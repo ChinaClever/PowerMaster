@@ -46,7 +46,8 @@
         v-show="switchValue !== 4"                          
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
-          <el-button style="height:25px;width:50px;margin-right:10px" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
+          <!-- <el-button style="height:25px;width:50px;margin-right:10px" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button> -->
+          <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
             <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
@@ -143,8 +144,8 @@
       </el-form>      
     </template>
     <template #Content>
-      <div v-if="switchValue !== 2 && list.length > 0" style="height:720px;margin-top:-10px;">
-        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
+      <div v-show="switchValue !== 2 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y:auto;">
+        <el-table :data="list" v-if="switchValue == 3 && list" v-loading="loading" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -152,11 +153,11 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
-            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 0">{{statusList[0].name}}</el-tag>
-            <el-tag type="success"  v-else-if="scope.row.color == 1&&scope.row.status != 0">{{statusList[1].name}}</el-tag>
-            <el-tag type="primary"  v-else-if="scope.row.color == 2&&scope.row.status != 0">{{statusList[2].name}}</el-tag>
-            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != 0">{{statusList[3].name}}</el-tag>
-            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != 0">{{statusList[4].name}}</el-tag>
+            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != null">{{statusList[0].name}}</el-tag>
+            <el-tag type="success"  v-else-if="scope.row.color == 1&&scope.row.status != null">{{statusList[1].name}}</el-tag>
+            <el-tag type="primary"  v-else-if="scope.row.color == 2&&scope.row.status != null">{{statusList[2].name}}</el-tag>
+            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != null">{{statusList[3].name}}</el-tag>
+            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != null">{{statusList[4].name}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="A相负载率(%)" align="center" prop="aloadRate" width="130px" >
@@ -205,7 +206,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-else-if="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -238,29 +239,31 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />        
-      <div v-if="switchValue == 2  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">                  
-              <div  v-if="item.aloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{Math.round(item.aloadRate)}}%</el-text></div>
-              <div  v-if="item.bloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{Math.round(item.bloadRate)}}%</el-text></div>
-              <div  v-if="item.cloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{Math.round(item.cloadRate)}}%</el-text></div>
+              <div v-if="item.status != null" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{Math.round(item.aloadRate)}}%</el-text></div>
+              <div v-if="item.status != null" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{Math.round(item.bloadRate)}}%</el-text></div>
+              <div v-if="item.status != null" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{Math.round(item.cloadRate)}}%</el-text></div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 18px;margin-left:10px" v-show="item.status != 0"><Bar :width="130" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
+            <div style="padding: 0 18px;margin-left:10px" v-show="item.color != 0"><Bar :width="130" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0 && item.status != 0">{{statusList[0].name}}</el-tag>
-            <el-tag type="success"  v-else-if="item.color == 1 && item.status != 0">{{statusList[1].name.slice(3,10)}}</el-tag>
-            <el-tag type="primary"  v-else-if="item.color == 2 && item.status != 0">{{statusList[2].name.slice(3,10)}}</el-tag>
-            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">{{statusList[3].name.slice(3,10)}}</el-tag>
-            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">{{statusList[4].name.slice(3,10)}}</el-tag>
+            <el-tag type="info"  v-if="item.color == 0">{{statusList[0].name}}</el-tag>
+            <el-tag type="success" v-else-if="item.color == 1">{{statusList[1].name.slice(3,10)}}</el-tag>
+            <el-tag type="primary" v-else-if="item.color == 2">{{statusList[2].name.slice(7,11)}}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3">{{statusList[3].name.slice(7,11)}}</el-tag>
+            <el-tag type="danger"  v-else-if="item.color == 4">{{statusList[4].name.slice(3,10)}}</el-tag>
           </div>
-          <button class="detail" @click="toDetail(item)" v-if="item.color !== 0" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status !== null" >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         v-if="showPagination == 0"
@@ -436,7 +439,7 @@ watch(filterText, (val) => {
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
-const loading = ref(false) // 列表的加载中
+const loading = ref(true) // 列表的加载中
 const list = ref([
   { 
     id:null,
@@ -503,7 +506,7 @@ const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
-  loading.value = true
+  //loading.value = true
   try {
     const data = await IndexApi.getIndexPage(queryParams)
     list.value = data.list
@@ -707,6 +710,16 @@ onActivated(() => {
     flashListTimer.value = setInterval((getList), 5000);
   }
 })
+
+onUpdated(() => {
+  nextTick(() => {
+    // 确保 table 已经被正确赋值，并且它是一个 ElTable 实例
+    if (list.value && list.value.$el && list.value.doLayout) {
+      // 调用 doLayout 方法，这通常是 Element UI 或 Element Plus 表格组件的一个方法
+      list.value.doLayout();
+    }
+  });
+});
 </script>
 
 <style scoped lang="scss">
@@ -771,7 +784,7 @@ onActivated(() => {
 .btn_offline {
   // width: 55px;
   // height: 32px;
-  padding: 3px 8px;
+  padding: 8px 8px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
@@ -1250,7 +1263,7 @@ onActivated(() => {
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
-  height: 32px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;

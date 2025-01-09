@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
 import com.alibaba.fastjson2.JSONObject;
+import lombok.extern.log4j.Log4j2;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.KEYWORD;
 
+@Log4j2
 @Service
 public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService {
     @Autowired
@@ -434,91 +436,96 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
 
     @Override
     public Map<String, Object> getBusEqData(BusPowerLoadDetailReqVO reqVO) throws IOException {
-        Long busId = reqVO.getId();
-        DecimalFormat df = new DecimalFormat("#.000");
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        if (busId == null) {
-            return null;
-        }
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-        searchSourceBuilder.size(10000);
-        searchSourceBuilder.trackTotalHits(true);
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
-        if (Objects.equals(reqVO.getGranularity(), "realtime")) {
-            searchRequest.indices("bus_eq_total_day");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "eq_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneMonthAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
-            searchRequest.indices("bus_ele_total_realtime");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneDayAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-            searchRequest.indices("bus_ele_total_realtime");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(threeDaysAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else {
-            searchRequest.indices("bus_eq_total_day");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "eq_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneMonthAgo.format(formatter))
-                    .to(now.format(formatter)));
-        }
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        // 搜索结果
-        SearchHits hits = searchResponse.getHits();
-        // 匹配到的总记录数
-        Long totalHits = hits.getTotalHits().value;
-        if (totalHits == 0) {
-            return null;
-        }
-        Map<String, Object> resultMap = new HashMap<>();
-        List<Map> result = new ArrayList<>();
-        if (Objects.equals(reqVO.getGranularity(), "hour")) {
-            hits.forEach(searchHit -> {
-                Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
-                result.add(sourceAsMap);
-            });
-            for (int i = 0; i < result.size() - 1; i++) {
-                result.get(i).put("create_time", result.get(i + 1).get("create_time"));
-                result.get(i).put("ele_active", Double.valueOf(df.format((double) result.get(i + 1).get("ele_active") - (double) result.get(i).get("ele_active"))));
+        try {
+            Long busId = reqVO.getId();
+            DecimalFormat df = new DecimalFormat("#.000");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+            LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+            LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+            LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+            if (busId == null) {
+                return null;
             }
-            result.remove(result.size() - 1);
-        } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-            hits.forEach(searchHit -> {
-                Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
-                result.add(sourceAsMap);
-            });
-            for (int i = 0; i < result.size() - 1; i++) {
-                result.get(i).put("create_time", result.get(i + 1).get("create_time"));
-                result.get(i).put("ele_active", Double.valueOf(df.format((double) result.get(i + 1).get("ele_active") - (double) result.get(i).get("ele_active"))));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+            searchSourceBuilder.size(10000);
+            searchSourceBuilder.trackTotalHits(true);
+            // 搜索请求对象
+            SearchRequest searchRequest = new SearchRequest();
+            searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
+            if (Objects.equals(reqVO.getGranularity(), "realtime")) {
+                searchRequest.indices("bus_eq_total_day");
+                searchSourceBuilder.fetchSource(new String[]{"bus_id", "eq_value", "create_time"}, null);
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(oneMonthAgo.format(formatter))
+                        .to(now.format(formatter)));
+            } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
+                searchRequest.indices("bus_ele_total_realtime");
+                searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(oneDayAgo.format(formatter))
+                        .to(now.format(formatter)));
+            } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
+                searchRequest.indices("bus_ele_total_realtime");
+                searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(threeDaysAgo.format(formatter))
+                        .to(now.format(formatter)));
+            } else {
+                searchRequest.indices("bus_eq_total_day");
+                searchSourceBuilder.fetchSource(new String[]{"bus_id", "eq_value", "create_time"}, null);
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(oneMonthAgo.format(formatter))
+                        .to(now.format(formatter)));
             }
-            result.remove(result.size() - 1);
-        } else {
-            hits.forEach(searchHit -> {
-                Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
-                result.add(sourceAsMap);
-            });
-        }
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 搜索结果
+            SearchHits hits = searchResponse.getHits();
+            // 匹配到的总记录数
+            Long totalHits = hits.getTotalHits().value;
+            if (totalHits == 0) {
+                return null;
+            }
+            Map<String, Object> resultMap = new HashMap<>();
+            List<Map> result = new ArrayList<>();
+            if (Objects.equals(reqVO.getGranularity(), "hour")) {
+                hits.forEach(searchHit -> {
+                    Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+                    result.add(sourceAsMap);
+                });
+                for (int i = 0; i < result.size() - 1; i++) {
+                    result.get(i).put("create_time", result.get(i + 1).get("create_time"));
+                    result.get(i).put("ele_active", Double.valueOf(df.format((double) result.get(i + 1).get("ele_active") - (double) result.get(i).get("ele_active"))));
+                }
+                result.remove(result.size() - 1);
+            } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
+                hits.forEach(searchHit -> {
+                    Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+                    result.add(sourceAsMap);
+                });
+                for (int i = 0; i < result.size() - 1; i++) {
+                    result.get(i).put("create_time", result.get(i + 1).get("create_time"));
+                    result.get(i).put("ele_active", Double.valueOf(df.format((double) result.get(i + 1).get("ele_active") - (double) result.get(i).get("ele_active"))));
+                }
+                result.remove(result.size() - 1);
+            } else {
+                hits.forEach(searchHit -> {
+                    Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+                    result.add(sourceAsMap);
+                });
+            }
 
-        resultMap.put("L1", result);
-        return resultMap;
+            resultMap.put("L1", result);
+            return resultMap;
+        }catch (Exception e){
+            log.error("母线用能详情错误："+e);
+            return null;
+        }
     }
 
 

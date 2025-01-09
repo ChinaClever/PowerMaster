@@ -23,7 +23,6 @@
             <span class="label">按时间范围查询实时能耗</span>
           </div>
         </div>
-        
       </div>
     </template>
     <template #ActionBar>
@@ -136,6 +135,7 @@
               link
               type="primary"
               @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
             详情
             </el-button>

@@ -1,8 +1,12 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author luowei
@@ -12,4 +16,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface BusIndexDoMapper extends BaseMapper<BusIndex> {
+    List<RoomMenuDTO> queryRoomMenuDTO(@Param("busKeys") List<String> busKeys);
 }

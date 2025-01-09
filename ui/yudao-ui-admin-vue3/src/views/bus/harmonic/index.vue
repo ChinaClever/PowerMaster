@@ -32,34 +32,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
-        <div class="line"></div>
-
       </div>
     </template>
     <template #ActionBar>
@@ -123,7 +95,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <div v-if="switchValue !== 0 && switchValue !== 1 && list.length > 0">
+        <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location"/>
@@ -194,9 +167,10 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
+    </div>    
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -347,7 +321,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
+      <template v-if="list.length == 0 && switchValue != null">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
@@ -580,63 +554,13 @@ const getList = async () => {
 
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
-    const allData = await await IndexApi.getBusRedisPage(queryParamsAll)
-    console.log("allData",allData)
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }  
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 3){
-        warn++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }          
-    });
+    const allData = await IndexApi.getBusIndexStatistics()
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.warn = allData.warn;
     busTotal.value = allData.total
-  } catch (error) {
-    
-  }
-}
-
-const getListNoLoading = async () => {
-  console.log(queryParams)
-  try {
-    const data = await IndexApi.getBusHarmonicPage(queryParams)
-    list.value = data.list
-    //list.value = list.value.map(item => ({
-    //  ...item, // 复制对象
-    //  location: item.devKey.split('-')[0] // 直接计算location属性
-    //}));
-    var tableIndex = 0;    
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acurThd == null){
-        return;
-      } 
-      obj.acurThd = obj.acurThd?.toFixed(2);
-      obj.bcurThd = obj.bcurThd?.toFixed(2);
-      obj.ccurThd = obj.ccurThd?.toFixed(2);
-      obj.avolThd = obj.avolThd?.toFixed(2);
-      obj.bvolThd = obj.bvolThd?.toFixed(2);
-      obj.cvolThd = obj.cvolThd?.toFixed(2);
-    });
-
-    total.value = data.total
   } catch (error) {
     
   }
@@ -659,18 +583,20 @@ const getNavList = async() => {
 }
 
 const toDetail = (row) =>{
+  console.log('row',row);
   const devKey = row.devKey;
-  const busId = row.busId
+  const busId = row.busId;
   const location = row.location ? row.location : devKey;
-  push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location }})
+  const busName = row.busName;
+  push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location , busName}});
 }
 
 const showDialogCur = () => {
-  dialogVisibleCur.value = true
+  dialogVisibleCur.value = true;
 }
 
 const showDialogVol = () => {
-  dialogVisibleVol.value = true
+  dialogVisibleVol.value = true;
 }
 
 // const openNewPage = (scope) => {
@@ -748,8 +674,8 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -771,7 +697,6 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
     flashListTimer.value = setInterval((getListAll), 5000);
   }
 })

@@ -3,18 +3,18 @@
     <template #NavInfo>
       <div class="navInfo">
         <div style="font-size:14px; margin-top:45px; margin-left:20px">
-          <div ><span>用能最多</span>
+          <div ><span>用能最大IP</span>
           </div>
           <div>
-            <span>昨日用能：</span>
+            <span>昨日：</span>
             <span>{{ busName1 }}</span>
           </div>
           <div >
-            <span>上周用能：</span>
+            <span>上周：</span>
             <span>{{ busName2 }}</span>
           </div>
           <div >
-            <span>上月用能：</span>
+            <span>上月：</span>
             <span>{{ busName3 }}</span>
           </div>
         </div>
@@ -67,15 +67,15 @@
         <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
               <div class="info">
                 <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.location}}</div>
-            <div class="name">{{item.busName}}</div>
+            <!-- <div class="name">{{item.busName}}</div> -->
             <button class="detail" @click.prevent="toDetail(item.devKey,item.roomId, item.id,item.location,item.busName)" >详情</button>
           </div>
         </div>
@@ -236,30 +236,40 @@ const getTableData = async(reset = false) => {
         return {
           id: item.id,
           devKey: item.devKey,
-          location: item.location ? item.location : item.devKey ,
+          busName : item.busName,
+          // location: item.location ? item.location : item.devKey+item.busName,
+          location: item.location || (item.devKey && item.busName ? item.devKey +'-'+ item.busName : null),
           local : item.location,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
           status : item.runStatus,
-          busName : item.busName,
+
         }
       })
-      queryParams.pageTotal = res.total
+      queryParams.pageTotal = res.total;
     }
+    console.log('tableData',tableData.value);
   } finally {
     tableLoading.value = false
   }
 }
 
 const getMaxData = async() => {
-  try {
-    const data = await IndexApi.getEqMax()
-    if (data) {
+    try {
+    const res = await IndexApi.getEqMax()
+    if (res) {
         //借用id值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
-          busName1.value = data.yesterdayBusKey
-          busName2.value = data.lastWeekBusKey
-          busName3.value = data.lastMonthBusKey
+        const dataList = res
+        dataList.forEach(item => {
+          if(item.id == 0){
+            busName1.value = item.devKey
+          }else if (item.id == 1){
+            busName2.value = item.devKey
+          }else if (item.id == 2){
+            busName3.value = item.devKey
+          }
+        })
     }
   } finally {
     
@@ -485,6 +495,7 @@ onBeforeMount(() => {
       .info {
         line-height: 1.7;
         font-size: 13px;
+        margin-right: 15px;
       }
     }
     .room {
@@ -554,6 +565,7 @@ onBeforeMount(() => {
       .info {
         line-height: 1.7;
         font-size: 13px;
+        margin-right: 15px;
       }
     }
     .room {
@@ -623,6 +635,7 @@ onBeforeMount(() => {
       .info {
         line-height: 1.7;
         font-size: 13px;
+        margin-right: 15px;
       }
     }
     .room {

@@ -47,13 +47,12 @@
     </template>
     <template #ActionBar>
       <el-form
-        class="-mb-15px"
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
       >
-        <el-form-item v-if="switchValue == 2 || switchValue == 3" style="margin-right: -300px;">
+        <el-form-item v-if="switchValue == 2 || switchValue == 3">
           <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus1">
             全部 
           </button>
@@ -71,12 +70,12 @@
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item>
-          <el-form-item label="网络地址" prop="devKey" style="float: left;">
+          <el-form-item label="网络地址" prop="devKey">
             <el-autocomplete
               v-model="queryParams.devKey"
               :fetch-suggestions="querySearch"
               clearable
-              class="!w-200px"
+              class="!w-150px"
               placeholder="请输入网络地址"
               @select="handleQuery"
             />
@@ -109,7 +108,7 @@
             </el-form-item>
           </el-form-item>
         </el-form-item>
-        <div style="float: left">
+        <div style="margin-right:10px;">
           <el-button
             @click="pageSizeArr = [24, 36, 48, 96];
             queryParams.pageSize = 24;
@@ -144,7 +143,7 @@
       </el-form>
     </template>
     <template #Content>
-     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
+     <div v-if="switchValue && list.length > 0" style="height: 720px;margin-top:-10px;overflow: hidden;overflow-y: auto;">
       <el-table
         v-show="switchValue == 3"
         :data="list"
@@ -242,6 +241,7 @@
               type="primary"
               @click="location=scope.row.location;toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
               详情
             </el-button>
@@ -291,7 +291,7 @@
             <el-tag type="info">离线</el-tag>
           </div>
           <button
-            v-if="item.status != null && item.status != 5"
+            v-if="item.status != null && item.color != 5"
             class="detail"
             @click="location=item.location;showDialogVol(item)"
             >详情</button
@@ -347,10 +347,10 @@
           <el-card class="cardChilc" shadow="hover">
             <div>
               <div>
-    <span style="font-size: 20px; font-weight: bold;">
-      {{ colorList[balanceObj.colorIndex].name }}
-    </span>
-</div>
+                <span style="font-size: 20px; font-weight: bold;">
+                  {{ colorList[balanceObj.colorIndex].name }}
+                </span>
+            </div>
           </div>
               <!-- <div class="status1"></div> -->
             <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" />
@@ -362,10 +362,10 @@
                 >{{ colorList[balanceObj.colorIndex].name }}</div
               >
               <div class="status1">
-  <template v-for="item in statusList" :key="item.value">
-    <div class="box1" :style="{backgroundColor: item.color}"></div>{{ item.name }}
-  </template>
-</div>
+                <template v-for="item in statusList" :key="item.value">
+                  <div class="box1" :style="{backgroundColor: item.color}"></div>{{ item.name }}
+                </template>
+              </div>
               <el-tooltip
                 class="box-item"
                 effect="dark"
@@ -378,44 +378,44 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover" >
             <div><span style="font-size: 20px; font-weight: bold;">相电流</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;">
-              <Bar :max="barMaxValues" width="300px" height="300px"/>
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 10px;">
+              <Bar :max="barMaxValues" width="300px" height="250px"/>
             </div>
             <div style="display: inline-block;
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            margin-top: 100px;
-            margin-left:80px">
-          <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;" >{{barMaxValues.L1}}A</span>
+              position: absolute;
+              width: 100px;
+              height: 100px;
+              margin-top: 50px;
+              margin-left:80px">
+            <div class="label-container">
+              <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;" >{{barMaxValues.L1}}A</span>
+            </div>
+            <div class="label-container">
+              <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{barMaxValues.L2}}A</span>
+            </div>
+            <div class="label-container">
+              <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{barMaxValues.L3}}A</span>
+            </div>
           </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{barMaxValues.L2}}A</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{barMaxValues.L3}}A</span>
-          </div>
-        </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
             <div >
-    <span style="font-size: 20px;  font-weight: bold; ">
-      电流趋势
-    </span>
-</div>
+              <span style="font-size: 20px;  font-weight: bold; ">
+                电流趋势
+              </span>
+            </div>
             <div class="IechartBar">
-              <Echart :options="ALineOption" :height="300" style="margin-top:10px" />
+              <Echart :options="ALineOption" :height="250" style="margin-top:10px" />
             </div>
           </el-card>
         </div>
         <div class="custom-content-container">
           <el-card  class="cardChilc" shadow="hover">
             <div>
-    <span style="font-size: 20px; font-weight: bold; color:{{ color: colorList[4].color }}">
-      电压不平衡
-    </span>
-</div>
+              <span style="font-size: 20px; font-weight: bold; color:{{ color: colorList[4].color }}">
+                电压不平衡
+              </span>
+            </div>
             <volUnblance :max="balanceObj.imbalanceValueB" :customColor="colorList[4].color" />
             <!-- <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
               <div class="value">{{balanceObj.imbalanceValueB}}%</div>
@@ -432,14 +432,14 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div><span style="font-size: 20px; font-weight: bold;">相电压</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;margin-left: -25px;">
-              <Vol :max="volMaxValues" width="300px" height="300px"/>
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 10px;margin-left: -25px;">
+              <Vol :max="volMaxValues" width="300px" height="250px"/>
             </div>
             <div style="display: inline-block;
             position: absolute;
             width: 100px;
             height: 100px;
-            margin-top: 110px;
+            margin-top: 50px;
             margin-left:100px">
           <div class="label-container">
             <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua</span><span style="font-size:16px;">{{volMaxValues.L1}}V</span>
@@ -454,12 +454,12 @@
           </el-card>
           <el-card class="cardChilc" shadow="hover">
             <div>
-    <span style="font-size: 20px; font-weight: bold; ">
-      电压趋势
-    </span>
-</div>
+              <span style="font-size: 20px; font-weight: bold; ">
+                电压趋势
+              </span>
+            </div>
             <div class="IechartBar" >
-              <Echart :options="BLineOption" :height="300" style="margin-top:10px"/>
+              <Echart :options="BLineOption" :height="250" style="margin-top:10px"/>
             </div>
           </el-card>
         </div>
@@ -774,15 +774,12 @@ const toggleAllStatus1 = () => {
   butColor.value = 0;
   onclickColor.value = -1;
   queryParams.color = [0,1,2,3,4];
-  queryParams.status = [0,1,2,3,4];
   handleQuery();
 }
 const handleSelectStatus1 = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.color = [index];
-  //queryParams.status = [index];
-
   handleQuery();
 }
 
@@ -1064,52 +1061,12 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-    var range = await CurbalanceColorApi.getCurbalanceColor()
-    if (range != null) {
-      statusList[0].name = '<' + range.rangeOne + '%'
-      statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
-      statusList[2].name = '>' + range.rangeFour + '%'
-    }
-
-    // var tableIndex = 0
-    // var lessFifteen = 0
-    // var greaterFifteen = 0
-    // var greaterThirty = 0
-    // var smallCurrent = 0
-    // data.list.forEach((obj) => {
-    //   obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-    //   if (obj?.dataUpdateTime == null && obj?.pow == null) {
-    //     return
-    //   }
-    //   const splitArray = obj.dataUpdateTime.split(' ')
-    //   obj.dataUpdateTime = splitArray[1]
-
-    //   obj.apparentPow = obj.apparentPow.toFixed(3)
-    //   obj.pow = obj.pow.toFixed(3)
-    //   obj.ele = obj.ele.toFixed(1)
-    //   obj.pf = obj.pf.toFixed(2)
-    //   obj.acur = obj.acur?.toFixed(2)
-    //   obj.bcur = obj.bcur?.toFixed(2)
-    //   obj.ccur = obj.ccur?.toFixed(2)
-    //   obj.curUnbalance = obj.curUnbalance?.toFixed(0)
-    //   obj.avol = obj.avol?.toFixed(1)
-    //   obj.bvol = obj.bvol?.toFixed(1)
-    //   obj.cvol = obj.cvol?.toFixed(1)
-    //   obj.volUnbalance = obj.volUnbalance?.toFixed(0)
-    //   if (obj.color == 1) {
-    //     smallCurrent++
-    //   } else if (obj.color == 2) {
-    //     lessFifteen++
-    //   } else if (obj.color == 3) {
-    //     greaterFifteen++
-    //   } else if (obj.color == 4) {
-    //     greaterThirty++
-    //   }
-    // })
-    // statusNumber.smallCurrent = smallCurrent
-    // statusNumber.lessFifteen = lessFifteen
-    // statusNumber.greaterFifteen = greaterFifteen
-    // statusNumber.greaterThirty = greaterThirty
+    // var range = await CurbalanceColorApi.getCurbalanceColor()
+    // if (range != null) {
+    //   statusList[0].name = '<' + range.rangeOne + '%'
+    //   statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
+    //   statusList[2].name = '>' + range.rangeFour + '%'
+    // }
     total.value = data.total
     list.value = data.list
     console.log('111获取数据111', list)
@@ -1117,59 +1074,17 @@ const getList = async () => {
     loading.value = false
   }
 }
+const getCurbalanceColor = async () => {
+  const res = await CurbalanceColorApi.getCurbalanceColor()
+  console.log('res', res)
+  if (res != null) {
+    statusList[0].name = '<' + res.rangeOne + '%'
+    statusList[1].name = res.rangeTwo + '%-' + res.rangeThree + '%'
+    statusList[2].name = '>' + res.rangeFour + '%'
+  }
+}
 
-// const getListNoLoading = async () => {
-//   try {
-//     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-//     var range = await CurbalanceColorApi.getCurbalanceColor()
-//     if (range != null) {
-//       statusList[0].name = '<' + range.rangeOne + '%'
-//       statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
-//       statusList[2].name = '>' + range.rangeFour + '%'
-//     }
-//     var tableIndex = 0
-//     var lessFifteen = 0
-//     var greaterFifteen = 0
-//     var greaterThirty = 0
-//     var smallCurrent = 0
-//     data.list.forEach((obj) => {
-//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-//       if (obj?.dataUpdateTime == null && obj?.pow == null) {
-//         return
-//       }
-//       const splitArray = obj.dataUpdateTime.split(' ')
-//       obj.dataUpdateTime = splitArray[1]
-//       obj.apparentPow = obj.apparentPow.toFixed(3)
-//       obj.pow = obj.pow.toFixed(3)
-//       obj.ele = obj.ele.toFixed(1)
-//       obj.pf = obj.pf.toFixed(2)
-//       obj.acur = obj.acur?.toFixed(2)
-//       obj.bcur = obj.bcur?.toFixed(2)
-//       obj.ccur = obj.ccur?.toFixed(2)
-//       obj.curUnbalance = obj.curUnbalance?.toFixed(0)
-//       obj.avol = obj.avol?.toFixed(1)
-//       obj.bvol = obj.bvol?.toFixed(1)
-//       obj.cvol = obj.cvol?.toFixed(1)
-//       obj.volUnbalance = obj.volUnbalance?.toFixed(0)
-//       if (obj.color == 1) {
-//         smallCurrent++
-//       } else if (obj.color == 2) {
-//         lessFifteen++
-//       } else if (obj.color == 3) {
-//         greaterFifteen++
-//       } else if (obj.color == 4) {
-//         greaterThirty++
-//       }
-//     })
 
-//     statusNumber.smallCurrent = smallCurrent
-//     statusNumber.lessFifteen = lessFifteen
-//     statusNumber.greaterFifteen = greaterFifteen
-//     statusNumber.greaterThirty = greaterThirty
-//     list.value = data.list
-//     total.value = data.total
-//   } catch (error) {}
-// }
 const getNavAList = async() => {
     const resStatus =await PDUDeviceApi.getBalancedDistribution();
     console.log(resStatus);
@@ -1220,10 +1135,8 @@ const handleSelectStatus = (index) => {
   const statusArr = status.map((item) => item.value)
   if (statusArr.length != statusList.length) {
     queryParams.color = statusArr
-    queryParams.status = [0, 1, 2, 3, 4]
   } else {
     queryParams.color = []
-    queryParams.status = []
   }
   handleQuery()
 }
@@ -1244,10 +1157,8 @@ const toggleAllStatus = () => {
   const statusArr = status.map(item => item.value);
   if (statusArr.length != statusList.length) {
     queryParams.color = statusArr
-    queryParams.status = [0, 1, 2, 3, 4]
   } else {
     queryParams.color = []
-    queryParams.status = []
   }
   handleQuery();
 }
@@ -1306,6 +1217,7 @@ const handleExport = async () => {
 onMounted(async () => {
   devKeyList.value = await loadAll()
   getList()
+  getCurbalanceColor()
   getNavList()
   getNavAList()
   // if (!firstTimerCreate.value) {
@@ -1884,6 +1796,7 @@ onActivated(() => {
   flex: 1;
   margin: 0 10px;
   box-sizing: border-box;
+  height:40vh;
   .box {
     position: relative;
     height: 121px;
@@ -1908,10 +1821,12 @@ onActivated(() => {
     }
   }
 }
+
 ::v-deep .el-table th,
-   ::v-deep .el-table td{
-    border-right: none;
-   }
+::v-deep .el-table td{
+ border-right: none;
+}
+
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
@@ -1964,9 +1879,14 @@ onActivated(() => {
   font-size: 34px; /* 根据需要调整大小 */
   margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
 }
+
 .label-container {
-      display: flex; /* 使用 Flexbox 布局 */
-      align-items: center; /* 垂直居中 */
-      color:#000;
-    }
+  display: flex; /* 使用 Flexbox 布局 */
+  align-items: center; /* 垂直居中 */
+  color:#000;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
+}
 </style>

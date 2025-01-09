@@ -30,33 +30,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>离线
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>告警
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
-          </div>
-        </div> -->
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -140,7 +113,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1 && visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+      <el-table v-show="switchValue == 1 && visMode == 0 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y:auto;" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
@@ -190,7 +163,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+      <el-table v-show="switchValue == 1 && visMode == 1 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y:auto;" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
@@ -288,8 +261,8 @@
         @pagination="getList"
       />
 
-      <template v-if="list.length == 0 && switchValue != 2">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && switchValue !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
 
       <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
@@ -342,7 +315,7 @@ import RequirementLine from './component/RequirementLine.vue'
 import { ElTree } from 'element-plus'
 
 /** PDU设备 列表 */
-defineOptions({ name: 'PDUDevice' })
+// defineOptions({ name: 'PDUDevice' })
 
 const startTime = ref() as any;
 const endTime = ref() as any;
@@ -1041,18 +1014,24 @@ onMounted(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

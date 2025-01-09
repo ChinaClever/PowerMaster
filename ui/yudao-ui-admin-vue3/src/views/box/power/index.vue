@@ -2,36 +2,6 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱配电">
     <template #NavInfo>
       <div>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
-        </div> -->
-        <!-- <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -92,7 +62,7 @@
             v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
             clearable
-            class="!w-200px"
+            class="!w-150px"
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
@@ -119,17 +89,19 @@
         </el-form-item>
         </el-form-item>
         <div style="float:right">
+          <el-button @click="valueMode = 4;" :type="valueMode == 4 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />视在功率</el-button>
           <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />有功功率</el-button>            
           <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button> 
-          <el-button v-if= "!shouldShowLabel" @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button v-if= "!shouldShowLabel" @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>                                 
+          <!-- <el-button v-if= "!shouldShowLabel" @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
+          <el-button v-if= "!shouldShowLabel" @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>                                  -->
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <div v-if="switchValue !== 0  && list.length > 0" style="height:720px;margin-top:-10px;">
+        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -176,7 +148,7 @@
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
+        <!-- <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.phaseActivePow">
               {{ scope.row.phaseActivePow[0] }}
@@ -196,8 +168,8 @@
               {{ scope.row.phaseActivePow[2] }}
             </el-text>
           </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3 && typeText == 'line'" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
+        </el-table-column> -->
+        <!-- <el-table-column v-if="valueMode == 3 && typeText == 'line'" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.phaseReactivePow">
               {{ scope.row.phaseReactivePow[0] }}
@@ -218,7 +190,35 @@
             </el-text>
           </template>
         </el-table-column>
-
+         -->
+                <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="输出位1视在功率(kVA)" align="center" prop="areactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletApparentPow">
+              {{ scope.row.outletApparentPow[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="输出位2视在功率(kVA)" align="center" prop="breactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletApparentPow">
+              {{ scope.row.outletApparentPow[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="输出位3视在功率(kVA)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletApparentPow">
+              {{ scope.row.outletApparentPow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="总视在功率(kVA)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparent">
+              {{ scope.row.powApparent }}
+            </el-text>
+          </template>
+        </el-table-column>
         
         <el-table-column v-if="valueMode == 2" label="输出位1有功功率(kW)" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
@@ -238,6 +238,13 @@
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.outletActivePow">
               {{ scope.row.outletActivePow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="总有功功率(kW)" align="center" prop="cactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powActive">
+              {{ scope.row.powActive }}
             </el-text>
           </template>
         </el-table-column>
@@ -262,7 +269,13 @@
             </el-text>
           </template>
         </el-table-column>
-
+        <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactive">
+              {{ scope.row.powReactive }}
+            </el-text>
+          </template>
+        </el-table-column>
         <!--<el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路1电流(A)" align="center" prop="acur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.loopCur != null">
@@ -541,53 +554,13 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-else-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <!-- <div v-if="shouldShow('current', 'phaseCur', 'line') || shouldShow('current', 'loopCur', 'loop')">  
-                电流
-              </div> -->
-              <!-- <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'" >
-                电流
-              </div>
-              <div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
-                电流
-              </div> -->
-              <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'">
-                电流
-              </div>
-              <!--<div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
-                电流
-              </div>-->
-              <div v-if="valueMode == 1 && item.phaseVol != null && typeText == 'line'" >
-                电压
-              </div>
-              <!--<div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
-                电压
-              </div>-->
-              <div v-if="valueMode == 2 && item.phaseActivePow != null && typeText == 'line'">
-                有功功率
-              </div>
-              <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
-                有功功率
-              </div>
-              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
-                有功功率
-              </div>-->
-              <div v-if="valueMode == 3 && item.phaseReactivePow != null && typeText == 'line'" >
-                无功功率
-              </div>
-              <!--<div v-if="valueMode == 3 && item.loopReactivePow != null && typeText == 'loop'" >
-                无功功率
-              </div>
-              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
-                无功功率
-              </div>-->
-            </div>
             <div class="info" v-if="valueMode == 0" >
               <div v-if="item.phaseCur != null && typeText == 'line'">
                 <div v-for="(phaseCur,index) in item.phaseCur" :key="index">
@@ -666,12 +639,76 @@
                 </div>
               </div>
             </div>
+            <div class="info" v-if="valueMode == 4">
+              <!--<div  v-if="item.phaseReactivePow != null && typeText == 'line'">
+                <div v-for="(phaseReactivePow,index) in item.phaseReactivePow" :key="index">
+                  <el-text  v-if="item.phaseReactivePow != null">
+                    {{phaseLineText[index]}}{{phaseReactivePow}}kVar
+                  </el-text>
+                </div>
+              </div>
+              <div  v-else-if="item.loopReactivePow != null && typeText == 'loop'">
+                <div v-for="(loopReactivePow,index) in item.loopReactivePow" :key="index">
+                  <el-text  v-if="item.loopReactivePow != null">
+                    {{loopLineText[index]}}{{loopReactivePow}}kVar
+                  </el-text>
+                </div>
+              </div>-->
+              <div>
+                <div v-for="(outletApparentPow,index) in item.outletApparentPow" :key="index">
+                  <el-text  v-if="item.outletApparentPow != null">
+                    {{outletLineText[index]}}{{outletApparentPow}}kVar
+                  </el-text>
+                </div>
+              </div>
+            </div>
+            <div class="icon" >
+              <!-- <div v-if="shouldShow('current', 'phaseCur', 'line') || shouldShow('current', 'loopCur', 'loop')">  
+                电流
+              </div> -->
+              <!-- <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'" >
+                电流
+              </div>
+              <div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
+                电流
+              </div> -->
+              <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'">
+                电流
+              </div>
+              <!--<div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
+                电流
+              </div>-->
+              <div v-if="valueMode == 1 && item.phaseVol != null && typeText == 'line'" >
+                电压
+              </div>
+              <!--<div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
+                电压
+              </div>-->
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line'">
+                总有功率
+              </div>
+              <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
+                有功功率
+              </div>
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
+                有功功率
+              </div>-->
+              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'" >
+                总无功率
+              </div>
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'" >
+                视在功率
+              </div>
+             <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
+                无功功率
+              </div>-->
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
-            <el-tag type="info" v-if="item.loopCurStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.loopCurStatus[0] != 0 || item.loopCurStatus[1] != 0  || item.loopCurStatus[2] != 0 " >告警</el-tag>
-            <el-tag type="success" v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status === 0 " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
+            <el-tag type="success" v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <!--<div class="status" v-if="valueMode == 1">
             <el-tag type="info" v-if="item.loopVolStatus == null " >离线</el-tag>
@@ -686,7 +723,7 @@
           <div class="status" v-if="valueMode == 3">
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
           </div>-->
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status !== 0" >详情</button>
         </div>
         </template>
       </div>
@@ -697,8 +734,8 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && switchValue !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>
@@ -943,8 +980,15 @@ const getList = async () => {
       const selectedElements = [];
       const indicesToSelect = [2, 5, 8];
       for (let j = 0; j < indicesToSelect.length; j++) {
-        if (j < loopCur.length){
-          selectedElements.push(loopCur[indicesToSelect[j]]);
+        if (Array.isArray(loopCur) && Array.isArray(indicesToSelect) && j < loopCur.length) {
+          const index = indicesToSelect[j];
+          if (index >= 0 && index < loopCur.length) {
+            selectedElements.push(loopCur[index]);
+          } else {
+            console.warn('Index out of bounds:', index);
+          }
+        } else {
+          console.warn('Invalid loopCur or indicesToSelect array');
         }
       }
 
@@ -959,90 +1003,73 @@ const getList = async () => {
 
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-
-    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }
-    });
+    const allData = await IndexApi.getBoxIndexStatistics();
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
     statusNumber.total = allData.total;
   } catch (error) {
     
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getBoxRedisPage(queryParams);
-    list.value = data.list;
-    var tableIndex = 0;
+// const getListNoLoading = async () => {
+//   try {
+//     const data = await IndexApi.getBoxRedisPage(queryParams);
+//     list.value = data.list;
+//     var tableIndex = 0;
 
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.phaseCur == null){
-        return;
-      }
-      for(var i= 0;i < obj.phaseCur.length; i++)
-      {
-        obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
-        obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
-        obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
-        obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
-        obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
-        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
-      }
+//     list.value.forEach((obj) => {
+//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+//       if(obj?.phaseCur == null){
+//         return;
+//       }
+//       for(var i= 0;i < obj.phaseCur.length; i++)
+//       {
+//         obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+//         obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+//         obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+//         obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+//         obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+//         obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+//       }
       
-      for(var i= 0;i < obj.loopCur.length; i++)
-      {
-        obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
-        obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
-        obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
-        obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
-      } 
+//       for(var i= 0;i < obj.loopCur.length; i++)
+//       {
+//         obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
+//         obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
+//         obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
+//         obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
+//       } 
       
-      for(var i= 0;i < obj.outletActivePow.length; i++)
-      {
-        obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
-        obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
-        obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
-        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
-      }
-    });
+//       for(var i= 0;i < obj.outletActivePow.length; i++)
+//       {
+//         obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
+//         obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
+//         obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
+//         obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+//       }
+//     });
 
-    for(let i = 0; i < list.value.length; i++){
-      const loopCur = list.value[i].loopCur;
-      const selectedElements = [];
-      const indicesToSelect = [2, 5, 8];
-      for (let j = 0; j < indicesToSelect.length; j++) {
-        if (j < loopCur.length){
-          selectedElements.push(loopCur[indicesToSelect[j]]);
-        }
-      }
+//     for(let i = 0; i < list.value.length; i++){
+//       const loopCur = list.value[i].loopCur;
+//       const selectedElements = [];
+//       const indicesToSelect = [2, 5, 8];
+//       for (let j = 0; j < indicesToSelect.length; j++) {
+//         if (j < loopCur.length){
+//           selectedElements.push(loopCur[indicesToSelect[j]]);
+//         }
+//       }
 
-      list.value[i].loopCur = selectedElements;
-    }
+//       list.value[i].loopCur = selectedElements;
+//     }
 
-    total.value = data.total;
-  } catch (error) {
+//     total.value = data.total;
+//   } catch (error) {
     
-  }
-};
+//   }
+// };
 
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu();
@@ -1184,8 +1211,8 @@ onMounted(async () => {
   getNavList();
   getListAll();
   //getTypeMaxValue();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  // flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1207,8 +1234,8 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    // flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>
@@ -1505,7 +1532,6 @@ onActivated(() => {
           width: 100px;
           height: 50px;
           margin-left:20px;
-          margin-right:20px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1514,6 +1540,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1587,7 +1614,6 @@ onActivated(() => {
           width: 100px;
           height: 50px;
           margin-left:20px;
-          margin-right:20px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1596,6 +1622,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1668,7 +1695,6 @@ onActivated(() => {
           width: 100px;
           height: 50px;
           margin-left:20px;
-          margin-right:20px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1677,6 +1703,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{

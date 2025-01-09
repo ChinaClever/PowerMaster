@@ -2,36 +2,6 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线电力">
     <template #NavInfo>
       <div>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div> -->
-        <!-- <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -45,12 +15,6 @@
             </div>
             <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
           </div>
-          <!-- <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
-          </div> -->
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
@@ -370,9 +334,9 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />     
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
-          <div v-if="item.id !== null" class="arrayItem">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             
@@ -483,7 +447,7 @@
                 总无功功率(kVar)
               </div>
               <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px;">
-                {{item.powApparent?.toFixed(3)}}
+                {{item.powApparent}}
               </div>
               <div v-if="valueMode == 4 && item.powApparent != null" style="font-size:16px;" >
                 总视在功率(kVA)
@@ -822,67 +786,15 @@ const getDeletedList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getBusRedisPage(queryParams)
-    list.value = data.list
-    filterData()
-    console.log('list.value',list.value)
-    var tableIndex = 0;    
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
-        return;
-      } 
-      obj.acur = obj.acur?.toFixed(2);
-      obj.bcur = obj.bcur?.toFixed(2);
-      obj.ccur = obj.ccur?.toFixed(2);
-      obj.avol = obj.avol?.toFixed(1);
-      obj.bvol = obj.bvol?.toFixed(1);
-      obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
-    });
-
-    total.value = data.total
-  } catch (error) {
-    
-  }
-}
-
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
-    const allData = await await IndexApi.getBusRedisPage(queryParamsAll)
-    console.log("allData",allData)
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }  
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 3){
-        warn++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }          
-    });
+
+    const allData =  await IndexApi.getBusIndexStatistics()
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.warn = allData.warn;
     busTotal.value = allData.total
   } catch (error) {
     
@@ -906,18 +818,14 @@ const getNavList = async() => {
 }
 
 const toDeatil = (row) =>{
-  //const devKey = row.devKey;
-  //const busId = row.busId;
-  //const location = row.location != null ? row.location : row.devKey
-  //const busName = row.busName;
-  //push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
-  push({path: '/bus/busmonitor/buspowerdetail'})
+  const devKey = row.devKey;
+  const busId = row.busId;
+  const location = row.location != null ? row.location : row.devKey
+  const busName = row.busName;
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+
 }
 
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
 const filterData = () => {
   const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
   console.log('data0',data0)
@@ -1030,8 +938,7 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1053,8 +960,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>
@@ -1349,6 +1255,8 @@ onActivated(() => {
           font-size: 20px;
           width: 150px;
           height: 100px;
+          margin-left: -30px;
+          margin-top:30px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1431,6 +1339,7 @@ onActivated(() => {
           width: 150px;
           height: 100px;
           margin-left: -30px;
+          margin-top:30px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1511,6 +1420,7 @@ onActivated(() => {
           width: 150px;
           height: 100px;
           margin-left: -30px;
+          margin-top:30px;
           text-align: center;
           .text-pf{
             font-size: 16px;

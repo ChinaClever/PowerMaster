@@ -2,36 +2,7 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱温度">
     <template #NavInfo>
       <div>
-         <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
+
         <div class="status">
           <div class="box">
             <div class="top"> <div class="tag"></div>正常</div>
@@ -124,7 +95,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="margin-top:-10px;height:720px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
+      <div v-if="switchValue !== 0  && list.length > 0">
+        <el-table v-if="switchValue == 3" v-loading="loading" style="margin-top:-10px;height:720px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -173,10 +145,12 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
+      </div>    
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-else-if="switchValue == 0  && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <img  class="icon"  src="@/assets/imgs/temicon.png" />    
@@ -195,6 +169,7 @@
           </div>
           <button class="detail" @click="openTemDetail(item)" v-if="item.status != null && item.status != 0"  >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         :total="total"
@@ -203,61 +178,47 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && switchValue !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
 
-      <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh">
-        <el-row class="custom-row">
-          <el-tag style="margin-left: 100px; margin-top: -130px">{{ location }}</el-tag>
-          <div style="margin-left: -170px;">
-            日期:
+      <el-dialog v-model="detailVis">
+        <div class="custom-row" style="display: flex; align-items: center;">
+          <!-- 位置标签 -->
+          <div class="location-tag el-col">
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">温度详情</span>
+            <span>所在位置：{{ location }}</span>
+            <span> 网络地址：{{ devkey }}</span>
+          </div>
+
+          <!-- 日期选择器 -->
+          <div class="date-picker-col el-col"> 
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
-              type="date"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-160px"
+              type="datetime"
+              :picker-options="pickerOptions"
+              placeholder="选择日期时间"
             />
-          </div>
-          
-          
-          <el-button
-            style="margin-left: 20px;"
-            @click="subtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &lt;前一日
-          </el-button>
-          <el-button 
-            @click="addtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &gt;后一日
-          </el-button>
-          <div class="button-group" style="margin-left: auto">
-            <el-button
-              @click="switchChartOrTable = 0"
-              :type="switchChartOrTable === 0 ? 'primary' : ''"
-            >
-              图表
-            </el-button>
-            <el-button
-              @click="switchChartOrTable = 1"
-              :type="switchChartOrTable === 1 ? 'primary' : ''"
-            >
-              数据
-            </el-button>
-            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
-              <Icon icon="ep:download" class="mr-5px" /> 导出
-            </el-button>
+            <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
+            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
-        </el-row>
+          <!-- 图表/数据切换按钮组 -->
+          <div class="chart-data-buttons el-col" style="margin-right: 50px;">
+            <div class="button-group">
+              <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+              <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
+              <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+                <i class="el-icon-download"></i> 导出
+              </el-button>
+            </div>
+          </div>
+        </div>
         <br/>
-        <TemDetail v-show="switchChartOrTable == 0" width="68vw" height="58vh"  :list="temESList"  />
-        <el-table v-show="switchChartOrTable == 1" :data="temTableList" :stripe="true" :show-overflow-tooltip="true" >
+        <TemDetail v-if="switchChartOrTable == 0" width="75vw" height="70vh"  :list="temESList"  />
+        <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+          <el-table :data="temTableList" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;">
           <el-table-column label="时间" align="center" prop="temAvgTime" />
           <el-table-column label="A相温度" align="center" prop="temAvgValueA" >
             <template #default="scope" >
@@ -288,6 +249,7 @@
             </template>
           </el-table-column>
         </el-table>
+        </div>
       </el-dialog>
     </template>
   </CommonMenu>
@@ -311,6 +273,7 @@ import TemDetail from './component/TemDetail.vue'
 defineOptions({ name: 'PDUDevice' })
 
 const location = ref() as any;
+const devkey = ref() as any;
 const detailVis = ref(false);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -422,6 +385,7 @@ const openTemDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : row.devKey;
+  devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;
 }
@@ -545,9 +509,8 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBoxTemPage(queryParams);
-    console.log('queryParams',queryParams);
     console.log('data',data);
-    const res = await IndexApi.getBoxIndexStatistics();
+    const res = await IndexApi.getBoxIndexStatisticsAll();
  
     // 初始情况下，使用 API 返回的数据
     let processedList = data.list.map((obj, index) => {
@@ -1287,6 +1250,7 @@ onActivated(() => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin-top:-50px;
 }
  
 .button-group {
@@ -1300,5 +1264,11 @@ onActivated(() => {
 
 :deep(.el-tag){
   margin-right:-60px;
+}
+
+:deep(.el-dialog){
+  width: 80%;
+  height: 80%;
+  margin-top: 100px;
 }
 </style>

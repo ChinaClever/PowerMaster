@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartDom" style="width: 400px; height: 300px;margin-left: 20px;"></div>
+  <div ref="chartDom" style="width: 400px; height: 280px;margin-left:50px;"></div>
 </template>
 
 <script setup lang="ts">
@@ -31,7 +31,7 @@ const restPercentageValue = computed(() => 100 - percentageValue.value);
 const option = computed(() => ({
   tooltip: {
     trigger: 'item',
-    formatter: '{b}: {c} ({d}%)'
+    formatter: '{d}%'
   },
   legend: {
     show: false // 不显示图例
@@ -41,7 +41,7 @@ const option = computed(() => ({
       name: 'Access From',
       type: 'pie',
       radius: ['55%', '90%'],
-      center: ['60%', '50%'],
+      center: ['50%', '50%'],
       avoidLabelOverlap: false,
       label: {
         show: true,
@@ -50,13 +50,6 @@ const option = computed(() => ({
         formatter: () => percentageValue.value +  '%',
         fontSize: 30,
         fontWeight: 'bold'
-      },
-      emphasis: {
-        label: {
-          show: true,
-          fontSize: 40,
-          fontWeight: 'bold'
-        }
       },
       labelLine: {
         show: false

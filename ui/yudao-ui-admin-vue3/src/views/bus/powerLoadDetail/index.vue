@@ -378,7 +378,7 @@ const initChart1 = () => {
             type: 'pie',
             radius: '50%',
             label: {
-              formatter: '{b}: {d}%',
+              formatter: '{b}: {c}%',
             },
             data: [
               { value: powReactivepPercentage.value, name: '无功功率', },
@@ -609,6 +609,10 @@ const getBusIdAndLocation =async () => {
  }
 }
 
+watch(() => loadPercentage.value ,async()=>{
+  await initChart()
+})
+
 // 监听切换类型
 watch( ()=>typeRadio.value, async(value)=>{
   //L1Data.value = [];
@@ -774,9 +778,6 @@ watch( ()=>timeRadio.value, async(value)=>{
   await getLineChartData();
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log('更新数据L1Data.value',L1Data.value)
-    console.log('更新数据L2Data.value',L2Data.value)
-    console.log('更新数据L3Data.value',L3Data.value)
     myChart2?.setOption({
     title: { text: ''},
      tooltip: { trigger: 'axis' ,formatter: function(params) {

@@ -152,7 +152,7 @@
       </el-form>
     </template>
     <template #Content>
-     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
+     <div v-if="switchValue && list.length > 0" style="height: 720px;margin-top:-10px;overflow: hidden;overflow-y: auto;">
     <!-- 三相数据显示 -->
       <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"   @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
@@ -199,6 +199,7 @@
               
               @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
             详情
             </el-button>
@@ -207,6 +208,7 @@
               type="danger"
               @click="handleDelete(scope.row.id)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -352,8 +354,8 @@
             <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
             <div class="info" style="margin-bottom: 60px">
               <div>L1最大功率：{{ (item.l1MaxPow || 0).toFixed(2) }}kW</div>
-    <div>L2最大功率：{{ (item.l2MaxPow || 0).toFixed(2) }}kW</div>
-    <div>L3最大功率：{{ (item.l3MaxPow || 0).toFixed(2) }}kW</div>
+              <div>L2最大功率：{{ (item.l2MaxPow || 0).toFixed(2) }}kW</div>
+              <div>L3最大功率：{{ (item.l3MaxPow || 0).toFixed(2) }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <div style="margin-left: 10px;margin-bottom: 50px; margin-top: -20px; width: 100px;height: 100px" ><Bar :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
@@ -400,8 +402,8 @@
             <div class="info" style="margin-bottom: 20px;">
               
               <div>L1最大电流：{{ (item.l1MaxCur || 0).toFixed(2) }}A</div>
-    <div>L2最大电流：{{ (item.l2MaxCur || 0).toFixed(2) }}A</div>
-    <div>L3最大电流：{{ (item.l3MaxCur || 0).toFixed(2) }}A</div>
+              <div>L2最大电流：{{ (item.l2MaxCur || 0).toFixed(2) }}A</div>
+              <div>L3最大电流：{{ (item.l3MaxCur || 0).toFixed(2) }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <!-- <div  style="height: 50px;background-color: black"></div> -->
@@ -465,14 +467,14 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import Pie from './component/Pie.vue'
+import download from '@/utils/download';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
+import Pie from './component/Pie.vue';
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
+import { ElTree } from 'element-plus';
+import { CabinetApi } from '@/api/cabinet/info';
 
-import * as echarts from 'echarts'
+import * as echarts from 'echarts';
 import { ref, onMounted, onUnmounted } from 'vue';
 import Bar from './component/Bar.vue'
 import pow from './component/pow.vue'
@@ -1348,8 +1350,10 @@ const showDialogOne = (id,type,flagValue) => {
   flagValue.value = 1
 }
 
-
-
+window.addEventListener('resize', function() {
+  lineidChart?.resize();
+  lineidChartOne?.resize();
+});
 </script>
 
 <style scoped lang="scss">
@@ -1879,7 +1883,10 @@ const showDialogOne = (id,type,flagValue) => {
   background-color: #f7f7f7;
   color: #909399;
   height: 60px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 .cardChilc {
   flex: 1;

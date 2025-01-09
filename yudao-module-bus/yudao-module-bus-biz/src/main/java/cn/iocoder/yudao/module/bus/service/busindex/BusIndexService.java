@@ -92,7 +92,7 @@ public interface BusIndexService {
 
     List<BusEqTrendDTO> eqTrend(int id, String type);
 
-    BusEleChainDTO getEleChain(int id);
+    BusEleChainDTO getEleChain(int id) throws IOException;
 
     BusBalanceDeatilRes getBusBalanceDetail(String devKey);
 
@@ -124,7 +124,7 @@ public interface BusIndexService {
 
     BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException;
 
-    MaxEqResVO getMaxEq();
+    List<BusIndexMaxEqResVO> getMaxEq();
 
     PageResult<BusCurLinePageResVO> getBusLineCurLinePage(BusIndexPageReqVO pageReqVO) throws IOException;
 
@@ -145,4 +145,5 @@ public interface BusIndexService {
 
     BalanceStatisticsVO getBusBalanceStatistics();
 
+    PageResult<BusIndexDTO> getEqPage1(BusIndexPageReqVO pageReqVO);
 }

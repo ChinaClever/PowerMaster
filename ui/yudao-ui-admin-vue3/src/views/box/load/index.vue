@@ -46,9 +46,8 @@
         label-width="68px"                          
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
-          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
-            全部
-          </button>
+          <!-- <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</button> -->
+           <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
             <button v-else-if="butColor === 1" style="height:25px;" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
@@ -145,7 +144,8 @@
       </el-form>      
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:710px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <div v-if="switchValue !== 2 && list.length > 0" style="height:710px;overflow-y:auto;">
+        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -208,7 +208,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-show="switchValue == 4" v-loading="loading" style="height:710px;overflow-y:auto;" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-else-if="switchValue == 4" v-loading="loading" :data="deletedList" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -232,15 +232,16 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
       <Pagination
-        v-show="showPagination == 1"
+        v-show="showPagination == 1 && switchValue === 4 && list.length > 0"
         :total="deletedTotal"
         :page-size-arr="pageSizeArr"
         v-model:page="queryDeletedPageParams.pageNo"
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />        
-      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 2  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}&nbsp;{{item.boxName}}</div>
@@ -261,7 +262,7 @@
             <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="success" v-else-if="item.loadRateStatus == 1&& item.status != 0">{{(statusList[0].name).slice(3, 10)}}</el-tag>
             <el-tag type="primary" v-else-if="item.loadRateStatus == 2&& item.status != 0">{{(statusList[1].name).slice(7, 11)}}</el-tag>
-            <el-tag type="warning" v-else-if="item.loadRateStatus == 3&& item.status != 0">{{(statusList[2].name).slice(3, 10)}}</el-tag>
+            <el-tag type="warning" v-else-if="item.loadRateStatus == 3&& item.status != 0">{{(statusList[2].name).slice(7, 11)}}</el-tag>
             <el-tag type="danger" v-else-if="item.loadRateStatus == 4&& item.status != 0">{{(statusList[3].name).slice(3, 10)}}</el-tag>
             <!--<el-tag type="danger" v-if="item.color != 0 && item.color != 4 && item.color != 3 && item.color != 2 && item.color != 1 && item.status != 0">异常</el-tag>-->
           </div>
@@ -270,15 +271,15 @@
         </template>
       </div>
       <Pagination
-        v-if="showPagination == 0"
+        v-show="showPagination == 0 && switchValue !== 4 && list.length > 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue == 2 && showPagination == 0">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && showPagination !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>
@@ -542,39 +543,6 @@ const getDeletedList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getIndexPage(queryParams);
-    list.value = data.list;
-    var tableIndex = 0;    
-    var lessThirty = 0;
-    var greaterThirty = 0;
-    var greaterSixty = 0;
-    var greaterNinety = 0;
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
-
-      if(obj.color == 4){
-        greaterNinety++;
-      } else if (obj.color == 1) {
-        lessThirty++;
-      } else if (obj.color == 2) {
-        greaterThirty++;
-      } else if (obj.color == 3) {
-        greaterSixty++;
-      }
-    });
-    statusNumber.greaterNinety = greaterNinety;
-    statusNumber.lessThirty = lessThirty;
-    statusNumber.greaterThirty = greaterThirty;
-    statusNumber.greaterSixty = greaterSixty;
-    total.value = data.total
-  } catch (error) {
-    
-  }
-}
-
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu();
   serverRoomArr.value = res;
@@ -807,7 +775,7 @@ onActivated(() => {
 .btn_offline {
   // width: 55px;
   // height: 32px;
-  padding: 3px 8px;
+  padding: 8px 8px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
@@ -1263,7 +1231,7 @@ onActivated(() => {
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
-  height: 25px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;

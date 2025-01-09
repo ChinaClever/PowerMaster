@@ -101,7 +101,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="visMode == 1" v-loading="loading" style="margin-top:-10px;height:720px;oveflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <div v-if="visMode !== 0 && list.length > 0">
+        <el-table v-if="visMode == 1" v-loading="loading" style="margin-top:-10px;height:720px;oveflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location"  width="300px"/>
@@ -109,9 +110,9 @@
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 0">{{statusList[0].name}}</el-tag>
-              <el-tag type="success"  v-if="scope.row.color == 1">{{statusList[1].name}}</el-tag>
-              <el-tag type="warning" v-if="scope.row.color == 2">{{statusList[2].name}}</el-tag>
-              <el-tag type="danger" v-if="scope.row.color == 3">{{statusList[3].name}}</el-tag>
+              <el-tag type="success"  v-else-if="scope.row.color == 1">{{statusList[1].name}}</el-tag>
+              <el-tag type="warning" v-else-if="scope.row.color == 2">{{statusList[2].name}}</el-tag>
+              <el-tag type="danger" v-else-if="scope.row.color == 3">{{statusList[3].name}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
@@ -194,8 +195,9 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
-      <div v-show="visMode == 0 && switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="visMode == 0 && switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -214,17 +216,61 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0">离线</el-tag>
+            <el-tag type="info"  v-if="item.color == 0">单相设备</el-tag>
             <el-tag type="info"  v-if="item.color == 1">{{statusList[3].name}}</el-tag>
             <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
             <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
             <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
           </div>
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 0">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0">详情</button>
         </div>
       </div>
 
-      <div v-show="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
+      <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <div>
+            <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
+            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
+            <span>网络地址：{{ curdevkey }}</span>
+          </div>
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <div class="custom-content-container">
+            <el-card class="cardChilc" shadow="hover">
+            <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name"/>
+            </el-card>
+            <el-card v-if="curflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="ABarOption" :height="300" />
+              </div>
+            </el-card>
+            <el-card v-if="curflag1" class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="ALineOption" :height="300" />
+              </div>
+            </el-card>
+          </div>
+          <div class="custom-content-container">
+            <el-card  class="cardChilc" shadow="hover">
+              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
+            </el-card>
+            <el-card v-if="volflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="BBarOption" :height="300"/>
+              </div>
+            </el-card>
+            <el-card v-if="volflag1" class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="BLineOption" :height="300"/>
+              </div>
+            </el-card>
+          </div>
+        </div>
+      </el-dialog>
+
+      <div v-if="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -243,12 +289,57 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
+            <el-tag type="info"  v-if="item.color === 0">单相设备</el-tag>
             <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 0">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0">详情</button>
         </div>
       </div>
+
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <div>
+            <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
+            <span style="margin-right:10px">所在位置：{{ vollocation }}</span>
+            <span>网络地址：{{ voldevkey }}</span>
+          </div>
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <div class="custom-content-container">
+            <el-card class="cardChilc" shadow="hover">
+              <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
+            </el-card>
+            <el-card v-if="curflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="ABarOption" :height="300" />
+              </div>
+            </el-card>
+            <el-card v-if="curflag1" class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="ALineOption" :height="300" />
+              </div>
+            </el-card>
+          </div>
+          <div class="custom-content-container">
+            <el-card class="cardChilc" shadow="hover">
+              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
+            </el-card>
+            <el-card v-if="volflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="BBarOption" :height="300"/>
+              </div>
+            </el-card>
+            <el-card v-if="volflag1" class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="BLineOption" :height="300"/>
+              </div>
+            </el-card>
+          </div>
+        </div>
+      </el-dialog>
+
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -256,8 +347,8 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && switchValue !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>
@@ -268,29 +359,44 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { IndexApi } from '@/api/bus/boxindex'
-import CurbalanceColorForm from './CurbalanceColorForm.vue'
-import { ElTree } from 'element-plus'
-
-import { BoxCurbalanceColorApi } from '@/api/bus/boxcurbalancecolor'
+import download from '@/utils/download';
+import { IndexApi } from '@/api/bus/boxindex';
+import CurbalanceColorForm from './CurbalanceColorForm.vue';
+import { ElTree } from 'element-plus';
+import { EChartsOption } from 'echarts';
+import { BoxCurbalanceColorApi } from '@/api/bus/boxcurbalancecolor';
+import curUnblance from './component/curUnblance.vue';
+import volUnblance from './component/volUnblance.vue';
 
 /** PDU设备 列表 */
-defineOptions({ name: 'PDUDevice' })
+defineOptions({ name: 'PDUDevice' });
 
-const { push } = useRouter()
+const curdevkey = ref() as any;
+const voldevkey = ref() as any;
+const dialogVisibleCur = ref(false);
+const dialogVisibleVol = ref(false);
+const { push } = useRouter();
 const visMode = ref(0);
-const curBalanceColorForm = ref()
+const curBalanceColorForm = ref();
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48,96])
-const switchValue = ref(0)
+const pageSizeArr = ref([24,36,48,96]);
+const switchValue = ref(0);
 const statusNumber = reactive({
   lessFifteen : 0,
   greaterFifteen : 0,
   greaterThirty : 0,
   smallCurrent : 0
 })
+
+const location = ref();
+const curlocation = ref();
+const vollocation = ref();
+const boxName = ref();
+const curflag = ref(false);
+const volflag = ref(false);
+const curflag1 = ref(false);
+const volflag1 = ref(false);
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
@@ -325,6 +431,39 @@ const statusList = reactive([
     activeClass: 'btn_offline offline'
   },
 ])
+
+const colorList = [
+  {
+    name: '小电流不平衡',
+    color: '#aaa'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#3bbb00'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#ffc402'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#fa3333'
+  }
+]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
+}]
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -427,6 +566,93 @@ const queryParams = reactive({
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
+const balanceObj = reactive({
+  pow_apparent_percent: 0,
+  pow_active_percent: 0,
+  cur_valueA: [],
+  vol_value: [],
+  imbalanceValueA: 0,
+  imbalanceValueB: 0,
+  colorIndex: 0
+})
+
+const ABarOption = ref<EChartsOption>({})
+const BBarOption = ref<EChartsOption>({})
+
+const ALineOption = ref<EChartsOption>({
+  title: {
+    text: '电流趋势',
+    left: 'left'
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电流', 'B相电流', 'C相电流'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis: {},
+  series: []
+})
+
+const BLineOption = ref<EChartsOption>({
+  title: {
+    text: '电压趋势',
+    left: 'left'
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+      
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电压', 'B相电压', 'C相电压'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电压',
+    axisLabel: {
+      formatter: '{value} V'
+    }
+  },
+  xAxis:{},
+  series: []
+})
 
 const getCurBalance = async () => {
     var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
@@ -468,20 +694,9 @@ const getList = async () => {
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
-      // if(obj.color == 1){
-      //   smallCurrent++;
-      // } else if (obj.color == 2) {
-      //   lessFifteen++;
-      // } else if (obj.color == 3) {
-      //   greaterFifteen++;
-      // } else if (obj.color == 4) {
-      //   greaterThirty++;
-      // }
+
     });
-    // statusNumber.smallCurrent = smallCurrent;
-    // statusNumber.lessFifteen = lessFifteen;
-    // statusNumber.greaterFifteen = greaterFifteen;
-    // statusNumber.greaterThirty = greaterThirty;
+
     list.value = data.list
     total.value = data.total
   } finally {
@@ -496,53 +711,6 @@ const getStatistics = async () => {
     statusNumber.greaterFifteen = data.greaterFifteen;
     statusNumber.greaterThirty = data.greaterThirty;
   }
-
-// const getListNoLoading = async () => {
-//   try {
-//     console.log(queryParams)
-//     const data = await IndexApi.getBalancePage(queryParams)
-//     var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
-//     if(range != null){
-//       statusList[0].name = '<' + range.rangeOne + '%';
-//       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-//       statusList[2].name = '>' + range.rangeFour + '%';
-//     }
-//     var tableIndex = 0;    
-//     var lessFifteen = 0;
-//     var greaterFifteen = 0;
-//     var greaterThirty = 0;
-//     var smallCurrent = 0;
-//     data.list.forEach((obj) => {
-//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
-//       obj.acur = obj.acur?.toFixed(2);
-//       obj.bcur = obj.bcur?.toFixed(2);
-//       obj.ccur = obj.ccur?.toFixed(2);
-//       obj.curUnbalance = obj.curUnbalance?.toFixed(0);
-//       obj.avol = obj.avol?.toFixed(1);
-//       obj.bvol = obj.bvol?.toFixed(1);
-//       obj.cvol = obj.cvol?.toFixed(1);
-//       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
-//       if(obj.color == 1){
-//         smallCurrent++;
-//       } else if (obj.color == 2) {
-//         lessFifteen++;
-//       } else if (obj.color == 3) {
-//         greaterFifteen++;
-//       } else if (obj.color == 4) {
-//         greaterThirty++;
-//       }
-//     });
-//     statusNumber.smallCurrent = smallCurrent;
-//     statusNumber.lessFifteen = lessFifteen;
-//     statusNumber.greaterFifteen = greaterFifteen;
-//     statusNumber.greaterThirty = greaterThirty;
-//     list.value = data.list
-//     total.value = data.total
-//   } catch (error) {
-    
-//   }
-// }
 
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
@@ -568,24 +736,227 @@ const toDeatil = (row) =>{
   push({path: '/bus/boxmonitor/boxbalancedetail', state: { devKey, boxId ,location }})
 }
 
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
+const colorFlag = ref(0);
 
-//const handleSelectStatus = (index) => {
-//  statusList[index].selected = !statusList[index].selected
-//  const status =  statusList.filter(item => item.selected)
-//  const statusArr = status.map(item => item.value)
-//  if(statusArr.length != statusList.length){
-//    queryParams.color = statusArr;
-//    //queryParams.status = [5];
-//  }else{
-//    queryParams.color = null;
-//    //queryParams.status = [];
-//  }
-//  handleQuery();
-//}
+const showDialogCur = (item) => {
+  colorFlag.value = item.color;
+  dialogVisibleCur.value = true;
+  curdevkey.value = item.devKey;
+  curlocation.value = item.location;
+  boxName.value = item.boxName;
+  getBalanceDetail(item);
+  getBalanceTrend(item);
+}
+
+const showDialogVol = (item) => {
+  colorFlag.value = item.color;
+  dialogVisibleVol.value = true;
+  voldevkey.value = item.devKey;
+  vollocation.value = item.location;
+  boxName.value = item.boxName;
+  getBalanceDetail(item);
+  getBalanceTrend(item);
+}
+
+const getBalanceDetail = async(item) => {
+  const res = await IndexApi.getBoxBalanceDetail({devKey:item.devKey})
+  console.log('11111111',res)
+
+  if (res.cur_value) {
+    const cur_valueA = res.cur_value;
+    curflag.value = true;
+    console.log('cur_valueA',cur_valueA);
+    // const max = Math.max(...cur_valueA) // 最大值
+    // // 计算平均值
+    // let sum = 0
+    // cur_valueA.forEach(item => {
+    //   sum = sum + item
+    // })
+    // const average = sum/cur_valueA.length
+    // // 平衡度
+    // balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
+    ABarOption.value = {
+      title: {
+        text: '电流饼形图',
+        left: 'left'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b} : {c}'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+          ]
+        }
+      ]
+    }
+  }
+  if (res.vol_value) {
+    const vol_value = res.vol_value;
+    volflag.value = true;
+    // const max = Math.max(...vol_value) // 最大值
+    // // 计算平均值
+    // let sum = 0
+    // vol_value.forEach(item => {
+    //   sum = sum + item
+    // })
+    // const average = sum / vol_value.length
+    // // 平衡度
+    // balanceObj.imbalanceValueB =  +(((max - average) * 100 / average).toFixed(0))
+    BBarOption.value = {
+      title: {
+        text: '电压饼形图',
+        left: 'left'
+      },
+      tooltip: {
+        trigger: 'item'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: ['40%', '80%'],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          label: {
+            show: true,
+            position: 'inside',
+            formatter: (params) => `${params.value}V`,
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: vol_value[0], name: 'A相电压', itemStyle: { color: '#E5B849' } },
+            { value: vol_value[1], name: 'B相电压', itemStyle: { color: '#C8603A' } },
+            { value: vol_value[2], name: 'C相电压', itemStyle: { color: '#AD3762' } },
+          ]
+        }
+      ]
+    }
+  }
+
+  balanceObj.imbalanceValueA = res.curUnbalance
+  balanceObj.imbalanceValueB = res.volUnbalance
+  balanceObj.colorIndex = res.color - 1
+}
+
+const getBalanceTrend = async (item) => {
+  const res = await IndexApi.getBoxBalanceTrend({
+    boxId: item.boxId
+  })
+  console.log('22222222',res)
+  if (res.length > 0) {
+    const timeList = res.map(item => item.dateTime);
+    curflag1.value = true;
+    volflag1.value = true;
+    if(res[0].cur && res[0].cur.length == 1) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[0].curValue.toFixed(2)),
+        },
+      ]
+    } else if (res[0].cur && res[0].cur.length == 3) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[0].curValue.toFixed(2)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[1].curValue.toFixed(2)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[2].curValue.toFixed(2)),
+        },
+      ]
+    }
+    console.log('ALineOption', ALineOption)
+    if (res[0].vol && res[0].vol.length == 1) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
+        },
+      ]
+    } else if(res[0].vol && res[0].vol.length == 3) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[1].volValue.toFixed(1)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[2].volValue.toFixed(1)),
+        },
+      ]
+    }
+  }
+}
 
 const handleSelectStatus = (index) => {
   console.log('index',index);
@@ -1279,5 +1650,71 @@ onActivated(() => {
 
 :deep(.el-tag){
   margin-right:-20px;
+}
+
+:deep(.el-dialog) {
+  width: 80%;
+  margin-top: 70px;
+  background-color: #f1f1f1;
+}
+
+.custom-content{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.custom-content-container{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.question {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cardChilc {
+  flex: 1;
+  margin: 0 10px;
+  box-sizing: border-box;
+  .box {
+    position: relative;
+    height: 121px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #00289e;
+    margin: 72px auto;
+    
+    .value {
+      font-size: 30px;
+      padding: 20px 0;
+    }
+    .day {
+      width: 100%;
+      font-size: 16px;
+      text-align: center;
+      color: #fff;
+      background-color: #00289e;
+      padding: 10px 0;
+    }
+  }
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

@@ -69,8 +69,8 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/eq/page`, data })
   },
 
-  getEqMax: async (data: any) => {
-    return await request.post({ url: `/box/index/eq/maxEq`, data })
+  getEqMax: async () => {
+    return await request.post({ url: `/box/index/eq/maxEq`})
   },
 
   getBalancePage: async (data: any) => {
@@ -187,11 +187,14 @@ export const IndexApi = {
     return await request.downloadPost({ url: `/box/index/line/cur/excel` , data, ...axiosConfig })
   },
 
-  //获得始端箱报表平均电流电压详细信息
+  //获得始端箱报表相平均电流电压详细信息
   getAvgBoxHdaLineForm: async (data: any) => {
     return await request.post({ url: `/box/index/avg/boxHdaLine/form` ,  data})
   },
-
+    //获得始端箱报表回路平均电流电压详细信息
+  getAvgBoxHdaLoopForm: async (data: any) => {
+    return await request.post({ url: `/box/index/avg/boxHdaLoop/form` ,  data})
+  },
   //插接箱温度详情导出
   getBoxTemDetailExcel: async ( data: any, axiosConfig) => {
     return await request.downloadPost({ url: `/box/index/tem/detailExcel` , data, ...axiosConfig })
@@ -205,8 +208,12 @@ export const IndexApi = {
   getRecordPage: async (data: any) => {
     return await request.post({ url: `/system/alarm/record/page`, data})
   },
-   //获得插接箱设备统计
+   //获得插接箱设备统计-去除连接器
     getBoxIndexStatistics: async () => {
       return await request.get({ url: `/box/index/statistics` })
     },
+       //获得插接箱设备统计-所有
+       getBoxIndexStatisticsAll: async () => {
+        return await request.get({ url: `/box/index/statisticsAll` })
+      },
 }

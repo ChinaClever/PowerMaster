@@ -1,10 +1,10 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
-import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
@@ -41,6 +41,7 @@ import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMa
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import com.alibaba.druid.util.StringUtils;
@@ -55,6 +56,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -143,6 +145,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     public static final String DAY_FORMAT = "dd";
 
+    public static final String HOUR_FORMAT = "yyyy-MM-dd";
+
+    public static final String TIME_STR = ":00:00";
+
     @Override
     public Long createIndex(BoxIndexSaveReqVO createReqVO) {
         // 插入
@@ -188,6 +194,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     /**
      * 获得已经删除插接箱负荷分页
+     *
      * @param pageReqVO
      * @return
      */
@@ -347,30 +354,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else {
                 index = "box_hda_line_day";
             }
-            // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest = new SearchRequest(index);
-            // 通过QueryBuilders构建ES查询条件，
-            SearchSourceBuilder builder = new SearchSourceBuilder();
-            builder.size(10000);
-            builder.trackTotalHits(true);
-            //获取需要处理的数据
-            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
-                            .gte(LocalDateTimeUtil.format(pageReqVO.getOldTime(),"yyyy-MM-dd HH:mm:ss"))
-                            .lte(LocalDateTimeUtil.format(pageReqVO.getNewTime(),"yyyy-MM-dd HH:mm:ss")))
-                    .must(QueryBuilders.termQuery("box_id", boxIndex.getId()))));
-            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
-            // 设置搜索条件
-            searchRequest.source(builder);
-
+            String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
+            String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
+            List<String> list = getEsStrings(index, start, end, boxIndex);
             List<BusHdaLineAvgResVO> dayList1 = new ArrayList<>();
             List<BusHdaLineAvgResVO> dayList2 = new ArrayList<>();
             List<BusHdaLineAvgResVO> dayList3 = new ArrayList<>();
             List<String> dateTimes = new ArrayList<>();
-            // 执行ES请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            for (SearchHit hit : searchResponse.getHits()) {
-                BusHdaLineAvgResVO houResVO = JsonUtils.parseObject(hit.getSourceAsString(), BusHdaLineAvgResVO.class);
+            for (String hit : list) {
+                BusHdaLineAvgResVO houResVO = JsonUtils.parseObject(hit, BusHdaLineAvgResVO.class);
                 switch (houResVO.getLineId()) {
                     case 1:
                         dayList1.add(houResVO);
@@ -391,6 +383,37 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         }
         return map;
+    }
+
+    private List<String> getEsStrings(String index, String start, String end, BoxIndex boxIndex) throws IOException {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.size(10000);
+            builder.trackTotalHits(true);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                            .gte(start)
+                            .lte(end))
+                    .must(QueryBuilders.termQuery("box_id", boxIndex.getId()))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            List<String> list = new ArrayList<>();
+            for (SearchHit hit : searchResponse.getHits()) {
+                String sourceAsString = hit.getSourceAsString();
+                list.add(sourceAsString);
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("插接箱报表查询异常:" + e);
+            return null;
+        }
     }
 
     @Override
@@ -428,12 +451,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         searchRequest.source(builder);
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        LineBoxMaxResVO resVO = null;
+        if (searchResponse.getHits().getTotalHits().value>0){
+            resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineBoxMaxResVO.class);
 
-        LineBoxMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineBoxMaxResVO.class);
-        if (Objects.nonNull(resVO)) {
-            BoxIndex boxIndex = boxIndexCopyMapper.selectById(resVO.getBusId());
-            resVO.setDevKey(boxIndex.getBoxKey());
-            resVO.setBusName(boxIndex.getBoxName());
             switch (resVO.getLineId()) {
                 case 1:
                     resVO.setLineName("A相");
@@ -446,33 +467,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     break;
                 default:
             }
-
-            List<BusAisleBarQueryVO> records = busIndexMapper.selectBoxPageList(boxIndex.getBoxKey().split(","));
-            if (CollectionUtil.isNotEmpty(records)) {
-                Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
-                Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
-                List aisles = ops.multiGet(redisKeys);
-                Map<Integer, String> positonMap = new HashMap<>();
-                if (!CollectionUtils.isEmpty(records)) {
-                    for (Object aisle : aisles) {
-                        if (aisle == null) {
-                            continue;
-                        }
-                        JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
-                        String devPosition = json.getString("room_name") + SPLIT_KEY
-                                + json.getString("aisle_name") + SPLIT_KEY;
-                        positonMap.put(json.getInteger("aisle_key"), devPosition);
-                    }
-                }
-                Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
-                        .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
-                Integer aisleId = keyMap.get(boxIndex.getBoxKey());
-                String localtion = positonMap.get(aisleId);
-                if (Objects.nonNull(aislePathMap.get(boxIndex.getBoxKey()).getPath())) {
-                    resVO.setLocation(localtion + aislePathMap.get(boxIndex.getBoxKey()).getPath() + "路");
-                } else {
-                    resVO.setLocation(localtion + "路");
-                }
+            BoxIndex boxIndex = boxIndexCopyMapper.selectById(resVO.getBusId());
+            if (Objects.nonNull(boxIndex)) {
+                resVO.setDevKey(boxIndex.getBoxKey());
+                resVO.setBusName(boxIndex.getBoxName());
+                Map<String, String> positionByKey = getPositionByKey(boxIndex.getBoxKey());
+                resVO.setLocation(positionByKey.get(boxIndex.getBoxKey()));
             }
         }
         return resVO;
@@ -497,7 +497,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
         ArrayList<String> list = new ArrayList<>();
         list.add(boxIndex.getBoxKey());
-        Map<String, String> positionByKey = getPositionByKey(list);
+        Map<String, String> positionByKey = getPositionByKeys(list);
         vo.setLocation(positionByKey.get(boxIndex.getBoxKey()));
         vo.setDevKey(boxIndex.getBoxKey());
         vo.setPowApparent(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("pow_apparent"));
@@ -535,6 +535,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxIndexRes.setBoxId(boxIndexDO.getId());
             boxIndexRes.setDevKey(boxIndexDO.getBoxKey());
             boxIndexRes.setBoxName(boxIndexDO.getBoxName());
+            boxIndexRes.setLoadRateStatus(boxIndexDO.getLoadRateStatus());
             res.add(boxIndexRes);
         }
         Map<String, BoxIndexRes> resMap = res.stream().collect(Collectors.toMap(BoxIndexRes::getDevKey, Function.identity()));
@@ -559,19 +560,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else {
                 boxIndexRes.setALoadRate(loadRate.getInteger(0));
             }
-            rateList.sort(Collections.reverseOrder());
-            Double biggest = rateList.get(0);
-            if (biggest == 0) {
-                boxIndexRes.setColor(0);
-            } else if (biggest / 100 < 30) {
-                boxIndexRes.setColor(1);
-            } else if (biggest / 100 < 60) {
-                boxIndexRes.setColor(2);
-            } else if (biggest / 100 < 90) {
-                boxIndexRes.setColor(3);
-            } else if (biggest / 100 >= 90) {
-                boxIndexRes.setColor(4);
-            }
+//            rateList.sort(Collections.reverseOrder());
+//            Double biggest = rateList.get(0);
+//            if (biggest == 0) {
+//                boxIndexRes.setColor(0);
+//            } else if (biggest / 100 < 30) {
+//                boxIndexRes.setColor(1);
+//            } else if (biggest / 100 < 60) {
+//                boxIndexRes.setColor(2);
+//            } else if (biggest / 100 < 90) {
+//                boxIndexRes.setColor(3);
+//            } else if (biggest / 100 >= 90) {
+//                boxIndexRes.setColor(4);
+//            }
 //            if (pageReqVO.getColor() != null) {
 //                if (!pageReqVO.getColor().contains(boxIndexRes.getColor())) {
 //                    res.removeIf(box -> box.getBoxId().equals(boxIndexRes.getBoxId()));
@@ -610,27 +611,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             //相数据解析
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
 
-            JSONArray volValue = lineItemList.getJSONArray("vol_value");
-            JSONArray curValue = lineItemList.getJSONArray("cur_value");
-            JSONArray powValue = lineItemList.getJSONArray("pow_active");
-            JSONArray powReactive = lineItemList.getJSONArray("pow_reactive");
-            JSONArray powApparent = lineItemList.getJSONArray("pow_apparent");
-            JSONArray powFactor = lineItemList.getJSONArray("power_factor");
-
-            List<Double> phaseVolValue = new ArrayList<>();
-            List<Double> phaseCurValue = new ArrayList<>();
-            List<Double> phasePowValue = new ArrayList<>();
-            List<Double> phaseReactivePowValue = new ArrayList<>();
-            List<Double> phaseApparentPowValue = new ArrayList<>();
-            List<Double> phasePowFactor = new ArrayList<>();
-
-            phaseVolValue = volValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phaseCurValue = curValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phasePowValue = powValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phaseReactivePowValue = powReactive.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phaseApparentPowValue = powApparent.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phasePowFactor = powFactor.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-
+            List<Double> phaseVolValue = lineItemList.getList("vol_value", Double.class);
+            List<Double> phaseCurValue = lineItemList.getList("cur_value", Double.class);
+            List<Double> phasePowValue = lineItemList.getList("pow_active", Double.class);
+            List<Double> phaseReactivePowValue = lineItemList.getList("pow_reactive", Double.class);
+            List<Double> phaseApparentPowValue = lineItemList.getList("pow_apparent", Double.class);
+            List<Double> phasePowFactor = lineItemList.getList("power_factor", Double.class);
 
             boxRedisDataRes.setPhaseVol(phaseVolValue);
             boxRedisDataRes.setPhaseCur(phaseCurValue);
@@ -640,38 +626,17 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxRedisDataRes.setPhasePowFactor(phasePowFactor);
             //回路数据解析
             JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-            volValue = loopItemList.getJSONArray("vol_value");
-            JSONArray volStatus = loopItemList.getJSONArray("vol_status");
-            curValue = loopItemList.getJSONArray("cur_value");
-            JSONArray curStatus = loopItemList.getJSONArray("cur_status");
-            powValue = loopItemList.getJSONArray("pow_value");
-            JSONArray powStatus = loopItemList.getJSONArray("pow_status");
-            powReactive = loopItemList.getJSONArray("pow_reactive");
+            List<Double> loopVolValue = loopItemList.getList("vol_value", Double.class);
+            List<Integer> loopVolStatus = loopItemList.getList("vol_status", Integer.class);
+            List<Double> loopCurValue = loopItemList.getList("cur_value", Double.class);
+            List<Integer> loopCurStatus = loopItemList.getList("cur_status", Integer.class);
+            List<Double> loopPowValue = loopItemList.getList("pow_value", Double.class);
+            List<Integer> loopPowStatus = loopItemList.getList("pow_status", Integer.class);
+            List<Double> loopReactivePowValue = loopItemList.getList("pow_reactive", Double.class);
 
             List<String> loopCurColor = new ArrayList<>();
             List<String> loopVolColor = new ArrayList<>();
             List<String> loopPowColor = new ArrayList<>();
-
-            List<Double> loopCurValue;
-            List<Integer> loopCurStatus;
-            List<Double> loopVolValue;
-            List<Integer> loopVolStatus;
-            List<Double> loopPowValue;
-            List<Integer> loopPowStatus;
-            List<Double> loopReactivePowValue;
-
-
-            loopCurValue = curValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            loopCurStatus = curStatus.stream().mapToInt(value -> Integer.parseInt(value.toString())).boxed().collect(Collectors.toList());
-
-            loopVolValue = volValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            loopVolStatus = volStatus.stream().mapToInt(value -> Integer.parseInt(value.toString())).boxed().collect(Collectors.toList());
-
-            loopPowValue = powValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            loopPowStatus = powStatus.stream().mapToInt(value -> Integer.parseInt(value.toString())).boxed().collect(Collectors.toList());
-
-            loopReactivePowValue = powReactive.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-
             for (Integer curState : loopCurStatus) {
                 if (curState != 0) {
                     loopCurColor.add("red");
@@ -697,34 +662,29 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxRedisDataRes.setLoopActivePowStatus(loopPowStatus);
             boxRedisDataRes.setLoopActivePowColor(loopPowColor);
             boxRedisDataRes.setLoopReactivePow(loopReactivePowValue);
-
             //输出位数据解析
             JSONObject outletItemList = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
-            powValue = outletItemList.getJSONArray("pow_active");
-            JSONArray reactivePowValue = outletItemList.getJSONArray("pow_reactive");
-            JSONArray apparentPowValue = outletItemList.getJSONArray("pow_apparent");
-            powFactor = outletItemList.getJSONArray("power_factor");
-
-            List<Double> outletPowValue;
-            List<Double> outletReactivePowValue;
-            List<Double> outletApparentPowValue;
-            List<Double> outletPowFactor;
-
-            outletPowValue = powValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            outletReactivePowValue = reactivePowValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            outletApparentPowValue = apparentPowValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            outletPowFactor = powFactor.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
+            List<Double> outletPowValue = outletItemList.getList("pow_active", Double.class);
+            List<Double> outletReactivePowValue = outletItemList.getList("pow_reactive", Double.class);
+            List<Double> outletApparentPowValue = outletItemList.getList("pow_apparent", Double.class);
+            List<Double> outletPowFactor = outletItemList.getList("power_factor", Double.class);
 
             boxRedisDataRes.setOutletActivePow(outletPowValue);
             boxRedisDataRes.setOutletReactivePow(outletReactivePowValue);
             boxRedisDataRes.setOutletApparentPow(outletApparentPowValue);
             boxRedisDataRes.setOutletPowFactor(outletPowFactor);
+
+            JSONObject boxTotalData = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data");
+            boxRedisDataRes.setPowActive(boxTotalData.getBigDecimal("pow_active"));//总有功功率
+            boxRedisDataRes.setPowApparent(boxTotalData.getBigDecimal("pow_apparent"));//总视在功率
+            boxRedisDataRes.setPowReactive(boxTotalData.getBigDecimal("pow_reactive"));//总无功功率
+
         }
         return new PageResult<>(res, boxIndexDOPageResult.getTotal());
     }
 
     @Override
-    public BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) {
+    public BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey, String type) throws IOException {
         BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
 //        PowerRedisDataRes result = new PowerRedisDataRes();
         ValueOperations ops = redisTemplate.opsForValue();
@@ -750,15 +710,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         List<Integer> breakerStatus = jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getList("breaker_status", Integer.class);
         List<BoxLoopItemResVO> list = new ArrayList<>();
         for (Integer i = 0; i < loopNum; i++) {
-            List<Double> curList = loopItemList.getList("cur_value",Double.class);//电流
-            List<Double> volList = loopItemList.getList("vol_value",Double.class);//电压
+            List<Double> curList = loopItemList.getList("cur_value", Double.class);//电流
+            List<Double> volList = loopItemList.getList("vol_value", Double.class);//电压
             List<Double> powReactive = loopItemList.getList("pow_reactive", Double.class);//无功功率
             List<Double> powApparent = loopItemList.getList("pow_apparent", Double.class);//视在功率
             List<Double> powValue = loopItemList.getList("pow_value", Double.class);//有功功率值
             List<Double> powerFactor = loopItemList.getList("power_factor", Double.class);//功率因素
             List<Double> eleActive = loopItemList.getList("ele_active", Double.class);//电能
             BoxLoopItemResVO loopItemResVO = new BoxLoopItemResVO();
-            loopItemResVO.setLoopId(i+1);
+            loopItemResVO.setLoopId(i + 1);
             loopItemResVO.setBreakerStatus(breakerStatus.get(i));
             loopItemResVO.setLoopCurValue(curList.get(i));
             loopItemResVO.setLoopVolValue(volList.get(i));
@@ -776,14 +736,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         List<Double> curList = lineItemList.getList("cur_value", Double.class);
         vo.setLineVolValue(volList);
         vo.setLineCurValue(curList);
-        vo.setLinePowActive(lineItemList.getList("pow_active",Double.class));
-        vo.setLinePowApparent(lineItemList.getList("pow_apparent",Double.class));
-        vo.setLinePowReactive(lineItemList.getList("pow_reactive",Double.class));
-        vo.setLineLoadRate(lineItemList.getList("load_rate",Double.class));
-        vo.setLineEleActive(lineItemList.getList("ele_active",Double.class));
-        vo.setLineEleReactive(lineItemList.getList("ele_reactive",Double.class));
-        vo.setLinePowerFactor(lineItemList.getList("power_factor",Double.class));
-        vo.setLineCurThd(lineItemList.getList("cur_thd",Double.class));
+        vo.setLinePowActive(lineItemList.getList("pow_active", Double.class));
+        vo.setLinePowApparent(lineItemList.getList("pow_apparent", Double.class));
+        vo.setLinePowReactive(lineItemList.getList("pow_reactive", Double.class));
+        vo.setLineLoadRate(lineItemList.getList("load_rate", Double.class));
+        vo.setLineEleActive(lineItemList.getList("ele_active", Double.class));
+        vo.setLineEleReactive(lineItemList.getList("ele_reactive", Double.class));
+        vo.setLinePowerFactor(lineItemList.getList("power_factor", Double.class));
+        vo.setLineCurThd(lineItemList.getList("cur_thd", Double.class));
 
         Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
         Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
@@ -795,13 +755,55 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         vo.setLoadFactor(loadRate.stream().mapToDouble(i -> i).average().getAsDouble());
 
         JSONObject outletItemList = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
-        vo.setOutletPowActive(outletItemList.getList("pow_active",Double.class));
-        vo.setOutletPowApparent(outletItemList.getList("pow_apparent",Double.class));
-        vo.setOutletPowReactive(outletItemList.getList("pow_reactive",Double.class));
-        vo.setOutletEleActive(outletItemList.getList("ele_active",Double.class));
-        vo.setOutletEleApparent(outletItemList.getList("ele_apparent",Double.class));
-        vo.setOutletEleReactive(outletItemList.getList("ele_reactive",Double.class));
-        vo.setOutletPowerFactor(outletItemList.getList("power_factor",Double.class));
+        vo.setOutletPowActive(outletItemList.getList("pow_active", Double.class));
+        vo.setOutletPowApparent(outletItemList.getList("pow_apparent", Double.class));
+        vo.setOutletPowReactive(outletItemList.getList("pow_reactive", Double.class));
+        vo.setOutletEleActive(outletItemList.getList("ele_active", Double.class));
+        vo.setOutletEleApparent(outletItemList.getList("ele_apparent", Double.class));
+        vo.setOutletEleReactive(outletItemList.getList("ele_reactive", Double.class));
+        vo.setOutletPowerFactor(outletItemList.getList("power_factor", Double.class));
+
+        if (true) {
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("load_rate", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("box_hda_line_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            if (hits.getTotalHits().value>0) {
+                SearchHit hit = hits.getAt(0);
+                vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
+            }
+        }
+        if (true) {
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("pow_active", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("box_hda_line_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            if (hits.getTotalHits().value>0) {
+                SearchHit hit = hits.getAt(0);
+                vo.setPowActiveTime(hit.getSourceAsMap().get("create_time").toString());
+            }
+        }
+
 
 //        Map map = getCabinetDistributionFactor(boxIndex.getId(), type);
 //        vo.setFactorC((List<BigDecimal>) map.get("factorC"));
@@ -811,29 +813,29 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return vo;
     }
 
-    public Map getCabinetDistributionFactor(int id, String type){
+    public Map getCabinetDistributionFactor(int id, String type) {
         String startTime = null;
         String endTime = null;
         String index = null;
-        switch (type){
+        switch (type) {
             case "day":
-                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(1),"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 break;
             case "hour":
-                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1),"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "box_hda_line_realtime";
                 break;
             case "today":
-                startTime = LocalDateTimeUtil.format(LocalDateTime.MIN,"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(LocalDateTime.MIN, "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "box_hda_line_hour";
                 break;
             case "threeDay":
-                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3),"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "box_hda_line_hour";
                 break;
             default:
@@ -842,34 +844,35 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         Map map = new HashMap();
         //day,today,threeDay
         List<Map<String, Object>> data = getDataEs(startTime, endTime, Collections.singletonList(id),
-                index ,Map.class);
+                index, Map.class);
         List<BigDecimal> factorA = new ArrayList<>();
         List<BigDecimal> factorB = new ArrayList<>();
         List<BigDecimal> factorC = new ArrayList<>();
         List<String> createTime = new ArrayList<>();
-        Map<Integer, List<Map<String, Object>>> lineMap = data.stream().collect(Collectors.groupingBy(i -> (Integer)i.get("line_id")));
+        Map<Integer, List<Map<String, Object>>> lineMap = data.stream().collect(Collectors.groupingBy(i -> (Integer) i.get("line_id")));
 
-        switch (index){
+        switch (index) {
             case "box_hda_line_realtime":
-                factorA = lineMap.get(1).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
-                factorB = lineMap.get(2).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
-                factorC = lineMap.get(3).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                factorA = lineMap.get(1).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
+                factorB = lineMap.get(2).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
+                factorC = lineMap.get(3).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
                 createTime = lineMap.get(1).stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
                 break;
             case "box_hda_line_hour":
-                factorA = lineMap.get(1).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
-                factorB = lineMap.get(2).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
-                factorC = lineMap.get(3).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                factorA = lineMap.get(1).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
+                factorB = lineMap.get(2).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
+                factorC = lineMap.get(3).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
                 createTime = lineMap.get(1).stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
                 break;
         }
-        map.put("factorA",factorA);
-        map.put("factorB",factorB);
-        map.put("factorC",factorC);
-        map.put("day",createTime);
+        map.put("factorA", factorA);
+        map.put("factorB", factorB);
+        map.put("factorC", factorC);
+        map.put("day", createTime);
         return map;
     }
-    private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass){
+
+    private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -1031,6 +1034,125 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return result;
     }
 
+    @Override
+    public PageResult<BoxIndexDTO> getEqPage1(BoxIndexPageReqVO pageReqVO) {
+        String indices = null;
+        String startTime = null;
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+        List<BoxIndex> boxIndices1 = boxIndexMapper.selectList(new LambdaUpdateWrapper<BoxIndex>().eq(BoxIndex::getBoxType, 1));
+        List<Integer> boxIds = boxIndices1.stream().map(BoxIndex::getId).collect(Collectors.toList());
+        Integer total = 0;
+        switch (pageReqVO.getTimeGranularity()) {
+            case "yesterday":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                indices = "box_eq_total_day";
+                break;
+            case "lastWeek":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                indices = "box_eq_total_week";
+                break;
+            case "lastMonth":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                indices = "box_eq_total_month";
+                break;
+            default:
+        }
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            int pageNo = pageReqVO.getPageNo();
+            int pageSize = pageReqVO.getPageSize();
+            int index = (pageNo - 1) * pageSize;
+            searchSourceBuilder.from(index);
+            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+            if (index + pageSize > 10000) {
+                searchSourceBuilder.size(10000 - index);
+            } else {
+                searchSourceBuilder.size(pageSize);
+            }
+            searchSourceBuilder.trackTotalHits(true);
+            searchSourceBuilder.sort("eq_value", SortOrder.DESC);
+            //获取需要处理的数据
+            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                    .mustNot(QueryBuilders.termQuery("box_id",boxIds))));
+
+            SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(indices);
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            List<BoxEqTotalDayDo> list = new ArrayList<>();
+            for (SearchHit hit : searchResponse.getHits()) {
+                BoxEqTotalDayDo dayDo = JsonUtils.parseObject(hit.getSourceAsString(), BoxEqTotalDayDo.class);
+                list.add(dayDo);
+            }
+
+            if (!CollectionUtils.isEmpty(list)) {
+                List<Integer> ids = list.stream().map(BoxBaseDo::getBoxId).collect(Collectors.toList());
+                List<BoxIndex> boxIndices = boxIndexCopyMapper.selectList(new LambdaUpdateWrapper<BoxIndex>().in(BoxIndex::getId, ids));
+                Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, x -> x));
+                List<BoxIndexDTO> result = new ArrayList<>();
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                List<String> yesterdayList = getData(startTime, endTime, ids, "box_eq_total_day");
+                Map<Integer, Double> yesterdayMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(yesterdayList)) {
+                    yesterdayList.forEach(str -> {
+                        BoxEqTotalDayDo dayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                        yesterdayMap.put(dayDo.getBoxId(), dayDo.getEq());
+                    });
+                }
+
+                //上周
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                List<String> weekList = getData(startTime, endTime, ids, "box_eq_total_week");
+                Map<Integer, Double> weekMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(weekList)) {
+                    weekList.forEach(str -> {
+                        BoxEqTotalWeekDo weekDo = JsonUtils.parseObject(str, BoxEqTotalWeekDo.class);
+                        weekMap.put(weekDo.getBoxId(), weekDo.getEq());
+                    });
+                }
+
+                //上月
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                List<String> monthList = getData(startTime, endTime, ids, "box_eq_total_month");
+                Map<Integer, Double> monthMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(monthList)) {
+                    monthList.forEach(str -> {
+                        BoxEqTotalMonthDo monthDo = JsonUtils.parseObject(str, BoxEqTotalMonthDo.class);
+                        monthMap.put(monthDo.getBoxId(), monthDo.getEq());
+                    });
+                }
+                list.forEach(vo -> {
+                    Integer id = vo.getBoxId();
+                    BoxIndex boxIndex = boxIndexMap.get(id);
+                    BoxIndexDTO boxIndexDTO = new BoxIndexDTO().setId(boxIndex.getId()).setRunStatus(boxIndex.getRunStatus());
+                    boxIndexDTO.setDevKey(boxIndex.getBoxKey());
+                    boxIndexDTO.setBoxName(boxIndex.getBoxName());
+                    boxIndexDTO.setYesterdayEq(yesterdayMap.get(id));
+                    boxIndexDTO.setLastWeekEq(weekMap.get(id));
+                    boxIndexDTO.setLastMonthEq(monthMap.get(id));
+                    if (boxIndexDTO.getYesterdayEq() == null) {
+                        boxIndexDTO.setYesterdayEq(0.0);
+                    }
+                    if (boxIndexDTO.getLastWeekEq() == null) {
+                        boxIndexDTO.setLastWeekEq(0.0);
+                    }
+                    if (boxIndexDTO.getLastMonthEq() == null) {
+                        boxIndexDTO.setLastMonthEq(0.0);
+                    }
+                    result.add(boxIndexDTO);
+                });
+                getPosition(result);
+                return new PageResult<>(result, searchResponse.getHits().getTotalHits().value);
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+            return null;
+        }
+    }
 
     @Override
     public PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) {
@@ -1115,23 +1237,86 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     @Override
-    public PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO) {
-        try {
-            PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
-            List<BoxIndex> boxIndexDOList = boxIndexDOPageResult.getList();
-            List<BoxIndexDTO> result = new ArrayList<>();
-            List<Integer> ids = boxIndexDOList.stream().map(BoxIndex::getId).collect(Collectors.toList());
-            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-            String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+    public Map getAvgBoxHdaLoopForm(BoxIndexPageReqVO pageReqVO) throws IOException {
+        HashMap<String, Object> map = new HashMap<>();
+        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+        if (boxIndex != null) {
+            String index;
+            if (pageReqVO.getTimeType().equals(0)) {
+                index = "box_hda_loop_hour";
+            } else {
+                index = "box_hda_loop_day";
+            }
+            String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
+            String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
+            List<String> list = getEsStrings(index, start, end, boxIndex);
+            List<BusHdaLoopAvgResVO> dayList1 = new ArrayList<>();
+            List<BusHdaLoopAvgResVO> dayList2 = new ArrayList<>();
+            List<BusHdaLoopAvgResVO> dayList3 = new ArrayList<>();
+            List<String> dateTimes = new ArrayList<>();
+            for (String hit : list) {
+                BusHdaLoopAvgResVO houResVO = JsonUtils.parseObject(hit, BusHdaLoopAvgResVO.class);
+                switch (houResVO.getLineId()) {
+                    case 1:
+                        dayList1.add(houResVO);
+                        break;
+                    case 2:
+                        dayList2.add(houResVO);
+                        break;
+                    case 3:
+                        dayList3.add(houResVO);
+                        break;
+                    default:
+                }
+                dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+            }
+            map.put("A", dayList1);
+            map.put("B", dayList2);
+            map.put("C", dayList3);
+            map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
+        }
+        return map;
+    }
 
+    @Override
+    public BusIndexStatisticsResVO getBoxIndexStatisticsAll() {
+        return boxIndexCopyMapper.getBoxIndexStatisticsAll();
+    }
+
+    @Override
+    public List<BoxIndexMaxEqResVO> getMaxEq() {
+        List<BoxIndexMaxEqResVO> result = new ArrayList<>();
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+        //借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+        extractedMaxEq("box_eq_total_day", startTime, endTime, result, 0);
+
+        //上周
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+        extractedMaxEq("box_eq_total_week", startTime, endTime, result, 1);
+        //上月
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+        extractedMaxEq("box_eq_total_week", startTime, endTime, result, 2);
+
+        List<String> collect = result.stream().map(BoxResBase::getDevKey).collect(Collectors.toList());
+        Map<String, String> map = getPositionByKeys(collect);
+        for (BoxIndexMaxEqResVO resVO : result) {
+            String location = map.get(resVO.getDevKey());
+            resVO.setLocation(location);
+        }
+        return result;
+    }
+
+    private void extractedMaxEq(String indexEs, String startTime, String endTime, List<BoxIndexMaxEqResVO> result, Integer type) {
+        try {
             // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest = new SearchRequest("box_eq_total_day");
+            SearchRequest searchRequest = new SearchRequest(indexEs);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
-            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
-                    .must(QueryBuilders.termsQuery("box_id", ids))));
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                    .gte(startTime).lte(endTime))));
             builder.sort("eq_value", SortOrder.DESC);
             // 设置搜索条件
             searchRequest.source(builder);
@@ -1142,90 +1327,20 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (hits.length > 0) {
                 // 获取最大值和时间字段
                 Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
-                BoxIndexDTO boxIndexDTO = new BoxIndexDTO();
-                boxIndexDTO.setYesterdayEq((Double) sourceAsMap.get("eq_value"));
+                BoxIndexMaxEqResVO boxIndexDTO = new BoxIndexMaxEqResVO();
+                boxIndexDTO.setMaxEq((Double) sourceAsMap.get("eq_value"));
                 boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
                 BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getId, boxIndexDTO.getBoxId());
                 boxIndexDTO.setDevKey(boxIndex.getBoxKey());
                 boxIndexDTO.setBoxName(boxIndex.getBoxName());
-                boxIndexDTO.setId(0);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+                boxIndexDTO.setId(type);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
                 result.add(boxIndexDTO);
             }
-
-
-            //上周
-            String startTime1 = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-            String endTime1 = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-            // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest1 = new SearchRequest("box_eq_total_week");
-            // 通过QueryBuilders构建ES查询条件，
-            SearchSourceBuilder builder1 = new SearchSourceBuilder();
-
-            //获取需要处理的数据
-            builder1.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime1).lte(endTime1))
-                    .must(QueryBuilders.termsQuery("box_id", ids))));
-            builder1.sort("eq_value", SortOrder.DESC);
-            // 设置搜索条件
-            searchRequest1.source(builder1);
-            builder1.size(1);
-            // 执行ES请求
-            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-            SearchHit[] hits1 = searchResponse1.getHits().getHits();
-            if (hits1.length > 0) {
-                // 获取最大值和时间字段
-                Map<String, Object> sourceAsMap = hits1[0].getSourceAsMap();
-                BoxIndexDTO boxIndexDTO = new BoxIndexDTO();
-                boxIndexDTO.setLastWeekEq((Double) sourceAsMap.get("eq_value"));
-                boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
-                BoxIndex boxIndexDO = boxIndexCopyMapper.selectOne(BoxIndex::getId, boxIndexDTO.getBoxId());
-                boxIndexDTO.setDevKey(boxIndexDO.getBoxKey());
-                boxIndexDTO.setBoxName(boxIndexDO.getBoxName());
-                boxIndexDTO.setId(1);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
-                result.add(boxIndexDTO);
-            }
-
-            //上月
-            String startTime2 = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-            String endTime2 = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-            // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest2 = new SearchRequest("box_eq_total_month");
-            // 通过QueryBuilders构建ES查询条件，
-            SearchSourceBuilder builder2 = new SearchSourceBuilder();
-
-            //获取需要处理的数据
-            builder2.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime2).lte(endTime2))
-                    .must(QueryBuilders.termsQuery("box_id", ids))));
-            builder2.sort("eq_value", SortOrder.DESC);
-            // 设置搜索条件
-            searchRequest2.source(builder2);
-            builder2.size(1);
-
-            // 执行ES请求
-            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
-            SearchHit[] hits2 = searchResponse2.getHits().getHits();
-            if (hits2.length > 0) {
-                // 获取最大值和时间字段
-                Map<String, Object> sourceAsMap = hits2[0].getSourceAsMap();
-                BoxIndexDTO boxIndexDTO = new BoxIndexDTO();
-                boxIndexDTO.setLastMonthEq((Double) sourceAsMap.get("eq_value"));
-                boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
-                BoxIndex boxIndexDO = boxIndexCopyMapper.selectOne(BoxIndex::getId, boxIndexDTO.getBoxId());
-                boxIndexDTO.setDevKey(boxIndexDO.getBoxKey());
-                boxIndexDTO.setBoxName(boxIndexDO.getBoxName());
-                boxIndexDTO.setId(2);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
-                result.add(boxIndexDTO);
-            }
-            getPosition(result);
-            return new PageResult<>(result, boxIndexDOPageResult.getTotal());
         } catch (Exception e) {
-            log.error("获取数据失败：", e);
+            log.error("插接箱用能最大查询异常：" + e);
         }
-        return new PageResult<>(new ArrayList<>(), 0L);
     }
 
-    public static final String HOUR_FORMAT = "yyyy-MM-dd";
-
-    public static final String TIME_STR = ":00:00";
 
     @Override
     public BusActivePowDTO getActivePow(BusPowVo vo) {
@@ -1322,15 +1437,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         BusEleChainDTO chainDTO = new BusEleChainDTO();
         try {
 
-
             getDayChain(id, chainDTO);
-
 
             getWeekChain(id, chainDTO);
 
-
             getMonthChain(id, chainDTO);
-
 
         } catch (Exception e) {
             log.error("获取数据异常：", e);
@@ -1369,12 +1480,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxBalanceDataRes boxBalanceDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
-            List<Double> curList = lineItemList.getList("vol_value",Double.class);
-            List<Double> volList  = lineItemList.getList("cur_value",Double.class);
+            List<Double> curList = lineItemList.getList("cur_value", Double.class);
+            List<Double> volList = lineItemList.getList("vol_value", Double.class);
 
             Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
             Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
-            Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList)- curAvg) / curAvg * 100;
+            Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
             Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
             for (int i = 0; i < 3; i++) {
                 double vol = volList.get(i);
@@ -1413,19 +1524,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 //        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
 
         JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
-        List<Double> curList = lineItemList.getList("vol_value",Double.class);
-        List<Double> volList  = lineItemList.getList("cur_value",Double.class);
+        List<Double> curList = lineItemList.getList("cur_value", Double.class);
+        List<Double> volList = lineItemList.getList("vol_value", Double.class);
 
         Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
         Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
-        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList)- curAvg) / curAvg * 100;
+        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
         Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
 
         result.setCur_value(curList);
         result.setVol_value(volList);
         result.setCurUnbalance(curUnbalance);
         result.setVolUnbalance(volUnbalance);
-        double maxVal =63.0;
+        double maxVal = 63.0;
         double a = Collections.max(curList) - Collections.min(curList);
         int color;
         if (boxCurbalanceColorDO == null) {
@@ -1516,7 +1627,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Override
     public PageResult<BoxTemRes> getBoxTemPage(BoxIndexPageReqVO pageReqVO) {
-        PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
+        PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPageAll(pageReqVO);
         List<BoxIndex> list = boxIndexDOPageResult.getList();
         List<BoxTemRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);
@@ -1682,60 +1793,20 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             ids.add(pageReqVO.getBoxId());
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            List<String> boxHdaLineHour = getData(startTime, endTime, ids, "box_hda_line_hour");
-            List<BoxLineHourDo> strList = boxHdaLineHour.stream()
-                    .map(str -> JsonUtils.parseObject(str, BoxLineHourDo.class))
+            List<String> outletHour = getData(startTime, endTime, ids, "box_hda_outlet_hour");
+            List<BoxPFDetail> strList = outletHour.stream()
+                    .map(str -> JsonUtils.parseObject(str, BoxPFDetail.class))
                     .collect(Collectors.toList());
 
-            HashMap<String, Object> resultMap = new HashMap<>();
-
-            List<BusPFTableRes> tableList = new ArrayList<>();
-            BusPFDetailRes result = new BusPFDetailRes();
-            result.setPowerFactorAvgValueA(new ArrayList<>());
-            result.setPowerFactorAvgValueB(new ArrayList<>());
-            result.setPowerFactorAvgValueC(new ArrayList<>());
-            result.setTime(new ArrayList<>());
-
-            resultMap.put("chart", result);
-            resultMap.put("table", tableList);
-
-            if (strList == null || strList.size() == 0) {
-                return resultMap;
+            Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
+            Map<String, List> map = new HashMap<>();
+            for (String key : pfMap.keySet()) {
+                List<BoxPFDetail> list = pfMap.get(key);
+                map.put(key, list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
             }
-
-            Map<Integer, List<BoxLineHourDo>> pfMap = strList.stream().collect(Collectors.groupingBy(boxLineHourDo -> boxLineHourDo.getLineId()));
-
-            int i = 0;
-            for (BoxLineHourDo boxLineHourDo : pfMap.get(1)) {
-                BusPFTableRes busPFTableRes = new BusPFTableRes();
-                result.getPowerFactorAvgValueA().add(boxLineHourDo.getPowerFactorAvgValue());
-                result.getTime().add(boxLineHourDo.getCreateTime().toString("HH:mm"));
-                busPFTableRes.setPowerFactorAvgValueA(boxLineHourDo.getPowerFactorAvgValue());
-                busPFTableRes.setTime(boxLineHourDo.getCreateTime().toString("HH:mm"));
-                tableList.add(busPFTableRes);
-                i++;
-            }
-            int j = 0;
-            for (BoxLineHourDo boxLineHourDo : pfMap.get(2)) {
-                result.getPowerFactorAvgValueB().add(boxLineHourDo.getPowerFactorAvgValue());
-                if (i == 0 || j >= i) {
-                    break;
-                } else if (j < i) {
-                    tableList.get(j).setPowerFactorAvgValueB(boxLineHourDo.getPowerFactorAvgValue());
-                    j++;
-                }
-            }
-            j = 0;
-            for (BoxLineHourDo boxLineHourDo : pfMap.get(3)) {
-                result.getPowerFactorAvgValueC().add(boxLineHourDo.getPowerFactorAvgValue());
-                if (i == 0 || j >= i) {
-                    break;
-                } else if (j < i) {
-                    tableList.get(j).setPowerFactorAvgValueC(boxLineHourDo.getPowerFactorAvgValue());
-                    j++;
-                }
-            }
-            return resultMap;
+            map.put("time", strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
+            map.put("table", strList);
+            return map;
         } catch (Exception e) {
             log.error("获取数据失败：", e);
         }
@@ -1877,8 +1948,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         try {
             List<BoxIndex> searchList = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>()
                     .inIfPresent(BoxIndex::getBoxKey, pageReqVO.getBoxDevKeyList())
-                    .eq(BoxIndex::getIsDeleted,false)
-                    .eq(BoxIndex::getBoxType,0));
+                    .eq(BoxIndex::getIsDeleted, false)
+                    .eq(BoxIndex::getBoxType, 0));
             if (CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);
             }
@@ -1919,9 +1990,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
             for (BoxIndex boxIndex : boxIndices) {
                 Integer id = boxIndex.getId();
-                if (curMap.get(id) == null) {
-                    continue;
-                }
+
                 BoxLineRes boxLineRes = new BoxLineRes();
                 boxLineRes.setStatus(boxIndex.getRunStatus());
 
@@ -1929,6 +1998,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxLineRes.setDevKey(boxIndex.getBoxKey());
                 boxLineRes.setBoxName(boxIndex.getBoxName());
 
+                if (curMap.get(id) == null) {
+                    continue;
+                }
                 MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
                 boxLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
                 boxLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -2500,7 +2572,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
             }
             return list;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
         }
         return null;
@@ -3009,47 +3081,47 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * @return
      */
     private void getDayChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //日环比
-        //今日
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //日环比
+            //今日
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double todayEq = getDayEq(startTime, endTime, id);
-        chainDTO.setTodayEq(todayEq);
-        //昨日
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -24);
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+            double todayEq = getDayEq(startTime, endTime, id);
+            chainDTO.setTodayEq(todayEq);
+            //昨日
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_DAY);
-        Map<String, Double> eqMap = new HashMap<>();
+            List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_DAY);
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BoxEqTotalDayDo dayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
-            String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, dayDo.getEq());
+            list.forEach(str -> {
+                BoxEqTotalDayDo dayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, dayDo.getEq());
 
-        });
-        //前日
-        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
-
-        //昨天
-        String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
-        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
-
-        chainDTO.setYesterdayEq(lastEq);
-
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
-        chainDTO.setDayRate(dayRate);
-
+            });
+            //前日
+            String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+            //昨天
+            String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
+            double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+            chainDTO.setYesterdayEq(lastEq);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+            chainDTO.setDayRate(dayRate);
+        } catch (Exception e) {
+            log.error("插接箱日环比错误" + e);
+        }
     }
 
     /**
@@ -3059,51 +3131,55 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * @param chainDTO
      */
     private void getWeekChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //周环比
-        //本周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //周环比
+            //本周
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double thisWeekEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisWeekEq(thisWeekEq);
-        //上周
-        LocalDate today = LocalDate.now();
-        //上周第一天
-        DayOfWeek todayOfWeek = today.getDayOfWeek();
-        int sub = todayOfWeek.getValue() + 6;
-        LocalDate lastWeekFirst = today.minusDays(sub);
+            double thisWeekEq = getDayEq(startTime, endTime, id);
+            chainDTO.setThisWeekEq(thisWeekEq);
+            //上周
+            LocalDate today = LocalDate.now();
+            //上周第一天
+            DayOfWeek todayOfWeek = today.getDayOfWeek();
+            int sub = todayOfWeek.getValue() + 6;
+            LocalDate lastWeekFirst = today.minusDays(sub);
 
 
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
 
-        List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_WEEK);
+            List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_WEEK);
 
-        Map<String, Double> eqMap = new HashMap<>();
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BoxEqTotalDayDo weekDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
-            String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, weekDo.getEq());
+            list.forEach(str -> {
+                BoxEqTotalDayDo weekDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, weekDo.getEq());
 
-        });
-        //上上周
-        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+            });
+            //上上周
+            String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
 
-        //上周
-        String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
-        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+            //上周
+            String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
+            double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
 
-        chainDTO.setLastWeekEq(lastEq);
+            chainDTO.setLastWeekEq(lastEq);
 
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String weekRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
-        chainDTO.setWeekRate(weekRate);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String weekRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+            chainDTO.setWeekRate(weekRate);
+        } catch (Exception e) {
+            log.error("插接箱用能环比" + e);
+        }
     }
 
     /**
@@ -3113,48 +3189,52 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * @param chainDTO
      */
     private void getMonthChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //月环比
-        //本月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //月环比
+            //本月
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double thisMonthEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisMonthEq(thisMonthEq);
-        //上月
-        //上月第一天
-        Calendar lastMonthFirstDateCal = Calendar.getInstance();
-        lastMonthFirstDateCal.add(Calendar.MONTH, -1);
-        lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
+            double thisMonthEq = getDayEq(startTime, endTime, id);
+            chainDTO.setThisMonthEq(thisMonthEq);
+            //上月
+            //上月第一天
+            Calendar lastMonthFirstDateCal = Calendar.getInstance();
+            lastMonthFirstDateCal.add(Calendar.MONTH, -1);
+            lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
 
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
 
 
-        List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_MONTH);
+            List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_MONTH);
 
-        Map<String, Double> eqMap = new HashMap<>();
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BoxEqTotalDayDo monthDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
-            String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, monthDo.getEq());
+            list.forEach(str -> {
+                BoxEqTotalDayDo monthDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, monthDo.getEq());
 
-        });
-        //上上月
-        String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastMonthTime) ? eqMap.get(lastMonthTime) : 0;
-        //上月
-        String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
-        double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
-        chainDTO.setLastMonthEq(lastMonthEq);
+            });
+            //上上月
+            String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastMonthTime) ? eqMap.get(lastMonthTime) : 0;
+            //上月
+            String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
+            double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
+            chainDTO.setLastMonthEq(lastMonthEq);
 
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String monthRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastMonthEq / eveEq);
-        chainDTO.setMonthRate(monthRate);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String monthRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastMonthEq / eveEq);
+            chainDTO.setMonthRate(monthRate);
+        } catch (Exception e) {
+            log.error("插接箱用能月环比错误" + e);
+        }
     }
 
     /**
@@ -3170,10 +3250,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         //获取时间段内第一条和最后一条数据
         BoxEleTotalDo endRealtimeDo = getEleData(startTime, endTime,
                 SortOrder.DESC,
-                BoxConstants.BOX_ELE_TOTAL_REALTIME, id);
+                BOX_ELE_TOTAL_REALTIME, id);
         BoxEleTotalDo startRealtimeDo = getEleData(startTime, endTime,
                 SortOrder.ASC,
-                BoxConstants.BOX_ELE_TOTAL_REALTIME, id);
+                BOX_ELE_TOTAL_REALTIME, id);
         //结束时间电量
         double endEle = endRealtimeDo.getEleActive();
 
@@ -3332,6 +3412,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         List cabinets = ops.multiGet(cabinetRedisKeys);
         if (!CollectionUtils.isEmpty(cabinets)) {
             for (Object cabinet : cabinets) {
+                if (Objects.isNull(cabinet)){
+                    continue;
+                }
                 JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
                 devPosition = json.getString("room_name") + SPLIT_KEY + json.getString("cabinet_name");
                 if (!StringUtils.isEmpty(json.getString("aisle_name"))) {
@@ -3392,38 +3475,43 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     private Map getESTotalAndIds(String index, String startTime, String endTime, Integer pageSize, Integer pageNo, List<Integer> ids) throws IOException {
-        HashMap<String, Object> result = new HashMap<>();
-        SearchRequest searchRequest = new SearchRequest(index);
+        try {
+            HashMap<String, Object> result = new HashMap<>();
+            SearchRequest searchRequest = new SearchRequest(index);
 
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        builder
-                .from(pageNo * pageSize)
-                .size(pageSize)
-                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
-                        .must(QueryBuilders.termsQuery("box_id", ids))))
-                .sort("box_id", SortOrder.ASC)
-                .collapse(new CollapseBuilder("box_id"))
-                .aggregation(AggregationBuilders.cardinality("total_size").field("box_id").precisionThreshold(10000));
-        searchRequest.source(builder);
-        List<Integer> sortValues = new ArrayList<>();
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
-                sortValues.add(hourDo.getBoxId());
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder
+                    .from(pageNo * pageSize)
+                    .size(pageSize)
+                    .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                            .must(QueryBuilders.termsQuery("box_id", ids))))
+                    .sort("box_id", SortOrder.ASC)
+                    .collapse(new CollapseBuilder("box_id"))
+                    .aggregation(AggregationBuilders.cardinality("total_size").field("box_id").precisionThreshold(10000));
+            searchRequest.source(builder);
+            List<Integer> sortValues = new ArrayList<>();
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+                    sortValues.add(hourDo.getBoxId());
+                }
             }
-        }
-        Long totalRes = 0L;
-        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
-        if (totalSizeAggregation != null) {
-            totalRes = totalSizeAggregation.getValue();
-        }
+            Long totalRes = 0L;
+            Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+            if (totalSizeAggregation != null) {
+                totalRes = totalSizeAggregation.getValue();
+            }
 
-        result.put("total", totalRes);
-        result.put("ids", sortValues);
-        return result;
+            result.put("total", totalRes);
+            result.put("ids", sortValues);
+            return result;
+        }catch (Exception e){
+            log.error("需量监测错误"+e);
+            return null;
+        }
     }
 
     private List getMutiRedis(List<BoxIndex> list) {
@@ -3432,9 +3520,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return ops.multiGet(devKeys);
     }
 
+    public Map<String, String> getPositionByKey(String key) {
+        List<String> list = new ArrayList<>();
+        list.add(key);
+        return getPositionByKeys(list);
+    }
 
-    public Map<String ,String> getPositionByKey(List<String> keys) {
-        Map<String ,String> map =new HashMap<>();
+    public Map<String, String> getPositionByKeys(List<String> keys) {
+        Map<String, String> map = new HashMap<>();
         if (CollectionUtils.isEmpty(keys)) {
             return map;
         }
@@ -3449,9 +3542,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<Integer> aisleBarIds = aisleBoxList.stream().map(AisleBox::getAisleBarId).collect(Collectors.toList());
             List<AisleBar> aisleBars = aisleBarMapper.selectBatchIds(aisleBarIds);
             Map<Integer, String> pathMap = aisleBars.stream().collect(Collectors.toMap(AisleBar::getId, AisleBar::getPath));
-            Map<Integer, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getAisleId,  Function.identity() ));
+            Map<Integer, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getAisleId, Function.identity()));
 
-            Map<Integer, String> positionMap = new HashMap<>();
+//            Map<Integer, String> positionMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(aisleBoxList)) {
                 List<String> redisKeys = aisleBoxList.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
                 List aisles = ops.multiGet(redisKeys);
@@ -3459,10 +3552,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     for (Object aisle : aisles) {
                         JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
                         AisleBox aisleKey = aisleBoxKeyMap.get(json.getInteger("aisle_key"));
-                        if (Objects.nonNull(aisleKey)){
+                        if (Objects.nonNull(aisleKey)) {
                             String boxKey = aisleKey.getBoxKey();
                             map.put(boxKey, json.getString("room_name") + SPLIT_KEY
-                                    + json.getString("aisle_name")+ SPLIT_KEY + pathMap.get(aisleKey.getAisleBarId()) + "路");
+                                    + json.getString("aisle_name") + SPLIT_KEY + pathMap.get(aisleKey.getAisleBarId()) + "路");
                         }
                     }
                 }
@@ -3479,8 +3572,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             return map;
         }
         List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
-        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i ->i.getBoxKeyA()+i.getOutletIdA()));
-        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i->i.getBoxKeyB()+i.getOutletIdB()));
+        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i -> i.getBoxKeyA() + i.getOutletIdA()));
+        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i -> i.getBoxKeyB() + i.getOutletIdB()));
 
         List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
         List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());
@@ -3497,18 +3590,18 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 Integer cabinetId = Integer.valueOf(json.getString("cabinet_key").split("-")[1]);
                 String devKeyA = cabinetBusMapA.get(cabinetId);
                 if (!StringUtils.isEmpty(devKeyA)) {
-                    if (Objects.isNull(collect.get(devKeyA))){
-                        map.put(devKeyA,devPosition + SPLIT_KEY + "A路");
-                    }else {
-                    map.put(devKeyA,devPosition + SPLIT_KEY + "A路" + SPLIT_KEY + collect.get(devKeyA));
-                  }
+                    if (Objects.isNull(collect.get(devKeyA))) {
+                        map.put(devKeyA, devPosition + SPLIT_KEY + "A路");
+                    } else {
+                        map.put(devKeyA, devPosition + SPLIT_KEY + "A路" + SPLIT_KEY + collect.get(devKeyA));
+                    }
                 }
                 String devKeyB = cabinetBusMapB.get(cabinetId);
                 if (!StringUtils.isEmpty(devKeyB)) {
-                    if (Objects.isNull(collect.get(devKeyB))){
-                        map.put(devKeyB,devPosition + SPLIT_KEY + "B路");
-                    }else {
-                        map.put(devKeyB,devPosition + SPLIT_KEY + "B路" + SPLIT_KEY + collect.get(devKeyA));
+                    if (Objects.isNull(collect.get(devKeyB))) {
+                        map.put(devKeyB, devPosition + SPLIT_KEY + "B路");
+                    } else {
+                        map.put(devKeyB, devPosition + SPLIT_KEY + "B路" + SPLIT_KEY + collect.get(devKeyA));
                     }
                 }
             }

@@ -121,7 +121,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <div v-if="switchValue !== 0 && list.length > 0">
+        <el-table v-if="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -173,8 +174,9 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
-      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+      <div v-else-if="switchValue == 0 && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey +'-' +item.boxName }}</div>
@@ -214,7 +216,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
+      <template v-if="list.length == 0 && switchValue !== null">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
@@ -448,55 +450,13 @@ const getList = async () => {
 
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-
-    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }
-    });
-    //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
+    const allData = await IndexApi.getBoxIndexStatistics();
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
     statusNumber.total = allData.total;
-  } catch (error) {
-    
-  }
-}
+      } finally {
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getBoxHarmonicPage(queryParams)
-    list.value = data.list
-
-    var tableIndex = 0;    
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acurThd == null){
-        return;
-      } 
-      obj.acurThd = obj.acurThd?.toFixed(2);
-      obj.bcurThd = obj.bcurThd?.toFixed(2);
-      obj.ccurThd = obj.ccurThd?.toFixed(2);
-
-    });
-
-    total.value = data.total
-  } catch (error) {
-    
   }
 }
 
@@ -524,26 +484,6 @@ const toDetail = (row) =>{
   const name = row.boxName
   push({path: '/bus/boxmonitor/boxharmonicdetail', state: { devKey, boxId ,location ,name}})
 }
-
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
-
-//const handleSelectStatus = (index) => {
-//  statusList[index].selected = !statusList[index].selected
-//  const status =  statusList.filter(item => item.selected)
-//  const statusArr = status.map(item => item.value)
-//  if(statusArr.length != statusList.length){
-//    queryParams.color = statusArr;
-//    //queryParams.status = [5];
-//  }else{
-//    queryParams.color = null;
-//    //queryParams.status = [];
-//  }
-//  
-//  handleQuery();
-//}
 
 const handleSelectStatus = (index) => {
   console.log('index',index);
@@ -616,8 +556,7 @@ onMounted(async () => {
   getList();
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -639,8 +578,7 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>
@@ -1255,6 +1193,6 @@ onActivated(() => {
 }
 
 :deep(.el-tag){
-  margin-right:-40px;
+  margin-right:-60px;
 }
 </style>

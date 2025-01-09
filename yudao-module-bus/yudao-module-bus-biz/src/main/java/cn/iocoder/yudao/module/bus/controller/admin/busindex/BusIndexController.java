@@ -1,6 +1,9 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexMaxEqResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
@@ -219,14 +222,22 @@ public class BusIndexController {
     @Operation(summary = "始端箱用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<BusIndexDTO>> getEqPage(@RequestBody BusIndexPageReqVO pageReqVO) {
-        PageResult<BusIndexDTO> pageResult = indexService.getEqPage(pageReqVO);
+        PageResult<BusIndexDTO> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
+            pageResult =  indexService.getEqPage(pageReqVO);
+        }else {
+            pageResult = indexService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)){
+                pageResult =  indexService.getEqPage(pageReqVO);
+            }
+        }
         return success(pageResult);
     }
 
     @Operation(summary = "始端箱用能列表分页")
     @PostMapping("/eq/maxEq")
-    public CommonResult<MaxEqResVO> getMaxEq() {
-        MaxEqResVO pageResult = indexService.getMaxEq();
+    public CommonResult<List<BusIndexMaxEqResVO>> getMaxEq() {
+        List<BusIndexMaxEqResVO> pageResult = indexService.getMaxEq();
         return success(pageResult);
     }
 
@@ -263,7 +274,7 @@ public class BusIndexController {
      */
     @Operation(summary = "始端箱用能环比")
     @GetMapping("/eleChain")
-    public CommonResult<BusEleChainDTO> eleChain(@Param("id") int id) {
+    public CommonResult<BusEleChainDTO> eleChain(@Param("id") int id) throws IOException {
         BusEleChainDTO dto = indexService.getEleChain(id);
         return success(dto);
     }
