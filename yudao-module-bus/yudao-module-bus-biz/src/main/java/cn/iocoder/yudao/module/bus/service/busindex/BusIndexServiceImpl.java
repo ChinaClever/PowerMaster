@@ -1508,7 +1508,12 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO) {
         try {
-            List<BusIndexDO> searchList = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>().inIfPresent(BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()));
+            LambdaQueryWrapper<BusIndexDO> queryWrapper = new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,0);
+            if (ObjectUtils.isNotEmpty(pageReqVO.getDevKey()) || ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList())){
+                queryWrapper.and(wq ->wq.in(ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList()),BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()).or()
+                        .eq(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BusIndexDO::getBusKey, pageReqVO.getDevKey()));
+            }
+            List<BusIndexDO> searchList = busIndexMapper.selectList(queryWrapper);
 
             if (CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);

@@ -36,6 +36,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
@@ -1946,10 +1947,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO) {
         try {
-            List<BoxIndex> searchList = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>()
-                    .inIfPresent(BoxIndex::getBoxKey, pageReqVO.getBoxDevKeyList())
+            LambdaQueryWrapper<BoxIndex> queryWrapperX = new LambdaQueryWrapperX<BoxIndex>()
                     .eq(BoxIndex::getIsDeleted, false)
-                    .eq(BoxIndex::getBoxType, 0));
+                    .eq(BoxIndex::getBoxType, 0);
+            if (ObjectUtils.isNotEmpty(pageReqVO.getDevKey()) || ObjectUtils.isNotEmpty(pageReqVO.getBoxDevKeyList())){
+                queryWrapperX.and(wq ->wq.in(ObjectUtils.isNotEmpty(pageReqVO.getBoxDevKeyList()), BoxIndex::getBoxKey, pageReqVO.getBoxDevKeyList()).or()
+                        .eq(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+            }
+
+            List<BoxIndex> searchList = boxIndexCopyMapper.selectList(queryWrapperX);
             if (CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);
             }
