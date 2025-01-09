@@ -57,8 +57,8 @@
             全部 
           </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
-            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus1(status.value)" style="width:70px;">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus1(status.value)" style="width:70px;">{{status.name}}</button>
           </template>
           <el-button
           v-if="switchValue == 2 || switchValue == 3"
