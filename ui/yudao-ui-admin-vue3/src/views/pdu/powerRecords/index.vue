@@ -123,25 +123,25 @@
 </template>
 
 <script setup lang="ts">
-import dayjs from 'dayjs'
-import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
-import { HistoryDataApi } from '@/api/pdu/historydata'
-import { CabinetApi } from '@/api/cabinet/info'
+import dayjs from 'dayjs';
+import download from '@/utils/download';
+import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption';
+import { HistoryDataApi } from '@/api/pdu/historydata';
+import { CabinetApi } from '@/api/cabinet/info';
 import PDUImage from '@/assets/imgs/PDU.jpg';
-import { ElMessage } from 'element-plus'
-defineOptions({ name: 'PowerRecords' })
+import { ElMessage } from 'element-plus';
+defineOptions({ name: 'PowerRecords' });
 
-const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
-const navLineData = ref(0)
-const navLoopData = ref(0)
-const navOutletData = ref(0)
-const loading = ref(true)
-const message = useMessage() // 消息弹窗
+const navList = ref([]) as any; // 左侧导航栏树结构列表
+const navTotalData = ref(0);
+const navLineData = ref(0);
+const navLoopData = ref(0);
+const navOutletData = ref(0);
+const loading = ref(true);
+const message = useMessage(); // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
-const total = ref(0)
-const realTotel = ref(0) // 数据的真实总条数
+const total = ref(0);
+const realTotel = ref(0); // 数据的真实总条数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -151,10 +151,10 @@ const queryParams = reactive({
   type: 'total',
   timeRange: undefined as any,
   ipArray: [],
-})
-const pageSizeArr = ref([15,30,50,100])
-const queryFormRef = ref()
-const exportLoading = ref(false)
+});
+const pageSizeArr = ref([15,30,50,100]);
+const queryFormRef = ref();
+const exportLoading = ref(false);
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -444,8 +444,8 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  getNavList()
-  getNavOneDayData()
+  getNavList();
+  getNavOneDayData();
   getTypeMaxValue();
   getList();
 })
