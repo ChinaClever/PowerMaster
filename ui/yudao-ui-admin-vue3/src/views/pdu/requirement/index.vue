@@ -387,12 +387,9 @@
         </template>
 
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
-          <div class="custom-content-container">
+        
            
-          <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"  style="width: 100%;height: 500px;"></div>
-          
-        </div></div>
+          <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"  style="width: 90vw;height: 60vh;margin-left: -100px;"></div>
       </el-dialog>
 
       <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
@@ -445,7 +442,7 @@
         
           <!-- <pow /> -->
          
-          <div ref="lineidChartContainer" id="lineidChartContainer"  style="width: 100%;height: 500px;"></div>
+          <div ref="lineidChartContainer" id="lineidChartContainer"  style="width: 90vw;height: 60vh;margin-left: -100px;"></div>
       </el-dialog>
     </div>
       <Pagination
@@ -799,6 +796,7 @@ const getNavList = async() => {
 //   push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
 // }
 import { useRouter } from 'vue-router';
+import { LineChart } from 'echarts/charts'
 
 const router = useRouter();
 const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
@@ -1246,6 +1244,12 @@ const updateChartData = (chartData, dataArray) => {
   chartData.value.cur_max_value = dataArray.map(item => item.cur_max_value);
   chartData.value.pow_active_max_value = dataArray.map(item => item.pow_active_max_value);
 };
+
+window.addEventListener('resize',function(){
+  lineidChart?.resize();
+  lineidChartOne?.resize();
+}
+);
 
 //获取电流信息
 const getLineid = async (id, type,flagValue) => {
