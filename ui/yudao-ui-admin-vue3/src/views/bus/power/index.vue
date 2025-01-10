@@ -96,7 +96,7 @@
         :model="queryDeletedPageParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"     
+        label-width="68px"
         v-show="switchValue == 4"        
       >
         <el-form-item label="网络地址" prop="devKey">

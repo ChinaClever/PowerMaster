@@ -29,11 +29,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ElTree } from 'element-plus'
-import * as DeptApi from '@/api/system/dept'
-import { defineProps } from 'vue'
-import type Node from 'element-plus/es/components/tree/src/model/node'
-import { string } from 'vue-types'
+import { ElTree } from 'element-plus';
+import * as DeptApi from '@/api/system/dept';
+import { defineProps } from 'vue';
+import type Node from 'element-plus/es/components/tree/src/model/node';
+import { string } from 'vue-types';
 
 const emits = defineEmits(['node-click', 'check'])
 const props = defineProps({
