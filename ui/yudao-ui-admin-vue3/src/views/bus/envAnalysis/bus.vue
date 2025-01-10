@@ -1154,7 +1154,8 @@ onMounted( async () => {
   queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
   if (queryParams.busId != undefined){
     await getList();
-    if (queryLocation == null) {
+    console.log(queryLocation)
+    if (queryLocation) {
       nowAddress.value = '';
     } else {
       nowAddress.value = queryLocation;
