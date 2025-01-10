@@ -202,7 +202,7 @@
           <div class="status" v-if="valueMode == 0">
             <el-tag type="info" v-if="item.status == 0 " >{{statusList[0].name}}</el-tag>
             <el-tag v-else-if="item.status === 1" type="success" >{{statusList[1].name}}</el-tag>
-            <el-tag v-else-if="item.status === 2" type="success" >{{statusList[2].name}}</el-tag>
+            <el-tag v-else-if="item.status === 2" type="danger" >{{statusList[2].name}}</el-tag>
           </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
