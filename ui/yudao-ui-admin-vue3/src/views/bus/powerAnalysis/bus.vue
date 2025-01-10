@@ -341,7 +341,7 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    const data = await EnergyConsumptionApi.getEQDataPage(queryParams);
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
 
     eqData.value = data.list.map((item) => {
@@ -490,42 +490,43 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
-  navList.value = res
+  const res = await IndexApi.getBusMenu();
+  console.log('接口获取机房导航列表',res);
+  navList.value = res;
 }
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await EnergyConsumptionApi.getNavNewData({})
-  lastDayTotalData.value = res.day
-  lastWeekTotalData.value = res.week
-  lastMonthTotalData.value = res.month
+  const res = await EnergyConsumptionApi.getNavNewData({});
+  lastDayTotalData.value = res.day;
+  lastWeekTotalData.value = res.week;
+  lastMonthTotalData.value = res.month;
 }
 
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    queryParams.pageNo = 1
-    exportLoading.value = true
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '始端箱能耗趋势.xlsx')
+    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig);
+    await download.excel(data, '始端箱能耗趋势.xlsx');
   } catch (error) {
     // 处理异常
-    console.error('导出失败：', error)
+    console.error('导出失败：', error);
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
-const start = ref('')
-const end = ref('')
-const devKey =  ref('')
+const start = ref('');
+const end = ref('');
+const devKey =  ref('');
 /** 详情操作*/
 const toDetails = (busId: number,location: string, devKey: string) => {
   push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location+'&devKey='+devKey);
@@ -533,8 +534,8 @@ const toDetails = (busId: number,location: string, devKey: string) => {
 
 /** 初始化 **/
 onMounted(() => {
-  getNavList()
-  getNavNewData()
+  getNavList();
+  getNavNewData();
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   devKey.value = useRoute().query.devKey as string;

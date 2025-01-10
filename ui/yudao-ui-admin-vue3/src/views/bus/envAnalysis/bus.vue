@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -278,16 +278,15 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu1>
+  </CommonMenu>
 </template>
 <script setup lang="ts">
-import { IndexApi } from '@/api/bus/busindex'
+import { IndexApi } from '@/api/bus/busindex';
 import * as echarts from 'echarts';
-import { onMounted } from 'vue'
-import { EnvDataApi } from '@/api/bus/envData'
-import { formatDate } from '@/utils/formatTime'
-import dayjs from 'dayjs'
-import CommonMenu1 from './component/CommonMenu1.vue';
+import { onMounted } from 'vue';
+import { EnvDataApi } from '@/api/bus/envData';
+import { formatDate } from '@/utils/formatTime';
+import dayjs from 'dayjs';
 import download from '@/utils/download'
 
 // import PDUImage from '@/assets/imgs/PDU.jpg'

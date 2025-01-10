@@ -4,7 +4,7 @@ export const EnvDataApi = {
   
   // 查询始端箱环境数据分页
   getBusEnvDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/history-data/bus-env-page`, params })
+    return await request.post({ url: `/bus/history-data/bus-env-page`, params })
   },
 
   // 查询始端箱环境数据详情
@@ -14,7 +14,7 @@ export const EnvDataApi = {
 
   // 导出始端箱环境历史数据 Excel
   exportBusEnvHistoryData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/history-data/bus-env-export-excel`, params, ...axiosConfig })
+    return await request.downloadPost({ url: `/bus/history-data/bus-env-export-excel`, params, ...axiosConfig })
   },
 
   // 查询始端箱环境数据导航的新增多少条记录数据
@@ -28,7 +28,7 @@ export const EnvDataApi = {
 
     // 查询插接箱环境数据分页
     getBoxEnvDataPage: async (params: any) => {
-      return await request.get({ url: `/bus/history-data/box-env-page`, params })
+      return await request.post({ url: `/bus/history-data/box-env-page`, params })
     },
   
     // 查询插接箱环境数据详情
@@ -38,7 +38,7 @@ export const EnvDataApi = {
   
     // 导出插接箱环境历史数据 Excel
     exportBoxEnvHistoryData: async (params, axiosConfig) => {
-      return await request.download({ url: `/bus/history-data/box-env-export-excel`, params, ...axiosConfig })
+      return await request.downloadPost({ url: `/bus/history-data/box-env-export-excel`, params, ...axiosConfig })
     },
   
     // 查询插接箱环境数据导航的新增多少条记录数据
