@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.*;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
+import com.alibaba.excel.EasyExcel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
@@ -90,18 +91,21 @@ public class BusHistoryDataController {
     public void exportBoxHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = busHistoryDataService.getBoxHistoryDataPage(pageReqVO).getList();
 
+        List<Object> list = busHistoryDataService.getBoxHistoryDataPage(pageReqVO).getList();
+        List<String> columnsToExclude = pageReqVO.getColumnsToExclude();
+        Set<String> columnsToExcludeSet = new HashSet<>(columnsToExclude);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")){
             //处理list
             busHistoryDataService.getNewBoxHistoryList(list);
-            ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
-                    BeanUtils.toBean(list, BoxRealtimePageRespVO.class));
+            ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
+                    BeanUtils.toBean(list, BoxRealtimePageRespVO.class),null, columnsToExcludeSet);
+
         }else{
             busHistoryDataService.getNewBoxHistoryList1(list);
-            ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxHourAndDayPageRespVO.class,
-                    BeanUtils.toBean(list, BoxHourAndDayPageRespVO.class));
+            ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxHourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, BoxHourAndDayPageRespVO.class),null, columnsToExcludeSet);
         }
 
     }

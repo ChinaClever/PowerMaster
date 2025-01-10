@@ -343,7 +343,9 @@ const getList = async () => {
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-
+    if(data.list == null){
+      ElMessage.error('暂无数据')
+    }
     eqData.value = data.list.map((item) => {
         const difference = item.end_ele - item.start_ele;
         return difference < 0 ? item.end_ele : formatEQ(difference, 1);
@@ -375,6 +377,9 @@ const getList1 = async () => {
     }
     queryParams.devkeys = [devKey.value];
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    if(data == null){
+      ElMessage.error('暂无数据')
+    }
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
     realTotel.value = data.total

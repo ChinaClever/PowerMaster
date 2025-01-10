@@ -734,8 +734,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("pdu_key", key);
         PduIndex pduIndex = pDUDeviceMapper.selectOne(queryWrapper);
-        Integer curUnbalanceStatus = pduIndex.getCurUnbalanceStatus();
         PduBalanceDeatilRes result = new PduBalanceDeatilRes();
+        if (pduIndex.getRunStatus() == 5){
+            result = null;
+            return result;
+        }
+        Integer curUnbalanceStatus = pduIndex.getCurUnbalanceStatus();
+
         PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         ValueOperations ops = redisTemplate.opsForValue();
         JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_PDU + key);

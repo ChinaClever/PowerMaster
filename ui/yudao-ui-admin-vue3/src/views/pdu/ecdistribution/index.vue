@@ -207,7 +207,7 @@ const instance = getCurrentInstance();
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
 const loading3 =ref(false)
-const selectTimeRange = ref(defaultDayTimeRange(14)) as any
+const selectTimeRange = ref()
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -725,13 +725,20 @@ const handleQuery = async() => {
   initRankChart();
 }
 
-
+const start = ref('')
+const end = ref('')
 
 
 /** 初始化 **/
 onMounted(async () => {
   getNavList()
   getTypeMaxValue();
+  start.value = useRoute().query.start as string;
+  end.value = useRoute().query.end as string;
+  const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
+      
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
+       selectTimeRange.value = [selectedStartTime, selectedEndTime];
   // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string | undefined;
   const queryAddress = useRoute().query.address as string;

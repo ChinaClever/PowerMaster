@@ -467,7 +467,13 @@ const getList = async () => {
         type: 'warning',
       });
     }
-  } finally {
+  } catch (error) {
+    ElMessage({
+      message: '暂无数据',
+      type: 'warning',
+    });
+} 
+  finally {
     loading.value = false;
     a.value=0;
     b.value=0;
@@ -892,7 +898,7 @@ const route = useRoute();
 const router = useRouter();
 /** 搜索按钮操作 */
 const handleQuery = () => {
-    queryParams.pduId = undefined;
+  
     
    // const firstChar = detect.value[0];
     const secondChar = detect.value[0];

@@ -249,30 +249,36 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity())) {
-            searchRequest.indices("bus_eq_total_day");
-        } else if ("week".equals(reqVO.getGranularity())) {
-            searchRequest.indices("bus_eq_total_week");
-        } else {
-            searchRequest.indices("bus_eq_total_month");
-        }
-
-        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        // 搜索结果
-        List<Object> resultList = new ArrayList<>();
-        SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
-        // 匹配到的总记录数
-        Long totalHits = hits.getTotalHits().value;
-        // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(resultList)
-                .setTotal(totalHits);
+        try {
+            // 搜索请求对象
+            SearchRequest searchRequest = new SearchRequest();
+            if ("day".equals(reqVO.getGranularity())) {
+                searchRequest.indices("bus_eq_total_day");
+            } else if ("week".equals(reqVO.getGranularity())) {
+                searchRequest.indices("bus_eq_total_week");
+            } else {
+                searchRequest.indices("bus_eq_total_month");
+            }
+
+            searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 搜索结果
+            List<Object> resultList = new ArrayList<>();
+            SearchHits hits = searchResponse.getHits();
+            hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+            // 匹配到的总记录数
+            Long totalHits = hits.getTotalHits().value;
+            // 返回的结果
+
+            pageResult.setList(resultList)
+                    .setTotal(totalHits);
+            return pageResult;
+        }catch (Exception e){
+            log.error("运行时异常", e);
+        }
         return pageResult;
     }
 
