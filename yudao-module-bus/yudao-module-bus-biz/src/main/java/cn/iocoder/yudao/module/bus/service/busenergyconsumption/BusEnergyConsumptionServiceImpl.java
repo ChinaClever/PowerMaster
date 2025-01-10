@@ -183,9 +183,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                         .from(pageReqVO.getTimeRange()[0])
                         .to(pageReqVO.getTimeRange()[1]));
             }
-            String[] devkeys = pageReqVO.getDevkeys();
-            if (devkeys != null) {
-                Integer[] busIds = getBusIdsByDevkeys(devkeys);
+
+            if (ObjectUtils.isNotEmpty(pageReqVO.getDevkeys())) {
+                Integer[] busIds = getBusIdsByDevkeys(pageReqVO.getDevkeys());
                 searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
             }
             // 搜索请求对象
@@ -303,9 +303,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null) {
-            Integer[] busIds = getBusIdsByDevkeys(devkeys);
+
+        if (ObjectUtils.isNotEmpty(pageReqVO.getDevkeys())) {
+            Integer[] busIds = getBusIdsByDevkeys(pageReqVO.getDevkeys());
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
         // 创建BoolQueryBuilder对象
@@ -561,9 +561,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                         .from(pageReqVO.getTimeRange()[0])
                         .to(pageReqVO.getTimeRange()[1]));
             }
-            String[] devkeys = pageReqVO.getDevkeys();
-            if (devkeys != null) {
-                Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
+            if (ObjectUtils.isNotEmpty(pageReqVO.getDevkeys())) {
+                Integer[] boxIds = getBoxIdsByDevkeys(pageReqVO.getDevkeys());
                 searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
             }
             // 搜索请求对象
@@ -694,9 +693,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null) {
-            Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
+        if (ObjectUtils.isNotEmpty(pageReqVO.getDevkeys())) {
+            Integer[] boxIds = getBoxIdsByDevkeys(pageReqVO.getDevkeys());
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
         // 创建BoolQueryBuilder对象

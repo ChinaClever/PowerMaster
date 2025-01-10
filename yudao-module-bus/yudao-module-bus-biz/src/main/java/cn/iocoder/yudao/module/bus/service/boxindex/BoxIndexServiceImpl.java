@@ -779,6 +779,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (hits.getTotalHits().value>0) {
                 SearchHit hit = hits.getAt(0);
                 vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
+                vo.setLoadFactorValue(hit.getSourceAsMap().get("load_rate").toString());
             }
         }
         if (true) {
@@ -799,6 +800,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (hits.getTotalHits().value>0) {
                 SearchHit hit = hits.getAt(0);
                 vo.setPowActiveTime(hit.getSourceAsMap().get("create_time").toString());
+                vo.setPowActiveValue(hit.getSourceAsMap().get("pow_active").toString());
             }
         }
 

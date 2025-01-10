@@ -193,9 +193,9 @@ public class BusEnergyConsumptionController {
     }
 
 
-    @GetMapping("/box/bill-page")
+    @PostMapping("/box/bill-page")
     @Operation(summary = "获得插接箱电费数据分页")
-    public CommonResult<PageResult<Object>> getBoxBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBoxBillDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBoxBillDataPage(pageReqVO);
         return success(pageResult);
     }

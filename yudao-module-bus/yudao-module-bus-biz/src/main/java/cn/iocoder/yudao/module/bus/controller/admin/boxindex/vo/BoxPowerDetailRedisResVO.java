@@ -20,6 +20,12 @@ public class BoxPowerDetailRedisResVO {
     @Schema(description = "有功功率最大时间")
     private String powActiveTime;
 
+    @Schema(description = "负载率最大")
+    private String loadFactorValue;
+
+    @Schema(description = "有功功率最大")
+    private String powActiveValue;
+
     @Schema(description = "电压均衡")
     private Double vub;
 
