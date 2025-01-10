@@ -6,7 +6,7 @@
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
         <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
             <span style="color:black;font-weight:bold;">负载率</span>
-            <div style="margin-left:300px;">
+            <div style="margin-left:200px;">
                 <span style="color:black;font-size:14px;">最大负载率: </span>
                 <span style="color:black;font-size:14px;">发生时间: {{redisData?.loadFactorTime}}</span>
             </div>
@@ -35,7 +35,7 @@
           <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div class="center-top-right-part">
-          <div style="margin-left:100px;margin-top:-70px;margin-bottom:50px">
+          <div style="margin-top:-70px;margin-bottom:50px">
             <span style="color:black;font-size:14px;">最大功率: </span>
             <span style="color:black;font-size:14px;">发生时间: {{redisData?.powActiveTime}}</span>
           </div>
