@@ -24,6 +24,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -278,6 +279,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public PageResult<Object> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+        if (ObjectUtils.isEmpty(pageReqVO.getType())){
+            pageReqVO.setType("total");
+        }
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
@@ -304,7 +308,28 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             Integer[] busIds = getBusIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
-        searchRequest.indices("bus_ele_total_realtime");
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        switch (pageReqVO.getType()){
+            case "total":
+                // 搜索请求对象
+                searchRequest.indices("bus_ele_total_realtime");
+                break;
+            case "line":
+                searchRequest.indices("bus_ele_line");
+                if (pageReqVO.getLineId() != null) {
+                    Integer lineId = pageReqVO.getLineId();
+                    // 创建匹配查询
+                    QueryBuilder termQuery = QueryBuilders.termQuery("line_id", lineId);
+                    boolQuery.must(termQuery);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }
+                break;
+            default:
+        }
+
+//        searchRequest.indices("bus_ele_total_realtime");
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -328,19 +353,15 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         // 添加范围查询
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < (name.length == 3 ? 3 : 1); i++) {
+        for (int i = 0; i < name.length; i++) {
             SearchRequest searchRequest;
-            if (indices.length == 2) {
-                searchRequest = new SearchRequest(indices[0], indices[1]);
-            } else {
-                searchRequest = new SearchRequest(indices[0]);
-            }
+            searchRequest = new SearchRequest(indices[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(timeAgo[i].format(formatter))
                     .to(now.format(formatter)));
             // 添加计数聚合
-            if (indices[0] == "bus_eq_total_day" || indices[0] == "bus_ele_total_realtime") {
+            if (indices[0].contains("bus")) {
                 searchSourceBuilder.aggregation(
                         AggregationBuilders.count("total_insertions").field("bus_id")
                 );
@@ -363,7 +384,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     @Override
     public Map<String, Object> getNewData() throws IOException {
         Map<String, Object> map = new HashMap<>();
-        String[] indices = new String[]{"bus_eq_total_day"};
+        String[] indices = new String[]{"bus_ele_total_realtime","bus_ele_total_realtime","bus_ele_total_realtime"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         try {
@@ -376,13 +397,13 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getOneDaySumData(String timeRangeType) throws IOException {
-        String[] indices = new String[]{"bus_ele_total_realtime"};
-        String[] name = new String[]{"total"};
+        String[] indices = new String[]{"bus_ele_total_realtime","bus_ele_line"};
+        String[] name = new String[]{"total", "line"};
         LocalDateTime[] timeAgo;
 
         switch (timeRangeType) {
             case "day":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
                 break;
             case "week":
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
@@ -643,6 +664,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public PageResult<Object> getBoxRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+        if (ObjectUtils.isEmpty(pageReqVO.getType())){
+            pageReqVO.setType("total");
+        }
         if (pageReqVO == null) {
             PageResult<Object> pageResult = new PageResult<>();
             pageResult.setTotal(new Long(0));
@@ -675,7 +699,48 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
-        searchRequest.indices("box_ele_total_realtime");
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        switch (pageReqVO.getType()) {
+            case "total":
+                // 搜索请求对象
+                searchRequest.indices("box_ele_total_realtime");
+                break;
+            case "line":
+                searchRequest.indices("box_ele_line");
+                if (pageReqVO.getLineId() != null) {
+                    Integer lineId = pageReqVO.getLineId();
+                    // 创建匹配查询
+                    QueryBuilder termQuery = QueryBuilders.termQuery("line_id", lineId);
+                    boolQuery.must(termQuery);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }
+                break;
+            case "loop":
+                searchRequest.indices("box_ele_loop");
+                if (pageReqVO.getLoopId() != null) {
+                    Integer loopId = pageReqVO.getLoopId();
+                    // 创建匹配查询
+                    QueryBuilder termQuery = QueryBuilders.termQuery("loop_id", loopId);
+                    boolQuery.must(termQuery);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }
+                break;
+            case "outlet":
+                searchRequest.indices("box_ele_outlet");
+                if (pageReqVO.getOutletId() != null) {
+                    Integer outletId = pageReqVO.getOutletId();
+                    // 创建匹配查询
+                    QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
+                    boolQuery.must(termQuery);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }
+                break;
+            default:
+        }
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -695,7 +760,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getBoxNewData() throws IOException {
-        String[] indices = new String[]{"box_eq_outlet_day", "box_eq_total_day"};
+        String[] indices = new String[]{"box_ele_total_realtime", "box_ele_total_realtime","box_ele_total_realtime"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
@@ -704,13 +769,13 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getBoxOneDaySumData(String timeRangeType) throws IOException {
-        String[] indices = new String[]{"box_ele_total_realtime"};
-        String[] name = new String[]{"total"};
+        String[] indices = new String[]{"box_ele_total_realtime","box_ele_line","box_ele_loop","box_ele_outlet"};
+        String[] name = new String[]{"total", "line", "loop", "outlet"};
         LocalDateTime[] timeAgo;
 
         switch (timeRangeType) {
             case "day":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
                 break;
             case "week":
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};

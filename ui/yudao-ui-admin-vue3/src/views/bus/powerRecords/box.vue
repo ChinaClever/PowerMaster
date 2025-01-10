@@ -17,13 +17,26 @@
         </div> -->
 
         <div class="descriptions-container" style="font-size: 14px;">
+          <div >
+            <span>插接箱近一天新增电能记录</span>
+          </div>
           <div class="description-item">
-            <span class="label">总电能 :</span>
+            <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
-          <div ><span>插接箱新增电能记录</span>
-           <div class="line" style="margin-top: 10px;"></div>
+          <div v-if="navLoopData"  class="description-item">
+            <span class="label">相电能 :</span>
+            <span class="value">{{ navLineData }}条</span>
           </div>
+          <div v-if="navLoopData" class="description-item">
+            <span class="label">回路电能 :</span>
+            <span class="value">{{ navLoopData }}条</span>
+          </div>
+          <div v-if="navOutletData" class="description-item">
+            <span class="label">输出位电能 :</span>
+            <span class="value">{{ navOutletData }}条</span>
+          </div>
+          <div class="line" style="margin-top: 10px;"></div>
         </div>
         
       </div>
@@ -116,6 +129,9 @@ defineOptions({ name: 'PowerRecords' });
 
 const navList = ref([]) as any; // 左侧导航栏树结构列表
 const navTotalData = ref(0);
+const navLineData = ref(0);
+const navLoopData = ref(0);
+const navOutletData = ref(0);
 const loading = ref(true);
 const message = useMessage(); // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
@@ -428,6 +444,9 @@ const getNavList = async() => {
 const getNavOneDayData = async(timeRangeType) => {
   const res = await EnergyConsumptionApi.getBoxNavOneDayData(timeRangeType.value)
   navTotalData.value = res.total
+  navLineData.value = res.line
+  navLoopData.value = res.loop
+  navOutletData.value = res.outlet
 }
 
 /** 搜索按钮操作 */

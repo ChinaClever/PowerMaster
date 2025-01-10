@@ -86,10 +86,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
@@ -1357,16 +1354,30 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             //获取昨日数据
             List<String> yesterdayData = getData(startTime, endTime, vo, "box_hda_total_hour");
 
-
+            LocalDate old = LocalDate.now().minusDays(1);
+            LocalDate now = LocalDate.now();
             List<BusActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
+
+            for (int i = 0; i < 24; i++) {
+                String oldDay = LocalDateTimeUtil.format(LocalDateTime.of(old, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
+                dto.setDateTime(oldDay);
+                dto.setActivePow("0");
+                yesterdayList.add(dto);
+                BusActivePowTrendDTO dto1 = new BusActivePowTrendDTO();
+                String nowDay = LocalDateTimeUtil.format(LocalDateTime.of(now, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                dto1.setDateTime(nowDay);
+                dto1.setActivePow("");
+                todayList.add(dto1);
+            }
+            Map<String, BusActivePowTrendDTO> yesMap = yesterdayList.stream().collect(Collectors.toMap(BusActivePowTrendDTO::getDateTime, x -> x));
             yesterdayData.forEach(str -> {
                 BoxTotalHourDo hourDo = JsonUtils.parseObject(str, BoxTotalHourDo.class);
-                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
-                dto.setActivePow(hourDo.getPowActiveAvgValue());
-                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                yesterdayList.add(dto);
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");// + TIME_STR
+                BusActivePowTrendDTO dto = yesMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getPowActiveAvgValue(),3)));
+
             });
 
 
@@ -1375,20 +1386,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
             log.info("startTime : " + startTime + "endTime：" + endTime);
             //获取今日数据
-            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
-
+            Map<String, BusActivePowTrendDTO> todayMap = todayList.stream().collect(Collectors.toMap(BusActivePowTrendDTO::getDateTime, x -> x));
             List<String> todayData = getData(startTime, endTime, vo, "box_hda_total_hour");
             todayData.forEach(str -> {
                 BoxTotalHourDo hourDo = JsonUtils.parseObject(str, BoxTotalHourDo.class);
-                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
-                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
-                if (Objects.isNull(dto)) {
-                    dto = new BusActivePowTrendDTO();
-                }
-                dto.setActivePow(hourDo.getPowActiveAvgValue());
-                dto.setDateTime(dateTime);
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
+                BusActivePowTrendDTO dto = todayMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getPowActiveAvgValue(),3)));
 //                log.info("dateTime : " + dateTime );
-                todayList.add(dto);
             });
 
             powDTO.setYesterdayList(yesterdayList);
@@ -1396,10 +1401,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             //获取峰值
             BusActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
             BusActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
-            powDTO.setTodayMax(todayMax.getActivePow());
+            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
             powDTO.setTodayMaxTime(todayMax.getDateTime());
             powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(yesterdayMax.getActivePow());
+            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
 
             return powDTO;
         } catch (Exception e) {
