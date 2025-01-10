@@ -10,12 +10,12 @@ export const HistoryDataApi = {
 
   // 查询母线始端箱历史数据分页
   getBusHistoryDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/history-data/bus-page`, params })
+    return await request.post({ url: `/bus/history-data/bus-page`, params })
   },
 
   // 查询母线插接箱历史数据分页
   getBoxHistoryDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/history-data/box-page`, params })
+    return await request.post({ url: `/bus/history-data/box-page`, params })
   },
   
   // 查询母线始端箱历史数据详情
@@ -30,12 +30,12 @@ export const HistoryDataApi = {
 
   // 导出母线插接箱历史数据 Excel
   exportBoxHistoryData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/history-data/box-export-excel`, params, ...axiosConfig })
+    return await request.downloadPost({ url: `/bus/history-data/box-export-excel`, params, ...axiosConfig })
   },
 
   // 导出母线始端箱历史数据 Excel
   exportBusHistoryData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/history-data/bus-export-excel`, params, ...axiosConfig })
+    return await request.downloadPost({ url: `/bus/history-data/bus-export-excel`, params, ...axiosConfig })
   },
 
   // 查询母线始端箱电力数据导航的新增记录数据显示
