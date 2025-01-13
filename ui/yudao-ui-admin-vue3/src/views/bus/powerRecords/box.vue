@@ -205,10 +205,10 @@ const shortcuts = [
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
 const getTypeMaxValue = async () => {
-    const data = await HistoryDataApi.getTypeMaxValue()
-    const lineIdMaxValue = data.line_id_max_value;
-    const loopIdMaxValue = data.loop_id_max_value;
-    const outletIdMaxValue = data.outlet_id_max_value;
+    // const data = await HistoryDataApi.getTypeMaxValue()
+    const lineIdMaxValue = 3;
+    const loopIdMaxValue = 9;
+    const outletIdMaxValue = 3;
     const typeSelectionValue  = [
     {
       value: "total",

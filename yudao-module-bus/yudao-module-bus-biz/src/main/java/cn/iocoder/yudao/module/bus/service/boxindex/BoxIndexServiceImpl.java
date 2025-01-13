@@ -1240,6 +1240,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     public Map getAvgBoxHdaLoopForm(BoxIndexPageReqVO pageReqVO) throws IOException {
         HashMap<String, Object> map = new HashMap<>();
         BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_BOX + boxIndex.getBoxKey());
         if (boxIndex != null) {
             String index;
             if (pageReqVO.getTimeType().equals(0)) {
@@ -1247,15 +1248,18 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else {
                 index = "box_hda_loop_day";
             }
+
             String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
             String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
             List<String> list = getEsStrings(index, start, end, boxIndex);
+            List<BusHdaLoopAvgResVO> dayList = new ArrayList<>();
             List<BusHdaLoopAvgResVO> dayList1 = new ArrayList<>();
             List<BusHdaLoopAvgResVO> dayList2 = new ArrayList<>();
             List<BusHdaLoopAvgResVO> dayList3 = new ArrayList<>();
             List<String> dateTimes = new ArrayList<>();
             for (String hit : list) {
                 BusHdaLoopAvgResVO houResVO = JsonUtils.parseObject(hit, BusHdaLoopAvgResVO.class);
+                dayList.add(houResVO);
                 switch (houResVO.getLineId()) {
                     case 1:
                         dayList1.add(houResVO);
@@ -1270,9 +1274,34 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
                 dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
             }
-            map.put("A", dayList1);
-            map.put("B", dayList2);
-            map.put("C", dayList3);
+
+//            List vol = new ArrayList();
+//            List cur = new ArrayList();
+            Map<Integer, List<BusHdaLoopAvgResVO>> collect = dayList.stream().collect(Collectors.groupingBy(BusHdaLoopAvgResVO::getLineId));
+            List list1 = new ArrayList();
+            JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
+            if (Objects.nonNull(jsonObject)) {
+                Integer loopNum = jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("loop_num");
+                for (Integer i = 1; i <= loopNum; i++) {
+                    VoHdaLoopResVO vo = new VoHdaLoopResVO();
+                    List<BusHdaLoopAvgResVO> busHdaLoopAvgResVOS = collect.get(i);
+                    List<BigDecimal> vols = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getVolAvgValue).collect(Collectors.toList());
+                    List<BigDecimal> curs = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getCurAvgValue).collect(Collectors.toList());
+                    vo.setLineId(i);
+                    vo.setVol(vols);
+                    vo.setCur(curs);
+//                    vol.add(vols);
+//                    cur.add(curs);
+                    list1.add(vo);
+                }
+
+            }
+//            map.put("A", dayList1);
+//            map.put("B", dayList2);
+//            map.put("C", dayList3);
+            map.put("loop" ,list1);
+//            map.put("vol",vol);
+//            map.put("cur",cur);
             map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         }
         return map;

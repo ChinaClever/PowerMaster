@@ -77,10 +77,13 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0);showPagination = 0;" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
+          <!-- <el-button @click="handleSwitchModal(0);showPagination = 0;" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
           <el-button @click="handleSwitchModal(1);showPagination = 0;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
-          
-          <el-button @click="handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
+          <el-button @click="handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button> -->
+
+                    <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0);switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1);switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;handleSwitchLogicRemoveModal(2,true);switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
           <!--  <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button> 
   --> 
          
@@ -201,13 +204,21 @@
           <button v-if="item.status !== 5" class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
-      <Pagination
+      <!-- <Pagination
         v-if="showPagination == 0"
         :total="queryParams.pageTotal"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getTableData(false)"
-      />
+      /> -->
+        <Pagination
+        v-show="showPagination == 0"
+        :total="total"
+        :page-size-arr="pageSizeArr"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getTableData(false)"
+        />       
       <template v-if="listPage.length == 0 && !switchValue">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
@@ -244,7 +255,9 @@ const deletedList = ref<any>([]) //已删除的
 const navList = ref([]) // 左侧导航列表数据
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
-
+const pageSizeArr = ref([24,36,48,96])
+const total = ref(0) // 列表的总页数
+const deletedTotal = ref(0) // 已删除PDU设备列表的总页数
 // 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
 const sumNoload = ref();
 const sumNormal = ref();
@@ -420,6 +433,7 @@ const getTableData = async(reset = false) => {
       })
       listPage.value = list
       queryParams.pageTotal = res.total
+      total.value = res.total
       //console.log('listPage', listPage.value)
       // console.log(res.runStatus);
     }
@@ -485,6 +499,7 @@ const handleSwitchLogicRemoveModal = async (value, reset = false) =>{
     deletedList.value = res.list;
     console.log('deletedList',deletedList.value)
     queryParams.pageTotal = res.total
+    deletedTotal.value = res.total;
 }
 
 //恢复设备

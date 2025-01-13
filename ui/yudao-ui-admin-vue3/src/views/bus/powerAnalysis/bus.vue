@@ -392,8 +392,8 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '位置：'+(list.value[item.dataIndex].location ? list.value[item.dataIndex].location : '未绑定设备')+ '  '
-  tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+item.seriesName + ': ' + formatEQ(item.value,1) + 'kWh <br/>'                 
-                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + ' 结束电能：'+formatEQ(list.value[item.dataIndex].end_ele,1) + 'kWh <br/>' 
+  tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+item.seriesName + ': ' + item.value + 'kWh <br/>'                 
+                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + ' 结束电能：'+formatEle(null, null,list.value[item.dataIndex].end_ele) + 'kWh <br/>' 
                     +item.marker + '开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) +'kWh <br/>'
   return tooltipContent;
 }

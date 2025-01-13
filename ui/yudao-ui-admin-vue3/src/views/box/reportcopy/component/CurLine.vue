@@ -43,6 +43,7 @@ const echartsOptions = computed(() => ({
       return result.trimEnd();
     }
   },
+  
   legend: {
     data: ['A电流', 'B电流', 'C电流'],
     selectedMode: 'multiple'
