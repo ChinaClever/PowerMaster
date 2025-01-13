@@ -67,7 +67,7 @@
             <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">额定容量:</span><span style="font-size:16px;">0KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">总现在功率:</span><span style="font-size:16px;">{{resultData?.powApparentTotal}}KVA</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">总视在功率:</span><span style="font-size:16px;">{{resultData?.powApparentTotal}}KVA</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">总有功功率:</span><span style="font-size:16px;">{{resultData?.powActiveTotal}}KVA</span>

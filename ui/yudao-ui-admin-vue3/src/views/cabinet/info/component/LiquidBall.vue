@@ -19,8 +19,9 @@ const props = defineProps({
     default: 60
   }
 })
-const color = ref('')
-const echartsOption = reactive<any>({})
+const color = ref('');
+const echartsOption = reactive<any>({});
+const dataValue = ref(props.precent);
 
 const judgeColor = () => {
   if (props.precent == 0) {
@@ -42,7 +43,7 @@ watch(() => props.precent,(val) => {
   echartsOption.series = [
     {
       type: 'liquidFill',
-      data: [props.precent/100], // 设置水球图的填充比例
+      data: [dataValue.value / 100], // 设置水球图的填充比例
       label: {
         fontSize: 12, // 设置字体大小
         fontWeight: 'bold', // 设置字体粗细
@@ -51,7 +52,7 @@ watch(() => props.precent,(val) => {
           if (params.data == 0) {
             return '未开通'
           } else {
-            return params.data * 100 + '%'
+            return props.precent + '%'
           }
         }
       },

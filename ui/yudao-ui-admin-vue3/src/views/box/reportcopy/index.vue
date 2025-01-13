@@ -220,13 +220,13 @@
             <div class="page-conTitle">
               回路电流曲线
             </div>
-            <CurLine class="adaptiveStyle" :list="curvolLoopList"/>
+            <LoopCurLine class="adaptiveStyle" :list="curvolLoopList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               回路电压曲线
             </div>
-            <VolLine class="adaptiveStyle" :list="curvolLoopList"/>
+            <LoopVolLine class="adaptiveStyle" :list="curvolLoopList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -287,15 +287,17 @@
 <script setup lang="ts">
 // import download from '@/utils/download'
 import * as echarts from 'echarts';
-import { ElTree } from 'element-plus'
-import { IndexApi } from '@/api/bus/boxindex'
-import type Node from 'element-plus/es/components/tree/src/model/node'
-import Line from './component/Line.vue'
-import PFLine from './component/PFLine.vue'
-import CurLine from './component/CurLine.vue'
-import VolLine from './component/VolLine.vue'
-import Bar from './component/Bar.vue'
-import EnvTemLine from './component/EnvTemLine.vue'
+import { ElTree } from 'element-plus';
+import { IndexApi } from '@/api/bus/boxindex';
+import type Node from 'element-plus/es/components/tree/src/model/node';
+import Line from './component/Line.vue';
+import PFLine from './component/PFLine.vue';
+import CurLine from './component/CurLine.vue';
+import VolLine from './component/VolLine.vue';
+import Bar from './component/Bar.vue';
+import EnvTemLine from './component/EnvTemLine.vue';
+import LoopCurLine from './component/LoopCurLine.vue';
+import LoopVolLine from './component/LoopVolLine.vue';
 
 
 /** PDU设备 列表 */
@@ -778,7 +780,7 @@ const getList = async () => {
   console.log('curvolList',curvolList.value)
 
   curvolLoopList.value = await IndexApi.getAvgBoxHdaLoopForm(queryParams);
-  console.log('curvolList',curvolLoopList.value)
+  console.log('curvolLoopList',curvolLoopList.value)
 
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;

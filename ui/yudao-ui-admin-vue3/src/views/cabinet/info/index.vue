@@ -148,7 +148,8 @@
         </el-table-column>
         <el-table-column label="状态" min-width="110" align="center">
             <template #default="scope">
-                 <div>{{ scope.row.pduBox === 0 ? 'PDU' : '母线' }}</div>
+                <div>{{ scope.row.pduBox === 0 ? 'PDU' : '母线' }}</div>
+                <!--<div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>-->
             </template>
         </el-table-column>
         
@@ -183,21 +184,21 @@
           <div class="content">
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
             <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
-            <div class="info">
+            <div v-if="item.status !== 5" class="info">
               <div>视在功率：{{item.apparentTotal}}KVA</div>
               <div>有功功率：{{item.activeTotal}}KW</div>
               <div>功率因素：{{item.powerFactorTotal}}</div>
               <!-- 负载率： -->
             </div>
           </div>
-          <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
+          <div class="room">{{item.roomName}}-{{item.cabinetName}}-{{item.cabinet_key}}</div>
           <div v-if="item.status == 0" class="status-empty">空载</div>
-          <div v-if="item.status == 1" class="status-normal">正常</div>
-          <div v-if="item.status == 2" class="status-warn">预警</div>
-          <div v-if="item.status == 3" class="status-error">告警</div>
-          <div v-if="item.status == 4" class="status-unbound">未绑定</div>
-          <div v-if="item.status == 5" class="status-offline">离线</div>
-          <button class="detail" @click.prevent="toMachineDetail(item)">详情</button>
+          <div v-else-if="item.status == 1" class="status-normal">正常</div>
+          <div v-else-if="item.status == 2" class="status-warn">预警</div>
+          <div v-else-if="item.status == 3" class="status-error">告警</div>
+          <div v-else-if="item.status == 4" class="status-unbound">未绑定</div>
+          <div v-else-if="item.status == 5" class="status-offline">离线</div>
+          <button v-if="item.status !== 5" class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
       <Pagination
@@ -388,7 +389,7 @@ const getTableData = async(reset = false) => {
       runStatus: queryParams.runStatus,
       company: queryParams.company
     })
-    console.log('res',res)
+    console.log('res.list',res.list);
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -482,6 +483,7 @@ const handleSwitchLogicRemoveModal = async (value, reset = false) =>{
       pageSize: queryParams.pageSize,
     })
     deletedList.value = res.list;
+    console.log('deletedList',deletedList.value)
     queryParams.pageTotal = res.total
 }
 
@@ -529,14 +531,8 @@ const toggleAllStatus = () => {
   getTableData();
 }
 
-
-
-
-
 // 跳转详情页
 const toMachineDetail = (key) => {
-  console.log('key',key.cabinet_key.split('-')[0]);
-  console.log('key',key.cabinet_key.split('-')[1]);
   console.log('key',key);
   const devKey = '172.16.101.2-1';
   const busId = 6;
