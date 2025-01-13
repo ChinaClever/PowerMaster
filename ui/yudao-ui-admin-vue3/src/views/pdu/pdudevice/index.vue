@@ -336,11 +336,11 @@ import { get } from 'http';
 defineOptions({ name: 'PDUDevice' });
 
 const { push } = useRouter();
-const navList = ref([]) as any // 左侧导航栏树结构列表
+const navList = ref([]) as any; // 左侧导航栏树结构列表
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48,96])
-const switchValue = ref(0)
+const pageSizeArr = ref([24,36,48,96]);
+const switchValue = ref(0);
 const showPagination = ref(0);
 
 const butColor = ref(0);

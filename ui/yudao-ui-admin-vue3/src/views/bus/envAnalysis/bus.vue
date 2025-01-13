@@ -1134,8 +1134,9 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
-  navList.value = res
+  const res = await IndexApi.getBusMenu();
+  navList.value = res;
+  console.log('navList.value',navList.value);
 }
 
 /** 搜索按钮操作 */
@@ -1148,11 +1149,12 @@ const handleQuery = () => {
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  let queryBusId = useRoute().query.busId as string | undefined;
+  //let queryBusId = useRoute().query.busId as string | undefined;
   let queryDevKey = useRoute().query.devKey as string;
   let queryLocation = useRoute().query.location as string;
-  queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
-  if (queryParams.busId != undefined){
+  //queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
+  queryParams.devkey = queryDevKey;
+  if (queryParams.devkey != undefined){
     await getList();
     console.log(queryLocation)
     if (queryLocation) {

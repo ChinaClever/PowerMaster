@@ -1086,11 +1086,12 @@ const handleQuery = () => {
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  let queryBoxId = useRoute().query.boxId as string | undefined;
+  //let queryBoxId = useRoute().query.boxId as string | undefined;
   let queryDevKey = useRoute().query.devKey as string;
   let queryLocation = useRoute().query.location as string;
-  queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
-  if (queryParams.boxId != undefined){
+  //queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
+  queryParams.devkey = queryDevKey;
+  if (queryParams.devkey != undefined){
     await getList();
     if (queryLocation == null) {
       nowAddress.value = '';

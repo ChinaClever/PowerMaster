@@ -151,8 +151,7 @@
         </el-table-column>
         <el-table-column label="状态" min-width="110" align="center">
             <template #default="scope">
-                <div>{{ scope.row.pduBox === 0 ? 'PDU' : '母线' }}</div>
-                <!--<div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>-->
+                <div :style="{color: statusList[scope.row.runStatus].color}">{{statusList[scope.row.runStatus] && statusList[scope.row.runStatus].name}}</div>
             </template>
         </el-table-column>
         
@@ -178,6 +177,7 @@
       <Pagination
         v-if="showPagination == 1"
         :total="queryParams.pageTotal"
+        :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="handleSwitchLogicRemoveModal(2,false)"
@@ -204,25 +204,17 @@
           <button v-if="item.status !== 5" class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
-      <!-- <Pagination
+      <Pagination
         v-if="showPagination == 0"
         :total="queryParams.pageTotal"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getTableData(false)"
-      /> -->
-        <Pagination
-        v-show="showPagination == 0"
-        :total="total"
-        :page-size-arr="pageSizeArr"
-        v-model:page="queryParams.pageNo"
-        v-model:limit="queryParams.pageSize"
-        @pagination="getTableData(false)"
-        />       
+      />
       <template v-if="listPage.length == 0 && !switchValue">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
-      <!-- <div v-if="listPage.length == 0 && !switchValue" style="display:flex;"> -->
+      <div v-if="listPage.length == 0 && !switchValue" style="display:flex;">
         
       <!-- </div> -->
     </template>
@@ -233,17 +225,17 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import MachineForm from './component/MachineForm.vue'
-import LiquidBall from './component/LiquidBall.vue'
-import { CabinetApi } from '@/api/cabinet/info'
+import MachineForm from './component/MachineForm.vue';
+import LiquidBall from './component/LiquidBall.vue';
+import { CabinetApi } from '@/api/cabinet/info';
 import { Console } from 'console';
 // import MyButton from '@/components/MyButton/MyButton.vue';
 
-const { push } = useRouter() // 路由跳转
-const message = useMessage() // 消息弹窗
-const machineForm = ref() // 机柜表单组件
-const colNode = ref() // 展示列组件
-const loading = ref(false)
+const { push } = useRouter(); // 路由跳转
+const message = useMessage(); // 消息弹窗
+const machineForm = ref(); // 机柜表单组件
+const colNode = ref(); // 展示列组件
+const loading = ref(false);
 const butColor = ref(0);
 const onclickColor = ref(-1);
 // const isCloseNav = ref(false) // 左侧导航是否收起
@@ -431,9 +423,9 @@ const getTableData = async(reset = false) => {
         }
         return tableItem
       })
-      listPage.value = list
-      queryParams.pageTotal = res.total
-      total.value = res.total
+      listPage.value = list;
+      console.log('res.total',res.total);
+      queryParams.pageTotal = res.total;
       //console.log('listPage', listPage.value)
       // console.log(res.runStatus);
     }
@@ -616,7 +608,6 @@ const cascaderChange = (_row) => {
 onBeforeMount(() => {
   getNavList();
   getTableData(false);
-
 })
 
 </script>
