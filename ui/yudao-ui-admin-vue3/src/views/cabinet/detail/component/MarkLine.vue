@@ -65,17 +65,17 @@ const echartsOption = reactive({
   },
   series: [
     {
-      name: 'Factor A',
+      name: 'A路负载率',
       type: 'line', // 或 'bar' 等其他类型，根据您的需求选择
       data: factorA
     },
     {
-      name: 'Factor B',
+      name: 'B路负载率',
       type: 'line', // 同上
       data: factorB
     },
     {
-      name: 'Factor Total',
+      name: '总负载率',
       type: 'line', // 同上
       data: factorTotal
     }

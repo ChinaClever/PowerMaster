@@ -77,10 +77,9 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0);showPagination = 0;" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1);showPagination = 0;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
-          
-          <el-button @click="handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0);showPagination = 0;" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1);showPagination = 0;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
           <!--  <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button> 
   --> 
          
@@ -148,8 +147,7 @@
         </el-table-column>
         <el-table-column label="状态" min-width="110" align="center">
             <template #default="scope">
-                <div>{{ scope.row.pduBox === 0 ? 'PDU' : '母线' }}</div>
-                <!--<div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>-->
+                <div :style="{color: statusList[scope.row.runStatus].color}">{{statusList[scope.row.runStatus] && statusList[scope.row.runStatus].name}}</div>
             </template>
         </el-table-column>
         
@@ -175,6 +173,7 @@
       <Pagination
         v-if="showPagination == 1"
         :total="queryParams.pageTotal"
+        :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="handleSwitchLogicRemoveModal(2,false)"
@@ -204,6 +203,7 @@
       <Pagination
         v-if="showPagination == 0"
         :total="queryParams.pageTotal"
+        :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getTableData(false)"
@@ -222,28 +222,29 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import MachineForm from './component/MachineForm.vue'
-import LiquidBall from './component/LiquidBall.vue'
-import { CabinetApi } from '@/api/cabinet/info'
+import MachineForm from './component/MachineForm.vue';
+import LiquidBall from './component/LiquidBall.vue';
+import { CabinetApi } from '@/api/cabinet/info';
 import { Console } from 'console';
 // import MyButton from '@/components/MyButton/MyButton.vue';
 
-const { push } = useRouter() // 路由跳转
-const message = useMessage() // 消息弹窗
-const machineForm = ref() // 机柜表单组件
-const colNode = ref() // 展示列组件
-const loading = ref(false)
+const { push } = useRouter(); // 路由跳转
+const message = useMessage(); // 消息弹窗
+const machineForm = ref(); // 机柜表单组件
+const colNode = ref(); // 展示列组件
+const loading = ref(false);
 const butColor = ref(0);
 const onclickColor = ref(-1);
 // const isCloseNav = ref(false) // 左侧导航是否收起
-const isFirst = ref(true) // 是否第一次调用getTableData函数
-const switchValue = ref(0) // 0:阵列 1：表格
-const showPagination = ref(0)
-const listPage = ref<any>([]) // 表格数据
-const deletedList = ref<any>([]) //已删除的
-const navList = ref([]) // 左侧导航列表数据
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
+const isFirst = ref(true); // 是否第一次调用getTableData函数
+const switchValue = ref(0); // 0:阵列 1：表格
+const showPagination = ref(0);
+const listPage = ref<any>([]); // 表格数据
+const deletedList = ref<any>([]); //已删除的
+const navList = ref([]); // 左侧导航列表数据
+const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
+const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16]);
+const pageSizeArr = ref([24,36,48,96]);
 
 // 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
 const sumNoload = ref();
@@ -418,8 +419,9 @@ const getTableData = async(reset = false) => {
         }
         return tableItem
       })
-      listPage.value = list
-      queryParams.pageTotal = res.total
+      listPage.value = list;
+      console.log('res.total',res.total);
+      queryParams.pageTotal = res.total;
       //console.log('listPage', listPage.value)
       // console.log(res.runStatus);
     }
@@ -601,7 +603,6 @@ const cascaderChange = (_row) => {
 onBeforeMount(() => {
   getNavList();
   getTableData(false);
-
 })
 
 </script>

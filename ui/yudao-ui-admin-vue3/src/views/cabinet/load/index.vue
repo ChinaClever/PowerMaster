@@ -72,9 +72,9 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />视在功率</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />有功功率</el-button>
-          <el-button @click="handleSwitchModal(2)" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />视在功率</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />有功功率</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(2)" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -123,6 +123,7 @@
         :total="queryParams.pageTotal"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
+        :page-size-arr="pageSizeArr"
         @pagination="getTableData(false)"
       />
       <template v-if="listPage.length == 0 && switchValue != 2 && !loading">
@@ -133,25 +134,26 @@
 </template>
 
 <script lang="ts" setup>
-import { EChartsOption } from 'echarts'
-import 'echarts-liquidfill'
-import { CabinetApi } from '@/api/cabinet/info'
-import LiquidBall from './compoent/LiquidBall.vue'
+import { EChartsOption } from 'echarts';
+import 'echarts-liquidfill';
+import { CabinetApi } from '@/api/cabinet/info';
+import LiquidBall from './compoent/LiquidBall.vue';
 
-const { push } = useRouter()
-const loading = ref(false)
-const isFirst = ref(true) // 是否第一次调用getTableData函数
-const navList = ref([])
-const Loadstatus = ref([0,0,0,0,0])
-const switchValue = ref(0)
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-const listPage = ref<any>([]) // 表格数据
+const { push } = useRouter();
+const loading = ref(false);
+const isFirst = ref(true); // 是否第一次调用getTableData函数
+const navList = ref([]);
+const Loadstatus = ref([0,0,0,0,0]);
+const switchValue = ref(0);
+const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
+const listPage = ref<any>([]); // 表格数据
+const pageSizeArr = ref([24,36,48,96]);
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-})
+});
 function formatApparentPower(row, column, cellValue ) {
   // console.log('测试',row+'-'+column+'-'+cellValue+'-'+num)
   // 假设保留两位小数
@@ -243,8 +245,8 @@ const getTableData = async(reset = false) => {
       company: queryParams.company
     })
     console.log('res', res)
-      listPage.value = res.list
-      queryParams.pageTotal = res.total
+      listPage.value = res.list;
+      queryParams.pageTotal = res.total;
       console.log('listPage', listPage.value)
   } finally {
     loading.value = false
