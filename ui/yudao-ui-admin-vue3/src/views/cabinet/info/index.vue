@@ -214,7 +214,7 @@
       <template v-if="listPage.length == 0 && !switchValue">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
-      <div v-if="listPage.length == 0 && !switchValue" style="display:flex;">
+      <!--<div v-if="listPage.length == 0 && !switchValue" style="display:flex;">-->
         
       <!-- </div> -->
     </template>
