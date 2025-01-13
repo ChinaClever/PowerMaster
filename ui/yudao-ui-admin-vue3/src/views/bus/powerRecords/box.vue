@@ -17,13 +17,26 @@
         </div> -->
 
         <div class="descriptions-container" style="font-size: 14px;">
+          <div >
+            <span>插接箱近一天新增电能记录</span>
+          </div>
           <div class="description-item">
-            <span class="label">总电能 :</span>
+            <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
-          <div ><span>插接箱新增电能记录</span>
-           <div class="line" style="margin-top: 10px;"></div>
+          <div v-if="navLoopData"  class="description-item">
+            <span class="label">相电能 :</span>
+            <span class="value">{{ navLineData }}条</span>
           </div>
+          <div v-if="navLoopData" class="description-item">
+            <span class="label">回路电能 :</span>
+            <span class="value">{{ navLoopData }}条</span>
+          </div>
+          <div v-if="navOutletData" class="description-item">
+            <span class="label">输出位电能 :</span>
+            <span class="value">{{ navOutletData }}条</span>
+          </div>
+          <div class="line" style="margin-top: 10px;"></div>
         </div>
         
       </div>
@@ -36,6 +49,19 @@
         :inline="true"
         label-width="auto"
       >
+
+      <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="typeDefaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-140px"
+        />
+      </el-form-item>
+      
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
@@ -92,32 +118,41 @@
 </template>
 
 <script setup lang="ts">
-import dayjs from 'dayjs'
-import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
-import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
-import { IndexApi } from '@/api/bus/busindex'
+import dayjs from 'dayjs';
+import download from '@/utils/download';
+import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption';
+import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime';
+import { IndexApi } from '@/api/bus/busindex';
+import { HistoryDataApi } from '@/api/pdu/historydata';
 // import PDUImage from '@/assets/imgs/PDU.jpg';
-defineOptions({ name: 'PowerRecords' })
+defineOptions({ name: 'PowerRecords' });
 
-const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
-const loading = ref(true)
-const message = useMessage() // 消息弹窗
+const navList = ref([]) as any; // 左侧导航栏树结构列表
+const navTotalData = ref(0);
+const navLineData = ref(0);
+const navLoopData = ref(0);
+const navOutletData = ref(0);
+const loading = ref(true);
+const message = useMessage(); // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
-const total = ref(0)
-const timeRangeType = ref('day')
-const realTotel = ref(0) // 数据的真实总条数
+const total = ref(0);
+const timeRangeType = ref('day');
+const realTotel = ref(0); // 数据的真实总条数
 const selectTimeRange = ref<Date[] | undefined>(undefined);
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   timeRange: undefined as string[] | undefined as any,
   devkeys: [],
+  lineId: undefined,
+  loopId: undefined,
+  outletId: undefined,
+  type: 'total',
+  ipArray: [],
 })
-const pageSizeArr = ref([15,30,50,100])
-const queryFormRef = ref()
-const exportLoading = ref(false)
+const pageSizeArr = ref([15,30,50,100]);
+const queryFormRef = ref();
+const exportLoading = ref(false);
 // const carouselItems = ref([
 //       { imgUrl: PDUImage},
 //       { imgUrl: PDUImage},
@@ -167,6 +202,125 @@ const shortcuts = [
     },
   },
 ];
+
+// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
+const getTypeMaxValue = async () => {
+    const data = await HistoryDataApi.getTypeMaxValue()
+    const lineIdMaxValue = data.line_id_max_value;
+    const loopIdMaxValue = data.loop_id_max_value;
+    const outletIdMaxValue = data.outlet_id_max_value;
+    const typeSelectionValue  = [
+    {
+      value: "total",
+      label: '总'
+    },
+    {
+      value: "line",
+      label: '相',
+      children: (() => {
+        const lines: { value: any; label: string; }[] = [];
+        lines.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= lineIdMaxValue; i++) {
+          lines.push({ value: `${i}`, label: `L${i}` });
+        }
+        return lines;
+      })(),
+    },
+    {
+      value: "loop",
+      label: '回路',
+      children: (() => {
+        const loops: { value: any; label: string; }[] = [];
+        loops.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= loopIdMaxValue; i++) {
+          loops.push({ value: `${i}`, label: `C${i}` });
+        }
+        return loops;
+      })(),
+    },
+    {
+      value: "outlet",
+      label: '输出位',
+      children: (() => {
+        const outlets: { value: any; label: string; }[] = [];
+        outlets.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= outletIdMaxValue; i++) {
+          outlets.push({ value: `${i}`, label: `${i}` });
+        }
+        return outlets;
+      })(),
+    },
+  ]
+  typeSelection.value = typeSelectionValue;
+}
+
+// 格式化相id
+function formatLineId(_row: any, _column: any, cellValue: number): string {
+   return 'L'+cellValue;
+}
+
+// 格式化回路id
+function formatLoopId(_row: any, _column: any, cellValue: number): string {
+   return 'C'+cellValue;
+}
+
+// 总/输出位筛选
+const typeDefaultSelected = ref(['total'])
+const typeSelection = ref([]) as any;
+const typeCascaderChange = (selected) => {
+  queryParams.type = selected[0];
+  switch(selected[0]){
+    case 'line':
+      tableColumns.value = [
+        { label: '所在位置', align: 'center', prop: 'locations' , istrue:true},
+        { label: '网络地址', align: 'center', prop: 'dev_key' , istrue:true},
+        { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+      ]
+      queryParams.lineId = selected[1];
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+    case 'loop':
+      tableColumns.value = [
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '网络地址', align: 'center', prop: 'dev_key' , istrue:true},
+        { label: '回路', align: 'center', prop: 'loop_id' , istrue:true, formatter: formatLoopId},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+      ]
+      queryParams.loopId = selected[1];
+      queryParams.lineId = undefined;
+      queryParams.outletId = undefined;
+      break;
+    case 'outlet':
+      tableColumns.value = [
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '网络地址', align: 'center', prop: 'dev_key' , istrue:true},
+        { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+      ]
+      queryParams.outletId = selected[1];
+      queryParams.loopId = undefined;
+      queryParams.lineId = undefined;
+      break;
+    case 'total':
+      tableColumns.value = [
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '网络地址', align: 'center', prop: 'dev_key' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+      ]
+      queryParams.lineId = undefined;
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+  }
+  // 自动搜索
+  handleQuery();
+}
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
@@ -290,6 +444,9 @@ const getNavList = async() => {
 const getNavOneDayData = async(timeRangeType) => {
   const res = await EnergyConsumptionApi.getBoxNavOneDayData(timeRangeType.value)
   navTotalData.value = res.total
+  navLineData.value = res.line
+  navLoopData.value = res.loop
+  navOutletData.value = res.outlet
 }
 
 /** 搜索按钮操作 */
@@ -308,6 +465,7 @@ onMounted(() => {
   const startStr = formatDate(startOfMonth);
   const endStr = formatDate(now);
   selectTimeRange.value = [startStr, endStr];
+  getTypeMaxValue();
   getList();
 })
 

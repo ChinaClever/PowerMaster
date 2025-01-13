@@ -82,7 +82,25 @@
             @change="handleDayPick"
             class="!w-200px"
           />
-        <el-form-item style="margin-left: 10px;" v-show="showSearchBtn">
+        <el-form-item label="网络地址" prop="devKey">
+          <el-autocomplete
+            v-model="queryParams.devKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
+          />
+          <el-form-item style="margin-left: 10px">
+            <el-button @click="handleQuery"
+              ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button
+            >
+            <el-button @click="resetQuery"
+              ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button
+            >
+          </el-form-item>
+        </el-form-item>
+        <!-- <el-form-item style="margin-left: 10px;" v-show="showSearchBtn">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -102,7 +120,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item>          
+        </el-form-item>           -->
         </el-form-item>
         <div style="float:right">
           <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
@@ -401,6 +419,31 @@ const statusList = reactive([
   },
 ])
 
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
+
 const handleClick = (row) => {
   console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
@@ -630,9 +673,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
-  queryParams.status = [];
+  queryParams.devKey = undefined;
   handleQuery()
 }
 
@@ -678,7 +719,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async() => {
+    devKeyList.value = await loadAll();
   getList()
   getNavList();
   getListAll();

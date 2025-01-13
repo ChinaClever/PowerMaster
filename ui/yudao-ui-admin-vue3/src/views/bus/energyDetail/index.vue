@@ -314,7 +314,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList?.map(item => item?.activePow.toFixed(3))
+        data: res.yesterdayList?.map(item => item?.activePow)
       },
       {
         name: '当日',
@@ -330,7 +330,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: '当日有功功率平均值线' }]
         },
-        data: res.todayList?.map(item => item?.activePow.toFixed(3))
+        data: res.todayList?.map(item => item?.activePow)
       }
     ]
   }

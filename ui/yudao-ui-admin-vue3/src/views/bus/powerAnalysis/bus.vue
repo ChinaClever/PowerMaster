@@ -398,8 +398,8 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '位置：'+(list.value[item.dataIndex].location ? list.value[item.dataIndex].location : '未绑定设备')+ '  '
-  tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+item.seriesName + ': ' + item.value + 'kWh <br/>'                 
-                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + ' 结束电能：'+list.value[item.dataIndex].end_ele + 'kWh <br/>' 
+  tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+item.seriesName + ': ' + formatEQ(item.value,1) + 'kWh <br/>'                 
+                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + ' 结束电能：'+formatEQ(list.value[item.dataIndex].end_ele,1) + 'kWh <br/>' 
                     +item.marker + '开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) +'kWh <br/>'
   return tooltipContent;
 }
@@ -495,42 +495,43 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
-  navList.value = res
+  const res = await IndexApi.getBusMenu();
+  console.log('接口获取机房导航列表',res);
+  navList.value = res;
 }
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await EnergyConsumptionApi.getNavNewData({})
-  lastDayTotalData.value = res.day
-  lastWeekTotalData.value = res.week
-  lastMonthTotalData.value = res.month
+  const res = await EnergyConsumptionApi.getNavNewData({});
+  lastDayTotalData.value = res.day;
+  lastWeekTotalData.value = res.week;
+  lastMonthTotalData.value = res.month;
 }
 
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    queryParams.pageNo = 1
-    exportLoading.value = true
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '始端箱能耗趋势.xlsx')
+    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig);
+    await download.excel(data, '始端箱能耗趋势.xlsx');
   } catch (error) {
     // 处理异常
-    console.error('导出失败：', error)
+    console.error('导出失败：', error);
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
-const start = ref('')
-const end = ref('')
-const devKey =  ref('')
+const start = ref('');
+const end = ref('');
+const devKey =  ref('');
 /** 详情操作*/
 const toDetails = (busId: number,location: string, devKey: string) => {
   push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location+'&devKey='+devKey);
@@ -538,8 +539,8 @@ const toDetails = (busId: number,location: string, devKey: string) => {
 
 /** 初始化 **/
 onMounted(() => {
-  getNavList()
-  getNavNewData()
+  getNavList();
+  getNavNewData();
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   devKey.value = useRoute().query.devKey as string;

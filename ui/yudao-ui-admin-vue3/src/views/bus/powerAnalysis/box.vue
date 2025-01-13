@@ -341,11 +341,11 @@ const getList = async () => {
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getBoxEQDataPage(queryParams)
-    //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    eqData.value = data.list.map((item) => {
-        const difference = item.end_ele - item.start_ele;
-        return difference < 0 ? item.end_ele : formatEQ(difference, 1);
-    });
+    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    // eqData.value = data.list.map((item) => {
+    //     const difference = item.end_ele - item.start_ele;
+    //     return difference < 0 ? item.end_ele : formatEQ(difference, 1);
+    // });
     
     list.value = data.list
     realTotel.value = data.total
@@ -392,8 +392,8 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '所在位置：'+(list.value[item.dataIndex].location ? list.value[item.dataIndex].location : '未绑定设备')+ '  '
-  tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+ item.seriesName + ': ' + item.value + 'kWh <br/>'                 
-                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+list.value[item.dataIndex].end_ele + 'kWh <br/>' 
+  tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+ item.seriesName + ': ' + formatEQ(item.value,1) + 'kWh <br/>'                 
+                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+formatEQ(list.value[item.dataIndex].end_ele,1) + 'kWh <br/>' 
                     +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) +' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh <br/>'
   return tooltipContent;
 }

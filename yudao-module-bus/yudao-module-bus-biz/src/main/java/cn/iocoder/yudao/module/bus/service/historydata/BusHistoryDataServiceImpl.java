@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -64,7 +65,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public String[] getBusIdsbyBusDevkeys(String[] devkeys) {
         LambdaQueryWrapper<BusIndexDO> queryWrapper = Wrappers.lambdaQuery();
-        queryWrapper.in(BusIndexDO::getBusKey, devkeys);
+        queryWrapper.in(ObjectUtils.isNotEmpty(devkeys),BusIndexDO::getBusKey, devkeys);
         List<BusIndexDO> list = busIndexMapper.selectList(queryWrapper);
         String[] busIds = new String[list.size()]; // 使用 list 的大小来初始化数组
         for (int i = 0; i < list.size(); i++) {
@@ -77,7 +78,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public String[] getBoxIdsbyBoxDevkeys(String[] devkeys) {
         LambdaQueryWrapper<BoxIndex> queryWrapper = Wrappers.lambdaQuery();
-        queryWrapper.in(BoxIndex::getBoxKey, devkeys);
+        queryWrapper.in(ObjectUtils.isNotEmpty(devkeys),BoxIndex::getBoxKey, devkeys);
         List<BoxIndex> list = boxIndexMapper.selectList(queryWrapper);
         String[] boxIds = new String[list.size()];
         for (int i = 0; i < list.size(); i++) {
@@ -146,7 +147,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     List<BoxResBase> boxResBaseList = new ArrayList<>();
                     BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
                     boxResBase.setBoxId((Integer) boxId);
-
+                    boxResBase.setBoxName(boxIndex.getBoxName());
                     boxResBase.setDevKey(boxIndex.getBoxKey());
                     boxResBaseList.add(boxResBase);// 将对象添加到列表中
                     try {

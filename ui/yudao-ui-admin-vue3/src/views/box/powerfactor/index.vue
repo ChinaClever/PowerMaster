@@ -283,13 +283,11 @@
 
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status" >
             <div class="status">
               <el-tag v-if="item.status === 1" type="success">正常</el-tag>
               <el-tag v-else-if="item.status === 0" type="info">离线</el-tag>
-              <el-tag v-else-if="item.status === 2">告警</el-tag>
+              <el-tag v-else-if="item.status === 2" type="danger">告警</el-tag>
             </div>
-          </div>
           <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 0">详情</button>
         </div>
         </template>
@@ -411,14 +409,16 @@ const statusList = reactive([
     selected: true,
     value: 1,
     cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
     name: '告警',
     selected: true,
     value: 2,
     cssClass: 'btn_error',
-    activeClass: 'btn_error error'
+    activeClass: 'btn_error error',
+    color: '#fa3333'
   }
 ])
 
@@ -1436,7 +1436,6 @@ onActivated(() => {
 }
 
 :deep(.el-tag){
-  margin-top: -15px;
-  margin-right:-130px;
+ margin-right:-60px;
 }
 </style>

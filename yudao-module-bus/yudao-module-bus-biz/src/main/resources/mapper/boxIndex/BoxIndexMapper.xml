@@ -60,7 +60,7 @@
         select
         t1.id as id,
         t1.box_key as `unique`,
-        t1.box_name as `name`,
+        concat(t1.box_key,'-',t1.box_name) as `name`,
         '7' as type,
         '6' as parentType
         from box_index t1

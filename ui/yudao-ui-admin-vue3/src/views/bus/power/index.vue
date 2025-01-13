@@ -77,7 +77,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item>         
+        </el-form-item>
         </el-form-item >
       </el-form-item>
         <div style="float:right;margin-top: 1.5px;">
@@ -96,7 +96,7 @@
         :model="queryDeletedPageParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"     
+        label-width="68px"
         v-show="switchValue == 4"        
       >
         <el-form-item label="网络地址" prop="devKey">

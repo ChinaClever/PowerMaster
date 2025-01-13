@@ -7,7 +7,7 @@
         </template>
       </el-input>
     </div>
-    <div class="head-container">
+    <div class="tree-container" style="margin-left:-20px;height:500px;width:calc(100% + 40px); /* 增加宽度以适应滚动条 */ overflow-x: auto; white-space: nowrap;">
       <el-tree
         ref="treeRef"
         :data="dataList"
@@ -20,17 +20,20 @@
         node-key="unique"
         :default-checked-keys="checkKeys"
         @node-click="handleNodeClick"
-        @check="handleCheckedNodes" />
+        @check="handleCheckedNodes"
+        style="min-width: 200px; /* 根据你的内容设置最小宽度 */ display: inline-block; white-space: nowrap;">
+        <!-- 注意：这里的 style 属性是直接在 el-tree 上设置的，用于确保树组件本身不换行 -->
+      </el-tree>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ElTree } from 'element-plus'
-import * as DeptApi from '@/api/system/dept'
-import { defineProps } from 'vue'
-import type Node from 'element-plus/es/components/tree/src/model/node'
-import { string } from 'vue-types'
+import { ElTree } from 'element-plus';
+import * as DeptApi from '@/api/system/dept';
+import { defineProps } from 'vue';
+import type Node from 'element-plus/es/components/tree/src/model/node';
+import { string } from 'vue-types';
 
 const emits = defineEmits(['node-click', 'check'])
 const props = defineProps({
@@ -76,23 +79,9 @@ const initCheck = (keys) => {
 
 /** 基于名字过滤 */
 const filterNode = (value:string, data) => {
-//   if (!value) return true
-// console.log('测试1', data)
-//   return data.name.includes(value) || data.unique.includes(value);
-if (!value) return true;
+  if (!value) return true
 
-  // 确保 data 是一个对象
-  if (typeof data !== 'object' || data === null) {
-    console.error('Invalid data object');
-    return false;
-  }
-    console.log('测试1', data);
-
-  // 确保 name 和 unique 属性存在且为字符串
-  const name = typeof data.name === 'string' ? data.name : '';
-  const unique = typeof data.unique === 'string' ? data.unique : '';
-
-  return name.includes(value) || unique.includes(value);
+  return data.name.includes(value) || data.unique.includes(value);
 }
 
 /** 处理部门被点击 */

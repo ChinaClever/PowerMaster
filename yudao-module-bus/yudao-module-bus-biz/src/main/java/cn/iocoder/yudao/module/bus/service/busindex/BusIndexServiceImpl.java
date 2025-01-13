@@ -87,10 +87,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
@@ -1508,7 +1505,12 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO) {
         try {
-            List<BusIndexDO> searchList = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>().inIfPresent(BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()));
+            LambdaQueryWrapper<BusIndexDO> queryWrapper = new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,0);
+            if (ObjectUtils.isNotEmpty(pageReqVO.getDevKey()) || ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList())){
+                queryWrapper.and(wq ->wq.in(ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList()),BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()).or()
+                        .eq(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BusIndexDO::getBusKey, pageReqVO.getDevKey()));
+            }
+            List<BusIndexDO> searchList = busIndexMapper.selectList(queryWrapper);
 
             if (CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);
@@ -2201,53 +2203,57 @@ public class BusIndexServiceImpl implements BusIndexService {
             String startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
             String endTime = DateUtil.formatDateTime(TimeUtil.getEndOfDay(calendar.getTime()));
 
-            log.info("startTime : " + startTime + "endTime：" + endTime);
+            LocalDate old = LocalDate.now().minusDays(1);
+            LocalDate now = LocalDate.now();
+            List<BusActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
+            for (int i = 0; i < 24; i++) {
+                String oldDay = LocalDateTimeUtil.format(LocalDateTime.of(old, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
+                dto.setDateTime(oldDay);
+                dto.setActivePow("0");
+                yesterdayList.add(dto);
+                BusActivePowTrendDTO dto1 = new BusActivePowTrendDTO();
+                String nowDay = LocalDateTimeUtil.format(LocalDateTime.of(now, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                dto1.setDateTime(nowDay);
+                dto1.setActivePow("");
+                todayList.add(dto1);
+            }
             //获取昨日数据
             List<String> yesterdayData = getData(startTime, endTime, vo, "bus_hda_total_hour");
 
 
-            List<BusActivePowTrendDTO> yesterdayList = new ArrayList<>();
+//            List<BusActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            Map<String, BusActivePowTrendDTO> yesMap = yesterdayList.stream().collect(Collectors.toMap(BusActivePowTrendDTO::getDateTime, x -> x));
             yesterdayData.forEach(str -> {
                 BusTotalHourDo hourDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
-                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
-                dto.setActivePow(hourDo.getPowActiveAvgValue());
                 String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                yesterdayList.add(dto);
+                BusActivePowTrendDTO dto = yesMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getPowActiveAvgValue(),3)));
             });
-
 
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
             endTime = DateUtil.formatDateTime(DateTime.now());
-
-            log.info("startTime : " + startTime + "endTime：" + endTime);
             //获取今日数据
-            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
-
+//            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
+            Map<String, BusActivePowTrendDTO> todayMap = todayList.stream().collect(Collectors.toMap(BusActivePowTrendDTO::getDateTime, x -> x));
             List<String> todayData = getData(startTime, endTime, vo, "bus_hda_total_hour");
             todayData.forEach(str -> {
                 BusTotalHourDo hourDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
                 String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
-                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
-                if (Objects.isNull(dto)) {
-                    dto = new BusActivePowTrendDTO();
-                }
-                dto.setActivePow(hourDo.getPowActiveAvgValue());
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                todayList.add(dto);
+                BusActivePowTrendDTO dto = todayMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getPowActiveAvgValue(),3)));
             });
 
             powDTO.setYesterdayList(yesterdayList);
             powDTO.setTodayList(todayList);
             //获取峰值
-            BusActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
-            BusActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
-            powDTO.setTodayMax(todayMax.getActivePow());
+            BusActivePowTrendDTO yesterdayMax = yesterdayList.stream().filter(i-> ObjectUtils.isNotEmpty(i.getActivePow())).max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
+            BusActivePowTrendDTO todayMax = todayList.stream().filter(i-> ObjectUtils.isNotEmpty(i.getActivePow())).max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
+            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
             powDTO.setTodayMaxTime(todayMax.getDateTime());
             powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(yesterdayMax.getActivePow());
+            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
 
             return powDTO;
         } catch (Exception e) {

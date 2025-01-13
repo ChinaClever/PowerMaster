@@ -11,10 +11,8 @@ import com.alibaba.excel.EasyExcel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -42,16 +40,16 @@ public class BusHistoryDataController {
         return success(resultList);
     }
 
-    @GetMapping("/bus-page")
+    @PostMapping("/bus-page")
     @Operation(summary = "获得母线始端箱历史数据分页")
-    public CommonResult<PageResult<Object>> getBusHistoryDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBusHistoryDataPage(@RequestBody BusHistoryDataPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busHistoryDataService.getBusHistoryDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/box-page")
+    @PostMapping("/box-page")
     @Operation(summary = "获得母线插接箱历史数据分页")
-    public CommonResult<PageResult<Object>> getBoxHistoryDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBoxHistoryDataPage(@RequestBody BusHistoryDataPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busHistoryDataService.getBoxHistoryDataPage(pageReqVO);
         return success(pageResult);
     }
@@ -84,11 +82,11 @@ public class BusHistoryDataController {
         return success(map);
     }
 
-    @GetMapping("/box-export-excel")
+    @PostMapping("/box-export-excel")
     @Operation(summary = "导出母线插接箱历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBoxHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+    public void exportBoxHistoryDataExcel(@RequestBody BusHistoryDataPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
 
@@ -110,11 +108,10 @@ public class BusHistoryDataController {
 
     }
 
-    @GetMapping("/bus-export-excel")
+    @PostMapping("/bus-export-excel")
     @Operation(summary = "导出母线始端箱历史数据 Excel")
-//    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBusHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+    public void exportBusHistoryDataExcel(@RequestBody BusHistoryDataPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
 
         pageReqVO.setPageSize(10000);
@@ -132,9 +129,9 @@ public class BusHistoryDataController {
         }
     }
 
-    @GetMapping("/bus-env-page")
+    @PostMapping("/bus-env-page")
     @Operation(summary = "获得始端箱环境数据分页")
-    public CommonResult<PageResult<Object>> getEnvDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getEnvDataPage(@RequestBody BusHistoryDataPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busHistoryDataService.getBusEnvDataPage(pageReqVO);
         return success(pageResult);
     }
@@ -153,11 +150,11 @@ public class BusHistoryDataController {
         return success(map);
     }
 
-    @GetMapping("/bus-env-export-excel")
+    @PostMapping("/bus-env-export-excel")
     @Operation(summary = "导出母线始端箱环境历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportEnvHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+    public void exportEnvHistoryDataExcel(@RequestBody BusHistoryDataPageReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBusEnvDataPage(pageReqVO).getList();
@@ -172,9 +169,9 @@ public class BusHistoryDataController {
         }
     }
 
-    @GetMapping("/box-env-page")
+    @PostMapping("/box-env-page")
     @Operation(summary = "获得插接箱环境数据分页")
-    public CommonResult<PageResult<Object>> getBoxEnvDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBoxEnvDataPage(@RequestBody BusHistoryDataPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busHistoryDataService.getBoxEnvDataPage(pageReqVO);
         return success(pageResult);
     }
@@ -193,11 +190,10 @@ public class BusHistoryDataController {
         return success(map);
     }
 
-    @GetMapping("/box-env-export-excel")
+    @PostMapping("/box-env-export-excel")
     @Operation(summary = "导出母线插接箱环境历史数据 Excel")
-//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBoxEnvHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+    public void exportBoxEnvHistoryDataExcel(@RequestBody BusHistoryDataPageReqVO pageReqVO,
                                              HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBoxEnvDataPage(pageReqVO).getList();
