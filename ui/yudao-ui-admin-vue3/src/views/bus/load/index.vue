@@ -521,7 +521,7 @@ const getList = async () => {
   }
 }
 const getLoadRateStatus = async () => {
-      const data = await IndexApi.getLoadRateStatus()
+    const data = await IndexApi.getLoadRateStatus()
     statusNumber.greaterNinety = data.greaterNinety;
     statusNumber.lessThirty = data.lessThirty;
     statusNumber.greaterThirty = data.greaterThirty;

@@ -52,9 +52,14 @@
         label-width="68px"
       >
         <el-form-item>
-          <template v-for="(status, index) in statusList" :key="index">
+          <!--<template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
+          </template>-->
+          <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+          </template> 
         </el-form-item>
         <div>
           <el-form-item label="公司名称" prop="company">
@@ -79,7 +84,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 2" style="width: 100%;" v-loading="loading" :data="listPage" >
+      <el-table v-show="switchValue == 2" style="width: 100%;" v-loading="loading" :data="listPage" class="loadContainer">
         <el-table-column label="位置" min-width="110" align="center" prop="roomName,cabinetName" >
           <template #default="scope">
             {{ scope.row.roomName }}-{{ scope.row.cabinetName }}
@@ -94,6 +99,18 @@
         <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" :formatter="formatApparentPower" />
         <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" :formatter="formatApparentPower" />
         <el-table-column label="更新时间" min-width="110" align="center" prop="dataUpdateTime" />
+        <el-table-column label="设备" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toMachineDetail(scope.row)"
+              style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
+            >
+            设备详情
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <div v-show="(switchValue == 0 || switchValue == 1) && listPage.length > 0" v-loading="loading" class="loadContainer">
         <div class="loadItem" v-for="load in listPage" :key="load.key">
@@ -116,7 +133,17 @@
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
           <div class="room">{{load.roomName+'-'+load.cabinetName}}</div>
-          <button class="detail" @click.prevent="toMachineDetail(load)">详情</button>
+          <div class="status-container">
+            <el-tag class="status" type="info" v-if="load.loadStatus == 0">{{statusList[0].name}}</el-tag>
+            <el-tag class="status" type="success" v-else-if="load.loadStatus == 1">{{statusList[1].name.slice(3,10)}}</el-tag>
+            <el-tag class="status" type="primary" v-else-if="load.loadStatus == 2">{{statusList[2].name.slice(7,11)}}</el-tag>
+            <el-tag class="status" type="warning" v-else-if="load.loadStatus == 3">{{statusList[3].name.slice(7,11)}}</el-tag>
+            <el-tag class="status" type="danger"  v-else-if="load.loadStatus == 4">{{statusList[4].name.slice(3,10)}}</el-tag>
+            <el-tag class="status" type="info"  v-else-if="load.loadStatus == 5">离线</el-tag>
+          </div>
+          <div class="detail-container">
+            <button class="detail" v-if="load.loadStatus !== 5 && load.loadStatus !== null" @click.prevent="toMachineDetail(load)">详情</button>
+          </div>
         </div>
       </div>
       <Pagination
@@ -153,14 +180,17 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
+  loadStatus: []
 });
+
+const butColor = ref(0);
+const onclickColor = ref(-1);
+
 function formatApparentPower(row, column, cellValue ) {
   // console.log('测试',row+'-'+column+'-'+cellValue+'-'+num)
   // 假设保留两位小数
   return parseFloat(cellValue).toFixed(2);
 }
-  
-
 
 const echartsOption = reactive({
   series: [
@@ -230,28 +260,63 @@ const statusList = reactive([
 
 
 // 接口获取机柜列表
+//const getTableData = async(reset = false) => {
+//  loading.value = true
+//  if (reset) queryParams.pageNo = 1
+//  //const status =  statusList.filter(item => item.selected)
+//  try {
+//    const res = await CabinetApi.getIndexLoadPage({
+//      pageNo: queryParams.pageNo,
+//      pageSize: queryParams.pageSize,
+//      cabinetIds: isFirst.value ? null : cabinetIds.value,
+//      // roomId: null,
+//      loadStatus: queryParams.loadStatus,
+//      pduBox: 0,
+//      company: queryParams.company
+//    })
+//    const res = await CabinetApi.getIndexLoadPage(queryParams)
+//    console.log('res', res);
+//    listPage.value = res.list;
+//    queryParams.pageTotal = res.total;
+//    console.log('listPage', listPage.value)
+//  } finally {
+//    loading.value = false
+//  }
+//}
 const getTableData = async(reset = false) => {
   loading.value = true
   if (reset) queryParams.pageNo = 1
-  const status =  statusList.filter(item => item.selected)
+ 
   try {
-    const res = await CabinetApi.getIndexLoadPage({
-      pageNo: queryParams.pageNo,
-      pageSize: queryParams.pageSize,
-      cabinetIds: isFirst.value ? null : cabinetIds.value,
-      // roomId: null,
-      loadStatus: status.map(item => item.value),
-      pduBox: 0,
-      company: queryParams.company
-    })
-    console.log('res', res)
-      listPage.value = res.list;
-      queryParams.pageTotal = res.total;
+    const res = await CabinetApi.getIndexLoadPage(queryParams)
+    if (!res) {
+      console.error('API response is null or undefined');
+      // 可以选择设置一个空数组和总页数为0，或者显示错误消息
+      listPage.value = [];
+      queryParams.pageTotal = 0;
+    } else {
+      console.log('res', res);
+      listPage.value = res.list || []; // 如果res.list是undefined，使用空数组
+      queryParams.pageTotal = res.total || 0; // 如果res.total是undefined，使用0
       console.log('listPage', listPage.value)
+    }
+  } catch (error) {
+    console.error('Error fetching table data:', error);
+    // 处理错误，如显示错误消息
+    listPage.value = [];
+    queryParams.pageTotal = 0;
   } finally {
     loading.value = false
   }
 }
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.loadStatus = [];
+  getTableData();
+}
+
 const formatNumber = (value, precision) => {
   if (typeof value === 'number' && !isNaN(value)) {
     return value.toFixed(precision);
@@ -297,9 +362,12 @@ const handleCheck = (row) => {
 }
 
 // 处理状态选择事件
-const handleSelectStatus = (index, event) => {
-  console.log('处理状态选择事件', index, event)
-  statusList[index].selected = !statusList[index].selected
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.loadStatus = [index];
+  console.log('处理状态选择事件', index)
+  //statusList[index].selected = !statusList[index].selected
   getTableData()
 }
 // 处理切换 表格/阵列 模式
@@ -316,11 +384,15 @@ const handleSwitchModal = (value) => {
 
 const toMachineDetail = (row) => {
   console.log("row",row)
-  const devKey = '192.168.1.200-3';
-  const busId = 2;
-  const location = '192.168.1.200-3';
-  const busName = 'iBusbar-3';
-  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
+  //const devKey = '192.168.1.200-3';
+  //const busId = 2;
+  //const location = '192.168.1.200-3';
+  //const busName = 'iBusbar-3';
+  //push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
+  const devKey = row.cabinet_key;
+  const busId = row.roomId;
+  const busName = row.cabinet_name;
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,busName }})
 }
 
 onBeforeMount(() => {
@@ -386,20 +458,6 @@ onBeforeMount(() => {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .navInfo {
   width: 215px;
   height: 100%;
@@ -430,6 +488,7 @@ onBeforeMount(() => {
       }
     }
   }
+
   .status {
     display: flex;
     flex-wrap: wrap;
@@ -477,6 +536,7 @@ onBeforeMount(() => {
       }
     }
   }
+
   .header {
     display: flex;
     flex-direction: column;
@@ -508,17 +568,21 @@ onBeforeMount(() => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
+
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 .btn_normal,
 .btn_empty,
 .btn_warn,
@@ -538,10 +602,12 @@ onBeforeMount(() => {
     color: #7bc25a;
   }
 }
+
 .btn_normal {
   border: 1px solid #3bbb00;
   background-color: #fff;
 }
+
 .normal {
   background-color: #3bbb00;
   color: #fff;
@@ -549,10 +615,12 @@ onBeforeMount(() => {
     color: #fff;
   }
 }
+
 .btn_empty {
   border: 1px solid #aaa;
   background-color: #fff;
 }
+
 .empty {
   background-color: #aaa;
   color: #fff;
@@ -560,10 +628,12 @@ onBeforeMount(() => {
     color: #fff;
   }
 }
+
 .btn_warn {
   border: 1px solid #3b8bf5;
   background-color: #fff;
 }
+
 .warn {
   background-color: #3b8bf5;
   color: #fff;
@@ -571,10 +641,12 @@ onBeforeMount(() => {
     color: #fff;
   }
 }
+
 .btn_error {
   border: 1px solid #ffc402;
   background-color: #fff;
 }
+
 .error {
   background-color: #ffc402;
   color: #fff;
@@ -582,15 +654,78 @@ onBeforeMount(() => {
     color: #fff;
   }
 }
+
 .btn_unbound {
   border: 1px solid #fa3333;
   background-color: #fff;
 }
+
 .unbound {
   background-color: #fa3333;
   color: #fff;
   &:hover {
     color: #fff;
+  }
+}
+
+.loadItem {
+  position: relative;
+  padding-right: 100px;
+}
+
+.status-container {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  text-align: center;
+}
+
+.status-container .status {
+  display: block;
+  padding-top: 5px;
+  width: 50px;
+  height: 25px;
+  margin-bottom: 8px;
+}
+
+.detail-container{
+  position: absolute;
+  right: 5px;
+  top: 80px;
+}
+
+.detail {
+  position: relative;
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
   }
 }
 </style>

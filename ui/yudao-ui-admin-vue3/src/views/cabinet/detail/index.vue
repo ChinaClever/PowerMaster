@@ -1,8 +1,8 @@
 <template>
-<div style="background-color: #E7E7E7;" class="centainer-height">
-  <div style="background-color: #E7E7E7;" class="header_app">
-    <div style="background-color: #E7E7E7;" class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
-    <div style="background-color: #E7E7E7;" class="header_app_text_other1">
+<div style="background-color: #E7E7E7;margin-bottom:20px;" class="centainer-height">
+  <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
+    <div style="padding: 5px 10px;" class="header_app_text">所在位置：{{ location }}-{{ busName }}</div>
+    <!--<div style="background-color: #E7E7E7;" class="header_app_text_other1">
           <el-col :span="10" >
             <el-form
               class="-mb-15px"
@@ -23,10 +23,10 @@
               </el-form-item>
             </el-form>
           </el-col>
-    </div>
-    <div style="background-color: #E7E7E7;" class="header_app_text_other">
-      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
+    </div>-->
+    <div  style="display: flex; justify-content: flex-end; gap: 10px;" class="header_app_text">
+      <!--<el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>-->
+      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''">近一小时</el-button>
       <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
       <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
       <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
@@ -45,10 +45,10 @@
         <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;">发生时间：{{peakDemandTime}}</span>
         </div>
-        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
+        <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
-        </div>
-        <div style="height:360px;width:100%;margin-top:-50px;">
+        </div>-->
+        <div style="height:40vh;width:100%;margin-top:-80px;">
             <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData.loadFactor" />
         </div>
         <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
@@ -73,7 +73,7 @@
             <span class="bullet" style="color:green;">•</span><span style="width:80px;font-size:14px;">总有功功率:</span><span style="font-size:16px;">{{resultData?.powActiveTotal}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:yellow;">•</span><span style="width:80px;font-size:14px;">总无功功率:</span><span style="font-size:16px;">{{resultData?.powReactiveTotal}}KVA</span>
+            <span class="bullet" style="color:purple;">•</span><span style="width:80px;font-size:14px;">总无功功率:</span><span style="font-size:16px;">{{resultData?.powReactiveTotal}}KVA</span>
           </div>
         </div>
       </div>
@@ -93,15 +93,15 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 50px;">
+            top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0]}}V</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1]}}V</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2]}}V</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2]}}V</span>
           </div>
         </div>
     </div>
@@ -110,48 +110,54 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电流</div>
-          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+          <ACur style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 50px;">
+            top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curA[0]}}A</span>
+            <span class="bullet" style="color:#E5B849">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curA[0]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curA[1]}}A</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curA[1]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curA[2]}}A</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curA[2]}}A</span>
           </div>
         </div>
     </div>
     <div class="bottom-part">
       <div style="display: inline-block;
         width: 50%;
-        height: 230px;">
+        height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率因数</div>
-          <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+          <PowerFactor style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 20px;">
-          <div class="label-container">
+            top: 25%;">
+          <!--<div class="label-container">
             <span class="bullet" style="color:#E5B849;">•</span><span style="font-size:14px;">频率:</span><span style="font-size:16px;">0Hz</span>
+          </div>-->
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">总功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">A路功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
           </div>
           <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">B路功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
+          </div>
+          <!--<div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="font-size:14px;">三相电压不平衡度:</span><span style="font-size:16px;">0%</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="font-size:14px;">三相电流不平衡度:</span><span style="font-size:16px;">0%</span>
-          </div>
+          </div>-->
         </div>
     </div>
     <div class="bottom-part">
@@ -165,15 +171,15 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 50px;">
+            top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
           </div>
         </div>
     </div>
@@ -182,21 +188,21 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电流</div>
-          <BCur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+          <BCur style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 50px;">
+            top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curB[0]}}A</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curB[0]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curB[1]}}A</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curB[1]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curB[2]}}A</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curB[2]}}A</span>
           </div>
         </div>
     </div>
@@ -204,17 +210,17 @@
       <div style="display: inline-block;
         width: 50%;
         height: 90%;
-        margin-right:-20px;"
+        margin-right:-50px;"
       >
-          <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
-          <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-        <div style="display: inline-block;
-            width: 50%;
-            height: 90%;">
-          <div style="display:inline-block;color:black;"><span style="margin-left:100px;">B路</span></div>
-          <EnvironmentCopy style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
+        <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
+        <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+      </div>
+      <div style="display: inline-block;
+          width: 50%;
+          height: 90%;">
+        <div style="display:inline-block;color:black;"><span style="margin-left:100px;">B路</span></div>
+        <EnvironmentCopy style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+      </div>
     </div>
   </div>
 </div> 
@@ -245,7 +251,7 @@ const resultData = ref() as any;
 const loadRateList = ref() as any;
 const selectedOption = ref('current')
 const location = ref(history?.state?.location);
-const busName = ref(history?.state?.busName);
+const busName = ref(history?.state?.cabinetName);
 const id = ref(history?.state?.id);
 const roomId = ref(history?.state?.roomId);
 const type = ref(history?.state.type);
@@ -393,11 +399,9 @@ onMounted(async () => {
   // await getLineChartData();
   devKeyList.value = await loadAll();
   await getRedisData();
-  await getLoadRateList();
+  //await getLoadRateList();
   // initChart1();
   // initChart2();
-
-
 })
 
 
@@ -423,7 +427,7 @@ onMounted(async () => {
 
 .TransformerMonitor {
     height: calc(100vh - 84px);
-    padding: 10px 10px;
+    margin-left: 20px;
 }
 
 .TransformerMonitor .topdiv {
@@ -995,7 +999,7 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
 .header_app{
   background-color: white;
   display: flex;
-  height: 50px;
+  height: 30px;
   padding-left: 10px;
   box-shadow: 20px;
 }
