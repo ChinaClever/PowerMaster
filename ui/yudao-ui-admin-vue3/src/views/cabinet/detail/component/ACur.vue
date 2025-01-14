@@ -30,8 +30,8 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
-      radius: [20, 80],
-      center: ['50%', '40%'],
+      radius: ['30%', '70%'],
+      center: ['50%', '50%'],
       roseType: 'radius',
       itemStyle: {
         borderRadius: 5
@@ -46,17 +46,19 @@ const echartsOption = reactive({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.curA[0], name: 'Ia', itemStyle: { color: '#075F71' } },
-        { value: props.loadFactor.curA[1], name: 'Ib', itemStyle: { color: '#119CB5' } },
-        { value: props.loadFactor.curA[2], name: 'Ic', itemStyle: { color: '#45C0C9' } },
+        { value: props.loadFactor.curA[0], name: 'Ia', itemStyle: { color: '#E5B849' } },
+        { value: props.loadFactor.curA[1], name: 'Ib', itemStyle: { color: '#C8603A' } },
+        { value: props.loadFactor.curA[2], name: 'Ic', itemStyle: { color: '#AD3762' } },
       ]
     }
   ]
 });
 
-onUnmounted(() => {
-  console.log('onUnmounted******')
-})
+onMounted(() => {
+  window.addEventListener('resize', () => {
+    echartsOption.resize();
+  });
+});
 </script>
 
 <style lang="scss" scoped>

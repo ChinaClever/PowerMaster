@@ -30,11 +30,13 @@ const judgeColor = () => {
 
 judgeColor()
 
+const num = precent;
+
 const echartsOption = reactive({
   series: [
     {
       type: 'liquidFill',
-      data: [precent/100], // 设置水球图的填充比例
+      data: [num/100], // 设置水球图的填充比例
       label: {
         fontSize: 12, // 设置字体大小
         fontWeight: 'bold', // 设置字体粗细

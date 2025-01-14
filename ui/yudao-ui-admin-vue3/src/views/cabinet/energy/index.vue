@@ -8,7 +8,7 @@
           <div>机房202</div>
         </div> -->
         <div class="line"></div>
-        <div class="status">
+        <!--<div class="status">
           <div class="box">
             <div class="top">
               <div class="tag"></div>正常
@@ -33,6 +33,16 @@
             </div>
             <div class="value"><span class="number">{{sumInform}}</span>个</div>
           </div>
+          <div>用能最大机柜：</div>
+          <div>昨日用能：{{}}</div>
+          <div>上周用能：{{}}</div>
+          <div>上月用能：{{}}</div>
+        </div>-->
+        <div class="status-container">
+          <div class="status-item">用能最大机柜：</div>
+          <div class="status-item">昨日用能：{{  }}</div>
+          <div class="status-item">上周用能：{{  }}</div>
+          <div class="status-item">上月用能：{{  }}</div>
         </div>
         <div class="line"></div>
         <!-- <div class="overview">
@@ -399,5 +409,16 @@ onBeforeMount(() => {
       top: 4px;
     }
   }
+}
+
+.status-container {
+  width: 100%;
+  margin-left: 10px;
+}
+
+.status-item {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
 }
 </style>

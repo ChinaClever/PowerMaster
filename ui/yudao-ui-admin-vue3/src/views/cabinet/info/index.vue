@@ -182,13 +182,13 @@
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
-            <div v-if="item.status !== 5" class="info">
+            <div v-if="item.status !== 5" class="info" style="margin-left:10px;">
               <div>视在功率：{{item.apparentTotal}}KVA</div>
               <div>有功功率：{{item.activeTotal}}KW</div>
-              <div>功率因素：{{item.powerFactorTotal}}</div>
+              <div>无功功率：{{item.reactiveTotal}}KVAR</div>
               <!-- 负载率： -->
             </div>
+            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
           </div>
           <div class="room">{{item.roomName}}-{{item.cabinetName}}-{{item.cabinet_key}}</div>
           <div v-if="item.status == 0" class="status-empty">空载</div>
@@ -447,8 +447,8 @@ const formatLoadFactor = (value) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  navList.value = res
+  const res = await CabinetApi.getRoomMenuAll({});
+  navList.value = res;
 
     const resStatus =await CabinetApi.getCabinetInfoStatus();
     sumNoload.value = resStatus.list[0].sumNoload;
@@ -459,20 +459,20 @@ const getNavList = async() => {
 
 // 保存机柜修改/删除
 const saveMachine = async() => {
-  getNavList()
+  getNavList();
 }
 
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   showPagination.value = 0;
   if (switchValue.value == value) return
-  switchValue.value = value
+  switchValue.value = value;
   if (value == 0) { // 阵列
-    queryParams.pageSize = 24
+    queryParams.pageSize = 24;
   } else {
-    queryParams.pageSize = 24
+    queryParams.pageSize = 24;
   }
-  getTableData(true)
+  getTableData(true);
 }
 
 //已删除
@@ -542,8 +542,8 @@ const toMachineDetail = (key) => {
   const roomId = key.cabinet_key.split('-')[0];
   const type = 'hour';
   const location = key.roomName;
-  const busName = key.cabinetName;
-  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName ,id ,roomId , type}})
+  const cabinetName = key.cabinetName;
+  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , cabinetName ,id ,roomId , type}})
 }
 
 const handleCheck = (row) => {
@@ -727,7 +727,7 @@ onBeforeMount(() => {
     display: flex;
     flex-wrap: wrap;
     .box {
-      height: 70px;
+      height: 50px;
       width: 50%;
       box-sizing: border-box;
       display: flex;
