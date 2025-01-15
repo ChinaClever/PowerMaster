@@ -69,7 +69,7 @@
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
-        v-model="queryParams.timeRange"
+        v-model="selectTimeRange"
         type="datetimerange"
         :shortcuts="shortcuts"
         range-separator="-"
@@ -129,6 +129,7 @@ import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption';
 import { HistoryDataApi } from '@/api/pdu/historydata';
 import { CabinetApi } from '@/api/cabinet/info';
 import PDUImage from '@/assets/imgs/PDU.jpg';
+import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { ElMessage } from 'element-plus';
 defineOptions({ name: 'PowerRecords' });
 
@@ -142,6 +143,7 @@ const message = useMessage(); // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0);
 const realTotel = ref(0); // 数据的真实总条数
+const selectTimeRange = ref(undefined)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -270,6 +272,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+     
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -452,7 +462,13 @@ onMounted(() => {
   getNavList();
   getNavOneDayData();
   getTypeMaxValue();
-  
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getList();
 })
 </script>
