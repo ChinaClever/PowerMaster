@@ -1,5 +1,5 @@
 <template>
- <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜电力分析" :showCheckbox="false">
+ <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜电力分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -196,7 +196,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -208,6 +208,7 @@ import { formatDate } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import download from '@/utils/download'
 import PDUImage from '@/assets/imgs/PDU.jpg'
+import  CommonMenu1 from './CommonMenu1.vue'
 /** 机柜历史曲线 */
 defineOptions({ name: 'CabinetHistoryLine' })
 const navList = ref([]) as any // 左侧导航栏树结构列表

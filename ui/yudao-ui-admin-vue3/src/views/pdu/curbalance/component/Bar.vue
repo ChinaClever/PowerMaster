@@ -74,6 +74,7 @@ onMounted(() => {
   }
 });
 
+
 // 组件卸载时销毁图表
 onUnmounted(() => {
   if (myChart) {

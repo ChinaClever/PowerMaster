@@ -751,6 +751,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Override
     public Map<String, Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
 
+
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();

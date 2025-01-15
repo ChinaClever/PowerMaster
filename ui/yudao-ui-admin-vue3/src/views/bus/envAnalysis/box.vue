@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress == null ? '暂未绑定设备' : nowAddress}}</span>
           <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
           <br/>
 
@@ -544,7 +544,8 @@ const getList = async () => {
         type: 'warning',
       });
     }
-  } finally {
+  } 
+  finally {
     loading.value = false;
     a.value=0;
     b.value=0;

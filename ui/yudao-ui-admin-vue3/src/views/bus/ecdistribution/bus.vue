@@ -333,6 +333,11 @@ loading.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
+    if (data.list == null){
+      ElMessage.warning('暂无数据！')
+      //清空数据
+      data.list = [];
+    }
     if (data != null && data.total != 0){
       loading2.value = true
       totalEqData.value = 0;

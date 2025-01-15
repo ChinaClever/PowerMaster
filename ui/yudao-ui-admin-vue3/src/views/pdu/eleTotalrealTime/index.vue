@@ -134,7 +134,7 @@
             <el-button
               link
               type="primary"
-              @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
+              @click="toDetails(scope.row.location,String(selectTimeRange[0]),String(selectTimeRange[1]))"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
             详情
@@ -594,13 +594,13 @@ onMounted(() => {
   getNavList()
   // getNavNewData()
   // getTypeMaxValue();
-  const end = new Date()
-      const start = new Date()
-      start.setMonth(start.getMonth() - 1)
+ 
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(start),
-  format(end)
+  format(startOfMonth),
+  format(now)
 ];
    getList();
 });

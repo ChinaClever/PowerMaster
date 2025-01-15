@@ -337,16 +337,19 @@ const getList = async () => {
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
-    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    // 时间段清空1后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams);
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    // eqData.value = data.list.map((item) => {
-    //     const difference = item.end_ele - item.start_ele;
-    //     return difference < 0 ? formatEQ(item.end_ele, 1) : formatEQ(difference, 1);
-    // });
+    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    if(data.list == null){
+      ElMessage.error('暂无数据')
+    }
+    eqData.value = data.list.map((item) => {
+        const difference = item.end_ele - item.start_ele;
+        return difference < 0 ? item.end_ele : formatEQ(difference, 1);
+    });
     
     list.value = data.list
     realTotel.value = data.total
@@ -374,6 +377,9 @@ const getList1 = async () => {
     }
     queryParams.devkeys = [devKey.value];
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    if(data == null){
+      ElMessage.error('暂无数据')
+    }
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
     realTotel.value = data.total

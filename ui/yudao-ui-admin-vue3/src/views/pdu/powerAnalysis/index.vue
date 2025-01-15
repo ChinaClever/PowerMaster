@@ -112,7 +112,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
           </template>
         </el-table-column>
         
@@ -398,7 +398,8 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -590,8 +591,8 @@ const getNavNewData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, address: string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address);
+const toDetails = (pduId: number, address: string,createTimeMin : string,createTimeMax : string) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+'&start='+createTimeMin+'&end='+createTimeMax);
 }
 
 /** 导出按钮操作 */
@@ -618,7 +619,12 @@ const handleExport = async () => {
 const start = ref('')
 const end = ref('')
 const ip =  ref('')
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 初始化 **/
 onMounted(() => {
   getNavList()

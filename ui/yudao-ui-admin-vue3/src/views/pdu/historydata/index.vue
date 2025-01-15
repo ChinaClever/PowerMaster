@@ -100,7 +100,7 @@
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
           value-format="YYYY-MM-DD HH:mm"
-          v-model="queryParams.timeRange"
+          v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -179,6 +179,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { CabinetApi } from '@/api/cabinet/info'
+import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** pdu历史数据 列表 */
@@ -195,6 +196,7 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const cascadeAddr = ref(0) // 数字类型的级联地址
+const selectTimeRange = ref(undefined)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -710,6 +712,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+     
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -908,12 +918,23 @@ const getNavNewData = async() => {
   navLoopData.value = res.loop
   navOutletData.value = res.outlet
 }
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 初始化 **/
 onMounted( () => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getList();
 });
 

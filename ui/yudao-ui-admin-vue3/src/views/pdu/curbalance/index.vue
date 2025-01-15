@@ -46,12 +46,14 @@
       </div>
     </template>
     <template #ActionBar>
+      <div style="float: left;">
       <el-form
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
       >
+      
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
           <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus1">
             全部 
@@ -108,7 +110,10 @@
             </el-form-item>
           </el-form-item>
         </el-form-item>
-        <div style="margin-right:10px;">
+     
+      </el-form>
+    </div>
+      <div style=" float: right;">
           <el-button
             @click="pageSizeArr = [24, 36, 48, 96];
             queryParams.pageSize = 24;
@@ -140,7 +145,6 @@
             ><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button
           >
         </div>
-      </el-form>
     </template>
     <template #Content>
      <div v-if="switchValue && list.length > 0" style="height: 720px;margin-top:-10px;overflow: hidden;overflow-y: auto;">
@@ -335,7 +339,7 @@
 
       <el-dialog v-model="dialogVisibleVol" @close="handleClose" :show-close=false>
         <template #header>
-          <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
+          <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" >关闭</el-button>
     <span style="font-size: 20px; font-weight: bold;margin-top: -10px;">均衡配电详情</span>
     <span style="margin-left: 15px;margin-top: -3px;">所在位置：{{ location }}</span>
     <span style="margin-left: 15px;margin-top: -3px;">网络地址：{{ vollocation }}</span>
@@ -659,6 +663,7 @@ function formatEQ(value: number, decimalPlaces: number | undefined){
 
 const getBalanceDetail = async (item) => {
   const res = await PDUDeviceApi.balanceDetail({ devKey: item.devKey })
+  if (res.data== null) 
   console.log('res', res)
   if (res.cur_value) {
     const cur_valueA = res.cur_value.map(num => formatEQ(num,2))
@@ -942,6 +947,14 @@ const volMaxValues = ref({
   L3: 0
 });
 const showDialogVol = (item) => {
+  if(item.status==5){
+    ElMessage({
+      message: '设备未启动',
+      type: 'warning',
+      duration: 2000
+    })
+    return;
+  }
   dialogVisibleVol.value = true
   vollocation.value = item.devKey
   getBalanceDetail(item)
@@ -1241,6 +1254,8 @@ onBeforeUnmount(() => {
 })
 const lineidBeforeChartUnmountOne = () => {
   dialogVisibleVol.value = false
+  // 销毁图表实例
+  Bar?.dispose();
 }
 onBeforeRouteLeave(() => {
   if (flashListTimer.value) {
