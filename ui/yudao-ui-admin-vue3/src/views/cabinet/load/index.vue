@@ -389,10 +389,11 @@ const toMachineDetail = (row) => {
   //const location = '192.168.1.200-3';
   //const busName = 'iBusbar-3';
   //push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
-  const devKey = row.cabinet_key;
-  const busId = row.roomId;
-  const busName = row.cabinet_name;
-  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,busName }})
+  const roomId = row.roomId;
+  const cabinet = row.id;
+  const cabinetName = row.cabinetName;
+  const roomName = row.roomName;
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet }})
 }
 
 onBeforeMount(() => {

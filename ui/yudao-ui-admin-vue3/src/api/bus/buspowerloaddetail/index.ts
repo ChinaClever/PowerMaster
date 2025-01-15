@@ -47,5 +47,4 @@ export const BusPowerLoadDetailApi = {
   getBoxdevKeyList: async () => {
     return await request.download({ url: `/bus/PowerLoad/box/devKeyList` })
   },
-
 }
