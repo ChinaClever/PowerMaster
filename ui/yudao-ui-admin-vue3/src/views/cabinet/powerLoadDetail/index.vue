@@ -1,7 +1,7 @@
 <template>
 <div style="background-color: #E7E7E7;">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})
+    <div class="header_app_text">所在位置：{{ roomName }}-{{cabinetName}}
     </div>
     <div class="header_app_text_other1">
           <el-col :span="10">
@@ -124,40 +124,41 @@
     </el-row>
   <br/>
   <div v-if="switchChartContainer === 0">
-    <CurChart v-if="visContro.curVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <CurChart v-if="visContro.curVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 2">
-    <VolChart v-if="visContro.volVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <VolChart v-if="visContro.volVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 3">
-    <ActivePower v-if="visContro.activeVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <ActivePower v-if="visContro.activeVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 4">
     <ReactivePower v-if="visContro.reactiveVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 5">
-    <CurrentPower v-if="visContro.currentVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <CurrentPower v-if="visContro.currentVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
-  <div v-else-if="switchChartContainer === 6">
+  <!--<div v-else-if="switchChartContainer === 6">
     <CurrentPower v-if="visContro.factorVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
-  </div>
+  </div>-->
   </div>
 </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from 'vue';
 import * as echarts from 'echarts';
-import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 import { ElMessage } from 'element-plus';
-import { formatDate} from '@/utils/formatTime'
+import { formatDate} from '@/utils/formatTime';
 import { has } from 'lodash-es';
-import CurChart from './component/CurChart.vue'
-import VolChart from './component/VolChart.vue'
-import ActivePower from './component/ActivePower.vue'
-import ReactivePower from './component/ReactivePower.vue'
-import CurrentPower from './component/CurrentPower.vue'
-import PowerFactor from './component/PowerFactor.vue'
+import CurChart from './component/CurChart.vue';
+import VolChart from './component/VolChart.vue';
+import ActivePower from './component/ActivePower.vue';
+import ReactivePower from './component/ReactivePower.vue';
+import CurrentPower from './component/CurrentPower.vue';
+import PowerFactor from './component/PowerFactor.vue';
+import { CabinetApi } from '@/api/cabinet/detail';
 
 const visContro = ref({
   curVis:false,
@@ -172,8 +173,8 @@ const queryFormRef = ref(); // 搜索的表单
 const input = ref('');
 // const value1 = ref('')
 const hasData = ref(true);
-const location = ref(history?.state?.location);
-const busName = ref(history?.state?.busName);
+const roomName = ref(history?.state?.roomName);
+const cabinetName = ref(history?.state?.cabinetName);
 const instance = getCurrentInstance();
 const typeRadio = ref('电流');
 const timeRadio = ref('近一小时');
@@ -182,10 +183,14 @@ const isDayAndMonthDisabled = ref(false);
 const isPowActiveDisabled = ref(true);
 const isLoadRateDisabled = ref(false);
 const switchChartContainer = ref(0);
- let intervalId: number | null = null; // 定时器
+let intervalId: number | null = null; // 定时器
 const queryParams = reactive({
-  id: history?.state?.busId as number | undefined,
-  devKey : history?.state?.devKey as string | undefined,
+  id: history?.state?.cabinet as number | undefined,
+  roomId: history?.state?.roomId as number | undefined,
+  cabinet_key : history?.state?.cabinet_key as string | undefined,
+  cabinet_name: history?.state?.cabinet_name as string | undefined,
+  type: 0,
+  granularity: "SeventyHours"
 })
 const queryParamsSearch = reactive({
   id: history?.state?.busId as number | undefined,
@@ -428,14 +433,15 @@ const L1Data = ref<number[]>([]);
 const L2Data = ref<number[]>([]);
 const L3Data = ref<number[]>([]);
 
-const curChartData = allLineData.value;
+const curChartData = ref();
 
 let myChart2 = null as echarts.ECharts | null; 
 let myChart3 = null as echarts.ECharts | null; 
 
 const getDetailData =async () => {
  try {
-    const data = await BusPowerLoadDetailApi.getDetailData(queryParams);
+    const data = await CabinetApi.getBusDetailData(queryParams);
+    console.log('data1111111111',data);
     if (data != null){
       hasData.value = true
       runLoad.value = formatNumber(data.runLoad, 2);
@@ -684,7 +690,7 @@ const flashChartData = async () =>{
 }
 const isHaveData = ref(true)
 
-watch(() => switchChartContainer.value,() => {
+watch(() => switchChartContainer.value,async () => {
   if(switchChartContainer.value === 0){
     visContro.value.curVis = true;
   }
@@ -703,50 +709,66 @@ watch(() => switchChartContainer.value,() => {
   else if(switchChartContainer.value === 6){
     visContro.value.factorVis = true
   }
+  await getLineChartData();
 })
 
 // 获取折线图数据
 const getLineChartData =async () => {
- try {
-    const data = await BusPowerLoadDetailApi.getLineChartData(lineChartQueryParams);
-    console.log('获取折线图数据',data);
-    console.log('lineChartQueryParams',lineChartQueryParams);
-    curChartData.value = data;
-    console.log('curChartData.value',curChartData.value);
-    if(switchChartContainer.value === 0){
-      visContro.value.curVis = true;
-    }
-    if (data != null){
-      // 查到数据
-      allLineData.value = data
-      if (timeRadio.value == '近一小时'){
-        createTimeData.value = data.L1.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
-      }else if (timeRadio.value == '近一天' || '近三天'){
-        createTimeData.value = data.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
-      } else{
-        createTimeData.value = data.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-      }
-      await initData();
-      isHaveData.value = true
-    }else{
-    }
-
-    const data2 = await BusPowerLoadDetailApi.getBusEqChartData(lineChartQueryParams);
-    if (data2 != null){
-      // 查到数据
-      allEqData.value = data2
-       if (timeRadio.value == '近一天'|| '近三天'){
-        eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
-      } else{
-        eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-      }
-      await initData();
-      isHaveData.value = true
-    }else{
-    }
- } finally {
- }
+  const data = await CabinetApi.getBusLineChartDetailData({
+    id: 178,
+    roomId: 115,
+    type: 0,
+    granularity: "SeventyHours"
+  });
+  curChartData.value = data;
+  if(switchChartContainer.value === 0){
+    visContro.value.curVis = true;
+  }
+  //const data = await CabinetApi.getBusLineChartDetailData(queryParams);
+  console.log('获取折线图数据',data);
+  console.log('curChartData.value',curChartData.value);
 }
+//const getLineChartData =async () => {
+// try {
+//    const data = await CabinetApi.getBusLineChartDetailData(lineChartQueryParams);
+//    console.log('获取折线图数据',data);
+//    console.log('lineChartQueryParams',lineChartQueryParams);
+//    curChartData.value = data;
+//    console.log('curChartData.value',curChartData.value);
+//    if(switchChartContainer.value === 0){
+//      visContro.value.curVis = true;
+//    }
+//    if (data != null){
+//      // 查到数据
+//      allLineData.value = data
+//      if (timeRadio.value == '近一小时'){
+//        createTimeData.value = data.L1.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
+//      }else if (timeRadio.value == '近一天' || '近三天'){
+//        createTimeData.value = data.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
+//      } else{
+//        createTimeData.value = data.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+//      }
+//      await initData();
+//      isHaveData.value = true
+//    }else{
+//    }
+//
+//    const data2 = await BusPowerLoadDetailApi.getBusEqChartData(lineChartQueryParams);
+//    if (data2 != null){
+//      // 查到数据
+//      allEqData.value = data2
+//       if (timeRadio.value == '近一天'|| '近三天'){
+//        eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
+//      } else{
+//        eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+//      }
+//      await initData();
+//      isHaveData.value = true
+//    }else{
+//    }
+// } finally {
+// }
+//}
 
 const initData = () => {
   if(timeRadio.value == '近一小时'){
@@ -862,7 +884,7 @@ const handleQuery = async () => {
 /** 初始化 **/
 onMounted(async () => {
   try {
-    devKeyList.value = await loadAll();
+    //devKeyList.value = await loadAll();
     await getDetailData();
     await getLineChartData();
     console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
@@ -871,9 +893,9 @@ onMounted(async () => {
     //initChart2()
     //initChart3()
     // 设置每五秒执行一次 getDetailData 方法
-    intervalId = window.setInterval(() => {
-      getDetailData();
-    }, 5000);
+    //intervalId = window.setInterval(() => {
+    //  getDetailData();
+    //}, 5000);
   } catch (error) {
     console.error('onMounted 钩子中的异步操作失败:', error);
   }

@@ -49,8 +49,9 @@
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
             <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
+          <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
         </el-form-item>
-        <div>
+        <div style="margin-left:10px;">
           <el-form-item v-show="switchValue"  label="公司名称" prop="company">
             <el-input
               v-model="queryParams.company"
@@ -73,7 +74,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
-            <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
+            <!--<el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>-->
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -81,7 +82,7 @@
           <el-button @click="handleSwitchModal(1);showPagination = 0;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
           <el-button @click="handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button> -->
 
-                    <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0);switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0);switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1);switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;handleSwitchLogicRemoveModal(2,true);switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
           <!--  <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button> 
@@ -113,7 +114,7 @@
         <el-table-column v-if="queryParams.showCol.includes(9)" label="B视在功率(kVA)" min-width="140" align="center" prop="apparentB" />
         <el-table-column v-if="queryParams.showCol.includes(10)" label="B有功功率(kW)" min-width="130" align="center" prop="activeB" />
         <el-table-column v-if="queryParams.showCol.includes(11)" label="B电能(kWh)" min-width="110" align="center" prop="eleB" />
-        <el-table-column v-if="queryParams.showCol.includes(12)" label="无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
+        <el-table-column v-if="queryParams.showCol.includes(12)" label="总无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
         <el-table-column v-if="queryParams.showCol.includes(13)" label="功率因素" align="center" prop="powerFactorTotal" />
         <el-table-column v-if="queryParams.showCol.includes(15)" label="负载比(%)" min-width="110" align="center" prop="loadFactor" />
         <el-table-column v-if="queryParams.showCol.includes(14)" label="所属公司" min-width="110" align="center" prop="company" />
@@ -195,11 +196,12 @@
             <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
           </div>
           <div class="room">{{item.roomName}}-{{item.cabinetName}}-{{item.cabinet_key}}</div>
-          <div v-if="item.status == 0" class="status-empty">空载</div>
-          <div v-else-if="item.status == 1" class="status-normal">正常</div>
-          <div v-else-if="item.status == 2" class="status-warn">预警</div>
-          <div v-else-if="item.status == 3" class="status-error">告警</div>
-          <div v-else-if="item.status == 4" class="status-unbound">未绑定</div>
+          <!--<div v-if="item.status == 0" class="status-empty">空载</div>-->
+          <div v-if="item.status == 0" class="status-unbound">正常</div>
+          <div v-else-if="item.status == 1" class="status-normal">预警</div>
+          <div v-else-if="item.status == 2" class="status-warn">告警</div>
+          <div v-else-if="item.status == 3" class="status-error">升级</div>
+          <div v-else-if="item.status == 4" class="status-error">故障</div>
           <div v-else-if="item.status == 5" class="status-offline">离线</div>
           <button v-if="item.status !== 5" class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
@@ -257,6 +259,7 @@ const sumEarly = ref();
 const sumInform = ref();
 const sumDidnot = ref();
 const sumOffline = ref();
+const flashListTimer = ref();
 
 const optionsCol = reactive([{
   value: 0,
@@ -267,9 +270,18 @@ const optionsCol = reactive([{
   }, {
     value: 2,
     label: '总AB有功功率'
-  }, {
+  },
+  {
+    value: 12,
+    label: '总AB无功功率'
+  },
+  {
     value: 3,
-    label: '总AB电能'
+    label: '总AB有功电能'
+  },
+  {
+    value: 13,
+    label: '总功率因素'
   }],
 },{
   value: 4,
@@ -281,8 +293,11 @@ const optionsCol = reactive([{
     value: 6,
     label: 'A有功功率'
   }, {
+    value: 18,
+    label: 'A无功功率'
+  }, {
     value: 7,
-    label: 'A电能'
+    label: 'A有功电能'
   }],
 },{
   value: 8,
@@ -293,17 +308,24 @@ const optionsCol = reactive([{
   }, {
     value: 10,
     label: 'B有功功率'
+  },{
+    value: 19,
+    label: 'B无功功率'
   }, {
     value: 11,
-    label: 'B电能'
+    label: 'B有功电能'
   }],
-},{
-  value: 12,
-  label: '无功功率'
-},{
-  value: 13,
-  label: '功率因素'
-},{
+},
+//{
+//  value: 12,
+//  label: '无功功率'
+//}
+//,
+//{
+//  value: 13,
+//  label: '功率因素'
+//}
+{
   value: 14,
   label: '所属公司'
 },{
@@ -324,18 +346,18 @@ const queryParams = reactive({
 }) as any
 
 const statusList = reactive([
-  {
-    name: '空载',
-    selected: true,
-    value: 0,
-    cssClass: 'btn_empty',
-    activeClass: 'btn_empty empty',
-    color: '#aaa'
-  },
+  //{
+  //  name: '空载',
+  //  selected: true,
+  //  value: 0,
+  //  cssClass: 'btn_empty',
+  //  activeClass: 'btn_empty empty',
+  //  color: '#aaa'
+  //},
   {
     name: '正常',
     selected: true,
-    value: 1,
+    value: 0,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal',
     color: '#3bbb00'
@@ -343,7 +365,7 @@ const statusList = reactive([
   {
     name: '预警',
     selected: true,
-    value: 2,
+    value: 1,
     cssClass: 'btn_warn',
     activeClass: 'btn_warn warn',
     color: '#ffc402'
@@ -351,18 +373,26 @@ const statusList = reactive([
   {
     name: '告警',
     selected: true,
-    value: 3,
+    value: 2,
     cssClass: 'btn_error',
     activeClass: 'btn_error error',
     color: '#fa3333'
   },
   {
-    name: '未绑定',
+    name: '升级',
     selected: true,
-    value: 4,
+    value: 3,
     cssClass: 'btn_unbound',
     activeClass: 'btn_unbound unbound',
     color: '#05ebfc'
+  },
+  {
+    name: '故障',
+    selected: true,
+    value: 4,
+    cssClass: 'btn_empty',
+    activeClass: 'btn_empty empty',
+    color: '#aaa'
   },
   {
     name: '离线',
@@ -463,6 +493,7 @@ const getNavList = async() => {
 
 // 保存机柜修改/删除
 const saveMachine = async() => {
+  getTableData(false);
   getNavList();
 }
 
@@ -608,8 +639,22 @@ const cascaderChange = (_row) => {
 onBeforeMount(() => {
   getNavList();
   getTableData(false);
+  flashListTimer.value = setInterval((getTableData), 5000);
 })
 
+onBeforeUnmount(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -798,8 +843,8 @@ onBeforeMount(() => {
   }
   .line {
     height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
+    margin-top: 30px;
+    margin-bottom: 10px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
