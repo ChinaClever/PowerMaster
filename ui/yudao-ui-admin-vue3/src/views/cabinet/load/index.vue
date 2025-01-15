@@ -217,7 +217,7 @@ const echartsOption = reactive({
 
 const statusList = reactive([
   {
-    name: '未开通',
+    name: '空载',
     selected: true,
     value: 0,
     cssClass: 'btn_empty',
@@ -283,6 +283,19 @@ const statusList = reactive([
 //    loading.value = false
 //  }
 //}
+//const lookRow = (row) => {
+//  console.log('1111row',row);
+//  const roomId = row.roomId;
+//  const cabinet = row.id;
+//  const cabinetName = row.cabinetName;
+//  const roomName = row.roomName;
+//  console.log('roomId',roomId);
+//  console.log('cabinet',cabinet);
+//  console.log('cabinetName',cabinetName);
+//  console.log('roomName',roomName);
+//  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet }})
+//}
+
 const getTableData = async(reset = false) => {
   loading.value = true
   if (reset) queryParams.pageNo = 1
@@ -383,7 +396,6 @@ const handleSwitchModal = (value) => {
 }
 
 const toMachineDetail = (row) => {
-  console.log("row",row)
   //const devKey = '192.168.1.200-3';
   //const busId = 2;
   //const location = '192.168.1.200-3';

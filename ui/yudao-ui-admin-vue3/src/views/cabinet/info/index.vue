@@ -73,7 +73,7 @@
               collapse-tags />
           </el-form-item>
           <el-form-item>
-            <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
+            <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData()"><Icon icon="ep:search" />搜索</el-button>
             <!--<el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>-->
           </el-form-item>
         </div>
@@ -196,14 +196,14 @@
             <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
           </div>
           <div class="room">{{item.roomName}}-{{item.cabinetName}}-{{item.cabinet_key}}</div>
-          <!--<div v-if="item.status == 0" class="status-empty">空载</div>-->
-          <div v-if="item.status == 0" class="status-unbound">正常</div>
-          <div v-else-if="item.status == 1" class="status-normal">预警</div>
-          <div v-else-if="item.status == 2" class="status-warn">告警</div>
-          <div v-else-if="item.status == 3" class="status-error">升级</div>
-          <div v-else-if="item.status == 4" class="status-error">故障</div>
-          <div v-else-if="item.status == 5" class="status-offline">离线</div>
-          <button v-if="item.status !== 5" class="detail" @click.prevent="toMachineDetail(item)">详情</button>
+          <div v-if="item.status == 0" class="status-empty">空载</div>
+          <!--<div v-if="item.status == 0" class="status-unbound">正常</div>-->
+          <div v-else-if="item.status == 1" class="status-normal">正常</div>
+          <div v-else-if="item.status == 2" class="status-warn">预警</div>
+          <div v-else-if="item.status == 3" class="status-error">告警</div>
+          <!--<div v-else-if="item.status == 4" class="status-error">故障</div>-->
+          <div v-else-if="item.status == 4" class="status-offline">离线</div>
+          <button v-if="item.status !== 4" class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
       <Pagination
@@ -211,7 +211,7 @@
         :total="queryParams.pageTotal"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
-        @pagination="getTableData(false)"
+        @pagination="getTableData()"
       />
       <template v-if="listPage.length == 0 && !switchValue">
         <el-empty description="暂无数据" :image-size="595" />
@@ -346,18 +346,18 @@ const queryParams = reactive({
 }) as any
 
 const statusList = reactive([
-  //{
-  //  name: '空载',
-  //  selected: true,
-  //  value: 0,
-  //  cssClass: 'btn_empty',
-  //  activeClass: 'btn_empty empty',
-  //  color: '#aaa'
-  //},
+  {
+    name: '空载',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_empty',
+    activeClass: 'btn_empty empty',
+    color: '#aaa'
+  },
   {
     name: '正常',
     selected: true,
-    value: 0,
+    value: 1,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal',
     color: '#3bbb00'
@@ -365,7 +365,7 @@ const statusList = reactive([
   {
     name: '预警',
     selected: true,
-    value: 1,
+    value: 2,
     cssClass: 'btn_warn',
     activeClass: 'btn_warn warn',
     color: '#ffc402'
@@ -373,31 +373,31 @@ const statusList = reactive([
   {
     name: '告警',
     selected: true,
-    value: 2,
+    value: 3,
     cssClass: 'btn_error',
     activeClass: 'btn_error error',
     color: '#fa3333'
   },
-  {
-    name: '升级',
-    selected: true,
-    value: 3,
-    cssClass: 'btn_unbound',
-    activeClass: 'btn_unbound unbound',
-    color: '#05ebfc'
-  },
-  {
-    name: '故障',
-    selected: true,
-    value: 4,
-    cssClass: 'btn_empty',
-    activeClass: 'btn_empty empty',
-    color: '#aaa'
-  },
+  //{
+  //  name: '升级',
+  //  selected: true,
+  //  value: 3,
+  //  cssClass: 'btn_unbound',
+  //  activeClass: 'btn_unbound unbound',
+  //  color: '#05ebfc'
+  //},
+  //{
+  //  name: '故障',
+  //  selected: true,
+  //  value: 4,
+  //  cssClass: 'btn_empty',
+  //  activeClass: 'btn_empty empty',
+  //  color: '#aaa'
+  //},
   {
     name: '离线',
     selected: true,
-    value: 5,
+    value: 4,
     cssClass: 'btn_offline',
     activeClass: 'btn_offline offline',
     color: '#7700ff'
@@ -406,7 +406,7 @@ const statusList = reactive([
 const props = { multiple: true }
 
 // 接口获取机柜列表
-const getTableData = async(reset = false) => {
+const getTableData = async() => {
   let ids;
   if(cabinetIds.value.length == 0){
     ids = null;
@@ -414,7 +414,7 @@ const getTableData = async(reset = false) => {
     ids =cabinetIds.value
   }
   loading.value = true
-  if (reset) queryParams.pageNo = 1
+  //if (reset) queryParams.pageNo = 1
   try {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
@@ -433,18 +433,27 @@ const getTableData = async(reset = false) => {
           cabinetName: item.cabinet_name,
           roomName: item.room_name,
           status: item.status,
-          apparentTotal: formatNumber(item.cabinet_power.total_data.pow_apparent, 3),
-          apparentA: formatNumber(item.cabinet_power.path_a?.pow_apparent, 3),
-          apparentB: formatNumber(item.cabinet_power.path_b?.pow_apparent, 3),
-          activeTotal: formatNumber(item.cabinet_power.total_data.pow_active, 3),
-          activeA: formatNumber(item.cabinet_power.path_a?.pow_active, 3),
-          activeB: formatNumber(item.cabinet_power.path_b?.pow_active, 3),
-          eleTotal: formatNumber(item.cabinet_power.total_data.ele_active, 1),
-          eleA: formatNumber(item.cabinet_power.path_a?.ele_active, 1),
-          eleB: formatNumber(item.cabinet_power.path_b?.ele_active, 1),
+          //apparentTotal: formatNumber(item.cabinet_power.total_data.pow_apparent, 3),
+          //apparentA: formatNumber(item.cabinet_power.path_a?.pow_apparent, 3),
+          //apparentB: formatNumber(item.cabinet_power.path_b?.pow_apparent, 3),
+          //activeTotal: formatNumber(item.cabinet_power.total_data.pow_active, 3),
+          //activeA: formatNumber(item.cabinet_power.path_a?.pow_active, 3),
+          //activeB: formatNumber(item.cabinet_power.path_b?.pow_active, 3),
+          //eleTotal: formatNumber(item.cabinet_power.total_data.ele_active, 1),
+          //eleA: formatNumber(item.cabinet_power.path_a?.ele_active, 1),
+          //eleB: formatNumber(item.cabinet_power.path_b?.ele_active, 1),
+          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
+          apparentA: item.cabinet_power.path_a?.pow_apparent.toFixed(3),
+          apparentB: item.cabinet_power.path_b?.pow_apparent.toFixed(3),
+          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
+          activeA: item.cabinet_power.path_a?.pow_active.toFixed(3),
+          activeB: item.cabinet_power.path_b?.pow_active.toFixed(3),
+          eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
+          eleA: item.cabinet_power.path_a?.ele_active.toFixed(1),
+          eleB: item.cabinet_power.path_b?.ele_active.toFixed(1),
           powerFactorTotal: item.cabinet_power.total_data.power_factor,
-          powerReactiveTotal: formatNumber(item.cabinet_power.total_data.pow_reactive, 3),
-          loadFactor: formatLoadFactor(item.load_factor),
+          powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
+          loadFactor: item.load_factor,
           abzb: '-' as number | string
         }
         if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
@@ -456,7 +465,7 @@ const getTableData = async(reset = false) => {
       listPage.value = list;
       console.log('res.total',res.total);
       queryParams.pageTotal = res.total;
-      //console.log('listPage', listPage.value)
+      console.log('listPage', listPage.value)
       // console.log(res.runStatus);
     }
   } finally {
@@ -464,12 +473,12 @@ const getTableData = async(reset = false) => {
   }
 }
 
-const formatNumber = (value, precision) => {
-  if (typeof value === 'number' && !isNaN(value)) {
-    return value.toFixed(precision);
-  }
-  return 0;
-};
+//const formatNumber = (value, precision) => {
+//  if (typeof value === 'number' && !isNaN(value)) {
+//    return value.toFixed(precision);
+//  }
+//  return 0;
+//};
 
 const formatLoadFactor = (value) => {
   if (typeof value === 'number' && !isNaN(value)) {
@@ -493,7 +502,7 @@ const getNavList = async() => {
 
 // 保存机柜修改/删除
 const saveMachine = async() => {
-  getTableData(false);
+  getTableData();
   getNavList();
 }
 
@@ -507,7 +516,7 @@ const handleSwitchModal = (value) => {
   } else {
     queryParams.pageSize = 24;
   }
-  getTableData(true);
+  getTableData();
 }
 
 //已删除
@@ -592,7 +601,7 @@ const handleCheck = (row) => {
     }
   })
   cabinetIds.value = ids
-  getTableData(true)
+  getTableData()
 }
 
 // 打开 编辑/添加 表单弹窗
@@ -624,7 +633,7 @@ const handleDelete = async (key: string) => {
     message.success('删除成功')
     // 刷新列表
     await getNavList()
-    getTableData(true)
+    getTableData()
   } catch (error) {
     // console.log(error)
   }
@@ -638,7 +647,7 @@ const cascaderChange = (_row) => {
 
 onBeforeMount(() => {
   getNavList();
-  getTableData(false);
+  getTableData();
   flashListTimer.value = setInterval((getTableData), 5000);
 })
 

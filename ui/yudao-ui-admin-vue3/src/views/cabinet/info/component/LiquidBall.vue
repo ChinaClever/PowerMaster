@@ -21,7 +21,7 @@ const props = defineProps({
 })
 const color = ref('');
 const echartsOption = reactive<any>({});
-const dataValue = ref(props.precent);
+//console.log('props.precent',Math.round(props.precent));
 
 const judgeColor = () => {
   if (props.precent == 0) {
@@ -43,7 +43,7 @@ watch(() => props.precent,(val) => {
   echartsOption.series = [
     {
       type: 'liquidFill',
-      data: [dataValue.value / 100], // 设置水球图的填充比例
+      data: [Math.round(val) / 100], // 设置水球图的填充比例
       label: {
         fontSize: 12, // 设置字体大小
         fontWeight: 'bold', // 设置字体粗细
@@ -52,7 +52,7 @@ watch(() => props.precent,(val) => {
           if (params.data == 0) {
             return '功率因素'
           } else {
-            return props.precent + '%'
+            return Math.round(val) + '%'
           }
         }
       },
@@ -63,7 +63,7 @@ watch(() => props.precent,(val) => {
       },
       color: [color.value], //3b8bf5 // 水的颜色
       backgroundStyle: { // 球的背景色
-        color: props.precent == 0 ? '#aaa' : '#fff'
+        color: Math.round(val) == 0 ? '#aaa' : '#fff'
       }
     }
   ]

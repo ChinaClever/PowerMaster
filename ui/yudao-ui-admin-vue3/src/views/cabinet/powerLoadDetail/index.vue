@@ -189,7 +189,7 @@ const queryParams = reactive({
   roomId: history?.state?.roomId as number | undefined,
   cabinet_key : history?.state?.cabinet_key as string | undefined,
   cabinet_name: history?.state?.cabinet_name as string | undefined,
-  type: 0,
+  type: 1,
   granularity: "SeventyHours"
 })
 const queryParamsSearch = reactive({
@@ -515,13 +515,13 @@ watch( ()=>timeRadio.value, async(value)=>{
     isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
     lineChartQueryParams.granularity = 'day'
   }
-  await getLineChartData();
+  await getCVLineChartData();
 });
 
 //刷新图
 const flashChartData = async () =>{
   await getDetailData();
-  await getLineChartData();
+  await getCVLineChartData();
   //await initData();
         function getTextColor (value) {
             if (value <= 40) {
@@ -692,32 +692,38 @@ const isHaveData = ref(true)
 
 watch(() => switchChartContainer.value,async () => {
   if(switchChartContainer.value === 0){
+    queryParams.type = 1;
     visContro.value.curVis = true;
   }
   else if(switchChartContainer.value === 2){
+    queryParams.type = 1
     visContro.value.volVis = true;
   }
   else if(switchChartContainer.value === 3){
+    queryParams.type = 0
     visContro.value.activeVis = true;
   }
   else if(switchChartContainer.value === 4){
+    queryParams.type = 0
     visContro.value.reactiveVis = true;
   }
   else if(switchChartContainer.value === 5){
-    visContro.value.currentVis = true
+    queryParams.type = 0
+    visContro.value.currentVis = true;
   }
-  else if(switchChartContainer.value === 6){
-    visContro.value.factorVis = true
-  }
-  await getLineChartData();
+  //else if(switchChartContainer.value === 6){
+  //  visContro.value.factorVis = true
+  //}
+  await getCVLineChartData();
 })
 
 // 获取折线图数据
-const getLineChartData =async () => {
+const getCVLineChartData =async () => {
+  console.log('1111',curChartData.value);
   const data = await CabinetApi.getBusLineChartDetailData({
     id: 178,
     roomId: 115,
-    type: 0,
+    type: 1,
     granularity: "SeventyHours"
   });
   curChartData.value = data;
@@ -886,7 +892,7 @@ onMounted(async () => {
   try {
     //devKeyList.value = await loadAll();
     await getDetailData();
-    await getLineChartData();
+    await getCVLineChartData();
     console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
     initChart();
     initChart1();
