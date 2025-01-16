@@ -13,29 +13,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -71,24 +48,24 @@
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
-              <div class="progress" v-if="item.abdlzb">
-                <div class="left" :style="`flex: ${item.abdlzb}`">{{item.abdlzb}}%</div>
+              <div class="progress">
+                <div class="left" :style="`flex: ${item.apow || '0.00'}`">{{item.apow || '0.00'}}%</div>
                 <div class="line"></div>
-                <div class="right" :style="`flex: ${100 - item.abdlzb}`">{{100 - item.abdlzb}}%</div>
+                <div class="right" :style="`flex: ${item.bpow || '0.00'}`">{{item.bpow || '0.00'}}%</div>
                 <div class="tip">
                   <span>A路</span>
                   <span>B路</span>
                 </div>
               </div>
-              <div class="progress" v-else>
-                <div class="left" :style="`flex: ${item.id}`">null</div>
+              <!-- <div class="progress" v-else>
+                <div class="left" :style="`flex: ${item.apow || '0.00'}`">{{item.apow || '0.00'}}%</div>
                 <div class="line"></div>
-                <div class="right" :style="`flex:  ${item.abdlzb}`">null</div>
+                <div class="right" :style="`flex:  ${item.bpow || '0.00'}`">{{item.bpow || '0.00'}}%</div>
                 <div class="tip">
                   <span>A路</span>
                   <span>B路</span>
                 </div>
-              </div>
+              </div> -->
             </div>
             <!-- 功率 -->
             <!-- <div class="progressContainer">
@@ -109,7 +86,7 @@
               </div>
             </div> -->
             <!-- 电流 -->
-            <div class="content" v-if="switchValue == 1">
+            <!-- <div class="content" v-if="switchValue == 1">
               <div class="road">A路</div>
               <div class="valueList">
                 <div>Ia：{{item.Ia0 || '0.00'}}A</div>
@@ -122,9 +99,9 @@
                 <div>Ia：{{item.Ib1 || '0.00'}}A</div>
                 <div>Ia：{{item.Ib2 || '0.00'}}A</div>
               </div>
-            </div>
+            </div> -->
             <!-- 功率 -->
-            <div class="content" v-if="switchValue == 1">
+            <!-- <div class="content" v-if="switchValue == 1">
               <div class="road">A路</div>
               <div class="valueList">
                 <div>Pa：{{item.Pa0 || '0.00'}}Kw</div>
@@ -137,7 +114,7 @@
                 <div>Pa：{{item.Pb1 || '0.00'}}Kw</div>
                 <div>Pa：{{item.Pb2 || '0.00'}}Kw</div>
               </div>
-            </div>
+            </div> -->
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
             <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
           </div>
@@ -187,22 +164,45 @@
 
         <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
-          <el-table-column label="A路" align="center">
-            <el-table-column label="I1(A)" min-width="90" align="center" prop="Ia0" />
-            <el-table-column label="I2(A)" min-width="90" align="center" prop="Ia1" />
-            <el-table-column label="I3(A)" min-width="90" align="center" prop="Ia2" />
-            <el-table-column label="P1(kW)" min-width="90" align="center" prop="Pa0" />
-            <el-table-column label="P2(kW)" min-width="90" align="center" prop="Pa1" />
-            <el-table-column label="P3(kW)" min-width="90" align="center" prop="Pa2" />
+          <el-table-column label="总视在功率" min-width="90" align="center" prop="powApparentTotal" />
+          <el-table-column label="A路视在功率" min-width="90" align="center" prop="powApparentA" />
+          <el-table-column label="B路视在功率" min-width="90" align="center" prop="powApparentB" />
+          <el-table-column label="A路占比" min-width="90" align="center" prop="aPow" />
+          <el-table-column label="B路占比" min-width="90" align="center" prop="bPow" />
+        <el-table-column label="操作" width="100px" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toDetail(scope.row)"
+              style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
+            >
+            设备详情
+            </el-button>
+          </template>
+        </el-table-column>
+        
+          <!-- <el-table-column label="操作" width="100px">
+          <template #default="scope">
+            <el-button size="small" link @click="openListenerFieldForm(scope.row, scope.$index)">详情</el-button>
+          </template>
+        </el-table-column> -->
+          <!-- <el-table-column label="A路" align="center">
+            <el-table-column label="I1(A)" min-width="90" align="center" prop="acurValueOne" />
+            <el-table-column label="I2(A)" min-width="90" align="center" prop="acurValueTwe" />
+            <el-table-column label="I3(A)" min-width="90" align="center" prop="acurValueThree" />
+            <el-table-column label="P1(kW)" min-width="90" align="center" prop="bpowValueOne" />
+            <el-table-column label="P2(kW)" min-width="90" align="center" prop="bpowValueTwe" />
+            <el-table-column label="P3(kW)" min-width="90" align="center" prop="bpowValueThree" />
           </el-table-column>
           <el-table-column label="B路"  align="center">
-            <el-table-column label="I1(A)" min-width="90" align="center" prop="Ib0" />
-            <el-table-column label="I2(A)" min-width="90" align="center" prop="Ib1" />
-            <el-table-column label="I3(A)" min-width="90" align="center" prop="Ib2" />
-            <el-table-column label="P1(kW)" min-width="90" align="center" prop="Pb0" />
-            <el-table-column label="P2(kW)" min-width="90" align="center" prop="Pb1" />
-            <el-table-column label="P3(kW)" min-width="90" align="center" prop="Pb2" />
-          </el-table-column>
+            <el-table-column label="I1(A)" min-width="90" align="center" prop="bcurValueOne" />
+            <el-table-column label="I2(A)" min-width="90" align="center" prop="bcurValueTwe" />
+            <el-table-column label="I3(A)" min-width="90" align="center" prop="bcurValueThree" />
+            <el-table-column label="P1(kW)" min-width="90" align="center" prop="bpowValueOne" />
+            <el-table-column label="P2(kW)" min-width="90" align="center" prop="bpowValueTwe" />
+            <el-table-column label="P3(kW)" min-width="90" align="center" prop="bpowValueThree" />
+          </el-table-column> -->
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"

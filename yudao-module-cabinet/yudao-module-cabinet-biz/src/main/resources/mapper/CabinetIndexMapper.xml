@@ -62,10 +62,12 @@
         cfg.ele_limit_month,
         cfg.x_coordinate,
         cfg.y_coordinate,
-        cfg.company
+        cfg.company,
+        ri.room_name as roomName
         FROM
         cabinet_index ci
         LEFT JOIN cabinet_cfg cfg on cfg.cabinet_id = ci.id
+        LEFT JOIN room_index ri on ri.id = ci.room_id
         <where>
             <if test="req.cabinetIds !=null and req.cabinetIds.size >0">
                 and ci.id in
@@ -96,5 +98,18 @@
             </if>
         </where>
         order by ci.create_time desc
+    </select>
+    <select id="selectLoadStatusCount" resultType="java.util.Map">
+        SELECT
+        sum(case when ci.load_status = 0 then 1 else 0 end) as LoadRateZero,
+        sum(case when ci.load_status = 1 then 1 else 0 end) as lessThirty,
+        sum(case when ci.load_status = 2 then 1 else 0 end) as greaterThirty,
+        sum(case when ci.load_status = 3 then 1 else 0 end) as greaterSixty,
+        sum(case when ci.load_status = 4 then 1 else 0 end) as greaterNinety,
+        count(id) as total
+        FROM cabinet_index ci
+        <where>
+            ci.is_deleted = 0
+        </where>
     </select>
 </mapper>

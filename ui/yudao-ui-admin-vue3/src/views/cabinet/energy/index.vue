@@ -2,80 +2,38 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜用能">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
-        </div> -->
+        <div style="font-size:14px; margin-top:45px; margin-left:20px">
+          <div ><span>用能最大机柜：</span>
+          </div>
+          <div>
+            <span>昨日：</span>
+            <span>{{ busName1 }}</span>
+          </div>
+          <div >
+            <span>上周：</span>
+            <span>{{ busName2 }}</span>
+          </div>
+          <div >
+            <span>上月：</span>
+            <span>{{ busName3 }}</span>
+          </div>
+        </div>
         <div class="line"></div>
-        <!--<div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>空载
-            </div>
-            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>告警
-            </div>
-            <div class="value"><span class="number">{{sumInform}}</span>个</div>
-          </div>
-          <div>用能最大机柜：</div>
-          <div>昨日用能：{{}}</div>
-          <div>上周用能：{{}}</div>
-          <div>上月用能：{{}}</div>
-        </div>-->
-        <div class="status-container">
+      </div>
+        <!-- <div class="status-container">
           <div class="status-item">用能最大机柜：</div>
           <div class="status-item">昨日用能：{{  }}</div>
           <div class="status-item">上周用能：{{  }}</div>
           <div class="status-item">上月用能：{{  }}</div>
         </div>
-        <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
-      </div>
+        <div class="line"></div> -->
     </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
         :model="queryParams"
         :inline="true"
-        label-width="68px"
+        label-width="90px"
       >
         <div style="margin-left:-30px;">
           <el-form-item label="用能排序"  label-width="100px">
@@ -90,7 +48,7 @@
           <el-button @click="changeTimeGranularity('lastMonth')"
           >
             上月
-          </el-button>                            
+          </el-button>
         </el-form-item>
           <el-form-item label="公司名称" prop="username" style="margin-left:50px;">
             <el-input
@@ -174,7 +132,9 @@ const sumEarly = ref();
 const sumInform = ref();
 const sumDidnot = ref();
 const sumOffline = ref();
-
+const busName1 = ref('无数据')
+const busName2 = ref('无数据')
+const busName3 = ref('无数据')
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
@@ -182,11 +142,11 @@ const tableData = ref([])
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const queryParams = reactive({
+  timeGranularity: undefined,
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-  timeGranularity:'',
 })
 const pageSizeArr = ref([24,36,48,96]);
 
@@ -196,17 +156,35 @@ const getNavList = async() => {
   navList.value = res
 }
 
-const statistics = async() => {
-  const resStatus =await CabinetApi.getCabinetInfoStatus();
-    sumNoload.value = resStatus.list[0].sumNoload;
-    sumNormal.value = resStatus.list[0].sumNormal;
-    sumEarly.value = resStatus.list[0].sumEarly;
-    sumInform.value = resStatus.list[0].sumInform;
+const changeTimeGranularity = (value) => {
+  queryParams.timeGranularity = value;
+  getTableData(true);
+}
+
+
+const getMaxData = async() => {
+    try {
+    const res = await CabinetApi.getEqMax()
+    if (res) {
+        //借用type值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
+        const dataList = res
+        dataList.forEach(item => {
+          if(item.type == 0){
+            busName1.value = item.location
+          }else if (item.type == 1){
+            busName2.value = item.location
+          }else if (item.type == 2){
+            busName3.value = item.location
+          }
+        })
+    }
+  } finally {
+
+  }
 }
 
 // 获取表格数据
 const getTableData = async(reset = false) => {
-  console.log('getTableData', queryParams)
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
@@ -231,7 +209,6 @@ const getTableData = async(reset = false) => {
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
         }
       })
-      console.log('tableData.value',tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {
@@ -264,11 +241,6 @@ const handleCheck = (row) => {
   getTableData(true)
 }
 
-const changeTimeGranularity = (value) => {
-  queryParams.timeGranularity = value;
-  getTableData(true);
-}
-
 // 跳转详情
 const toDetail = (roomId, id) => {
   console.log('跳转详情', id)
@@ -278,7 +250,8 @@ const toDetail = (roomId, id) => {
 onBeforeMount(() => {
   getNavList()
   getTableData()
-  statistics()
+  getMaxData()
+  // statistics()
 })
 </script>
 
@@ -441,7 +414,7 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      bottom: 4px;
+      top: 4px;
     }
   }
 }

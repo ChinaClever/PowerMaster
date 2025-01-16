@@ -6,27 +6,39 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>正常
+              <div class="tag empty"></div>未绑定
             </div>
-            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
+            <div class="value"><span class="number">{{Unbound}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载
+              <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
+            <div class="value"><span class="number">{{Normal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
+            <div class="value"><span class="number">{{Warning}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">{{sumInform}}</span>个</div>
+            <div class="value"><span class="number">{{Alarm}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">{{Offline}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div></div>全部
+            </div>
+            <div class="value"><span class="number">{{totalAll}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -253,13 +265,14 @@ const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
 const pageSizeArr = ref([24,36,48,96])
 const total = ref(0) // 列表的总页数
 const deletedTotal = ref(0) // 已删除PDU设备列表的总页数
-// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
-const sumNoload = ref();
-const sumNormal = ref();
-const sumEarly = ref();
-const sumInform = ref();
-const sumDidnot = ref();
-const sumOffline = ref();
+// 运行状态 0：未绑定 1：正常 2：预警 3：告警 4：离线
+const Unbound = ref();
+const Normal = ref();
+const Warning = ref();
+const Alarm = ref();
+const Offline = ref();
+const totalAll = ref();
+
 const flashListTimer = ref();
 
 const optionsCol = reactive([{
@@ -495,11 +508,14 @@ const getNavList = async() => {
   navList.value = res;
 
     const resStatus =await CabinetApi.getCabinetInfoStatus();
-    sumNoload.value = resStatus.list[0].sumNoload;
-    sumNormal.value = resStatus.list[0].sumNormal;
-    sumEarly.value = resStatus.list[0].sumEarly;
-    sumInform.value = resStatus.list[0].sumInform;
+    Unbound.value = resStatus.unbound;
+    Normal.value = resStatus.normal;
+    Warning.value = resStatus.warning;
+    Alarm.value = resStatus.alarm;
+    Offline.value = resStatus.offline;
+    totalAll.value = resStatus.total;
 }
+
 
 // 保存机柜修改/删除
 const saveMachine = async() => {

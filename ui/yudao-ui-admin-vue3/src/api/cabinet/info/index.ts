@@ -23,6 +23,10 @@ export const CabinetApi = {
     return await request.post({ url: `/cabinet/runStatus` })
   },
 
+  getEqMax: async () => {
+    return await request.get({ url: `/cabinet/eq/max` })
+  },
+
   //获得已删除机柜分页
   getDeletedCabinetPage: async (data: any) => {
     return await request.post({ url: `/cabinet/deletedCabinetPage`, data })

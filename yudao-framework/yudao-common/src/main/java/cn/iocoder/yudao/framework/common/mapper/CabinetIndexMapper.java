@@ -10,6 +10,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectKey;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author luowei
  * @version 1.0
@@ -29,4 +32,8 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     CabineIndexCfgVO selectCabineIndexCfgById(int id);
 
     Page<CabineIndexCfgVO> selectIndexLoadPage(@Param("page") Page page, @Param("req") CabinetIndexVo req);
+
+    List<CabineIndexCfgVO> selectIndexLoadPage(@Param("req") CabinetIndexVo req);
+
+    Map<String, Integer> selectLoadStatusCount();
 }

@@ -6,10 +6,12 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,14 +76,14 @@ public interface CabinetService {
      * 根据负载状态统计
      * @return
      */
-    Map<Integer,Integer>  loadStatusCount();
+    Map<String,Integer>  loadStatusCount();
 
 
     /**
      * 机柜配电状态统计
      * @return
      */
-    PageResult<JSONObject> getCabinetRunStatus();
+    CabinetRunStatusResVO getCabinetRunStatus();
 
     /**
      * 获得已删除机柜分页
@@ -115,4 +117,12 @@ public interface CabinetService {
     CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int roomId, String type) throws IOException;
 
     Map getCabinetDistributionFactor(int id, int roomId, String type) throws IOException;
+
+    CabinetPowerLoadDetailRespVO getDetailData(CabinetPowerLoadDetailReqVO reqVO);
+
+    Map<String, List<CabinetLoadPageChartResVO>> getLineChartDetailData(CabinetPowerLoadDetailReqVO reqVO);
+
+    List<CabinetEnergyMaxResVO> getEnergyMax();
+
+    PageResult<CabinetEnergyStatisticsResVO> getEqPage1(CabinetIndexVo pageReqVO);
 }

@@ -13,40 +13,40 @@
             <div class="top">
               <div class="tag empty"></div>空载
             </div>
-            <div class="value"><span class="number">{{Loadstatus[0]}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.LoadRateZero}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag"></div>&lt;30%
             </div>
-            <div class="value"><span class="number">{{Loadstatus[1]}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.lessThirty}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag normal"></div>30%~60%
             </div>
-            <div class="value"><span class="number">{{Loadstatus[2]}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
           <div class="box">
             <div class="top" style="margin-left:-10px;">
               <div class="tag warn"></div>60%~90%
             </div>
-            <div class="value"><span class="number">{{Loadstatus[3]}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterSixty}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>&gt;90%
             </div>
-            <div class="value"><span class="number">{{Loadstatus[4]}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterNinety}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div></div>全部
             </div>
-            <div class="value"><span class="number">{{Loadstatus[5]}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.total}}</span>个</div>
           </div>
         </div>
-        
+
         <div class="line"></div>
       </div>
     </template>
@@ -177,7 +177,14 @@ const { push } = useRouter();
 const loading = ref(false);
 const isFirst = ref(true); // 是否第一次调用getTableData函数
 const navList = ref([]);
-const Loadstatus = ref([0,0,0,0,0,0]);
+const statusNumber = reactive({
+  LoadRateZero:0,
+  lessThirty : 0,
+  greaterThirty : 0,
+  greaterSixty : 0,
+  greaterNinety : 0,
+  total: 0
+})
 const switchValue = ref(0);
 const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
 const listPage = ref<any>([]); // 表格数据
@@ -290,19 +297,6 @@ const statusList = reactive([
 //    loading.value = false
 //  }
 //}
-//const lookRow = (row) => {
-//  console.log('1111row',row);
-//  const roomId = row.roomId;
-//  const cabinet = row.id;
-//  const cabinetName = row.cabinetName;
-//  const roomName = row.roomName;
-//  console.log('roomId',roomId);
-//  console.log('cabinet',cabinet);
-//  console.log('cabinetName',cabinetName);
-//  console.log('roomName',roomName);
-//  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet }})
-//}
-
 const getTableData = async(reset = false) => {
   loading.value = true
   if (reset) queryParams.pageNo = 1
@@ -360,8 +354,13 @@ const getNavList = async() => {
 // 接口获取负载状态
 const getLoadStatusList = async() => {
   const res = await CabinetApi.getLoadStatus({})
-  console.log('接口获取机房导航列表', res)
-  Loadstatus.value = res
+    statusNumber.LoadRateZero = res.LoadRateZero;
+    statusNumber.greaterNinety = res.greaterNinety;
+    statusNumber.lessThirty = res.lessThirty;
+    statusNumber.greaterThirty = res.greaterThirty;
+    statusNumber.greaterSixty = res.greaterSixty;
+    statusNumber.total = res.total;
+  // Loadstatus.value = res
 }
 
 const handleClick = (row) => {
