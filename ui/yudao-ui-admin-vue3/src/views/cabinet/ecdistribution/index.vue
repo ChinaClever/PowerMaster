@@ -1,11 +1,11 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分布" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分布" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
         <div class="nav_header">      
           <span>{{nowAddress}}</span>
-          <span>{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span>
+          <span style="padding-top:10px">{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span>
         </div>
       <div class="nav_content">
        <div class="description-item">
@@ -21,7 +21,7 @@
           <span class="value">{{ maxEqDataTimeTemp }}</span>
         </div>
         <div class="description-item">
-          <span class="label">最小耗电量 :</span>
+          <span class="label">最小耗电量:</span>
           <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
         </div>
         <div v-if="minEqDataTimeTemp" class="description-item">
@@ -112,7 +112,7 @@
         </el-tab-pane>
       </el-tabs>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 
 </template>
 
@@ -125,6 +125,7 @@ import { formatDate, endOfDay, convertDate, addTime, betweenDay, beginOfDay } fr
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
+import  CommonMenu1 from './CommonMenu1.vue'
 
 defineOptions({ name: 'ECDistribution' })
 const exportLoading = ref(false)
@@ -296,7 +297,7 @@ loading.value = true
       startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
       endEleData.value = data.list.map((item) => formatNumber(item.end_ele, 1));
       endTimeData.value = data.list.map((item) => formatDate(item.end_time, 'YYYY-MM-DD'));
-      eqData.value = data.list.map((item) => formatNumber(item.end_ele-item.start_ele, 1));
+      eqData.value = data.list.map((item) => formatNumber(item.eq_value, 1));
       createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
 
       maxEqDataTemp.value = Math.max(...eqData.value);
@@ -353,6 +354,9 @@ const initLineChart = () => {
 
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
+  if (value === 0){
+    return 0;
+  }
     if (!isNaN(value)) {
         return Number(value).toFixed(decimalPlaces);
     } else {
@@ -520,6 +524,7 @@ onMounted(async () => {
 .description-item {
   display: flex;
   align-items: center;
+  padding-top: 10px;
 }
 
 .label {

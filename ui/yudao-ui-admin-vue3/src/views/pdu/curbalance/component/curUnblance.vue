@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartDom" style="width: 400px; height: 280px;margin-left:50px;"></div>
+  <div ref="chartDom" style="width: 400px; height: 280px;margin-left:30px;"></div>
 </template>
 
 <script setup lang="ts">

@@ -394,7 +394,7 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
-    const data = await EnvDataApi.getEnvDataPage(queryParams)
+    const data = await EnvDataApi.getEnvDataPageByCabinet(queryParams)
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -503,7 +503,7 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, address: string, channel: number, position: number, sensorId: number) => {
   let detectValue = channel?.toString()+position?.toString()
-  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId);
+  push('/cabinet/record/CabinetEnvAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId);
 }
 
 /** 导出按钮操作 */

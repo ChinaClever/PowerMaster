@@ -34,11 +34,11 @@
         </div> -->
         
         <div class="nav_header" style="font-size: 14px;">
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span >{{nowAddress}}</span>
           <br/>
       </div>
       
-        <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
+        <div  class="descriptions-container"  style="font-size: 14px;">
           <div  class="description-item">
             <span class="label">最大值 :</span>
             <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
@@ -464,7 +464,7 @@ loading.value = true
         }
       });
       // 图表显示的位置变化
-      nowAddress.value = nowAddressTemp.value
+     // nowAddress.value = nowAddressTemp.value
 
     }else{
       loading2.value=false

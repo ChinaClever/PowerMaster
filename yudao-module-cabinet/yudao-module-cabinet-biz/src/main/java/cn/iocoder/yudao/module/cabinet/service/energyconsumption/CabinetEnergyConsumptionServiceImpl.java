@@ -14,6 +14,7 @@ import cn.iocoder.yudao.module.cabinet.service.historydata.CabinetHistoryDataSer
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -37,6 +38,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsumptionService {
 
     @Autowired
@@ -432,7 +434,13 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         for (IndexDO record : records) {
             CabinetEleTotalRealtimeResVO resVO = new CabinetEleTotalRealtimeResVO();
             String roomName = mapRoom.get(record.getRoomId()).getRoomName();
-            String aisleName = mapAisle.get(record.getAisleId()).getAisleName();
+            String aisleName = null;
+            //TODO
+            try {
+                aisleName = mapAisle.get(record.getAisleId()).getAisleName();
+            }catch (Exception e){
+                log.info("aisleId为0");
+            }
             String localtion = null;
             if(record.getAisleId() != 0){
                 localtion = roomName + "-" + aisleName + "-" + record.getCabinetName();

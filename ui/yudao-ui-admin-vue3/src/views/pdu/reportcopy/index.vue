@@ -243,6 +243,7 @@
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVA， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVA， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container" :width="computedWidth" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox" v-if="visControll.volVis">
@@ -809,6 +810,7 @@ const eqData = ref<EqData>({
 interface PowData {
   apparentPowAvgValue: number[];
   activePowAvgValue: number[];
+  reactivePowAvgValue: number[];
   time: string[];
   total_pow_apparent : number;
   apparentPowMaxValue : number;
@@ -819,10 +821,15 @@ interface PowData {
   activePowMaxTime : string;
   activePowMinValue : number;
   activePowMinTime : string;
+  reactivePowMaxValue : number;
+  reactivePowMaxTime : string;
+  reactivePowMinValue : number;
+  reactivePowMinTime : string;
 }
 const powData = ref<PowData>({
   apparentPowAvgValue : [],
   activePowAvgValue: [],
+  reactivePowAvgValue: [],
   time:[],
   total_pow_apparent : 0,
   apparentPowMaxValue : 0,
@@ -832,7 +839,11 @@ const powData = ref<PowData>({
   activePowMaxValue : 0,
   activePowMaxTime : "",
   activePowMinValue : 0,
-  activePowMinTime : ""
+  activePowMinTime : "",
+  reactivePowMaxValue : 0,
+  reactivePowMaxTime : "",
+  reactivePowMinValue : 0,
+  reactivePowMinTime : ""
 }) as any
 
 interface TemData {
@@ -985,6 +996,8 @@ const getList = async () => {
     powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
     powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
     powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+    powData.value.reactivePowMaxValue = powData.value.reactivePowMaxValue?.toFixed(3);
+    powData.value.reactivePowMinValue = powData.value.reactivePowMinValue?.toFixed(3);
     visControll.powVis = true;
   }else{
     visControll.powVis = false;
@@ -1010,7 +1023,7 @@ const getList = async () => {
   }else{
     visControll.temVis = false;
   }
-debugger
+
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   PDU = JSON.parse(PDU)
   var temp = [] as any;
@@ -1628,7 +1641,7 @@ onUnmounted(() => {
 }
 
 .pageBox{
-  margin-top:4vw
+  margin-top:1vw
 }
 
 .Container{

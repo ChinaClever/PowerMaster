@@ -72,6 +72,15 @@ export function formatDate(date: Date, format?: string): string {
   return date ? dayjs(date).format(format ?? 'YYYY-MM-DD HH:mm:ss') : ''
 }
 
+export function formatDate1(date: Date, format?: string): string {
+  // 日期不存在，则返回空
+  if (!date) {
+    return ''
+  }
+  // 日期存在，则进行格式化
+  return date ? dayjs(date).format(format ?? 'YYYY-MM-DD HH:mm') : ''
+}
+
 /**
  * 获取当前的日期+时间
  */

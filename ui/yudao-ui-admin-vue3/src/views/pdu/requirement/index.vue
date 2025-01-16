@@ -76,13 +76,13 @@
       >
         <el-form-item label="时间段" prop="createTime" label-width="60px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = getFullTimeByDate(new Date(now1.getTime() - 24 * 60 * 60 * 1000));queryParams.newTime = getFullTimeByDate(now1);queryParams.timeArr = null;handleQuery();showSearchBtn = false;dateSwitch = true;"
+            @click=" startTime = new Date(now1.getTime() - 24 * 60 * 60 * 1000);endTime = new Date(); queryParams.timeType = 0;queryParams.oldTime = getFullTimeByDate(new Date(now1.getTime() - 24 * 60 * 60 * 1000));queryParams.newTime = getFullTimeByDate(now1);queryParams.timeArr = null;handleQuery();showSearchBtn = false;dateSwitch = true;"
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();showSearchBtn = false;;dateSwitch = false" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0); startTime = now;endTime = now;   queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;   queryParams.timeArr = null;handleMonthPick();showSearchBtn = false;;dateSwitch = false" 
             :type="queryParams.timeType == 1 ? 'primary' : ''"
           >
             月份
@@ -169,7 +169,7 @@
         <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}
+              {{ formatToTwoDecimals(scope.row.l1MaxCur) }}
             </el-text>
           </template>
         </el-table-column>
@@ -177,7 +177,7 @@
         <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l2MaxCur }}
+              {{ formatToTwoDecimals(scope.row.l2MaxCur) }}
             </el-text>
           </template>
         </el-table-column>
@@ -185,7 +185,7 @@
         <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l3MaxCur }}
+              {{ formatToTwoDecimals(scope.row.l3MaxCur) }}
             </el-text>
           </template>
         </el-table-column>
@@ -228,7 +228,7 @@
         <el-table-column label="最大电流(kA)" align="center" prop="l1MaxCur"  >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}
+              {{ formatToTwoDecimals(scope.row.l1MaxCur) }}
             </el-text>
           </template>
         </el-table-column>
@@ -267,7 +267,7 @@
         <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}
+              {{ formatToTwoDecimals(scope.row.l1MaxPow) }}
             </el-text>
           </template>
         </el-table-column>
@@ -275,7 +275,7 @@
         <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l2MaxPow }}
+              {{ formatToTwoDecimals(scope.row.l2MaxPow) }}
             </el-text>
           </template>
         </el-table-column>
@@ -283,7 +283,7 @@
         <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l3MaxPow }}
+              {{ formatToTwoDecimals(scope.row.l3MaxPow) }}
             </el-text>
           </template>
         </el-table-column>
@@ -321,7 +321,7 @@
         <el-table-column label="最大功率(kW)" align="center" prop="l1MaxPow"  >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}
+              {{ formatToTwoDecimals(scope.row.l1MaxPow) }}
             </el-text>
           </template>
         </el-table-column>
@@ -481,6 +481,20 @@ import pow from './component/pow.vue'
 
 const searchbth = ref(false);
 const now1 = new Date();
+let startTime = new Date(now1.getTime() - 24 * 60 * 60 * 1000);
+let endTime = new Date();
+
+const formatToTwoDecimals = (num) => {
+    if (typeof num === 'number') {
+      return num.toFixed(2);
+    } else if (typeof num === 'string') {
+      // 如果已经是字符串，则尝试转换为数字再格式化
+      const parsedNum = parseFloat(num);
+      return isNaN(parsedNum) ? "0.00" : parsedNum.toFixed(2);
+    } else {
+      return "0.00"; // 或者根据你的需求选择一个默认值
+    }
+  };
 
 // 使用 ref 来获取 DOM 元素
 const chartDom = ref<HTMLDivElement | null>(null);
@@ -709,7 +723,8 @@ const handleMonthPick = () => {
     newTime.setDate(newTime.getDate() - 1);
     newTime.setHours(23,59,59)
     queryParams.newTime = getFullTimeByDate(newTime);
-
+    startTime = new Date(queryParams.oldTime);
+     endTime = newTime;
   }else {
     queryParams.newTime = null;
   }
@@ -764,6 +779,13 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 
+const queryParams1 = reactive({
+  id : undefined,
+  type : undefined,
+  startTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
+  endTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
+})
+
 
 /** 查询列表 */
 const getList = async () => {
@@ -799,6 +821,7 @@ const getNavList = async() => {
 // }
 import { useRouter } from 'vue-router';
 import { LineChart } from 'echarts/charts'
+import { s } from 'vite/dist/node/types.d-aGj9QkWt';
 
 const router = useRouter();
 const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
@@ -890,31 +913,42 @@ let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart �
 const lineidChartContainerOne = ref<HTMLElement | null>(null);
 
 
-const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
-  console.log(lineidDateTimes.value.length)
-  console.log(lChartData.value.cur_max_value[1])
+const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => {
+  console.log(lineidDateTimes.value.length);
+  
   interface DataItem {
-  Year: any;
-  Country: any;
-  Income: any;
-}
+    Year: any;
+    Country: any;
+    Income: string; // 现在我们指定Income为字符串类型
+  }
 
+  const formatToTwoDecimals = (num) => {
+    if (typeof num === 'number') {
+      return num.toFixed(2);
+    } else if (typeof num === 'string') {
+      // 如果已经是字符串，则尝试转换为数字再格式化
+      const parsedNum = parseFloat(num);
+      return isNaN(parsedNum) ? "0.00" : parsedNum.toFixed(2);
+    } else {
+      return "0.00"; // 或者根据你的需求选择一个默认值
+    }
+  };
 
-const newData: DataItem[] = [];
-for (let i = 0; i < lineidDateTimes.value.length; i++) {
-  newData.push({ Year: lineidDateTimes.value[i], Country: 'L1-电流', Income: lChartData.value.cur_max_value[i] } as DataItem);
-  newData.push({ Year: lineidDateTimes.value[i], Country: 'L2-电流', Income: llChartData.value.cur_max_value[i] } as DataItem);
-  newData.push({ Year: lineidDateTimes.value[i], Country: 'L3-电流', Income: lllChartData.value.cur_max_value[i] } as DataItem);
-}
-console.log(newData)
-console.log(lChartData.value.pow_active_max_value[1])
-const newData1: DataItem[] = [];
-for (let i = 0; i < lineidDateTimes.value.length; i++) {
-  newData1.push({ Year: lineidDateTimes.value[i], Country: 'L1功率', Income: lChartData.value.pow_active_max_value[i] } as DataItem);
-  newData1.push({ Year: lineidDateTimes.value[i], Country: 'L2功率', Income: llChartData.value.pow_active_max_value[i] } as DataItem);
-  newData1.push({ Year: lineidDateTimes.value[i], Country: 'L3功率', Income: lllChartData.value.pow_active_max_value[i] } as DataItem);
-}
-console.log(newData1)
+  const newData: DataItem[] = [];
+  for (let i = 0; i < lineidDateTimes.value.length; i++) {
+    newData.push({ Year: lineidDateTimes.value[i], Country: 'L1-电流', Income: formatToTwoDecimals(lChartData.value.cur_max_value[i]) });
+    newData.push({ Year: lineidDateTimes.value[i], Country: 'L2-电流', Income: formatToTwoDecimals(llChartData.value.cur_max_value[i]) });
+    newData.push({ Year: lineidDateTimes.value[i], Country: 'L3-电流', Income: formatToTwoDecimals(lllChartData.value.cur_max_value[i]) });
+  }
+  console.log(newData);
+
+  const newData1: DataItem[] = [];
+  for (let i = 0; i < lineidDateTimes.value.length; i++) {
+    newData1.push({ Year: lineidDateTimes.value[i], Country: 'L1功率', Income: formatToTwoDecimals(lChartData.value.pow_active_max_value[i]) });
+    newData1.push({ Year: lineidDateTimes.value[i], Country: 'L2功率', Income: formatToTwoDecimals(llChartData.value.pow_active_max_value[i]) });
+    newData1.push({ Year: lineidDateTimes.value[i], Country: 'L3功率', Income: formatToTwoDecimals(lllChartData.value.pow_active_max_value[i]) });
+  }
+  console.log(newData1);
 
   if(flagValue.value == 0){
     return {
@@ -961,8 +995,16 @@ console.log(newData1)
     }
   ],
   tooltip: {
-    trigger: 'axis'
-  },
+    trigger: 'axis',
+    formatter: function (params) {
+        let result = '';
+        params.forEach((param) => {
+            let unit = param.seriesName.includes('功率')? 'kW' : 'A';
+            result += `${param.seriesName}: ${param.value.Income} ${unit}<br>`;
+        });
+        return result;
+    }
+},
   xAxis: {
     type: 'category',
     nameLocation: 'middle'
@@ -1057,8 +1099,16 @@ console.log(newData1)
     }
   ],
   tooltip: {
-    trigger: 'axis'
-  },
+    trigger: 'axis',
+    formatter: function (params) {
+        let result = '';
+        params.forEach((param) => {
+            let unit = param.seriesName.includes('功率')? 'kW' : 'A';
+            result += `${param.seriesName}: ${param.value.Income} ${unit}<br>`;
+        });
+        return result;
+    }
+},
   xAxis: {
     type: 'category',
     nameLocation: 'middle'
@@ -1255,7 +1305,11 @@ window.addEventListener('resize',function(){
 
 //获取电流信息
 const getLineid = async (id, type,flagValue) => {
-  const result = await PDUDeviceApi.getMaxLineHisdata({id:id ,type:type})
+  queryParams1.id = id;
+  queryParams1.type = type;
+  queryParams1.startTime = getFullTimeByDate(startTime);
+  queryParams1.endTime = getFullTimeByDate(endTime);
+  const result = await PDUDeviceApi.getMaxLineHisdata(queryParams1)
 
   const lChartData = ref({
     cur_max_value : [] as number[], //电流

@@ -185,9 +185,9 @@ public class PDUDeviceController {
         return success(pduId);
     }
 
-    @GetMapping("line/getMaxLine")
+    @PostMapping("line/getMaxLine")
     @Operation(summary = "PDU需量详情数据")
-    public CommonResult<Map> getPduMaxLine(@Parameter(description = "pdu的id") Integer id, @Parameter(description = "选择类型24小时：hour/30天 day") String type) {
-        return success(pDUDeviceService.getPduMaxLine(id, type));
+    public CommonResult<Map> getPduMaxLine(@RequestBody PDURequireDetailReq requireDetailReq) {
+        return success(pDUDeviceService.getPduMaxLine(requireDetailReq));
     }
 }

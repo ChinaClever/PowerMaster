@@ -369,6 +369,7 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
+    queryParams.ipArray = [ip.value];
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     eqData.value = data.list.map((item) => {
@@ -630,6 +631,9 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
+  start.value = useRoute().query.start as string;
+  end.value = useRoute().query.end as string;
+  ip.value = useRoute().query.ip as string;
   getList();
 
   start.value = useRoute().query.start as string;

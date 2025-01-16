@@ -74,13 +74,16 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                         .from(pageReqVO.getTimeRange()[0])
                         .to(pageReqVO.getTimeRange()[1]));
             }
+            // 假设相关对象已经正确导入和初始化
             List<String> pduIds = null;
             String[] ipArray = pageReqVO.getIpArray();
-            if (ipArray != null) {
+
+            if (ipArray!= null) {
                 pduIds = historyDataService.getPduIdsByIps(ipArray);
-                searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
+                boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduIds)); // 将 termsQuery 加入 boolQuery 的 must 子句
             }
-            // 搜索请求对象
+
+// 搜索请求对象
             SearchRequest searchRequest = new SearchRequest();
             switch (pageReqVO.getType()) {
                 case "total":
@@ -92,7 +95,6 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                         searchRequest.indices("pdu_eq_total_month");
                     }
                     break;
-
                 case "outlet":
                     // 搜索请求对象
                     searchRequest = new SearchRequest();
@@ -103,17 +105,17 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     } else {
                         searchRequest.indices("pdu_eq_outlet_month");
                     }
-                    if (pageReqVO.getOutletId() != null) {
+                    if (pageReqVO.getOutletId()!= null) {
                         Integer outletId = pageReqVO.getOutletId();
                         // 创建匹配查询
                         QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
-                        boolQuery.must(termQuery);
-                        // 将布尔查询设置到SearchSourceBuilder中
-                        searchSourceBuilder.query(boolQuery);
+                        boolQuery.must(termQuery); // 将 termQuery 加入 boolQuery 的 must 子句
                     }
                     break;
                 default:
             }
+            // 将最终的 boolQuery 作为查询添加到 searchSourceBuilder 中
+            searchSourceBuilder.query(boolQuery);
             searchRequest.source(searchSourceBuilder);
             // 执行搜索,向ES发起http请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);

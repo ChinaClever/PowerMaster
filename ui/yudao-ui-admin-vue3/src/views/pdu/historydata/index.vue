@@ -99,7 +99,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm"
+          format="YYYY-MM-DD HH:mm"
           v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
@@ -179,7 +179,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { CabinetApi } from '@/api/cabinet/info'
-import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime,formatDate1} from '@/utils/formatTime'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** pdu历史数据 列表 */
@@ -717,7 +717,7 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
      
       const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+     // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
@@ -766,6 +766,14 @@ function formatLoopId(_row: any, _column: any, cellValue: number): string {
 
 // 格式化日期
 function formatTime(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
+
+// 格式化日期
+function formatTime1( cellValue: number): string {
   if (!cellValue) {
     return ''
   }
@@ -932,8 +940,8 @@ onMounted( () => {
   const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+      formatDate1(startOfMonth),
+      formatDate1(now)
 ];
   getList();
 });
