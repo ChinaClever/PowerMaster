@@ -692,23 +692,18 @@ const isHaveData = ref(true)
 
 watch(() => switchChartContainer.value,async () => {
   if(switchChartContainer.value === 0){
-    queryParams.type = 1;
     visContro.value.curVis = true;
   }
   else if(switchChartContainer.value === 2){
-    queryParams.type = 1
     visContro.value.volVis = true;
   }
   else if(switchChartContainer.value === 3){
-    queryParams.type = 0
     visContro.value.activeVis = true;
   }
   else if(switchChartContainer.value === 4){
-    queryParams.type = 0
     visContro.value.reactiveVis = true;
   }
   else if(switchChartContainer.value === 5){
-    queryParams.type = 0
     visContro.value.currentVis = true;
   }
   //else if(switchChartContainer.value === 6){

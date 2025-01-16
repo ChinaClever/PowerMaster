@@ -77,8 +77,22 @@
         :inline="true"
         label-width="68px"
       >
-        <div>
-          <el-form-item label="公司名称" prop="username">
+        <div style="margin-left:-30px;">
+          <el-form-item label="用能排序"  label-width="100px">
+          <el-button @click="changeTimeGranularity('yesterday')"
+          >
+            昨日
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastWeek')"
+          >
+            上周
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastMonth')"
+          >
+            上月
+          </el-button>                            
+        </el-form-item>
+          <el-form-item label="公司名称" prop="username" style="margin-left:50px;">
             <el-input
               v-model="queryParams.company"
               placeholder="请输入公司名称"
@@ -92,8 +106,8 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -102,12 +116,12 @@
         <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-              <div class="info">
+              <div class="info" style="margin-left:-10px;">
                 <div>昨日：{{item.yesterdayEq}}kW·h</div>
                 <div>上周：{{item.lastWeekEq}}kW·h</div>
                 <div>上月：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.local}}</div>
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">用能详情</button>
@@ -120,9 +134,22 @@
           <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" />
           <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" />
           <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" />
+          <el-table-column label="操作" align="center">
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="toDetail(scope.row.roomId, scope.row.id)"
+                style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
+              >
+              设备详情
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
@@ -159,7 +186,9 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
+  timeGranularity:'',
 })
+const pageSizeArr = ref([24,36,48,96]);
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -202,6 +231,7 @@ const getTableData = async(reset = false) => {
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
         }
       })
+      console.log('tableData.value',tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {
@@ -232,6 +262,11 @@ const handleCheck = (row) => {
   })
   cabinetIds.value = ids
   getTableData(true)
+}
+
+const changeTimeGranularity = (value) => {
+  queryParams.timeGranularity = value;
+  getTableData(true);
 }
 
 // 跳转详情
@@ -406,7 +441,7 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      top: 4px;
+      bottom: 4px;
     }
   }
 }

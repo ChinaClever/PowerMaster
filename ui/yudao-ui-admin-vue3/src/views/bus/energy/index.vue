@@ -28,7 +28,7 @@
         :inline="true"
         label-width="68px"
       >
-        <el-form-item label="用能排序"  label-width="100px">
+        <el-form-item label="用能排序"  label-width="100px" style="margin-left:-30px;">
           <el-button @click="changeTimeGranularity('yesterday')"
           >
             昨日

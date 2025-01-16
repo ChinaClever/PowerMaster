@@ -60,8 +60,8 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="switchValue==0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />AB路占比</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue==1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="switchValue==0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />AB路占比</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue==1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -138,7 +138,7 @@
                 <div>Pa：{{item.Pb2 || '0.00'}}Kw</div>
               </div>
             </div>
-            <div class="room">{{item.local}}</div>
+            <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
             <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
           </div>
         </div>
@@ -163,6 +163,7 @@
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
@@ -176,22 +177,23 @@
 </template>
 
 <script lang="ts" setup>
-import { CabinetApi } from '@/api/cabinet/info'
+import { CabinetApi } from '@/api/cabinet/info';
 
-const { push } = useRouter() // 路由跳转
-const router = useRouter() // 路由跳转
-const tableLoading = ref(false) // 
-const isFirst = ref(true) // 是否第一次调用getTableData函数
-const navList = ref([]) // 左侧导航栏树结构列表
-const tableData = ref([])
-const switchValue = ref(0) // 表格(1) 矩阵(0)切换
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const { push } = useRouter(); // 路由跳转
+const router = useRouter(); // 路由跳转
+const tableLoading = ref(false); // 
+const isFirst = ref(true); // 是否第一次调用getTableData函数
+const navList = ref([]); // 左侧导航栏树结构列表
+const tableData = ref([]);
+const switchValue = ref(0); // 表格(1) 矩阵(0)切换
+const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
 })
+const pageSizeArr = ref([24,36,48,96]);
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -491,7 +493,7 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 10px;
-      top: 8px;
+      bottom: 8px;
     }
   }
 }

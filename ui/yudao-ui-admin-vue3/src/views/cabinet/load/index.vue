@@ -11,7 +11,7 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>未开通
+              <div class="tag empty"></div>空载
             </div>
             <div class="value"><span class="number">{{Loadstatus[0]}}</span>个</div>
           </div>
@@ -28,7 +28,7 @@
             <div class="value"><span class="number">{{Loadstatus[2]}}</span>个</div>
           </div>
           <div class="box">
-            <div class="top">
+            <div class="top" style="margin-left:-10px;">
               <div class="tag warn"></div>60%~90%
             </div>
             <div class="value"><span class="number">{{Loadstatus[3]}}</span>个</div>
@@ -39,7 +39,14 @@
             </div>
             <div class="value"><span class="number">{{Loadstatus[4]}}</span>个</div>
           </div>
+          <div class="box">
+            <div class="top">
+              <div></div>全部
+            </div>
+            <div class="value"><span class="number">{{Loadstatus[5]}}</span>个</div>
+          </div>
         </div>
+        
         <div class="line"></div>
       </div>
     </template>
@@ -170,7 +177,7 @@ const { push } = useRouter();
 const loading = ref(false);
 const isFirst = ref(true); // 是否第一次调用getTableData函数
 const navList = ref([]);
-const Loadstatus = ref([0,0,0,0,0]);
+const Loadstatus = ref([0,0,0,0,0,0]);
 const switchValue = ref(0);
 const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
 const listPage = ref<any>([]); // 表格数据
