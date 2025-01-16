@@ -8,7 +8,7 @@
         label-width="68px"
       >
         <div>
-          <el-form-item label="公司名称" prop="username">
+          <el-form-item label="公司名称" prop="company">
             <el-input
               v-model="queryParams.company"
               placeholder="请输入公司名称"
@@ -22,8 +22,8 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -61,9 +61,22 @@
           <el-table-column label="设备数量(U)" min-width="110" align="center" prop="rackNum" />
           <el-table-column label="未用空间(U)" min-width="110" align="center" prop="freeSpace" />
           <el-table-column label="已用空间(U)" min-width="110" align="center" prop="usedSpace" />
+          <el-table-column label="操作" align="center">
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="toDetail(scope.row.roomId, scope.row.id)"
+                style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
+              >
+              设备详情
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
@@ -77,23 +90,23 @@
 </template>
 
 <script lang="ts" setup>
-import { CabinetApi } from '@/api/cabinet/info'
-import { CapacityApi } from '@/api/cabinet/capacity'
+import { CabinetApi } from '@/api/cabinet/info';
+import { CapacityApi } from '@/api/cabinet/capacity';
 
-const {push} = useRouter()
-const switchValue = ref(0)
-const tableLoading = ref(false)
-const tableData = ref([])
-const navList = ref([]) // 左侧导航栏树结构列表
-const isFirst = ref(true) // 是否第一次调用getTableData函数
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const {push} = useRouter();
+const switchValue = ref(0);
+const tableLoading = ref(false);
+const tableData = ref([]);
+const navList = ref([]); // 左侧导航栏树结构列表
+const isFirst = ref(true); // 是否第一次调用getTableData函数
+const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-})
-
+});
+const pageSizeArr = ref([24,36,48,96]);
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -232,7 +245,7 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      top: 4px;
+      bottom: 4px;
     }
   }
 }

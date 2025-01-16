@@ -72,7 +72,14 @@
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item> -->
-        <el-form-item>
+        <el-form-item label="公司名称" prop="company">
+          <el-input
+            v-model="queryParams.company"
+            placeholder="请输入公司名称"
+            clearable
+            class="!w-160px"
+            height="35"
+          />
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
