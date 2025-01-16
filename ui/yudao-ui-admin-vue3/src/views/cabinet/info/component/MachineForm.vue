@@ -11,16 +11,17 @@
       >
       <el-collapse v-model="activeNames" @change="handleChange" accordion>
         <el-collapse-item title="机柜参数" name="1">
-          <div class="collapseItem">
-            <el-form-item label="机房：" prop="roomId">
+          <div class="collapse-container">
+            <div class="collapseItem">
+              <el-form-item label="机房：" prop="roomId">
               <el-select v-model="machineFormData.roomId" placeholder="请选择">
                 <el-option v-for="room in roomList" :key="room.id" :label="room.name" :value="room.id" />
               </el-select>
-            </el-form-item>
-            <el-form-item label="机柜名称：" prop="cabinetName">
+              </el-form-item>
+              <el-form-item label="机柜名称：" prop="cabinetName">
               <el-input v-model="machineFormData.cabinetName" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="机柜类型：" prop="type">
+              </el-form-item>
+              <el-form-item label="机柜类型：" prop="type">
               <el-select v-model="machineFormData.type" placeholder="请选择">
                 <el-option label="IT机柜" value="IT机柜" />
                 <el-option label="网络柜" value="网络柜" />
@@ -30,31 +31,34 @@
                 <el-option label="柱子" value="柱子" />
                 <el-option label="占位" value="占位" />
               </el-select>
-            </el-form-item>
-            <el-form-item label="机柜高度：" prop="cabinetHeight">
-              <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="电力容量：" prop="powCapacity ">
-              <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="所属公司：" prop="company">
-              <el-input v-model="machineFormData.company" placeholder="请输入" />
-            </el-form-item>
-            <div class="double-formitem">
-              <el-form-item label="日用能告警">
-                <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
               </el-form-item>
-              <el-form-item label="日用能限制">
-                <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              <el-form-item label="机柜高度：" prop="cabinetHeight">
+              <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
               </el-form-item>
             </div>
-            <div class="double-formitem">
-              <el-form-item label="月用能告警">
-                <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+            <div class="collapseItem">
+              <el-form-item label="电力容量：" prop="powCapacity ">
+                <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
               </el-form-item>
-              <el-form-item label="月用能限制">
-                <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              <el-form-item label="所属公司：" prop="company">
+                <el-input v-model="machineFormData.company" placeholder="请输入" />
               </el-form-item>
+              <div class="double-formitem">
+                <el-form-item label="日用能告警">
+                  <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item label="日用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                </el-form-item>
+              </div>
+              <div class="double-formitem">
+                <el-form-item label="月用能告警">
+                  <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item label="月用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                </el-form-item>
+              </div>
             </div>
           </div>
         </el-collapse-item>
@@ -635,8 +639,17 @@ const resetForm = () => {
     }
   }
 }
-.collapseItem {
+
+.collapse-container {
+  display: flex;
+  flex-direction: row;
   border: 1px solid #efefef;
+}
+
+.collapseItem {
+  display: block;
+  width: 50%;
+  //border: 1px solid #efefef;
   padding: 30px 50px 10px 0;
 }
 .pduBus {
@@ -661,9 +674,11 @@ const resetForm = () => {
     text-align: center;
   }
 }
+
 :deep(.el-collapse-item__content) {
   padding: 0 20px 20px;
 }
+
 .formContainer {
   padding: 20px;
 }
