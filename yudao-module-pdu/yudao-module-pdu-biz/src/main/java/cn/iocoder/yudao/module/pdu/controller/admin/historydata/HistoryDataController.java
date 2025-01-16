@@ -142,6 +142,13 @@ public class HistoryDataController {
         return success(pageResult);
     }
 
+    @GetMapping("/env-pageByCabinet")
+    @Operation(summary = "获得pdu环境数据分页")
+    public CommonResult<PageResult<Object>> getEnvDataPageByCabinet(EnvDataPageReqVo pageReqVO) throws IOException {
+        PageResult<Object> pageResult = historyDataService.getEnvDataPageByCabinet(pageReqVO);
+        return success(pageResult);
+    }
+
     @GetMapping("/env-details")
     @Operation(summary = "获得pdu环境历史数据详情")
     public CommonResult<Map<String, Object>> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {

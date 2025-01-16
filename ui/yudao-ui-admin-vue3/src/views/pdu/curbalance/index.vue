@@ -339,10 +339,11 @@
 
       <el-dialog v-model="dialogVisibleVol" @close="handleClose" :show-close=false>
         <template #header>
-          <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" >关闭</el-button>
+          <el-button @click="lineidBeforeChartUnmountOne()" style="float:right;margin-left: 10px;" >关闭</el-button>
     <span style="font-size: 20px; font-weight: bold;margin-top: -10px;">均衡配电详情</span>
     <span style="margin-left: 15px;margin-top: -3px;">所在位置：{{ location }}</span>
     <span style="margin-left: 15px;margin-top: -3px;">网络地址：{{ vollocation }}</span>
+    <span style="float: right;margin-top: 3px;">时间：{{ createTimes }} - {{ endTimes }}</span>
     <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
         </template>
          <!-- 自定义的主要内容 -->
@@ -357,7 +358,9 @@
             </div>
           </div>
               <!-- <div class="status1"></div> -->
+               <div style="margin-top: 30px;">
             <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" />
+          </div>
             <!-- <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
               <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
               <div
@@ -382,14 +385,14 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover" >
             <div><span style="font-size: 20px; font-weight: bold;">相电流</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 10px;">
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;">
               <Bar :max="barMaxValues" width="300px" height="250px"/>
             </div>
             <div style="display: inline-block;
               position: absolute;
               width: 100px;
               height: 100px;
-              margin-top: 50px;
+              margin-top: 90px;
               margin-left:80px">
             <div class="label-container">
               <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;" >{{barMaxValues.L1}}A</span>
@@ -420,7 +423,9 @@
                 电压不平衡
               </span>
             </div>
+            <div style="margin-top: 30px;">
             <volUnblance :max="balanceObj.imbalanceValueB" :customColor="colorList[4].color" />
+            </div>
             <!-- <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
               <div class="value">{{balanceObj.imbalanceValueB}}%</div>
               <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
@@ -436,14 +441,14 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div><span style="font-size: 20px; font-weight: bold;">相电压</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 10px;margin-left: -25px;">
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 40px;margin-left: -25px;">
               <Vol :max="volMaxValues" width="300px" height="250px"/>
             </div>
             <div style="display: inline-block;
             position: absolute;
             width: 100px;
             height: 100px;
-            margin-top: 50px;
+            margin-top: 100px;
             margin-left:100px">
           <div class="label-container">
             <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua</span><span style="font-size:16px;">{{volMaxValues.L1}}V</span>
@@ -511,6 +516,8 @@ const devKeyList = ref([])
 const curBalanceColorForm = ref()
 const flashListTimer = ref()
 const firstTimerCreate = ref(true)
+const createTimes = ref('')
+const endTimes = ref('')
 const pageSizeArr = ref([24, 36, 48, 96])
 const switchValue = ref(2)
 const statusNumber = reactive({
@@ -793,6 +800,12 @@ const getBalanceTrend = async (item) => {
   const res = await PDUDeviceApi.balanceTrend({
     pduId: item.id
   })
+  console.log('res11111111111111111111111', res)
+  console.log('res22222222222222222222222', res[0].dateTime)
+  
+  createTimes.value = res[0].dateTime;
+  const lastIndex = res.length - 1;
+  endTimes.value = res[lastIndex].dateTime;
   if (res.length > 0) {
     const timeList = res.map((item) => item.dateTime)
     if (res[0].cur && res[0].cur.length == 1) {
@@ -921,7 +934,7 @@ const getBalanceTrend = async (item) => {
       ]
     }
   }
-  
+  console.log('1111111111111111111111111111111111111')
   console.log('ALineOption', ALineOption)
   console.log('item', item)
 }
@@ -1889,6 +1902,7 @@ onActivated(() => {
   display: flex;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin: 10px;
 }
 .bullet {
   font-size: 34px; /* 根据需要调整大小 */

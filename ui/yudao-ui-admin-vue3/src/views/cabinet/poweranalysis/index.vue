@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗数据">
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
@@ -365,7 +365,7 @@ function customTooltipFormatter(params: any[]) {
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
   tooltipContent += '<br/>'+ item.marker +'记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + ' '+ item.seriesName + ': ' + item.value + 'kWh <br/>'                 
-                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+list.value[item.dataIndex].end_ele +'kWh <br/>' 
+                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].end_ele) +'kWh <br/>' 
                     +item.marker + '开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) +'kWh <br/>'
   return tooltipContent;
 }

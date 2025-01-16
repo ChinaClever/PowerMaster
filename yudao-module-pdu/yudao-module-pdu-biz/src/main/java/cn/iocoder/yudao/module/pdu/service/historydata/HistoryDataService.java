@@ -87,4 +87,6 @@ public interface HistoryDataService {
     IPage<PduIndex> findPduIndexAll(int pageNo, int pageSize, String[] ipArray);
 
     List<PduIndex> findPduIndexAllToList(String[] ipArray);
+
+    PageResult<Object> getEnvDataPageByCabinet(EnvDataPageReqVo pageReqVO) throws IOException;
 }

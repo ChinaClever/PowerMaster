@@ -667,17 +667,22 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
-    public Map getPduMaxLine(Integer id, String type) {
+    public Map getPduMaxLine(PDURequireDetailReq pduRequireDetailReq) {
+        Integer id = pduRequireDetailReq.getId();
+        String type = pduRequireDetailReq.getType();
+        LocalDateTime startTime = pduRequireDetailReq.getStartTime();
+        LocalDateTime endTime = pduRequireDetailReq.getEndTime();
         HashMap result = new HashMap<>();
         // 构建查询请求
         SearchRequest searchRequest = null;
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime pastTime = null;
         if ("hour".equals(type)) {
-            pastTime = now.minusHours(25);
+            pastTime = startTime;
             searchRequest = new SearchRequest("pdu_hda_line_hour");
         } else if ("day".equals(type)) {
-            pastTime = now.minusMonths(1);
+            pastTime = startTime;
+            now = endTime;
             searchRequest = new SearchRequest("pdu_hda_line_day");
         }
 
@@ -1165,6 +1170,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         result.put("activePowMaxTime", null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime", null);
+        result.put("reactivePowMaxValue",null);
+        result.put("reactivePowMaxTime",null);
+        result.put("reactivePowMinValue",null);
+        result.put("reactivePowMinTime",null);
         try {
             PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
 
@@ -1195,12 +1204,16 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 totalActivePow.setName("总平均有功功率");
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
+                totalLineRes.getSeries().add(totalReactivePow);
 
 
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentPowAvgValue());
                         totalActivePow.getData().add(hourdo.getActivePowAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
 
                     });
@@ -1208,15 +1221,21 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentPowAvgValue());
                         totalActivePow.getData().add(hourdo.getActivePowAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
-
                     });
                 }
+
+                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_reactive_max_value");
+                PduHdaTotalHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, PduHdaTotalHourDo.class);
+                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_reactive_min_value");
+                PduHdaTotalHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, PduHdaTotalHourDo.class);
 
                 String apparentTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_apparent_max_value");
                 PduHdaTotalHourDo totalMaxApparent = JsonUtils.parseObject(apparentTotalMaxValue, PduHdaTotalHourDo.class);
                 String apparentTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_apparent_min_value");
                 PduHdaTotalHourDo totalMinApparent = JsonUtils.parseObject(apparentTotalMinValue, PduHdaTotalHourDo.class);
+
 
                 String activeTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_active_max_value");
                 PduHdaTotalHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, PduHdaTotalHourDo.class);
@@ -1233,6 +1252,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("activePowMaxTime", totalMaxActive.getActivePowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("activePowMinValue", totalMinActive.getActivePowMinValue());
                 result.put("activePowMinTime", totalMinActive.getActivePowMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMaxValue", totalMaxReactive.getPowReactiveMaxValue());
+                result.put("reactivePowMaxTime", totalMaxReactive.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMinValue", totalMinReactive.getPowReactiveMinValue());
+                result.put("reactivePowMinTime", totalMinReactive.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
             }
         } catch (Exception e) {

@@ -64,8 +64,8 @@ export const PDUDeviceApi = {
   },
 
   //获取PDU需量详细数据
-  getMaxLineHisdata: async (params: any) => {
-    return await request.get({ url: `pdu/PDU-device/line/getMaxLine`, params})
+  getMaxLineHisdata: async (data) => {
+    return await request.post({ url: `pdu/PDU-device/line/getMaxLine`, data})
   },
 
   // 导出PDU设备 Excel

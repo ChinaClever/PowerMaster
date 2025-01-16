@@ -98,10 +98,10 @@
               </el-text>
             </template>
             </el-table-column>
-        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin'   width= '165px'  >
+        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin'   width= '165px'>
           <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.createTimeMin">
-                {{ scope.row.createTimeMin }}
+                {{ formatTime1(scope.row,scope.row.createTimeMin,scope.row.createTimeMin) }}
               </el-text>
             </template>
         </el-table-column>
@@ -117,7 +117,7 @@
           <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax'  width= '165px'  >
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.createTimeMax">
-                {{ scope.row.createTimeMax }}
+                {{ formatTime1(scope.row,scope.row.createTimeMax,scope.row.createTimeMax) }}
               </el-text>
             </template>
           </el-table-column>
