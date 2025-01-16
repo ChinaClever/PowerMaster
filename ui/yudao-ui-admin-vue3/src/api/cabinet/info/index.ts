@@ -1,6 +1,11 @@
 import request from '@/config/axios'
 
 export const CabinetApi = {
+  // 获取机柜详情
+  getDetail: async (params: any) => {
+    return await request.get({ url: `/cabinet/detail`, params })
+  },
+
   // 查询机柜列表分页
   getCabinetInfo: async (data: any) => {
     return await request.post({ url: `/cabinet/page`, data })

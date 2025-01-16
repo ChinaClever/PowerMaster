@@ -142,6 +142,49 @@
             <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
           </div>
         </div>
+
+        <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+          <!-- 自定义的头部内容（可选） -->
+          <template #header>
+            <!--<template>
+            <CardTitle title="AB占比情况" />
+          </template>
+          <div class="powerContainer" v-if="balanceObj.pow_active_percent > 0">
+            <div class="power">
+              <div class="label">有功功率：</div>
+              <div class="progressContainer">
+                <div class="progress">
+                  <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent}}%</div>
+                  <div class="line"></div>
+                  <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent}}%</div>
+                </div>
+              </div>
+            </div>
+            <div class="power">
+              <div class="label">视在功率：</div>
+              <div class="progressContainer">
+                <div class="progress">
+                  <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent}}%</div>
+                  <div class="line"></div>
+                  <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent}}%</div>
+                </div>
+              </div>
+            </div>
+          </div>-->
+          </template>
+          <!-- 自定义的主要内容 -->
+          <div class="custom-content">111
+            <!--<div class="custom-content-container">
+              <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="ABarOption" :height="300" />
+                </div>
+              </el-card>
+            </div>-->
+            <Echart :options="ABarOption" :height="300" />
+          </div>
+        </el-dialog>
+
         <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="A路" align="center">
@@ -177,7 +220,9 @@
 </template>
 
 <script lang="ts" setup>
+import { EChartsOption } from 'echarts';
 import { CabinetApi } from '@/api/cabinet/info';
+//import curUnblance from './component/curUnblance.vue';
 
 const { push } = useRouter(); // 路由跳转
 const router = useRouter(); // 路由跳转
@@ -194,6 +239,70 @@ const queryParams = reactive({
   pageTotal: 0,
 })
 const pageSizeArr = ref([24,36,48,96]);
+const ABarOption = ref<EChartsOption>({});
+//const BBarOption = ref<EChartsOption>({});
+
+const balanceObj = reactive({
+  pow_apparent_percent: 0,
+  pow_active_percent: 0,
+  cur_valueA: [],
+  cur_valueB: [],
+  imbalanceValueA: 0,
+  imbalanceValueB: 0,
+  colorIndex: 0,
+})
+
+const getBalanceDetail = async(item) => {
+  const res = await CabinetApi.getDetail({id:item});
+  console.log('res', res);
+  if (res.cabinet_power.path_a) {
+    const cur_valueA = res.cabinet_power.path_a.cur_value
+    ABarOption.value = {
+      title: {
+        text: '电流柱形图',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: [
+        {
+          type: 'category',
+          data: Object.keys(cur_valueA),
+          axisTick: {
+            alignWithLabel: true
+          }
+        }
+      ],
+      yAxis: [
+        {
+          type: 'value',
+          name: '电流',
+          axisLabel: {
+            formatter: '{value} A'
+          }
+        }
+      ],
+      series: [
+        {
+          name: 'A路',
+          type: 'bar',
+          barWidth: '20%',
+          data: cur_valueA,
+        },
+      ]
+    }
+  }
+}
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -275,6 +384,21 @@ const getTableData = async(reset = false) => {
 const toDetail = (id) => {
   console.log('详情跳转', id, router, router.getRoutes())
   push({path: '/cabinet/cab/balanceDetail', state: { id }})
+}
+
+const colorFlag = ref(0);
+const dialogVisibleCur = ref(false);
+const curdevkey = ref();
+const busName = ref();
+const curlocation = ref();
+
+const showDialog = async (item) => {
+  colorFlag.value = item.color;
+  dialogVisibleCur.value = true;
+  curdevkey.value = item.devKey;
+  busName.value = item.busName;
+  curlocation.value = item.location;
+  await getBalanceDetail(item);
 }
 
 // 处理切换 表格/阵列 模式

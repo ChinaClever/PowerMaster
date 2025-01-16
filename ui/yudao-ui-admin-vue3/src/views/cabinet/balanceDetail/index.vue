@@ -91,9 +91,9 @@
 </template>
 
 <script lang="ts" setup>
-import { EChartsOption } from 'echarts'
-import { CabinetApi } from '@/api/cabinet/detail'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { EChartsOption } from 'echarts';
+import { CabinetApi } from '@/api/cabinet/detail';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
 
 const cabinetId = history?.state?.id || 1
 
@@ -417,10 +417,6 @@ onBeforeMount(()=> {
   getBalanceDegree()
   getBalanceTrend()
 })
-
-
-
-
 </script>
 
 <style lang="scss" scoped>
@@ -525,7 +521,14 @@ onBeforeMount(()=> {
     height: 100%;
   }
 }
+
 .card {
   margin-bottom: 10px;
+}
+
+:deep(.el-dialog) {
+  width: 80%;
+  margin-top: 70px;
+  background-color: #f1f1f1;
 }
 </style>

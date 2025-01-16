@@ -443,9 +443,9 @@ const statusList = reactive([
   },
 ])
 
-const curlocation = ref()
-const vollocation = ref()
-const busName = ref()
+const curlocation = ref();
+const vollocation = ref();
+const busName = ref();
 const colorList = [
   {
     name: '小电流不平衡',
