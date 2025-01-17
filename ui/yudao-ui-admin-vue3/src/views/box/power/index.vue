@@ -1090,8 +1090,9 @@ const getNavList = async() => {
 const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
+  const boxName = row.boxName;
   const location = row.location != null ? row.location : row.devKey;
-  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}});
+  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location}});
 };
 
 const defaultSelected = ref(['line']);
