@@ -1,4 +1,11 @@
 <template>
+  <div style="padding-left:20px;height:30px;font-size: 15px;">
+    <span style="color:black;font-size:14px;">机房: {{location}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">母线: {{busName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">插接箱: {{boxName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">网络地址: {{devKey}}</span>
+  </div>
+
 <div style="background-color: #E7E7E7;" class="centainer-height">
   <div class="TransformerMonitor">
     <div class="center-part">
@@ -6,8 +13,8 @@
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
         <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
             <span style="color:black;font-weight:bold;height:20px;width:100px;">负载率</span>
-            <div style="margin-left:100px;">
-                <span style="color:black;font-size:14px;">最大负载率: {{redisData?.loadFactorValue}}</span>
+            <div style="margin-left:110px;">
+                <span style="color:black;font-size:14px;">最大负载率: {{redisData?.loadFactorValue}}&nbsp;&nbsp;</span>
                 <span style="color:black;font-size:14px;">发生时间: {{redisData?.loadFactorTime}}</span>
             </div>
         </div>
@@ -21,7 +28,7 @@
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>-->
         <div style="height:340px;width:100%;margin-top:-30px;">
-            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :data="redisData.loadFactor" />
+            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :data="redisData.loadFactor.toFixed(0)" />
         </div>
         <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
             <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
@@ -35,8 +42,8 @@
           <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div class="center-top-right-part">
-          <div style="margin-top:-70px;margin-bottom:50px;margin-left:-30px;">
-            <span style="color:black;font-size:14px;">最大功率: {{redisData?.powActiveValue}}</span>
+          <div style="margin-top:-70px;margin-bottom:50px;margin-left:-60px;">
+            <span style="color:black;font-size:14px;">最大功率: {{redisData?.powActiveValue}}kW&nbsp;&nbsp;</span>
             <span style="color:black;font-size:14px;">发生时间: {{redisData?.powActiveTime}}</span>
           </div>
           <div class="label-container">
@@ -300,6 +307,8 @@ const loadRateList = ref() as any;
 const selectedOption = ref('current')
 const location = ref(history?.state?.location);
 const busName = ref(history?.state?.busName);
+const devKey = ref(history?.state?.devKey);
+const boxName = ref(history?.state?.boxName);
 const id = ref(history?.state?.id);
 const roomId = ref(history?.state?.roomId);
 const type = ref(history?.state.type);
