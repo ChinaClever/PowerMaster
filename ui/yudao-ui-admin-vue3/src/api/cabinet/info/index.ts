@@ -6,6 +6,11 @@ export const CabinetApi = {
     return await request.get({ url: `/cabinet/detail`, params })
   },
 
+  // 平衡详情电流趋势
+  getBalanceTrend: async (params: any) => {
+    return await request.get({ url: `/cabinet/curTrend`, params })
+  },
+
   // 查询机柜列表分页
   getCabinetInfo: async (data: any) => {
     return await request.post({ url: `/cabinet/page`, data })

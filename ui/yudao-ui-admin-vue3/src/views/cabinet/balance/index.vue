@@ -116,49 +116,72 @@
               </div>
             </div> -->
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
-            <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
+            <button v-if="item.pduBox === false" class="detail" @click.prevent="showDialog(item)">详情</button>
           </div>
         </div>
 
         <el-dialog v-model="dialogVisibleCur" @close="handleClose">
           <!-- 自定义的头部内容（可选） -->
           <template #header>
-            <!--<template>
             <CardTitle title="AB占比情况" />
-          </template>
-          <div class="powerContainer" v-if="balanceObj.pow_active_percent > 0">
-            <div class="power">
-              <div class="label">有功功率：</div>
-              <div class="progressContainer">
-                <div class="progress">
-                  <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent}}%</div>
-                  <div class="line"></div>
-                  <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent}}%</div>
+            <div class="powerContainer" v-if="balanceObj.pow_active_percent > 0">
+              <div class="power">
+                <div class="label">有功功率：</div>
+                <div class="progressContainer">
+                  <div class="progress">
+                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(2)}}%</div>
+                    <div class="line"></div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(2)}}%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="power">
+                <div class="label">视在功率：</div>
+                <div class="progressContainer">
+                  <div class="progress">
+                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent}}%</div>
+                    <div class="line"></div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent}}%</div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="power">
-              <div class="label">视在功率：</div>
-              <div class="progressContainer">
-                <div class="progress">
-                  <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent}}%</div>
-                  <div class="line"></div>
-                  <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent}}%</div>
-                </div>
-              </div>
-            </div>
-          </div>-->
           </template>
           <!-- 自定义的主要内容 -->
-          <div class="custom-content">111
-            <!--<div class="custom-content-container">
+          <div class="custom-content">
+            <CardTitle title="A路电流不平衡" />
+            <div class="custom-content-container">
+              <el-card class="cardChilc" shadow="hover">
+                <curUnblance :max="balanceObj.imbalanceValueA"/>
+              </el-card>
               <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
                 <div class="IechartBar">
                   <Echart :options="ABarOption" :height="300" />
                 </div>
               </el-card>
-            </div>-->
-            <Echart :options="ABarOption" :height="300" />
+              <el-card  class="cardChilc" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="ALineOption" :height="300"/>
+                </div>
+              </el-card>
+            </div>
+
+            <CardTitle title="B路电流不平衡" />
+            <div class="custom-content-container">
+              <el-card class="cardChilc" shadow="hover">
+                <volUnblance :max="balanceObj.imbalanceValueB"/>
+              </el-card>
+              <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="BBarOption" :height="300"/>
+                </div>
+              </el-card>
+              <el-card  class="cardChilc" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="BLineOption" :height="300"/>
+                </div>
+              </el-card>
+            </div>
           </div>
         </el-dialog>
 
@@ -174,7 +197,7 @@
             <el-button
               link
               type="primary"
-              @click="toDetail(scope.row)"
+              @click="showDialog(scope.row)"
               style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
             >
             设备详情
@@ -222,7 +245,11 @@
 <script lang="ts" setup>
 import { EChartsOption } from 'echarts';
 import { CabinetApi } from '@/api/cabinet/info';
-//import curUnblance from './component/curUnblance.vue';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
+import curUnblance from './component/curUnblance.vue';
+import volUnblance from './component/volUnblance.vue';
+
+const cabinetId = ref();
 
 const { push } = useRouter(); // 路由跳转
 const router = useRouter(); // 路由跳转
@@ -238,9 +265,43 @@ const queryParams = reactive({
   pageSize: 24,
   pageTotal: 0,
 })
+
+const colorList = [
+  {
+    name: '小电流不平衡',
+    color: '#aaa'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#3bbb00'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#ffc402'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#fa3333'
+  }
+]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
+}]
+
 const pageSizeArr = ref([24,36,48,96]);
 const ABarOption = ref<EChartsOption>({});
-//const BBarOption = ref<EChartsOption>({});
+const BBarOption = ref<EChartsOption>({});
 
 const balanceObj = reactive({
   pow_apparent_percent: 0,
@@ -254,54 +315,93 @@ const balanceObj = reactive({
 
 const getBalanceDetail = async(item) => {
   const res = await CabinetApi.getDetail({id:item});
-  console.log('res', res);
+  console.log('res111', res);
+  if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
+    if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
+    else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
+    if (res.cabinet_power.path_a.pow_active == 0) balanceObj.pow_active_percent = 0
+    else balanceObj.pow_active_percent = (res.cabinet_power.path_a.pow_active / res.cabinet_power.total_data.pow_active as any).toFixed(2) * 100
+  }
   if (res.cabinet_power.path_a) {
-    const cur_valueA = res.cabinet_power.path_a.cur_value
+    const cur_valueA = res.cabinet_power.path_a.cur_value.map(item => item.toFixed(2));
     ABarOption.value = {
       title: {
-        text: '电流柱形图',
-        left: 'center'
+        text: 'A路电流饼形图',
+        left: 'left'
       },
       tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },
+        trigger: 'item',
+        formatter: '{b} : {c}'
       },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: [
-        {
-          type: 'category',
-          data: Object.keys(cur_valueA),
-          axisTick: {
-            alignWithLabel: true
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: 'value',
-          name: '电流',
-          axisLabel: {
-            formatter: '{value} A'
-          }
-        }
-      ],
       series: [
         {
-          name: 'A路',
-          type: 'bar',
-          barWidth: '20%',
-          data: cur_valueA,
-        },
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+          ]
+        }
       ]
     }
   }
+  if (res.cabinet_power.path_b) {
+    const cur_valueB = res.cabinet_power.path_b.cur_value.map(item => item.toFixed(2));
+    BBarOption.value = {
+      title: {
+        text: 'B路电流饼形图',
+        left: 'left'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b} : {c}'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: cur_valueB[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueB[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueB[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+          ]
+        }
+      ]
+    }
+  }
+
+  balanceObj.imbalanceValueA = res.curUnbalance;
+  balanceObj.imbalanceValueB = res.volUnbalance;
+  balanceObj.colorIndex = res.color - 1;
 }
 
 // 接口获取机房导航列表
@@ -380,6 +480,173 @@ const getTableData = async(reset = false) => {
   }
 }
 
+// 获取平衡度
+const getBalanceDegree = async () => {
+  const res = await PDUDeviceApi.getPDUDevicePage({
+    pageNo: 1,
+    pageSize: 24,
+    cabinetIds : [cabinetId.value],
+  })
+  console.log('getBalanceDegreeres', res)
+  if (res.list.length > 0) {
+    const itemA = res.list.find(item => item.location.includes('A路'))
+    const itemB = res.list.find(item => item.location.includes('B路'))
+    if (itemA) {
+      balanceObj.imbalanceValueA = itemA.curUnbalance
+      balanceObj.colorIndex = itemA.color - 1
+    }
+    if (itemB) {
+      balanceObj.imbalanceValueB = itemB.curUnbalance
+      balanceObj.colorIndex = itemB.color - 1
+    }
+  }
+}
+
+// 获取pdu电流趋势
+const getBalanceTrend = async () => {
+  console.log('cabinetId.value111',cabinetId.value);
+  const res = await CabinetApi.getBalanceTrend({
+    id: cabinetId.value
+  })
+  console.log('getBalanceTrendres111',res);
+  if (res.length > 0) {
+    const timeList = res.map(item => item.dateTime)
+    if(res[0].curA && res[0].curA.length == 1) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[0].curValue),
+        },
+      ]
+    } else if (res[0].curA && res[0].curA.length == 3) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[0].curValue),
+        },
+        {
+          name: 'A2',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[1].curValue),
+        },
+        {
+          name: 'A3',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[2].curValue),
+        },
+      ]
+    }
+    console.log('ALineOption', ALineOption)
+    if (res[0].curB && res[0].curB.length == 1) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'B1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[0].curValue),
+        },
+      ]
+    } else if(res[0].curB && res[0].curB.length == 3) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'B1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[0].curValue),
+        },
+        {
+          name: 'B2',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[1].curValue),
+        },
+        {
+          name: 'B3',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[2].curValue),
+        },
+      ]
+    }
+  }
+}
+
+const ALineOption = ref<EChartsOption>({
+  title: {
+    text: 'A路电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis:{},
+  series: []
+})
+
+const BLineOption = ref<EChartsOption>({
+  title: {
+    text: 'B路电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis:{},
+  series: []
+})
+
 // 详情跳转
 const toDetail = (id) => {
   console.log('详情跳转', id, router, router.getRoutes())
@@ -393,12 +660,17 @@ const busName = ref();
 const curlocation = ref();
 
 const showDialog = async (item) => {
+  console.log('item1111',item.id);
+  cabinetId.value = item.id || 1;
+  console.log('cabinetId1111',cabinetId.value);
   colorFlag.value = item.color;
   dialogVisibleCur.value = true;
   curdevkey.value = item.devKey;
   busName.value = item.busName;
   curlocation.value = item.location;
-  await getBalanceDetail(item);
+  await getBalanceDetail(item.id);
+  await getBalanceDegree();
+  await getBalanceTrend();
 }
 
 // 处理切换 表格/阵列 模式
@@ -620,5 +892,81 @@ onBeforeMount(() => {
       bottom: 8px;
     }
   }
+}
+
+.powerContainer {
+  display: flex;
+  .power {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // padding-left: 50px;
+    margin: 20px 0;
+    .label {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .progressContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 30px;
+      .progress {
+        width: 400px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #eee;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        .line {
+          width: 3px;
+          height: 36px;
+          background-color: #000;
+        }
+        .left {
+          text-align: center;
+          box-sizing: border-box;
+          background-color: #3b8bf5;
+          // border-right: 1px solid #000;
+        }
+        .right {
+          text-align: center;
+          background-color:  #f86f13;
+        }
+      }
+    }
+  }
+}
+
+:deep(.el-dialog) {
+  width: 80%;
+  margin-top: 50px;
+  background-color: #f1f1f1;
+}
+
+.custom-content{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.custom-content-container{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.cardChilc {
+  flex: 1;
+  height: 100%;
+}
+
+.IechartBar {
+  width: 100%;
+  height: 100%;
 }
 </style>
