@@ -177,6 +177,23 @@
             </el-text>
           </template>
         </el-table-column>
+        <el-table-column
+          v-if="valueMode == 0"
+          label="N相温度(°C)"
+          align="center"
+          prop="ntem"
+          width="130px"
+        >
+          <template #default="scope">
+            <el-text
+              line-clamp="2"
+              v-if="scope.row.ntem != null"
+              :type="scope.row.ntemStatus != 0 ? 'danger' : ''"
+            >
+              {{ scope.row.ntem }}
+            </el-text>
+          </template>
+        </el-table-column>
         <!-- 数据库查询 -->
         <el-table-column label="操作" align="center">
           <template #default="scope">
@@ -208,20 +225,16 @@
           <div v-if="item.id !== null" class="arrayItem" :style="{backgroundColor: item.status === 2?'red':'' }">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <img class="icon" src="@/assets/imgs/temicon.png" />
+            <img class="icon" style="height: 60px;" src="@/assets/imgs/temicon.png" />
             <div class="info">
-              <div v-if="item.atem != null"
-                >A:{{ item.atem }}°C</div
-              >
-              <div v-if="item.btem != null"
-                >B:{{ item.btem }}°C</div
-              >
-              <div v-if="item.ctem != null"
-                >C:{{ item.ctem }}°C</div
-              >
-              <div v-if="item.ntem != null"
-                >N:{{ item.ntem }}°C</div
-              >
+              <div>
+              <span v-if="item.atem != null">A: {{ item.atem }}°C</span>
+              <span v-if="item.btem != null" style="margin-left: 20px;">B: {{ item.btem }}°C</span>
+              </div>
+              <div>
+              <span v-if="item.ctem != null">C: {{ item.ctem }}°C</span>
+              <span v-if="item.ntem != null" style="margin-left: 20px;">N: {{ item.ntem }}°C</span>
+              </div>
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
