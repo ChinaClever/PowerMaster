@@ -55,10 +55,12 @@
         </el-form-item> -->
         
         <el-form-item>  
-          <span>所处位置：</span>
+          <span>机房：</span>
           <el-tag size="large">{{ location }}</el-tag>
-          <span>设备名称：</span>
-          <el-tag size="large" style="margin-right:11vw">{{ busName }}</el-tag>
+          <span> 名称：</span>
+          <el-tag size="large">{{ busName }}</el-tag>
+          <span>网络地址：</span>
+          <el-tag size="large" style="margin-right:8vw">{{ devKey }}</el-tag>
           <el-select
             v-model="queryParams.harmonicType"
             placeholder="请选择"
@@ -149,6 +151,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const location = ref(history?.state?.location);
 const busName = ref(history?.state?.busName);
+const devKey = ref(history?.state?.devKey);
 const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();
