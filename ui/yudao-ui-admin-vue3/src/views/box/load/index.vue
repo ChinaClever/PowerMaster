@@ -505,7 +505,7 @@ const getList = async () => {
   try {
     console.log('queryParams',queryParams);
     const data = await IndexApi.getIndexPage(queryParams);
-    console.log('data',data);
+     
     list.value = data.list;
     var tableIndex = 0;
     list.value.forEach((obj) => {
@@ -519,12 +519,26 @@ const getList = async () => {
 }
 
 const getLoadRateStatus = async () => {
-    const data = await IndexApi.getLoadRateStatus()
-    console.log('statusNumber',data);
-    statusNumber.greaterNinety = data.greaterNinety;
-    statusNumber.lessThirty = data.lessThirty;
-    statusNumber.greaterThirty = data.greaterThirty;
-    statusNumber.greaterSixty = data.greaterSixty;
+  try {
+    const res = await IndexApi.getLoadRateStatus()
+    const data = await IndexApi.getIndexPage(queryParams);
+    
+    list.value = data.list
+    var tableIndex = 0;
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+    });
+
+    console.log('statusNumber',res);
+    statusNumber.greaterNinety = res.greaterNinety;
+    statusNumber.lessThirty = res.lessThirty;
+    statusNumber.greaterThirty = res.greaterThirty;
+    statusNumber.greaterSixty = res.greaterSixty;
+
+    list.value = data.list;
+  } catch (error) {
+    
+  }
 }
 
 const getDeletedList = async () => {
@@ -686,7 +700,7 @@ onMounted(async () => {
   getList();
   getNavList();
   getLoadRateStatus();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getLoadRateStatus), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -708,7 +722,7 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getLoadRateStatus), 5000);
   }
 })
 </script>
