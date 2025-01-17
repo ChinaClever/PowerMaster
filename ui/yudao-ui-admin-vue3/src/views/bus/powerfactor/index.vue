@@ -119,7 +119,14 @@
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
-          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>   
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>  
+          <el-table-column v-if="valueMode == 0" label="总功率因素" align="center" prop="apf" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.totalPf != null">
+                {{ scope.row.totalPf }}
+              </el-text>
+            </template>
+          </el-table-column> 
           <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.apf != null">

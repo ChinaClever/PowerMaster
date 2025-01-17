@@ -35,7 +35,7 @@ const echartsOption = reactive({
   },
   yAxis: {
     type: 'value', // y轴为数值型
-    max: 100, // 设置y轴最大值为100%
+    max: 1, // 设置y轴最大值为100%
     axisLabel: false  
   },
   series: [
