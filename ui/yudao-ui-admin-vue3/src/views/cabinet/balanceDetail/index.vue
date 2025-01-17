@@ -69,7 +69,7 @@
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
         <div class="IechartBar">
-          <Echart :options="ALineOption" :height="300"/>
+          <Echart :options="BLineOption" :height="300"/>
         </div>
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
@@ -123,7 +123,7 @@ const balanceObj = reactive({
 
 const getBalanceDetail = async() => {
   const res = await CabinetApi.getDetail({id:cabinetId})
-  console.log('res', res)
+  console.log('res2222', res)
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
@@ -268,9 +268,11 @@ const getBalanceDegree = async () => {
 
 // 获取pdu电流趋势
 const getBalanceTrend = async () => {
+  console.log('cabinetId.value111',cabinetId);
   const res = await CabinetApi.getBalanceTrend({
     id: cabinetId
   })
+  console.log('getBalanceTrendres222',res);
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime)
     if(res[0].curA && res[0].curA.length == 1) {

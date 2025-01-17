@@ -54,7 +54,7 @@ const option = computed(() => ({
         show: true,
         position: 'center',
         // 修改 formatter 以显示 percentageValue 的值
-        formatter: () => percentageValue.value +  '%',
+        formatter: () => percentageValue.value + '%',
         fontSize: 30,
         fontWeight: 'bold'
       },
