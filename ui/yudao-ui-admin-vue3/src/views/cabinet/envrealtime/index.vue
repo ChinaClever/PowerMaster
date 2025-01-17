@@ -203,7 +203,8 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location }}</div>
           <div class="content">
-            <div class="icon" >
+            <div class="icon">1111111111</div>
+            <!--<div class="icon" >
               <div v-if="false" >
                 1                                    
               </div>              
@@ -215,8 +216,8 @@
               <div v-if="item.hotTopHum != null && switchTemAndHum == 1" >上层湿度：{{item.hotTopHum}}%</div>
               <div v-if="item.hotMidHum != null && switchTemAndHum == 1" >中层湿度：{{item.hotMidHum}}%</div>
               <div v-if="item.hotBomHum != null && switchTemAndHum == 1" >下层湿度：{{item.hotBomHum}}%</div>
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            </div>
+              <div>AB路占比：{{item.fzb}}</div>
+            </div>-->
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
@@ -230,18 +231,25 @@
           <div class="devKey">{{ item.location }}</div>
           <div class="content">
             <div class="icon" >
-              <div v-if="false" >
-                1
-              </div>              
+              <div style="margin-top:5px;">
+                T
+              </div>
+              <div style="margin-top:10px;">
+                H
+              </div>           
             </div>
-            <div class="info">                  
-              <div v-if="item.iceTopTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceTopTemColor }">上层温度：{{item.iceTopTem}}°C</div>
-              <div v-if="item.iceMidTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceMidTemColor }">中层温度：{{item.iceMidTem}}°C</div>
-              <div v-if="item.iceBomTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceBomTemColor }">下层温度：{{item.iceBomTem}}°C</div>
-              <div v-if="item.iceTopHum != null && switchTemAndHum == 1" >上层湿度：{{item.iceTopHum}}%</div>
-              <div v-if="item.iceMidHum != null && switchTemAndHum == 1" >中层湿度：{{item.iceMidHum}}%</div>
-              <div v-if="item.iceBomHum != null && switchTemAndHum == 1" >下层湿度：{{item.iceBomHum}}%</div>
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            <div class="info" style="margin-left:30px;">
+              <!--<div style="margin-top:-20px;margin-left:20px;"><span>冷</span><span style="margin-left:50px;">热</span></div>-->
+              <div style="margin-bottom:10px;"><span>冷</span><span style="margin-left:50px;">热</span></div>
+              <div style="margin-bottom:10px;"><span>0</span><span style="margin-left:50px;">0</span></div>
+              <div><span>0%</span><span style="margin-left:50px;">0%</span></div>
+              <!--<div :style="{ backgroundColor : item.iceTopTemColor }">上层温度：{{item.iceTopTem}}°C</div>
+              <div :style="{ backgroundColor : item.iceMidTemColor }">中层温度：{{item.iceMidTem}}°C</div>
+              <div :style="{ backgroundColor : item.iceBomTemColor }">下层温度：{{item.iceBomTem}}°C</div>
+              <div >上层湿度：{{item.iceTopHum}}%</div>
+              <div >中层湿度：{{item.iceMidHum}}%</div>
+              <div >下层湿度：{{item.iceBomHum}}%</div>
+              <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -852,7 +860,6 @@ onActivated(() => {
       .icon {
         width: 60px;
         height: 30px;
-        margin: 0 28px;
         text-align: center;
       }
     }
