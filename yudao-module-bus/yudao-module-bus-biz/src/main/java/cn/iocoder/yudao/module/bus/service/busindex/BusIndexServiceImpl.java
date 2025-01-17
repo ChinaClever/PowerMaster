@@ -1562,30 +1562,30 @@ public class BusIndexServiceImpl implements BusIndexService {
 
                 MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
                 busLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
-                busLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                busLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 MaxValueAndCreateTime curl2 = curMap.get(id).get(2);
                 if (curl2 != null) {
                     busLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
-                    busLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 MaxValueAndCreateTime curl3 = curMap.get(id).get(3);
                 if (curl3 != null) {
                     busLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
-                    busLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
 
                 MaxValueAndCreateTime powl1 = powMap.get(id).get(1);
                 busLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
-                busLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                busLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 MaxValueAndCreateTime powl2 = powMap.get(id).get(2);
                 if (powl2 != null) {
                     busLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
-                    busLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 MaxValueAndCreateTime powl3 = powMap.get(id).get(3);
                 if (powl3 != null) {
                     busLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
-                    busLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 result.add(busLineRes);
             }

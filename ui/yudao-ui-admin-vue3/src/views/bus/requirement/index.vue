@@ -95,7 +95,7 @@
             自定义
           </el-button>                            
         </el-form-item>
-        <el-form-item>
+        <el-form-item style="padding-left: 15px;">
           <el-date-picker
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
@@ -276,13 +276,13 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px" class="info">
+            <div class="info" style="padding:10px 28px;font-size: 15px;">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
+            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
           <div class="status"  >
@@ -298,13 +298,13 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">            
-            <div style="padding: 0 28px" class="info">              
+            <div class="info" style="padding:10px 28px;font-size: 15px;">              
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
           <div class="status"  >
@@ -1046,7 +1046,7 @@ onMounted(async () => {
   .arrayItem {
     width: 25%;
     height: 140px;
-    font-size: 13px;
+    font-size: 15px;
     box-sizing: border-box;
     background-color: #eef4fc;
     border: 5px solid #fff;
