@@ -1,5 +1,41 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜容量">
+    <template #NavInfo>
+      <div class="navInfo">
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>100%
+            </div>
+            <div class="value"><span class="number">{{oneHundred}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag normal"></div>&gt;50%
+            </div>
+            <div class="value"><span class="number">{{ ninetyNine }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top" style="margin-left:-10px;">
+              <div class="tag warn"></div>30%~50%
+            </div>
+            <div class="value"><span class="number">{{ fifty }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>&lt;30%
+            </div>
+            <div class="value"><span class="number">{{ thirty }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div></div>全部
+            </div>
+            <div class="value"><span class="number">{{ total }}</span>个</div>
+          </div>
+        </div>
+      </div>
+    </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
@@ -162,6 +198,11 @@ const statusList = reactive([
     endNum: 29.99,
   }
 ])
+const thirty = ref(0);
+const fifty = ref(0);
+const ninetyNine = ref(0);
+const oneHundred = ref(0);
+const total = ref(0);
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -234,15 +275,27 @@ const handleSwitchModal = (value) => {
   getTableData(true)
 }
 
+//获取机柜容量列表统计
+const getCapacitystatistics = async () => {
+  const res = await CapacityApi.getCapacity();
+  thirty.value = res.thirty;
+  fifty.value = res.fifty;
+  ninetyNine.value  =res.ninetyNine;
+  oneHundred.value = res.oneHundred;
+  total.value  =res.total;
+  console.log('data1111111111111',res);
+}
+
 // 跳转详情
 const toDetail = (id,roomId) => {
   console.log('跳转详情', id)
   push({path: '/cabinet/cab/screen', state: { id , roomId}})
 }
 
-onBeforeMount(() => {
-  getNavList()
-  getTableData()
+onBeforeMount(async () => {
+  await getNavList();
+  await getTableData();
+  await getCapacitystatistics();
 })
 </script>
 
@@ -437,6 +490,117 @@ onBeforeMount(() => {
   color: #fff;
   &:hover {
     color: #fff;
+  }
+}
+
+.navInfo {
+  width: 215px;
+  height: 100%;
+  .overview {
+    padding: 0 20px;
+    .count {
+      height: 70px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 15px;
+      padding-right: 10px;
+      box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
+      border-radius: 3px;
+      border: 1px solid #eee;
+      .info {
+        height: 46px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        font-size: 13px;
+        .value {
+          font-size: 15px;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top:15px;
+    .box {
+      height: 70px;
+      width: 50%;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      .top {
+        display: flex;
+        align-items: center;
+        .tag {
+          width: 8px;
+          height: 8px;
+          background-color: #3bbb00;
+          margin-right: 3px;
+          margin-top: 2px;
+        }
+        .empty {
+          background-color: #ccc;
+        }
+        .warn {
+          background-color: #ffc402;
+        }
+        .normal {
+          background-color: #3B8BF5;
+        }
+        .error {
+          background-color: #fa3333;
+        }
+      }
+      .value {
+        font-size: 14px;
+        margin-top: 5px;
+        color: #aaa;
+        .number {
+          font-size: 14px;
+          font-weight: bold;
+          margin-right: 5px;
+          color: #000;
+        }
+      }
+    }
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+    .header_img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #555;
+      img {
+        width: 75px;
+        height: 75px;
+      }
+    }
+    .name {
+      font-size: 15px;
+      margin: 15px 0;
+    }
+  }
+  .line {
+    height: 1px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
 </style>
