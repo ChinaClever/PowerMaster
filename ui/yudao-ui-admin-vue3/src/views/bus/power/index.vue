@@ -818,11 +818,12 @@ const getNavList = async() => {
 }
 
 const toDeatil = (row) =>{
+  const roomName = row.roomName;
   const devKey = row.devKey;
   const busId = row.busId;
   const location = row.location != null ? row.location : row.devKey
   const busName = row.busName;
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
 
 }
 
