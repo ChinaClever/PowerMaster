@@ -33,17 +33,17 @@
           <div class="item" v-for="item in tableData" :key="item.id">
             <div class="content">
               <!-- <div>未用空间：{{item.freeSpace}}U</div> -->
-              <div class="shapeContainer">
-                <div class="shape">
-                  <div :style="{flex: item.usedSpace}"></div>
-                  <div class="fill" :style="{flex: item.freeSpace}">{{item.freeSpace}}U</div>
-                </div>
-                <div class="bottom"></div>
-              </div>
               <div class="info">
                 <div>已用空间：{{item.usedSpace}}U</div>
                 <div>空间容量：{{item.cabinetHeight}}U</div>
-                <div>设备数量：{{item.rackNum}}U</div>
+                <div>设备数量：{{item.rackNum}}</div>
+              </div>
+              <div class="shapeContainer">
+                <div class="shape">
+                  <div :style="{flex: item.usedSpace}"></div>
+                  <div class="fill" :style="{flex: 100-item.usedSpaceRate}">{{100-item.usedSpaceRate}}%</div>
+                </div>
+                <div class="bottom"></div>
               </div>
             </div>
             <div class="room">{{item.roomName}}-{{item.name}}</div>
@@ -58,7 +58,7 @@
             </template>
           </el-table-column>
           <el-table-column label="公司" min-width="110" align="center" prop="company" />
-          <el-table-column label="设备数量(U)" min-width="110" align="center" prop="rackNum" />
+          <el-table-column label="设备数量" min-width="110" align="center" prop="rackNum" />
           <el-table-column label="未用空间(U)" min-width="110" align="center" prop="freeSpace" />
           <el-table-column label="已用空间(U)" min-width="110" align="center" prop="usedSpace" />
           <el-table-column label="操作" align="center">
@@ -124,7 +124,6 @@ const getTableData = async(reset = false) => {
       pageSize: queryParams.pageSize,
       company: queryParams.company,
       cabinetIds: isFirst.value ? null : cabinetIds.value,
-      runStatus: [0, 1, 2, 3, 4, 5],
       roomId: null
     })
     console.log('res', res)
@@ -194,17 +193,18 @@ onBeforeMount(() => {
     padding-top: 36px;
     position: relative;
     .content {
-      padding-left: 30px;
+      padding-left: 0px;
       display: flex;
       align-items: center;
       .shapeContainer {
+        padding-left: 50px;
         display: flex;
         flex-direction: column;
         align-items: center;
         .shape {
           display: flex;
           flex-direction: column;
-          width: 40px;
+          width: 45px;
           height: 75px;
           background-color: #fff;
           .fill {

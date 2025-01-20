@@ -16,6 +16,7 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.common.vo.RackIndexRoomVO;
+import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
 import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
@@ -49,6 +50,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -79,15 +81,18 @@ import static cn.iocoder.yudao.module.rack.enums.ErrorCodeConstants.NAME_REPEAT;
 public class RackIndexServiceImpl implements RackIndexService {
 
 
-    @Resource
+    @Autowired
     private RackIndexDoMapper rackIndexDoMapper;
 
-    @Resource
+    @Autowired
+    private CabinetService cabinetService;
+
+    @Autowired
     RedisTemplate redisTemplate;
 
     @Value("${rack-cal-refresh-url}")
     public String adder;
-    @Resource
+    @Autowired
     private RestHighLevelClient client;
     public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
@@ -231,9 +236,15 @@ public class RackIndexServiceImpl implements RackIndexService {
 
                 });
             }
-            return rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
+            List<RackIndex> rackIndices = rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
                     .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
                     .eq(RackIndex::getCabinetId, vo.getCabinetId()));
+
+            if (Objects.nonNull(rackIndices)){
+                int sum = rackIndices.stream().mapToInt(RackIndex::getUHeight).sum();
+                cabinetService.editHeight(vo.getCabinetId(),sum);
+            }
+            return rackIndices;
         } finally {
             //刷新机柜计算服务缓存
             log.info("刷新计算服务缓存 --- " + adder);

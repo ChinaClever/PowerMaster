@@ -59,7 +59,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
@@ -595,22 +594,6 @@ public class CabinetServiceImpl implements CabinetService {
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
 //            List<CabinetIndexDTO> result = new ArrayList<>();
             List<CabinetIndexDTO> result = indexDTOPage.getRecords();
-            //获取机房数据
-//            if (!CollectionUtils.isEmpty(result)) {
-//                List<Integer> roomIds = result.stream().map(CabinetIndexDTO::getRoomId).distinct().collect(Collectors.toList());
-//                if (!CollectionUtils.isEmpty(roomIds)) {
-//                    List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
-//                    if (!CollectionUtils.isEmpty(roomIndexList)) {
-//                        Map<Integer, String> map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
-//
-//                        if (ObjectUtils.isNotEmpty(map)) {
-//                            result.forEach(dto -> {
-//                                dto.setRoomName(map.get(dto.getRoomId()));
-//                            });
-//                        }
-//                    }
-//                }
-//            }
 
             List<Integer> ids = result.stream().map(CabinetIndexDTO::getId).distinct().collect(Collectors.toList());
             if (CollectionUtils.isEmpty(ids)) {
@@ -636,11 +619,7 @@ public class CabinetServiceImpl implements CabinetService {
                     }
                 });
             }
-//            result.forEach(dto -> {
-//                if (dto.getUsedSpace() == 0) {
-//                    dto.setFreeSpace(dto.getCabinetHeight());
-//                }
-//            });
+
             return new PageResult<>(result, indexDTOPage.getTotal());
         } catch (Exception e) {
             log.error("获取数据失败：", e);
@@ -924,6 +903,13 @@ public class CabinetServiceImpl implements CabinetService {
     }
 
     @Override
+    public void editHeight(int cabinetId, int sum) {
+        CabinetIndex cabinetIndex = new CabinetIndex();
+        cabinetIndex.setId(cabinetId).setCabinetUseHeight(sum);
+        cabinetIndexMapper.updateById(cabinetIndex);
+    }
+
+    @Override
     public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
         Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
@@ -1147,8 +1133,23 @@ public class CabinetServiceImpl implements CabinetService {
         BigDecimal powActive = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_value");
         BigDecimal powReactive = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_reactive");
 
-        // 异步执行 Elasticsearch 查询bus_hda_total_hour近24小时总视在功率最大值
-        CompletableFuture<Double> peakDemandFuture = CompletableFuture.supplyAsync(() -> {
+        // 等待异步操作完成并获取结果
+        Double peakDemand = findEsByPowApparentMax(reqVO);
+
+        // 返回数据
+        CabinetPowerLoadDetailRespVO respVO = new CabinetPowerLoadDetailRespVO();
+        respVO.setRunLoad(powApparent);
+        respVO.setRatedCapacity(powCapacity);
+        respVO.setReserveMargin(margin);
+        respVO.setPowActive(powActive);
+        respVO.setPowReactive(powReactive);
+        if (Objects.nonNull(peakDemand))
+            respVO.setPeakDemand(BigDecimal.valueOf(peakDemand));
+        return respVO;
+    }
+
+    private Double findEsByPowApparentMax(CabinetPowerLoadDetailReqVO reqVO) {
+        // 执行 Elasticsearch 查询bus_hda_total_hour近24小时总视在功率最大值
             try {
                 SearchRequest searchRequest = new SearchRequest();
                 searchRequest.indices("cabinet_hda_pow_hour");
@@ -1171,24 +1172,11 @@ public class CabinetServiceImpl implements CabinetService {
                 // 从聚合结果中获取最大值
                 Max maxAggregation = searchResponse.getAggregations().get("pow_apparent_max");
                 return maxAggregation.getValue();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
-        });
-        // 等待异步操作完成并获取结果
-        Double peakDemand = peakDemandFuture.join();
 
-        // 返回数据
-        CabinetPowerLoadDetailRespVO respVO = new CabinetPowerLoadDetailRespVO();
-        respVO.setRunLoad(powApparent);
-        respVO.setRatedCapacity(powCapacity);
-        respVO.setReserveMargin(margin);
-        respVO.setPowActive(powActive);
-        respVO.setPowReactive(powReactive);
-        if (!Double.isInfinite(peakDemand))
-            respVO.setPeakDemand(BigDecimal.valueOf(peakDemand));
-        return respVO;
     }
 
     @Override
@@ -1715,7 +1703,6 @@ public class CabinetServiceImpl implements CabinetService {
         if (!CollectionUtils.isEmpty(vo.getRackIndexList())) {
             //修改
             vo.getRackIndexList().forEach(rackIndex -> rackIndexMapper.updateById(rackIndex));
-
 
         }
     }

@@ -89,4 +89,9 @@ public class CabinetIndex implements Serializable {
 
     @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)
     private  Integer count;
+
+    /**
+     * 使用高度
+     */
+    private Integer cabinetUseHeight;
 }

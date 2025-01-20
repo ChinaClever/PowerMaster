@@ -125,4 +125,6 @@ public interface CabinetService {
     List<CabinetEnergyMaxResVO> getEnergyMax();
 
     PageResult<CabinetEnergyStatisticsResVO> getEqPage1(CabinetIndexVo pageReqVO);
+
+    void editHeight(int cabinetId, int sum);
 }

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class CabinetEnvSensorServiceImpl  extends ServiceImpl<CabinetEnvSensorMapper, CabinetEnvSensor> implements ICabinetEnvSensorService {
+public class CabinetEnvSensorServiceImpl extends ServiceImpl<CabinetEnvSensorMapper, CabinetEnvSensor> implements ICabinetEnvSensorService {
     @Autowired
     private CabinetEnvSensorMapper envSensorMapper;
 

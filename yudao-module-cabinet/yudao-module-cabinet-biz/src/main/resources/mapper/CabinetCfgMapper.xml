@@ -27,6 +27,7 @@
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
         cf.company,
+        round((cabinet_use_height/cabinet_height)*100,2) as usedSpaceRate,
         ri.room_name as roomName,
         concat(ri.room_name,'-',ci.cabinet_name) as location
         from cabinet_index ci
@@ -59,6 +60,9 @@
         </if>
         <if test=" indexVo.company != null and indexVo.company != ''">
             and cf.company like "%"#{indexVo.company}"%"
+        </if>
+        <if test="indexVo.startNum != null and  indexVo.endNum != null">
+            and  round((cabinet_use_height/cabinet_height)*100,2) BETWEEN #{indexVo.startNum} and #{indexVo.endNum}
         </if>
         order by ci.create_time desc,ci.run_status asc
     </select>

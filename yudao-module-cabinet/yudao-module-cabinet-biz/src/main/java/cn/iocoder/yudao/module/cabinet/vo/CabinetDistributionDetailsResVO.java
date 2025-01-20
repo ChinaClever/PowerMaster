@@ -89,4 +89,19 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "负载率曲线 - 总")
     private List<BigDecimal> factorTotal;
 
+    @Schema(description = "额定容量")
+    private BigDecimal powCapacity;
+
+    @Schema(description = "最大负载率")
+    private BigDecimal  loadFactorBig;
+
+    @Schema(description = "最大负载率发生时间")
+    private String  loadFactorTime;
+
+    @Schema(description = "最大有功功率")
+    private BigDecimal powActiveBig;
+
+    @Schema(description = "最大有功功率发生时间")
+    private String powActiveTime;
+
 }
