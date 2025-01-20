@@ -89,7 +89,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm"
+          format="YYYY-MM-DD HH:mm:ss"
           v-model="queryParams.timeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
@@ -517,7 +517,7 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnvDataApi.exportEnvHistoryData(queryParams, axiosConfig)
+    const data = await EnvDataApi.exportEnvHistoryDataByCabinet(queryParams, axiosConfig)
     await download.excel(data, '机柜环境记录.xlsx')
   } catch (error) {
     // 处理异常
@@ -529,7 +529,7 @@ const handleExport = async () => {
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await EnvDataApi.getEnvNavNewData({})
+  const res = await EnvDataApi.getEnvNavNewDataByCabinet({})
   lastHourTotalData.value = res.hour
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week

@@ -2451,6 +2451,10 @@ public class BusIndexServiceImpl implements BusIndexService {
         result.put("activePowMaxTime", null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime", null);
+        result.put("reactivePowMaxTime",null);
+        result.put("reactivePowMaxValue", null);
+        result.put("reactivePowMinTime",null);
+        result.put("reactivePowMinValue", null);
         try {
             BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getBusKey, devKey));
 
@@ -2479,6 +2483,9 @@ public class BusIndexServiceImpl implements BusIndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
+                totalLineRes.getSeries().add(totalReactivePow);
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
 
@@ -2487,6 +2494,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
 
                     });
@@ -2494,6 +2502,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                     });
@@ -2509,6 +2518,11 @@ public class BusIndexServiceImpl implements BusIndexService {
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_active_min_value");
                 BusTotalHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, BusTotalHourDo.class);
 
+                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_max_value");
+                BusTotalHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, BusTotalHourDo.class);
+                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_min_value");
+                BusTotalHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, BusTotalHourDo.class);
+
                 result.put("totalLineRes", totalLineRes);
 
                 result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
@@ -2519,6 +2533,10 @@ public class BusIndexServiceImpl implements BusIndexService {
                 result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
                 result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMaxValue", totalMaxReactive.getPowReactiveMaxValue());
+                result.put("reactivePowMaxTime", totalMaxReactive.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMinValue", totalMinReactive.getPowReactiveMinValue());
+                result.put("reactivePowMinTime", totalMinReactive.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
             }
         } catch (Exception e) {

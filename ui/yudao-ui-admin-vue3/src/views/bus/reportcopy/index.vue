@@ -44,8 +44,6 @@
           >
             自定义
           </el-button>
-          
-          
         </el-form-item>
         <el-form-item>
           <el-date-picker
@@ -93,9 +91,7 @@
             <div class="page-conTitle">
               母线基本信息
             </div>
-            <el-row :gutter="24" >
-              <el-col :span="24 - serChartContainerWidth">
-                <div class="centered-div">
+            <div class="centered-div">
                   <el-table 
                     :data="PDUTableData" 
                     :header-cell-style="arraySpanMethod"
@@ -132,15 +128,18 @@
                     
                   </el-table>
                 </div>
+            <!-- <el-row :gutter="24" >
+              <el-col :span="24 - serChartContainerWidth">
+                
               </el-col>
               <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
                 
-                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+               
                 <div >
                  <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
                </div>
               </el-col>
-            </el-row>
+            </el-row> -->
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
@@ -162,6 +161,7 @@
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVA， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
@@ -666,7 +666,11 @@ const powData = ref<PowData>({
   activePowMaxValue : 0,
   activePowMaxTime : "",
   activePowMinValue : 0,
-  activePowMinTime : ""
+  activePowMinTime : "",
+  reactivePowMaxValue : 0,
+  reactivePowMaxTime : "",
+  reactivePowMinValue : 0,
+  reactivePowMinTime : "",
 }) as any
 
 interface TemData {
@@ -753,6 +757,8 @@ const getList = async () => {
     powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
     powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
     powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+    powData.value.reactivePowMaxValue = powData.value.reactivePowMaxValue?.toFixed(3);
+    powData.value.reactivePowMinValue = powData.value.reactivePowMinValue?.toFixed(3);
     visControll.powVis = true;
   }else{
     visControll.powVis = false;
@@ -1261,15 +1267,9 @@ onMounted( async () =>  {
   padding: 0;
 }
 
-:deep(.el-form) {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
 
-:deep(.el-form .el-form-item) {
-  margin-right: 0;
-}
+
+
 
 @media screen and (min-width:2048px) {
   .adaptiveStyle {

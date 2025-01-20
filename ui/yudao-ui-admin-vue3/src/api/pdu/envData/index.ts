@@ -26,8 +26,18 @@ export const EnvDataApi = {
     return await request.download({ url: `/pdu/history-data/env-export-excel`, params, ...axiosConfig })
   },
 
+   // 导出pdu环境历史数据 Excel
+   exportEnvHistoryDataByCabinet: async (params, axiosConfig) => {
+    return await request.download({ url: `/pdu/history-data/env-export-excelByCabinet`, params, ...axiosConfig })
+  },
+
   // 查询pdu环境数据导航的新增多少条记录数据
   getEnvNavNewData: async (params: any) => {
     return await request.get({ url: `/pdu/history-data/env-new-data`, params })
+  },
+
+  // 查询pdu环境数据导航的新增多少条记录数据
+  getEnvNavNewDataByCabinet: async (params: any) => {
+    return await request.get({ url: `/pdu/history-data/env-new-dataByCabinet`, params })
   },
 }
