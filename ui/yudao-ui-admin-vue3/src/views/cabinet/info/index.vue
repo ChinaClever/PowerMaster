@@ -6,39 +6,27 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>未绑定
+              <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">{{Unbound}}</span>个</div>
+            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag"></div>正常
+              <div class="tag empty"></div>空载
             </div>
-            <div class="value"><span class="number">{{Normal}}</span>个</div>
+            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">{{Warning}}</span>个</div>
+            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">{{Alarm}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>离线
-            </div>
-            <div class="value"><span class="number">{{Offline}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div></div>全部
-            </div>
-            <div class="value"><span class="number">{{totalAll}}</span>个</div>
+            <div class="value"><span class="number">{{sumInform}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -254,25 +242,24 @@ const loading = ref(false);
 const butColor = ref(0);
 const onclickColor = ref(-1);
 // const isCloseNav = ref(false) // 左侧导航是否收起
-const isFirst = ref(true) // 是否第一次调用getTableData函数
-const switchValue = ref(0) // 0:阵列 1：表格
-const showPagination = ref(0)
-const listPage = ref<any>([]) // 表格数据
-const deletedList = ref<any>([]) //已删除的
-const navList = ref([]) // 左侧导航列表数据
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
-const pageSizeArr = ref([24,36,48,96])
+const isFirst = ref(true); // 是否第一次调用getTableData函数
+const switchValue = ref(0); // 0:阵列 1：表格
+const showPagination = ref(0);
+const listPage = ref<any>([]); // 表格数据
+const deletedList = ref<any>([]); //已删除的
+const navList = ref([]); // 左侧导航列表数据
+const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
+const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16]);
+const pageSizeArr = ref([24,36,48,96]);
 const total = ref(0) // 列表的总页数
-const deletedTotal = ref(0) // 已删除PDU设备列表的总页数
-// 运行状态 0：未绑定 1：正常 2：预警 3：告警 4：离线
-const Unbound = ref();
-const Normal = ref();
-const Warning = ref();
-const Alarm = ref();
-const Offline = ref();
-const totalAll = ref();
-
+const deletedTotal = ref(0); // 已删除PDU设备列表的总页数
+// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
+const sumNoload = ref();
+const sumNormal = ref();
+const sumEarly = ref();
+const sumInform = ref();
+const sumDidnot = ref();
+const sumOffline = ref();
 const flashListTimer = ref();
 
 const optionsCol = reactive([{
@@ -508,14 +495,11 @@ const getNavList = async() => {
   navList.value = res;
 
     const resStatus =await CabinetApi.getCabinetInfoStatus();
-    Unbound.value = resStatus.unbound;
-    Normal.value = resStatus.normal;
-    Warning.value = resStatus.warning;
-    Alarm.value = resStatus.alarm;
-    Offline.value = resStatus.offline;
-    totalAll.value = resStatus.total;
+    sumNoload.value = resStatus.list[0].sumNoload;
+    sumNormal.value = resStatus.list[0].sumNormal;
+    sumEarly.value = resStatus.list[0].sumEarly;
+    sumInform.value = resStatus.list[0].sumInform;
 }
-
 
 // 保存机柜修改/删除
 const saveMachine = async() => {
@@ -598,7 +582,7 @@ const toggleAllStatus = () => {
 // 跳转详情页
 const toMachineDetail = (key) => {
   console.log('key',key);
-  const devKey = '172.16.101.2-1';
+  const devKey = '';
   const busId = 6;
   const id = key.cabinet_key.split('-')[1]
   const roomId = key.cabinet_key.split('-')[0];
@@ -906,7 +890,7 @@ onBeforeRouteLeave(()=>{
 
 @media screen and (min-width:2048px){
   .arrayContainer {
-    height: 720px;
+    height: 78vh;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1166,7 +1150,7 @@ onBeforeRouteLeave(()=>{
 
 @media screen and (max-width:1600px){
   .arrayContainer {
-    height: 720px;
+    height: 600px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;

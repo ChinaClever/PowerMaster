@@ -252,7 +252,7 @@
           @pagination="getDeletedList"
         />               
       <!-- 阵列模式分页 --> 
-      <div class="arrayContainer" v-show="!switchValue && list.length > 0"> 
+      <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>

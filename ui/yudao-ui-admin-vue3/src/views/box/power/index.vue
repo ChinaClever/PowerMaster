@@ -100,7 +100,7 @@
       </el-form>
     </template>
     <template #Content>
-      <div v-if="switchValue !== 0  && list.length > 0" style="height:720px;margin-top:-10px;">
+      <div v-if="switchValue !== 0  && list.length > 0" style="height:720px;margin-top:-10px;overflow-y: auto;">
         <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -657,7 +657,7 @@
               <div>
                 <div v-for="(outletApparentPow,index) in item.outletApparentPow" :key="index">
                   <el-text  v-if="item.outletApparentPow != null">
-                    {{outletLineText[index]}}{{outletApparentPow}}kVar
+                    {{outletLineText[index]}}{{outletApparentPow}}kVa
                   </el-text>
                 </div>
               </div>
@@ -684,8 +684,11 @@
               <!--<div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
                 电压
               </div>-->
-              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line'">
-                总有功率
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length <= 1">
+                有功功率
+              </div>
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length > 1">
+                总有功功率{{}}
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
@@ -693,11 +696,17 @@
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
                 有功功率
               </div>-->
-              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'" >
-                总无功率
+              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'  && item.outletReactivePow.length <= 1" >
+                无功功率
               </div>
-              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'" >
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
+                总无功功率{{}}
+              </div>
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'  && item.outletApparentPow.length <= 1" >
                 视在功率
+              </div>
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line' && item.outletApparentPow.length > 1" >
+                总视在功率{{}}
               </div>
              <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
                 无功功率

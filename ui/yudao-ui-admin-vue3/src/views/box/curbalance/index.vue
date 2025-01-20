@@ -201,17 +201,17 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.curUnbalance != null" >
-                <span style="font-size: 20px;">{{ item.curUnbalance }}%</span><br/>电流不平衡度
-              </div>
-            </div>
-            <div class="info">                  
+            <div class="info" style="margin-left:10px;">                  
               <div v-if="item.acur != null">A相：{{item.acur}}A</div>
               <div v-if="item.bcur != null">B相：{{item.bcur}}A</div>
               <div v-if="item.ccur != null">C相：{{item.ccur}}A</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+            <div class="icon" >
+              <div v-if="item.curUnbalance != null" >
+                <span style="font-size: 20px;">{{ item.curUnbalance }}%</span><br/>电流不平衡度
+              </div>
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
