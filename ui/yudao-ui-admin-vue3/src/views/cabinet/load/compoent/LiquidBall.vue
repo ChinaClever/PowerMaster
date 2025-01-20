@@ -43,7 +43,7 @@ const echartsOption = reactive({
         color: precent == 0 ? '#fff' : color.value,
         formatter: (params) => {
           if (params.data == 0) {
-            return '未开通'
+            return '空载'
           } else {
             return params.data * 100 + '%'
           }

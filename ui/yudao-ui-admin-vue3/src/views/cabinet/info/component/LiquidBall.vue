@@ -50,7 +50,7 @@ watch(() => props.precent,(val) => {
         color: props.precent == 0 ? '#fff' : color.value,
         formatter: (params) => {
           if (params.data == 0) {
-            return '功率因素'
+            return '未绑定'
           } else {
             return Math.round(val) + '%'
           }

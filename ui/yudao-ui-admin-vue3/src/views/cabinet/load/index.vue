@@ -106,7 +106,7 @@
         <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" :formatter="formatApparentPower" />
         <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" :formatter="formatApparentPower" />
         <el-table-column label="更新时间" min-width="110" align="center" prop="dataUpdateTime" />
-        <el-table-column label="设备" align="center">
+        <el-table-column label="操作" align="center">
           <template #default="scope">
             <el-button
               link
@@ -610,7 +610,7 @@ onBeforeMount(() => {
 .btn_offline {
   // width: 55px;
   // height: 32px;
-  padding: 3px 8px;
+  padding: 6px 8px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
@@ -720,7 +720,7 @@ onBeforeMount(() => {
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
-  height: 25px;
+  height: 32px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -734,7 +734,7 @@ onBeforeMount(() => {
 .btnallNotSelected{
   margin-right: 10px;
   width: 58px;
-  height: 25px;
+  height: 32px;
   cursor: pointer;
   display: flex;
   align-items: center;

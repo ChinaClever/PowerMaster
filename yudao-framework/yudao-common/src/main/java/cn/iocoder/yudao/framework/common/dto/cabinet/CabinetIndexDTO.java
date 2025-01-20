@@ -19,7 +19,8 @@ public class CabinetIndexDTO {
     @Schema(description = "机柜id", example = "1")
     private int id;
 
-
+    @Schema(description = "位置")
+    private String location;
     /**
      * 机房编号
      */

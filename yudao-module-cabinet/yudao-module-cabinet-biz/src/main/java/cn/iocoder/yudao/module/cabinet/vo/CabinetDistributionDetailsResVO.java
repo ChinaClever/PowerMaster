@@ -15,6 +15,13 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "机房名称")
     private String roomName;
 
+    @Schema(description = "数据来源 0：PDU 1：母线", example = "1")
+    private Boolean pduBox;
+
+    private String keyA;
+
+    private String keyB;
+
     @Schema(description = "a电流")
     private List<BigDecimal> curA;
 

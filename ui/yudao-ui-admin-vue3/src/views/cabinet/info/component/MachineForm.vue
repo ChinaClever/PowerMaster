@@ -6,7 +6,7 @@
         v-loading="formLoading"
         :model="machineFormData"
         :rules="machineFormRules"
-        label-width="120px"
+        label-width="140px"
         center
       >
       <el-collapse v-model="activeNames" @change="handleChange" accordion>
@@ -32,12 +32,12 @@
                 <el-option label="占位" value="占位" />
               </el-select>
               </el-form-item>
-              <el-form-item label="机柜高度：" prop="cabinetHeight">
+              <el-form-item label="机柜高度(U)：" prop="cabinetHeight">
               <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
               </el-form-item>
             </div>
             <div class="collapseItem">
-              <el-form-item label="电力容量：" prop="powCapacity ">
+              <el-form-item  :required="true"  label="电力容量(kVA)：" prop="powCapacity ">
                 <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
               </el-form-item>
               <el-form-item label="所属公司：" prop="company">
@@ -64,7 +64,7 @@
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
           <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox">
-            <el-tab-pane label="PDU" :name="0">
+            <el-tab-pane label="PDU" :name=false>
               <div class="pduBus">
                 <el-form-item label="A路：">
                   <el-col :span="4" class="text-center">
@@ -96,7 +96,7 @@
                 </el-form-item>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="母线" :name="1">
+            <el-tab-pane label="母线" :name=true>
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>

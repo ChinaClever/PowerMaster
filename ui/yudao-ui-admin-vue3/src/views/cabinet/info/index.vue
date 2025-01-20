@@ -6,27 +6,39 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>正常
+              <div class="tag empty"></div>未绑定
             </div>
-            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
+            <div class="value"><span class="number">{{Unbound}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载
+              <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
+            <div class="value"><span class="number">{{Normal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
+            <div class="value"><span class="number">{{Warning}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">{{sumInform}}</span>个</div>
+            <div class="value"><span class="number">{{Alarm}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">{{Offline}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div></div>全部
+            </div>
+            <div class="value"><span class="number">{{totalAll}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -193,10 +205,10 @@
               <div>无功功率：{{item.reactiveTotal}}KVAR</div>
               <!-- 负载率： -->
             </div>
-            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
+            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor || ''" /></div>
           </div>
           <div class="room">{{item.roomName}}-{{item.cabinetName}}-{{item.cabinet_key}}</div>
-          <div v-if="item.status == 0" class="status-empty">空载</div>
+          <div v-if="item.status == 0" class="status-empty">未绑定</div>
           <!--<div v-if="item.status == 0" class="status-unbound">正常</div>-->
           <div v-else-if="item.status == 1" class="status-normal">正常</div>
           <div v-else-if="item.status == 2" class="status-warn">预警</div>
@@ -252,14 +264,15 @@ const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
 const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16]);
 const pageSizeArr = ref([24,36,48,96]);
 const total = ref(0) // 列表的总页数
-const deletedTotal = ref(0); // 已删除PDU设备列表的总页数
-// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
-const sumNoload = ref();
-const sumNormal = ref();
-const sumEarly = ref();
-const sumInform = ref();
-const sumDidnot = ref();
-const sumOffline = ref();
+const deletedTotal = ref(0) // 已删除PDU设备列表的总页数
+// 运行状态 0：未绑定 1：正常 2：预警 3：告警 4：离线
+const Unbound = ref();
+const Normal = ref();
+const Warning = ref();
+const Alarm = ref();
+const Offline = ref();
+const totalAll = ref();
+
 const flashListTimer = ref();
 
 const optionsCol = reactive([{
@@ -348,7 +361,7 @@ const queryParams = reactive({
 
 const statusList = reactive([
   {
-    name: '空载',
+    name: '未绑定',
     selected: true,
     value: 0,
     cssClass: 'btn_empty',
@@ -495,11 +508,14 @@ const getNavList = async() => {
   navList.value = res;
 
     const resStatus =await CabinetApi.getCabinetInfoStatus();
-    sumNoload.value = resStatus.list[0].sumNoload;
-    sumNormal.value = resStatus.list[0].sumNormal;
-    sumEarly.value = resStatus.list[0].sumEarly;
-    sumInform.value = resStatus.list[0].sumInform;
+    Unbound.value = resStatus.unbound;
+    Normal.value = resStatus.normal;
+    Warning.value = resStatus.warning;
+    Alarm.value = resStatus.alarm;
+    Offline.value = resStatus.offline;
+    totalAll.value = resStatus.total;
 }
+
 
 // 保存机柜修改/删除
 const saveMachine = async() => {
@@ -581,15 +597,15 @@ const toggleAllStatus = () => {
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  console.log('key',key);
-  const devKey = '';
-  const busId = 6;
+  // console.log('key',key);
+  // const devKey = '172.16.101.2-1';
+  // const busId = 6;
   const id = key.cabinet_key.split('-')[1]
   const roomId = key.cabinet_key.split('-')[0];
   const type = 'hour';
   const location = key.roomName;
   const cabinetName = key.cabinetName;
-  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , cabinetName ,id ,roomId , type}})
+  push({path: '/cabinet/cab/detail', state: {location , cabinetName ,id ,roomId , type}})
 }
 
 const handleCheck = (row) => {

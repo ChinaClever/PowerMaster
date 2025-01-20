@@ -23,12 +23,16 @@
         ci.update_time as updateTime,
         ci.create_time as createTime,
         ci.cabinet_height as cabinetHeight,
+        ci.cabinet_height as freeSpace,
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
-        cf.company
+        cf.company,
+        ri.room_name as roomName,
+        concat(ri.room_name,'-',ci.cabinet_name) as location
         from cabinet_index ci
         left join cabinet_cfg cf on ci.id = cf.cabinet_id
-        where CI.is_disabled = 0 and CI.is_deleted = 0
+        left join room_index ri on ci.room_id = ri.id
+        where ci.is_disabled = 0 and ci.is_deleted = 0
         <if test=" indexVo.pduBox != null ">
             and ci.pdu_box = #{indexVo.pduBox}
         </if>
@@ -54,7 +58,7 @@
             and ci.roomId = #{indexVo.roomId}
         </if>
         <if test=" indexVo.company != null and indexVo.company != ''">
-            and CF.company like "%"#{indexVo.company}"%"
+            and cf.company like "%"#{indexVo.company}"%"
         </if>
         order by ci.create_time desc,ci.run_status asc
     </select>
