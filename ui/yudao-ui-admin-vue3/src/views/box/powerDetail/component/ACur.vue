@@ -30,7 +30,7 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
-      radius: [20, 80],
+      radius: ['25%', '70%'],
       center: ['50%', '40%'],
       roseType: 'radius',
       itemStyle: {
@@ -46,9 +46,9 @@ const echartsOption = reactive({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.lineCurValue[0], name: 'Ia', itemStyle: { color: '#075F71' } },
-        { value: props.loadFactor.lineCurValue[1], name: 'Ib', itemStyle: { color: '#119CB5' } },
-        { value: props.loadFactor.lineCurValue[2], name: 'Ic', itemStyle: { color: '#45C0C9' } },
+        { value: props.loadFactor.lineCurValue[0], name: 'Ia', itemStyle: { color: '#E5B849' } },
+        { value: props.loadFactor.lineCurValue[1], name: 'Ib', itemStyle: { color: '#C8603A' } },
+        { value: props.loadFactor.lineCurValue[2], name: 'Ic', itemStyle: { color: '#AD3762' } },
       ]
     }
   ]

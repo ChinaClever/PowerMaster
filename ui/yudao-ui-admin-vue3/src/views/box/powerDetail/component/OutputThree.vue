@@ -38,8 +38,8 @@ const chartOptions = computed(() => ({
         case '现在功率':
           unit = 'kVA';
           break;
-        case '功率因数':
-          return `${params.name}: ${params.value.toFixed(2)}`;
+        // case '功率因数':
+        //   return `${params.name}: ${params.value.toFixed(2)}`;
       }
       return `${params.name}: ${params.value}${unit}`;
     }
@@ -65,7 +65,7 @@ const chartOptions = computed(() => ({
         { value: props.loadFactor.linePowActive[2], name: '有功功率', itemStyle: { color: '#B47660' } },
         { value: props.loadFactor.linePowReactive[2], name: '无功功率', itemStyle: { color: '#C8603A' } },
         { value: props.loadFactor.linePowApparent[2], name: '现在功率', itemStyle: { color: '#AD3762' } },
-        { value: props.loadFactor.linePowerFactor[2].toFixed(2), name: '功率因数', itemStyle: { color: '#E5B849' } },
+        // { value: props.loadFactor.linePowerFactor[2].toFixed(2), name: '功率因数', itemStyle: { color: '#E5B849' } },
       ]
     }
   ]
