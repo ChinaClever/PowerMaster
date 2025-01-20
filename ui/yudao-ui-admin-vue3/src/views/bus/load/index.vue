@@ -573,11 +573,13 @@ const getNavList = async() => {
 }
 
 const toDetail = (row) =>{
+  console.log('row',row);
+  const roomName = row.rooName;
   const devKey = row.devKey;
   const busId = row.busId
   const location = row.location != null ? row.location : devKey;
   const busName = row.busName;
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName }})
+  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName,roomName }})
 }
 
 
@@ -999,7 +1001,7 @@ onUpdated(() => {
 @media screen and (min-width:2048px){
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 78vh;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1162,7 +1164,7 @@ onUpdated(() => {
 @media screen and (max-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 600px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
