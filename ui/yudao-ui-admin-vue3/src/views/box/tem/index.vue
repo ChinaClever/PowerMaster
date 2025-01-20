@@ -154,11 +154,15 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <img  class="icon"  src="@/assets/imgs/temicon.png" />    
-            <div class="info" >                  
-              <div :style="{backgroundColor : item.atemColor}" v-if="item.atem != null">A: {{item.atem}}°C</div>
-              <div :style="{backgroundColor : item.btemColor}" v-if="item.btem != null">B: {{item.btem}}°C</div>
-              <div :style="{backgroundColor : item.ctemColor}" v-if="item.ctem != null">C: {{item.ctem}}°C</div>
-              <div :style="{backgroundColor : item.ntemColor}" v-if="item.ntem != null">N: {{item.ntem}}°C</div>
+            <div class="info flex-container">
+              <div class="flex-row">
+                <div :style="{backgroundColor: item.atemColor}" v-if="item.atem != null">A:{{item.atem}}°C</div>
+                <div :style="{backgroundColor: item.ctemColor}" v-if="item.ctem != null">C:{{item.ctem}}°C</div>
+              </div>
+              <div class="flex-row">
+                <div :style="{backgroundColor: item.btemColor}" v-if="item.btem != null">B:{{item.btem}}°C</div>
+                <div :style="{backgroundColor: item.ntemColor}" v-if="item.ntem != null">N:{{item.ntem}}°C</div>
+              </div>
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -1270,5 +1274,21 @@ onActivated(() => {
   width: 80%;
   height: 80%;
   margin-top: 100px;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+}
+ 
+.flex-row {
+  display: flex;
+  justify-content: space-between;
+}
+ 
+.flex-row > div {
+  flex: 1;
+  margin: 10px;
+  text-align: center;
 }
 </style>
