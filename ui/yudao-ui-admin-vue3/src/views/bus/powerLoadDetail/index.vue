@@ -14,9 +14,9 @@
   <hr/> <br/> -->
   <div class="header_app">
     <div class="header_app_text">
-      <span style="margin-right:10px;">机房：</span>
-      <span style="margin-right:10px;">所在位置：{{ location }}</span>
-      <span style="margin-right:10px;">名称：{{busName}}</span>
+      <span style="margin-right:10px;">机房：{{ roomName }}</span>
+      <span style="margin-right:10px;">名称：{{ busName }}</span>
+      <span style="margin-right:10px;">所在位置：{{ devKey }}</span>
     </div>
     <div class="header_app_text_other1">
           <el-col :span="10">
@@ -160,6 +160,7 @@ const hasData = ref(true);
 const location = ref(history?.state?.location);
 const busName = ref(history?.state?.busName);
 const roomName = ref(history?.state?.roomName);
+const devKey = ref(history?.state?.devKey);
 const instance = getCurrentInstance();
 const typeRadio = ref('电流');
 const timeRadio = ref('近一小时');
