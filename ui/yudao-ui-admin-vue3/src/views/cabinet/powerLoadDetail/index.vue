@@ -886,7 +886,7 @@ const handleQuery = async () => {
 onMounted(async () => {
   try {
     //devKeyList.value = await loadAll();
-    await getDetailData();
+    //await getDetailData();
     await getCVLineChartData();
     console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
     initChart();
