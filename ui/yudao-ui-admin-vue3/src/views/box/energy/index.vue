@@ -69,16 +69,16 @@
         <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-              <div class="info">
+              <div class="info" style="margin-left:-10px;">
                 <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.location}}</div>
             <!-- <div class="name">{{item.boxName}}</div> -->
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location,item.boxName)" >详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location,item.boxName, item)" >详情</button>
           </div>
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
@@ -303,7 +303,8 @@ const handleCheck = (row) => {
 
 
 // 跳转详情
-const toDetail = (roomId, id,location,boxName) => {
+const toDetail = (roomId, id,location,boxName, item) => {
+  console.log('item',item);
   push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,location,boxName}})
 }
 onMounted(async () => {

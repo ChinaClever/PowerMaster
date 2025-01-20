@@ -2,7 +2,10 @@
   <!-- <div id="main"></div> -->
   <div class="energy" style="background-color: #E7E7E7;">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})
+    <div class="header_app_text">
+      <span style="margin-right:10px;">机房</span>
+      <span style="margin-right:10px;">所在位置：{{ location }}</span>
+      <span style="margin-right:10px;">名称：{{busName}}</span>
     </div>
     <div class="header_app_text_other1">
           <el-col :span="10"> 

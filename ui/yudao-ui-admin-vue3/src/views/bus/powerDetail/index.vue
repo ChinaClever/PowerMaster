@@ -1,7 +1,11 @@
 <template>
 <div class="change" style="background-color: #E7E7E7;">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
+    <div class="header_app_text">
+        <span style="margin-right:10px;">机房：{{ roomName }}</span>
+        <span style="margin-right:10px;">名称：{{ busName }}</span>
+        <span style="margin-right:10px;">所在位置：{{ location }}</span> 
+    </div>
     <div class="header_app_text_other1">
           <el-col :span="10" >
             <el-form
@@ -144,23 +148,24 @@
 
 <script setup lang="ts">
 
-import { ref } from 'vue'
-import Gauge from './component/Gauge.vue'
-import MarkLine from './component/MarkLine.vue'
-import PowReactiveLine from './component/PowReactiveLine.vue'
-import PowActiveLine from './component/PowActiveLine.vue'
-import { IndexApi } from '@/api/bus/busindex'
-import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { ref } from 'vue';
+import Gauge from './component/Gauge.vue';
+import MarkLine from './component/MarkLine.vue';
+import PowReactiveLine from './component/PowReactiveLine.vue';
+import PowActiveLine from './component/PowActiveLine.vue';
+import { IndexApi } from '@/api/bus/busindex';
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 
 const peakDemand = ref(0);
-const peakDemandTime = ref('')
+const peakDemandTime = ref('');
 const redisData = ref() as any;
 const loadRateList = ref() as any;
 const powActiveList = ref() as any;
 const powReactiveList = ref() as any;
-const selectedOption = ref('current')
-const location = ref(history?.state?.location)
-const busName = ref(history?.state?.busName)
+const selectedOption = ref('current');
+const location = ref(history?.state?.location);
+const busName = ref(history?.state?.busName);
+const roomName = ref(history?.state?.roomName);
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,

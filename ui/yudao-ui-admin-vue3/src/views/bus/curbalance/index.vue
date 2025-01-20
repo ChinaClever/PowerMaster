@@ -226,7 +226,7 @@
             <div class="icon">
               <div v-if="item.curUnbalance != null" >
                 <span style="font-size: 20px;margin-left:35px;">{{ item.curUnbalance }}%</span>
-                <div style="width:100px;">电流不平衡度</div>
+                <div style="width:100px;margin-left:15px;">电流不平衡度</div>
               </div>              
             </div>
           </div>
@@ -301,7 +301,7 @@
             <div class="icon" >
               <div v-if="item.volUnbalance != null" >
                 <span style="font-size: 20px;margin-left:35px;">{{ item.volUnbalance }}%</span>
-                <div style="width:100px;">电压不平衡度</div>
+                <div style="width:100px;margin-left:15px;">电压不平衡度</div>
               </div>              
             </div>
           </div>
@@ -654,10 +654,13 @@ const getBalanceDetail = async (item) => {
     }
   }
 
-  balanceObj.imbalanceValueA = res.curUnbalance
-  balanceObj.imbalanceValueB = res.volUnbalance
-  balanceObj.colorIndex = res.color - 1
+  balanceObj.imbalanceValueA = res.curUnbalance;
+  balanceObj.imbalanceValueB = res.volUnbalance;
+  balanceObj.colorIndex = res.color - 1;
+  colorFlag.value = res.color - 1;
   console.log('balanceObj',balanceObj.colorIndex)
+  console.log('colorList[balanceObj.colorIndex].color',colorList[balanceObj.colorIndex].color);
+  console.log('colorFlag',colorFlag);
 }
 
 const getBalanceTrend = async (item) => {
@@ -756,7 +759,7 @@ const getBalanceTrend = async (item) => {
 const colorFlag = ref(0);
 
 const showDialogCur = (item) => {
-  colorFlag.value = item.color;
+  //colorFlag.value = item.color;
   dialogVisibleCur.value = true;
   curdevkey.value = item.devKey;
   busName.value = item.busName;
@@ -766,7 +769,7 @@ const showDialogCur = (item) => {
 }
 
 const showDialogVol = (item) => {
-  colorFlag.value = item.color;
+  //colorFlag.value = item.color;
   dialogVisibleVol.value = true;
   voldevkey.value = item.devKey;
   busName.value = item.busName;
@@ -907,11 +910,11 @@ const getList = async () => {
       obj.acur = obj.acur?.toFixed(2);
       obj.bcur = obj.bcur?.toFixed(2);
       obj.ccur = obj.ccur?.toFixed(2);
-      obj.curUnbalance = obj.curUnbalance?.toFixed(0);
+      obj.curUnbalance = obj.curUnbalance?.toFixed(2);
       obj.avol = obj.avol?.toFixed(1);
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
-      obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(2);
     });
     list.value = data.list
     total.value = data.total

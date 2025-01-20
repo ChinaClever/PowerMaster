@@ -244,7 +244,7 @@
         <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="powReactive" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powReactive">
-              {{ scope.row.powReactive }}
+              {{ scope.row.powReactive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -818,11 +818,12 @@ const getNavList = async() => {
 }
 
 const toDeatil = (row) =>{
+  const roomName = row.roomName;
   const devKey = row.devKey;
   const busId = row.busId;
   const location = row.location != null ? row.location : row.devKey
   const busName = row.busName;
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
 
 }
 
