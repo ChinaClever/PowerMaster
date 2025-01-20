@@ -699,7 +699,7 @@
               <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'  && item.outletReactivePow.length <= 1" >
                 无功功率
               </div>
-              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
+              <div v-if="valueMode == 3 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
                 总无功功率{{}}
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'  && item.outletApparentPow.length <= 1" >
