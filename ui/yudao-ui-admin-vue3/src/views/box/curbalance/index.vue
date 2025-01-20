@@ -241,12 +241,12 @@
             <el-card class="cardChilc" shadow="hover">
             <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name"/>
             </el-card>
-            <el-card v-if="curflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="ABarOption" :height="300" />
               </div>
             </el-card>
-            <el-card v-if="curflag1" class="cardChilc" shadow="hover">
+            <el-card class="cardChilc" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="ALineOption" :height="300" />
               </div>
@@ -256,12 +256,12 @@
             <el-card  class="cardChilc" shadow="hover">
               <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
             </el-card>
-            <el-card v-if="volflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="BBarOption" :height="300"/>
               </div>
             </el-card>
-            <el-card v-if="volflag1" class="cardChilc" shadow="hover">
+            <el-card class="cardChilc" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="BLineOption" :height="300"/>
               </div>
@@ -311,12 +311,12 @@
             <el-card class="cardChilc" shadow="hover">
               <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
             </el-card>
-            <el-card v-if="curflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="ABarOption" :height="300" />
               </div>
             </el-card>
-            <el-card v-if="curflag1" class="cardChilc" shadow="hover">
+            <el-card class="cardChilc" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="ALineOption" :height="300" />
               </div>
@@ -326,12 +326,12 @@
             <el-card class="cardChilc" shadow="hover">
               <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
             </el-card>
-            <el-card v-if="volflag" class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="BBarOption" :height="300"/>
               </div>
             </el-card>
-            <el-card v-if="volflag1" class="cardChilc" shadow="hover">
+            <el-card class="cardChilc" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="BLineOption" :height="300"/>
               </div>
@@ -393,10 +393,6 @@ const location = ref();
 const curlocation = ref();
 const vollocation = ref();
 const boxName = ref();
-const curflag = ref(false);
-const volflag = ref(false);
-const curflag1 = ref(false);
-const volflag1 = ref(false);
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
@@ -764,7 +760,6 @@ const getBalanceDetail = async(item) => {
 
   if (res.cur_value) {
     const cur_valueA = res.cur_value;
-    curflag.value = true;
     console.log('cur_valueA',cur_valueA);
     // const max = Math.max(...cur_valueA) // 最大值
     // // 计算平均值
@@ -787,7 +782,7 @@ const getBalanceDetail = async(item) => {
       series: [
         {
           type: 'pie',
-          radius: [20, 120],
+          radius: ['20%', '120%'],
           center: ['50%', '50%'],
           roseType: 'radius',
           itemStyle: {
@@ -813,7 +808,6 @@ const getBalanceDetail = async(item) => {
   }
   if (res.vol_value) {
     const vol_value = res.vol_value;
-    volflag.value = true;
     // const max = Math.max(...vol_value) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -870,8 +864,6 @@ const getBalanceTrend = async (item) => {
   console.log('22222222',res)
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime);
-    curflag1.value = true;
-    volflag1.value = true;
     if(res[0].cur && res[0].cur.length == 1) {
       ALineOption.value.xAxis = {
         type: 'category',
