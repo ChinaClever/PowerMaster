@@ -3,7 +3,12 @@
   <div class="energy">
     <div class="top">
       <ContentWrap>
-        <el-tag size="large">{{ location }}</el-tag>
+        <!--<el-tag size="large">
+        </el-tag>-->
+        <span style="margin-right:10px;">机房：</span>
+        <span style="margin-right:10px;">母线：</span>
+        <span style="margin-right:10px;">插接箱：{{ boxName }}</span>
+        <span style="margin-right:10px;">网络地址：{{ location }}</span>
       </ContentWrap>
     </div>
     <div class="content">
@@ -99,7 +104,8 @@ import { IndexApi } from '@/api/bus/boxindex'
 import { BoxEnergyApi } from '@/api/bus/boxenergy'
 import 'echarts/lib/component/dataZoom';
 
-const location = ref(history?.state?.location )
+const location = ref(history?.state?.location );
+const boxName = ref(history?.state?.boxName );
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
@@ -456,6 +462,10 @@ const echartsOptionPowTrend = ref<EChartsOption>({})
       }
     }
   }
+}
+
+:deep(.el-card__body){
+  padding: 10px;
 }
 
 </style>

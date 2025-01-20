@@ -244,7 +244,7 @@
         <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="powReactive" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powReactive">
-              {{ scope.row.powReactive }}
+              {{ scope.row.powReactive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>

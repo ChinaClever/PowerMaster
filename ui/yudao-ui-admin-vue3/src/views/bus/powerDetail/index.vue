@@ -1,7 +1,11 @@
 <template>
 <div class="change" style="background-color: #E7E7E7;">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
+    <div class="header_app_text">
+        <span style="margin-right:10px;">机房：</span>
+        <span style="margin-right:10px;">名称：{{busName}}</span>
+        <span style="margin-right:10px;">所在位置：{{ location }}</span> 
+    </div>
     <div class="header_app_text_other1">
           <el-col :span="10" >
             <el-form
