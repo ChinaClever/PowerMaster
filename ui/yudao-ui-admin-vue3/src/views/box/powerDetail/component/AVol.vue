@@ -46,9 +46,9 @@ const chartOptions = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.lineVolValue[0], name: 'Ua', itemStyle: { color: '#E5B849' } },
-        { value: props.loadFactor.lineVolValue[1], name: 'Ub', itemStyle: { color: '#C8603A' } },
-        { value: props.loadFactor.lineVolValue[2], name: 'Uc', itemStyle: { color: '#AD3762' } },
+        { value: props.loadFactor.lineVolValue[0], name: 'Ua', itemStyle: { color: '#075F71' } },
+        { value: props.loadFactor.lineVolValue[1], name: 'Ub', itemStyle: { color: '#119CB5' } },
+        { value: props.loadFactor.lineVolValue[2], name: 'Uc', itemStyle: { color: '#45C0C9' } },
       ]
     }
   ]

@@ -42,7 +42,7 @@ const echartsOption = reactive( {
         }
       },
       axisTick: {
-        distance: -30,
+        distance: -40,
         length: 8,
         lineStyle: {
           color: '#fff',
@@ -50,7 +50,7 @@ const echartsOption = reactive( {
         }
       },
       splitLine: {
-        distance: -30,
+        distance: -40,
         length: 30,
         lineStyle: {
           color: '#fff',

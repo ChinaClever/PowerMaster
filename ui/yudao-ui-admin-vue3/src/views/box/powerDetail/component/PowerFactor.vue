@@ -86,7 +86,7 @@ const echartsOption = reactive({
       },
       detail: {
         fontSize: 30,
-        offsetCenter: [0, '-35%'],
+        offsetCenter: [0, '-15%'],
         valueAnimation: true,
         formatter: function (value) {
           return Math.round(value * 100) + '';
@@ -96,7 +96,7 @@ const echartsOption = reactive({
       data: [
         {
           value: props.loadFactor.totalPowerFactor.toFixed(2),
-          name: '功率因数'
+          // name: ''
         }
       ]
     }
