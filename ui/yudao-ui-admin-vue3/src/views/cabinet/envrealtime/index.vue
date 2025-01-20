@@ -418,9 +418,11 @@ const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
+  console.log('queryParams.company',queryParams.company);
   loading.value = true
   try {
     const data = await IndexApi.getCabinetEnvPage(queryParams);
+    console.log('data',data);
 
     list.value = data.list
     var tableIndex = 0;
