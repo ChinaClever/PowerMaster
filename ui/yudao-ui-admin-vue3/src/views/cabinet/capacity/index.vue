@@ -7,6 +7,15 @@
         :inline="true"
         label-width="68px"
       >
+        <el-form-item style="margin-left: 5px;">
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部
+          </button>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          </template>
+        </el-form-item>
         <div>
           <el-form-item label="公司名称" prop="company">
             <el-input
@@ -47,6 +56,7 @@
               </div>
             </div>
             <div class="room">{{item.roomName}}-{{item.name}}</div>
+            <div style="position: absolute;width:70px;height:30px;top:5px;right:5px;">剩余量100%</div>
             <button class="detail" @click.prevent="toDetail(item.id,item.roomId)">详情</button>
           </div>
         </div>
@@ -105,8 +115,53 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
+  startNum: 0,
+  endNum: 100,
 });
 const pageSizeArr = ref([24,36,48,96]);
+const butColor = ref(0);
+const onclickColor = ref(-1);
+const statusList = reactive([
+  {
+    name: '剩余量100%',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00',
+    startNum: 100,
+    endNum: 100,
+  },
+  {
+    name: '剩余量>50%',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal',
+    color: '#ffc402',
+    startNum: 50,
+    endNum: 99.99,
+  },
+  {
+    name: '30%<剩余量<50%',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_warn',
+    activeClass: 'btn_warn warn',
+    color: '#fa3333',
+    startNum: 30,
+    endNum: 49.99,
+  },
+  {
+    name: '剩余量<30%',
+    selected: true,
+    value: 4,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error',
+    startNum: 0,
+    endNum: 29.99,
+  }
+])
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -134,6 +189,22 @@ const getTableData = async(reset = false) => {
   } finally {
     tableLoading.value = false
   }
+}
+
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.startNum = statusList[index].startNum;
+  queryParams.endNum = statusList[index].endNum;
+  getTableData();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.startNum = 0;
+  queryParams.endNum = 100;
+  getTableData();
 }
 
 // 处理左侧树导航选择事件
@@ -254,7 +325,118 @@ onBeforeMount(() => {
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+
+.btn_fault,
+.btn_offline,
+.btn_normal,
+.btn_warn,
+.btn_error{
+  width: 125px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+.btn_offline {
+  border: 1px solid #aaa;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.btn_fault{
+  border: 1px solid orange;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.offline {
+  background-color: #aaa;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_normal {
+  border: 1px solid #3bbb00;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.normal {
+  background-color: #3bbb00;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_warn {
+  border: 1px solid #ffc402;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.warn {
+  background-color: #ffc402;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_error {
+  border: 1px solid #fa3333;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.error {
+  background-color: #fa3333;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+
+.fault {
+  background-color: orange;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
 }
 </style>
