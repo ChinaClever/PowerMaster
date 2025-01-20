@@ -385,7 +385,14 @@ const getList = async () => {
       total.value = data.total
     }
     
-  } finally {
+  } catch (error) {
+    ElMessage.warning('暂无数据')
+    //清空表格
+    list.value = [];
+    //清空图表数据
+    eqData.value = [];
+  } 
+  finally {
     initChart();
     loading.value = false
   }

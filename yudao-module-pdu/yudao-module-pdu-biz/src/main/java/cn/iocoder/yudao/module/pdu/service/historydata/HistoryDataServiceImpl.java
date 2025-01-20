@@ -674,48 +674,76 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         }else{
             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         }
-        if (channel != null){
+        if (cabinetIds==null && channel != null){
             searchSourceBuilder.query(QueryBuilders.termQuery("sensor_id", channel));
         }
-        // 前端筛选某个机柜和探测点后触发
-        if (cabinetIds!= null && channel != null && position != null){
-            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
-            cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetIds[0])
-                    .eq("channel", channel)
-                    .eq("position", position);
-            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
-            // 表示此机柜此位置没有传感器 直接返回
-            if ( cabinetEnvSensor == null ){
-                pageResult = new PageResult<>();
-                pageResult.setList(null)
-                        .setTotal(0L);
-                return pageResult;
-            }
-            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
-            cabinetPduQueryWrapper.eq("cabinet_id", cabinetIds[0]);
-            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
-            Integer pduId = null;
-            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
-            }
-            if (Objects.equals('B', cabinetEnvSensor.getPathPdu())){
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), null);
-            }
-            // 创建范围查询
-            if (pduId != null) {
-                QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
-                // 创建匹配查询
-                QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId());
-                // 创建BoolQueryBuilder对象
-                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-                // 将范围查询和匹配查询添加到布尔查询中
-                boolQuery.must(termQuery);
-                boolQuery.must(termQuery1);
-                // 将布尔查询设置到SearchSourceBuilder中
-                searchSourceBuilder.query(boolQuery);
-            }
 
+        //如果机柜和传感器同时筛选
+        List<String> pduList = new ArrayList<>();
+        if (cabinetIds != null && channel != null){
+            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper1 = new QueryWrapper<>();
+            cabinetPduQueryWrapper1.in("cabinet_id", cabinetIds);
+            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper1);
+            for (CabinetPdu cabinetPdu1 : cabinetPduList){
+                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(),null );//String.valueOf(cabinetPdu1.getCasIdA())
+                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(),null);
+                if (ipA != null) {
+                    pduList.add(String.valueOf(ipA));
+                }
+                if (ipB != null) {
+                    pduList.add(String.valueOf(ipB));
+                }
+            }
+            // 创建布尔查询
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            if (!pduList.isEmpty()) {
+                boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduList));
+            }
+            if (channel != null) {
+                boolQuery.must(QueryBuilders.termQuery("sensor_id", channel));
+            }
+            searchSourceBuilder.query(boolQuery);
         }
+
+//        // 前端筛选某个机柜和探测点后触发
+//        if (cabinetIds!= null && channel != null && position != null){
+//            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
+//            cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetIds[0])
+//                    .eq("channel", channel)
+//                    .eq("position", position);
+//            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
+//            // 表示此机柜此位置没有传感器 直接返回
+//            if ( cabinetEnvSensor == null ){
+//                pageResult = new PageResult<>();
+//                pageResult.setList(null)
+//                        .setTotal(0L);
+//                return pageResult;
+//            }
+//            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
+//            cabinetPduQueryWrapper.eq("cabinet_id", cabinetIds[0]);
+//            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
+//            Integer pduId = null;
+//            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
+//                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
+//            }
+//            if (Objects.equals('B', cabinetEnvSensor.getPathPdu())){
+//                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), null);
+//            }
+//            // 创建范围查询
+//            if (pduId != null) {
+//                QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
+//                // 创建匹配查询
+//                QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId());
+//                // 创建BoolQueryBuilder对象
+//                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+//                // 将范围查询和匹配查询添加到布尔查询中
+//                boolQuery.must(termQuery);
+//                boolQuery.must(termQuery1);
+//                // 将布尔查询设置到SearchSourceBuilder中
+//                searchSourceBuilder.query(boolQuery);
+//            }
+//
+//        }
 
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
@@ -798,8 +826,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
 
+        QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
+        cabinetPduQueryWrapper.select("pdu_key_a", "pdu_key_b");
         if (cabinetIds == null){
-            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(null);
+            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper);
             for (CabinetPdu cabinetPdu1 : cabinetPduList){
                 Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(),null );//String.valueOf(cabinetPdu1.getCasIdA())
                 Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(),null);
@@ -821,48 +851,76 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
 
-        if (channel != null){
+        if (cabinetIds==null && channel != null){
             searchSourceBuilder.query(QueryBuilders.termQuery("sensor_id", channel));
         }
-        // 前端筛选某个机柜和探测点后触发
-        if (cabinetIds!= null && channel != null && position != null){
-            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
-            cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetIds[0])
-                    .eq("channel", channel)
-                    .eq("position", position);
-            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
-            // 表示此机柜此位置没有传感器 直接返回
-            if ( cabinetEnvSensor == null ){
-                pageResult = new PageResult<>();
-                pageResult.setList(null)
-                        .setTotal(0L);
-                return pageResult;
-            }
-            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
-            cabinetPduQueryWrapper.eq("cabinet_id", cabinetIds[0]);
-            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
-            Integer pduId = null;
-            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
-            }
-            if (Objects.equals('B', cabinetEnvSensor.getPathPdu())){
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), null);
-            }
-            // 创建范围查询
-            if (pduId != null) {
-                QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
-                // 创建匹配查询
-                QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId());
-                // 创建BoolQueryBuilder对象
-                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-                // 将范围查询和匹配查询添加到布尔查询中
-                boolQuery.must(termQuery);
-                boolQuery.must(termQuery1);
-                // 将布尔查询设置到SearchSourceBuilder中
-                searchSourceBuilder.query(boolQuery);
-            }
 
+        //如果机柜和传感器同时筛选
+        List<String> pduList = new ArrayList<>();
+        if (cabinetIds != null && channel != null){
+            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper1 = new QueryWrapper<>();
+            cabinetPduQueryWrapper1.in("cabinet_id", cabinetIds);
+            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper1);
+            for (CabinetPdu cabinetPdu1 : cabinetPduList){
+                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(),null );//String.valueOf(cabinetPdu1.getCasIdA())
+                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(),null);
+                if (ipA != null) {
+                    pduList.add(String.valueOf(ipA));
+                }
+                if (ipB != null) {
+                    pduList.add(String.valueOf(ipB));
+                }
+            }
+            // 创建布尔查询
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            if (!pduList.isEmpty()) {
+                boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduList));
+            }
+            if (channel != null) {
+                boolQuery.must(QueryBuilders.termQuery("sensor_id", channel));
+            }
+            searchSourceBuilder.query(boolQuery);
         }
+
+        // 前端筛选某个机柜和探测点后触发
+//        if (cabinetIds!= null && channel != null && position != null){
+//            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
+//            cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetIds[0])
+//                    .eq("channel", channel)
+//                    .eq("position", position);
+//            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
+//            // 表示此机柜此位置没有传感器 直接返回
+//            if ( cabinetEnvSensor == null ){
+//                pageResult = new PageResult<>();
+//                pageResult.setList(null)
+//                        .setTotal(0L);
+//                return pageResult;
+//            }
+//            QueryWrapper<CabinetPdu> queryWrapper = new QueryWrapper<>();
+//            queryWrapper.eq("cabinet_id", cabinetIds[0]);
+//            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(queryWrapper);
+//            Integer pduId = null;
+//            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
+//                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
+//            }
+//            if (Objects.equals('B', cabinetEnvSensor.getPathPdu())){
+//                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), null);
+//            }
+//            // 创建范围查询
+//            if (pduId != null) {
+//                QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
+//                // 创建匹配查询
+//                QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId());
+//                // 创建BoolQueryBuilder对象
+//                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+//                // 将范围查询和匹配查询添加到布尔查询中
+//                boolQuery.must(termQuery);
+//                boolQuery.must(termQuery1);
+//                // 将布尔查询设置到SearchSourceBuilder中
+//                searchSourceBuilder.query(boolQuery);
+//            }
+//
+//        }
 
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
@@ -1014,7 +1072,16 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         String[] indices = new String[]{"pdu_env_realtime", "pdu_env_hour", "pdu_env_day"};
         String[] name = new String[]{"hour", "day", "week"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
+
         Map<String, Object> map = energyConsumptionService.getSumData(indices, name, timeAgo);
+        return map;
+    }
+
+    public Map<String, Object> getEnvNavNewDataByCabinet() throws IOException {
+        String[] indices = new String[]{"pdu_env_realtime", "pdu_env_hour", "pdu_env_day"};
+        String[] name = new String[]{"hour", "day", "week"};
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
+        Map<String, Object> map = energyConsumptionService.getSumDataByCabinet(indices, name, timeAgo);
         return map;
     }
     @Override

@@ -74,6 +74,9 @@ public interface HistoryDataService {
 
     Map<String, Object> getEnvNavNewData() throws IOException;
 
+    Map<String, Object> getEnvNavNewDataByCabinet() throws IOException;
+
+
     List<Object> getEnExcelList(List<Object> list);
 
     List<Object> getNewHistoryDataDetails(List<Object> list);

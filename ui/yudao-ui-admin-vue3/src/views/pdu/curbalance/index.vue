@@ -337,7 +337,7 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleVol" @close="handleClose" :show-close=false>
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose" :show-close=false style="background-color: #F1F1F1;">
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right;margin-left: 10px;" >关闭</el-button>
     <span style="font-size: 20px; font-weight: bold;margin-top: -10px;">均衡配电详情</span>
@@ -385,14 +385,14 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover" >
             <div><span style="font-size: 20px; font-weight: bold;">相电流</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;">
-              <Bar :max="barMaxValues" width="300px" height="250px"/>
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 40px;">
+              <Bar :max="barMaxValues" width="300px" height="250px" />
             </div>
             <div style="display: inline-block;
               position: absolute;
               width: 100px;
               height: 100px;
-              margin-top: 90px;
+              margin-top: 100px;
               margin-left:80px">
             <div class="label-container">
               <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;" >{{barMaxValues.L1}}A</span>
@@ -423,7 +423,7 @@
                 电压不平衡
               </span>
             </div>
-            <div style="margin-top: 30px;">
+            <div style="margin-top: 50px;">
             <volUnblance :max="balanceObj.imbalanceValueB" :customColor="colorList[4].color" />
             </div>
             <!-- <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
@@ -441,14 +441,14 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div><span style="font-size: 20px; font-weight: bold;">相电压</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 40px;margin-left: -25px;">
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 50px;margin-left: -25px;">
               <Vol :max="volMaxValues" width="300px" height="250px"/>
             </div>
             <div style="display: inline-block;
             position: absolute;
             width: 100px;
             height: 100px;
-            margin-top: 100px;
+            margin-top: 110px;
             margin-left:100px">
           <div class="label-container">
             <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua</span><span style="font-size:16px;">{{volMaxValues.L1}}V</span>
@@ -1267,8 +1267,6 @@ onBeforeUnmount(() => {
 })
 const lineidBeforeChartUnmountOne = () => {
   dialogVisibleVol.value = false
-  // 销毁图表实例
-  Bar?.dispose();
 }
 onBeforeRouteLeave(() => {
   if (flashListTimer.value) {

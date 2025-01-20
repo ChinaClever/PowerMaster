@@ -169,7 +169,7 @@
         <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ formatToTwoDecimals(scope.row.l1MaxCur) }}
+              {{ scope.row.l1MaxCur }}
             </el-text>
           </template>
         </el-table-column>
@@ -177,7 +177,7 @@
         <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ formatToTwoDecimals(scope.row.l2MaxCur) }}
+              {{ scope.row.l2MaxCur }}
             </el-text>
           </template>
         </el-table-column>
@@ -185,7 +185,7 @@
         <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ formatToTwoDecimals(scope.row.l3MaxCur) }}
+              {{ scope.row.l3MaxCur }}
             </el-text>
           </template>
         </el-table-column>
@@ -197,7 +197,7 @@
               link
               type="primary"
               
-              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
+              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0,scope.row.l1MaxCur)"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -228,7 +228,7 @@
         <el-table-column label="最大电流(kA)" align="center" prop="l1MaxCur"  >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ formatToTwoDecimals(scope.row.l1MaxCur) }}
+              {{ scope.row.l1MaxCur }}
             </el-text>
           </template>
         </el-table-column>
@@ -267,7 +267,7 @@
         <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ formatToTwoDecimals(scope.row.l1MaxPow) }}
+              {{ scope.row.l1MaxPow }}
             </el-text>
           </template>
         </el-table-column>
@@ -275,7 +275,7 @@
         <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ formatToTwoDecimals(scope.row.l2MaxPow) }}
+              {{ scope.row.l2MaxPow }}
             </el-text>
           </template>
         </el-table-column>
@@ -283,7 +283,7 @@
         <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ formatToTwoDecimals(scope.row.l3MaxPow) }}
+              {{ scope.row.l3MaxPow }}
             </el-text>
           </template>
         </el-table-column>
@@ -321,7 +321,7 @@
         <el-table-column label="最大功率(kW)" align="center" prop="l1MaxPow"  >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ formatToTwoDecimals(scope.row.l1MaxPow) }}
+              {{ scope.row.l1MaxPow }}
             </el-text>
           </template>
         </el-table-column>
@@ -331,7 +331,7 @@
             <el-button
               link
               type="primary"
-              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1);"
+              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1,scope.row.l1MaxPow);"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -346,7 +346,9 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>     
+      </el-table> 
+      
+      
       <div  v-if="switchValue == 1 && list.length > 0  && valueMode == 1" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -359,20 +361,25 @@
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <div style="margin-left: 10px;margin-bottom: 50px; margin-top: -20px; width: 100px;height: 100px" ><Bar :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
-          </div>
-          
-          <div class="content" v-show="item.l3MaxPow == undefined || item.l3MaxPow == null">
-
+          </div>       
+          <div class="content" v-show="item.l3MaxPow == undefined && item.l3MaxPow == null && item.l2MaxPow == undefined && item.l2MaxPow == null && item.l1MaxPow != undefined && item.l1MaxPow != null">
             <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
             <div class="info">
               <div >最大功率：{{item.l1MaxPow}}kW</div>
               <div >发生时间：{{item.l1MaxPowTime}}</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+          </div> 
+          <div class="content" v-show="item.l3MaxPow == undefined && item.l3MaxPow == null && item.l2MaxPow == undefined && item.l2MaxPow == null && item.l1MaxPow == undefined && item.l1MaxPow == null ">
+            <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
+            <div class="info">
+              <div style="margin-top: 30px;">该设备暂无数据</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
           <!-- <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button> -->    
-          <button class="detail" @click="onlyDevKey=item.devKey,location=item.location;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1);location1=item.location">详情</button>
+          <button class="detail" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null" @click="onlyDevKey=item.devKey,location=item.location;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1,item.l1MaxPow);location1=item.location">详情</button>
         </div>
       </div>
 
@@ -409,7 +416,7 @@
             <!-- <div  style="height: 50px;background-color: black"></div> -->
             <div style="margin-left: 10px;margin-bottom: 30px; width: 100px;height: 100px" ><Bar :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
-          <div class="content" v-if="item.l3MaxCur == undefined || item.l3MaxCur == null">
+          <div class="content" v-if="item.l3MaxCur == undefined && item.l3MaxCur == null && item.l2MaxCur == undefined && item.l2MaxCur == null && item.l1MaxCur != undefined && item.l1MaxCur != null">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info">
               
@@ -419,10 +426,20 @@
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <div style="padding: 0 28px"><Pie :width="100" :height="100" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
-          </div>          
+          </div>   
+          <div class="content" v-if="item.l3MaxCur == undefined || item.l3MaxCur == null && item.l2MaxCur == undefined && item.l2MaxCur == null && item.l1MaxCur == undefined && item.l1MaxCur == null">
+            <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
+            <div class="info">
+              
+              <div style="margin-top: 30px;">该设备暂无数据</div>
+
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+            <!-- <div style="padding: 0 28px"><Pie :width="100" :height="100" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div> -->
+          </div>       
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
-          <button class="detail" @click="onlyDevKey=item.devKey,location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0);">详情</button>
+          <button class="detail" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" @click="onlyDevKey=item.devKey,location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0,item.l1MaxCur);">详情</button>
         </div>
       </div>
       
@@ -822,6 +839,7 @@ const getNavList = async() => {
 import { useRouter } from 'vue-router';
 import { LineChart } from 'echarts/charts'
 import { s } from 'vite/dist/node/types.d-aGj9QkWt';
+import { ElementPlus } from '@element-plus/icons-vue/dist/types';
 
 const router = useRouter();
 const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
@@ -1390,17 +1408,31 @@ const lineidBeforeChartUnmountOne = () => {
   dialogVisibleOne.value = false
 }
 
-const showDialog = (id, type,flagValue) => {
+const showDialog = (id, type,flagValue,l1MaxCur) => {
   lineidChart?.dispose()
   getLineid(id, type,flagValue)
+  if(l1MaxCur!= null && l1MaxCur != undefined && l1MaxCur != 0){
   dialogVisible.value = true
+}else {
+  ElMessage({
+    message: '该设备没有数据',
+    type: 'warning',
+  });
+}
   flagValue.value = 0
 }
 
-const showDialogOne = (id,type,flagValue) => {
+const showDialogOne = (id,type,flagValue,l1MaxPow) => {
   lineidChartOne?.dispose()
   getLineid(id, type,flagValue)
+  if(l1MaxPow!= null && l1MaxPow != undefined && l1MaxPow != 0){
   dialogVisibleOne.value = true
+}else {
+  ElMessage({
+    message: '该设备没有数据',
+    type: 'warning',
+  });
+}
   flagValue.value = 1
 }
 

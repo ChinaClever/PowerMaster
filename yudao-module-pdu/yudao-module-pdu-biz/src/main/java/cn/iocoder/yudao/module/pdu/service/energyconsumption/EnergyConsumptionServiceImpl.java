@@ -1,13 +1,17 @@
 package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeRespVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
+import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
 import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
 import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.log4j.Log4j2;
 import org.elasticsearch.action.search.SearchRequest;
@@ -45,6 +49,12 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     @Autowired
     private PDUDeviceService pduDeviceService;
 
+    @Autowired
+    private CabinetPduMapper cabinetPduMapper;
+
+    @Autowired
+    private PduIndexMapper pduIndexMapper;
+
     @Override
     public PageResult<Object> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = null;
@@ -78,7 +88,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             List<String> pduIds = null;
             String[] ipArray = pageReqVO.getIpArray();
 
-            if (ipArray!= null) {
+            if (ipArray != null) {
                 pduIds = historyDataService.getPduIdsByIps(ipArray);
                 boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduIds)); // 将 termsQuery 加入 boolQuery 的 must 子句
             }
@@ -105,7 +115,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     } else {
                         searchRequest.indices("pdu_eq_outlet_month");
                     }
-                    if (pageReqVO.getOutletId()!= null) {
+                    if (pageReqVO.getOutletId() != null) {
                         Integer outletId = pageReqVO.getOutletId();
                         // 创建匹配查询
                         QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
@@ -131,8 +141,8 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     .setTotal(totalHits);
 
             return pageResult;
-        }catch (Exception e){
-            log.error("EnergyConsumptionServiceImpl.getEQDataPage error:{}",e.getMessage());
+        } catch (Exception e) {
+            log.error("EnergyConsumptionServiceImpl.getEQDataPage error:{}", e.getMessage());
         }
         return pageResult;
     }
@@ -294,7 +304,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             pageResult.setList(resultList)
                     .setTotal(totalHits);
             return pageResult;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("getEQDataDetails error", e);
         }
         return pageResult;
@@ -361,8 +371,8 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             });
             // 返回的结果
             return resultList;
-        }catch (Exception e){
-            log.error("获取实时eq数据失败",e);
+        } catch (Exception e) {
+            log.error("获取实时eq数据失败", e);
         }
         return resultList;
     }
@@ -458,11 +468,11 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException {
         Map<String, Object> resultItem = new HashMap<>();
         try {
-             resultItem = new HashMap<>();
+            resultItem = new HashMap<>();
             // 添加范围查询 最近24小时
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            for (int i = 0; i < name.length ; i++) {
+            for (int i = 0; i < name.length; i++) {
                 SearchRequest searchRequest;
                 searchRequest = new SearchRequest(indices[i]);
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -482,11 +492,84 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                 resultItem.put(name[i], totalInsertions);
             }
             return resultItem;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
         }
         return null;
     }
+
+    public Integer getPduIdByAddr(String ipAddr, String cascadeAddr) {
+        String devKey = ipAddr;//+"-"+cascadeAddr;
+        QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pdu_key", devKey); // 指定查询条件：name 字段等于给定的 name 值
+        PduIndex pduIndex = pduIndexMapper.selectOne(queryWrapper); // 执行查询，返回匹配的实体对象
+        if (pduIndex != null) {
+            return Math.toIntExact(pduIndex.getId());
+        }
+        return null;
+    }
+
+    public Map<String, Object> getSumDataByCabinet(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException {
+        Map<String, Object> resultItem = new HashMap<>();
+        QueryWrapper<CabinetPdu> wrapper = new QueryWrapper();
+        wrapper.select("pdu_key_a", "pdu_key_b");
+        List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(wrapper);
+        List<String> pduIds = new ArrayList<>();
+        if (!cabinetPduList.isEmpty()) {
+            for (CabinetPdu cabinetPdu1 : cabinetPduList) {
+                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(), null);//String.valueOf(cabinetPdu1.getCasIdA())
+                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(), null);
+                if (ipA != null) {
+                    pduIds.add(String.valueOf(ipA));
+                }
+                if (ipB != null) {
+                    pduIds.add(String.valueOf(ipB));
+                }
+            }
+        }
+
+            try {
+                resultItem = new HashMap<>();
+                // 添加范围查询 最近24小时
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                for (int i = 0; i < name.length; i++) {
+                    SearchRequest searchRequest = new SearchRequest(indices[i]);
+                    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+                    // 使用 bool 查询来组合多个查询条件
+                    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+                    boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
+                            .from(timeAgo[i].format(formatter))
+                            .to(now.format(formatter)));
+                    boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduIds));
+                    searchSourceBuilder.query(boolQuery);
+                    // 添加计数聚合
+                    searchSourceBuilder.aggregation(
+                            AggregationBuilders.count("total_insertions").field("pdu_id")
+                    );
+                    searchRequest.source(searchSourceBuilder);
+                    // 执行搜索请求
+                    try {
+                        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                        // 从聚合结果中获取文档数量
+                        ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+                        if (totalInsertionsAggregation!= null) {
+                            long totalInsertions = totalInsertionsAggregation.getValue();
+                            resultItem.put(name[i], totalInsertions);
+                        } else {
+                            resultItem.put(name[i], 0L);
+                        }
+                    } catch (Exception e) {
+                        // 处理异常，例如打印异常信息
+                        e.printStackTrace();
+                    }
+                }
+                return resultItem;
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+            return null;
+        }
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
