@@ -37,7 +37,7 @@
               </el-form-item>
             </div>
             <div class="collapseItem">
-              <el-form-item  :required="true"  label="电力容量(kVA)：" prop="powCapacity ">
+              <el-form-item  label="电力容量(kVA)：" prop="powCapacity">
                 <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
               </el-form-item>
               <el-form-item label="所属公司：" prop="company">
@@ -133,14 +133,14 @@
           </el-tabs>
           
         </el-collapse-item>
-        <el-collapse-item v-if="machineFormData.pduBox == 0" title="机柜与传感器" name="4">
+        <el-collapse-item v-if="machineFormData.pduBox == false" title="机柜与传感器" name="4">
           <div class="sensorContainer">
             <div class="list">
               <template v-for="(item, index) in sensorListLeft" :key="index">
                 <div class="minInterval" v-if="index > 0"></div>
                 <!-- <div v-if="!item.sensorId" :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">{{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}</div> -->
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
                   <div :class="item.pathPdu ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
                     <div v-if="item.pathPdu" @click.stop="handleSensorDelete(0, index)" class="delete"><Icon icon="ep:close" />
@@ -157,7 +157,8 @@
               <template v-for="(item, index) in sensorListRight" :key="index">
                 <div class="minInterval" v-if="index > 0"></div>
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <!-- <el-table-column prop="id" label="ID" v-if="false"/> -->
                   <div :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 1, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
                     <div v-if="item.pathPdu" @click.stop="handleSensorDelete(1, index)" class="delete"><Icon icon="ep:close" /></div>
@@ -258,39 +259,45 @@ const sensorListLeft = reactive([
     sensorId: null,
     position: 1,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 3,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 4,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 2,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 2,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 3,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   }
 ])
 const sensorListRight = reactive([
@@ -299,39 +306,45 @@ const sensorListRight = reactive([
     sensorId: null,
     position: 1,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 3,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 4,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
-    position: 1,
+    position: 2,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 2,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 3,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
 ])
 const machineFormData = ref({
@@ -452,10 +465,10 @@ const open = async (type: string, data, roomList) => {
   dialogTitle.value = type == 'edit' ? '编辑': '添加'
   formType.value = type
   resetForm()
-  sensorListLeft.forEach(item => {
-    item.sensorId = null
-    item.pathPdu = ''
-  })
+  // sensorListLeft.forEach(item => {
+  //   item.sensorId = null
+  //   item.pathPdu = ''
+  // })
   console.log('data', data)
   if (data && data.sensorList && data.sensorList.length) {
     data.sensorList.forEach(item => {
@@ -465,6 +478,7 @@ const open = async (type: string, data, roomList) => {
           ...sensorListLeft[index],
           sensorId: item.sensorId,
           pathPdu: item.pathPdu,
+          id: item.id
         }
       } else if (item.channel == 2) {
         const index = sensorListRight.findIndex(sensor => item.position ? (item.position == sensor.position) : (sensor.type == item.sensorType))
@@ -472,6 +486,7 @@ const open = async (type: string, data, roomList) => {
           ...sensorListRight[index],
           sensorId: item.sensorId,
           pathPdu: item.pathPdu,
+          id: item.id
         }
       }
     })

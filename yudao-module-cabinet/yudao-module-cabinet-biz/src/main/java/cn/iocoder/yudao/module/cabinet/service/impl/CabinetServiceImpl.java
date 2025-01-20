@@ -23,6 +23,7 @@ import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
+import cn.iocoder.yudao.module.cabinet.service.ICabinetEnvSensorService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -318,24 +319,11 @@ public class CabinetServiceImpl implements CabinetService {
                 }
 
 
-                List<CabinetEnvSensor> envSensorList = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
+                List<CabinetEnvSensor> envs = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
                         .eq(CabinetEnvSensor::getCabinetId, index.getId()));
-                if (!CollectionUtils.isEmpty(envSensorList)) {
-
-                    List<CabinetEnvSensorDTO> sensorDtos = new ArrayList<>();
-                    envSensorList.forEach(env -> {
-                        CabinetEnvSensorDTO sensorDTO = new CabinetEnvSensorDTO();
-                        sensorDTO.setId(env.getId());
-                        sensorDTO.setCabinetId(env.getCabinetId());
-                        sensorDTO.setChannel(env.getChannel());
-                        sensorDTO.setPosition(env.getPosition());
-                        sensorDTO.setPathPdu(String.valueOf(env.getPathPdu()));
-                        sensorDTO.setSensorId(env.getSensorId());
-                        sensorDTO.setSensorType(env.getSensorType());
-                        sensorDtos.add(sensorDTO);
-                    });
-                    dto.setSensorList(sensorDtos);
-
+                if (!CollectionUtils.isEmpty(envs)) {
+                    List<CabinetEnvSensorDTO> left = BeanUtils.toBean(envs, CabinetEnvSensorDTO.class);
+                    dto.setSensorList(left);
                 }
 
                 List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
@@ -507,9 +495,10 @@ public class CabinetServiceImpl implements CabinetService {
                     }
                 }
             }
-
             //保存环境数据
-            saveEnvSensor(vo.getId(), vo);
+            cabinetEnvSensorService.saveEnvSensor(vo.getId(), vo);
+
+            //saveEnvSensor(vo.getId(), vo);
             //保存U位数据
             saveRack(vo.getId(), vo);
 
@@ -586,7 +575,9 @@ public class CabinetServiceImpl implements CabinetService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult saveEnvCabinet(CabinetVo vo) throws Exception {
-        saveEnvSensor(vo.getId(), vo);
+        //保存环境数据
+        cabinetEnvSensorService.saveEnvSensor(vo.getId(), vo);
+//        saveEnvSensor(vo.getId(), vo);
         return CommonResult.success(vo.getId());
     }
 
@@ -1118,19 +1109,22 @@ public class CabinetServiceImpl implements CabinetService {
         List<BigDecimal> factorB = new ArrayList<>();
         List<BigDecimal> factorTotal = new ArrayList<>();
         List<String> createTime = new ArrayList<>();
-        switch (index) {
-            case "cabinet_hda_pow_realtime":
-                factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a").toString()), 100)).collect(Collectors.toList());
-                factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b").toString()), 100)).collect(Collectors.toList());
-                factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total").toString()), 100)).collect(Collectors.toList());
-                createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
-                break;
-            case "cabinet_hda_pow_hour":
-                factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a_avg_value").toString()), 100)).collect(Collectors.toList());
-                factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b_avg_value").toString()), 100)).collect(Collectors.toList());
-                factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total_avg_value").toString()), 100)).collect(Collectors.toList());
-                createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
-                break;
+        if (Objects.nonNull(data)) {
+            switch (index) {
+                case "cabinet_hda_pow_realtime":
+                    factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a").toString()), 100)).collect(Collectors.toList());
+                    factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b").toString()), 100)).collect(Collectors.toList());
+                    factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total").toString()), 100)).collect(Collectors.toList());
+                    createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                    break;
+                case "cabinet_hda_pow_hour":
+                    factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a_avg_value").toString()), 100)).collect(Collectors.toList());
+                    factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b_avg_value").toString()), 100)).collect(Collectors.toList());
+                    factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total_avg_value").toString()), 100)).collect(Collectors.toList());
+                    createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                    break;
+                default:
+            }
         }
         map.put("factorA", factorA);
         map.put("factorB", factorB);
@@ -1667,6 +1661,8 @@ public class CabinetServiceImpl implements CabinetService {
         return !CollectionUtils.isEmpty(pduFlag);
     }
 
+    @Autowired
+    private ICabinetEnvSensorService cabinetEnvSensorService;
     /**
      * 保存机柜环境数据
      */

@@ -128,7 +128,7 @@ public class CabinetDTO {
     @Schema(description = "运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线", example = "2")
     private int runStatus;
 
-    @Schema(description = "环境数据", example = "[]")
+    @Schema(description = "环境数据")
     private List<CabinetEnvSensorDTO> sensorList;
 
     @Schema(description = "u位数据", example = "[]")
