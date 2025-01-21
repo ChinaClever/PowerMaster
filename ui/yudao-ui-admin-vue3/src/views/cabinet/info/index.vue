@@ -202,7 +202,7 @@
             <div v-if="item.status !== 5" class="info" style="margin-left:10px;">
               <div>视在功率：{{item.apparentTotal}}KVA</div>
               <div>有功功率：{{item.activeTotal}}KW</div>
-              <div>无功功率：{{item.reactiveTotal}}KVAR</div>
+              <div>无功功率：{{item.powerReactiveTotal}}KVAR</div>
               <!-- 负载率： -->
             </div>
             <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor || ''" /></div>
