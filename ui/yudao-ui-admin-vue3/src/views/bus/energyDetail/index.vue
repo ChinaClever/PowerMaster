@@ -3,9 +3,9 @@
   <div class="energy" style="background-color: #E7E7E7;">
   <div class="header_app">
     <div class="header_app_text">
-      <span style="margin-right:10px;">机房</span>
-      <span style="margin-right:10px;">所在位置：{{ location }}</span>
+      <span style="margin-right:10px;">机房：{{roomName}}</span>
       <span style="margin-right:10px;">名称：{{busName}}</span>
+      <span style="margin-right:10px;">网络地址：{{ location }}</span>
     </div>
     <div class="header_app_text_other1">
           <el-col :span="10"> 

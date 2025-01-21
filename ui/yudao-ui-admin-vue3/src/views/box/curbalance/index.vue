@@ -274,17 +274,17 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.volUnbalance != null" >
-                <span style="font-size: 20px;">{{ item.volUnbalance }}%</span><br/>电压不平衡度
-              </div>              
-            </div>
-            <div class="info">                  
+            <div class="info" style="margin-left:10px;">                  
               <div v-if="item.avol != null">A相：{{item.avol}}V</div>
               <div v-if="item.bvol != null">B相：{{item.bvol}}V</div>
               <div v-if="item.cvol != null">C相：{{item.cvol}}V</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+            <div class="icon" >
+              <div v-if="item.volUnbalance != null" >
+                <span style="font-size: 20px;">{{ item.volUnbalance }}%</span><br/>电压不平衡度
+              </div>              
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -782,7 +782,7 @@ const getBalanceDetail = async(item) => {
       series: [
         {
           type: 'pie',
-          radius: ['20%', '120%'],
+          radius: ['30%', '100%'],
           center: ['50%', '50%'],
           roseType: 'radius',
           itemStyle: {

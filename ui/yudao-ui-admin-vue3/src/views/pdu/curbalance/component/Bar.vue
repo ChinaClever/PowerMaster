@@ -21,6 +21,7 @@ const props = defineProps({
   }
 });
 
+console.log('maxdata111111111',props.max);
 // 使用 ref 来获取 DOM 元素
 const chartDom = ref<HTMLDivElement | null>(null);
 let myChart: echarts.ECharts | null = null;
@@ -110,6 +111,17 @@ watch(() => props.max, (newMax) => {
     }
   ];
   updateChart();
+}, { deep: true });
+
+watch(() => props.max, (newVal) => {
+  echartsOption.series[0].data = dataWithPercent.value;
+  if (myChart) {
+    myChart.setOption({
+      series: [{
+        data: dataWithPercent.value
+      }]
+    });
+  }
 }, { deep: true });
 
 // 组件挂载时初始化图表
