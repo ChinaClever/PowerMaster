@@ -207,7 +207,7 @@
             </div>
             <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor || ''" /></div>
           </div>
-          <div class="room">{{item.roomName}}-{{item.cabinetName}}-{{item.cabinet_key}}</div>
+          <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
           <div v-if="item.status == 0" class="status-empty">未绑定</div>
           <!--<div v-if="item.status == 0" class="status-unbound">正常</div>-->
           <div v-else-if="item.status == 1" class="status-normal">正常</div>
