@@ -15,7 +15,7 @@ public class BusConstants {
     /**
      * Redis设置key
      */
-    public static final String REDIS_KEY_PDU = "packet:始端箱:";
+    public static final String REDIS_KEY_PDU = "packet:box:";
 
     /**
      * 分隔符

@@ -71,9 +71,9 @@
             type="daterange"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
+            :shortcuts="shortcuts"
             :disabled-date="disabledDate"
             @change="handleDayPick"
-            class="!w-200px"
           />
         </el-form-item>
         <el-form-item>
@@ -141,6 +141,14 @@
               </el-col>
             </el-row> -->
           </div>
+            <div>
+              <el-table :data="tableData" >
+                <el-table-column label="所属位置" prop="location" align="center" />
+                <el-table-column label="设备编号" prop="devKey" align="center" />
+                <el-table-column label="设备状态" prop="runStatus" align="center" />
+                  <el-table-column label="耗电量" prop="powerConsume" align="center" />
+              </el-table>
+            </div>
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
               电量分布
@@ -249,6 +257,7 @@ import { AlarmApi } from '@/api/system/notify/alarm'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const tableData = ref([]);
 const temp1 = ref([]) as any
 const curvolList = ref() as any
 const temList = ref() as any
@@ -328,6 +337,57 @@ const truncateArrays = (data: ServerData): ServerData => {
     powapparent: data.powapparent.slice(0, 12)
   };
 };
+
+
+// 时间段快捷选项
+const shortcuts = [
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 7)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近六个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+   {    
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
+      return [start, end]
+    },
+  },
+]
+
 
 //const lineidBeforeChartUnmount = () => {
 //  // 清空 curvolAData 中的数组
@@ -485,6 +545,8 @@ const disabledDate = (date) => {
   
 }
 
+
+
 const handleDayPick = () => {
   if(queryParams?.oldTime && switchValue.value == 2){
 
@@ -577,6 +639,8 @@ const createFilter = (queryString: string) => {
 // const activeNames = ref(["1","2","3","4","5"])
 
 const PDUTableData = ref([]) as any
+
+const PDUTableData1 = ref([]) as any
 
 const queryParams = reactive({
   pageNo: 1,
@@ -862,6 +926,15 @@ const getList = async () => {
   })
   PDUTableData.value = temp;
   
+
+  // var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
+// Bus = JSON.parse(Bus);
+
+const  baseInfoList = await IndexApi.getReportBasicInformationByBusResVO(queryParams);
+console.log('baseInfoList',baseInfoList)
+tableData.value = baseInfoList;
+console.log('tableData.value',tableData.value)
+
   visControll.visAllReport = true;
   //initChart();
   loading.value = false
