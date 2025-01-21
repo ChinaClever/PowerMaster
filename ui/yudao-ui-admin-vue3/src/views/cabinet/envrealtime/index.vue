@@ -67,11 +67,22 @@
         :inline="true"
         label-width="68px"                          
       >
-        <!-- <el-form-item>
+        <el-form-item>
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部 
+          </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)" style="width:70px;">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)" style="width:70px;">{{status.name}}</button>
           </template>
-        </el-form-item> -->
+          <el-button
+            type="primary"
+            plain
+            @click="openForm('create')"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色
+          </el-button>
+        </el-form-item>
         <el-form-item label="公司名称" prop="company">
           <el-input
             v-model="queryParams.company"
@@ -82,13 +93,7 @@
           />
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-          <el-button
-            type="primary"
-            plain
-            @click="openForm('create')"
-          >
-            <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色
-          </el-button>
+
           <el-button
             type="success"
             plain
@@ -286,6 +291,8 @@ import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/cabinet/index'
 
+const butColor = ref(0);
+const onclickColor = ref(-1);
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -311,36 +318,23 @@ const toCabinetEnvDetail = (row) =>{
   // push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
 }
 
-const statusList = reactive([
-  {
-    name: '<15%',
-    selected: true,
-    value: 2,
-    cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
-  },
-  {
-    name: '15%-30%',
-    selected: true,
-    value: 3,
-    cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
-  },
-  {
-    name: '>30%',
-    selected: true,
-    value: 4,
-    cssClass: 'btn_error',
-    activeClass: 'btn_error error'
-  },
-  {
-    name: '小电流',
-    selected: true,
-    value: 1,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
-  },
-])
+const statusList = ref([]);
+
+const getCabinetColorAll = async () => {
+  const res = await IndexApi.getCabinetColorAll()
+  console.log('res', res)
+  if (res != null) {
+  statusList.value = res.map(item => ({
+      name: `${item.min}°C ~ ${item.max}°C`,
+      selected: true, // 根据实际情况设置默认选中状态
+      cssClass: 'btn_normal',// 根据实际情况设置样式类
+      activeClass: 'btn_normal normal',// 根据实际情况设置样式类
+      value: 0,
+      color: item.color
+    }));
+  }
+}
+
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -418,7 +412,7 @@ const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
-  console.log('queryParams.company',queryParams.company);
+
   loading.value = true
   try {
     const data = await IndexApi.getCabinetEnvPage(queryParams);
@@ -497,13 +491,22 @@ const getNavList = async() => {
 //   window.open(url, '_blank');
 // }
 
-// const handleSelectStatus = (index) => {
-//   statusList[index].selected = !statusList[index].selected
-//   const status =  statusList.filter(item => item.selected)
-//   const statusArr = status.map(item => item.value)
-//   queryParams.color = statusArr;
-//   handleQuery();
-// }
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.startNum = statusList[index].startNum;
+  queryParams.endNum = statusList[index].endNum;
+  handleQuery();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.startNum = 0;
+  queryParams.endNum = 100;
+  handleQuery();
+}
+
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -553,7 +556,8 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  getList()
+  getCabinetColorAll();
+  getList();
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 60000);
 })
@@ -636,23 +640,61 @@ onActivated(() => {
   }
 }
 
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+
+.btn_fault,
 .btn_offline,
 .btn_normal,
 .btn_warn,
-.btn_error {
-  width: 58px;
-  height: 35px;
+.btn_error{
+  width: 125px;
+  height: 32px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
   &:hover {
     color: #7bc25a;
   }
 }
 .btn_offline {
   border: 1px solid #aaa;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.btn_fault{
+  border: 1px solid orange;
   background-color: #fff;
   margin-right: 8px;
 }

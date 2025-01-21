@@ -75,7 +75,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item label="时间段" prop="createTime" label-width="100px">
+        <el-form-item label="时间段" prop="createTime" label-width="50px">
           <el-button 
             @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
@@ -93,10 +93,8 @@
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
-          </el-button>                            
-        </el-form-item>
-        <el-form-item style="padding-left: 15px;">
-          <el-date-picker
+          </el-button>     
+          <el-date-picker  style="padding-left: 10px;"
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -105,7 +103,7 @@
             @change="handleMonthPick"
             class="!w-160px"
           />
-          <el-date-picker
+          <el-date-picker  style="padding-left: 10px;"
             v-if="queryParams.timeType == 2"
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -116,47 +114,28 @@
             :disabled-date="disabledDate"
             @change="handleDayPick"
             class="!w-200px"
-          />
-        <el-form-item label="网络地址" prop="devKey">
-          <el-autocomplete
-            v-model="queryParams.devKey"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-200px"
-            placeholder="请输入网络地址"
-            @select="handleQuery"
-          />
-          <el-form-item style="margin-left: 10px">
-            <el-button @click="handleQuery"
-              ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button
-            >
-            <el-button @click="resetQuery"
-              ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button
-            >
-          </el-form-item>
+          />                       
         </el-form-item>
 
-        <!-- <el-form-item style="margin-left: 10px;" v-show="showSearchBtn">
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-          <el-button
-            type="primary"
-            plain
-            @click="openForm('create')"
-            v-hasPermi="['pdu:PDU-device:create']"
-          >
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
-          </el-button>
-          <el-button
-            type="success"
-            plain
-            @click="handleExport"
-            :loading="exportLoading"
-            v-hasPermi="['pdu:PDU-device:export']"
-          >
-            <Icon icon="ep:download" class="mr-5px" /> 导出
-          </el-button>
-        </el-form-item>           -->
+        <el-form-item>
+          <el-form-item label="网络地址" prop="devKey">
+            <el-autocomplete
+              v-model="queryParams.devKey"
+              :fetch-suggestions="querySearch"
+              clearable
+              class="!w-200px"
+              placeholder="请输入网络地址"
+              @select="handleQuery"
+            />
+            <el-form-item style="margin-left: 10px">
+              <el-button @click="handleQuery"
+                ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button
+              >
+              <el-button @click="resetQuery"
+                ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button
+              >
+            </el-form-item>
+          </el-form-item>
         </el-form-item>
         <div style="float:right">
           <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
