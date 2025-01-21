@@ -3,38 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <template v-if="queryParams.granularity == 'realtime' && queryParams.timeRange != null">
-          <span>{{queryParams.timeRange[0]}}</span>
-          <span>至</span>
-          <span>{{queryParams.timeRange[1]}}</span>
-        </template>
-        <br/>
-      </div>
-      <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="最高温度 | 发生时间">
-            <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最低温度 | 发生时间">
-            <span>{{ formatNumber(minTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="minTemDataTimeTemp">{{ minTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-    </div> -->
-
+       
     <div class="nav_header" style="font-size: 14px;">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
@@ -890,8 +859,10 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  navList.value = res
+  let arr = [] as any
+  var temp = await CabinetApi.getRoomPDUList()
+  arr = arr.concat(temp);
+  navList.value = arr
 }
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();

@@ -1,26 +1,11 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电能记录" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-      <!-- <div class="line"></div> -->
+
       <br/>    <br/> 
     
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div> -->
-        <!-- <div class="nav_content">
-          <el-descriptions title="" direction="vertical" :column="1" border >
-            <el-descriptions-item label="总电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="总电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="相电能"><span>{{ navLineData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="回路电能" ><span>{{ navLoopData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="输出位电能" ><span>{{ navOutletData }} 条</span></el-descriptions-item>
-          </el-descriptions>
-        </div> -->
+
 
         <div class="descriptions-container" style="font-size: 14px;">
           <div >
@@ -406,12 +391,9 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 

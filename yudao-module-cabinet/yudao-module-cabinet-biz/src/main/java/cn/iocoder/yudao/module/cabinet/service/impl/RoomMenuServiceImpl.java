@@ -250,20 +250,12 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     public List<RoomPduMenuDTO> roomPduMenuList() {
 
         try {
-
-
-
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
                     .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
-            //获取机房
-//            List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
-//                    .eq(Objects.nonNull(id), RoomIndex::getId, id));
-
             List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
                     .eq(RoomIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
-
 
             List<RoomPduMenuDTO> menuDTOS = new ArrayList<>();
 
@@ -300,17 +292,8 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
             }
             List<CabinetPduResVO> cabinetIndexList = cabinetIndexMapper.selectListAndPdu();
-            //获取机柜列表
-//            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectListAndPdu(new LambdaQueryWrapper<CabinetIndex>().eq(CabinetIndex::getPduBox,false)
-//                    .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
-//                    .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
 
             if (!CollectionUtils.isEmpty(cabinetIndexList)) {
-
-//                List<Integer>  idList = cabinetIndexList.stream().map(CabinetIndex::getId).distinct().collect(Collectors.toList());
-//                //获取pdu
-//                List<CabinetPdu> pduList = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
-//                        .in(!CollectionUtils.isEmpty(idList),CabinetPdu::getCabinetId, idList));
 
                 cabinetIndexList.forEach(cabinetIndex -> {
                     RoomPduMenuDTO roomMenuDTO = new RoomPduMenuDTO();

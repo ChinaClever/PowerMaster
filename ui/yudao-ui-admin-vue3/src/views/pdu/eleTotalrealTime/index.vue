@@ -3,21 +3,6 @@
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
-          <!-- <div class="carousel-container">
-            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-              </el-carousel-item>
-            </el-carousel>
-          </div>
-          <div class="nav_content">
-            <el-descriptions title="全部PDU新增能耗记录" direction="vertical" :column="1" width="60px" border >
-              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions>
-          </div>
-        </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">按时间范围查询实时能耗</span>
@@ -33,29 +18,6 @@
          :inline="true"
          label-width="auto"
        >
-         <!-- <el-form-item label="参数类型" prop="type">
-          <el-cascader
-            v-model="typeDefaultSelected"
-            collapse-tags
-            :options="typeSelection"
-            collapse-tags-tooltip
-            :show-all-levels="true"
-            @change="typeCascaderChange"
-            class="!w-140px"
-          />
-        </el-form-item>
-
-         <el-form-item label="颗粒度" prop="granularity">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择天/周/月"
-              class="!w-120px" >
-              <el-option label="天" value="day" />
-              <el-option label="周" value="week" />
-              <el-option label="月" value="month" />
-            </el-select>
-          </el-form-item> -->
-
          <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
             value-format="YYYY-MM-DD"
@@ -503,31 +465,6 @@ const handleQuery = () => {
  getList()
 }
 
-// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
-// const getTypeMaxValue = async () => {
-//     const data = await HistoryDataApi.getTypeMaxValue()
-//     const outletIdMaxValue = data.outlet_id_max_value;
-//     const typeSelectionValue  = [
-//     {
-//       value: "total",
-//       label: '总'
-//     },
-//     {
-//       value: "outlet",
-//       label: '输出位',
-//       children: (() => {
-//         const outlets: { value: any; label: string; }[] = [];
-//         outlets.push({ value: undefined, label: '全部' },)
-//         for (let i = 1; i <= outletIdMaxValue; i++) {
-//           outlets.push({ value: `${i}`, label: `${i}` });
-//         }
-//         return outlets;
-//       })(),
-//     },
-//   ]
-//   typeSelection.value = typeSelectionValue;
-// }
-
 // 导航栏选择后触发
 const handleCheck = async (node) => {
     let arr = [] as any
@@ -551,12 +488,9 @@ const handleCheck = async (node) => {
 
 // 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 

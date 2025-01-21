@@ -2,39 +2,6 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="需量监测">
     <template #NavInfo>
       <div >
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-        </div> -->
-        <!-- <div class="line"></div>       -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>离线
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>告警
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
-          </div>
-        </div> -->
-      <!-- <div class="nav_data">
-
-      </div>  -->
       <div class="nav_data">
       <br/> 
     <div class="descriptions-container" style="font-size: 14px;">
@@ -654,22 +621,22 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.cabinetIds = null;
+    queryParams.pduKeyList = null;
     getList();
     return;
   }
-  const ids = [] as any
+  const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
     if (item.type == 3) {
-      ids.push(item.id)
+      pduKeys.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
+    queryParams.pduKeyList = [-1]
   }else{
-    queryParams.cabinetIds = ids
+    queryParams.pduKeyList = pduKeys
   }
 
   getList();
@@ -824,12 +791,9 @@ const getList = async () => {
 
 // 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 

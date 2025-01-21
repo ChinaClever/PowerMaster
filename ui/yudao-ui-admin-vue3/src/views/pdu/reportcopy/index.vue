@@ -8,37 +8,6 @@
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
         </div>
 
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>&lt;15%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>15%-30%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>&gt;30
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
-        <!-- <div class="line"></div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -49,16 +18,6 @@
         :inline="true"
         label-width="120px"
       >      
-        <!-- <el-form-item label="网络地址" prop="devKey">
-          <el-input
-            v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
-            clearable
-            @keyup.enter="handleQuery"
-            class="!w-240px"
-          />
-        </el-form-item> -->
-
         <el-form-item  label="IP地址" prop="ipAddr" >
           <el-autocomplete
             v-model="queryParams.ipAddr"
@@ -70,18 +29,6 @@
             @select="handleQuery"
           />
         </el-form-item>
-<!-- 
-        <el-form-item label="IP地址" prop="ipAddr">
-    <el-input
-      v-model="queryParams.ipAddr"
-      clearable
-      class="!w-140px"
-      placeholder="请输入IP地址"
-      @select="handleQuery"
-    />
-  </el-form-item> -->
-        
-
         <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
           <el-input-number
             v-model="queryParams.cascadeAddr"
@@ -551,14 +498,6 @@ const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   } 
 }
 
-// const handleClick = (row) => {
-//   if(row.type != null  && row.type == 4){
-//     queryParams.ipAddr = row.ip
-//     queryParams.cascadeAddr = row?.unique?.split("-")[1];
-//     handleQuery();getNavList
-//   }
-// }
-
 // 导航栏选择后触发
 const handleClick = async (row) => {
    if(row.type != null  && row.type == 4){
@@ -777,12 +716,9 @@ const lineidFlashChartData = async () =>{
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
   await PDUHdaLineHisdata()
 }

@@ -1018,22 +1018,22 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if (row.length == 0) {
-    queryParams.cabinetIds = null
+    queryParams.pduKeyList = null
     getList()
     return
   }
-  const ids = [] as any
+  const pduKeys = [] as any
   var haveCabinet = false
   row.forEach((item) => {
     if (item.type == 3) {
-      ids.push(item.id)
+      pduKeys.push(item.unique)
       haveCabinet = true
     }
   })
   if (!haveCabinet) {
-    queryParams.cabinetIds = [-1]
+    queryParams.pduKeyList = [-1]
   } else {
-    queryParams.cabinetIds = ids
+    queryParams.pduKeyList = pduKeys
   }
 
   getList()
@@ -1121,12 +1121,9 @@ const getNavAList = async() => {
 }
 // 接口获取导航列表
 const getNavList = async () => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i = 0; i < res.length; i++) {
-    var temp = await CabinetApi.getRoomPDUList({ id: res[i].id })
-    arr = arr.concat(temp)
-  }
+  var temp = await CabinetApi.getRoomPDUList()
+  arr = arr.concat(temp);
   navList.value = arr
 }
 
