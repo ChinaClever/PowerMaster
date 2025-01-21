@@ -151,5 +151,4 @@ public interface BusIndexService {
 
     List<String> findKeys(String key);
 
-    List<String> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO);
 }

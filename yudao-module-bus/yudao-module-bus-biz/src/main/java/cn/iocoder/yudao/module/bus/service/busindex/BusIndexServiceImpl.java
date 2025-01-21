@@ -821,7 +821,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
 
-    public List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) throws IOException {
+    public List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) {
 
         String devKey = pageReqVO.getDevKey();
 
