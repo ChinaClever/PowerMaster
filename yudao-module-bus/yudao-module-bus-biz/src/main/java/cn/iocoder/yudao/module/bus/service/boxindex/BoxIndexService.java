@@ -100,7 +100,7 @@ public interface BoxIndexService {
 
     BusHarmonicRedisRes getHarmonicRedis(BoxIndexPageReqVO pageReqVO);
 
-    BusHarmonicLineRes getHarmonicLine(BoxIndexPageReqVO pageReqVO);
+    BoxHarmonicLineResVO getHarmonicLine(BoxIndexPageReqVO pageReqVO);
 
     Integer getBoxIdByDevKey(String devKey);
 

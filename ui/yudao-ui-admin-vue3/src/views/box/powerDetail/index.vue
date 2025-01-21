@@ -1,7 +1,7 @@
 <template>
   <div style="padding-left:20px;height:30px;font-size: 15px;">
     <span style="color:black;font-size:14px;">机房: {{location}}&nbsp;&nbsp;</span>
-    <span style="color:black;font-size:14px;">母线: {{busName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">母线: {{busName || redisData?.busName}}&nbsp;&nbsp;</span>
     <span style="color:black;font-size:14px;">插接箱: {{boxName}}&nbsp;&nbsp;</span>
     <span style="color:black;font-size:14px;">网络地址: {{devKey}}</span>
   </div>

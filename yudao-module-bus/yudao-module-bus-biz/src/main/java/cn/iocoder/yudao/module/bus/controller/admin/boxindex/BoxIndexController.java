@@ -191,8 +191,8 @@ public class BoxIndexController {
 
     @Operation(summary = "插接箱谐波监测ES数据图表")
     @PostMapping("/harmonic/line")
-    public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
+    public CommonResult<BoxHarmonicLineResVO> getHarmonicLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BoxHarmonicLineResVO pageResult = indexService.getHarmonicLine(pageReqVO);
         return success(pageResult);
     }
 

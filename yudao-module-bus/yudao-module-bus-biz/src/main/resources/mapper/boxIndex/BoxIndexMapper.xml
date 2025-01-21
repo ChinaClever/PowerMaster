@@ -90,5 +90,9 @@
         </if>
         limit 50
     </select>
+    <select id="selectNameById" resultType="cn.iocoder.yudao.framework.common.vo.BoxName">
+        select box_name as name from box_index bi left join bus_index bi2 on bi.box_key = bi2.box_key
+        where id = #{boxId}
+    </select>
 
 </mapper>

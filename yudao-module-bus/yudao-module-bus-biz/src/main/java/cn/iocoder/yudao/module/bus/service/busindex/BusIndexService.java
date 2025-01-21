@@ -148,4 +148,6 @@ public interface BusIndexService {
     PageResult<BusIndexDTO> getEqPage1(BusIndexPageReqVO pageReqVO);
 
     List<String> findKeys(String key);
+
+    List<String> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO);
 }

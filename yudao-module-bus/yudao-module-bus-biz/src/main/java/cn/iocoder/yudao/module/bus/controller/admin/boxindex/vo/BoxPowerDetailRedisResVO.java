@@ -8,6 +8,11 @@ import java.util.List;
 
 @Data
 public class BoxPowerDetailRedisResVO {
+
+    private String busName;
+
+    private String boxName;
+
     @Schema(description = "温度")
     private List<Double> temValue;
 
