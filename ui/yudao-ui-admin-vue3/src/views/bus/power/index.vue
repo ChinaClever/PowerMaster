@@ -55,7 +55,6 @@
             clearable
             class="!w-160px"
             placeholder="请输入网络地址"
-            @change="changeList"
             @select="handleQuery"
           />
         <el-form-item style="margin-left: 5px;margin-right: 6px">
@@ -572,25 +571,16 @@ const loadAll = async () => {
   return objectArray;
 }
 
-const queryStringCopy = ref();
-const cbCopy = ref();
-
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
-    ? devKeyList.value.filter(createFilter(queryString))
-    : devKeyList.value
-  // call callback function to return suggestions
-  cb(results);
-  queryStringCopy.value = queryString;
-  cbCopy.value = cb;
-}
-
-const changeList = async () => {
-  const data  = await IndexApi.findKeys(queryParams.devKey);
-  devKeyList.value = data;
-  querySearch(queryStringCopy.value, cbCopy.value);
-  console.log('devKeyList.value',devKeyList.value);
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length >= 8){
+    var results = await IndexApi.findKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      console.log('item',item);
+      arr.push({value:item})
+    });
+    cb(arr)
+  }
 }
 
 const createFilter = (queryString: string) => {

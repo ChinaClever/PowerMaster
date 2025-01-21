@@ -132,7 +132,7 @@ getBalanceStatistics: async () => {
   },
 
   findKeys: async (params: any) => {
-    return await request.get({ url: `/bus/index/findKeys?key=${params}`,params})
+    return await request.get({ url: `/bus/index/findKeys`,params})
   },
 
   getBusLinePage: async (data: any) => {
