@@ -234,7 +234,7 @@
           <span>母线：{{ busName }}</span>
           <span>插接箱：{{boxName}}</span>
           <span>所在位置：{{ location }}</span>
-          <el-select
+          <!--<el-select
             v-model="queryParamsCopy.harmonicType"
             placeholder="请选择"
             style="width: 240px"
@@ -242,7 +242,7 @@
             <el-option label="A相电流谐波" :value = 3 />
             <el-option label="B相电流谐波" :value = 4 />
             <el-option label="C相电流谐波" :value = 5 />
-          </el-select>
+          </el-select>-->
           
         </el-form-item>
 
@@ -275,7 +275,7 @@
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <div class="custom-content-container">
-            <HarmonicLine  width="70vw" height="58vh" :list="harmonicLine"/>
+            <HarmonicLine  width="70vw" height="58vh" :list="abcLineData"/>
           </div>
         </div>
       </el-dialog>
@@ -612,31 +612,34 @@ const disabledDate = (date) => {
   
 }
 
+const abcLineData = ref({});
+
 const getDetail = async () => {
 
-  if(!haveSearch.value){
-    const data = await IndexApi.getHarmonicRedis(queryParamsCopy);
-    console.log('data111111',data);
-    harmonicRealTime.value = data;
-    if(harmonicRealTime.value.times != null){
-      realTimeVis.value = true;
-    }else{
-      realTimeVis.value = false;
-    }
-    haveSearch.value = true;
-  }
+  //if(!haveSearch.value){
+  //  const data = await IndexApi.getHarmonicRedis(queryParamsCopy);
+  //  console.log('data111111',data);
+  //  harmonicRealTime.value = data;
+  //  if(harmonicRealTime.value.times != null){
+  //    realTimeVis.value = true;
+  //  }else{
+  //    realTimeVis.value = false;
+  //  }
+  //  haveSearch.value = true;
+  //}
 
   const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
-  console.log('lineData',lineData);
-  seriesAndTimeArr.value = lineData;
-  if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
-    const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
-    harmonicLine.value.series = filteredSeries;
-    harmonicLine.value.time = seriesAndTimeArr.value.time;
-    lineVis.value = true;
-  } else {
-    lineVis.value = false;
-  }
+  abcLineData.value = lineData;
+  console.log('abcLineData',abcLineData.value);
+  //seriesAndTimeArr.value = lineData;
+  //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
+  //  const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
+  //  harmonicLine.value.series = filteredSeries;
+  //  harmonicLine.value.time = seriesAndTimeArr.value.time;
+  //  lineVis.value = true;
+  //} else {
+  //  lineVis.value = false;
+  //}
 }
 
 const handleQueryCopy = async () => {
