@@ -141,14 +141,63 @@
               </el-col>
             </el-row> -->
           </div>
-            <div>
-              <el-table :data="tableData" >
-                <el-table-column label="所属位置" prop="location" align="center" />
-                <el-table-column label="设备编号" prop="devKey" align="center" />
-                <el-table-column label="设备状态" prop="runStatus" align="center" />
-                  <el-table-column label="耗电量" prop="powerConsume" align="center" />
-              </el-table>
-            </div>
+          <div>
+    <div class="page-conTitle">
+      插接箱基本信息
+    </div>
+    <el-table :data="tableData" style="width: 100%" :border="true">
+      <el-table-column label="设备编号" align="center">
+        <template #default="scope">
+          {{ scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="boxName" label="设备名称" align="center"/>
+      <el-table-column prop="runStatus" label="状态" align="center">
+        <template #default="scope">
+          <el-tag
+            v-if="scope.row.runStatus == 1"
+            type="default"
+          >
+            正常
+          </el-tag>
+          <el-tag
+            v-if="scope.row.runStatus == 2"
+            type="warning"
+          >
+            告警
+          </el-tag>
+          <el-popover
+            placement="top-start"
+            title="告警内容"
+            :width="500"
+            trigger="hover"
+            :content="scope.row.pduAlarm"
+            v-if="scope.row.runStatus == 2"
+          >
+            <template #reference>
+              <el-tag type="danger">告警</el-tag>
+            </template>
+          </el-popover>
+          <el-tag
+            v-if="scope.row.runStatus == 0"
+            type="info"
+          >
+            离线
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="powApparent" label="总视在功率" align="center"/>
+      <el-table-column prop="powActiveOne" label="输出位1有功功率" align="center"/>
+      <el-table-column prop="powActiveTwo" label="输出位2有功功率" align="center"/>
+      <el-table-column prop="powActiveThree" label="输出位3有功功率" align="center"/>
+      <el-table-column label="操作" align="center">
+        <template #default="scope">
+          <el-button @click="generateDailyReport(scope.row.devKey)">日报</el-button>
+          <el-button @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
               电量分布
@@ -195,7 +244,7 @@
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
         </div>
-
+       
         <div class="pageBox"  v-if="visControll.temVis">
             <div class="page-conTitle">
               告警信息
@@ -256,7 +305,7 @@ import { AlarmApi } from '@/api/system/notify/alarm'
 //import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
-
+const parsedData = ref([]) as any
 const tableData = ref([]);
 const temp1 = ref([]) as any
 const curvolList = ref() as any
@@ -929,11 +978,25 @@ const getList = async () => {
 
   // var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
 // Bus = JSON.parse(Bus);
-
-const  baseInfoList = await IndexApi.getReportBasicInformationByBusResVO(queryParams);
+    // 从接口获取数据，假设得到的数据是一个数组，数组元素是用逗号分隔的字符串
+const baseInfoList = await IndexApi.getReportBasicInformationByBusResVO(queryParams);
 console.log('baseInfoList',baseInfoList)
-tableData.value = baseInfoList;
+// 对数据进行处理，保留三位小数
+const processedData = baseInfoList.map(item => {
+            return {
+                boxName: item.boxName,
+                devKey: item.devKey,
+                runStatus: item.runStatus,
+                powApparent: parseFloat(item.powApparent.toFixed(3)),
+                powActiveOne: parseFloat(item.powActiveOne.toFixed(3)),
+                powActiveTwo: parseFloat(item.powActiveTwo.toFixed(3)),
+                powActiveThree: parseFloat(item.powActiveThree.toFixed(3))
+            };
+        });
+        // 将处理后的数据存储在 tableData.value 中
+        tableData.value = processedData;
 console.log('tableData.value',tableData.value)
+
 
   visControll.visAllReport = true;
   //initChart();
@@ -1030,7 +1093,36 @@ const targetId = ref('')
 //   queryFormRef.value.resetFields()
 //   handleQuery()
 // }
+const now1 = ref()
+const old1 = ref()
+const new1 = ref()
 
+const { push } = useRouter()
+const generateDailyReport = (devKey) => {
+  now1.value = new Date();
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = old1.value.split(" ")[0] + " " + "23:59:59";
+  
+      // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
+      console.log('生成日报报告', devKey);
+      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
+    };
+
+    const generateMonthlyReport = (devKey) => {
+      now1.value = new Date();
+  now1.value.setDate(1)
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = new Date(old1.value)
+  new1.value.setMonth(new1.value.getMonth() + 1);
+  new1.value.setDate(new1.value.getDate() - 1);
+  new1.value.setHours(23,59,59)
+  new1.value = getFullTimeByDate(new1.value);
+      // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
+      console.log('生成月报报告', devKey);
+      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+    };
 // 表格行选择处理
 const handleCurrentChange = (val) => {
   if (!val) return

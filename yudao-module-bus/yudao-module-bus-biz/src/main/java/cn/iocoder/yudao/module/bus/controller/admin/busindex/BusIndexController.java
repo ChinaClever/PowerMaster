@@ -404,7 +404,7 @@ public class BusIndexController {
 
     @PostMapping("/report/basicInformationbybus")
     @Operation(summary = "获得插接箱报表数据-基础数据")
-    public CommonResult<List<String>> getReportBasicInformationByBusResVO(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+    public CommonResult<List<BoxReportcopyResVO>> getReportBasicInformationByBusResVO(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getReportBasicInformationByBusResVO(pageReqVO));
     }
 

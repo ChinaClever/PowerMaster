@@ -816,23 +816,69 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
 
-    public List<String> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) throws IOException {
+    public List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) throws IOException {
 
         String devKey = pageReqVO.getDevKey();
 
         QueryWrapper<BoxIndex> queryWrapper = new QueryWrapper();
-        queryWrapper.select("box_key");
+        queryWrapper.select("box_key","run_status");
         queryWrapper.eq("bus_key", devKey);
         List<BoxIndex> boxIndexList = boxIndexMapper.selectList(queryWrapper);
         List<String> boxKeyList = new ArrayList<>();
-        for (BoxIndex boxIndex : boxIndexList){
+        List<BoxReportcopyResVO> vos = new ArrayList<>();
+        for (BoxIndex boxIndex : boxIndexList) {
+            BoxReportcopyResVO vo = new BoxReportcopyResVO();
+            vo.setDevKey(boxIndex.getBoxKey());
+            vo.setRunStatus(boxIndex.getRunStatus());
             ValueOperations ops = redisTemplate.opsForValue();
-            JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BOX + devKey);
+            JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+            // 获取 box_name 字段的值
+            String boxName = jsonObject.getString("box_name");
+            System.out.println("box_name: " + boxName);
+            vo.setBoxName(boxName);
+            // 获取 box_total_data 中的 pow_apparent 字段的值
+            JSONObject boxData1 = jsonObject.getJSONObject("box_data");
+            JSONObject boxTotalData = boxData1.getJSONObject("box_total_data");
+            if (boxTotalData != null) {
+                Double powApparent = boxTotalData.getDouble("pow_apparent");
+                vo.setPowApparent(powApparent);
+                System.out.println("box_total_data.pow_apparent: " + powApparent);
+            } else {
+                System.out.println("box_total_data is null");
+            }
+            // 获取 outlet_item_list 中的 pow_active 数组的值
+            JSONObject boxData = jsonObject.getJSONObject("box_data");
+            if (boxData != null) {
+                JSONObject outletItemList = boxData.getJSONObject("outlet_item_list");
+                if (outletItemList != null) {
+                    JSONArray powActiveArray = outletItemList.getJSONArray("pow_active");
+                    if (powActiveArray != null) {
+                        for (int i = 0; i < powActiveArray.size(); i++) {
+                            Double powActiveValue = powActiveArray.getDouble(i);
+                            if (i == 0) {
+                                vo.setPowActiveOne(powActiveValue);
+                            } else if (i == 1) {
+                                vo.setPowActiveTwo(powActiveValue);
+                            } else if (i == 2) {
+                                vo.setPowActiveThree(powActiveValue);
+                            }
+                            System.out.println("outlet_item_list.pow_active[" + i + "]: " + powActiveValue);
+                        }
+                    } else {
+                        System.out.println("outlet_item_list.pow_active array is null");
+                    }
+                } else {
+                    System.out.println("outlet_item_list is null");
+                }
+            } else {
+                System.out.println("box_data is null");
+            }
+            vos.add(vo);
             if (jsonObject != null){
                 boxKeyList.add(jsonObject.toJSONString());
             }
         }
-        return boxKeyList;
+        return vos;
 
     }
 

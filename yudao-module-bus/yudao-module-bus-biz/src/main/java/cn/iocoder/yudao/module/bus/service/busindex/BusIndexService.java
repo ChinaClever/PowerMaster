@@ -143,7 +143,7 @@ public interface BusIndexService {
 
     ReportBasicInformationResVO getReportBasicInformationResVO(BusIndexPageReqVO pageReqVO);
 
-    List<String> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) throws IOException;
+    List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) throws IOException;
 
     BalanceStatisticsVO getBusBalanceStatistics();
 
