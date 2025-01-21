@@ -388,7 +388,7 @@ const handleCheck = async (row) => {
 const openTemDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location : row.devKey;
+  location.value = row.location ? row.location : '未绑定'
   devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;

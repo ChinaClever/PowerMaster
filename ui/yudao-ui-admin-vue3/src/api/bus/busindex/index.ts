@@ -18,10 +18,16 @@ export const IndexApi = {
   getIndexPage: async (data: any) => {
     return await request.post({ url: `/bus/index/page`, data })
   },
-  // 获得插接箱报表数据-基础数据
+  // 获得始端箱报表数据-基础数据
   getReportBasicInformationResVO: async (data: any) => {
     return await request.post({ url: `/bus/index/report/basicInformation`, data })
   },
+
+ // 获得插接箱报表数据-基础数据
+ getReportBasicInformationByBusResVO: async (data: any) => {
+  return await request.post({ url: `/bus/index/report/basicInformationbybus`, data })
+},
+
   // 查询已删除的始端箱索引分页
   getDeletedIndexPage: async (data: any) => {
     return await request.post({ url: `/bus/index/getDeletedPage`, data })
@@ -123,6 +129,10 @@ getBalanceStatistics: async () => {
 
   devKeyList: async () => {
     return await request.download({ url: `/bus/index/devKeyList` })
+  },
+
+  findKeys: async (params: any) => {
+    return await request.get({ url: `/bus/index/findKeys?key=${params}`,params})
   },
 
   getBusLinePage: async (data: any) => {

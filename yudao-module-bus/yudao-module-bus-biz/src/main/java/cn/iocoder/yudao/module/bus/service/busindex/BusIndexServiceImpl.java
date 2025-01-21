@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekDo;
@@ -25,6 +26,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -40,6 +42,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
@@ -53,6 +56,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -132,6 +136,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
 
     public static final String REDIS_KEY_CABINET = "packet:cabinet:";
 
@@ -809,6 +816,27 @@ public class BusIndexServiceImpl implements BusIndexService {
         vo.setRunStatus(busIndexDO.getRunStatus());
         vo.setPowerFactor(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("power_factor"));
         return vo;
+    }
+
+
+    public List<String> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) throws IOException {
+
+        String devKey = pageReqVO.getDevKey();
+
+        QueryWrapper<BoxIndex> queryWrapper = new QueryWrapper();
+        queryWrapper.select("box_key");
+        queryWrapper.eq("bus_key", devKey);
+        List<BoxIndex> boxIndexList = boxIndexMapper.selectList(queryWrapper);
+        List<String> boxKeyList = new ArrayList<>();
+        for (BoxIndex boxIndex : boxIndexList){
+            ValueOperations ops = redisTemplate.opsForValue();
+            JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BOX + devKey);
+            if (jsonObject != null){
+                boxKeyList.add(jsonObject.toJSONString());
+            }
+        }
+        return boxKeyList;
+
     }
 
     @Override
@@ -2690,6 +2718,8 @@ public class BusIndexServiceImpl implements BusIndexService {
             return jsonObject != null ? jsonObject.toJSONString() : null;
         }
     }
+
+
 
     @Override
     public PageResult<BusIndexRes> getDeletedPage(BusIndexPageReqVO pageReqVO) {

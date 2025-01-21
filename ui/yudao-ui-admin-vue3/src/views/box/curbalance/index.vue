@@ -109,10 +109,10 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
-              <el-tag type="info"  v-if="scope.row.color == 0">{{statusList[0].name}}</el-tag>
-              <el-tag type="success"  v-else-if="scope.row.color == 1">{{statusList[1].name}}</el-tag>
-              <el-tag type="warning" v-else-if="scope.row.color == 2">{{statusList[2].name}}</el-tag>
-              <el-tag type="danger" v-else-if="scope.row.color == 3">{{statusList[3].name}}</el-tag>
+              <el-tag type="info"  v-if="scope.row.color == 1">{{statusList[3].name}}</el-tag>
+              <el-tag type="success"  v-else-if="scope.row.color == 2">{{statusList[0].name}}</el-tag>
+              <el-tag type="warning" v-else-if="scope.row.color == 3">{{statusList[1].name}}</el-tag>
+              <el-tag type="danger" v-else-if="scope.row.color == 4">{{statusList[2].name}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
@@ -231,7 +231,9 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
+            <span style="margin-right:10px">机房：{{ curlocation? curlocation : '未绑定' }}</span>
+            <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+            <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span>网络地址：{{ curdevkey }}</span>
           </div>
         </template>
@@ -242,8 +244,28 @@
             <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name"/>
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-              <div class="IechartBar">
-                <Echart :options="ABarOption" :height="300" />
+              <div class="IechartBar" style="position: relative;">
+                <div style="display: inline-block;
+                width: 70%;
+                height: 100%;">
+                  <Echart :options="ABarOption" :height="300" />
+                </div>
+                <div style="display: inline-block;
+                    position: absolute;
+                    width: 150px;
+                    height: 100px;
+                    top: 30%;">
+                  <div>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
+                  </div>
+                </div>
+                <!--<Echart :options="ABarOption" :height="300" />-->
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
@@ -254,11 +276,30 @@
           </div>
           <div class="custom-content-container">
             <el-card  class="cardChilc" shadow="hover">
-              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
+              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorVolList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-              <div class="IechartBar">
-                <Echart :options="BBarOption" :height="300"/>
+              <div class="IechartBar" style="position: relative;">
+                <div style="display: inline-block;
+                width: 70%;
+                height: 100%;">
+                  <Echart :options="BBarOption" :height="300"/>
+                </div>
+                <div style="display: inline-block;
+                    position: absolute;
+                    width: 150px;
+                    height: 100px;
+                    top: 30%;">
+                  <div>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
+                  </div>
+                </div>
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
@@ -301,7 +342,9 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ vollocation }}</span>
+            <span style="margin-right:10px">机房：{{ vollocation? vollocation : '未绑定' }}</span>
+            <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+            <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span>网络地址：{{ voldevkey }}</span>
           </div>
         </template>
@@ -312,8 +355,28 @@
               <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-              <div class="IechartBar">
-                <Echart :options="ABarOption" :height="300" />
+              <div class="IechartBar" style="position: relative;">
+                <div style="display: inline-block;
+                width: 70%;
+                height: 100%;">
+                  <Echart :options="ABarOption" :height="300" />
+                </div>
+                <div style="display: inline-block;
+                    position: absolute;
+                    width: 150px;
+                    height: 100px;
+                    top: 30%;">
+                  <div>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
+                  </div>
+                </div>
+                <!--<Echart :options="ABarOption" :height="300" />-->
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
@@ -324,11 +387,30 @@
           </div>
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
-              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
+              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorVolList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-              <div class="IechartBar">
-                <Echart :options="BBarOption" :height="300"/>
+              <div class="IechartBar" style="position: relative;">
+                <div style="display: inline-block;
+                width: 70%;
+                height: 100%;">
+                  <Echart :options="BBarOption" :height="300"/>
+                </div>
+                <div style="display: inline-block;
+                    position: absolute;
+                    width: 150px;
+                    height: 100px;
+                    top: 30%;">
+                  <div>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
+                  </div>
+                </div>
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
@@ -393,6 +475,7 @@ const location = ref();
 const curlocation = ref();
 const vollocation = ref();
 const boxName = ref();
+const busName = ref();
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
@@ -430,35 +513,35 @@ const statusList = reactive([
 
 const colorList = [
   {
-    name: '小电流不平衡',
+    name: '电流不平衡',
     color: '#aaa'
   },
   {
-    name: '大电流不平衡',
+    name: '电流不平衡',
     color: '#3bbb00'
   },
   {
-    name: '大电流不平衡',
+    name: '电流不平衡',
     color: '#ffc402'
   },
   {
-    name: '大电流不平衡',
+    name: '电流不平衡',
     color: '#fa3333'
   }
 ]
 
 const colorVolList = [{
-  name: '小电压不平衡',
+  name: '电压不平衡',
   color: '#aaa',  //灰色
 },{
-  name: '大电压不平衡',
+  name: '电压不平衡',
   color: '#3bbb00', //绿色
 },{
-  name: '大电压不平衡',
+  name: '电压不平衡',
   color: '#ffc402', //黄色
 },{
   name: '大电压不平衡',
-  color: '#fa3333', //红色
+  color: '#075F71',
 }]
 
 const devKeyList = ref([])
@@ -735,24 +818,29 @@ const toDeatil = (row) =>{
 const colorFlag = ref(0);
 
 const showDialogCur = (item) => {
-  colorFlag.value = item.color;
+  colorFlag.value = item.color-1;
   dialogVisibleCur.value = true;
   curdevkey.value = item.devKey;
   curlocation.value = item.location;
   boxName.value = item.boxName;
+  busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
 
 const showDialogVol = (item) => {
-  colorFlag.value = item.color;
+  colorFlag.value = item.color-1;
   dialogVisibleVol.value = true;
   voldevkey.value = item.devKey;
   vollocation.value = item.location;
   boxName.value = item.boxName;
+  busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
+
+const cur_valueACopy = ref([]);
+const vol_valueACopy = ref([]);
 
 const getBalanceDetail = async(item) => {
   const res = await IndexApi.getBoxBalanceDetail({devKey:item.devKey})
@@ -760,7 +848,8 @@ const getBalanceDetail = async(item) => {
 
   if (res.cur_value) {
     const cur_valueA = res.cur_value;
-    console.log('cur_valueA',cur_valueA);
+    cur_valueACopy.value = res.cur_value;
+    console.log('cur_valueACopy.value',cur_valueACopy.value[0]);
     // const max = Math.max(...cur_valueA) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -782,7 +871,7 @@ const getBalanceDetail = async(item) => {
       series: [
         {
           type: 'pie',
-          radius: ['30%', '100%'],
+          radius: ['30%', '80%'],
           center: ['50%', '50%'],
           roseType: 'radius',
           itemStyle: {
@@ -798,9 +887,9 @@ const getBalanceDetail = async(item) => {
             fontWeight: 'bold'
           },
           data: [
-            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
-            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
-            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#E5B849' } },
+            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#C8603A' } },
+            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#AD3762' } },
           ]
         }
       ]
@@ -808,6 +897,7 @@ const getBalanceDetail = async(item) => {
   }
   if (res.vol_value) {
     const vol_value = res.vol_value;
+    vol_valueACopy.value = res.vol_value;
     // const max = Math.max(...vol_value) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -843,9 +933,9 @@ const getBalanceDetail = async(item) => {
             fontWeight: 'bold'
           },
           data: [
-            { value: vol_value[0], name: 'A相电压', itemStyle: { color: '#E5B849' } },
-            { value: vol_value[1], name: 'B相电压', itemStyle: { color: '#C8603A' } },
-            { value: vol_value[2], name: 'C相电压', itemStyle: { color: '#AD3762' } },
+            { value: vol_value[0].toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
+            { value: vol_value[1].toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
+            { value: vol_value[2].toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
           ]
         }
       ]
