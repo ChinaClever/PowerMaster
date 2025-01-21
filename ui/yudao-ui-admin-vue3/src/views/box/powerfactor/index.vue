@@ -276,8 +276,8 @@
               <div v-if=" item.totalPowFactor != null  && typeText == 'line' && item.outletPowFactor.length >1" style="font-size: 18px;">
                 <span style="font-size: 20px; ">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>
-              <div v-if=" item.totalPowFactor != null  && typeText == 'line' && item.outletPowFactor.length <=1" style="font-size: 18px;padding-top: -10px;">
-                <span style="font-size: 20px;"></span><br/>功率因数
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line' && item.outletPowFactor.length <=1" style="font-size: 18px; padding-top: 10px;">
+                <span style="font-size: 20px;"></span>功率因数
               </div>
 
               <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
