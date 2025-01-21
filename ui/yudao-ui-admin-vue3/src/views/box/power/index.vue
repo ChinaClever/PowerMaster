@@ -688,7 +688,7 @@
                 有功功率
               </div>
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length > 1">
-                总有功功率{{ item.powActive }} kW
+                {{ item.powActive }} kW<br/><span style="font-size: 15px; ">总有功功率</span>
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
@@ -700,13 +700,13 @@
                 无功功率
               </div>
               <div v-if="valueMode == 3 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
-                总无功功率{{ item.powReactive }} kVar
+                {{ item.powReactive }} kVar<br/><span style="font-size: 15px; ">总无功功率</span>
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'  && item.outletApparentPow.length <= 1" >
                 视在功率
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line' && item.outletApparentPow.length > 1" >
-                总视在功率{{ item.powApparent }} kVa
+                {{ item.powApparent }} kVa<br/><span style="font-size: 15px; ">总视在功率</span>
               </div>
              <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
                 无功功率
@@ -1160,8 +1160,9 @@ const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
   const boxName = row.boxName;
-  const location = row.location != null ? row.location : row.devKey;
-  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location}});
+  const busName = row.busName;
+  const location = row.location != null ? row.location : '未绑定';
+  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location,busName}});
 };
 
 const defaultSelected = ref(['line']);
@@ -1458,7 +1459,7 @@ onActivated(() => {
         flex-direction: row;
         align-items: self-end;
         justify-content: space-between;
-        font-size: 13px;
+        font-size: 20px;
         .value {
           font-size: 15px;
           font-weight: bold;
@@ -1597,10 +1598,10 @@ onActivated(() => {
         align-items: center;
         height: 100%;
         .icon {
-          font-size: 20px;
+          font-size: 18px;
           width: 100px;
-          height: 50px;
-          margin-left:40px;
+          height: 60px;
+          margin-left:60px;
           text-align: center;
           .text-pf{
             font-size: 16px;

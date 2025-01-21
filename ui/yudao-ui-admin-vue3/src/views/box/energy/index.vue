@@ -74,7 +74,7 @@
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" style="margin-left:20%;"/>
             </div>
             <div class="room">{{item.location}}</div>
             <!-- <div class="name">{{item.boxName}}</div> -->
@@ -304,8 +304,11 @@ const handleCheck = (row) => {
 
 // 跳转详情
 const toDetail = (roomId, id,location,boxName, item) => {
+  const devKey = item.devKey;
+  const busName = item.busName;
+  const local = item.local ? item.local : '未绑定';
   console.log('item',item);
-  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,location,boxName}})
+  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,local,boxName,devKey,busName}})
 }
 onMounted(async () => {
   devKeyList.value = await loadAll();
