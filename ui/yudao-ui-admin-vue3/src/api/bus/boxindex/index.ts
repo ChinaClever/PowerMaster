@@ -69,6 +69,11 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/eq/page`, data })
   },
 
+  // 获取分段电能电费 
+  boxFindKeys: async (params: any) => {
+    return await request.get({ url: `/box/index/findKeys`, params})
+  },
+
   getEqMax: async () => {
     return await request.post({ url: `/box/index/eq/maxEq`})
   },
