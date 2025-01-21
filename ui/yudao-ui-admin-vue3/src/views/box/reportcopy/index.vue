@@ -279,7 +279,7 @@ const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
 const now = ref()
-const switchValue = ref(1);
+const switchValue = ref();
 const visControll = reactive({
   visAllReport : false,
   isSameDay : false,
@@ -949,12 +949,40 @@ const formRef = ref()
 // }
 
 
-
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 /** 初始化 **/
 onMounted( async () =>  {
   // getList();
   initChart();
   devKeyList.value = await loadAll();
+
+  // 使用可选链操作符避免访问 undefined 的属性
+let devKey = route.query?.devKey as string | undefined;
+let timeType = route.query?.timeType as string | undefined;
+let oldTime = route.query?.oldTime as string | undefined;
+let newTime = route.query?.newTime as string | undefined;
+let timeArr = route.query?.timeArr as string | undefined;
+let visAllReport = route.query?.visAllReport as string | undefined;
+let switchValue1 = route.query?.switchValue as string | undefined;
+console.log('devKey', switchValue1);
+
+if (devKey != undefined) {
+  queryParams.devKey = devKey;
+  queryParams.timeType = timeType;
+  queryParams.oldTime = oldTime;
+  queryParams.newTime = newTime;
+  queryParams.timeArr = timeArr;
+  queryParams.visAllReport = visAllReport;
+  switchValue.value = switchValue1;
+  console.log('1111111111111111111', switchValue.value);
+
+  getList();
+  initChart();
+}
+
+
 })
 </script>
 <style scoped lang="scss">
