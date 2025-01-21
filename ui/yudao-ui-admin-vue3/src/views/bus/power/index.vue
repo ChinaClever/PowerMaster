@@ -39,7 +39,7 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
-        v-show="switchValue !== 4"  
+        v-show="switchValue !== 4" 
       > <el-form-item>
         <el-form-item>
           <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
@@ -55,6 +55,7 @@
             clearable
             class="!w-160px"
             placeholder="请输入网络地址"
+            @change="changeList"
             @select="handleQuery"
           />
         <el-form-item style="margin-left: 5px;margin-right: 6px">
@@ -508,6 +509,7 @@ import { IndexApi } from '@/api/bus/busindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import Bar from './Bar.vue'
+import { error } from 'console'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
@@ -560,13 +562,18 @@ const statusList = reactive([
   }
 ])
 const devKeyList = ref([])
+
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
+  console.log('111122331313131',data);
   var objectArray = data.map((str) => {
     return { value: str };
   });
   return objectArray;
 }
+
+const queryStringCopy = ref();
+const cbCopy = ref();
 
 const querySearch = (queryString: string, cb: any) => {
 
@@ -574,7 +581,16 @@ const querySearch = (queryString: string, cb: any) => {
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
   // call callback function to return suggestions
-  cb(results)
+  cb(results);
+  queryStringCopy.value = queryString;
+  cbCopy.value = cb;
+}
+
+const changeList = async () => {
+  const data  = await IndexApi.findKeys(queryParams.devKey);
+  devKeyList.value = data;
+  querySearch(queryStringCopy.value, cbCopy.value);
+  console.log('devKeyList.value',devKeyList.value);
 }
 
 const createFilter = (queryString: string) => {
@@ -731,7 +747,7 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
-    filterData()
+    //filterData()
     console.log('查询列表的数据',list.value)
     var tableIndex = 0;
 
@@ -827,34 +843,34 @@ const toDeatil = (row) =>{
 
 }
 
-const filterData = () => {
-  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
-  console.log('data0',data0)
-  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
-  console.log('data1',data1)
-  const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
-  console.log('data2',data2)
- 
-  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
-    list.value = data0; // 仅正常状态
-  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
-    list.value = data1; // 仅告警状态
-  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
-    list.value = data2; // 仅离线状态
-  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
-    list.value = [...data0, ...data1];
-  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
-    list.value = [...data0, ...data2];
-  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
-    list.value = [...data1, ...data2];
-  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
-    list.value = [...data0, ...data1, ...data2];
-  } else {
-    list.value = list.value;
-  }
-
-  console.log('执行完毕')
-}
+//const filterData = () => {
+//  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
+//  console.log('data0',data0)
+//  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
+//  console.log('data1',data1)
+//  const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
+//  console.log('data2',data2)
+// 
+//  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
+//    list.value = data0; // 仅正常状态
+//  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
+//    list.value = data1; // 仅告警状态
+//  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
+//    list.value = data2; // 仅离线状态
+//  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
+//    list.value = [...data0, ...data1];
+//  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
+//    list.value = [...data0, ...data2];
+//  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
+//    list.value = [...data1, ...data2];
+//  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
+//    list.value = [...data0, ...data1, ...data2];
+//  } else {
+//    list.value = list.value;
+//  }
+//
+//  console.log('执行完毕')
+//}
 
 const handleSelectStatus = (index) => {
   butColor.value = 1;
@@ -873,6 +889,7 @@ const toggleAllStatus = () => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  console.log('queryParams.devKey',queryParams.devKey)
   getList()
   getDeletedList();
 }
