@@ -125,6 +125,10 @@ getBalanceStatistics: async () => {
     return await request.download({ url: `/bus/index/devKeyList` })
   },
 
+  findKeys: async (params: any) => {
+    return await request.get({ url: `/bus/index/findKeys?key=${params}`,params})
+  },
+
   getBusLinePage: async (data: any) => {
     return await request.post({ url: `/bus/index/line/page`,data})
   },
