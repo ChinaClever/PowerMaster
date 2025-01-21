@@ -80,11 +80,11 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "负载率曲线 - 时间")
     private List<String> day;
 
-    @Schema(description = "负载率曲线 - a")
-    private List<BigDecimal> factorA;
-
-    @Schema(description = "负载率曲线 - b")
-    private List<BigDecimal> factorB;
+//    @Schema(description = "负载率曲线 - a")
+//    private List<BigDecimal> factorA;
+//
+//    @Schema(description = "负载率曲线 - b")
+//    private List<BigDecimal> factorB;
 
     @Schema(description = "负载率曲线 - 总")
     private List<BigDecimal> factorTotal;

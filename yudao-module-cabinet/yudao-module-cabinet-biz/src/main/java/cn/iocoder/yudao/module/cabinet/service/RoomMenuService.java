@@ -48,7 +48,7 @@ public interface RoomMenuService {
      *
      * @param id 机房id
      */
-    List<RoomPduMenuDTO> roomPduMenuList(Integer id);
+    List<RoomPduMenuDTO> roomPduMenuList();
 
 
     /**

@@ -20,6 +20,7 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
@@ -910,6 +911,11 @@ public class CabinetServiceImpl implements CabinetService {
     }
 
     @Override
+    public CabinetCapacityStatisticsResVO getCapacitystatistics() {
+        return cabinetIndexMapper.getCapacitystatistics();
+    }
+
+    @Override
     public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
         Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
@@ -1048,10 +1054,15 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentB(), vo.getPowApparentTotal()), 100));
 
             Map map = getCabinetDistributionFactor(id, roomId, type);
-            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
-            vo.setFactorA((List<BigDecimal>) map.get("factorA"));
             vo.setDay((List<String>) map.get("day"));
-            vo.setFactorB((List<BigDecimal>) map.get("factorB"));
+            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
+            if (Objects.nonNull(map.get("load_rate"))) {
+                vo.setLoadFactorBig(BigDemicalUtil.setScale(new BigDecimal(String.valueOf(map.get("load_rate"))), 2));
+                vo.setLoadFactorTime((String) map.get("create_time"));
+            }
+//            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
+//            vo.setFactorA((List<BigDecimal>) map.get("factorA"));
+//            vo.setFactorB((List<BigDecimal>) map.get("factorB"));
         }
 
 
@@ -1063,59 +1074,75 @@ public class CabinetServiceImpl implements CabinetService {
         String startTime = null;
         String endTime = null;
         String index = null;
+        String key = null;
         switch (type) {
             case "day":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(1), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
+                key= "load_rate_total_avg_value";
                 break;
             case "hour":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_realtime";
+                key= "load_rate";
                 break;
             case "today":
-                startTime = LocalDateTimeUtil.format(LocalDateTime.MIN, "yyyy-MM-dd HH:mm:ss");
+                startTime =  LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd 00:00:00");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
+                key= "load_rate_total_avg_value";
                 break;
             case "threeDay":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
+                key= "load_rate_total_avg_value";
                 break;
             default:
         }
+
 
         Map map = new HashMap();
         //day,today,threeDay
         List<Map<String, Object>> data = getDataEs(startTime, endTime, Collections.singletonList(id),
                 index, Map.class);
+
         List<BigDecimal> factorA = new ArrayList<>();
         List<BigDecimal> factorB = new ArrayList<>();
         List<BigDecimal> factorTotal = new ArrayList<>();
+        List<BigDecimal> loadRate = new ArrayList<>();
         List<String> createTime = new ArrayList<>();
         if (Objects.nonNull(data)) {
             switch (index) {
                 case "cabinet_hda_pow_realtime":
-                    factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a").toString()), 100)).collect(Collectors.toList());
-                    factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b").toString()), 100)).collect(Collectors.toList());
-                    factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total").toString()), 100)).collect(Collectors.toList());
+//                    factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a").toString()), 100)).collect(Collectors.toList());
+//                    factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b").toString()), 100)).collect(Collectors.toList());
+//                    factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total").toString()), 100)).collect(Collectors.toList());
+                    loadRate = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
                     createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
                     break;
                 case "cabinet_hda_pow_hour":
-                    factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a_avg_value").toString()), 100)).collect(Collectors.toList());
-                    factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b_avg_value").toString()), 100)).collect(Collectors.toList());
-                    factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total_avg_value").toString()), 100)).collect(Collectors.toList());
+//                    factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a_avg_value").toString()), 100)).collect(Collectors.toList());
+//                    factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b_avg_value").toString()), 100)).collect(Collectors.toList());
+//                    factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total_avg_value").toString()), 100)).collect(Collectors.toList());
+                    loadRate = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate_total_avg_value").toString()), 100)).collect(Collectors.toList());
                     createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
                     break;
                 default:
             }
         }
-        map.put("factorA", factorA);
-        map.put("factorB", factorB);
-        map.put("factorTotal", factorTotal);
+//        map.put("factorA", factorA);
+//        map.put("factorB", factorB);
+//        map.put("factorTotal", factorTotal);
+        map.put("factorTotal", loadRate);
         map.put("day", createTime);
+        Map<String,Object> loadRateEs = getDataLoadRateEs(startTime, endTime, id, index,key);
+        if (Objects.nonNull(loadRateEs)) {
+            map.put("load_rate", loadRateEs.get("load_rate"));
+            map.put("create_time", loadRateEs.get("create_time"));
+        }
         return map;
     }
 
@@ -1201,29 +1228,35 @@ public class CabinetServiceImpl implements CabinetService {
             switch (reqVO.getGranularity()) {
                 case "realtime":
                     index = "cabinet_hda_pow_realtime";
-                    heads = new String[]{"cabinet_id", "apparent_total", "apparent_a", "apparent_b", "active_total", "active_a", "active_b", "create_time"};
+                    heads = new String[]{"cabinet_id", "apparent_total", "apparent_a", "apparent_b", "active_total", "active_a",
+                            "active_b","reactive_a","reactive_b","reactive_total","factor_a","factor_b","factor_total","load_rate", "create_time"};
                     start = LocalDateTime.now().minusHours(1).format(formatter);
                     break;
                 case "hour":
                     index = "cabinet_hda_pow_hour";
-                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value", "apparent_total_avg_value", "active_total_avg_value", "create_time"};
+                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "apparent_total_avg_value", "active_total_avg_value","reactive_a_avg_value","reactive_b_avg_value","reactive_total_avg_value",
+                            "factor_a_avg_value,","factor_b_avg_value","factor_total_avg_value", "load_rate_total_avg_value","create_time"};
                     start = LocalDateTime.now().minusDays(1).format(formatter);
                     break;
                 case "SeventyHours":
                     index = "cabinet_hda_pow_hour";
-                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value", "apparent_total_avg_value", "active_total_avg_value", "create_time"};
+                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "apparent_total_avg_value", "active_total_avg_value","reactive_a_avg_value","reactive_b_avg_value","reactive_total_avg_value",
+                            "factor_a_avg_value,","factor_b_avg_value","factor_total_avg_value", "load_rate_total_avg_value","create_time"};
                     start = LocalDateTime.now().minusDays(3).format(formatter);
                     break;
                 default:
                     index = "cabinet_hda_pow_day";
-                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value", "apparent_total_avg_value", "active_total_avg_value", "create_time"};
+                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "apparent_total_avg_value", "active_total_avg_value","reactive_a_avg_value","reactive_b_avg_value","reactive_total_avg_value",
+                            "factor_a_avg_value,","factor_b_avg_value","factor_total_avg_value", "load_rate_total_avg_value","create_time"};
                     start = LocalDateTime.now().minusMonths(1).format(formatter);
             }
             List<Map<String, Object>> mapList = getDataEsChart(start, end, idKey, cabinet, index, heads);
             mapList.forEach(map -> {
                 // 获取文档内容，假设它以 Map 的形式存储
                 CabinetLoadPageChartResVO vo = new CabinetLoadPageChartResVO();
-//                CabinetLoadPageChartResVO bvo = new CabinetLoadPageChartResVO();
                 if (Objects.equals(reqVO.getGranularity(), "realtime")) {
                     vo.setCabinetId((Integer) map.get("cabinet_id"));
                     vo.setCreateTime(String.valueOf(map.get("create_time")));
@@ -1233,6 +1266,13 @@ public class CabinetServiceImpl implements CabinetService {
                     vo.setPowActiveB((Double) map.get("active_b"));
                     vo.setPowApparentB((Double) map.get("apparent_b"));
                     vo.setPowApparentTotal((Double) map.get("apparent_total"));
+                    vo.setLoadRateTotal((Double) map.get("load_rate"));
+                    vo.setPowReactiveA((Double) map.get("reactive_a"));
+                    vo.setPowReactiveB((Double) map.get("reactive_b"));
+                    vo.setPowReactiveTotal((Double) map.get("reactive_total"));
+                    vo.setPowerFactorA((Double) map.get("factor_a"));
+                    vo.setPowerFactorB((Double) map.get("factor_b"));
+                    vo.setPowerFactorTotal((Double) map.get("factor_total"));
                     aPath.add(vo);
                 } else {
                     vo.setCabinetId((Integer) map.get("cabinet_id"));
@@ -1243,6 +1283,13 @@ public class CabinetServiceImpl implements CabinetService {
                     vo.setPowActiveTotal((Double) map.get("active_total_avg_value"));
                     vo.setPowActiveB((Double) map.get("active_b_avg_value"));
                     vo.setPowApparentB((Double) map.get("apparent_b_avg_value"));
+                    vo.setLoadRateTotal((Double) map.get("load_rate_total_avg_value"));
+                    vo.setPowReactiveA((Double) map.get("reactive_a_avg_value"));
+                    vo.setPowReactiveB((Double) map.get("reactive_b_avg_value"));
+                    vo.setPowReactiveTotal((Double) map.get("reactive_total_avg_value"));
+                    vo.setPowerFactorA((Double) map.get("factor_a_avg_value"));
+                    vo.setPowerFactorB((Double) map.get("factor_b_avg_value"));
+                    vo.setPowerFactorTotal((Double) map.get("factor_total_avg_value"));
                     aPath.add(vo);
                 }
             });
@@ -1514,6 +1561,38 @@ public class CabinetServiceImpl implements CabinetService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private Map<String,Object> getDataLoadRateEs(String startTime, String endTime, Integer id, String index, String key) {
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery(CABINET_ID, id.toString()))));
+
+            searchSourceBuilder.sort(key, SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices(index);
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            Map<String, Object> map =new HashMap();
+            if (hits.getTotalHits().value > 0) {
+                SearchHit hit = hits.getAt(0);
+                map.put("create_time",hit.getSourceAsMap().get("create_time").toString());
+                map.put("load_rate",hit.getSourceAsMap().get(key));
+            }
+            return map;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
     /**

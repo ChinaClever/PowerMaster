@@ -109,7 +109,24 @@
         count(id) as total
         FROM cabinet_index ci
         <where>
-            ci.is_deleted = 0
+            ci.is_deleted = 0 and ci.is_disabled = 0
+        </where>
+    </select>
+    <select id="getCapacitystatistics"
+            resultType="cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO">
+        select
+        count(id) as total,
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 0 and 29.99  then 1 else 0 end) as thirty,
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 30 and 49.99  then 1 else 0 end) as fifty,
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 50 and 99.99  then 1 else 0 end) as ninetyNine,
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 100 and 100  then 1 else 0 end) as oneHundred
+        from cabinet_index
+        where is_disabled = 0 and is_deleted = 0
+    </select>
+    <select id="selectListAndPdu" resultType="cn.iocoder.yudao.framework.common.vo.CabinetPduResVO">
+        select * from cabinet_index ci left join cabinet_pdu cp on ci.id = cp.cabinet_id
+        <where>
+            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0
         </where>
     </select>
 </mapper>

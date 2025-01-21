@@ -62,7 +62,7 @@
             and cf.company like "%"#{indexVo.company}"%"
         </if>
         <if test="indexVo.startNum != null and  indexVo.endNum != null">
-            and  round((cabinet_use_height/cabinet_height)*100,2) BETWEEN #{indexVo.startNum} and #{indexVo.endNum}
+            and  round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN #{indexVo.startNum} and #{indexVo.endNum}
         </if>
         order by ci.create_time desc,ci.run_status asc
     </select>

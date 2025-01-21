@@ -2,7 +2,10 @@ package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Insert;
@@ -36,4 +39,9 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     List<CabineIndexCfgVO> selectIndexLoadPage(@Param("req") CabinetIndexVo req);
 
     Map<String, Integer> selectLoadStatusCount();
+
+    CabinetCapacityStatisticsResVO getCapacitystatistics();
+
+    List<CabinetPduResVO> selectListAndPdu();
+
 }

@@ -443,28 +443,27 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.cabinetIds = null;
-    queryDeletedPageParams.cabinetIds = null;
+    queryParams.pduKeyList = null;
     getDeletedList();
     getList();
     return;
   }
-  const ids = [] as any
+  const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 4) {
+      pduKeys.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
-    queryDeletedPageParams.cabinetIds = [-1]
-  }else{
-    queryParams.cabinetIds = ids
-    queryDeletedPageParams.cabinetIds = ids
-  }
 
+    queryParams.pduKeyList = [-1]
+    queryDeletedPageParams.pduKeyList = [-1]
+  }else{
+    queryParams.pduKeyList = pduKeys
+    queryDeletedPageParams.pduKeyList = pduKeys
+  }
   getList();
   getDeletedList();
 }
@@ -541,6 +540,7 @@ const queryParamsAll = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds:[],
+  pduKeyList:[] ,
 }) as any
 const queryDeletedPageParams = reactive({
   pageNo: 1,
@@ -711,12 +711,9 @@ const getListAll = async () => {
 
 // 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
@@ -834,7 +831,7 @@ onMounted(async () => {
   //         //getList()
   //      }, 0);
   // }, 5000);
-  flashListTimer.value = setInterval((getList), 5000);
+  // flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{

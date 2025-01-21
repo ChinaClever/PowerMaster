@@ -8,6 +8,7 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
@@ -199,6 +200,12 @@ public class CabinetController {
     public CommonResult<PageResult<CabinetIndexDTO>> getCapacityPage(@RequestBody CabinetIndexVo pageReqVO) {
         PageResult<CabinetIndexDTO> pageResult = cabinetService.getCapacityPage(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "机柜容量列表统计")
+    @GetMapping("/cabinet/capacity/statistics")
+    public CommonResult<CabinetCapacityStatisticsResVO> getCapacitystatistics() {
+        return CommonResult.success(cabinetService.getCapacitystatistics());
     }
 
     @Operation(summary = "机柜环境详情")

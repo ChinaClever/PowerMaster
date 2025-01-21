@@ -72,8 +72,8 @@ export const CabinetApi = {
     return await request.get({ url: `/cabinet/load/count`, params })
   },
   // 获取机房菜单
-  getRoomPDUList: async (params: any) => {
-    return await request.get({ url: `/room/pdu/menu`, params })
+  getRoomPDUList: async () => {
+    return await request.get({ url: `/room/pdu/menu`})
   },
   // 获取机柜详情
   getCabinetDetail: async (params: any) => {

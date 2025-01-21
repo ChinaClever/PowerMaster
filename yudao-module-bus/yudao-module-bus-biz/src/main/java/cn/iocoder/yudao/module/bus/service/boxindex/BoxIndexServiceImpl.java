@@ -2015,7 +2015,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
             Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime, pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1, searchList.stream().map(BoxIndex::getId).collect(Collectors.toList()));
-
+            if (Objects.isNull(esTotalAndIds)){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
             Long total = (Long) esTotalAndIds.get("total");
             if (total == 0) {
                 return new PageResult<>(new ArrayList<>(), 0L);
