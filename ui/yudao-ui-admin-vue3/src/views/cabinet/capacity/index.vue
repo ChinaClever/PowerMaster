@@ -85,7 +85,9 @@
               </div>
               <div class="shapeContainer">
                 <div class="shape">
-                  <div :style="{flex: item.usedSpace}"></div>
+                  <div style="position:relative;" :style="{flex: item.usedSpace}">
+                    <div style="position:absolute;top:50px;left:5px;">剩余量</div>
+                  </div>
                   <div class="fill" :style="{flex: 100-item.usedSpaceRate}">{{100-item.usedSpaceRate}}%</div>
                 </div>
                 <div class="bottom"></div>
@@ -347,13 +349,12 @@ onBeforeMount(async () => {
       .info {
         line-height: 1.7;
         font-size: 13px;
-        margin-left: 20%;
+        margin-left: 10px;;
       }
     }
     .room {
       position: absolute;
-      left: 10px;
-      top: 8px;
+      top: 5px;
       font-size: 13px;
     }
     .detail {
