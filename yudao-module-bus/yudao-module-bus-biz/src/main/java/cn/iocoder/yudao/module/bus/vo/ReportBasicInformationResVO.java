@@ -17,4 +17,10 @@ public class ReportBasicInformationResVO {
     private int runStatus;
 
     private BigDecimal powerFactor;
+
+    /**
+     * 耗电量
+     */
+    private BigDecimal powerConsume;
+
 }
