@@ -740,7 +740,9 @@ public class BusIndexServiceImpl implements BusIndexService {
         searchRequest.source(builder);
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
+        if (searchResponse.getHits().getTotalHits().value == 0){
+            return null;
+        }
         LineMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineMaxResVO.class);
         if (Objects.nonNull(resVO)) {
             BusIndexDO busIndexDO = busIndexMapper.selectById(resVO.getBusId());
