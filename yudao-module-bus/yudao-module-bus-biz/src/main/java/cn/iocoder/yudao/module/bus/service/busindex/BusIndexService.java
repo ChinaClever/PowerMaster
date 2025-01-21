@@ -146,4 +146,6 @@ public interface BusIndexService {
     BalanceStatisticsVO getBusBalanceStatistics();
 
     PageResult<BusIndexDTO> getEqPage1(BusIndexPageReqVO pageReqVO);
+
+    List<String> findKeys(String key);
 }

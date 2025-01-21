@@ -79,5 +79,16 @@
             </if>
         </where>
     </select>
+    <select id="findKeys" resultType="java.lang.String">
+        select box_key from box_index
+        where is_deleted = 0
+        <if test="key != null and key != ''">
+            and box_key like concat(#{key},'%')
+        </if>
+        <if test="flag ==1">
+            GROUP BY ip_addr,box_key
+        </if>
+        limit 50
+    </select>
 
 </mapper>

@@ -195,6 +195,7 @@ const getTableData = async(reset = false) => {
       // roomId: null,
       runStatus: [],
       pduBox: 0,
+      timeGranularity:queryParams.timeGranularity,
       company: queryParams.company
     })
     if (res.list) {

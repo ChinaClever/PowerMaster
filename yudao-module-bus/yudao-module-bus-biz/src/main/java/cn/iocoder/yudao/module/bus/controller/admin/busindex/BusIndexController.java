@@ -407,4 +407,11 @@ public class BusIndexController {
     public CommonResult<BalanceStatisticsVO> getBusBalanceStatistics() {
         return success(indexService.getBusBalanceStatistics());
     }
+
+
+    @GetMapping("/findKeys")
+    @Operation(summary = "模糊查询")
+    public CommonResult<List<String>> findKeys(@RequestParam(value = "key") String key) {
+        return success(indexService.findKeys(key));
+    }
 }

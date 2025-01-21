@@ -391,4 +391,9 @@ public class BoxIndexController {
         return success(indexService.getBoxIndexLoadRateStatus());
     }
 
+    @GetMapping("/findKeys")
+    @Operation(summary = "模糊查询")
+    public CommonResult<List<String>> findKeys(@RequestParam(value = "key") String key) {
+        return success(indexService.findKeys(key));
+    }
 }

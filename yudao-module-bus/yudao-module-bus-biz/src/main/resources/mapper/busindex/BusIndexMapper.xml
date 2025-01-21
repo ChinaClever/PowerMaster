@@ -98,4 +98,15 @@
             is_deleted =0
         </where>
     </select>
+    <select id="findKeys" resultType="java.lang.String">
+        select bus_key from bus_index
+        where is_deleted = 0
+        <if test="key != null and key != ''">
+            and bus_key like concat(#{key},'%')
+        </if>
+        <if test="flag ==1">
+            GROUP BY ip_addr,bus_key
+        </if>
+        limit 50
+    </select>
 </mapper>

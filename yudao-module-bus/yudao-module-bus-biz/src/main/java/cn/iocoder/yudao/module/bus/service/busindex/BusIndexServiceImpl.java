@@ -79,6 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -98,6 +99,8 @@ import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_API_AUDIT_FAIL;
 
 /**
  * 始端箱索引 Service 实现类
@@ -929,6 +932,18 @@ public class BusIndexServiceImpl implements BusIndexService {
             log.error("获取数据失败：", e);
             return null;
         }
+    }
+
+    @Override
+    public List<String> findKeys(String key) {
+        if (key == null || key.length()<8){
+            throw exception(KEY_SHORT);
+        }
+        Integer flag = 0;
+        if (key.length()<=10){
+            flag =1;
+        }
+        return busIndexMapper.findKeys(key,flag);
     }
 
     @Override

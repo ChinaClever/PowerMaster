@@ -18,4 +18,5 @@ import java.util.List;
 public interface BoxIndexMapper extends BaseMapper<BoxIndex> {
     List<RoomMenuDTO> queryRoomMenuDTO(@Param("boxKeys") List<String> boxKeys);
 
+    List<String> findKeys(@Param("key") String key, @Param("flag") Integer flag);
 }

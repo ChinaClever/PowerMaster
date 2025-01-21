@@ -148,4 +148,5 @@ public interface BoxIndexService {
 
     BusIndexStatisticsResVO getBoxIndexStatisticsAll();
 
+    List<String> findKeys(String key);
 }

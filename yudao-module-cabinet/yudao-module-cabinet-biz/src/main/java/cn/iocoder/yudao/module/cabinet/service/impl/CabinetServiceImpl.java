@@ -737,7 +737,7 @@ public class CabinetServiceImpl implements CabinetService {
         //昨日
         String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
         String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-        List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class);
+        List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> yesterdayMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(yesterdayList)) {
             yesterdayMap = yesterdayList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
@@ -746,7 +746,7 @@ public class CabinetServiceImpl implements CabinetService {
         //上周
         startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
         endTime = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-        List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class);
+        List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> weekMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(weekList)) {
             weekMap = weekList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
@@ -755,7 +755,7 @@ public class CabinetServiceImpl implements CabinetService {
         //上月
         startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
         endTime = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-        List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class);
+        List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> monthMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(monthList)) {
             monthMap = monthList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
@@ -821,6 +821,7 @@ public class CabinetServiceImpl implements CabinetService {
                 searchSourceBuilder.size(pageSize);
             }
             searchSourceBuilder.trackTotalHits(true);
+            searchSourceBuilder.fetchSource(new String[]{"cabinet_id"}, null);
             searchSourceBuilder.sort("eq_value", SortOrder.DESC);
             //获取需要处理的数据
             searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
@@ -845,7 +846,8 @@ public class CabinetServiceImpl implements CabinetService {
 
                 //昨日
                 startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-                List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class);
+                List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class,
+                        new String[]{"cabinet_id","eq_value"});
                 Map<Integer, BigDecimal> yesterdayMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(yesterdayList)) {
                     yesterdayMap = yesterdayList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
@@ -853,7 +855,7 @@ public class CabinetServiceImpl implements CabinetService {
 
                 //上周
                 startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-                List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class);
+                List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
                 Map<Integer, BigDecimal> weekMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(weekList)) {
                     weekMap = weekList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
@@ -861,7 +863,7 @@ public class CabinetServiceImpl implements CabinetService {
 
                 //上月
                 startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-                List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class);
+                List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
                 Map<Integer, BigDecimal> monthMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(monthList)) {
                     monthMap = monthList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
@@ -1107,7 +1109,7 @@ public class CabinetServiceImpl implements CabinetService {
         Map map = new HashMap();
         //day,today,threeDay
         List<Map<String, Object>> data = getDataEs(startTime, endTime, Collections.singletonList(id),
-                index, Map.class);
+                index, Map.class, new String[]{"cabinet_id", "eq_value"});
 
         List<BigDecimal> factorA = new ArrayList<>();
         List<BigDecimal> factorB = new ArrayList<>();
@@ -1533,13 +1535,13 @@ public class CabinetServiceImpl implements CabinetService {
         return null;
     }
 
-    private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass) {
+    private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass, String[] heads) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
-
+            builder.fetchSource(heads, null);
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
                     .must(QueryBuilders.termsQuery(CABINET_ID, ids))));

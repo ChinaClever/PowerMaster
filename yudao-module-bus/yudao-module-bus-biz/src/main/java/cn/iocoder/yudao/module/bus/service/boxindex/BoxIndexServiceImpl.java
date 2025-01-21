@@ -99,6 +99,7 @@ import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
 
 /**
  * 始端箱索引 Service 实现类
@@ -1310,6 +1311,18 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public BusIndexStatisticsResVO getBoxIndexStatisticsAll() {
         return boxIndexCopyMapper.getBoxIndexStatisticsAll();
+    }
+
+    @Override
+    public List<String> findKeys(String key) {
+        if (key == null || key.length()<8){
+            throw exception(KEY_SHORT);
+        }
+        Integer flag = 0;
+        if (key.length()<=10){
+            flag =1;
+        }
+        return boxIndexMapper.findKeys(key,flag);
     }
 
     @Override
