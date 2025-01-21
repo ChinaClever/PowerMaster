@@ -273,9 +273,13 @@
             </div>  
             
             <div class="icon" >
-              <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line' && item.outletPowFactor.length >1" style="font-size: 18px;">
                 <span style="font-size: 20px; ">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line' && item.outletPowFactor.length <=1" style="font-size: 18px;padding-top: -10px;">
+                <span style="font-size: 20px;"></span><br/>功率因数
+              </div>
+
               <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
                 <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>                
@@ -1135,7 +1139,7 @@ onActivated(() => {
         align-items: center;
         height: 100%;
         .icon {
-          font-size: 20px;
+          font-size: 18px;
           width: 100px;
           height: 50px;
           margin-left:30px;
