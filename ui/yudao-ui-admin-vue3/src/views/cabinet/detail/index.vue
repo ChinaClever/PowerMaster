@@ -1,7 +1,11 @@
 <template>
 <div style="background-color: #E7E7E7;margin-bottom:20px;" class="centainer-height">
   <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
-    <div style="padding: 5px 10px;" class="header_app_text">所在位置：{{ location }}-{{ busName }}</div>
+    <div style="padding: 5px 10px;" class="header_app_text">
+      <span>所在位置：{{ location }}-{{ busName }}</span>
+      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(location)">PDU详情</el-button></span>
+      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus()">母线详情</el-button></span>
+    </div>
     <!--<div style="background-color: #E7E7E7;" class="header_app_text_other1">
           <el-col :span="10" >
             <el-form
@@ -55,7 +59,7 @@
         <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>-->
-        <div style="height:40vh;width:100%;margin-top:-80px;">
+        <div style="height:40vh;width:100%;margin-top:-40px;">
             <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData.loadFactor" />
         </div>
         <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
@@ -251,7 +255,11 @@ import EnvironmentCopy from './component/EnvironmentCopy.vue'
 import { IndexApi } from '@/api/bus/busindex'
 import { CabinetApi } from '@/api/cabinet/detail'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+
+const { push } = useRouter(); // 路由跳转
 const peakDemand = ref(0);
 //const peakDemandTime = ref('');
 const resultData = ref() as any;
@@ -266,12 +274,25 @@ const loadFactorBig = ref();
 const loadFactorTime = ref();
 const powActiveBig = ref();
 const powActiveTime = ref();
+const pduBox = ref();
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
   powActiveVis : false,
   powReactiveVis : false,
 })
+
+const goPDU = (row: { devKey: string; location: string; id: number }) => {
+  const { devKey, location, id } = row;
+  router.push({
+    path: '/pdu/pdudisplayscreen',
+    query: { devKey, id: id.toString(), location }
+  });
+}
+
+const goBus = (roomName, devKey, busId, location, busName) => {
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
+}
 
 const getFullTimeByDate = (date) => {
   var year = date.getFullYear();//年
@@ -319,6 +340,8 @@ const getRedisData = async () => {
   powActiveTime.value = result.powActiveTime;
   location.value = result.roomName;
   busName.value = result.cabinetName;
+  pduBox.value = result.pduBox;
+  console.log('pduBox.value',pduBox.value);
   console.log('result',result);
   resultData.value = result;
   
