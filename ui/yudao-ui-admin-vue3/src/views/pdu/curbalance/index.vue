@@ -526,6 +526,7 @@ const statusNumber = reactive({
   greaterThirty: 0,
   smallCurrent: 0
 })
+const BarFlag = ref(false);
 
 const statusList = reactive([
   {
@@ -938,12 +939,12 @@ const getBalanceTrend = async (item) => {
   console.log('ALineOption', ALineOption)
   console.log('item', item)
 }
-
+ 
 const showDialogCur = (item) => {
-  dialogVisibleCur .value = true
-  curlocation.value = item.devKey
-  getBalanceDetail(item)
-  getBalanceTrend(item)
+  dialogVisibleCur .value = true;
+  curlocation.value = item.devKey;
+  getBalanceDetail(item);
+  getBalanceTrend(item);
 }
 
 const barMaxValues = ref({
@@ -959,6 +960,7 @@ const volMaxValues = ref({
   L2: 0,
   L3: 0
 });
+const itemValue = ref();
 const showDialogVol = (item) => {
   if(item.status==5){
     ElMessage({
@@ -972,20 +974,21 @@ const showDialogVol = (item) => {
   vollocation.value = item.devKey
   getBalanceDetail(item)
   getBalanceTrend(item)
+  console.log('111111111item',item);
   curUnblance1.value = balanceObj.imbalanceValueA
 // 将 item 的属性赋值给 barMaxValues
 barMaxValues.value = {
-    L1: item.acur.toFixed(2),
-    L2: item.bcur.toFixed(2),
-    L3: item.ccur.toFixed(2)
-  };
+  L1: item.acur.toFixed(2),
+  L2: item.bcur.toFixed(2),
+  L3: item.ccur.toFixed(2)
+};
 
-  volMaxValues.value = {
-    L1: item.avol.toFixed(1),
-    L2: item.bvol.toFixed(1),
-    L3: item.cvol.toFixed(1)
-  };
-
+volMaxValues.value = {
+  L1: item.avol.toFixed(1),
+  L2: item.bvol.toFixed(1),
+  L3: item.cvol.toFixed(1)
+};
+BarFlag.value = true;
 }
 
 const loadAll = async () => {
