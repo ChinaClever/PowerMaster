@@ -35,15 +35,22 @@
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
-        <!-- <el-tag size="large">{{ location }}</el-tag> -->
+        <!-- <el-tag size="large">{{ location }}</el-tag>
         <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
             <span style="color:black;font-size:26px;">负载率</span>
         </div>
-        <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px">              
             <span style="color:#ccc;font-size:14px;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
-        </div>-->
+        </div>
         <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;">发生时间：{{peakDemandTime}}</span>
+        </div>-->
+        <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
+            <span style="color:black;font-weight:bold;height:20px;width:100px;">负载率</span>
+            <div style="margin-left:100px;">
+                <span style="color:black;font-size:14px;margin-right:10px;">最大负载率: {{loadFactorBig}}</span>
+                <span style="color:black;font-size:14px;">发生时间: {{loadFactorTime}}</span>
+            </div>
         </div>
         <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
@@ -246,7 +253,7 @@ import { CabinetApi } from '@/api/cabinet/detail'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
 const peakDemand = ref(0);
-const peakDemandTime = ref('');
+//const peakDemandTime = ref('');
 const resultData = ref() as any;
 const loadRateList = ref() as any;
 const selectedOption = ref('current')
@@ -255,6 +262,10 @@ const busName = ref(history?.state?.cabinetName);
 const id = ref(history?.state?.id);
 const roomId = ref(history?.state?.roomId);
 const type = ref(history?.state.type);
+const loadFactorBig = ref();
+const loadFactorTime = ref();
+const powActiveBig = ref();
+const powActiveTime = ref();
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
@@ -302,6 +313,10 @@ const getRedisData = async () => {
     roomId:roomId.value,
     type:type.value
   })
+  loadFactorBig.value = result.loadFactorBig;
+  loadFactorTime.value = result.loadFactorTime;
+  powActiveBig.value = result.powActiveBig;
+  powActiveTime.value = result.powActiveTime;
   location.value = result.roomName;
   busName.value = result.cabinetName;
   console.log('result',result);
