@@ -38,8 +38,8 @@
           <br/>
       </div>
       
-        <div  class="descriptions-container"  style="font-size: 14px;">
-          <div  class="description-item">
+        <div   class="descriptions-container"  style="font-size: 14px;">
+          <div v-if="maxActivePowDataTemp" class="description-item">
             <span class="label">最大值 :</span>
             <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
           </div>
@@ -48,7 +48,7 @@
             <span class="value">{{ maxActivePowDataTimeTemp }}</span>
           </div>
           <br/>
-          <div  class="description-item">
+          <div v-if="minActivePowDataTemp" class="description-item">
             <span class="label">最小值 :</span>
             <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
           </div>
@@ -209,6 +209,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import download from '@/utils/download'
 import PDUImage from '@/assets/imgs/PDU.jpg'
 import  CommonMenu1 from './CommonMenu1.vue'
+import { stat } from 'fs';
 /** 机柜历史曲线 */
 defineOptions({ name: 'CabinetHistoryLine' })
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -400,6 +401,7 @@ const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
+ 
 loading.value = true
  try {
     const data = await HistoryDataApi.getHistoryDataDetails(queryParams);
@@ -412,6 +414,7 @@ loading.value = true
       totalApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_total, 3)); 
       aApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_a, 3));
       bApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_b, 3));
+      
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
@@ -452,7 +455,7 @@ loading.value = true
       bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time,"YYYY-MM-DD HH:mm"));
       bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
       bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time,"YYYY-MM-DD HH:mm"));
-
+      if(status.value == 0){
       maxActivePowDataTemp.value = Math.max(...totalActivePowData.value);
       minActivePowDataTemp.value = Math.min(...totalActivePowData.value);
       totalActivePowData.value.forEach(function(num, index) {
@@ -463,18 +466,24 @@ loading.value = true
           minActivePowDataTimeTemp.value = createTimeData.value[index]
         }
       });
+    }
       // 图表显示的位置变化
      // nowAddress.value = nowAddressTemp.value
 
     }else{
       loading2.value=false
       isHaveData.value = false;
+      maxActivePowDataTemp.value = 0
+      minActivePowDataTemp.value = 0
+      maxActivePowDataTimeTemp.value = ''
+      minActivePowDataTimeTemp.value = ''
       ElMessage({
         message: '暂无数据',
         type: 'warning',
       });
     }
- } finally {
+ } 
+ finally {
    loading.value = false
  }
 }
@@ -541,18 +550,21 @@ const beforeUnmount = () => {
 window.addEventListener('resize', function() {
     realtimeChart?.resize(); 
 });
-
+const status = ref(0)
 // 监听切换原始数据、极值数据tab
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
     queryParams.timeRange = defaultHourTimeRange(1)
+    status.value = 0
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
     queryParams.timeRange = defaultHourTimeRange(24)
+    status.value = 1
   }else{
     queryParams.granularity = 'day'
     queryParams.timeRange = defaultHourTimeRange(24*30)
+    status.value = 2
   }
   needFlush.value ++;
 });

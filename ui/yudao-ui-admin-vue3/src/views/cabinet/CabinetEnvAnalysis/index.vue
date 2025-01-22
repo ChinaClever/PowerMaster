@@ -42,15 +42,6 @@
       </div>
     <div class="descriptions-container" v-if="maxTemDataTimeTemp" style="font-size: 14px;">
                 <!-- 处理原始数据和小时极值数据的菜单栏 -->
-      <div v-if="queryParams.granularity != 'day'&& queryParams.timeRange != null" class="description-item" > 
-            <span class="label">开始时间 :</span>
-            <span class="value">{{   formatTime(queryParams.timeRange[0])  }}</span>
-          </div>
-          
-          <div  v-if="queryParams.granularity != 'day'  && queryParams.timeRange != null" class="description-item">
-            <span class="label">结束时间 :</span>
-            <span class="value">{{ formatTime(queryParams.timeRange[1])}}</span>
-          </div>
 
 
           <div  class="description-item" v-if="queryParams.granularity != 'day'" >

@@ -978,7 +978,7 @@ const getList = async () => {
 
   // var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
 // Bus = JSON.parse(Bus);
-    // 从接口获1取数据，假设得到的数据是一个数组，数组元素是用逗号分隔的字符串
+    // 从接口获取数据，假设得到的数据是一个数组，数组元素是用逗号分隔的字符串
 const baseInfoList = await IndexApi.getReportBasicInformationByBusResVO(queryParams);
 console.log('baseInfoList',baseInfoList)
 // 对数据进行处理，保留三位小数

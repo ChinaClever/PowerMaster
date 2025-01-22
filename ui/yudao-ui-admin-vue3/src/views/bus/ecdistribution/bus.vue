@@ -35,7 +35,7 @@
       </div> -->
 
       <div class="nav_header">       
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress?'暂未绑定设备':nowAddress}}</span>
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
@@ -362,6 +362,12 @@ loading.value = true
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
+      maxEqDataTemp.value = 0;
+      minEqDataTemp.value = 0;
+      totalEqData.value = 0;
+      maxEqDataTimeTemp.value='';
+      minEqDataTimeTemp.value='';
+      
       loading2.value = false
       ElMessage({
         message: '暂无数据',
@@ -537,6 +543,7 @@ onMounted(async () => {
   if (queryParams.busId != undefined){
     await getLineChartData();
     nowAddress.value = queryLocation;
+    
     nowAddressTemp.value = queryLocation;
     initLineChart();
   }
