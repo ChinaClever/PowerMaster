@@ -92,6 +92,7 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.put;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
@@ -2331,6 +2332,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         result.put("activePowMaxTime", null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime", null);
+        result.put("reactivePowMaxValue", null);
+        result.put("reactivePowMaxTime",null);
+        result.put("reactivePowMinValue", null);
+        result.put("reactivePowMinTime",null);
         try {
             BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
 
@@ -2359,6 +2364,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
+                totalLineRes.getSeries().add(totalReactivePow);
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
 
@@ -2367,6 +2375,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
 
                     });
@@ -2374,6 +2383,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                     });
@@ -2388,6 +2398,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 BoxTotalHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, BoxTotalHourDo.class);
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_active_min_value");
                 BoxTotalHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, BoxTotalHourDo.class);
+
+                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_max_value");
+                BoxTotalHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, BoxTotalHourDo.class);
+                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_min_value");
+                BoxTotalHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, BoxTotalHourDo.class);
 
                 result.put("totalLineRes", totalLineRes);
                 if (Objects.nonNull(totalMaxApparent)) {
@@ -2405,6 +2420,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 if (Objects.nonNull(totalMinActive)) {
                     result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
                     result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMaxReactive)) {
+                    result.put("reactivePowMaxValue", totalMaxReactive.getPowReactiveMaxValue());
+                    result.put("reactivePowMaxTime", totalMaxReactive.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMinReactive)) {
+                    result.put("reactivePowMinValue", totalMinReactive.getPowReactiveMinValue());
+                    result.put("reactivePowMinTime", totalMinReactive.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
 
             }

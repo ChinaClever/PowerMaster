@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分布" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
