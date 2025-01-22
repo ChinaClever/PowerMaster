@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetIndexBoxResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -43,5 +44,7 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     CabinetCapacityStatisticsResVO getCapacitystatistics();
 
     List<CabinetPduResVO> selectListAndPdu();
+
+    List<CabinetIndexBoxResVO> selectCabinetBox();
 
 }

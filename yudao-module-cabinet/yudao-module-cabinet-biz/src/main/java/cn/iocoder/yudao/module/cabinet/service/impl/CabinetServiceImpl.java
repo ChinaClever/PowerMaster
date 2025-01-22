@@ -22,6 +22,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.service.ICabinetEnvSensorService;
@@ -938,6 +939,11 @@ public class CabinetServiceImpl implements CabinetService {
     @Override
     public CabinetCapacityStatisticsResVO getCapacitystatistics() {
         return cabinetIndexMapper.getCapacitystatistics();
+    }
+
+    @Override
+    public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(CabinetIndexVo pageReqVO) {
+        return null;
     }
 
     @Override

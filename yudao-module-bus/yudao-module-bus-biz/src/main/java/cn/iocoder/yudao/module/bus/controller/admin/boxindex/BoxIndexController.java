@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -205,7 +206,7 @@ public class BoxIndexController {
     @PostMapping("/eq/page")
     public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         PageResult<BoxIndexDTO> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getBoxDevKeyList()) || ObjectUtil.isNotEmpty(pageReqVO.getDevKey())){
             pageResult =  indexService.getEqPage(pageReqVO);
         }else {
             pageResult = indexService.getEqPage1(pageReqVO);

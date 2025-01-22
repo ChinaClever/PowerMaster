@@ -26,7 +26,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
 
     default PageResult<BusIndexDO> selectPage(BusIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,false)
-                .eqIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
+                .likeIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
                 .inIfPresent(BusIndexDO::getBusKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
@@ -43,7 +43,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
 
     default PageResult<BusIndexDO> selectPage2(BusIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>()
-                .eqIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
+                .likeIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
                 .inIfPresent(BusIndexDO::getBusKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())

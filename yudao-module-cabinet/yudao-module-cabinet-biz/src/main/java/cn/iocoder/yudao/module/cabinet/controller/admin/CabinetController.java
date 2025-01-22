@@ -10,6 +10,8 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.IndexPageReqVO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
@@ -86,7 +88,6 @@ public class CabinetController {
         PageResult<JSONObject> pageResult = cabinetService.getDeletedCabinetPage(pageReqVO);
         return success(pageResult);
     }
-
 
     @Operation(summary = "恢复设备")
     @GetMapping("/cabinet/restorerCabinet")
@@ -243,5 +244,11 @@ public class CabinetController {
     public CommonResult<Map<String, List<CabinetLoadPageChartResVO>>> getBusLineChartDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
         Map<String, List<CabinetLoadPageChartResVO>> resultMap = cabinetService.getLineChartDetailData(reqVO);
         return success(resultMap);
+    }
+
+    @PostMapping("/env/page")
+    @Operation(summary = "获得机柜环境分页")
+    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid CabinetIndexVo pageReqVO) {
+        return success(cabinetService.getCabinetEnvPage(pageReqVO));
     }
 }

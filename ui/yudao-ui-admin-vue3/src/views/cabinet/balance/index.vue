@@ -121,7 +121,7 @@
               </div>
             </div> -->
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
-            <button v-if="item.pduBox === false" class="detail" @click.prevent="showDialog(item)">详情</button>
+            <button v-if="item.apow != null || item.bpow != null" class="detail" @click.prevent="showDialog(item)" >详情</button>
           </div>
         </div>
 

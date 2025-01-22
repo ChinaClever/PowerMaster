@@ -2040,7 +2040,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     .eq(BoxIndex::getBoxType, 0);
             if (ObjectUtils.isNotEmpty(pageReqVO.getDevKey()) || ObjectUtils.isNotEmpty(pageReqVO.getBoxDevKeyList())) {
                 queryWrapperX.and(wq -> wq.in(ObjectUtils.isNotEmpty(pageReqVO.getBoxDevKeyList()), BoxIndex::getBoxKey, pageReqVO.getBoxDevKeyList()).or()
-                        .eq(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+                        .like(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BoxIndex::getBoxKey, pageReqVO.getDevKey()));
                 List<BoxIndex> searchList = boxIndexCopyMapper.selectList(queryWrapperX);
                 idList = searchList.stream().map(BoxIndex::getId).collect(Collectors.toList());
             }
