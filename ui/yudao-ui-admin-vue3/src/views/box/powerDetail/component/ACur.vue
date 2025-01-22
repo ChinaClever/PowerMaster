@@ -30,7 +30,7 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
-      radius: ['25%', '110%'],
+      radius: ['25%', '75%'],
       center: ['50%', '40%'],
       roseType: 'radius',
       itemStyle: {
