@@ -823,7 +823,7 @@ const showDialogCur = (item) => {
   curdevkey.value = item.devKey;
   curlocation.value = item.location;
   boxName.value = item.boxName;
-  busName.value = item.busName;
+  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -834,7 +834,7 @@ const showDialogVol = (item) => {
   voldevkey.value = item.devKey;
   vollocation.value = item.location;
   boxName.value = item.boxName;
-  busName.value = item.busName;
+  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -945,6 +945,7 @@ const getBalanceDetail = async(item) => {
   balanceObj.imbalanceValueA = res.curUnbalance;
   balanceObj.imbalanceValueB = res.volUnbalance;
   balanceObj.colorIndex = res.color - 1;
+  busName.value = res.busName;
 }
 
 const getBalanceTrend = async (item) => {

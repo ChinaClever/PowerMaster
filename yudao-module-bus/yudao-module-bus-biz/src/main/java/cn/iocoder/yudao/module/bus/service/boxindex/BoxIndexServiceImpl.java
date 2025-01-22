@@ -1584,6 +1584,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
 //        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
 
+
+        result.setBusName(jsonObject.getString("bus_name"));
         JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
         List<Double> curList = lineItemList.getList("cur_value", Double.class);
         List<Double> volList = lineItemList.getList("vol_value", Double.class);
@@ -1692,6 +1694,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         List<BoxIndex> list = boxIndexDOPageResult.getList();
         List<BoxTemRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);
+
         for (BoxIndex boxIndexDO : list) {
             BoxTemRes boxTemRes = new BoxTemRes();
             boxTemRes.setStatus(boxIndexDO.getRunStatus());
@@ -1709,6 +1712,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxTemRes boxTemRes = resMap.get(devKey);
+            boxTemRes.setBusName(jsonObject.getString("bus_name"));
             JSONObject envItemList = jsonObject.getJSONObject("env_item_list");
             JSONArray temValue = envItemList.getJSONArray("tem_value");
             JSONArray temStatus = envItemList.getJSONArray("tem_status");
@@ -1748,6 +1752,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public Map getBoxTemDetail(BoxIndexPageReqVO pageReqVO) {
         try {
+
             pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
             ArrayList<Integer> ids = new ArrayList<>();
             ids.add(pageReqVO.getBoxId());
@@ -1759,6 +1764,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     .collect(Collectors.toList());
 
             BusTemDetailRes result = new BusTemDetailRes();
+
             result.setTemAvgValueA(new ArrayList<>());
             result.setTemAvgValueB(new ArrayList<>());
             result.setTemAvgValueC(new ArrayList<>());

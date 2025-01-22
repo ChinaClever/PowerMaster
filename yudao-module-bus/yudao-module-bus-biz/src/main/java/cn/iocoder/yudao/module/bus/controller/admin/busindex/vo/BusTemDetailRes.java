@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex.vo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
