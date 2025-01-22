@@ -30,10 +30,10 @@
     </div>-->
     <div  style="display: flex; justify-content: flex-end; gap: 10px;" class="header_app_text">
       <!--<el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>-->
-      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''">近一小时</el-button>
-      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
-      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
-      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
+      <el-button @click="changeTime ('day');" :type="queryParams.timeGranularity == 'day' ? 'primary' : ''">近一小时</el-button>
+      <el-button @click="changeTime ('hour');" :type="queryParams.timeGranularity == 'hour' ? 'primary' : ''">今天</el-button>
+      <el-button @click="changeTime('today');" :type="queryParams.timeGranularity == 'today' ? 'primary' : ''">近一天</el-button>
+      <el-button @click="changeTime('threeDay');" :type="queryParams.timeGranularity == 'threeDay' ? 'primary' : ''">近三天</el-button>
     </div>
   </div>
   <div class="TransformerMonitor">
@@ -221,7 +221,7 @@
       <div style="display: inline-block;
         width: 50%;
         height: 90%;
-        margin-right:-50px;"
+        margin-right:-15px;"
       >
         <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
         <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
@@ -323,7 +323,7 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
-  timeGranularity: '近一小时',
+  timeGranularity: 'day',
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
 }) as any
