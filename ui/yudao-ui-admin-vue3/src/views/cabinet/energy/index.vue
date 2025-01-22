@@ -64,8 +64,8 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0);switchFlagValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1);switchFlagValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -82,9 +82,17 @@
               <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">用能详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">详情</button>
           </div>
         </div>
+        <Pagination
+          v-if="switchFlagValue == 0"
+          :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
+          v-model:page="queryParams.pageNo"
+          v-model:limit="queryParams.pageSize"
+          @pagination="getTableData(false)"
+        />
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
@@ -106,6 +114,7 @@
           </el-table-column>
         </el-table>
         <Pagination
+          v-if="switchFlagValue == 1"
           :total="queryParams.pageTotal"
           :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
@@ -141,6 +150,7 @@ const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const switchFlagValue = ref(0); // 0:阵列 1：表格
 const queryParams = reactive({
   timeGranularity: undefined,
   company: undefined,
@@ -223,7 +233,7 @@ const handleSwitchModal = (value) => {
   if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
-    queryParams.pageSize = 10
+    queryParams.pageSize = 15
   }
   getTableData(true)
 }
@@ -414,7 +424,7 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      top: 4px;
+      bottom: 4px;
     }
   }
 }
