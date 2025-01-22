@@ -354,7 +354,10 @@ const querySearch = async (queryString: string, cb: any) => {
     });
     cb(arr)
   }else{
-    cb([])
+      const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  cb(results)
   }
 }
 

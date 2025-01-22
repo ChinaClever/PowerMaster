@@ -69,6 +69,7 @@
         LEFT JOIN cabinet_cfg cfg on cfg.cabinet_id = ci.id
         LEFT JOIN room_index ri on ri.id = ci.room_id
         <where>
+            ci.is_deleted = 0 and ci.is_disabled = 0
             <if test="req.cabinetIds !=null and req.cabinetIds.size >0">
                 and ci.id in
                 <foreach item="item" collection="req.cabinetIds" separator="," open="(" close=")" index="">

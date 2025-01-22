@@ -467,7 +467,7 @@ const getTableData = async() => {
           eleB: item.cabinet_power.path_b?.ele_active.toFixed(1),
           powerFactorTotal: item.cabinet_power.total_data.power_factor,
           powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
-          loadFactor: item.load_factor,
+          loadFactor: formatLoadFactor(item.load_factor),
           abzb: '-' as number | string
         }
         if (item.cabinet_power.path_a && item.cabinet_power.path_b) {

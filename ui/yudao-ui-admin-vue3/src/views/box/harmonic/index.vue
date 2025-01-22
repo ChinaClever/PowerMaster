@@ -416,13 +416,20 @@ const loadAll = async () => {
   return objectArray;
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {

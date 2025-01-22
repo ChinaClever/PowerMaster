@@ -98,13 +98,13 @@
           </template>
         </el-table-column>
         <el-table-column label="负载率" min-width="80" align="center" prop="loadFactor" :formatter="formatApparentPower" />
-        <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" :formatter="formatApparentPower" />
-        <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" :formatter="formatApparentPower" />
-        <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="powApparentb" :formatter="formatApparentPower" />
-        <el-table-column label="B路视在功率(kVA)" min-width="120" align="center" prop="powApparenta" :formatter="formatApparentPower" />
-        <el-table-column label="总有功功率(kW)" min-width="110" align="center" prop="activeTotal" :formatter="formatApparentPower" />
-        <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" :formatter="formatApparentPower" />
-        <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" :formatter="formatApparentPower" />
+        <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" :formatter="formatnumOne" />
+        <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" :formatter="formatnumThree" />
+        <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="powApparentb" :formatter="formatnumThree" />
+        <el-table-column label="B路视在功率(kVA)" min-width="120" align="center" prop="powApparenta" :formatter="formatnumThree" />
+        <el-table-column label="总有功功率(kW)" min-width="110" align="center" prop="activeTotal" :formatter="formatnumThree" />
+        <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" :formatter="formatnumThree" />
+        <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" :formatter="formatnumThree" />
         <el-table-column label="更新时间" min-width="110" align="center" prop="dataUpdateTime" />
         <el-table-column label="操作" align="center">
           <template #default="scope">
@@ -135,7 +135,7 @@
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
-              <LiquidBall  :precent="formatLoadFactor(load.loadFactor)"/>
+              <LiquidBall  :precent="load.loadFactor"/>
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
@@ -201,9 +201,29 @@ const butColor = ref(0);
 const onclickColor = ref(-1);
 
 function formatApparentPower(row, column, cellValue ) {
-  // console.log('测试',row+'-'+column+'-'+cellValue+'-'+num)
+  console.log('测试',row+'-'+column+'-'+cellValue)
   // 假设保留两位小数
-  return parseFloat(cellValue).toFixed(2);
+  if (cellValue === null || cellValue === undefined) {
+    return 0;
+  }
+  return parseFloat(cellValue).toFixed(0);
+}
+function formatnumOne(row, column, cellValue ) {
+    if (cellValue === null || cellValue === undefined) {
+    return 0;
+  }
+  console.log('测试',row+'-'+column+'-'+cellValue+'-')
+  // 假设保留两位小数
+  return parseFloat(cellValue).toFixed(1);
+}
+function formatnumThree(row, column, cellValue ) {
+  console.log('cesi',cellValue)
+    if (cellValue === null || cellValue === undefined) {
+    return 0;
+  }
+  console.log('测试',row+'-'+column+'-'+cellValue+'-')
+  // 假设保留两位小数
+  return parseFloat(cellValue).toFixed(3);
 }
 
 const echartsOption = reactive({

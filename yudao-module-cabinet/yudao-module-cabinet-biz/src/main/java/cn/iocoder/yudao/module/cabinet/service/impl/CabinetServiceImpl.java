@@ -38,6 +38,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -365,17 +366,14 @@ public class CabinetServiceImpl implements CabinetService {
                     List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
                     if (!CollectionUtils.isEmpty(ids)) {
                         if (isExist(vo.getPduIpA(), vo.getCasIdA(), ids)) {
-//                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
 
                         if (isExist(vo.getPduIpB(), vo.getCasIdB(), ids)) {
-//                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
                     }
                 }
-
                 //判断AB路pdu是否一样
                 if (StringUtils.isNotEmpty(vo.getPduIpA()) && StringUtils.isNotEmpty(vo.getPduIpB())) {
                     if (vo.getPduIpA().equals(vo.getPduIpB()) && vo.getCasIdA() == vo.getCasIdB()) {
@@ -448,7 +446,6 @@ public class CabinetServiceImpl implements CabinetService {
             if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
-
                     //删除
                     cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
                             .eq(CabinetPdu::getCabinetId, vo.getId()));
@@ -457,7 +454,6 @@ public class CabinetServiceImpl implements CabinetService {
                 //pdu关联表
                 CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                         .eq(CabinetPdu::getCabinetId, vo.getId()));
-
 
                 if (Objects.nonNull(pdu)) {
                     //修改
@@ -477,12 +473,9 @@ public class CabinetServiceImpl implements CabinetService {
                     cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
                             .eq(CabinetBox::getCabinetId, vo.getId()));
                 }
-
                 //母线关联表
                 CabinetBox bus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>()
                         .eq(CabinetBox::getCabinetId, vo.getId()));
-
-
                 if (Objects.nonNull(bus)) {
                     //修改
                     cabinetBusMapper.updateById(convertBus(vo, bus));
@@ -735,8 +728,11 @@ public class CabinetServiceImpl implements CabinetService {
         List<String> keys = list.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
         List vlues = redisTemplate.opsForValue().multiGet(keys);
         //昨日
-        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+
+//        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+//        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
         List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> yesterdayMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(yesterdayList)) {
@@ -744,8 +740,9 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-        endTime = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+//        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+//        endTime = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
         List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> weekMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(weekList)) {
@@ -753,8 +750,9 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-        endTime = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+//        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+//        endTime = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
         List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> monthMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(monthList)) {
@@ -792,6 +790,10 @@ public class CabinetServiceImpl implements CabinetService {
         String startTime = null;
         String endTime = DateUtil.formatDateTime(DateTime.now());
         Integer total = 0;
+        List<Integer> cabinetIds = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(pageReqVO.getCabinetIds())){
+            cabinetIds.addAll(pageReqVO.getCabinetIds());
+        }
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
                 startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
@@ -824,8 +826,12 @@ public class CabinetServiceImpl implements CabinetService {
             searchSourceBuilder.fetchSource(new String[]{"cabinet_id"}, null);
             searchSourceBuilder.sort("eq_value", SortOrder.DESC);
             //获取需要处理的数据
-            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))));
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            boolQueryBuilder.must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+            if (!CollectionUtils.isEmpty(cabinetIds)){
+                boolQueryBuilder.must(QueryBuilders.termsQuery(CABINET_ID, cabinetIds));
+            }
+            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(boolQueryBuilder));
 
             SearchRequest searchRequest = new SearchRequest();
             searchRequest.indices(indices);
