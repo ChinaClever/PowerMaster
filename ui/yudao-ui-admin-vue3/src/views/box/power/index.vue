@@ -215,7 +215,7 @@
         <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="总视在功率(kVA)" align="center" prop="creactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powApparent">
-              {{ scope.row.powApparent }}
+              {{ scope.row.powApparent.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -244,7 +244,7 @@
         <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="总有功功率(kW)" align="center" prop="cactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powActive">
-              {{ scope.row.powActive }}
+              {{ scope.row.powActive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -272,7 +272,7 @@
         <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powReactive">
-              {{ scope.row.powReactive }}
+              {{ scope.row.powReactive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -688,7 +688,7 @@
                 有功功率
               </div>
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length > 1">
-                {{ item.powActive }} kW<br/><span style="font-size: 15px; ">总有功功率</span>
+                {{ item.powActive.toFixed(3) }}kW<br/><span style="font-size: 15px; ">总有功功率</span>
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
@@ -700,13 +700,13 @@
                 无功功率
               </div>
               <div v-if="valueMode == 3 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
-                {{ item.powReactive }} kVar<br/><span style="font-size: 15px; ">总无功功率</span>
+                {{ item.powReactive.toFixed(3) }}kVar<br/><span style="font-size: 15px; ">总无功功率</span>
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'  && item.outletApparentPow.length <= 1" >
                 视在功率
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line' && item.outletApparentPow.length > 1" >
-                {{ item.powApparent }} kVa<br/><span style="font-size: 15px; ">总视在功率</span>
+                {{ item.powApparent.toFixed(3) }}kVa<br/><span style="font-size: 15px; ">总视在功率</span>
               </div>
              <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
                 无功功率
