@@ -3,8 +3,8 @@
   <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
     <div style="padding: 5px 10px;" class="header_app_text">
       <span>所在位置：{{ location }}-{{ busName }}</span>
-      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(location)">PDU详情</el-button></span>
-      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus()">母线详情</el-button></span>
+      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA)">A路PDU详情</el-button><el-button @click="goBus(keyB)">B路PDU详情</el-button></span>
+      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA)">A路母线详情</el-button><el-button @click="goBus(keyB)">B路母线详情</el-button></span>
     </div>
     <!--<div style="background-color: #E7E7E7;" class="header_app_text_other1">
           <el-col :span="10" >
@@ -281,17 +281,19 @@ const visContro = ref({
   powActiveVis : false,
   powReactiveVis : false,
 })
+const keyA = ref();
+const keyB = ref();
 
-const goPDU = (row: { devKey: string; location: string; id: number }) => {
-  const { devKey, location, id } = row;
+const goPDU = (row: { devKey: string;  }) => {
+  const { devKey} = row;
   router.push({
     path: '/pdu/pdudisplayscreen',
-    query: { devKey, id: id.toString(), location }
+    query: { devKey }
   });
 }
 
-const goBus = (roomName, devKey, busId, location, busName) => {
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
+const goBus = (devKey) => {
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey }})
 }
 
 const getFullTimeByDate = (date) => {
@@ -341,6 +343,10 @@ const getRedisData = async () => {
   location.value = result.roomName;
   busName.value = result.cabinetName;
   pduBox.value = result.pduBox;
+  keyA.value = result.keyA.split('-').slice(0, 2).join('-');
+  keyB.value = result.keyB.split('-').slice(0, 2).join('-');
+  console.log('keyA.value',keyA.value);
+  console.log('keyB.value',keyB.value);
   console.log('pduBox.value',pduBox.value);
   console.log('result',result);
   resultData.value = result;
