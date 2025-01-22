@@ -72,7 +72,17 @@ const echartsOption = ref({
 //  time.value = prop.list.time;
 //
 //});
-
+watch(() => prop.list, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    time.value = newVal.time;
+    series.value = [
+      { name: 'A相电流谐波', type: 'line', data: newVal.lineOne },
+      { name: 'B相电流谐波', type: 'line', data: newVal.linetwe },
+      { name: 'C相电流谐波', type: 'line', data: newVal.linethree }
+    ];
+    legendList.value = series.value.map(item => item.name);
+  }
+}, { deep: true }); // 使用 deep: true 来深度监听对象的变化
 
 
 onUnmounted(() => {

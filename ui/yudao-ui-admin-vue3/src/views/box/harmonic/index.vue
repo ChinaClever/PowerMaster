@@ -275,7 +275,7 @@
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <div class="custom-content-container">
-            <HarmonicLine  width="70vw" height="58vh" :list="abcLineData"/>
+            <HarmonicLine v-if="abcLineShow === true" width="70vw" height="58vh" :list="abcLineData"/>
           </div>
         </div>
       </el-dialog>
@@ -625,6 +625,7 @@ const disabledDate = (date) => {
 }
 
 const abcLineData = ref({});
+const abcLineShow = ref(false);
 
 const getDetail = async () => {
 
@@ -642,6 +643,7 @@ const getDetail = async () => {
 
   const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
   abcLineData.value = lineData;
+  abcLineShow.value = true;
   console.log('abcLineData',abcLineData.value);
   //seriesAndTimeArr.value = lineData;
   //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
@@ -700,6 +702,7 @@ watch(() => [queryParamsCopy.harmonicType], () => {
 
 const showDialog = async (item) => {
   //colorFlag.value = item.color;
+  console.log('111111111111111111111',item);
   queryParamsCopy.devKey = item.devKey;
   queryParamsCopy.boxId = item.boxId;
   location.value = item.location ? item.location : '未绑定';
