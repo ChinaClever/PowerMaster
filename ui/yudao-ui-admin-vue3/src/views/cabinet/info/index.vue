@@ -122,9 +122,11 @@
         <el-table-column v-if="queryParams.showCol.includes(3)" label="总电能(kWh)" min-width="110" align="center" prop="eleTotal" />
         <el-table-column v-if="queryParams.showCol.includes(5)" label="A视在功率(kVA)" min-width="140" align="center" prop="apparentA" />
         <el-table-column v-if="queryParams.showCol.includes(6)" label="A有功功率(kW)" min-width="130" align="center" prop="activeA" />
+        <el-table-column v-if="queryParams.showCol.includes(17)" label="A无功功率(kVar)" min-width="130" align="center" prop="reactiveA"/>
         <el-table-column v-if="queryParams.showCol.includes(7)" label="A电能(kWh)" min-width="110" align="center" prop="eleA" />
         <el-table-column v-if="queryParams.showCol.includes(9)" label="B视在功率(kVA)" min-width="140" align="center" prop="apparentB" />
         <el-table-column v-if="queryParams.showCol.includes(10)" label="B有功功率(kW)" min-width="130" align="center" prop="activeB" />
+        <el-table-column v-if="queryParams.showCol.includes(18)" label="B无功功率(kVar)" min-width="130" align="center" prop="reactiveB"/>
         <el-table-column v-if="queryParams.showCol.includes(11)" label="B电能(kWh)" min-width="110" align="center" prop="eleB" />
         <el-table-column v-if="queryParams.showCol.includes(12)" label="总无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
         <el-table-column v-if="queryParams.showCol.includes(13)" label="功率因素" align="center" prop="powerFactorTotal" />
@@ -307,7 +309,7 @@ const optionsCol = reactive([{
     value: 6,
     label: 'A有功功率'
   }, {
-    value: 18,
+    value: 17,
     label: 'A无功功率'
   }, {
     value: 7,
@@ -323,7 +325,7 @@ const optionsCol = reactive([{
     value: 10,
     label: 'B有功功率'
   },{
-    value: 19,
+    value: 18,
     label: 'B无功功率'
   }, {
     value: 11,
@@ -462,6 +464,8 @@ const getTableData = async() => {
           activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
           activeA: item.cabinet_power.path_a?.pow_active.toFixed(3),
           activeB: item.cabinet_power.path_b?.pow_active.toFixed(3),
+          reactiveA: item.cabinet_power.path_a?.pow_reactive.toFixed(3),
+          reactiveB: item.cabinet_power.path_b?.pow_reactive.toFixed(3),
           eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
           eleA: item.cabinet_power.path_a?.ele_active.toFixed(1),
           eleB: item.cabinet_power.path_b?.ele_active.toFixed(1),
