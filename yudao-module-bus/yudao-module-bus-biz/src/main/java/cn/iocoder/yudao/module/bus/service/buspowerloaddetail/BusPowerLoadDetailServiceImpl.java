@@ -570,9 +570,16 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
     @Override
     public BoxResBase getBoxIdAndLocationByDevKey(BusPowerLoadDetailReqVO reqVO) {
         BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getBoxKey, reqVO.getDevKey());
+        ValueOperations ops = redisTemplate.opsForValue();
+        JSONObject jsonObject = (JSONObject) ops.get("packet:box:" + reqVO.getDevKey());
+        if (jsonObject == null) {
+            return null;
+        }
+
         if (boxIndex != null) {
             List<BoxResBase> boxResBaseList = new ArrayList<>();
             BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
+            boxResBase.setBusName(jsonObject.getString("bus_name"));
             boxResBase.setBoxId(boxIndex.getId());
             boxResBase.setBoxName(boxIndex.getBoxName());
             boxResBase.setDevKey(reqVO.getDevKey());

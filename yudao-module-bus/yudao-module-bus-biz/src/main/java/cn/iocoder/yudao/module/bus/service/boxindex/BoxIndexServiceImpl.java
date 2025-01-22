@@ -1166,11 +1166,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             pageReqVO.setIsDeleted(0);
             PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
             List<BoxIndex> boxIndexDOList = boxIndexDOPageResult.getList();
+
             List<BoxIndexDTO> result = new ArrayList<>();
             List<Integer> ids = boxIndexDOList.stream().map(BoxIndex::getId).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(ids)) {
                 return new PageResult<>(result, boxIndexDOPageResult.getTotal());
             }
+            
             //昨日
             boxIndexDOList.forEach(boxIndex -> {
                 BoxIndexDTO boxIndexDTO = new BoxIndexDTO().setId(boxIndex.getId()).setRunStatus(boxIndex.getRunStatus());
@@ -1907,8 +1909,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxHarmonicRes boxHarmonicRes = resMap.get(devKey);
+            boxHarmonicRes.setBusName(jsonObject.getString("bus_name"));
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");
+
             for (int i = 0; i < 3; i++) {
 
                 BigDecimal curThdValue = BigDemicalUtil.safeDivide(curThd.getDoubleValue(i), 100);
