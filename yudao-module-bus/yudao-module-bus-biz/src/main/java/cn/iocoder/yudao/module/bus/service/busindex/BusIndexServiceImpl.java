@@ -189,6 +189,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException {
         // 返回数据
+        BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaUpdateWrapper<BusIndexDO>().eq(BusIndexDO::getBusKey, pageReqVO.getDevKey()).last("limit 1"));
         BusPowerLoadDetailRespVO respVO = new BusPowerLoadDetailRespVO();
         String startTime;
         String endTime;
@@ -201,12 +202,12 @@ public class BusIndexServiceImpl implements BusIndexService {
                 startTime = localDateTimeToString(LocalDateTime.now().minusHours(1));
                 endTime = localDateTimeToString(LocalDateTime.now());
                 searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                        .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                        .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             } else {
                 startTime = localDateTimeToString(pageReqVO.getOldTime());
                 endTime = localDateTimeToString(pageReqVO.getNewTime());
                 searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                        .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                        .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             }
             searchSourceBuilder.sort("pow_apparent", SortOrder.DESC);
             // 执行搜索
@@ -232,7 +233,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             endTime = localDateTimeToString(LocalDateTime.now());
             searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                    .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                    .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             searchSourceBuilder.sort("pow_apparent_max_value", SortOrder.DESC);
             // 执行搜索
             searchRequest.source(searchSourceBuilder);

@@ -135,7 +135,7 @@
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
-              <LiquidBall  :precent="load.loadFactor  || 0"/>
+              <LiquidBall  :precent="load.loadFactor || 0"/>
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
@@ -191,6 +191,7 @@ const listPage = ref<any>([]); // 表格数据
 const pageSizeArr = ref([24,36,48,96]);
 const queryParams = reactive({
   company: undefined,
+  cabinetIds:[] as number[],
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
@@ -396,7 +397,8 @@ const handleCheck = (row) => {
       ids.push(item.id)
     }
   })
-  cabinetIds.value = ids
+  cabinetIds.value = ids;
+  queryParams.cabinetIds =ids;
   getTableData(true)
 }
 
