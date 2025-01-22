@@ -100,13 +100,13 @@
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item label="母线IP：">
                     <el-input v-model="machineFormData.busIpA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
                     <el-input v-model="machineFormData.barIdA" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱编号：">
+                  <el-form-item label="插接箱地址：">
                     <el-input v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
@@ -115,13 +115,13 @@
                 </div>
                 <div>
                   <div class="title">B路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item label="母线IP：">
                     <el-input v-model="machineFormData.busIpB" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
                     <el-input v-model="machineFormData.barIdB" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱编号：">
+                  <el-form-item label="插接箱地址：">
                     <el-input v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
@@ -530,6 +530,9 @@ const open = async (type: string, data, roomList) => {
   // }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
+
+watch(() => machineFormData.value.powCapacity, (newValue) => {
+});
 
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
