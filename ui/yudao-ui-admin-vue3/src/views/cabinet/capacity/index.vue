@@ -193,7 +193,7 @@ const statusList = reactive([
   {
     name: '剩余量<30%',
     selected: true,
-    value: 4,
+    value: 3,
     cssClass: 'btn_error',
     activeClass: 'btn_error error',
     startNum: 0,
@@ -222,6 +222,8 @@ const getTableData = async(reset = false) => {
       pageSize: queryParams.pageSize,
       company: queryParams.company,
       cabinetIds: isFirst.value ? null : cabinetIds.value,
+      startNum:queryParams.startNum,
+      endNum:queryParams.endNum,
       roomId: null
     })
     console.log('res', res)
@@ -235,6 +237,7 @@ const getTableData = async(reset = false) => {
 }
 
 const handleSelectStatus = (index) => {
+  console.log('handleSelectStatus', statusList[index].startNum)
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.startNum = statusList[index].startNum;

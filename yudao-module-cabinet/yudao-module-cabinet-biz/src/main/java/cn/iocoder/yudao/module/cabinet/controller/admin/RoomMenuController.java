@@ -79,12 +79,11 @@ public class RoomMenuController {
     /**
      * 机房菜单
      *
-     * @param id 机房id
      */
     @Operation(summary = "机房-pdu菜单")
     @GetMapping("/room/pdu/menu")
-    public CommonResult<List<RoomPduMenuDTO>> getRoomPduMenu(@RequestParam(value = "id") Integer id) {
-        List<RoomPduMenuDTO> dto = roomService.roomPduMenuList(id);
+    public CommonResult<List<RoomPduMenuDTO>> getRoomPduMenu() {
+        List<RoomPduMenuDTO> dto = roomService.roomPduMenuList();
         return success(dto);
     }
 

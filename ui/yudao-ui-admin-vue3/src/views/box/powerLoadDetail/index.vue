@@ -13,7 +13,7 @@
   <!-- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/> -->
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location?location:'未绑定' }}&nbsp;&nbsp;母线：{{busName}}&nbsp;&nbsp;名称：{{boxName}}&nbsp;&nbsp;网络地址：{{devKey}}</div>
+    <div class="header_app_text">机房：{{ location?location:'未绑定' }}&nbsp;&nbsp;母线：{{busName}}&nbsp;&nbsp;名称：{{boxName}}&nbsp;&nbsp;网络地址：{{devKey}}</div>
     <div class="header_app_text_other1">
           <el-col :span="10">
             <el-form

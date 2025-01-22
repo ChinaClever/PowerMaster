@@ -2,11 +2,6 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="PDU配电">
     <template #NavInfo>
       <div>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-
-        </div> -->
-        <!-- <div class="line"></div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -443,28 +438,27 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.cabinetIds = null;
-    queryDeletedPageParams.cabinetIds = null;
+    queryParams.pduKeyList = null;
     getDeletedList();
     getList();
     return;
   }
-  const ids = [] as any
+  const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 4) {
+      pduKeys.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
-    queryDeletedPageParams.cabinetIds = [-1]
-  }else{
-    queryParams.cabinetIds = ids
-    queryDeletedPageParams.cabinetIds = ids
-  }
 
+    queryParams.pduKeyList = [-1]
+    queryDeletedPageParams.pduKeyList = [-1]
+  }else{
+    queryParams.pduKeyList = pduKeys
+    queryDeletedPageParams.pduKeyList = pduKeys
+  }
   getList();
   getDeletedList();
 }
@@ -541,6 +535,7 @@ const queryParamsAll = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds:[],
+  pduKeyList:[] ,
 }) as any
 const queryDeletedPageParams = reactive({
   pageNo: 1,
@@ -563,15 +558,11 @@ const getList = async () => {
     console.log('data',data);
     list.value = data.list
     var tableIndex = 0;
-    // var normal = 0;
-    // var offline = 0;
-    // var alarm = 0;
-    // var warn = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
-        //offline++;
+
         return;
       }
       const splitArray = obj.dataUpdateTime.split(' ');
@@ -582,35 +573,8 @@ const getList = async () => {
       obj.ele = obj.ele.toFixed(1);
       obj.pf = obj.pf.toFixed(2);
       
-      // if(obj.status == 0){
-      //   normal++;
-      // } else if (obj.status == 1){
-      //   warn++;
-      // } else if (obj.status == 2){
-      //   alarm++;
-      // } 
     });
-    // const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
-    // allList.value = allData.list
-    // allList.value.forEach((objAll) => {
-    //   if(objAll?.dataUpdateTime == null && objAll?.pow == null){
-    //     objAll.status = 5;
-    //     offline++;
-    //     return;
-    //   }  
-    //   if(objAll?.status == 0){
-    //     normal++;
-    //   } else if (objAll?.status == 1){
-    //     warn++;
-    //   } else if (objAll?.status == 2){
-    //     alarm++;
-    //   }          
-    // });    
-    //设置左边数量
-    // statusNumber.normal = normal;
-    // statusNumber.offline = offline;
-    // statusNumber.alarm = alarm;
-    // statusNumber.warn = warn;
+
     total.value = data.total;
     getListAll();
   } finally {
@@ -641,10 +605,6 @@ const getListNoLoading = async () => {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
     list.value = data.list
     var tableIndex = 0;
-    // var normal = 0;
-    // var offline = 0;
-    // var alarm = 0;
-    // var warn = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
@@ -659,36 +619,8 @@ const getListNoLoading = async () => {
       obj.pow = obj?.pow?.toFixed(3);
       obj.ele = obj?.ele?.toFixed(1);
       obj.pf = obj?.pf?.toFixed(2);
-
-      // if(obj?.status == 0){
-      //   normal++;
-      // } else if (obj?.status == 1){
-      //   warn++;
-      // } else if (obj?.status == 2){
-      //   alarm++;
-      // }
     });
-    // const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
-    // allList.value = allData.list
-    // allList.value.forEach((objAll) => {
-    //   if(objAll?.dataUpdateTime == null && objAll?.pow == null){
-    //     objAll.status = 5;
-    //     offline++;
-    //     return;
-    //   }  
-    //   if(objAll?.status == 0){
-    //     normal++;
-    //   } else if (objAll?.status == 1){
-    //     warn++;
-    //   } else if (objAll?.status == 2){
-    //     alarm++;
-    //   }          
-    // });
-    // //设置左边数量
-    // statusNumber.normal = normal;
-    // statusNumber.offline = offline;
-    // statusNumber.alarm = alarm;
-    // statusNumber.warn = warn;
+
 
     total.value = data.total
   } catch (error) {
@@ -711,12 +643,9 @@ const getListAll = async () => {
 
 // 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
@@ -831,10 +760,10 @@ onMounted(async () => {
   getListAll();
   // flashListTimer.value = setInterval(() => {
   //        setTimeout(() => {
-  //         //getList()
+  //         getList()
   //      }, 0);
-  // }, 5000);
-  flashListTimer.value = setInterval((getList), 5000);
+  // }, 10000);
+  flashListTimer.value = setInterval((getList), 10000);
 })
 
 onBeforeUnmount(()=>{

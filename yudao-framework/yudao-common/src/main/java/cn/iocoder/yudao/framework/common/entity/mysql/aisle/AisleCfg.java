@@ -18,7 +18,7 @@ public class AisleCfg implements Serializable {
 
     @Schema(description = "id", example = "1")
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 机房id

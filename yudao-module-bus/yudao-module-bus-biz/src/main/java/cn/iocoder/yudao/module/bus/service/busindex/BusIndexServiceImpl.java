@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekDo;
@@ -25,6 +26,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -40,6 +42,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
@@ -53,6 +56,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -79,6 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -98,6 +103,8 @@ import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_API_AUDIT_FAIL;
 
 /**
  * 始端箱索引 Service 实现类
@@ -129,6 +136,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
 
     public static final String REDIS_KEY_CABINET = "packet:cabinet:";
 
@@ -730,7 +740,9 @@ public class BusIndexServiceImpl implements BusIndexService {
         searchRequest.source(builder);
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
+        if (searchResponse.getHits().getTotalHits().value == 0){
+            return null;
+        }
         LineMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineMaxResVO.class);
         if (Objects.nonNull(resVO)) {
             BusIndexDO busIndexDO = busIndexMapper.selectById(resVO.getBusId());
@@ -806,6 +818,73 @@ public class BusIndexServiceImpl implements BusIndexService {
         vo.setRunStatus(busIndexDO.getRunStatus());
         vo.setPowerFactor(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("power_factor"));
         return vo;
+    }
+
+
+    public List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) {
+
+        String devKey = pageReqVO.getDevKey();
+
+        QueryWrapper<BoxIndex> queryWrapper = new QueryWrapper();
+        queryWrapper.select("box_key","run_status");
+        queryWrapper.eq("bus_key", devKey);
+        List<BoxIndex> boxIndexList = boxIndexMapper.selectList(queryWrapper);
+        List<String> boxKeyList = new ArrayList<>();
+        List<BoxReportcopyResVO> vos = new ArrayList<>();
+        for (BoxIndex boxIndex : boxIndexList) {
+            BoxReportcopyResVO vo = new BoxReportcopyResVO();
+            vo.setDevKey(boxIndex.getBoxKey());
+            vo.setRunStatus(boxIndex.getRunStatus());
+            ValueOperations ops = redisTemplate.opsForValue();
+            JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+            // 获取 box_name 字段的值
+            String boxName = jsonObject.getString("box_name");
+            System.out.println("box_name: " + boxName);
+            vo.setBoxName(boxName);
+            // 获取 box_total_data 中的 pow_apparent 字段的值
+            JSONObject boxData1 = jsonObject.getJSONObject("box_data");
+            JSONObject boxTotalData = boxData1.getJSONObject("box_total_data");
+            if (boxTotalData != null) {
+                Double powApparent = boxTotalData.getDouble("pow_apparent");
+                vo.setPowApparent(powApparent);
+                System.out.println("box_total_data.pow_apparent: " + powApparent);
+            } else {
+                System.out.println("box_total_data is null");
+            }
+            // 获取 outlet_item_list 中的 pow_active 数组的值
+            JSONObject boxData = jsonObject.getJSONObject("box_data");
+            if (boxData != null) {
+                JSONObject outletItemList = boxData.getJSONObject("outlet_item_list");
+                if (outletItemList != null) {
+                    JSONArray powActiveArray = outletItemList.getJSONArray("pow_active");
+                    if (powActiveArray != null) {
+                        for (int i = 0; i < powActiveArray.size(); i++) {
+                            Double powActiveValue = powActiveArray.getDouble(i);
+                            if (i == 0) {
+                                vo.setPowActiveOne(powActiveValue);
+                            } else if (i == 1) {
+                                vo.setPowActiveTwo(powActiveValue);
+                            } else if (i == 2) {
+                                vo.setPowActiveThree(powActiveValue);
+                            }
+                            System.out.println("outlet_item_list.pow_active[" + i + "]: " + powActiveValue);
+                        }
+                    } else {
+                        System.out.println("outlet_item_list.pow_active array is null");
+                    }
+                } else {
+                    System.out.println("outlet_item_list is null");
+                }
+            } else {
+                System.out.println("box_data is null");
+            }
+            vos.add(vo);
+            if (jsonObject != null){
+                boxKeyList.add(jsonObject.toJSONString());
+            }
+        }
+        return vos;
+
     }
 
     @Override
@@ -929,6 +1008,18 @@ public class BusIndexServiceImpl implements BusIndexService {
             log.error("获取数据失败：", e);
             return null;
         }
+    }
+
+    @Override
+    public List<String> findKeys(String key) {
+        if (key == null || key.length()<8){
+            throw exception(KEY_SHORT);
+        }
+        Integer flag = 0;
+        if (key.length()<=10){
+            flag =1;
+        }
+        return busIndexMapper.findKeys(key,flag);
     }
 
     @Override
@@ -2451,6 +2542,10 @@ public class BusIndexServiceImpl implements BusIndexService {
         result.put("activePowMaxTime", null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime", null);
+        result.put("reactivePowMaxTime",null);
+        result.put("reactivePowMaxValue", null);
+        result.put("reactivePowMinTime",null);
+        result.put("reactivePowMinValue", null);
         try {
             BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getBusKey, devKey));
 
@@ -2479,6 +2574,9 @@ public class BusIndexServiceImpl implements BusIndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
+                totalLineRes.getSeries().add(totalReactivePow);
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
 
@@ -2487,6 +2585,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
 
                     });
@@ -2494,6 +2593,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                     });
@@ -2509,6 +2609,11 @@ public class BusIndexServiceImpl implements BusIndexService {
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_active_min_value");
                 BusTotalHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, BusTotalHourDo.class);
 
+                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_max_value");
+                BusTotalHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, BusTotalHourDo.class);
+                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_min_value");
+                BusTotalHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, BusTotalHourDo.class);
+
                 result.put("totalLineRes", totalLineRes);
 
                 result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
@@ -2519,6 +2624,10 @@ public class BusIndexServiceImpl implements BusIndexService {
                 result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
                 result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMaxValue", totalMaxReactive.getPowReactiveMaxValue());
+                result.put("reactivePowMaxTime", totalMaxReactive.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMinValue", totalMinReactive.getPowReactiveMinValue());
+                result.put("reactivePowMinTime", totalMinReactive.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
             }
         } catch (Exception e) {
@@ -2657,6 +2766,8 @@ public class BusIndexServiceImpl implements BusIndexService {
             return jsonObject != null ? jsonObject.toJSONString() : null;
         }
     }
+
+
 
     @Override
     public PageResult<BusIndexRes> getDeletedPage(BusIndexPageReqVO pageReqVO) {

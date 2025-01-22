@@ -1,7 +1,7 @@
 <template>
   <div style="padding-left:20px;height:30px;font-size: 15px;">
     <span style="color:black;font-size:14px;">机房: {{location}}&nbsp;&nbsp;</span>
-    <span style="color:black;font-size:14px;">母线: {{busName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">母线: {{busName || redisData?.busName}}&nbsp;&nbsp;</span>
     <span style="color:black;font-size:14px;">插接箱: {{boxName}}&nbsp;&nbsp;</span>
     <span style="color:black;font-size:14px;">网络地址: {{devKey}}</span>
   </div>
@@ -28,7 +28,7 @@
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>-->
         <div style="height:100%;width:100%;margin-top:-10px;">
-            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :data="redisData.loadFactor" />
+            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :data="Math.round(redisData.loadFactor)" />
         </div>
         <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
             <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>

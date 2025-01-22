@@ -67,4 +67,6 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
     LoadRateStatus selectBusIndexLoadRateStatus();
 
     BalanceStatisticsVO getBusBalanceStatistics();
+
+    List<String> findKeys(@Param("key") String key, @Param("flag") Integer flag);
 }

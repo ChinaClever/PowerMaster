@@ -191,7 +191,9 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">温度详情</span>
-            <span>所在位置：{{ location }}</span>
+            <span>机房：{{ location }}&nbsp;&nbsp;</span>
+            <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+            <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
 
@@ -278,6 +280,8 @@ defineOptions({ name: 'PDUDevice' })
 
 const location = ref() as any;
 const devkey = ref() as any;
+const busName = ref() as any;
+const boxName = ref() as any;
 const detailVis = ref(false);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -341,13 +345,17 @@ const toggleAllStatus = () => {
   handleQuery();
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
-    ? devKeyList.value.filter(createFilter(queryString))
-    : devKeyList.value
-  // call callback function to return suggestions
-  cb(results)
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+    cb([])
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -388,7 +396,9 @@ const handleCheck = async (row) => {
 const openTemDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location : row.devKey;
+  location.value = row.location ? row.location : '未绑定'
+  busName.value = row.busName
+  boxName.value = row.boxName
   devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;

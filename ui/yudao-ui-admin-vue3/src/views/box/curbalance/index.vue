@@ -109,10 +109,10 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
-              <el-tag type="info"  v-if="scope.row.color == 0">{{statusList[0].name}}</el-tag>
-              <el-tag type="success"  v-else-if="scope.row.color == 1">{{statusList[1].name}}</el-tag>
-              <el-tag type="warning" v-else-if="scope.row.color == 2">{{statusList[2].name}}</el-tag>
-              <el-tag type="danger" v-else-if="scope.row.color == 3">{{statusList[3].name}}</el-tag>
+              <el-tag type="info"  v-if="scope.row.color == 1">{{statusList[3].name}}</el-tag>
+              <el-tag type="success"  v-else-if="scope.row.color == 2">{{statusList[0].name}}</el-tag>
+              <el-tag type="warning" v-else-if="scope.row.color == 3">{{statusList[1].name}}</el-tag>
+              <el-tag type="danger" v-else-if="scope.row.color == 4">{{statusList[2].name}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
@@ -231,7 +231,9 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
+            <span style="margin-right:10px">机房：{{ curlocation? curlocation : '未绑定' }}</span>
+            <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+            <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span>网络地址：{{ curdevkey }}</span>
           </div>
         </template>
@@ -340,7 +342,9 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ vollocation }}</span>
+            <span style="margin-right:10px">机房：{{ vollocation? vollocation : '未绑定' }}</span>
+            <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+            <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span>网络地址：{{ voldevkey }}</span>
           </div>
         </template>
@@ -471,6 +475,7 @@ const location = ref();
 const curlocation = ref();
 const vollocation = ref();
 const boxName = ref();
+const busName = ref();
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
@@ -508,31 +513,31 @@ const statusList = reactive([
 
 const colorList = [
   {
-    name: '小电流不平衡',
+    name: '电流不平衡',
     color: '#aaa'
   },
   {
-    name: '大电流不平衡',
+    name: '电流不平衡',
     color: '#3bbb00'
   },
   {
-    name: '大电流不平衡',
+    name: '电流不平衡',
     color: '#ffc402'
   },
   {
-    name: '大电流不平衡',
+    name: '电流不平衡',
     color: '#fa3333'
   }
 ]
 
 const colorVolList = [{
-  name: '小电压不平衡',
+  name: '电压不平衡',
   color: '#aaa',  //灰色
 },{
-  name: '大电压不平衡',
+  name: '电压不平衡',
   color: '#3bbb00', //绿色
 },{
-  name: '大电压不平衡',
+  name: '电压不平衡',
   color: '#ffc402', //黄色
 },{
   name: '大电压不平衡',
@@ -813,21 +818,23 @@ const toDeatil = (row) =>{
 const colorFlag = ref(0);
 
 const showDialogCur = (item) => {
-  colorFlag.value = item.color;
+  colorFlag.value = item.color-1;
   dialogVisibleCur.value = true;
   curdevkey.value = item.devKey;
   curlocation.value = item.location;
   boxName.value = item.boxName;
+  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
 
 const showDialogVol = (item) => {
-  colorFlag.value = item.color;
+  colorFlag.value = item.color-1;
   dialogVisibleVol.value = true;
   voldevkey.value = item.devKey;
   vollocation.value = item.location;
   boxName.value = item.boxName;
+  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -938,6 +945,7 @@ const getBalanceDetail = async(item) => {
   balanceObj.imbalanceValueA = res.curUnbalance;
   balanceObj.imbalanceValueB = res.volUnbalance;
   balanceObj.colorIndex = res.color - 1;
+  busName.value = res.busName;
 }
 
 const getBalanceTrend = async (item) => {

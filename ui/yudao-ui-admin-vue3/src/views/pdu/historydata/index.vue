@@ -3,28 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>
-        <div class="nav_header">
-          <br/>
-          <span v-if="queryParams.granularity == 'realtime' ">全部PDU最近一分钟新增记录</span>
-          <span v-if="queryParams.granularity == 'hour' ">全部PDU最近一小时新增记录</span>
-          <span v-if="queryParams.granularity == 'day' ">全部PDU最近一天新增记录</span>
-        </div>
-        <div class="nav_content" >
-          <el-descriptions title="" direction="vertical" :column="1" border >
-            <el-descriptions-item label="总数据"><span >{{ navTotalData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="相数据"><span >{{ navLineData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="回路数据" ><span >{{ navLoopData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="输出位数据" ><span >{{ navOutletData }} 条</span></el-descriptions-item>
-          </el-descriptions>
-        </div>
-      </div> -->
+
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">总数据 :</span>
@@ -860,12 +839,9 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 

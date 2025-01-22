@@ -12,11 +12,7 @@ public class CabinetLoadPageChartResVO {
     private Integer cabinetId;
 
     @Schema(description = "负载率")
-    private BigDecimal loadRateA;
-    @Schema(description = "负载率")
-    private BigDecimal loadRateB;
-    @Schema(description = "负载率")
-    private BigDecimal loadRateTotal;
+    private Double loadRateTotal;
 
     @Schema(description = "电流1")
     private Double curValue;

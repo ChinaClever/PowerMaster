@@ -230,10 +230,10 @@
         </el-form-item> -->
         <el-form-item>       
           <!--<el-tag size="large">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{boxName}})</el-tag>-->
-          <span>机房：{{ roomName }}</span>
-          <span>母线：{{ busName }}</span>
-          <span>插接箱：{{boxName}}</span>
-          <span>网络地址：{{ location }}</span>
+          <span>机房：{{ location }}&nbsp;&nbsp;</span>
+          <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+          <span>插接箱：{{boxName}}&nbsp;&nbsp;</span>
+          <span>网络地址：{{ devkey }}</span>
           <!--<el-select
             v-model="queryParamsCopy.harmonicType"
             placeholder="请选择"
@@ -312,6 +312,11 @@ import HarmonicLine from './component/HarmonicLine.vue';
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
+
+const location = ref() as any;
+const devkey = ref() as any;
+const busName = ref() as any;
+const boxName = ref() as any;
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
@@ -592,7 +597,7 @@ const harmonicRealTime = ref();
 const realTimeVis = ref(false);
 const seriesAndTimeArr = ref() as any;
 const lineVis = ref(false);
-const harmonicLine = ref({ value: { series: [], time: [] } }) as any;
+const harmonicLine = ref([]) as any;
 
 
 const disabledDate = (date) => {
@@ -690,6 +695,11 @@ const showDialog = async (item) => {
   //colorFlag.value = item.color;
   queryParamsCopy.devKey = item.devKey;
   queryParamsCopy.boxId = item.boxId;
+  location.value = item.location ? item.location : '未绑定';
+  devkey.value = item.devKey;
+  busName.value = item.busName;
+  boxName.value = item.boxName;
+
   console.log('item',item);
   dialogVisible.value = true;
   await handleQueryCopy();

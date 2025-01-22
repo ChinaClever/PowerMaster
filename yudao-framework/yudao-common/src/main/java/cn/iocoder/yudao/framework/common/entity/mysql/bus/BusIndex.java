@@ -20,7 +20,7 @@ public class BusIndex implements Serializable {
      * bus_id  唯一标识
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 设备识别码

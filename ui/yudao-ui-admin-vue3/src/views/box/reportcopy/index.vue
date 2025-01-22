@@ -2,39 +2,7 @@
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="插接箱报表">
     <template #NavInfo>
       <div >
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>&lt;15%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>15%-30%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>&gt;30
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
-        <!-- <div class="line"></div> -->
          <br/>
-
       </div>
     </template>
     <template #ActionBar>
@@ -311,7 +279,7 @@ const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
 const now = ref()
-const switchValue = ref(1);
+const switchValue = ref();
 const visControll = reactive({
   visAllReport : false,
   isSameDay : false,
@@ -732,6 +700,7 @@ const itemStyle = ref({
 
 const getList = async () => {
   loading.value = true
+
   eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
@@ -750,7 +719,31 @@ const getList = async () => {
   } else{
     visControll.eqVis = false;
   }
-  
+
+  var temp = [] as any;
+  var baseInfo = await IndexApi.getReportBasicInformationResVO(queryParams);
+
+  temp.push({
+    baseInfoName : "所属位置",
+    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
+    consumeName : "消耗电量",
+    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+  })
+  temp.push({
+    baseInfoName : "网络地址",
+    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
+    consumeName : "当前视在功率",
+    consumeValue : baseInfo?.powApparent !=null ? baseInfo?.powApparent.toFixed(3) + "kVA" : '/',
+  })
+  temp.push({
+    baseInfoName : "设备状态",
+    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
+    // pduAlarm : Box?.pdu_alarm,
+    consumeName : "当前功率因素",
+    consumeValue : baseInfo?.powerFactor !=null ? baseInfo?.powerFactor.toFixed(2) : '/'
+  })
+  PDUTableData.value = temp;
+
   const data = await IndexApi.getBoxPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
   pfLineList.value.series.forEach(item => {
@@ -855,30 +848,6 @@ const getList = async () => {
   console.log('雷达图的数据',serverData.value);
   // var Box = await IndexApi.getBoxRedisByDevKey(queryParams);
   // Box = JSON.parse(Box)
-  var temp = [] as any;
-  var baseInfo = await IndexApi.getReportBasicInformationResVO(queryParams);
-
-  temp.push({
-    baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
-    consumeName : "消耗电量",
-    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
-  })
-  temp.push({
-    baseInfoName : "网络地址",
-    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
-    consumeName : "当前视在功率",
-    consumeValue : baseInfo?.powApparent !=null ? baseInfo?.powApparent.toFixed(3) + "kVA" : '/',
-  })
-  temp.push({
-    baseInfoName : "设备状态",
-    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
-    // pduAlarm : Box?.pdu_alarm,
-    consumeName : "当前功率因素",
-    consumeValue : baseInfo?.powerFactor !=null ? baseInfo?.powerFactor.toFixed(2) : '/'
-  })
-  PDUTableData.value = temp;
-  
   visControll.visAllReport = true;
   // initChart();
   loading.value = false
@@ -980,12 +949,40 @@ const formRef = ref()
 // }
 
 
-
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 /** 初始化 **/
 onMounted( async () =>  {
   // getList();
   initChart();
   devKeyList.value = await loadAll();
+
+  // 使用可选链操作符避免访问 undefined 的属性
+let devKey = route.query?.devKey as string | undefined;
+let timeType = route.query?.timeType as string | undefined;
+let oldTime = route.query?.oldTime as string | undefined;
+let newTime = route.query?.newTime as string | undefined;
+let timeArr = route.query?.timeArr as string | undefined;
+let visAllReport = route.query?.visAllReport as string | undefined;
+let switchValue1 = route.query?.switchValue as string | undefined;
+console.log('devKey', switchValue1);
+
+if (devKey != undefined) {
+  queryParams.devKey = devKey;
+  queryParams.timeType = timeType;
+  queryParams.oldTime = oldTime;
+  queryParams.newTime = newTime;
+  queryParams.timeArr = timeArr;
+  queryParams.visAllReport = visAllReport;
+  switchValue.value = switchValue1;
+  console.log('1111111111111111111', switchValue.value);
+
+  getList();
+  initChart();
+}
+
+
 })
 </script>
 <style scoped lang="scss">

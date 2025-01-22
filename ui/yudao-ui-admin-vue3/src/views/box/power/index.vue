@@ -688,7 +688,7 @@
                 有功功率
               </div>
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length > 1">
-                总有功功率{{}}
+                {{ item.powActive }} kW<br/><span style="font-size: 15px; ">总有功功率</span>
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
@@ -700,13 +700,13 @@
                 无功功率
               </div>
               <div v-if="valueMode == 3 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
-                总无功功率{{}}
+                {{ item.powReactive }} kVar<br/><span style="font-size: 15px; ">总无功功率</span>
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'  && item.outletApparentPow.length <= 1" >
                 视在功率
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line' && item.outletApparentPow.length > 1" >
-                总视在功率{{}}
+                {{ item.powApparent }} kVa<br/><span style="font-size: 15px; ">总视在功率</span>
               </div>
              <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
                 无功功率
@@ -1013,13 +1013,73 @@ const getList = async () => {
 const getListAll = async () => {
   try {
     const allData = await IndexApi.getBoxIndexStatistics();
+
+    const data = await IndexApi.getBoxRedisPage(queryParams);
     //设置左边数量
     statusNumber.normal = allData.normal;
     statusNumber.offline = allData.offline;
     statusNumber.alarm = allData.alarm;
     statusNumber.total = allData.total;
-  } catch (error) {
-    
+
+    list.value = data.list;
+    var tableIndex = 0;
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.phaseCur == null){
+        return;
+      }
+      for(var i= 0;i < obj.phaseCur.length; i++)
+      {
+        obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+        obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+        obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+        obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+        obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      
+      for(var i= 0;i < obj.loopCur.length; i++)
+      {
+        obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
+        obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
+        obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
+        obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
+      } 
+      
+      for(var i= 0;i < obj.outletActivePow.length; i++)
+      {
+        obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
+        obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
+        obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
+    });
+
+    for(let i = 0; i < list.value.length; i++){
+      const loopCur = list.value[i].loopCur;
+      const selectedElements = [];
+      const indicesToSelect = [2, 5, 8];
+      for (let j = 0; j < indicesToSelect.length; j++) {
+        if (Array.isArray(loopCur) && Array.isArray(indicesToSelect) && j < loopCur.length) {
+          const index = indicesToSelect[j];
+          if (index >= 0 && index < loopCur.length) {
+            selectedElements.push(loopCur[index]);
+          } else {
+            console.warn('Index out of bounds:', index);
+          }
+        } else {
+          console.warn('Invalid loopCur or indicesToSelect array');
+        }
+      }
+
+      list.value[i].loopCur = selectedElements;
+    }
+
+    total.value = data.total;
+
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -1100,8 +1160,9 @@ const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
   const boxName = row.boxName;
-  const location = row.location != null ? row.location : row.devKey;
-  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location}});
+  const busName = row.busName;
+  const location = row.location != null ? row.location : '未绑定';
+  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location,busName}});
 };
 
 const defaultSelected = ref(['line']);
@@ -1222,7 +1283,7 @@ onMounted(async () => {
   getListAll();
   //getTypeMaxValue();
   // flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1244,8 +1305,7 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    // flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
@@ -1399,7 +1459,7 @@ onActivated(() => {
         flex-direction: row;
         align-items: self-end;
         justify-content: space-between;
-        font-size: 13px;
+        font-size: 20px;
         .value {
           font-size: 15px;
           font-weight: bold;
@@ -1538,10 +1598,10 @@ onActivated(() => {
         align-items: center;
         height: 100%;
         .icon {
-          font-size: 20px;
+          font-size: 18px;
           width: 100px;
-          height: 50px;
-          margin-left:20px;
+          height: 60px;
+          margin-left:60px;
           text-align: center;
           .text-pf{
             font-size: 16px;
