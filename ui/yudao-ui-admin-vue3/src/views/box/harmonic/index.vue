@@ -230,10 +230,10 @@
         </el-form-item> -->
         <el-form-item>       
           <!--<el-tag size="large">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{boxName}})</el-tag>-->
-          <span>机房：{{ roomName }}</span>
-          <span>母线：{{ busName }}</span>
-          <span>插接箱：{{boxName}}</span>
-          <span>网络地址：{{ location }}</span>
+          <span>机房：{{ location }}&nbsp;&nbsp;</span>
+          <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+          <span>插接箱：{{boxName}}&nbsp;&nbsp;</span>
+          <span>网络地址：{{ devkey }}</span>
           <!--<el-select
             v-model="queryParamsCopy.harmonicType"
             placeholder="请选择"
