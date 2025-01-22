@@ -3,6 +3,8 @@
   <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
     <div style="padding: 5px 10px;" class="header_app_text">
       <span>所在位置：{{ location }}-{{ busName }}</span>
+      <span style="margin-left:10px;">A路网络地址：{{ keyAlocation }}</span>
+      <span style="margin-left:10px;">B路网络地址：{{ keyBlocation }}</span>
       <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA)">A路PDU详情</el-button><el-button @click="goBus(keyB)">B路PDU详情</el-button></span>
       <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA)">A路母线详情</el-button><el-button @click="goBus(keyB)">B路母线详情</el-button></span>
     </div>
@@ -283,6 +285,8 @@ const visContro = ref({
 })
 const keyA = ref();
 const keyB = ref();
+const keyAlocation = ref();
+const keyBlocation = ref();
 
 const goPDU = (row: { devKey: string;  }) => {
   const { devKey} = row;
@@ -345,6 +349,8 @@ const getRedisData = async () => {
   pduBox.value = result.pduBox;
   keyA.value = result.keyA.split('-').slice(0, 2).join('-');
   keyB.value = result.keyB.split('-').slice(0, 2).join('-');
+  keyAlocation.value = result.keyA;
+  keyBlocation.value = result.keyB;
   console.log('keyA.value',keyA.value);
   console.log('keyB.value',keyB.value);
   console.log('pduBox.value',pduBox.value);

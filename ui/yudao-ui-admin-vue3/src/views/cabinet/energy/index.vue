@@ -413,10 +413,10 @@ onBeforeMount(() => {
       font-size: 13px;
     }
     .detail {
-      width: 55px;
-      height: 20px;
+      width: 40px;
+      height: 25px;
       cursor: pointer;
-      font-size: 12px;
+      //font-size: 12px;
       padding: 0;
       border: 1px solid #ccc;
       display: flex;

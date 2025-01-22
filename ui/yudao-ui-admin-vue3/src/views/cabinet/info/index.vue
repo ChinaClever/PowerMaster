@@ -276,6 +276,7 @@ const Offline = ref();
 const totalAll = ref();
 
 const flashListTimer = ref();
+const flashListTimerCopy = ref();
 
 const optionsCol = reactive([{
   value: 0,
@@ -560,6 +561,7 @@ const handleRestore = async(id) =>{
     const res = await CabinetApi.getrestorerCabinet({
       id: id,
     });
+    console.log('恢复设备的数据',res);
     if(res != "1"){
        message.success('设备恢复失败!')
     }
@@ -670,6 +672,7 @@ onBeforeMount(() => {
   getNavList();
   getTableData();
   flashListTimer.value = setInterval((getTableData), 5000);
+  flashListTimerCopy.value = setInterval((getNavList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -677,12 +680,20 @@ onBeforeUnmount(()=>{
     clearInterval(flashListTimer.value)
     flashListTimer.value = null;
   }
+  if(flashListTimerCopy.value){
+    clearInterval(flashListTimerCopy.value)
+    flashListTimerCopy.value = null;
+  }
 })
 
 onBeforeRouteLeave(()=>{
   if(flashListTimer.value){
     clearInterval(flashListTimer.value)
     flashListTimer.value = null;
+  }
+  if(flashListTimerCopy.value){
+    clearInterval(flashListTimerCopy.value)
+    flashListTimerCopy.value = null;
   }
 })
 </script>
