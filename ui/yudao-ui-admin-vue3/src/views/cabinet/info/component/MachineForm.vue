@@ -44,19 +44,19 @@
                 <el-input v-model="machineFormData.company" placeholder="请输入" />
               </el-form-item>
               <div class="double-formitem">
-                <el-form-item label="日用能告警">
-                  <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+                <el-form-item label="月用能告警">
+                  <el-switch @click="showFlag = !showFlag" v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
                 </el-form-item>
-                <el-form-item label="日用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                <el-form-item v-if="showFlag" label="月用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
                 </el-form-item>
               </div>
               <div class="double-formitem">
-                <el-form-item label="月用能告警">
-                  <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+                <el-form-item label="日用能告警">
+                  <el-switch @click="showFlagCopy = !showFlagCopy" v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
                 </el-form-item>
-                <el-form-item label="月用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                <el-form-item v-if="showFlagCopy" label="日用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
                 </el-form-item>
               </div>
             </div>
@@ -237,6 +237,8 @@ const isFullscreen = ref(false)
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const sensorVisible = ref(false) // 传感器弹窗的是否展示
 const sensorLoading = ref(false) // 传感器表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+const showFlag = ref(false);
+const showFlagCopy = ref(false);
 const sensorFormData = reactive({
   type: null,
   sensorId: null,
@@ -352,7 +354,7 @@ const machineFormData = ref({
   cabinetName: '',
   type: '',
   cabinetHeight: 42, //U
-  powCapacity: 8, // kAV
+  powCapacity: 8, // kVA
   company: '',
   pduIpA: '',
   casIdA: '',
