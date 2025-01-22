@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -132,7 +133,7 @@ public class CabinetController {
     @Operation(summary = "获得机柜用能分页")
     public CommonResult<PageResult<CabinetEnergyStatisticsResVO>> getEnergyStatisticsPage(@RequestBody CabinetIndexVo pageReqVO) throws IOException {
         PageResult<CabinetEnergyStatisticsResVO> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getCabinetIds()) || ObjectUtil.isNotEmpty(pageReqVO.getCompany())){
             pageResult =  cabinetService.getEnergyStatisticsPage(pageReqVO);
         }else {
             pageResult = cabinetService.getEqPage1(pageReqVO);

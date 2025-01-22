@@ -135,7 +135,7 @@
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
-              <LiquidBall  :precent="load.loadFactor"/>
+              <LiquidBall  :precent="load.loadFactor  || 0"/>
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>

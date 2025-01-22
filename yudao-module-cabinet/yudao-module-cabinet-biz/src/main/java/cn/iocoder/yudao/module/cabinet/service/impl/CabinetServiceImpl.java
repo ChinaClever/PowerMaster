@@ -61,6 +61,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
@@ -724,9 +725,9 @@ public class CabinetServiceImpl implements CabinetService {
         if (CollectionUtils.isEmpty(ids)) {
             return new PageResult<>(list, voPage.getTotal());
         }
-        Map<String, CabinetEnergyStatisticsResVO> map = list.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+//        Map<String, CabinetEnergyStatisticsResVO> map = list.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
         List<String> keys = list.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
-        List vlues = redisTemplate.opsForValue().multiGet(keys);
+
         //昨日
 
 //        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
@@ -759,20 +760,27 @@ public class CabinetServiceImpl implements CabinetService {
             monthMap = monthList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
         }
 
+        List<Object> vlues = redisTemplate.opsForValue().multiGet(keys);
+        Map<String,Object> keyMap = vlues.stream().filter(i -> Objects.nonNull(i))
+                .collect(Collectors.toMap(i -> JSON.parseObject(JSONObject.toJSONString(i)).getString("cabinet_key"), Function.identity()));
         for (CabinetEnergyStatisticsResVO vo : list) {
             vo.setYesterdayEq(yesterdayMap.get(vo.getId()));
             vo.setLastWeekEq(weekMap.get(vo.getId()));
             vo.setLastMonthEq(monthMap.get(vo.getId()));
-        }
-
-        for (Object obj : vlues) {
-            if (Objects.isNull(obj)) {
+            if (vo.getYesterdayEq() == null) {
+                vo.setYesterdayEq(new BigDecimal("0"));
+            }
+            if (vo.getLastWeekEq() == null){
+                vo.setLastWeekEq(new BigDecimal("0"));
+            }
+            if (vo.getLastMonthEq() == null){
+                vo.setLastMonthEq(new BigDecimal("0"));
+            }
+            Object obj = keyMap.get(vo.getRoomId() + "-" + vo.getId());
+            if (Objects.isNull(obj)){
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
-            String cabinetKey = jsonObject.getString("cabinet_key");
-            CabinetEnergyStatisticsResVO vo = map.get(cabinetKey);
-
             vo.setRoomName(jsonObject.getString("room_name"));
             StringJoiner joiner = new StringJoiner("-");
             if (!StringUtils.isEmpty(vo.getRoomName())) {
@@ -780,6 +788,15 @@ public class CabinetServiceImpl implements CabinetService {
             }
             joiner.add(vo.getCabinetName());
             vo.setLocation(joiner.toString());
+        }
+        if (Objects.nonNull(pageReqVO.getTimeGranularity())) {
+            if (pageReqVO.getTimeGranularity().equals("yesterday")) {
+                list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getYesterdayEq).reversed());
+            } else if (pageReqVO.getTimeGranularity().equals("lastWeek")) {
+                list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getLastWeekEq).reversed());
+            } else if (pageReqVO.getTimeGranularity().equals("lastMonth")) {
+                list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getLastMonthEq).reversed());
+            }
         }
         return new PageResult<>(list, voPage.getTotal());
     }
