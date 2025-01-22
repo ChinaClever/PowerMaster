@@ -123,15 +123,15 @@
         <div class="loadItem" v-for="load in listPage" :key="load.key">
           <div class="content">
             <div class="info" v-if="switchValue == 0">
-              <div>总视在功率：{{formatNumber(load.apparentTotal,2)}}KVA</div>
-              <div>A路视在功率：{{formatNumber(load.powApparenta,2)}}KVA</div>
-              <div>B路视在功率：{{formatNumber(load.powApparentb,2)}}KVA</div>
+              <div>总视在功率：{{formatNumber(load.apparentTotal,3) || '0.000'}}KVA</div>
+              <div>A路视在功率：{{formatNumber(load.powApparenta,3) || '0.000'}}KVA</div>
+              <div>B路视在功率：{{formatNumber(load.powApparentb,3) || '0.000'}}KVA</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="info" v-else>
-              <div>总有功功率：{{formatNumber(load.activeTotal,2)}}kW</div>
-              <div>A路有功功率：{{formatNumber(load.powActivea,2)}}kW</div>
-              <div>B路有功功率：{{formatNumber(load.powActiveb,2)}}kW</div>
+              <div>总有功功率：{{formatNumber(load.activeTotal,3)|| '0.000'}}kW</div>
+              <div>A路有功功率：{{formatNumber(load.powActivea,3)|| '0.000'}}kW</div>
+              <div>B路有功功率：{{formatNumber(load.powActiveb,3)|| '0.000'}}kW</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
