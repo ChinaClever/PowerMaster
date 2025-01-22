@@ -12,6 +12,7 @@
         ref="queryFormRef"
         :inline="true"
         label-width="120px"
+        style="float: left;"
       >      
         <!-- <el-form-item label="网络地址" prop="devKey">
           <el-input
@@ -34,21 +35,21 @@
           />
         </el-form-item>
 
-        <el-form-item label="时间段" prop="createTime" label-width="100px">
+        <el-form-item label="时间段" prop="createTime" >
           <el-button 
-            @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
+            @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 2;" 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;switchValue = 2;" 
             :type="switchValue == 2 ? 'primary' : ''"
           >
             自定义
@@ -170,6 +171,7 @@
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最无功功率{{powData.reactivePowMinValue}}kVar， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
@@ -279,7 +281,7 @@ const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
 const now = ref()
-const switchValue = ref();
+const switchValue = ref(1);
 const visControll = reactive({
   visAllReport : false,
   isSameDay : false,
@@ -699,12 +701,29 @@ const itemStyle = ref({
 });
 
 const getList = async () => {
+  console.log('kasjdajsdaosl;dkasl',switchValue.value)
   loading.value = true
-
-  eqData.value = await IndexApi.getConsumeData(queryParams);
+  console.log('queryParams1111111111111')
+  try {
+  console.log('Fetching data...');
+  const data1 = await IndexApi.getConsumeData(queryParams);
+  try{
+  eqData.value = data1;
+  }catch (error) {
+    console.log('adsadasdas', error);
+  }
+  console.log('Data fetched:', data1);
+  console.log('eqData.value',eqData.value)
+} catch (error) {
+  console.log('data1dasssssssasda', error);
+}
+  
+  
+  
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
   }
+  console.log('eqData.valqwdqwdqdqwdue',eqData.value.barRes)
   eleList.value = eqData.value.barRes;
   if( eleList.value?.time != null && eleList.value?.time?.length > 0){
     eqData.value.maxEle = eqData.value.maxEle?.toFixed(1);
@@ -764,6 +783,8 @@ const getList = async () => {
     powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
     powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
     powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+    powData.value.reactivePowMaxValue = powData.value.reactivePowMaxValue?.toFixed(3);
+    powData.value.reactivePowMinValue = powData.value.reactivePowMinValue?.toFixed(3);
     visControll.powVis = true;
   }else{
     visControll.powVis = false;
@@ -867,6 +888,7 @@ const getList = async () => {
   
   console.log('表格的数据',temp1Data)
   temp1.value = temp1Data.list
+  
 
 }
 
@@ -898,7 +920,9 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-
+  console.log('queryParams',queryParams.devKey)
+  console.log('queryParams',queryParams.oldTime)
+  console.log('queryParams',queryParams.newTime)
   if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
@@ -950,6 +974,7 @@ const formRef = ref()
 
 
 import { useRoute, useRouter } from 'vue-router';
+import { ca } from 'element-plus/es/locale';
 const route = useRoute();
 const router = useRouter();
 /** 初始化 **/
@@ -977,10 +1002,11 @@ if (devKey != undefined) {
   queryParams.visAllReport = visAllReport;
   switchValue.value = switchValue1;
   console.log('1111111111111111111', switchValue.value);
-
   getList();
   initChart();
 }
+  
+
 
 
 })
@@ -1251,9 +1277,9 @@ if (devKey != undefined) {
   flex-wrap: wrap;
 }
 
-:deep(.el-form .el-form-item) {
-  margin-right: 0;
-}
+// :deep(.el-form .el-form-item) {
+//   margin-right: 0;
+// }
 
 @media screen and (min-width:2048px) {
   .adaptiveStyle {

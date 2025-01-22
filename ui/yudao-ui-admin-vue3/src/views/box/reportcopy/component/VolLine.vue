@@ -35,7 +35,7 @@ const echartsOptions = computed(() => ({
       let result = params[0].name + '<br>';
       params.forEach(param => {
         result += `${param.marker}${param.seriesName}: &nbsp;&nbsp;&nbsp;&nbsp${param.value}`;
-        if (param.seriesName === 'A电压' || param.seriesName === 'B电压' || param.seriesName === 'C电压') {
+        if (param.seriesName === 'A相电压' || param.seriesName === 'B相电压' || param.seriesName === 'C相电压') {
           result += 'V';
         }
         result += '<br>';
@@ -44,7 +44,7 @@ const echartsOptions = computed(() => ({
     }
   },
   legend: {
-    data: ['A电压', 'B电压', 'C电压'],
+    data: ['A相电压', 'B相电压', 'C相电压'],
     selectedMode: 'multiple'
   },
   grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
@@ -54,9 +54,9 @@ const echartsOptions = computed(() => ({
   },
   yAxis: { type: 'value' },
   series: [
-    { name: 'A电压', type: 'line', data: curvolAData.value.volValueList, symbol: 'circle', symbolSize: 4 },
-    { name: 'B电压', type: 'line', data: curvolBData.value.volValueList, symbol: 'circle', symbolSize: 4 },
-    { name: 'C电压', type: 'line', data: curvolCData.value.volValueList, symbol: 'circle', symbolSize: 4 }
+    { name: 'A相电压', type: 'line', data: curvolAData.value.volValueList, symbol: 'circle', symbolSize: 4 },
+    { name: 'B相电压', type: 'line', data: curvolBData.value.volValueList, symbol: 'circle', symbolSize: 4 },
+    { name: 'C相电压', type: 'line', data: curvolCData.value.volValueList, symbol: 'circle', symbolSize: 4 }
   ]
 }));
 
