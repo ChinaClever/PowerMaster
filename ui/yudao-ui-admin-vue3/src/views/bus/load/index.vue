@@ -375,13 +375,16 @@ const toggleAllStatus = () => {
   handleQuery();
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
-    ? devKeyList.value.filter(createFilter(queryString))
-    : devKeyList.value
-  // call callback function to return suggestions
-  cb(results)
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length >= 8){
+    var results = await IndexApi.findKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      console.log('item',item);
+      arr.push({value:item})
+    });
+    cb(arr)
+  }
 }
 
 const createFilter = (queryString: string) => {
