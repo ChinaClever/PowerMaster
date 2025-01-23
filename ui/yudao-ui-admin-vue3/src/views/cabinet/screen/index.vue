@@ -12,7 +12,7 @@
     </div>
     <div v-if="switchValue === 0">
       <div class="screenContiner">
-      <div class="deviceList">
+      <!--<div class="deviceList">
         <div v-for="item in deviceRight" :key="item.id" class="device">
           <div class="name">设备名称： {{item.rackName}}</div>
           <div class="info">
@@ -31,18 +31,55 @@
           </div>
         </div>
         <div class="base"></div>
-      </div>
+      </div>-->
       <div class="deviceList">
         <div v-for="item in deviceLeft" :key="item.id" class="device">
-          <div class="name">设备名称： {{item.rackName}}</div>
+          <div class="name"><span>设备名称： {{item.rackName}}</span><span style="margin-left:100px;">高度：{{item.uHeight}}</span></div>
           <div class="info">
             <div>型号：{{item.rackType}}</div>
-            <div>占用：{{item.uHeight}}</div>
+            <!--<div>占用：{{item.uHeight}}</div>-->
+            <div>功率：{{item.powActive}}KW</div>
+            <div>电流：{{item.curValue}}A</div>
+          </div>
+        </div>
+      </div>
+      <div style="width:20%;height:100%;">
+        <div class="machine">
+        <div class="mainBorder">
+          <div class="main">
+            <template v-for="(item, index) in frameList" :key="index">
+              <div v-if="item.uHeight > 0" class="Uitem active" :style="`min-height: ${height}`">{{item.rackName}}</div>
+              <div v-else class="Uitem"></div>
+            </template>
+          </div>
+        </div>
+        <div class="base"></div>
+        <div class="local">{{cabinetInfo.roomName}}-{{cabinetInfo.cabinetName}}</div>
+        <div class="infomation">
+          <div class="infoItem">
+            <span class="num">{{cabinetInfo.cabinetHeight}}</span>
+            <span>空间总容量</span>
+          </div>
+          <div class="line"></div>
+          <div class="infoItem">
+            <span class="num">{{cabinetInfo.usedSpace}}U</span>
+            <span>已用空间</span>
+          </div>
+          <div class="line"></div>
+          <div class="infoItem">
+            <span class="num">{{cabinetInfo.freeSpace}}U</span>
+            <span>未用空间</span>
+          </div>
+          <div class="line"></div>
+          <div class="infoItem">
+            <span class="num">{{cabinetInfo.rackNum}}</span>
+            <span>设备总数</span>
           </div>
         </div>
       </div>
       </div>
-      <div class="local">{{cabinetInfo.roomName}}-{{cabinetInfo.cabinetName}}</div>
+      </div>
+      <!--<div class="local">{{cabinetInfo.roomName}}-{{cabinetInfo.cabinetName}}</div>
       <div class="infomation">
         <div class="infoItem">
           <span class="num">{{cabinetInfo.cabinetHeight}}</span>
@@ -63,7 +100,7 @@
           <span class="num">{{cabinetInfo.rackNum}}</span>
           <span>设备总数</span>
         </div>
-      </div>
+      </div>-->
     </div>
     <div v-else-if="switchValue === 1">
       <el-table :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
@@ -99,8 +136,10 @@ const getData = async() => {
   console.log('res', res);
   cabinetInfo.value = res;
   if (res.rackIndexList && res.rackIndexList.length > 0) {
-    deviceLeft.value = res.rackIndexList.filter((item,index) => index%2 == 0);
-    deviceRight.value = res.rackIndexList.filter((item,index) => index%2 == 1);
+    deviceLeft.value = res.rackIndexList;
+    console.log('deviceLeft.value', deviceLeft.value);
+    //deviceLeft.value = res.rackIndexList.filter((item,index) => index%2 == 0);
+    //deviceRight.value = res.rackIndexList.filter((item,index) => index%2 == 1);
     const frames = [] as any;
     for(let i = 1; i <= res.cabinetHeight; i++) {
       frames.push({});
@@ -137,8 +176,12 @@ getData();
   display: flex;
   justify-content: space-evenly;
   .deviceList {
+    width:80%;
     height: 588px;
     overflow: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
     &::-webkit-scrollbar {
       width: 0;
       height: 0;
@@ -147,8 +190,10 @@ getData();
       width: 310px;
       height: 130px;
       margin-bottom: 15px;
+      margin: 10px;
       font-size: 14px;
       border: 1px solid #eee;
+      box-sizing: border-box;
       .name {
         padding: 10px 8px;
         background-color: #eee;
@@ -158,7 +203,7 @@ getData();
       .info {
         padding: 0 8px;
         div {
-          margin-top: 15px;
+          margin-top: 10px;
         }
       }
     }
@@ -242,6 +287,8 @@ getData();
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 500px;
+  margin-left:-120px;
   .infoItem {
     padding: 20px 30px;
     display: flex;
