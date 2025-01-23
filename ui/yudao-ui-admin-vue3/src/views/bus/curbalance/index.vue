@@ -271,13 +271,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0].toFixed(2)}}A</span>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1].toFixed(2)}}A</span>
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2].toFixed(2)}}A</span>
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
                   </div>
                 </div>
                 <!--<Echart :options="ABarOption" :height="300" />-->
@@ -306,13 +306,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0].toFixed(1)}}V</span>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1].toFixed(1)}}V</span>
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2].toFixed(1)}}V</span>
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
                   </div>
                 </div>
               </div>
@@ -381,13 +381,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0].toFixed(2)}}A</span>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1].toFixed(2)}}A</span>
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2].toFixed(2)}}A</span>
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
                   </div>
                 </div>
                 <!--<Echart :options="ABarOption" :height="300" />-->
@@ -416,13 +416,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0].toFixed(1)}}V</span>
+                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1].toFixed(1)}}V</span>
+                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2].toFixed(1)}}V</span>
+                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
                   </div>
                 </div>
               </div>
@@ -651,17 +651,18 @@ const BLineOption = ref<EChartsOption>({
 const getBalanceDetail = async(item) => {
   const res = await IndexApi.getBusBalanceDetail({devKey: item.devKey});
   console.log('11111111', res);
-
+ 
   // 定义默认值
   const defaultCurrentValue = [0.00, 0.00, 0.00]; // 假设三相电流默认值为0
   const defaultVoltageValue = [0.0, 0.0, 0.0]; // 假设三相电压默认值为0
-
+ 
   let cur_valueA = res.cur_value ? res.cur_value : defaultCurrentValue;
   let vol_value = res.vol_value ? res.vol_value : defaultVoltageValue;
-
-  cur_valueACopy.value = cur_valueA;
-  vol_valueACopy.value = vol_value;
-
+ 
+  // 更新全局或组件状态（假设cur_valueACopy和vol_valueACopy是响应式对象）
+  cur_valueACopy.value = cur_valueA.map(number => number.toFixed(2));
+  vol_valueACopy.value = vol_value.map(number => number.toFixed(1));
+ 
   // 设置电流饼形图数据
   ABarOption.value = {
     title: {
@@ -696,7 +697,7 @@ const getBalanceDetail = async(item) => {
       }
     ]
   };
-
+ 
   // 设置电压饼形图数据
   BBarOption.value = {
     title: {
@@ -731,12 +732,14 @@ const getBalanceDetail = async(item) => {
       }
     ]
   };
-
-  balanceObj.imbalanceValueA = res.curUnbalance || 0;
-  balanceObj.imbalanceValueB = res.volUnbalance || 0;
-  balanceObj.colorIndex = (res.color || 1) - 1;
-  busName.value = res.busName || '未知';
+ 
+  // 更新平衡度和其他信息
+  balanceObj.imbalanceValueA = res.curUnbalance || 0; // 假设默认不平衡度为0
+  balanceObj.imbalanceValueB = res.volUnbalance || 0; // 假设默认不平衡度为0
+  balanceObj.colorIndex = (res.color || 1) - 1; // 假设默认颜色索引为0（如果color字段缺失或小于等于1）
+  busName.value = res.busName || '未知'; // 假设默认总线名称为'未知'
 }
+
 
 const getBalanceTrend = async (item) => {
   const res = await IndexApi.getBusBalanceTrend({
