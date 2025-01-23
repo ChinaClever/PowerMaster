@@ -344,7 +344,13 @@ const getList = async () => {
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     if(data.list == null){
-      ElMessage.error('暂无数据')
+      //清空表格
+      eqData.value = []
+      list.value = []
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
     }
     eqData.value = data.list.map((item) => {
         const difference = item.end_ele - item.start_ele;
@@ -372,7 +378,8 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(convertDate(end.value))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     queryParams.devkeys = [devKey.value];
@@ -553,10 +560,10 @@ onMounted(() => {
   const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
-selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
-];
+// selectTimeRange.value = [
+//   format(start),
+//   format(end)
+// ];
   if (start.value != null){
   	console.log('详情页', start);
 	console.log('详情页1', devKey);

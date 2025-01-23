@@ -466,7 +466,20 @@ loading.value = true
           minActivePowDataTimeTemp.value = createTimeData.value[index]
         }
       });
-    }
+    } else if(status.value == 1 ||status.value == 2){
+      maxActivePowDataTemp.value = Math.max(...totalActivePowMaxValueData.value);
+      minActivePowDataTemp.value = Math.min(...totalActivePowMinValueData.value);
+      totalActivePowMaxValueData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+      totalActivePowMinValueData.value.forEach(function(num, index) {
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+}
       // 图表显示的位置变化
      // nowAddress.value = nowAddressTemp.value
 
