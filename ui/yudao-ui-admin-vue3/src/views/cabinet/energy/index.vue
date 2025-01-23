@@ -208,6 +208,7 @@ const getTableData = async(reset = false) => {
       timeGranularity:queryParams.timeGranularity,
       company: queryParams.company
     })
+    console.log('res',res);
     if (res.list) {
       tableData.value = res.list.map(item => {
         const roomName = item.roomName || ''; // 处理 null 值
@@ -220,11 +221,12 @@ const getTableData = async(reset = false) => {
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
         }
       })
+      console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
+     }
+    } finally {
+      tableLoading.value = false
     }
-  } finally {
-    tableLoading.value = false
-  }
 }
 
 // 处理切换 表格/阵列 模式

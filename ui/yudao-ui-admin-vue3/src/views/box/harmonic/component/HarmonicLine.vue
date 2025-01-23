@@ -41,18 +41,36 @@ const echartsOption = ref({
   },
   tooltip: {
     trigger: 'axis',
+    tooltip: {
+    trigger: 'axis',
     formatter: function (params) {
-      var result = '';
-      params.forEach(function (item) {
-        // 根据系列名称来定制显示内容（可选）
-        var seriesName = item.seriesName;
-        var value = item.value; // 使用 item.value 来获取数据点的值
- 
-        result += '记录时间：' + item.name + '<br/>'; // item.name 通常是 x 轴的值
-        result += '<span style="display: inline-block; width: 10px; height: 10px; background-color: blue; border-radius: 50%; margin-right: 8px;"></span>';
-        result += seriesName + '：' + value + 'A<br/>'; // 显示系列名称和对应的值
-      });
+      var result = '记录时间：' + params[0].name + '<br/>';
+        params.forEach(function (item) {
+            // 根据系列名称设置颜色
+            var color;
+            switch (item.seriesName) {
+                case '系列1':
+                    color = 'blue';
+                    break;
+                case '系列2':
+                    color = 'green';
+                    break;
+                case '系列3':
+                    color = 'yellow';
+                    break;
+                // 可以添加更多系列名称和颜色的映射
+                default:
+                    color = 'black'; // 默认颜色，或者根据需求设置
+            }
+  
+            // 创建一个颜色点和间隔
+            result += '<span style="display: inline-block; width: 10px; height: 10px; background-color: ' + color + '; border-radius: 50%; margin-right: 8px;"></span>';
+  
+            // 添加系列名称和对应的值
+            result += item.seriesName + '：' + item.value + '<br/>';
+        });
       return result;
+      }
     }
   },
   xAxis: {type: 'category', boundaryGap: false, data : time.value},

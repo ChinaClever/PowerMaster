@@ -38,19 +38,19 @@
         <el-form-item label="时间段" prop="createTime" >
           <el-button 
             @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;switchValue = 0;handleDayPick();handleQuery()" 
-            :type="switchValue == 0 ? 'primary' : ''"
+            :type="switchValue === 0 ? 'primary' : ''"
           >
             日报
           </el-button>
           <el-button 
             @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;switchValue = 1;handleMonthPick();handleQuery()" 
-            :type="switchValue == 1 ? 'primary' : ''"
+            :type="switchValue === 1 ? 'primary' : ''"
           >
             月报
           </el-button>
           <el-button 
             @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;switchValue = 2;" 
-            :type="switchValue == 2 ? 'primary' : ''"
+            :type="switchValue === 2 ? 'primary' : ''"
           >
             自定义
           </el-button>
