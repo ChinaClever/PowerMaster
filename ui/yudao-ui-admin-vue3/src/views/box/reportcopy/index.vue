@@ -144,7 +144,7 @@
                 </div>
               </el-col>
               <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">
-                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+                <!-- <Rad2ar width="29vw" height="25vh" :list="serverData" /> -->
                 <div>
                  <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
                </div>
