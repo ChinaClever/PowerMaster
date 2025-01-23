@@ -575,6 +575,7 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBoxLinePage(queryParams)
+    console.log('data',data);
     list.value = data.list
     var tableIndex = 0;
     list.value.forEach((obj) => {
