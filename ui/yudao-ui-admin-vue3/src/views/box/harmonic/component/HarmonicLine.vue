@@ -33,52 +33,56 @@ series.value = [
 
 //设置饼图的选项
 const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
-  legend: { data: legendList,
-    type: 'scroll', // 设置为 'single' 或 'multiple'
-    orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
-    width:1000
+  dataZoom: [{ type: "inside" }],
+  legend: {
+    data: legendList,
+    type: 'scroll',
+    orient: 'horizontal',
+    width: 1000
   },
   tooltip: {
     trigger: 'axis',
-    tooltip: {
-    trigger: 'axis',
     formatter: function (params) {
-      var result = '记录时间：' + params[0].name + '<br/>';
+        var result = '记录时间：' + (params.length > 0 ? params[0].name : '未知时间') + '<br/>';
         params.forEach(function (item) {
             // 根据系列名称设置颜色
             var color;
             switch (item.seriesName) {
-                case '系列1':
+                case 'A相电流谐波':
                     color = 'blue';
                     break;
-                case '系列2':
+                case 'B相电流谐波':
                     color = 'green';
                     break;
-                case '系列3':
+                case 'C相电流谐波':
                     color = 'yellow';
                     break;
                 // 可以添加更多系列名称和颜色的映射
                 default:
                     color = 'black'; // 默认颜色，或者根据需求设置
             }
-  
+ 
             // 创建一个颜色点和间隔
             result += '<span style="display: inline-block; width: 10px; height: 10px; background-color: ' + color + '; border-radius: 50%; margin-right: 8px;"></span>';
-  
+ 
             // 添加系列名称和对应的值
             result += item.seriesName + '：' + item.value + '<br/>';
         });
-      return result;
-      }
+        return result;
+    }
+},
+  xAxis: { type: 'category', boundaryGap: false, data: time.value },
+  yAxis: { type: 'value' },
+  toolbox: {
+    feature: {
+      saveAsImage: {},
+      dataView: {},
+      dataZoom: {},
+      restore: {}
     }
   },
-  xAxis: {type: 'category', boundaryGap: false, data : time.value},
-  yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: series.value,
-})
-
+});
 //watchEffect(() => {
 //  // 直接访问即可，watchEffect会自动跟踪变化
 //
