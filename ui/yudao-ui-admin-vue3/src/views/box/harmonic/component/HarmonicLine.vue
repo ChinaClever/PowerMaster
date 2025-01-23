@@ -40,37 +40,17 @@ const echartsOption = ref({
     orient: 'horizontal',
     width: 1000
   },
-  tooltip: {
+  tooltip: { 
     trigger: 'axis',
-    formatter: function (params) {
-        var result = '记录时间：' + (params.length > 0 ? params[0].name : '未知时间') + '<br/>';
-        params.forEach(function (item) {
-            // 根据系列名称设置颜色
-            var color;
-            switch (item.seriesName) {
-                case 'A相电流谐波':
-                    color = 'blue';
-                    break;
-                case 'B相电流谐波':
-                    color = 'green';
-                    break;
-                case 'C相电流谐波':
-                    color = 'yellow';
-                    break;
-                // 可以添加更多系列名称和颜色的映射
-                default:
-                    color = 'black'; // 默认颜色，或者根据需求设置
-            }
- 
-            // 创建一个颜色点和间隔
-            result += '<span style="display: inline-block; width: 10px; height: 10px; background-color: ' + color + '; border-radius: 50%; margin-right: 8px;"></span>';
- 
-            // 添加系列名称和对应的值
-            result += item.seriesName + '：' + item.value + '<br/>';
-        });
-        return result;
-    }
-},
+    formatter: function(params) {
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+        result += '<br>';
+      }
+      return result;
+    } 
+   },
   xAxis: { type: 'category', boundaryGap: false, data: time.value },
   yAxis: { type: 'value' },
   toolbox: {
@@ -98,9 +78,9 @@ watch(() => prop.list, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     time.value = newVal.time;
     series.value = [
-      { name: 'A相电流谐波', type: 'line', data: newVal.lineOne },
-      { name: 'B相电流谐波', type: 'line', data: newVal.linetwe },
-      { name: 'C相电流谐波', type: 'line', data: newVal.linethree }
+      { name: 'A相电流谐波', type: 'line', symbol: 'circle', symbolSize: 4,data: newVal.lineOne },
+      { name: 'B相电流谐波', type: 'line', symbol: 'circle', symbolSize: 4,data: newVal.linetwe },
+      { name: 'C相电流谐波', type: 'line', symbol: 'circle', symbolSize: 4,data: newVal.linethree }
     ];
     legendList.value = series.value.map(item => item.name);
   }
