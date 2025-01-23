@@ -733,7 +733,7 @@ public class CabinetServiceImpl implements CabinetService {
         if (CollectionUtils.isEmpty(ids)) {
             return new PageResult<>(list, voPage.getTotal());
         }
-//        Map<String, CabinetEnergyStatisticsResVO> map = list.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+
         List<String> keys = list.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
 
         //昨日
@@ -1581,7 +1581,7 @@ public class CabinetServiceImpl implements CabinetService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
                     .must(QueryBuilders.termsQuery(CABINET_ID, ids))));
-            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+//            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(10000);
