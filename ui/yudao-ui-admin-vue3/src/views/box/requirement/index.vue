@@ -231,7 +231,9 @@
       </div>
 
       <div  v-show="switchValue == 0 && visMode == 0 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+        <div v-if="item.devKey !== null" class="arrayItem">
+        <!-- <div class="arrayItem" v-for="item in list" :key="item.devKey"> -->
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
@@ -249,6 +251,7 @@
           </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
         </div>
+        </template>
       </div>
 
       <Pagination

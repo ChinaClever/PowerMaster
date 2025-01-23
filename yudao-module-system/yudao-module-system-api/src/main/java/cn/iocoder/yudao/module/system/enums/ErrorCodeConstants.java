@@ -161,5 +161,6 @@ public interface ErrorCodeConstants {
     ErrorCode EXCEL_NULL = new ErrorCode(1_002_029_001, "暂无数据可导出");
 
     ErrorCode KEY_SHORT = new ErrorCode(1_002_030_001, "请输入更多的内容以便查询");
+    ErrorCode NOT_DETAIL = new ErrorCode(1_002_030_002, "暂无详情数据");
 
 }

@@ -22,6 +22,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.framework.common.vo.RackIndexResVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
@@ -333,7 +334,13 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(RackIndex::getCabinetId, index.getId())
                         .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
                 if (!CollectionUtils.isEmpty(rackIndexList)) {
-                    dto.setRackIndexList(rackIndexList);
+                    List<RackIndexResVO> bean = BeanUtils.toBean(rackIndexList, RackIndexResVO.class);
+                    bean.forEach(t -> {
+                        //TODO 测试
+                        t.setPowActive(new BigDecimal("3.3"));
+                        t.setCurValue(new BigDecimal("4.4"));
+                    });
+                    dto.setRackIndexList(bean);
                     int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0, Integer::sum);
                     int rackNum = rackIndexList.size();
                     int freeSpace = dto.getCabinetHeight() - usedSpace;

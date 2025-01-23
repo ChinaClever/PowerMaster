@@ -97,7 +97,7 @@ import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
-import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
 
 /**
  * 始端箱索引 Service 实现类
@@ -1339,6 +1339,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return boxIndexMapper.findKeys(key, flag);
     }
 
+
+
     @Override
     public List<BoxIndexMaxEqResVO> getMaxEq() {
         List<BoxIndexMaxEqResVO> result = new ArrayList<>();
@@ -1857,11 +1859,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Override
     public Map getBoxPFDetail(BoxIndexPageReqVO pageReqVO) {
+        Map<String, List> map = new HashMap<>();
         try {
             pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
             ArrayList<Integer> ids = new ArrayList<>();
             ids.add(pageReqVO.getBoxId());
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            if (Objects.isNull(pageReqVO.getNewTime())){
+                pageReqVO.setNewTime(LocalDateTime.now());
+            }
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             List<String> outletHour = getData(startTime, endTime, ids, "box_hda_outlet_hour");
             List<BoxPFDetail> strList = outletHour.stream()
@@ -1869,7 +1875,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     .collect(Collectors.toList());
 
             Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
-            Map<String, List> map = new HashMap<>();
+//            Map<String, List> map = new HashMap<>();
             for (String key : pfMap.keySet()) {
                 List<BoxPFDetail> list = pfMap.get(key);
                 map.put(key, list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
@@ -1879,10 +1885,35 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             return map;
         } catch (Exception e) {
             log.error("获取数据失败：", e);
+//            throw exception(NOT_DETAIL);
+            return null;
         }
-        return null;
     }
+    @Override
+    public Map getBoxPFDetailNow(BoxIndexPageReqVO pageReqVO) {
+        BoxIndex boxIndex = boxIndexMapper.selectById(pageReqVO.getBoxId());
+        Object o = redisTemplate.opsForValue().get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+        if (Objects.isNull(o)){
+            return null;
+        }
+        JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(o));
+        Map<String, List> map = new HashMap<>();
+        List<BoxPFDetail> strList =new ArrayList<>();
 
+        String time = jsonObject.getString("sys_time");
+        JSONObject outItem = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
+        List<BigDecimal> powerFactor = outItem.getList("power_factor", BigDecimal.class);
+        for (int i = 0; i < powerFactor.size(); i++) {
+            BoxPFDetail detail = new BoxPFDetail();
+            detail.setOutletId(i+1);
+            detail.setPowerFactorAvgValue(powerFactor.get(i));
+            detail.setCreateTime(time);
+
+        }
+        map.put("time", strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
+        map.put("table", strList);
+        return map;
+    }
 
     @Override
     public PageResult<BoxHarmonicRes> getBoxHarmonicPage(BoxIndexPageReqVO pageReqVO) {
@@ -1965,15 +1996,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         BoxHarmonicLineResVO result = new BoxHarmonicLineResVO();
 
         Object o = redisTemplate.opsForValue().get(REDIS_KEY_BOX + pageReqVO.getDevKey());
-        JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(o));
-
-        result.setBusName(jsonObject.getString("bus_name"));
-        result.setBoxName(jsonObject.getString("box_name"));
-
+        if (Objects.nonNull(o)) {
+            JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(o));
+            result.setBusName(jsonObject.getString("bus_name"));
+            result.setBoxName(jsonObject.getString("box_name"));
+        }
 
         pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
         try {
-
             List<Integer> lines = new ArrayList<>();
             lines.add(1);
             lines.add(2);
@@ -1998,7 +2028,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 if (Objects.nonNull(line3)) {
                     result.setLinethree(line3.stream().map(BoxLineBaseDo::getCurThdAvgValue).collect(Collectors.toList()));
                 }
-
             }
 //            boxHdaLine.forEach(boxLineHourDo -> {
 //                result.getTime().add(boxLineHourDo.getCreateTime().toString("HH:mm"));
