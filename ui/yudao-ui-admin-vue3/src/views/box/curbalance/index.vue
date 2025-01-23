@@ -854,13 +854,12 @@ const getBalanceDetail = async(item) => {
   console.log('11111111', res);
  
   // 定义默认值
-  const defaultCurrentValue = [0.00, 0.00, 0.00]; // 假设三相电流默认值为0
-  const defaultVoltageValue = [0.0, 0.0, 0.0]; // 假设三相电压默认值为0
+  const defaultCurrentValue = [0.00, 0.00, 0.00];
+  const defaultVoltageValue = [0.0, 0.0, 0.0];
  
   let cur_valueA = res.cur_value ? res.cur_value : defaultCurrentValue;
   let vol_value = res.vol_value ? res.vol_value : defaultVoltageValue;
- 
-  // 更新全局或组件状态（假设cur_valueACopy和vol_valueACopy是响应式对象）
+
   cur_valueACopy.value = cur_valueA.map(number => number.toFixed(2));
   vol_valueACopy.value = vol_value.map(number => number.toFixed(1));
  
@@ -934,11 +933,10 @@ const getBalanceDetail = async(item) => {
     ]
   };
  
-  // 更新平衡度和其他信息
-  balanceObj.imbalanceValueA = res.curUnbalance || 0; // 假设默认不平衡度为0
-  balanceObj.imbalanceValueB = res.volUnbalance || 0; // 假设默认不平衡度为0
-  balanceObj.colorIndex = (res.color || 1) - 1; // 假设默认颜色索引为0（如果color字段缺失或小于等于1）
-  busName.value = res.busName || '未知'; // 假设默认总线名称为'未知'
+  balanceObj.imbalanceValueA = res.curUnbalance || 0;
+  balanceObj.imbalanceValueB = res.volUnbalance || 0;
+  balanceObj.colorIndex = (res.color || 1) - 1;
+  busName.value = res.busName || '未知';
 }
 
 const getBalanceTrend = async (item) => {
