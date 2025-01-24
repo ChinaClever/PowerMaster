@@ -22,6 +22,8 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.framework.common.vo.RackIndexResVO;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.service.ICabinetEnvSensorService;
@@ -38,6 +40,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -60,6 +63,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
@@ -330,7 +334,13 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(RackIndex::getCabinetId, index.getId())
                         .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
                 if (!CollectionUtils.isEmpty(rackIndexList)) {
-                    dto.setRackIndexList(rackIndexList);
+                    List<RackIndexResVO> bean = BeanUtils.toBean(rackIndexList, RackIndexResVO.class);
+                    bean.forEach(t -> {
+                        //TODO 测试
+                        t.setPowActive(new BigDecimal("3.3"));
+                        t.setCurValue(new BigDecimal("4.4"));
+                    });
+                    dto.setRackIndexList(bean);
                     int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0, Integer::sum);
                     int rackNum = rackIndexList.size();
                     int freeSpace = dto.getCabinetHeight() - usedSpace;
@@ -365,17 +375,14 @@ public class CabinetServiceImpl implements CabinetService {
                     List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
                     if (!CollectionUtils.isEmpty(ids)) {
                         if (isExist(vo.getPduIpA(), vo.getCasIdA(), ids)) {
-//                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
 
                         if (isExist(vo.getPduIpB(), vo.getCasIdB(), ids)) {
-//                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
                     }
                 }
-
                 //判断AB路pdu是否一样
                 if (StringUtils.isNotEmpty(vo.getPduIpA()) && StringUtils.isNotEmpty(vo.getPduIpB())) {
                     if (vo.getPduIpA().equals(vo.getPduIpB()) && vo.getCasIdA() == vo.getCasIdB()) {
@@ -448,7 +455,6 @@ public class CabinetServiceImpl implements CabinetService {
             if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
-
                     //删除
                     cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
                             .eq(CabinetPdu::getCabinetId, vo.getId()));
@@ -457,7 +463,6 @@ public class CabinetServiceImpl implements CabinetService {
                 //pdu关联表
                 CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                         .eq(CabinetPdu::getCabinetId, vo.getId()));
-
 
                 if (Objects.nonNull(pdu)) {
                     //修改
@@ -477,12 +482,9 @@ public class CabinetServiceImpl implements CabinetService {
                     cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
                             .eq(CabinetBox::getCabinetId, vo.getId()));
                 }
-
                 //母线关联表
                 CabinetBox bus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>()
                         .eq(CabinetBox::getCabinetId, vo.getId()));
-
-
                 if (Objects.nonNull(bus)) {
                     //修改
                     cabinetBusMapper.updateById(convertBus(vo, bus));
@@ -731,12 +733,15 @@ public class CabinetServiceImpl implements CabinetService {
         if (CollectionUtils.isEmpty(ids)) {
             return new PageResult<>(list, voPage.getTotal());
         }
-        Map<String, CabinetEnergyStatisticsResVO> map = list.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+
         List<String> keys = list.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
-        List vlues = redisTemplate.opsForValue().multiGet(keys);
+
         //昨日
-        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+
+//        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+//        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
         List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> yesterdayMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(yesterdayList)) {
@@ -744,8 +749,9 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-        endTime = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+//        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+//        endTime = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
         List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> weekMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(weekList)) {
@@ -753,28 +759,36 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-        endTime = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+//        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+//        endTime = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
         List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> monthMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(monthList)) {
             monthMap = monthList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
         }
 
+        List<Object> vlues = redisTemplate.opsForValue().multiGet(keys);
+        Map<String,Object> keyMap = vlues.stream().filter(i -> Objects.nonNull(i))
+                .collect(Collectors.toMap(i -> JSON.parseObject(JSONObject.toJSONString(i)).getString("cabinet_key"), Function.identity()));
         for (CabinetEnergyStatisticsResVO vo : list) {
             vo.setYesterdayEq(yesterdayMap.get(vo.getId()));
             vo.setLastWeekEq(weekMap.get(vo.getId()));
             vo.setLastMonthEq(monthMap.get(vo.getId()));
-        }
-
-        for (Object obj : vlues) {
-            if (Objects.isNull(obj)) {
+            if (vo.getYesterdayEq() == null) {
+                vo.setYesterdayEq(new BigDecimal("0"));
+            }
+            if (vo.getLastWeekEq() == null){
+                vo.setLastWeekEq(new BigDecimal("0"));
+            }
+            if (vo.getLastMonthEq() == null){
+                vo.setLastMonthEq(new BigDecimal("0"));
+            }
+            Object obj = keyMap.get(vo.getRoomId() + "-" + vo.getId());
+            if (Objects.isNull(obj)){
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
-            String cabinetKey = jsonObject.getString("cabinet_key");
-            CabinetEnergyStatisticsResVO vo = map.get(cabinetKey);
-
             vo.setRoomName(jsonObject.getString("room_name"));
             StringJoiner joiner = new StringJoiner("-");
             if (!StringUtils.isEmpty(vo.getRoomName())) {
@@ -782,6 +796,15 @@ public class CabinetServiceImpl implements CabinetService {
             }
             joiner.add(vo.getCabinetName());
             vo.setLocation(joiner.toString());
+        }
+        if (Objects.nonNull(pageReqVO.getTimeGranularity())) {
+            if (pageReqVO.getTimeGranularity().equals("yesterday")) {
+                list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getYesterdayEq).reversed());
+            } else if (pageReqVO.getTimeGranularity().equals("lastWeek")) {
+                list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getLastWeekEq).reversed());
+            } else if (pageReqVO.getTimeGranularity().equals("lastMonth")) {
+                list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getLastMonthEq).reversed());
+            }
         }
         return new PageResult<>(list, voPage.getTotal());
     }
@@ -792,6 +815,10 @@ public class CabinetServiceImpl implements CabinetService {
         String startTime = null;
         String endTime = DateUtil.formatDateTime(DateTime.now());
         Integer total = 0;
+        List<Integer> cabinetIds = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(pageReqVO.getCabinetIds())){
+            cabinetIds.addAll(pageReqVO.getCabinetIds());
+        }
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
                 startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
@@ -824,8 +851,12 @@ public class CabinetServiceImpl implements CabinetService {
             searchSourceBuilder.fetchSource(new String[]{"cabinet_id"}, null);
             searchSourceBuilder.sort("eq_value", SortOrder.DESC);
             //获取需要处理的数据
-            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))));
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            boolQueryBuilder.must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+            if (!CollectionUtils.isEmpty(cabinetIds)){
+                boolQueryBuilder.must(QueryBuilders.termsQuery(CABINET_ID, cabinetIds));
+            }
+            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(boolQueryBuilder));
 
             SearchRequest searchRequest = new SearchRequest();
             searchRequest.indices(indices);
@@ -915,6 +946,11 @@ public class CabinetServiceImpl implements CabinetService {
     @Override
     public CabinetCapacityStatisticsResVO getCapacitystatistics() {
         return cabinetIndexMapper.getCapacitystatistics();
+    }
+
+    @Override
+    public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(CabinetIndexVo pageReqVO) {
+        return null;
     }
 
     @Override
@@ -1545,7 +1581,7 @@ public class CabinetServiceImpl implements CabinetService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
                     .must(QueryBuilders.termsQuery(CABINET_ID, ids))));
-            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+//            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(10000);

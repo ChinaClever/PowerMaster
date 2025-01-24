@@ -3,6 +3,7 @@ package cn.iocoder.yudao.framework.common.dto.cabinet;
 import cn.hutool.json.JSONObject;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
+import cn.iocoder.yudao.framework.common.vo.RackIndexResVO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -132,7 +133,7 @@ public class CabinetDTO {
     private List<CabinetEnvSensorDTO> sensorList;
 
     @Schema(description = "u位数据", example = "[]")
-    private List<RackIndex> rackIndexList;
+    private List<RackIndexResVO> rackIndexList;
 
 
     @Schema(description = "A路输出位长度", example = "10")

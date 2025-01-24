@@ -44,19 +44,19 @@
                 <el-input v-model="machineFormData.company" placeholder="请输入" />
               </el-form-item>
               <div class="double-formitem">
-                <el-form-item label="日用能告警">
-                  <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+                <el-form-item label="月用能告警">
+                  <el-switch @click="showFlag = !showFlag" v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
                 </el-form-item>
-                <el-form-item label="日用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                <el-form-item v-if="showFlag" label="月用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
                 </el-form-item>
               </div>
               <div class="double-formitem">
-                <el-form-item label="月用能告警">
-                  <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+                <el-form-item label="日用能告警">
+                  <el-switch @click="showFlagCopy = !showFlagCopy" v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
                 </el-form-item>
-                <el-form-item label="月用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                <el-form-item v-if="showFlagCopy" label="日用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
                 </el-form-item>
               </div>
             </div>
@@ -100,13 +100,13 @@
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item label="母线IP：">
                     <el-input v-model="machineFormData.busIpA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
                     <el-input v-model="machineFormData.barIdA" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱编号：">
+                  <el-form-item label="插接箱地址：">
                     <el-input v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
@@ -115,13 +115,13 @@
                 </div>
                 <div>
                   <div class="title">B路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item label="母线IP：">
                     <el-input v-model="machineFormData.busIpB" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
                     <el-input v-model="machineFormData.barIdB" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱编号：">
+                  <el-form-item label="插接箱地址：">
                     <el-input v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
@@ -237,6 +237,8 @@ const isFullscreen = ref(false)
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const sensorVisible = ref(false) // 传感器弹窗的是否展示
 const sensorLoading = ref(false) // 传感器表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+const showFlag = ref(false);
+const showFlagCopy = ref(false);
 const sensorFormData = reactive({
   type: null,
   sensorId: null,
@@ -352,7 +354,7 @@ const machineFormData = ref({
   cabinetName: '',
   type: '',
   cabinetHeight: 42, //U
-  powCapacity: 8, // kAV
+  powCapacity: 8, // kVA
   company: '',
   pduIpA: '',
   casIdA: '',
@@ -528,6 +530,9 @@ const open = async (type: string, data, roomList) => {
   // }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
+
+watch(() => machineFormData.value.powCapacity, (newValue) => {
+});
 
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调

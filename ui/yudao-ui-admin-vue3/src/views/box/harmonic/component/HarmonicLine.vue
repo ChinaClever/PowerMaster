@@ -33,34 +33,36 @@ series.value = [
 
 //设置饼图的选项
 const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
-  legend: { data: legendList,
-    type: 'scroll', // 设置为 'single' 或 'multiple'
-    orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
-    width:1000
+  dataZoom: [{ type: "inside" }],
+  legend: {
+    data: legendList,
+    type: 'scroll',
+    orient: 'horizontal',
+    width: 1000
   },
-  tooltip: {
+  tooltip: { 
     trigger: 'axis',
-    formatter: function (params) {
-      var result = '';
-      params.forEach(function (item) {
-        // 根据系列名称来定制显示内容（可选）
-        var seriesName = item.seriesName;
-        var value = item.value; // 使用 item.value 来获取数据点的值
- 
-        result += '记录时间：' + item.name + '<br/>'; // item.name 通常是 x 轴的值
-        result += '<span style="display: inline-block; width: 10px; height: 10px; background-color: blue; border-radius: 50%; margin-right: 8px;"></span>';
-        result += seriesName + '：' + value + 'A<br/>'; // 显示系列名称和对应的值
-      });
+    formatter: function(params) {
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+        result += '<br>';
+      }
       return result;
+    } 
+   },
+  xAxis: { type: 'category', boundaryGap: false, data: time.value },
+  yAxis: { type: 'value' },
+  toolbox: {
+    feature: {
+      saveAsImage: {},
+      dataView: {},
+      dataZoom: {},
+      restore: {}
     }
   },
-  xAxis: {type: 'category', boundaryGap: false, data : time.value},
-  yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: series.value,
-})
-
+});
 //watchEffect(() => {
 //  // 直接访问即可，watchEffect会自动跟踪变化
 //
@@ -72,7 +74,17 @@ const echartsOption = ref({
 //  time.value = prop.list.time;
 //
 //});
-
+watch(() => prop.list, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    time.value = newVal.time;
+    series.value = [
+      { name: 'A相电流谐波', type: 'line', symbol: 'circle', symbolSize: 4,data: newVal.lineOne },
+      { name: 'B相电流谐波', type: 'line', symbol: 'circle', symbolSize: 4,data: newVal.linetwe },
+      { name: 'C相电流谐波', type: 'line', symbol: 'circle', symbolSize: 4,data: newVal.linethree }
+    ];
+    legendList.value = series.value.map(item => item.name);
+  }
+}, { deep: true }); // 使用 deep: true 来深度监听对象的变化
 
 
 onUnmounted(() => {

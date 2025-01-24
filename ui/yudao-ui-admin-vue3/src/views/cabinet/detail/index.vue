@@ -3,8 +3,10 @@
   <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
     <div style="padding: 5px 10px;" class="header_app_text">
       <span>所在位置：{{ location }}-{{ busName }}</span>
-      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(location)">PDU详情</el-button></span>
-      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus()">母线详情</el-button></span>
+      <span style="margin-left:10px;">A路网络地址：{{ keyAlocation }}</span>
+      <span style="margin-left:10px;">B路网络地址：{{ keyBlocation }}</span>
+      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA)">A路PDU详情</el-button><el-button @click="goBus(keyB)">B路PDU详情</el-button></span>
+      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA)">A路母线详情</el-button><el-button @click="goBus(keyB)">B路母线详情</el-button></span>
     </div>
     <!--<div style="background-color: #E7E7E7;" class="header_app_text_other1">
           <el-col :span="10" >
@@ -30,10 +32,10 @@
     </div>-->
     <div  style="display: flex; justify-content: flex-end; gap: 10px;" class="header_app_text">
       <!--<el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>-->
-      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''">近一小时</el-button>
-      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
-      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
-      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
+      <el-button @click="changeTime ('day');" :type="queryParams.timeGranularity == 'day' ? 'primary' : ''">近一小时</el-button>
+      <el-button @click="changeTime ('hour');" :type="queryParams.timeGranularity == 'hour' ? 'primary' : ''">今天</el-button>
+      <el-button @click="changeTime('today');" :type="queryParams.timeGranularity == 'today' ? 'primary' : ''">近一天</el-button>
+      <el-button @click="changeTime('threeDay');" :type="queryParams.timeGranularity == 'threeDay' ? 'primary' : ''">近三天</el-button>
     </div>
   </div>
   <div class="TransformerMonitor">
@@ -221,7 +223,7 @@
       <div style="display: inline-block;
         width: 50%;
         height: 90%;
-        margin-right:-50px;"
+        margin-right:-15px;"
       >
         <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
         <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
@@ -281,17 +283,21 @@ const visContro = ref({
   powActiveVis : false,
   powReactiveVis : false,
 })
+const keyA = ref();
+const keyB = ref();
+const keyAlocation = ref();
+const keyBlocation = ref();
 
-const goPDU = (row: { devKey: string; location: string; id: number }) => {
-  const { devKey, location, id } = row;
+const goPDU = (row: { devKey: string;  }) => {
+  const { devKey} = row;
   router.push({
     path: '/pdu/pdudisplayscreen',
-    query: { devKey, id: id.toString(), location }
+    query: { devKey }
   });
 }
 
-const goBus = (roomName, devKey, busId, location, busName) => {
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
+const goBus = (devKey) => {
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey }})
 }
 
 const getFullTimeByDate = (date) => {
@@ -323,7 +329,7 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
-  timeGranularity: '近一小时',
+  timeGranularity: 'day',
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
 }) as any
@@ -341,6 +347,12 @@ const getRedisData = async () => {
   location.value = result.roomName;
   busName.value = result.cabinetName;
   pduBox.value = result.pduBox;
+  keyA.value = result.keyA.split('-').slice(0, 2).join('-');
+  keyB.value = result.keyB.split('-').slice(0, 2).join('-');
+  keyAlocation.value = result.keyA;
+  keyBlocation.value = result.keyB;
+  console.log('keyA.value',keyA.value);
+  console.log('keyB.value',keyB.value);
   console.log('pduBox.value',pduBox.value);
   console.log('result',result);
   resultData.value = result;

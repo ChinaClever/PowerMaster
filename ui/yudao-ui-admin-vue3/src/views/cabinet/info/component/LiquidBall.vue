@@ -21,7 +21,7 @@ const props = defineProps({
 })
 const color = ref('');
 const echartsOption = reactive<any>({});
-//console.log('props.precent',Math.round(props.precent));
+console.log('props.precent',Math.round(props.precent));
 
 const judgeColor = () => {
   if (props.precent == 0) {

@@ -104,7 +104,7 @@ import { IndexApi } from '@/api/bus/boxindex'
 import { BoxEnergyApi } from '@/api/bus/boxenergy'
 import 'echarts/lib/component/dataZoom';
 
-const location = ref(history?.state?.local );
+const location = ref(history?.state?.roomName );
 const boxName = ref(history?.state?.boxName );
 const busName = ref(history?.state?.busName );
 const devKey = ref(history?.state?.devKey );
@@ -355,7 +355,7 @@ const getMachineEleTrend = async(type) => {
 }
 
 onBeforeMount(() => {
-  getNavList()
+  // getNavList()
   getActivePowTrend()
   getMachineEleChain()
   getMachineEleTrend('DAY')

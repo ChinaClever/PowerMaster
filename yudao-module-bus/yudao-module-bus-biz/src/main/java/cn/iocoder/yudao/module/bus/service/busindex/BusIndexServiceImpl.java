@@ -189,6 +189,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException {
         // 返回数据
+        BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaUpdateWrapper<BusIndexDO>().eq(BusIndexDO::getBusKey, pageReqVO.getDevKey()).last("limit 1"));
         BusPowerLoadDetailRespVO respVO = new BusPowerLoadDetailRespVO();
         String startTime;
         String endTime;
@@ -201,12 +202,12 @@ public class BusIndexServiceImpl implements BusIndexService {
                 startTime = localDateTimeToString(LocalDateTime.now().minusHours(1));
                 endTime = localDateTimeToString(LocalDateTime.now());
                 searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                        .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                        .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             } else {
                 startTime = localDateTimeToString(pageReqVO.getOldTime());
                 endTime = localDateTimeToString(pageReqVO.getNewTime());
                 searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                        .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                        .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             }
             searchSourceBuilder.sort("pow_apparent", SortOrder.DESC);
             // 执行搜索
@@ -232,7 +233,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             endTime = localDateTimeToString(LocalDateTime.now());
             searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                    .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                    .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             searchSourceBuilder.sort("pow_apparent_max_value", SortOrder.DESC);
             // 执行搜索
             searchRequest.source(searchSourceBuilder);
@@ -1599,7 +1600,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             LambdaQueryWrapper<BusIndexDO> queryWrapper = new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,0);
             if (ObjectUtils.isNotEmpty(pageReqVO.getDevKey()) || ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList())){
                 queryWrapper.and(wq ->wq.in(ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList()),BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()).or()
-                        .eq(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BusIndexDO::getBusKey, pageReqVO.getDevKey()));
+                        .likeLeft(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BusIndexDO::getBusKey, pageReqVO.getDevKey()));
             }
             List<BusIndexDO> searchList = busIndexMapper.selectList(queryWrapper);
 
@@ -3425,7 +3426,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
                     .must(QueryBuilders.termsQuery("bus_id", ids))));
-            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+//            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(2000);

@@ -35,7 +35,8 @@
 
 
       <div class="nav_header">       
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress?'暂未绑定设备':nowAddress}}</span>
+          <span v-if="devKey">({{devKey}})</span>
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
@@ -167,6 +168,7 @@ const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
+const devKey = ref('') // 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const activeName = ref('dayTabPane')
 const activeName1 = ref('lineChart')
@@ -524,7 +526,7 @@ onMounted(async () => {
   // 获取路由参数中的 box_id
   const queryBoxId = useRoute().query.boxId as string | undefined;
   const queryLocation = useRoute().query.location as string;
-  const queryDevkey = useRoute().query.devKey as string | undefined;
+  const queryDevkey = useRoute().query.devKey as string;
   queryParams.devkey =queryDevkey? queryDevkey : undefined;
   
   queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
@@ -532,6 +534,7 @@ onMounted(async () => {
   if (queryParams.boxId != undefined){
     await getLineChartData();
     nowAddress.value = queryLocation;
+    devKey.value = queryDevkey;
     nowAddressTemp.value = queryLocation;
     initLineChart();
   }

@@ -48,6 +48,11 @@
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
+              <div style="margin-right:30px;margin-left:-20px;">
+                <div>总视在功率：{{item.powApparentTotal || '0.00'}}</div>
+                <div>A路视在功率：{{item.powApparentA || '0.00'}}</div>
+                <div>B路视在功率：{{item.powApparentB || '0.00'}}</div>
+              </div>
               <div class="progress">
                 <div class="left" :style="`flex: ${item.apow || '0.00'}`">{{item.apow || '0.00'}}%</div>
                 <div class="line"></div>
@@ -116,7 +121,7 @@
               </div>
             </div> -->
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
-            <button v-if="item.pduBox === false" class="detail" @click.prevent="showDialog(item)">详情</button>
+            <button v-if="item.apow != null || item.bpow != null" class="detail" @click.prevent="showDialog(item)" >详情</button>
           </div>
         </div>
 
@@ -150,7 +155,7 @@
           <!-- 自定义的主要内容 -->
           <div class="custom-content">
             <CardTitle title="A路电流不平衡" />
-            <div class="custom-content-container">
+            <div class="custom-content-container" v-if="apow !== null">
               <el-card class="cardChilc" shadow="hover">
                 <curUnblance :max="balanceObj.imbalanceValueA"/>
               </el-card>
@@ -167,7 +172,7 @@
             </div>
 
             <CardTitle title="B路电流不平衡" />
-            <div class="custom-content-container">
+            <div class="custom-content-container" v-if="bpow !== null">
               <el-card class="cardChilc" shadow="hover">
                 <volUnblance :max="balanceObj.imbalanceValueB"/>
               </el-card>
@@ -522,7 +527,7 @@ const getBalanceTrend = async () => {
           name: 'A1',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curA[0].curValue),
+          data: res.map(item => item.curA[0].curValue.toFixed(2)),
         },
       ]
     } else if (res[0].curA && res[0].curA.length == 3) {
@@ -536,19 +541,19 @@ const getBalanceTrend = async () => {
           name: 'A1',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curA[0].curValue),
+          data: res.map(item => item.curA[0].curValue.toFixed(2)),
         },
         {
           name: 'A2',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curA[1].curValue),
+          data: res.map(item => item.curA[1].curValue.toFixed(2)),
         },
         {
           name: 'A3',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curA[2].curValue),
+          data: res.map(item => item.curA[2].curValue.toFixed(2)),
         },
       ]
     }
@@ -564,7 +569,7 @@ const getBalanceTrend = async () => {
           name: 'B1',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curB[0].curValue),
+          data: res.map(item => item.curB[0].curValue.toFixed(2)),
         },
       ]
     } else if(res[0].curB && res[0].curB.length == 3) {
@@ -578,19 +583,19 @@ const getBalanceTrend = async () => {
           name: 'B1',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curB[0].curValue),
+          data: res.map(item => item.curB[0].curValue.toFixed(2)),
         },
         {
           name: 'B2',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curB[1].curValue),
+          data: res.map(item => item.curB[1].curValue.toFixed(2)),
         },
         {
           name: 'B3',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.curB[2].curValue),
+          data: res.map(item => item.curB[2].curValue.toFixed(2)),
         },
       ]
     }
@@ -658,6 +663,8 @@ const dialogVisibleCur = ref(false);
 const curdevkey = ref();
 const busName = ref();
 const curlocation = ref();
+const apow = ref(null);
+const bpow = ref(null);
 
 const showDialog = async (item) => {
   console.log('item1111',item.id);
@@ -668,6 +675,8 @@ const showDialog = async (item) => {
   curdevkey.value = item.devKey;
   busName.value = item.busName;
   curlocation.value = item.location;
+  apow.value = item.apow;
+  bpow.value = item.bpow;
   await getBalanceDetail(item.id);
   await getBalanceDegree();
   await getBalanceTrend();
@@ -680,7 +689,7 @@ const handleSwitchModal = (value) => {
   if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
-    queryParams.pageSize = 10
+    queryParams.pageSize = 15
   }
   getTableData(true)
 }

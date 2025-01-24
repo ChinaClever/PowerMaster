@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.NOT_DETAIL;
 
 @Tag(name = "管理后台 - 插接箱索引")
 @RestController
@@ -164,7 +167,14 @@ public class BoxIndexController {
     @Operation(summary = "插接箱功率因数详情")
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBoxPFDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        return success(indexService.getBoxPFDetail(pageReqVO));
+        Map boxPFDetail = indexService.getBoxPFDetail(pageReqVO);
+        if (boxPFDetail == null){
+            boxPFDetail = indexService.getBoxPFDetailNow(pageReqVO);
+        }
+        if (boxPFDetail == null){
+            throw exception(NOT_DETAIL);
+        }
+        return success(boxPFDetail);
     }
 
     @Operation(summary = "插接箱功率因数详情-导出")
@@ -205,7 +215,7 @@ public class BoxIndexController {
     @PostMapping("/eq/page")
     public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         PageResult<BoxIndexDTO> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getBoxDevKeyList()) || ObjectUtil.isNotEmpty(pageReqVO.getDevKey())){
             pageResult =  indexService.getEqPage(pageReqVO);
         }else {
             pageResult = indexService.getEqPage1(pageReqVO);

@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗数据">
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">

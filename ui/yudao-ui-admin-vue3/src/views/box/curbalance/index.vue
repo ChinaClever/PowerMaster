@@ -553,13 +553,20 @@ const loadAll = async () => {
   return objectArray;
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -823,7 +830,7 @@ const showDialogCur = (item) => {
   curdevkey.value = item.devKey;
   curlocation.value = item.location;
   boxName.value = item.boxName;
-  busName.value = item.busName;
+  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -834,7 +841,7 @@ const showDialogVol = (item) => {
   voldevkey.value = item.devKey;
   vollocation.value = item.location;
   boxName.value = item.boxName;
-  busName.value = item.busName;
+  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -843,108 +850,93 @@ const cur_valueACopy = ref([]);
 const vol_valueACopy = ref([]);
 
 const getBalanceDetail = async(item) => {
-  const res = await IndexApi.getBoxBalanceDetail({devKey:item.devKey})
-  console.log('11111111',res)
+  const res = await IndexApi.getBoxBalanceDetail({devKey: item.devKey});
+  console.log('11111111', res);
+ 
+  // 定义默认值
+  const defaultCurrentValue = [0.00, 0.00, 0.00];
+  const defaultVoltageValue = [0.0, 0.0, 0.0];
+ 
+  let cur_valueA = res.cur_value ? res.cur_value : defaultCurrentValue;
+  let vol_value = res.vol_value ? res.vol_value : defaultVoltageValue;
 
-  if (res.cur_value) {
-    const cur_valueA = res.cur_value;
-    cur_valueACopy.value = res.cur_value;
-    console.log('cur_valueACopy.value',cur_valueACopy.value[0]);
-    // const max = Math.max(...cur_valueA) // 最大值
-    // // 计算平均值
-    // let sum = 0
-    // cur_valueA.forEach(item => {
-    //   sum = sum + item
-    // })
-    // const average = sum/cur_valueA.length
-    // // 平衡度
-    // balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
-    ABarOption.value = {
-      title: {
-        text: '电流饼形图',
-        left: 'left'
-      },
-      tooltip: {
-        trigger: 'item',
-        formatter: '{b} : {c}'
-      },
-      series: [
-        {
-          type: 'pie',
-          radius: ['30%', '80%'],
-          center: ['50%', '50%'],
-          roseType: 'radius',
-          itemStyle: {
-            borderRadius: 5
-          },
-          label: {
-            show: true,
-            position: 'inside', // 将标签显示在饼图内部
-            formatter: (params) => {
-              return `${params.value}A`;
-            },
-            fontSize: 14,
-            fontWeight: 'bold'
-          },
-          data: [
-            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#E5B849' } },
-            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#C8603A' } },
-            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#AD3762' } },
-          ]
-        }
-      ]
-    }
-  }
-  if (res.vol_value) {
-    const vol_value = res.vol_value;
-    vol_valueACopy.value = res.vol_value;
-    // const max = Math.max(...vol_value) // 最大值
-    // // 计算平均值
-    // let sum = 0
-    // vol_value.forEach(item => {
-    //   sum = sum + item
-    // })
-    // const average = sum / vol_value.length
-    // // 平衡度
-    // balanceObj.imbalanceValueB =  +(((max - average) * 100 / average).toFixed(0))
-    BBarOption.value = {
-      title: {
-        text: '电压饼形图',
-        left: 'left'
-      },
-      tooltip: {
-        trigger: 'item'
-      },
-      series: [
-        {
-          type: 'pie',
-          radius: ['40%', '80%'],
-          avoidLabelOverlap: false,
-          itemStyle: {
-            borderRadius: 10,
-            borderColor: '#fff',
-            borderWidth: 2
-          },
-          label: {
-            show: true,
-            position: 'inside',
-            formatter: (params) => `${params.value}V`,
-            fontSize: 14,
-            fontWeight: 'bold'
-          },
-          data: [
-            { value: vol_value[0].toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
-            { value: vol_value[1].toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
-            { value: vol_value[2].toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
-          ]
-        }
-      ]
-    }
-  }
-
-  balanceObj.imbalanceValueA = res.curUnbalance;
-  balanceObj.imbalanceValueB = res.volUnbalance;
-  balanceObj.colorIndex = res.color - 1;
+  cur_valueACopy.value = cur_valueA.map(number => number.toFixed(2));
+  vol_valueACopy.value = vol_value.map(number => number.toFixed(1));
+ 
+  // 设置电流饼形图数据
+  ABarOption.value = {
+    title: {
+      text: '电流饼形图',
+      left: 'left'
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b} : {c}'
+    },
+    series: [
+      {
+        type: 'pie',
+        radius: ['30%', '80%'],
+        center: ['50%', '50%'],
+        roseType: 'radius',
+        itemStyle: {
+          borderRadius: 5
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: (params) => `${params.value}A`,
+          fontSize: 14,
+          fontWeight: 'bold'
+        },
+        data: [
+          { value: cur_valueA[0].toFixed(2), name: 'A相电流', itemStyle: { color: '#E5B849' } },
+          { value: cur_valueA[1].toFixed(2), name: 'B相电流', itemStyle: { color: '#C8603A' } },
+          { value: cur_valueA[2].toFixed(2), name: 'C相电流', itemStyle: { color: '#AD3762' } },
+        ]
+      }
+    ]
+  };
+ 
+  // 设置电压饼形图数据
+  BBarOption.value = {
+    title: {
+      text: '电压饼形图',
+      left: 'left'
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    series: [
+      {
+        type: 'pie',
+        radius: ['40%', '80%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: (params) => `${params.value}V`,
+          fontSize: 14,
+          fontWeight: 'bold'
+        },
+        data: [
+          { value: vol_value[0].toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
+          { value: vol_value[1].toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
+          { value: vol_value[2].toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
+        ]
+      }
+    ]
+  };
+ 
+  balanceObj.imbalanceValueA = res.curUnbalance || 0;
+  balanceObj.imbalanceValueB = res.volUnbalance || 0;
+  balanceObj.colorIndex = (res.color || 1) - 1;
+  busName.value = res.busName || '未知';
 }
 
 const getBalanceTrend = async (item) => {

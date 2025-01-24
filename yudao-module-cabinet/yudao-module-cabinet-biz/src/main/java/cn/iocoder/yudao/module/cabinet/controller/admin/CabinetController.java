@@ -10,6 +10,8 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.IndexPageReqVO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
@@ -18,6 +20,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -86,7 +89,6 @@ public class CabinetController {
         return success(pageResult);
     }
 
-
     @Operation(summary = "恢复设备")
     @GetMapping("/cabinet/restorerCabinet")
     public CommonResult getrestorerCabinet(@Param("id") int id) {
@@ -132,7 +134,7 @@ public class CabinetController {
     @Operation(summary = "获得机柜用能分页")
     public CommonResult<PageResult<CabinetEnergyStatisticsResVO>> getEnergyStatisticsPage(@RequestBody CabinetIndexVo pageReqVO) throws IOException {
         PageResult<CabinetEnergyStatisticsResVO> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getCabinetIds()) || ObjectUtil.isNotEmpty(pageReqVO.getCompany())){
             pageResult =  cabinetService.getEnergyStatisticsPage(pageReqVO);
         }else {
             pageResult = cabinetService.getEqPage1(pageReqVO);
@@ -242,5 +244,11 @@ public class CabinetController {
     public CommonResult<Map<String, List<CabinetLoadPageChartResVO>>> getBusLineChartDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
         Map<String, List<CabinetLoadPageChartResVO>> resultMap = cabinetService.getLineChartDetailData(reqVO);
         return success(resultMap);
+    }
+
+    @PostMapping("/env/page")
+    @Operation(summary = "获得机柜环境分页")
+    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid CabinetIndexVo pageReqVO) {
+        return success(cabinetService.getCabinetEnvPage(pageReqVO));
     }
 }

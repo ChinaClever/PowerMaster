@@ -230,10 +230,10 @@
         </el-form-item> -->
         <el-form-item>       
           <!--<el-tag size="large">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{boxName}})</el-tag>-->
-          <span>机房：{{ roomName }}</span>
-          <span>母线：{{ busName }}</span>
-          <span>插接箱：{{boxName}}</span>
-          <span>网络地址：{{ location }}</span>
+          <span>机房：{{ location }}&nbsp;&nbsp;</span>
+          <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+          <span>插接箱：{{boxName}}&nbsp;&nbsp;</span>
+          <span>网络地址：{{ devkey }}</span>
           <!--<el-select
             v-model="queryParamsCopy.harmonicType"
             placeholder="请选择"
@@ -275,7 +275,7 @@
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <div class="custom-content-container">
-            <HarmonicLine  width="70vw" height="58vh" :list="abcLineData"/>
+            <HarmonicLine v-if="abcLineShow === true" width="70vw" height="58vh" :list="abcLineData"/>
           </div>
         </div>
       </el-dialog>
@@ -416,13 +416,20 @@ const loadAll = async () => {
   return objectArray;
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -618,6 +625,7 @@ const disabledDate = (date) => {
 }
 
 const abcLineData = ref({});
+const abcLineShow = ref(false);
 
 const getDetail = async () => {
 
@@ -635,6 +643,7 @@ const getDetail = async () => {
 
   const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
   abcLineData.value = lineData;
+  abcLineShow.value = true;
   console.log('abcLineData',abcLineData.value);
   //seriesAndTimeArr.value = lineData;
   //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
@@ -693,6 +702,7 @@ watch(() => [queryParamsCopy.harmonicType], () => {
 
 const showDialog = async (item) => {
   //colorFlag.value = item.color;
+  console.log('111111111111111111111',item);
   queryParamsCopy.devKey = item.devKey;
   queryParamsCopy.boxId = item.boxId;
   location.value = item.location ? item.location : '未绑定';
