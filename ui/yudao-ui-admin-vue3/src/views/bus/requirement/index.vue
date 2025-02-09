@@ -104,7 +104,8 @@
             @change="handleMonthPick"
             class="!w-160px"
           />
-          <el-date-picker  style="padding-left: 10px;"
+          <el-date-picker
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 2"
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
