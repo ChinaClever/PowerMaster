@@ -369,14 +369,20 @@ public class BoxIndexController {
     }
 
     @PostMapping("/avg/boxHdaLine/form")
-    @Operation(summary = "获得插接箱报表平均电流电压详细信息")
+    @Operation(summary = "获得插接箱报表相平均电流电压详细信息")
     public CommonResult<Map> getAvgBoxHdaLineForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBoxHdaLineForm(pageReqVO));
     }
     @PostMapping("/avg/boxHdaLoop/form")
-    @Operation(summary = "获得插接箱报表平均电流电压详细信息")
+    @Operation(summary = "获得插接箱报表回路平均电流电压详细信息")
     public CommonResult<Map> getAvgBoxHdaLoopForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBoxHdaLoopForm(pageReqVO));
+    }
+
+    @PostMapping("/avg/boxHdaOutlet/form")
+    @Operation(summary = "获得插接箱报表回路平均电流电压详细信息")
+    public CommonResult<Map> getAvgBoxHdaOutletForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBoxHdaOutletForm(pageReqVO));
     }
 
     @GetMapping("/statistics")

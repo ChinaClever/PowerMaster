@@ -11,6 +11,7 @@ import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekD
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.outlet.BoxOutletBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalRealtimeDo;
@@ -392,7 +393,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return map;
     }
 
-    private List<String> getEsStrings(String index, String start, String end, BoxIndex boxIndex) throws IOException {
+    private List<String> getEsStrings(String index, String start, String end, BoxIndex boxIndex){
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -1937,6 +1938,28 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     @Override
+    public Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO){
+        HashMap<String, Object> map = new HashMap<>();
+        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+        if (boxIndex != null) {
+            String index;
+            if (pageReqVO.getTimeType().equals(0)) {
+                index = "box_hda_outlet_hour";
+            } else {
+                index = "box_hda_outlet_day";
+            }
+
+            String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
+            String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
+            List<String> list = getEsStrings(index, start, end, boxIndex);
+            List<BoxOutletBaseDo> baseDos = list.stream().map(i -> JsonUtils.parseObject(i, BoxOutletBaseDo.class)).collect(Collectors.toList());
+            Map<Integer, List<BoxOutletBaseDo>> collect = baseDos.stream().collect(Collectors.groupingBy(BoxOutletBaseDo::getOutletId));
+        }
+        return null;
+    }
+
+    @Override
     public PageResult<BoxHarmonicRes> getBoxHarmonicPage(BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
         List<BoxIndex> list = boxIndexDOPageResult.getList();
@@ -2204,7 +2227,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 endTime = localDateTimeToString(pageReqVO.getNewTime());
             }
             List<Integer> ids = Arrays.asList(pageReqVO.getBoxId());
-            List<String> data = getData(startTime, endTime, ids, index, new String[]{"box_id,eq_value"});
+            List<String> data = getData(startTime, endTime, ids, index, new String[]{"box_id","line_id","cur_max_value","cur_max_time",
+                    "pow_active_max_value","pow_active_max_time"});
 
             if (pageReqVO.getLineType() == 0) {
                 result.getSeries().add(new RequirementLineSeries().setName("A路最大电流"));
