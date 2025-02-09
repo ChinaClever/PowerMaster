@@ -60,18 +60,17 @@ public class EnergyConsumptionController {
 
     }
 
-    @GetMapping("/bill-page")
+    @PostMapping("/bill-page")
     @Operation(summary = "获得pdu电费数据分页")
-    public CommonResult<PageResult<Object>> getBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBillDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getBillDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/bill-export-excel")
+    @PostMapping("/bill-export-excel")
     @Operation(summary = "导出pdu电费统计数据 Excel")
-//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBillDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportBillDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list1 = energyConsumptionService.getBillDataPage(pageReqVO).getList();

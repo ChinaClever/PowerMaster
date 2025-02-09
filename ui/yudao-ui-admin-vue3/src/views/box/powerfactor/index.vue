@@ -344,10 +344,10 @@
         <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList" />
         <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
           <el-table :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;" >
-          <el-table-column label="时间" align="center" prop="time"/>
-          <el-table-column label="输出位1功率因数" align="center" prop="powerFactorAvgValueA"/>
-          <el-table-column label="输出位2功率因数" align="center" prop="powerFactorAvgValueB"/>
-          <el-table-column label="输出位3功率因数" align="center" prop="powerFactorAvgValueC"/>
+          <el-table-column label="时间" align="center" prop="create_time"/>
+          <el-table-column label="输出位" align="center" prop="outlet_id"/>
+          <el-table-column label="功率因数" align="center" prop="power_factor_avg_value"/>
+          <!-- <el-table-column label="输出位3功率因数" align="center" prop="powerFactorAvgValueC"/> -->
         </el-table>
         </div>
       </el-dialog>
@@ -640,22 +640,21 @@ const getDetail = async () => {
   console.log('pfESList.value',pfESList.value);
 
   pfTableList.value = data?.table;
+  console.log('pfTableList',pfTableList.value);
   pfTableList.value?.forEach((obj) => {
-    console.log(obj,obj.powerFactorAvgValueA);
-    obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
-    obj.powerFactorAvgValueB = obj?.powerFactorAvgValueB?.toFixed(2);
-    obj.powerFactorAvgValueC = obj?.powerFactorAvgValueC?.toFixed(2);
+    console.log(obj,obj.powerFactorAvgValue);
+    obj.power_factor_avg_value = obj?.power_factor_avg_value?.toFixed(2);
   });
 }
 const getList = async () => {
   loading.value = true;
   try {
     const data = await IndexApi.getBoxPFPage(queryParams);
-    console.log('data',data);
+    // console.log('data',data);
 
     list.value = data.list;
 
-    console.log('list.value',list.value);
+    // console.log('list.value',list.value);
     var tableIndex = 0;
 
     list.value.forEach((obj) => {

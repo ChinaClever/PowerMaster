@@ -727,24 +727,9 @@ public class BusIndexServiceImpl implements BusIndexService {
         String startTime = localDateTimeToString(pageReqVO.getOldTime());
         String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        builder.size(1);
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
-                .gte(startTime).lt(endTime))));
-        builder.sort("cur_max_value", SortOrder.DESC);
-//        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
-        // 设置搜索条件
-        searchRequest.source(builder);
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse.getHits().getTotalHits().value == 0){
-            return null;
-        }
-        LineMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineMaxResVO.class);
+        String mess = getSearchResponse(index, startTime, endTime);
+        if (mess == null) return null;
+        LineMaxResVO resVO = JsonUtils.parseObject(mess, LineMaxResVO.class);
         if (Objects.nonNull(resVO)) {
             BusIndexDO busIndexDO = busIndexMapper.selectById(resVO.getBusId());
             resVO.setDevKey(busIndexDO.getBusKey());
@@ -791,6 +776,32 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
         }
         return resVO;
+    }
+
+    private String getSearchResponse(String index, String startTime, String endTime) throws IOException {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.size(1);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                    .gte(startTime).lt(endTime))));
+            builder.sort("cur_max_value", SortOrder.DESC);
+//        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
+            // 设置搜索条件
+            searchRequest.source(builder);
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse.getHits().getTotalHits().value == 0) {
+                return null;
+            }
+            return searchResponse.getHits().getAt(0).getSourceAsString();
+        }catch (Exception e){
+            log.error("母线需量报错"+e);
+            return null;
+        }
     }
 
     @Override

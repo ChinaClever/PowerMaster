@@ -1882,12 +1882,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             List<String> outletHour = getData(startTime, endTime, ids, "box_hda_outlet_hour", new String[]{"box_id,eq_value"});
+            if (CollectionUtils.isEmpty(outletHour)){
+                return map;
+            }
             List<BoxPFDetail> strList = outletHour.stream()
                     .map(str -> JsonUtils.parseObject(str, BoxPFDetail.class))
                     .collect(Collectors.toList());
 
             Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
-//            Map<String, List> map = new HashMap<>();
             for (String key : pfMap.keySet()) {
                 List<BoxPFDetail> list = pfMap.get(key);
                 map.put(key, list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
@@ -1921,7 +1923,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             detail.setOutletId(i + 1);
             detail.setPowerFactorAvgValue(powerFactor.get(i));
             detail.setCreateTime(time);
-
+            strList.add(detail);
+           List list = new ArrayList();
+           list.add(detail.getPowerFactorAvgValue());
+            map.put(String.valueOf(detail.getOutletId()) ,list);
+        }
+        Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
+        for (String key : pfMap.keySet()) {
+            List<BoxPFDetail> list = pfMap.get(key);
+            map.put(key, list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
         }
         map.put("time", strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
         map.put("table", strList);
@@ -2727,7 +2737,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 SearchHits hits = searchResponse.getHits();
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
-                    list.add(str);
+                    if (str.length()>2) {
+                        list.add(str);
+                    }
                 }
             }
             return list;
