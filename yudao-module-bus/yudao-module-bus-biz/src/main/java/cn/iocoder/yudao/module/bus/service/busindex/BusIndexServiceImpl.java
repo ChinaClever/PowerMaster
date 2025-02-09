@@ -826,9 +826,11 @@ public class BusIndexServiceImpl implements BusIndexService {
         Map<String, String> positionByKey = getPositionByKey(list);
         vo.setLocation(positionByKey.get(busIndexDO.getBusKey()));
         vo.setDevKey(busIndexDO.getBusKey());
-        vo.setPowApparent(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("pow_apparent"));
         vo.setRunStatus(busIndexDO.getRunStatus());
-        vo.setPowerFactor(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("power_factor"));
+        if (Objects.nonNull(jsonObject)) {
+            vo.setPowApparent(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("pow_apparent"));
+            vo.setPowerFactor(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("power_factor"));
+        }
         return vo;
     }
 
@@ -850,8 +852,11 @@ public class BusIndexServiceImpl implements BusIndexService {
             ValueOperations ops = redisTemplate.opsForValue();
             JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BOX + boxIndex.getBoxKey());
             // 获取 box_name 字段的值
+            if (Objects.isNull(jsonObject)){
+                vos.add(vo);
+                return vos;
+            }
             String boxName = jsonObject.getString("box_name");
-            System.out.println("box_name: " + boxName);
             vo.setBoxName(boxName);
             // 获取 box_total_data 中的 pow_apparent 字段的值
             JSONObject boxData1 = jsonObject.getJSONObject("box_data");

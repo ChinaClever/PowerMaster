@@ -511,9 +511,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         Map<String, String> positionByKey = getPositionByKeys(list);
         vo.setLocation(positionByKey.get(boxIndex.getBoxKey()));
         vo.setDevKey(boxIndex.getBoxKey());
-        vo.setPowApparent(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("pow_apparent"));
+
         vo.setRunStatus(boxIndex.getRunStatus());
-        vo.setPowerFactor(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("power_factor"));
+        if (Objects.nonNull(jsonObject)) {
+            vo.setPowApparent(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("pow_apparent"));
+            vo.setPowerFactor(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("power_factor"));
+        }
         return vo;
     }
 
@@ -1316,24 +1319,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 Integer loopNum = jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("loop_num");
                 for (Integer i = 1; i <= loopNum; i++) {
                     VoHdaLoopResVO vo = new VoHdaLoopResVO();
-                    List<BusHdaLoopAvgResVO> busHdaLoopAvgResVOS = collect.get(i);
-                    List<BigDecimal> vols = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getVolAvgValue).collect(Collectors.toList());
-                    List<BigDecimal> curs = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getCurAvgValue).collect(Collectors.toList());
                     vo.setLineId(i);
-                    vo.setVol(vols);
-                    vo.setCur(curs);
-//                    vol.add(vols);
-//                    cur.add(curs);
+                    List<BusHdaLoopAvgResVO> busHdaLoopAvgResVOS = collect.get(i);
+                    if (!CollectionUtils.isEmpty(busHdaLoopAvgResVOS)) {
+                        List<BigDecimal> vols = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getVolAvgValue).collect(Collectors.toList());
+                        List<BigDecimal> curs = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getCurAvgValue).collect(Collectors.toList());
+                        vo.setVol(vols);
+                        vo.setCur(curs);
+                    }
                     list1.add(vo);
                 }
 
             }
-//            map.put("A", dayList1);
-//            map.put("B", dayList2);
-//            map.put("C", dayList3);
             map.put("loop", list1);
-//            map.put("vol",vol);
-//            map.put("cur",cur);
             map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         }
         return map;
