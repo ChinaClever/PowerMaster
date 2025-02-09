@@ -7,8 +7,8 @@ export const HistoryDataApi = {
   },
 
   // 查询pdu历史数据分页
-  getHistoryDataPage: async (params: any) => {
-    return await request.get({ url: `/pdu/history-data/page`, params })
+  getHistoryDataPage: async (data: any) => {
+    return await request.post({ url: `/pdu/history-data/page`, data })
   },
 
   // 查询pdu历史数据详情
@@ -17,8 +17,8 @@ export const HistoryDataApi = {
   },
 
   // 导出pdu能耗趋势数据 Excel
-  exportHistoryData: async (params, axiosConfig) => {
-    return await request.download({ url: `/pdu/history-data/export-excel`, params, ...axiosConfig })
+  exportHistoryData: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/pdu/history-data/export-excel`, data, ...axiosConfig })
   },
   // 查询pdu电力数据导航的新增记录数据显示
   getNavNewData: async (granularity: string) => {

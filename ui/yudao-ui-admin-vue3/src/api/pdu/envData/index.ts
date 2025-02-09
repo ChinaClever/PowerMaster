@@ -7,8 +7,8 @@ export const EnvDataApi = {
   },
   
   // 查询pdu环境数据分页
-  getEnvDataPage: async (params: any) => {
-    return await request.get({ url: `/pdu/history-data/env-page`, params })
+  getEnvDataPage: async (data: any) => {
+    return await request.post({ url: `/pdu/history-data/env-page`, data })
   },
 
   // 查询pdu环境数据分页
@@ -27,8 +27,8 @@ export const EnvDataApi = {
   },
 
    // 导出pdu环境历史数据 Excel
-   exportEnvHistoryDataByCabinet: async (params, axiosConfig) => {
-    return await request.download({ url: `/pdu/history-data/env-export-excelByCabinet`, params, ...axiosConfig })
+   exportEnvHistoryDataByCabinet: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/pdu/history-data/env-export-excelByCabinet`, data, ...axiosConfig })
   },
 
   // 查询pdu环境数据导航的新增多少条记录数据

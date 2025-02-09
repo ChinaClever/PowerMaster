@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -394,7 +395,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         }
         List<String> pduIds = null;
         String[] ipArray = pageReqVO.getIpArray();
-        if (ipArray != null){
+        if (ObjectUtils.isNotEmpty(ipArray)){
             pduIds = getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
@@ -648,7 +649,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         Integer position = pageReqVO.getPosition();
 
         // 前端筛选机柜但没筛选探测点触发
-        if (cabinetIds != null && channel == null){
+        if (ObjectUtils.isNotEmpty(cabinetIds) && ObjectUtils.isEmpty(channel)){
             QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
             cabinetPduQueryWrapper.in("cabinet_id", cabinetIds);
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper);

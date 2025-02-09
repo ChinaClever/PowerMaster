@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜环境数据" placeholder="机柜名">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU环境数据" placeholder="机柜名">
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
