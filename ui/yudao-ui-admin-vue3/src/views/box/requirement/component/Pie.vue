@@ -24,6 +24,7 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
+      padAngle: 6,
       data: [
         { name: 'L1', value: max.L1 },
         { name: 'L2', value: max.L2 },
