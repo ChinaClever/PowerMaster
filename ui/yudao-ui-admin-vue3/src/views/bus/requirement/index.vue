@@ -37,7 +37,6 @@
             <span>{{ statusNumber.cur_max_value }}</span>
           </div>
         </div>
-        <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -64,7 +63,6 @@
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
