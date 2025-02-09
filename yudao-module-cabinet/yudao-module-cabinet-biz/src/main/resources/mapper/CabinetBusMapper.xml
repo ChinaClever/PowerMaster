@@ -31,4 +31,29 @@
             </foreach>
         </where>
     </select>
+    <select id="selectCabinetByBoxKey" resultType="cn.iocoder.yudao.framework.common.vo.CabinetBoxResVO">
+        SELECT
+        cb.id,
+        cb.cabinet_id,
+        cb.box_key_a,
+        cb.outlet_id_a,
+        cb.box_key_b,
+        cb.outlet_id_b,
+        ci.room_id,
+        ci.cabinet_name,
+        ri.room_name
+        FROM cabinet_box cb
+        left join cabinet_index ci on cb.cabinet_id = ci.id
+        left join room_index ri on ci.room_id = ri.id
+        <where>
+            cb.box_key_a in
+            <foreach collection="keys" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            or cb.box_key_b  in
+            <foreach collection="keys" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>

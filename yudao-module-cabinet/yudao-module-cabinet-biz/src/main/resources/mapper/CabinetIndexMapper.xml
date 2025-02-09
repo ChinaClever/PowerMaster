@@ -130,4 +130,18 @@
             ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0
         </where>
     </select>
+    <select id="selectCabinetBox" resultType="cn.iocoder.yudao.framework.common.vo.CabinetIndexBoxResVO">
+        select
+        ci.id as id,
+        ci.room_id as roomId,
+        ci.cabinet_name as cabinetName,
+        ci.pdu_box as pduBox,
+        cb.box_key_a as boxKeyA,
+        cb.box_key_b as boxKeyB
+        from cabinet_index ci
+        left join cabinet_box cb on ci.id = cb.cabinet_id
+        <where>
+            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 1
+        </where>
+    </select>
 </mapper>

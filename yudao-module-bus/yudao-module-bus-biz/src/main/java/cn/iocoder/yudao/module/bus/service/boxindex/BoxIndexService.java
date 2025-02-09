@@ -149,4 +149,6 @@ public interface BoxIndexService {
     BusIndexStatisticsResVO getBoxIndexStatisticsAll();
 
     List<String> findKeys(String key);
+
+    Map getBoxPFDetailNow(BoxIndexPageReqVO pageReqVO);
 }

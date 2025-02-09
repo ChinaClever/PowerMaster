@@ -376,14 +376,18 @@ const toggleAllStatus = () => {
 }
 
 const querySearch = async (queryString: string, cb: any) => {
-  if(queryString.length >= 8){
+    if(queryString.length>7){
     var results = await IndexApi.findKeys({key:queryString});
     let arr: any[] = [];
     results.map(item => {
-      console.log('item',item);
       arr.push({value:item})
     });
     cb(arr)
+  }else{
+      const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  cb(results)
   }
 }
 

@@ -36,9 +36,14 @@
 
       <div class="nav_header">       
           <span v-if="nowAddress">{{nowAddress?'暂未绑定设备':nowAddress}}</span>
+          <span v-if="devKey">({{devKey}})</span>
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
+        <div class="description-item">
+        <span class="label">网络地址 :</span>
+        <span >{{ devKye }} </span>
+      </div>
       <div class="description-item">
         <span class="label">总耗电量 :</span>
         <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -166,6 +171,7 @@ const exportLoading = ref(false)
 const message = useMessage() // 消息弹窗
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
+const devKey = ref('') // 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const activeName = ref('dayTabPane')
 const activeName1 = ref('lineChart')
@@ -175,7 +181,7 @@ const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
 const loading = ref(false) 
 const loading2 = ref(false)
-
+const devKye = ref('')
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -429,9 +435,14 @@ const handleExport1 = async () => {
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {
+      if(Number(value).toFixed(decimalPlaces) == '-Infinity') {
+        return '∞';
+      } else if (Number(value).toFixed(decimalPlaces) == 'Infinity') {
+        return '-∞';
+      }
         return Number(value).toFixed(decimalPlaces);
     } else {
-        return null; // 或者其他默认值
+        return 0; // 或者其他默认值
     }
 }
 
@@ -537,13 +548,14 @@ onMounted(async () => {
   
   const queryBusId = useRoute().query.busId as string | undefined;
   const queryLocation = useRoute().query.location as string;
-  const queryDevkey = useRoute().query.devKey as string | undefined;
+  const queryDevkey = useRoute().query.devKey as string;
   queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
   queryParams.devkey =queryDevkey? queryDevkey : undefined;
+  devKye.value = queryDevkey? queryDevkey : undefined
   if (queryParams.busId != undefined){
     await getLineChartData();
     nowAddress.value = queryLocation;
-    
+    devKey.value = queryDevkey;
     nowAddressTemp.value = queryLocation;
     initLineChart();
   }

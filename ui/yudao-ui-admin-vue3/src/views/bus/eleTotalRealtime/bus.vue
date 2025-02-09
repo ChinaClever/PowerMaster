@@ -59,7 +59,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.devKey,row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.devKey,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
           </template>
         </el-table-column>
         

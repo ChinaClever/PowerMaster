@@ -14,7 +14,7 @@
         label-width="120px"
         style="float: left;"
       >      
-        <!-- <el-form-item label="网络地址" prop="devKey">
+        <!-- 1<el-form-item label="网络地址" prop="devKey">
           <el-input
             v-model="queryParams.devKey"
             placeholder="请输入网络地址"
@@ -144,7 +144,7 @@
                 </div>
               </el-col>
               <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">
-                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+                <!-- <Rad2ar width="29vw" height="25vh" :list="serverData" /> -->
                 <div>
                  <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
                </div>
@@ -190,13 +190,13 @@
             <div class="page-conTitle">
               回路电流曲线
             </div>
-            <LoopCurLine class="adaptiveStyle" :list="curvolLoopList"/>
+            <!-- <LoopCurLine class="adaptiveStyle" :list="curvolLoopList"/> -->
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               回路电压曲线
             </div>
-            <LoopVolLine class="adaptiveStyle" :list="curvolLoopList"/>
+            <!-- <LoopVolLine class="adaptiveStyle" :list="curvolLoopList"/> -->
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -701,29 +701,12 @@ const itemStyle = ref({
 });
 
 const getList = async () => {
-  console.log('kasjdajsdaosl;dkasl',switchValue.value)
   loading.value = true
-  console.log('queryParams1111111111111')
-  try {
-  console.log('Fetching data...');
-  const data1 = await IndexApi.getConsumeData(queryParams);
-  try{
-  eqData.value = data1;
-  }catch (error) {
-    console.log('adsadasdas', error);
-  }
-  console.log('Data fetched:', data1);
-  console.log('eqData.value',eqData.value)
-} catch (error) {
-  console.log('data1dasssssssasda', error);
-}
-  
-  
-  
+
+  eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
   }
-  console.log('eqData.valqwdqwdqdqwdue',eqData.value.barRes)
   eleList.value = eqData.value.barRes;
   if( eleList.value?.time != null && eleList.value?.time?.length > 0){
     eqData.value.maxEle = eqData.value.maxEle?.toFixed(1);
@@ -798,7 +781,7 @@ const getList = async () => {
 
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
-  if(temList.value?.time != null && temList.value?.time?.length > 0 ){
+
 
     temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(2);
     temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(2);
@@ -812,9 +795,7 @@ const getList = async () => {
     temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(2);
     temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(2);
     visControll.temVis = true;
-  }else{
-    visControll.temVis = false;
-  }
+
 
   var PDU = await IndexApi.getBoxRedisByDevKey(queryParams);
   console.log('PDU',PDU);
@@ -888,7 +869,6 @@ const getList = async () => {
   
   console.log('表格的数据',temp1Data)
   temp1.value = temp1Data.list
-  
 
 }
 
@@ -920,9 +900,7 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-  console.log('queryParams',queryParams.devKey)
-  console.log('queryParams',queryParams.oldTime)
-  console.log('queryParams',queryParams.newTime)
+
   if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
@@ -974,7 +952,6 @@ const formRef = ref()
 
 
 import { useRoute, useRouter } from 'vue-router';
-import { ca } from 'element-plus/es/locale';
 const route = useRoute();
 const router = useRouter();
 /** 初始化 **/

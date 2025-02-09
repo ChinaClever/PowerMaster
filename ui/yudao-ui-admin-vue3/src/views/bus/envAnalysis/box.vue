@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="插接箱温度分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="插接箱温度分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -159,7 +159,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 <script setup lang="ts">
 import { IndexApi } from '@/api/bus/busindex'
@@ -173,6 +173,7 @@ import download from '@/utils/download'
 import { ElMessage } from 'element-plus'
 import { max } from 'lodash-es';
 import { error } from 'console';
+import CommonMenu1 from './component/CommonMenu1.vue';
 
 defineOptions({ name: 'BoxEnvLine' })
 const message = useMessage() // 消息弹窗

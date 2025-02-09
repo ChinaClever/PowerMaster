@@ -305,7 +305,8 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -335,7 +336,8 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value) ))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     	console.log('入参', queryParams);
@@ -495,13 +497,13 @@ const id =  ref(0)
 onMounted(() => {
   getNavList()
   getNavNewData()
-  const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
-selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
-];
+//   const now = new Date()
+//       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+//    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+// selectTimeRange.value = [
+//   format(startOfMonth),
+//   format(now)
+// ];
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   id.value = useRoute().query.id as unknown as number;

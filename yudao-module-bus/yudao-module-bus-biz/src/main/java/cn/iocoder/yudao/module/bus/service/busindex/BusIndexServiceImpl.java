@@ -1600,7 +1600,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             LambdaQueryWrapper<BusIndexDO> queryWrapper = new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,0);
             if (ObjectUtils.isNotEmpty(pageReqVO.getDevKey()) || ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList())){
                 queryWrapper.and(wq ->wq.in(ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList()),BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()).or()
-                        .eq(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BusIndexDO::getBusKey, pageReqVO.getDevKey()));
+                        .likeLeft(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BusIndexDO::getBusKey, pageReqVO.getDevKey()));
             }
             List<BusIndexDO> searchList = busIndexMapper.selectList(queryWrapper);
 
@@ -3426,7 +3426,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
                     .must(QueryBuilders.termsQuery("bus_id", ids))));
-            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+//            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(2000);
