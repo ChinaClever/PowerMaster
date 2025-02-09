@@ -94,7 +94,8 @@
           >
             自定义
           </el-button>     
-          <el-date-picker  style="padding-left: 10px;"
+          <el-date-picker  
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
             value-format="YYYY-MM-DD HH:mm:ss"
