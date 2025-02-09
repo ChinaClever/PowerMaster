@@ -59,7 +59,8 @@
           >
             自定义
           </el-button>     
-          <el-date-picker  style="padding-left: 10px;"
+          <el-date-picker  
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -68,11 +69,12 @@
             @change="handleMonthPick"
             class="!w-160px"
           />
-          <el-date-picker  style="padding-left: 10px;"
+          <el-date-picker  
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 2"
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
-            type="daterange"
+            type="datetimerange"
             :shortcuts="shortcuts"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
@@ -83,7 +85,8 @@
         </el-form-item>
 
         <el-form-item>
-          <el-form-item label="网络地址" prop="devKey">
+          <span>网络地址：</span>
+          <el-form-item prop="devKey">
             <el-autocomplete
               v-model="queryParams.devKey"
               :fetch-suggestions="querySearch"
@@ -116,7 +119,7 @@
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
-        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
+        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l1MaxCur }}
@@ -124,7 +127,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
-        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
+        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l2MaxCur }}
@@ -132,7 +135,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
-        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
+        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l3MaxCur }}
@@ -214,16 +217,16 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
-            <div class="info">
+            <div class="info" style="margin-left:10px;font-size: 15px;">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量功率</el-tag>
           </div>           
           <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
@@ -236,17 +239,16 @@
         <!-- <div class="arrayItem" v-for="item in list" :key="item.devKey"> -->
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
-            <div class="info">
-              
+            <div class="info" style="margin-left:10px;font-size: 15px;">
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量电流</el-tag>
           </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
@@ -521,6 +523,8 @@ const handleDayPick = () => {
     queryParams.oldTime = queryParams.timeArr[0];
     queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
   }
+
+  handleQuery();
 }
 
 const handleMonthPick = () => {
@@ -582,7 +586,6 @@ const getList = async () => {
     list.value = data.list
     var tableIndex = 0;
     list.value.forEach((obj) => {
-
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
       obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
@@ -593,6 +596,9 @@ const getList = async () => {
       obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
       obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
       obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
+      obj.l1MaxCurTime = obj.l1MaxCurTime?.slice(0,16);
+      obj.l2MaxCurTime = obj.l2MaxCurTime?.slice(0,16);
+      obj.l3MaxCurTime = obj.l3MaxCurTime?.slice(0,16);
     });
 
     total.value = data.total

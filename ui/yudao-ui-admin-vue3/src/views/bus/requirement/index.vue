@@ -256,7 +256,7 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="info" style="padding:10px 28px;font-size: 15px;">
+            <div class="info" style="margin-left:10px;font-size: 15px;">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
@@ -265,7 +265,7 @@
             <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量功率</el-tag>
           </div>           
           <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
@@ -278,7 +278,7 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">            
-            <div class="info" style="padding:10px 28px;font-size: 15px;">              
+            <div class="info" style="margin-left:10px;font-size: 15px;">              
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
@@ -287,7 +287,7 @@
             <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量电流</el-tag>
           </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
