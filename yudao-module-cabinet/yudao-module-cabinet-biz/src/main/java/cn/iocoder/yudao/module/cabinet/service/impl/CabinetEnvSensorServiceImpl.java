@@ -38,7 +38,7 @@ public class CabinetEnvSensorServiceImpl extends ServiceImpl<CabinetEnvSensorMap
                 cabinetEnvSensor.setCabinetId(cabinetId);
             });
             List<CabinetEnvSensor> sensorList = vo.getSensorList();
-            updateBatchById(sensorList);
+            saveOrUpdateBatch(sensorList);
 
             if (envSensors.size()>0){
                 List<Integer> idOld = envSensors.stream().map(CabinetEnvSensor::getId).collect(Collectors.toList());
@@ -48,9 +48,6 @@ public class CabinetEnvSensorServiceImpl extends ServiceImpl<CabinetEnvSensorMap
                     envSensorMapper.deleteBatchIds(idOld);
                 }
             }
-
-
-
         }
     }
 }

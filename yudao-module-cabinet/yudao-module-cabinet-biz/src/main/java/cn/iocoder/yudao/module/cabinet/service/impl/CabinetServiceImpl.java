@@ -60,7 +60,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
@@ -123,17 +122,24 @@ public class CabinetServiceImpl implements CabinetService {
                 list.add(-1);
                 vo.setCabinetIds(list);
             }
-
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
             List<JSONObject> result = new ArrayList<>();
             //获取redis 实时数据
             if (Objects.nonNull(indexDTOPage) && !CollectionUtils.isEmpty(indexDTOPage.getRecords())) {
+                List<Integer> collect = indexDTOPage.getRecords().stream().map(CabinetIndexDTO::getId).collect(Collectors.toList());
+
                 indexDTOPage.getRecords().forEach(dto -> {
+                    List<CabinetBox> cabinetBoxes = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>().eq(CabinetBox::getCabinetId, dto.getId()));
+                    List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, dto.getId()));
+                    List<RackIndex> rackIndices = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>().eq(RackIndex::getCabinetId, dto.getId()));
                     String key = REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId();
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
                     if (Objects.nonNull(jsonObject)) {
                         jsonObject.put("id", dto.getId());
                         jsonObject.put("roomId", dto.getRoomId());
+                        jsonObject.put("cabinetBoxes", cabinetBoxes);
+                        jsonObject.put("cabinetPdus", cabinetPdus);
+                        jsonObject.put("rackIndices", rackIndices);
                         jsonObject.put(COMPANY, Objects.nonNull(dto.getCompany()) ? dto.getCompany() : "");
                         result.add(jsonObject);
                     } else {
@@ -141,6 +147,9 @@ public class CabinetServiceImpl implements CabinetService {
                         map.put("id", dto.getId());
                         map.put("roomId", dto.getRoomId());
                         map.put("room_name", dto.getRoomName());
+                        map.put("cabinetBoxes", cabinetBoxes);
+                        map.put("cabinetPdus", cabinetPdus);
+                        map.put("rackIndices", rackIndices);
                         map.put("cabinet_name", dto.getName());
                         map.put("status", dto.getRunStatus());
                         map.put("cabinet_key", dto.getRoomId() + "-" + dto.getId());
@@ -317,11 +326,8 @@ public class CabinetServiceImpl implements CabinetService {
                             }
 
                         }
-//                        dto.setBoxIndexA(cabinetBus.getBoxIndexA());
-//                        dto.setBoxIndexB(cabinetBus.getBoxIndexB());
                     }
                 }
-
 
                 List<CabinetEnvSensor> envs = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
                         .eq(CabinetEnvSensor::getCabinetId, index.getId()));
@@ -506,6 +512,7 @@ public class CabinetServiceImpl implements CabinetService {
 
             return CommonResult.success(vo.getId());
         } finally {
+
             //刷新机柜计算服务缓存
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
@@ -515,7 +522,7 @@ public class CabinetServiceImpl implements CabinetService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int delCabinet(int id) {
+    public int delCabinet(int id, Integer type) {
         try {
             CabinetIndex index = cabinetIndexMapper.selectById(id);
             if (Objects.isNull(index)) {

@@ -171,8 +171,9 @@ public class CabinetController {
      */
     @Operation(summary = "机柜删除")
     @GetMapping("/cabinet/delete")
-    public CommonResult<Integer> deleteCabinet(@Param("id") int id) throws Exception {
-        int cabinetId = cabinetService.delCabinet(id);
+    public CommonResult<Integer> deleteCabinet(@RequestParam("id") int id,
+                                               @RequestParam(value = "type" , required = false) @Parameter(description = "删除类型：1-解绑pdu  2-解绑bus(母线) 3-解绑机架  4-删除机柜") Integer type) throws Exception {
+        int cabinetId = cabinetService.delCabinet(id,type);
         if (cabinetId == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
         }

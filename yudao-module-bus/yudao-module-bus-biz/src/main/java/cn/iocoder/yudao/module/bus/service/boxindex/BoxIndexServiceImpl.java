@@ -1944,7 +1944,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     public Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO){
         Map map = new HashMap<>();
         BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
-
         if (boxIndex != null) {
             String index;
             if (pageReqVO.getTimeType().equals(0)) {
@@ -1961,7 +1960,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             List<BoxOutletBaseDo> baseDos = list.stream().map(i -> JsonUtils.parseObject(i, BoxOutletBaseDo.class)).collect(Collectors.toList());
             map = baseDos.stream().collect(Collectors.groupingBy(BoxOutletBaseDo::getOutletId));
-            map.put("time",baseDos.stream().map(BoxBaseDo::getCreateTime).distinct().collect(Collectors.toList()));
+
+            List<String> collect1 = baseDos.stream().map(i ->DateUtil.format(i.getCreateTime(),"yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList());
+            map.put("time",collect1);
             return map;
         }
         return map;

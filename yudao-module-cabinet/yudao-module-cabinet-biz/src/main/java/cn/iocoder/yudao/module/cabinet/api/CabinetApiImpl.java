@@ -31,6 +31,6 @@ public class CabinetApiImpl implements CabinetApi{
 
     @Override
     public void delCabinet(int id) throws Exception {
-        cabinetService.delCabinet(id);
+        cabinetService.delCabinet(id,4);
     }
 }

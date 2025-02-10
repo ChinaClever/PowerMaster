@@ -56,9 +56,10 @@ public interface CabinetService {
     /**
      * 机柜删除
      *
-     * @param id 机柜id
+     * @param id   机柜id
+     * @param type
      */
-    int delCabinet(int id) throws Exception;
+    int delCabinet(int id, Integer type) throws Exception;
 
     /**
      * 机柜环境新增/编辑页面
