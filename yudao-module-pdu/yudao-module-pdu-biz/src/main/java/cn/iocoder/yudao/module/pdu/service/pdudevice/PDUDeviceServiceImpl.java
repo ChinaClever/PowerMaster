@@ -83,6 +83,8 @@ import java.util.stream.IntStream;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.NOT_PDU;
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 
 
 /**
@@ -664,6 +666,229 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         } else {
             return result;
         }
+    }
+
+    public Map getPduHdaLineHisdataKeyByCabinet(Long cabinetId, String type) {
+        HashMap resultAB = new HashMap<>();
+        CabinetIndex cabinetIndex = cabinetIndexMapper.selectOne(new LambdaQueryWrapperX<CabinetIndex>().eq(CabinetIndex::getId, cabinetId));
+        if (cabinetIndex.getPduBox().equals(true)){
+            throw exception(NOT_PDU);
+        }
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, cabinetId));
+        String pduKeyA = cabinetPdu.getPduKeyA();
+        HashMap result = new HashMap<>();
+        HashMap resultB = new HashMap<>();
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKeyA));
+        if (pduIndex != null) {
+            Integer id = pduIndex.getId();
+            // 构建查询请求
+            SearchRequest searchRequest = null;
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime pastTime = null;
+            if ("oneHour".equals(type)) {
+                pastTime = now.minusHours(1);
+                pastTime = pastTime.minusMinutes(1);
+                searchRequest = new SearchRequest("pdu_hda_line_realtime");
+            } else if ("twentyfourHour".equals(type)) {
+                pastTime = now.minusHours(25);
+                searchRequest = new SearchRequest("pdu_hda_line_hour");
+            } else if ("seventytwoHour".equals(type)) {
+                pastTime = now.minusHours(73);
+                searchRequest = new SearchRequest("pdu_hda_line_day");
+            }
+
+            // 构建查询请求
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", id));
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(formatter.format(pastTime))
+                    .to(formatter.format(now)));
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+            searchSourceBuilder.size(1000); // 设置返回的最大结果数
+
+            searchRequest.source(searchSourceBuilder);
+            List<PduHdaLineRealtimeResVO> oneHourList1 = new ArrayList<>();
+            List<PduHdaLineRealtimeResVO> oneHourList2 = new ArrayList<>();
+            List<PduHdaLineRealtimeResVO> oneHourList3 = new ArrayList<>();
+
+            List<PduHdaLineHouResVO> dayList1 = new ArrayList<>();
+            List<PduHdaLineHouResVO> dayList2 = new ArrayList<>();
+            List<PduHdaLineHouResVO> dayList3 = new ArrayList<>();
+            List<String> dateTimes = new ArrayList<>();
+
+            // 执行查询请求
+            try {
+                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (searchResponse != null) {
+                    SearchHits hits = searchResponse.getHits();
+                    for (SearchHit hit : hits) {
+                        String str = hit.getSourceAsString();
+                        switch (type) {
+                            case "oneHour":
+                                PduHdaLineRealtimeResVO realtimeDO = JsonUtils.parseObject(str, PduHdaLineRealtimeResVO.class);
+                                switch (realtimeDO.getLineId()) {
+                                    case 1:
+                                        oneHourList1.add(realtimeDO);
+                                        result.put("l", oneHourList1);
+                                        break;
+                                    case 2:
+                                        oneHourList2.add(realtimeDO);
+                                        result.put("ll", oneHourList2);
+                                        break;
+                                    case 3:
+                                        oneHourList3.add(realtimeDO);
+                                        result.put("lll", oneHourList3);
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(realtimeDO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            case "twentyfourHour":
+                            case "seventytwoHour":
+                                PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
+                                switch (houResVO.getLineId()) {
+                                    case 1:
+                                        dayList1.add(houResVO);
+
+                                        break;
+                                    case 2:
+                                        dayList2.add(houResVO);
+
+                                        break;
+                                    case 3:
+                                        dayList3.add(houResVO);
+
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            default:
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (!Objects.equals("oneHour", type)) {
+                result.put("l", dayList1);
+                result.put("ll", dayList2);
+                result.put("lll", dayList3);
+            }
+            result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
+            resultAB.put("A",result);
+
+        } else {
+            return resultAB;
+        }
+        String pduKeyB = cabinetPdu.getPduKeyB();
+        PduIndex pduIndex1 = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKeyB));
+        if (pduIndex1 != null) {
+            Integer id = pduIndex1.getId();
+            // 构建查询请求
+            SearchRequest searchRequest = null;
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime pastTime = null;
+            if ("oneHour".equals(type)) {
+                pastTime = now.minusHours(1);
+                pastTime = pastTime.minusMinutes(1);
+                searchRequest = new SearchRequest("pdu_hda_line_realtime");
+            } else if ("twentyfourHour".equals(type)) {
+                pastTime = now.minusHours(25);
+                searchRequest = new SearchRequest("pdu_hda_line_hour");
+            } else if ("seventytwoHour".equals(type)) {
+                pastTime = now.minusHours(73);
+                searchRequest = new SearchRequest("pdu_hda_line_day");
+            }
+
+            // 构建查询请求
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", id));
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(formatter.format(pastTime))
+                    .to(formatter.format(now)));
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+            searchSourceBuilder.size(1000); // 设置返回的最大结果数
+
+            searchRequest.source(searchSourceBuilder);
+            List<PduHdaLineRealtimeResVO> oneHourList1 = new ArrayList<>();
+            List<PduHdaLineRealtimeResVO> oneHourList2 = new ArrayList<>();
+            List<PduHdaLineRealtimeResVO> oneHourList3 = new ArrayList<>();
+
+            List<PduHdaLineHouResVO> dayList1 = new ArrayList<>();
+            List<PduHdaLineHouResVO> dayList2 = new ArrayList<>();
+            List<PduHdaLineHouResVO> dayList3 = new ArrayList<>();
+            List<String> dateTimes = new ArrayList<>();
+
+            // 执行查询请求
+            try {
+                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (searchResponse != null) {
+                    SearchHits hits = searchResponse.getHits();
+                    for (SearchHit hit : hits) {
+                        String str = hit.getSourceAsString();
+                        switch (type) {
+                            case "oneHour":
+                                PduHdaLineRealtimeResVO realtimeDO = JsonUtils.parseObject(str, PduHdaLineRealtimeResVO.class);
+                                switch (realtimeDO.getLineId()) {
+                                    case 1:
+                                        oneHourList1.add(realtimeDO);
+                                        resultB.put("l", oneHourList1);
+                                        break;
+                                    case 2:
+                                        oneHourList2.add(realtimeDO);
+                                        resultB.put("ll", oneHourList2);
+                                        break;
+                                    case 3:
+                                        oneHourList3.add(realtimeDO);
+                                        resultB.put("lll", oneHourList3);
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(realtimeDO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            case "twentyfourHour":
+                            case "seventytwoHour":
+                                PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
+                                switch (houResVO.getLineId()) {
+                                    case 1:
+                                        dayList1.add(houResVO);
+
+                                        break;
+                                    case 2:
+                                        dayList2.add(houResVO);
+
+                                        break;
+                                    case 3:
+                                        dayList3.add(houResVO);
+
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            default:
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (!Objects.equals("oneHour", type)) {
+                resultB.put("l", dayList1);
+                resultB.put("ll", dayList2);
+                resultB.put("lll", dayList3);
+            }
+            resultB.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
+            resultAB.put("B",resultB);
+
+        } else {
+            return resultAB;
+        }
+        return resultAB;
+
     }
 
     @Override

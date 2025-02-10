@@ -45,7 +45,8 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="120px"
+        style="float: left;"
+
       >
         <!-- <el-form-item label="网络地址" prop="devKey">
           <el-input
@@ -67,16 +68,15 @@
             @select="handleQuery"
           />
         </el-form-item>
-
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
-            @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
+            @click="queryParams.timeType = 0;dateTimeName='twentyfourHour';now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
+            @click="queryParams.timeType = 1;dateTimeName='seventytwoHour';now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
@@ -208,6 +208,30 @@
             <p class="paragraph" v-if="visControll.isSameDay && eqData.firstEq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              A路相电流历史曲线趋势图
+            </div>
+            <div ref="lineidChartContainerA" id="AlineidChartContainerA" class="adaptiveStyle"></div>
+          </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              A路相电压历史曲线趋势图
+            </div>
+            <div ref="lineidChartContainerOneA" id="lineidChartContainerOneA" class="adaptiveStyle"></div>
+          </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              B路相电流历史曲线趋势图
+            </div>
+            <div ref="lineidChartContainerB" id="AlineidChartContainerB" class="adaptiveStyle"></div>
+          </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              B路相电压历史曲线趋势图
+            </div>
+            <div ref="lineidChartContainerOneB" id="lineidChartContainerOneB" class="adaptiveStyle"></div>
+          </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
               功率因素曲线
@@ -280,6 +304,8 @@ import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -295,6 +321,17 @@ const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 
+let lineidChartA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainerA = ref<HTMLElement | null>(null);
+let lineidChartOneA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainerOneA = ref<HTMLElement | null>(null);
+let lineidChartB = null as echarts.ECharts | null;
+const lineidChartContainerB = ref<HTMLElement | null>(null);
+let lineidChartOneB = null as echarts.ECharts | null;
+const lineidChartContainerOneB = ref<HTMLElement | null>(null);
+const dateTimeName = ref('seventytwoHour')
+
+
 const visControll = reactive({
   visAllReport : false,
   isSameDay : false,
@@ -306,6 +343,7 @@ const visControll = reactive({
   ApowVis :false,
   BpowVis : false,
   pfVis: false,
+  flag: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -598,12 +636,391 @@ const getList = async () => {
 const handlePFLineQuery = async () => {
   const data = await IndexApi.getCabinetPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
+  //保留俩位小数
+  
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     visControll.pfVis = true;
   }else {
     visControll.pfVis = false;
   }
+}
+
+const AlChartData = ref({
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[] //电流
+});
+const AllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+const AlllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+
+const BlChartData = ref({
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[] //电流
+});
+const BllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+const BlllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+
+const AlineidDateTimes = ref([] as string[])
+
+  const BlineidDateTimes = ref([] as string[])
+
+  const filterTimesFromDate = (dateTimeStrings, targetDate) => {
+  const targetDateObj = new Date(targetDate);
+  const targetDateString = targetDateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  return dateTimeStrings.filter(dateTimeString => {
+    const [datePart, _] = dateTimeString.split(' ');
+    return datePart >= targetDateString;
+  });
+};
+
+// 获取当前日期（或者您可以指定任意日期）
+const currentDate = new Date().toISOString().split('T')[0];
+
+const isPDU = ref(true);
+
+const PDUHdaLineHisdata = async () => {
+  try {
+    const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value });
+  console.log('result', result);
+
+    //清空数组
+    AlChartData.value.volValueList.length = 0;
+    AlChartData.value.curValueList.length = 0;
+    BlChartData.value.volValueList.length = 0;
+    BlChartData.value.curValueList.length = 0;
+    AllChartData.value.volValueList.length = 0;
+    AllChartData.value.curValueList.length = 0;
+    AlllChartData.value.volValueList.length = 0;
+    AlllChartData.value.curValueList.length = 0;
+    BllChartData.value.volValueList.length = 0;
+    BllChartData.value.curValueList.length = 0;
+    BlllChartData.value.volValueList.length = 0;
+    BllChartData.value.curValueList.length = 0;
+
+
+
+  // 处理 A 对象的数据
+  const aData = result.A;
+  const aLData = aData.l;
+  const aLlData = aData.ll;
+  const aLllData = aData.lll;
+
+    console.log('kdflkdnfd',aLData)
+
+  aLData.forEach(item => {
+    AlChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
+    AlChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
+  });
+
+  console.log('kdf1111111111111111lkdnfd',AlChartData)
+
+  aLlData.forEach(item => {
+    AllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
+    AllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
+  });
+
+  aLllData.forEach(item => {
+    AlllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
+    AlllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
+  });
+
+  // 处理 B 对象的数据
+  const bData = result.B;
+  const bLData = bData.l;
+  const bLlData = bData.ll;
+  const bLllData = bData.lll;
+
+  bLData.forEach(item => {
+    BlChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
+    BlChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
+  });
+
+  bLlData.forEach(item => {
+    BllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
+    BllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
+  });
+
+  bLllData.forEach(item => {
+    BlllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
+    BlllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
+  });
+
+  console.log('lineidDateTimes1dsssssssssssssss',visControll.flag)
+  console.log('lineidDateTimes1tttttttttttttttttt',isPDU)
+
+  // 处理日期时间
+  if (dateTimeName.value === 'twentyfourHour') {
+    AlineidDateTimes.value = filterTimesFromDate(aData.dateTimes, currentDate).map(item => item.substring(11, 16));
+  } else if (dateTimeName.value === 'seventytwoHour') {
+    AlineidDateTimes.value = aData.dateTimes.map(item => item.substring(0, 10));
+  }
+  //处理日期时间
+  if (dateTimeName.value === 'twentyfourHour') {
+    BlineidDateTimes.value = filterTimesFromDate(bData.dateTimes, currentDate).map(item => item.substring(11, 16));
+  } else if (dateTimeName.value === 'seventytwoHour') {
+    BlineidDateTimes.value = bData.dateTimes.map(item => item.substring(0, 10));
+  }
+
+  console.log('time1222222222222',AlineidDateTimes.value)
+  console.log('time1222222222222',BlineidDateTimes.value)
+  }catch (error) {
+    isPDU.value = false;
+  }finally{
+    console.log('finally1111111111',isPDU.value);
+  }
+   
+};
+
+const lineidBeforeChartUnmount = () => {
+lineidChartA?.dispose() // 销毁图表实例
+lineidChartB?.dispose()
+}
+
+const lineidFlashChartData = async () =>{
+  lineidBeforeChartUnmount()
+
+  await PDUHdaLineHisdata()
+  console.log('askjdlkasmdklamsdk111111111111111111',AlChartData.value.curValueList)
+  // 创建新的图表实例
+  lineidChartA = echarts.init(document.getElementById('lineidChartContainerA'));
+  // 设置新的配置对象
+  if (lineidChartA) {
+    lineidChartA.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
+            result += 'A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
+        selectedMode: 'multiple'
+      },
+      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:AlineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电流',
+          type: 'line',
+          data: AlChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: AllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: AlllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        }
+      ]
+    })
+  }
+
+  lineidChartOneA = echarts.init(document.getElementById('lineidChartContainerOneA'));
+  // 设置新的配置对象
+  if (lineidChartOneA) {
+    lineidChartOneA.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+            result += 'V';
+          } 
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+        selectedMode: 'multiple'
+      },
+      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:AlineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电压',
+          type: 'line',
+          data: AlChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电压',
+          type: 'line',
+          data: AllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电压',
+          type: 'line',
+          data: AlllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        }
+      ]
+    })
+  }
+
+  // 创建新的图表实例
+  lineidChartB = echarts.init(document.getElementById('lineidChartContainerB'));
+  // 设置新的配置对象
+  if (lineidChartB) {
+    lineidChartB.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
+            result += 'A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
+        selectedMode: 'multiple'
+      },
+      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:BlineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电流',
+          type: 'line',
+          data: BlChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: BllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: BlllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        }
+      ]
+    })
+  }
+
+  lineidChartOneB = echarts.init(document.getElementById('lineidChartContainerOneB'));
+  // 设置新的配置对象
+  if (lineidChartOneB) {
+    lineidChartOneB.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+            result += 'V';
+          } 
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+        selectedMode: 'multiple'
+      },
+      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:BlineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电压',
+          type: 'line',
+          data: BlChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电压',
+          type: 'line',
+          data: BllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电压',
+          type: 'line',
+          data: BlllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        }
+      ]
+    })
+  }
+
+  
 }
 
 const handleIceQuery = async () => {
@@ -769,6 +1186,8 @@ const handleQuery = async () => {
   if(queryParams.Id){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
+      await PDUHdaLineHisdata();
+      await lineidFlashChartData();
       queryParams.devKey = null;
     }
   }
@@ -814,6 +1233,7 @@ const handleQuery = async () => {
 //     exportLoading.value = false
 //   }
 // }
+
 
 /** 初始化 **/
 onMounted( async () =>  {
@@ -1087,7 +1507,28 @@ onMounted( async () =>  {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-:deep(.el-form .el-form-item) {
-  margin-right: 0;
+// :deep(.el-form .el-form-item) {
+//   margin-right: 0;
+// }
+
+@media screen and (min-width:2048px) {
+  .adaptiveStyle {
+    width: 75vw;
+    height: 42vh;
+  }
+}
+
+@media screen and  (max-width:2048px) and (min-width:1600px) {
+  .adaptiveStyle {
+    width: 70vw;
+    height: 42vh;
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .adaptiveStyle {
+    width: 85vw;
+    height: 42vh;
+  }
 }
 </style>

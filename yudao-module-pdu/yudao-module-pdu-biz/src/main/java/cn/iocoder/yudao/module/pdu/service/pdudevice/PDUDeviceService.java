@@ -61,6 +61,8 @@ public interface PDUDeviceService {
 
     Map getPduHdaLineHisdataKey(String devKey, String type);
 
+    Map getPduHdaLineHisdataKeyByCabinet(Long cabinetId, String type);
+
     Map getPduMaxLine(PDURequireDetailReq pduRequireDetailReq);
 
     PduBalanceDeatilRes getPDUDeviceDetail(String key);

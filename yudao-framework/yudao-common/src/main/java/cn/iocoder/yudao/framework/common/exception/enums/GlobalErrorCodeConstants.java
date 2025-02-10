@@ -38,4 +38,6 @@ public interface GlobalErrorCodeConstants {
 
     ErrorCode UNKNOWN = new ErrorCode(999, "未知错误");
 
+    ErrorCode NOT_PDU = new ErrorCode(1000, "该机柜未绑定PDU");
+
 }

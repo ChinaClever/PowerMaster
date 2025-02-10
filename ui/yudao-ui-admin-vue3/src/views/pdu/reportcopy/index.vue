@@ -166,13 +166,13 @@
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" :width="computedWidth" height="58vh" :list="eleList"/>
           </div>
-          <div class="pageBox" v-if="visControll.pfVis">
+          <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电流历史曲线趋势图
             </div>
             <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
           </div>
-          <div class="pageBox" v-if="visControll.pfVis">
+          <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电压历史曲线趋势图
             </div>
@@ -348,6 +348,7 @@ const visControll = reactive({
   outletVis : false,
   temVis : false,
   pfVis: false,
+  flag: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -557,11 +558,18 @@ const filterTimesFromDate = (dateTimeStrings, targetDate) => {
 // 获取当前日期（或者您可以指定任意日期）
 const currentDate = new Date().toISOString().split('T')[0];
 
-//获取PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async () => {
-  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value})
-  console.log('dateTimes',result.dateTimes)
-  //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value })
+  
+  console.log('dateTimes', result.dateTimes)
+
+  // 清空数组
+  lChartData.value.volValueList.length = 0
+  lChartData.value.curValueList.length = 0
+  llChartData.value.volValueList.length = 0
+  llChartData.value.curValueList.length = 0
+  lllChartData.value.volValueList.length = 0
+  lllChartData.value.curValueList.length = 0
 
   const lData = result.l
   const llData = result.ll
@@ -582,26 +590,32 @@ const PDUHdaLineHisdata = async () => {
     lllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
   })
 
-  //if(dateTimeName.value === 'twentyfourHour'){
-  //  lineidDateTimes.value = result.dateTimes.map(extractTime)
-  //}else if(dateTimeName.value === 'seventytwoHour'){
-  //  lineidDateTimes.value = result.dateTimes
-  //}
-  if(dateTimeName.value === 'twentyfourHour'){
-    lineidDateTimes.value = filterTimesFromDate(result.dateTimes,currentDate).map(item => item.substring(11, 16))
-  }else if(dateTimeName.value === 'seventytwoHour'){
+  if(result?.dateTimes != null && result?.dateTimes?.length > 0){
+    visControll.flag = true;
+  }else{
+    visControll.flag = false;
+  }
+
+  if (dateTimeName.value === 'twentyfourHour') {
+    lineidDateTimes.value = filterTimesFromDate(result.dateTimes, currentDate).map(item => item.substring(11, 16))
+  } else if (dateTimeName.value === 'seventytwoHour') {
     lineidDateTimes.value = result.dateTimes.map(item => item.substring(0, 10))
   }
+
+  console.log('lineidDateTimes111111111111111')
 }
 
 
 const lineidFlashChartData = async () =>{
+  console.log('lineidFlashChartData',lChartData.value)
+  console.log('lineidDateTimes.value',lineidDateTimes.value)
   lineidBeforeChartUnmount()
 
   await PDUHdaLineHisdata()
 
   // 创建新的图表实例
   lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  console.log('lineidFlashChartData',lChartData.value.curValueList)
   // 设置新的配置对象
   if (lineidChart) {
     lineidChart.setOption({

@@ -246,6 +246,10 @@ public class IndexServiceImpl implements IndexService {
         result.put("activePowMaxTime",  null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime",  null);
+        result.put("reactivePowMaxValue",null);
+        result.put("reactivePowMaxTime",  null);
+        result.put("reactivePowMinValue", null);
+        result.put("reactivePowMinTime",  null);
 
         result.put("AapparentPowMaxValue",  null);
         result.put("AapparentPowMaxTime",   null);
@@ -255,6 +259,10 @@ public class IndexServiceImpl implements IndexService {
         result.put("AactivePowMaxTime",     null);
         result.put("AactivePowMinValue",    null);
         result.put("AactivePowMinTime",     null);
+        result.put("AreactivePowMaxValue",null);
+        result.put("AreactivePowMaxTime",  null);
+        result.put("AreactivePowMinValue",null);
+        result.put("AreactivePowMinTime",  null);
 
         result.put("BapparentPowMaxValue",  null);
         result.put("BapparentPowMaxTime",   null);
@@ -264,6 +272,10 @@ public class IndexServiceImpl implements IndexService {
         result.put("BactivePowMaxTime",     null);
         result.put("BactivePowMinValue",    null);
         result.put("BactivePowMinTime",     null);
+        result.put("BreactivePowMaxValue",null);
+        result.put("BreactivePowMaxTime",  null);
+        result.put("BreactivePowMinValue",null);
+        result.put("BreactivePowMinTime",  null);
         try {
             if(Id != null) {
                 String index = null;
@@ -289,22 +301,30 @@ public class IndexServiceImpl implements IndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
+                totalLineRes.getSeries().add(totalReactivePow);
 
 
                 LineSeries apparentPowA = new LineSeries();
                 apparentPowA.setName("A平均视在功率");
                 LineSeries activePowA = new LineSeries();
                 activePowA.setName("A平均有功功率");
+                LineSeries reactivePowA = new LineSeries();
+                reactivePowA.setName("A平均无功功率");
                 aLineRes.getSeries().add(apparentPowA);
                 aLineRes.getSeries().add(activePowA);
+                aLineRes.getSeries().add(reactivePowA);
 
 
                 LineSeries apparentPowB = new LineSeries();
                 apparentPowB.setName("B平均视在功率");
                 LineSeries activePowB = new LineSeries();
                 activePowB.setName("B平均有功功率");
+                LineSeries reactivePowB = new LineSeries();
+                reactivePowB.setName("B平均无功功率");
                 bLineRes.getSeries().add(apparentPowB);
                 bLineRes.getSeries().add(activePowB);
 
@@ -312,28 +332,34 @@ public class IndexServiceImpl implements IndexService {
                     cabinetPowHourDoList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().split(" ")[1]);
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().split(" ")[1]);
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().split(" ")[1]);
                     });
                 }else{
                     cabinetPowHourDoList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().split(" ")[0]);
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().split(" ")[0]);
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().split(" ")[0]);
                     });
                 }
@@ -348,6 +374,10 @@ public class IndexServiceImpl implements IndexService {
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "active_total_min_value");
                 CabinetPowHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, CabinetPowHourDo.class);
 
+                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_total_max_value");
+                CabinetPowHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, CabinetPowHourDo.class);
+                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_total_min_value");
+                CabinetPowHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, CabinetPowHourDo.class);
 
                 String apparentAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "apparent_a_max_value");
                 CabinetPowHourDo maxApparentA = JsonUtils.parseObject(apparentAMaxValue, CabinetPowHourDo.class);
@@ -359,6 +389,12 @@ public class IndexServiceImpl implements IndexService {
                 String activeAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "active_a_min_value");
                 CabinetPowHourDo minActiveA = JsonUtils.parseObject(activeAMinValue, CabinetPowHourDo.class);
 
+                String reactiveAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_a_max_value");
+                CabinetPowHourDo maxReactiveA = JsonUtils.parseObject(reactiveAMaxValue, CabinetPowHourDo.class);
+                String reactiveAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_a_min_value");
+                CabinetPowHourDo minReactiveA = JsonUtils.parseObject(reactiveAMinValue, CabinetPowHourDo.class);
+
+
                 String apparentBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "apparent_b_max_value");
                 CabinetPowHourDo maxApparentB = JsonUtils.parseObject(apparentBMaxValue, CabinetPowHourDo.class);
                 String apparentBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "apparent_b_min_value");
@@ -368,6 +404,12 @@ public class IndexServiceImpl implements IndexService {
                 CabinetPowHourDo maxActiveB = JsonUtils.parseObject(activeBMaxValue, CabinetPowHourDo.class);
                 String activeBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "active_b_min_value");
                 CabinetPowHourDo minActiveB = JsonUtils.parseObject(activeBMinValue, CabinetPowHourDo.class);
+
+                String reactiveBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_b_max_value");
+                CabinetPowHourDo maxReactiveB = JsonUtils.parseObject(reactiveBMaxValue, CabinetPowHourDo.class);
+                String reactiveBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_b_min_value");
+                CabinetPowHourDo minReactiveB = JsonUtils.parseObject(reactiveBMinValue, CabinetPowHourDo.class);
+
 
                 result.put("totalLineRes",totalLineRes);
                 result.put("aLineRes",aLineRes);
@@ -381,6 +423,10 @@ public class IndexServiceImpl implements IndexService {
                 result.put("activePowMaxTime",totalMaxActive.getActiveTotalMaxTime());
                 result.put("activePowMinValue",totalMinActive.getActiveTotalMinValue());
                 result.put("activePowMinTime",totalMinActive.getActiveTotalMinTime());
+                result.put("reactivePowMaxValue",totalMaxReactive.getReactiveTotalMaxValue());
+                result.put("reactivePowMaxTime",totalMaxReactive.getReactiveTotalMaxTime());
+                result.put("reactivePowMinValue",totalMinReactive.getReactiveTotalMinValue());
+                result.put("reactivePowMinTime",totalMinReactive.getReactiveTotalMinTime());
 
                 result.put("AapparentPowMaxValue",maxApparentA.getApparentAMaxValue());
                 result.put("AapparentPowMaxTime",maxApparentA.getApparentAMaxTime());
@@ -390,6 +436,7 @@ public class IndexServiceImpl implements IndexService {
                 result.put("AactivePowMaxTime",maxActiveA.getActiveAMaxTime());
                 result.put("AactivePowMinValue",minActiveA.getActiveAMinValue());
                 result.put("AactivePowMinTime",minActiveA.getActiveAMinTime());
+
 
                 result.put("BapparentPowMaxValue",  maxApparentB.getApparentBMaxValue());
                 result.put("BapparentPowMaxTime",   maxApparentB.getApparentBMaxTime());
