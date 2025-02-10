@@ -609,7 +609,6 @@ const statusList = reactive([
 ])
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
     handleQuery();
@@ -773,7 +772,6 @@ const getList = async () => {
   // loading.value = true
   try {
     const data = await PDUDeviceApi.getPDULinePage(queryParams)
-    console.log('dataresult',data)
     list.value = data.list
     const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
     maxCurAll.value = allData.list
@@ -864,7 +862,6 @@ const handleExport = async () => {
 /** 获得es历史数据PDU相id的最大值 */
 const giveValue = async () => {
   MaxLineId.value = await PDUDeviceApi.getPDUMaxLineId(queryParams)
-  // console.log(MaxLineId.value)
 }
 
 //L1,L2,L3的数据
@@ -893,8 +890,6 @@ const lineidChartContainerOne = ref<HTMLElement | null>(null);
 
 
 const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => {
-  console.log(lineidDateTimes.value.length);
-  
   interface DataItem {
     Year: any;
     Country: any;
@@ -919,7 +914,6 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
     newData.push({ Year: lineidDateTimes.value[i], Country: 'L2-电流', Income: formatToTwoDecimals(llChartData.value.cur_max_value[i]) });
     newData.push({ Year: lineidDateTimes.value[i], Country: 'L3-电流', Income: formatToTwoDecimals(lllChartData.value.cur_max_value[i]) });
   }
-  console.log(newData);
 
   const newData1: DataItem[] = [];
   for (let i = 0; i < lineidDateTimes.value.length; i++) {
@@ -927,7 +921,6 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
     newData1.push({ Year: lineidDateTimes.value[i], Country: 'L2功率', Income: formatToTwoDecimals(llChartData.value.pow_active_max_value[i]) });
     newData1.push({ Year: lineidDateTimes.value[i], Country: 'L3功率', Income: formatToTwoDecimals(lllChartData.value.pow_active_max_value[i]) });
   }
-  console.log(newData1);
 
   if(flagValue.value == 0){
     return {

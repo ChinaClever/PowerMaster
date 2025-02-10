@@ -341,7 +341,6 @@ const statusList = reactive([
 ])
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
     handleQuery();

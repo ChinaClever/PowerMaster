@@ -226,7 +226,6 @@ const getTableData = async(reset = false) => {
       endNum:queryParams.endNum,
       roomId: null
     })
-    console.log('res', res)
     if (res.list) {
       tableData.value = res.list
       queryParams.pageTotal = res.total
@@ -237,7 +236,6 @@ const getTableData = async(reset = false) => {
 }
 
 const handleSelectStatus = (index) => {
-  console.log('handleSelectStatus', statusList[index].startNum)
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.startNum = statusList[index].startNum;
@@ -255,7 +253,6 @@ const toggleAllStatus = () => {
 
 // 处理左侧树导航选择事件
 const handleCheck = (row) => {
-  console.log('handleCheck', row)
   isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
@@ -263,7 +260,6 @@ const handleCheck = (row) => {
       ids.push(item.id)
     }
   })
-  console.log('handleCheck-----', ids)
   cabinetIds.value = ids
   getTableData(true)
 }
@@ -288,12 +284,10 @@ const getCapacitystatistics = async () => {
   ninetyNine.value  =res.ninetyNine;
   oneHundred.value = res.oneHundred;
   total.value  =res.total;
-  console.log('data1111111111111',res);
 }
 
 // 跳转详情
 const toDetail = (id,roomId) => {
-  console.log('跳转详情', id)
   push({path: '/cabinet/cab/screen', state: { id , roomId}})
 }
 

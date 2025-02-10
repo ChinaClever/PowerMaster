@@ -394,22 +394,6 @@ const statusList = reactive([
     activeClass: 'btn_error error',
     color: '#fa3333'
   },
-  //{
-  //  name: '升级',
-  //  selected: true,
-  //  value: 3,
-  //  cssClass: 'btn_unbound',
-  //  activeClass: 'btn_unbound unbound',
-  //  color: '#05ebfc'
-  //},
-  //{
-  //  name: '故障',
-  //  selected: true,
-  //  value: 4,
-  //  cssClass: 'btn_empty',
-  //  activeClass: 'btn_empty empty',
-  //  color: '#aaa'
-  //},
   {
     name: '离线',
     selected: true,
@@ -440,7 +424,7 @@ const getTableData = async() => {
       runStatus: queryParams.runStatus,
       company: queryParams.company
     })
-    console.log('res.list',res.list);
+
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -481,22 +465,14 @@ const getTableData = async() => {
         return tableItem
       })
       listPage.value = list;
-      console.log('res.total',res.total);
       queryParams.pageTotal = res.total;
-      console.log('listPage', listPage.value)
-      // console.log(res.runStatus);
+
     }
   } finally {
     loading.value = false
   }
 }
 
-//const formatNumber = (value, precision) => {
-//  if (typeof value === 'number' && !isNaN(value)) {
-//    return value.toFixed(precision);
-//  }
-//  return 0;
-//};
 
 const formatLoadFactor = (value) => {
   if (typeof value === 'number' && !isNaN(value)) {
@@ -550,7 +526,6 @@ const handleSwitchLogicRemoveModal = async (value, reset = false) =>{
       pageSize: queryParams.pageSize,
     })
     deletedList.value = res.list;
-    console.log('deletedList',deletedList.value)
     queryParams.pageTotal = res.total
     deletedTotal.value = res.total;
 }
@@ -560,7 +535,6 @@ const handleRestore = async(id) =>{
     const res = await CabinetApi.getrestorerCabinet({
       id: id,
     });
-    console.log('恢复设备的数据',res);
     if(res != "1"){
        message.success('设备恢复失败!')
     }
@@ -573,20 +547,16 @@ const handleRestore = async(id) =>{
 
 //处理表格双击事件
 const handleDbclick = (e) => {
-  console.log('处理表格双击事件', e, e.id)
   push('/cabinet/cab/detail')
 }
 
 // 处理阵列双击事件
 const handleArrayDbclick = (key) => {
-  // console.log('处理阵列双击事件', key)
   openForm('edit', key)
 }
 
 // 处理状态选择事件
 const handleSelectStatus = (index) => {
-  // console.log('处理状态选择事件', index, event)
-  //statusList[index].selected = !statusList[index].selected
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.runStatus = [index];
@@ -602,9 +572,6 @@ const toggleAllStatus = () => {
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  // console.log('key',key);
-  // const devKey = '172.16.101.2-1';
-  // const busId = 6;
   const id = key.cabinet_key.split('-')[1]
   const roomId = key.cabinet_key.split('-')[0];
   const type = 'hour';
@@ -614,7 +581,6 @@ const toMachineDetail = (key) => {
 }
 
 const handleCheck = (row) => {
-  // console.log('handleCheck!', row);
   isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
@@ -635,7 +601,6 @@ const openForm = async(type: string, key?: string) => {
     try {
       loading.value = true
       const res = await CabinetApi.getCabinetInfoItem({id})
-      // console.log('res', res)
       machineForm.value.open(type, res)
     } finally {
       loading.value =false
@@ -657,7 +622,6 @@ const handleDelete = async (key: string) => {
     await getNavList()
     getTableData()
   } catch (error) {
-    // console.log(error)
   }
 }
 

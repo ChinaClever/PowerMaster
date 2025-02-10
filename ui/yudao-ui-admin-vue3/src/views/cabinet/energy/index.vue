@@ -208,7 +208,6 @@ const getTableData = async(reset = false) => {
       timeGranularity:queryParams.timeGranularity,
       company: queryParams.company
     })
-    console.log('res',res);
     if (res.list) {
       tableData.value = res.list.map(item => {
         const roomName = item.roomName || ''; // 处理 null 值
@@ -221,7 +220,6 @@ const getTableData = async(reset = false) => {
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
         }
       })
-      console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
      }
     } finally {
@@ -256,7 +254,6 @@ const handleCheck = (row) => {
 
 // 跳转详情
 const toDetail = (roomId, id) => {
-  console.log('跳转详情', id)
   push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
 }
 
@@ -264,7 +261,6 @@ onBeforeMount(() => {
   getNavList()
   getTableData()
   getMaxData()
-  // statistics()
 })
 </script>
 

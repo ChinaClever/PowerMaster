@@ -443,7 +443,6 @@ const createFilter = (queryString: string) => {
 }
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
     handleQuery();
@@ -588,7 +587,6 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBoxLinePage(queryParams)
-    console.log('data',data);
     list.value = data.list
     var tableIndex = 0;
     list.value.forEach((obj) => {
@@ -616,7 +614,6 @@ const getList = async () => {
 const getListAll = async () => {
   try {
         const allData = await IndexApi.getBoxLineMax(queryParams)
-        console.log('测试'+allData)
     //设置左边数量
     statusNumber.location = allData.location;
     statusNumber.devKey = allData.devKey;
@@ -649,13 +646,11 @@ const getNavList = async() => {
 const openDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   const tableData = await IndexApi.getBoxLineCurLinePage(queryParams)
-  console.log("tableData",tableData)
   pfTableList.value = tableData?.list;
   pfTableList.value.forEach(item => item.cur_max_value = item.cur_max_value.toFixed(2)+'A')
   pfTableList.value.forEach(item => item.pow_active_max_value = item.pow_active_max_value+'KW')
 
   const lineData = await IndexApi.getBoxLineCurLine(queryParams);
-  console.log('requirementLine1111111111111',requirementLine.value);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
   location.value = row.location != null ? row.location : row.devKey
@@ -712,7 +707,6 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await IndexApi.getBoxLineCurLineExcel(queryParams, axiosConfig)
-    console.log("data",data)
     await download.excel(data, '电流详细.xlsx')
   } catch (error) {
     // 处理异常

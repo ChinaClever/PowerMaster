@@ -353,7 +353,6 @@ const loadAll = async () => {
   var objectArray = data.map((str) => {
     return { value: str };
   });
-  console.log(objectArray)
   return objectArray;
 }
 
@@ -553,7 +552,6 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams);
-    console.log('data',data);
     list.value = data.list
     var tableIndex = 0;
     list.value.forEach((obj) => {

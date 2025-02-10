@@ -320,7 +320,6 @@ const balanceObj = reactive({
 
 const getBalanceDetail = async(item) => {
   const res = await CabinetApi.getDetail({id:item});
-  console.log('res111', res);
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
@@ -429,7 +428,6 @@ const getTableData = async(reset = false) => {
       pduBox: 0,
       company: queryParams.company
     })
-    console.log('res', res)
     if (res.list) {
       // const list = res.list.map(item => {
       //   const tableItem = {} as any
@@ -476,7 +474,6 @@ const getTableData = async(reset = false) => {
       //   }
       //   return tableItem
       // })
-      console.log('list', res.list)
       tableData.value = res.list
       queryParams.pageTotal = res.total
     }
@@ -492,7 +489,6 @@ const getBalanceDegree = async () => {
     pageSize: 24,
     cabinetIds : [cabinetId.value],
   })
-  console.log('getBalanceDegreeres', res)
   if (res.list.length > 0) {
     const itemA = res.list.find(item => item.location.includes('A路'))
     const itemB = res.list.find(item => item.location.includes('B路'))
@@ -509,11 +505,9 @@ const getBalanceDegree = async () => {
 
 // 获取pdu电流趋势
 const getBalanceTrend = async () => {
-  console.log('cabinetId.value111',cabinetId.value);
   const res = await CabinetApi.getBalanceTrend({
     id: cabinetId.value
   })
-  console.log('getBalanceTrendres111',res);
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime)
     if(res[0].curA && res[0].curA.length == 1) {
@@ -557,7 +551,6 @@ const getBalanceTrend = async () => {
         },
       ]
     }
-    console.log('ALineOption', ALineOption)
     if (res[0].curB && res[0].curB.length == 1) {
       BLineOption.value.xAxis = {
         type: 'category',
@@ -654,7 +647,7 @@ const BLineOption = ref<EChartsOption>({
 
 // 详情跳转
 const toDetail = (id) => {
-  console.log('详情跳转', id, router, router.getRoutes())
+
   push({path: '/cabinet/cab/balanceDetail', state: { id }})
 }
 
@@ -667,9 +660,7 @@ const apow = ref(null);
 const bpow = ref(null);
 
 const showDialog = async (item) => {
-  console.log('item1111',item.id);
   cabinetId.value = item.id || 1;
-  console.log('cabinetId1111',cabinetId.value);
   colorFlag.value = item.color;
   dialogVisibleCur.value = true;
   curdevkey.value = item.devKey;

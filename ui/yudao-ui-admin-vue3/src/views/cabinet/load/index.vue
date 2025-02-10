@@ -202,7 +202,6 @@ const butColor = ref(0);
 const onclickColor = ref(-1);
 
 function formatApparentPower(row, column, cellValue ) {
-  console.log('测试',row+'-'+column+'-'+cellValue)
   // 假设保留两位小数
   if (cellValue === null || cellValue === undefined) {
     return 0;
@@ -213,16 +212,13 @@ function formatnumOne(row, column, cellValue ) {
     if (cellValue === null || cellValue === undefined) {
     return 0;
   }
-  console.log('测试',row+'-'+column+'-'+cellValue+'-')
   // 假设保留两位小数
   return parseFloat(cellValue).toFixed(1);
 }
 function formatnumThree(row, column, cellValue ) {
-  console.log('cesi',cellValue)
     if (cellValue === null || cellValue === undefined) {
     return 0;
   }
-  console.log('测试',row+'-'+column+'-'+cellValue+'-')
   // 假设保留两位小数
   return parseFloat(cellValue).toFixed(3);
 }
@@ -293,31 +289,6 @@ const statusList = reactive([
   },
 ])
 
-
-// 接口获取机柜列表
-//const getTableData = async(reset = false) => {
-//  loading.value = true
-//  if (reset) queryParams.pageNo = 1
-//  //const status =  statusList.filter(item => item.selected)
-//  try {
-//    const res = await CabinetApi.getIndexLoadPage({
-//      pageNo: queryParams.pageNo,
-//      pageSize: queryParams.pageSize,
-//      cabinetIds: isFirst.value ? null : cabinetIds.value,
-//      // roomId: null,
-//      loadStatus: queryParams.loadStatus,
-//      pduBox: 0,
-//      company: queryParams.company
-//    })
-//    const res = await CabinetApi.getIndexLoadPage(queryParams)
-//    console.log('res', res);
-//    listPage.value = res.list;
-//    queryParams.pageTotal = res.total;
-//    console.log('listPage', listPage.value)
-//  } finally {
-//    loading.value = false
-//  }
-//}
 const getTableData = async(reset = false) => {
   loading.value = true
   if (reset) queryParams.pageNo = 1
@@ -325,18 +296,15 @@ const getTableData = async(reset = false) => {
   try {
     const res = await CabinetApi.getIndexLoadPage(queryParams)
     if (!res) {
-      console.error('API response is null or undefined');
       // 可以选择设置一个空数组和总页数为0，或者显示错误消息
       listPage.value = [];
       queryParams.pageTotal = 0;
     } else {
-      console.log('res', res);
+
       listPage.value = res.list || []; // 如果res.list是undefined，使用空数组
       queryParams.pageTotal = res.total || 0; // 如果res.total是undefined，使用0
-      console.log('listPage', listPage.value)
     }
   } catch (error) {
-    console.error('Error fetching table data:', error);
     // 处理错误，如显示错误消息
     listPage.value = [];
     queryParams.pageTotal = 0;
@@ -368,7 +336,6 @@ const formatLoadFactor = (value) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
-  console.log('接口获取机房导航列表', res)
   navList.value = res
 }
 
@@ -389,7 +356,7 @@ const handleClick = (row) => {
 }
 
 const handleCheck = (row) => {
-  console.log('handleCheck!', row);
+
   isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
@@ -407,7 +374,7 @@ const handleSelectStatus = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.loadStatus = [index];
-  console.log('处理状态选择事件', index)
+
   //statusList[index].selected = !statusList[index].selected
   getTableData()
 }

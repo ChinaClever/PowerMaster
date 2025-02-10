@@ -472,7 +472,6 @@ const statusList = reactive([
 ])
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
     handleQuery();
@@ -577,7 +576,6 @@ const handleMonthPick = () => {
 const getListAll = async () => {
   try {
         const allData = await IndexApi.getBusLineMax(queryParams)
-        console.log('测试'+allData)
     //设置左边数量
     statusNumber.location = allData.location;
     statusNumber.devKey = allData.devKey;
@@ -677,7 +675,6 @@ const openDetail = async (row) =>{
   pfTableList.value.forEach(item => item.pow_active_max_value = item.pow_active_max_value+'KW')
 
   const lineData = await IndexApi.getBusLineCurLine(queryParams)
-  console.log('lineData',lineData);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
   location.value = row.location != null ? row.location : row.devKey
@@ -694,7 +691,6 @@ const handleQuery = () => {
   if(queryParams.timeType != 0 && queryParams.oldTime == null ){
     return;
   }
-  console.log('搜索',queryParams);
   getList();
   getListAll();
 }
@@ -736,7 +732,6 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await IndexApi.getBusLineCurLineExcel(queryParams, axiosConfig)
-    console.log("data",data)
     await download.excel(data, '电流详细.xlsx')
   } catch (error) {
     // 处理异常

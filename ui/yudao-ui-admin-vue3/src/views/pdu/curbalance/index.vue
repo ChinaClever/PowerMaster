@@ -671,7 +671,6 @@ function formatEQ(value: number, decimalPlaces: number | undefined){
 const getBalanceDetail = async (item) => {
   const res = await PDUDeviceApi.balanceDetail({ devKey: item.devKey })
   if (res.data== null) 
-  console.log('res', res)
   if (res.cur_value) {
     const cur_valueA = res.cur_value.map(num => formatEQ(num,2))
     // const max = Math.max(...cur_valueA) // 最大值
@@ -777,7 +776,6 @@ const getBalanceDetail = async (item) => {
   balanceObj.imbalanceValueA = res.curUnbalance
   balanceObj.imbalanceValueB = res.volUnbalance
   balanceObj.colorIndex = res.color - 1
-  console.log('balanceObj',balanceObj)
 }
 const butColor = ref(0);
 
@@ -800,8 +798,6 @@ const getBalanceTrend = async (item) => {
   const res = await PDUDeviceApi.balanceTrend({
     pduId: item.id
   })
-  console.log('res11111111111111111111111', res)
-  console.log('res22222222222222222222222', res[0].dateTime)
   
   createTimes.value = res[0].dateTime;
   const lastIndex = res.length - 1;
@@ -934,9 +930,6 @@ const getBalanceTrend = async (item) => {
       ]
     }
   }
-  console.log('1111111111111111111111111111111111111')
-  console.log('ALineOption', ALineOption)
-  console.log('item', item)
 }
  
 const showDialogCur = (item) => {
@@ -973,7 +966,6 @@ const showDialogVol = (item) => {
   vollocation.value = item.devKey
   getBalanceDetail(item)
   getBalanceTrend(item)
-  console.log('111111111item',item);
   curUnblance1.value = balanceObj.imbalanceValueA
 // 将 item 的属性赋值给 barMaxValues
 barMaxValues.value = {
@@ -995,12 +987,10 @@ const loadAll = async () => {
   var objectArray = data.map((str) => {
     return { value: str }
   })
-  console.log(objectArray)
   return objectArray
 }
 
 const querySearch = (queryString: string, cb: any) => {
-  console.log(devKeyList.value)
   const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
@@ -1097,14 +1087,12 @@ const getList = async () => {
     // }
     total.value = data.total
     list.value = data.list
-    console.log('111获取数据111', list)
   } finally {
     loading.value = false
   }
 }
 const getCurbalanceColor = async () => {
   const res = await CurbalanceColorApi.getCurbalanceColor()
-  console.log('res', res)
   if (res != null) {
     statusList[0].name = '<' + res.rangeOne + '%'
     statusList[1].name = res.rangeTwo + '%-' + res.rangeThree + '%'
@@ -1115,7 +1103,6 @@ const getCurbalanceColor = async () => {
 
 const getNavAList = async() => {
     const resStatus =await PDUDeviceApi.getBalancedDistribution();
-    console.log(resStatus);
     statusNumber.smallCurrent = resStatus.smallCurrent;
     statusNumber.lessFifteen = resStatus.lessFifteen;
     statusNumber.greaterFifteen = resStatus.greaterFifteen;
