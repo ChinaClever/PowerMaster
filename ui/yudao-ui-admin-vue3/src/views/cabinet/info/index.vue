@@ -41,7 +41,6 @@
             <div class="value"><span class="number">{{totalAll}}</span>个</div>
           </div>
         </div>
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -69,7 +68,7 @@
               v-model="queryParams.company"
               placeholder="请输入公司名称"
               clearable
-              class="!w-160px"
+              class="!w-130px"
               height="35"
             />
           </el-form-item >
@@ -104,8 +103,8 @@
       </el-form>
     </template>
     <template #Content>
-      <div v-show="switchValue && listPage.length > 0" style="height:710px">
-        <el-table v-show="switchValue == 1"  style="height: 710px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <div v-show="switchValue && listPage.length > 0" class="table-height">
+        <el-table v-show="switchValue == 1" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -920,6 +919,11 @@ onBeforeRouteLeave(()=>{
 }
 
 @media screen and (min-width:2048px){
+  .table-height{
+    height: 76vh;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     height: 78vh;
     overflow: hidden;
@@ -1050,6 +1054,11 @@ onBeforeRouteLeave(()=>{
 }
 
 @media screen and (max-width:2048px) and (min-width:1600px){
+  .table-height{
+    height: 710px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     height: 720px;
     overflow: hidden;
@@ -1180,6 +1189,11 @@ onBeforeRouteLeave(()=>{
 }
 
 @media screen and (max-width:1600px){
+  .table-height{
+    height: 600px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     height: 600px;
     overflow: hidden;

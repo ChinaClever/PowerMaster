@@ -14,6 +14,7 @@ import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -88,7 +89,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             List<String> pduIds = null;
             String[] ipArray = pageReqVO.getIpArray();
 
-            if (ipArray != null) {
+            if (ObjectUtils.isNotEmpty(ipArray)) {
                 pduIds = historyDataService.getPduIdsByIps(ipArray);
                 boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduIds)); // 将 termsQuery 加入 boolQuery 的 must 子句
             }
@@ -171,10 +172,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        List<String> pduIds = null;
+        List<String> pduIds;
         String[] ipArray = pageReqVO.getIpArray();
-        if (ipArray != null) {
-            pduIds = historyDataService.getPduIdsByIps(ipArray);
+        if (ObjectUtils.isNotEmpty(ipArray)) {
+             pduIds = historyDataService.getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
         // 搜索请求对象
@@ -403,7 +404,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] ipArray = pageReqVO.getIpArray();
-        if (ipArray != null) {
+        if (ObjectUtils.isNotEmpty(ipArray)) {
             List<String> pduIds = historyDataService.getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }

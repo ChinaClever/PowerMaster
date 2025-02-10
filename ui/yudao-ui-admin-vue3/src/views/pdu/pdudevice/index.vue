@@ -28,8 +28,6 @@
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div>
-        <div class="line"></div>
-
       </div>
     </template>
     <template #ActionBar>
@@ -140,7 +138,7 @@
       </el-form>      
     </template>
     <template #Content >
-     <div v-if="switchValue && list.length > 0" style="height: 720px;overflow: hidden;overflow-y: auto;margin-top: -10px;">
+     <div v-if="switchValue && list.length > 0" class="table-height">
       <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -1104,9 +1102,15 @@ onActivated(() => {
 }
 
 @media screen and (min-width:2048px){
+  .table-height{
+    height: 76vh;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top:-10px;
+  }
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 78vh;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1184,6 +1188,12 @@ onActivated(() => {
 }
 
 @media screen and (max-width:2048px) and (min-width:1600px) {
+  .table-height{
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top:-10px;
+  }
   .arrayContainer {
     width:100%;
     height: 720px;
@@ -1265,9 +1275,15 @@ onActivated(() => {
 }
 
 @media screen and (max-width:1600px) {
+  .table-height{
+    height: 600px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top:-10px;
+  }
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 600px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;

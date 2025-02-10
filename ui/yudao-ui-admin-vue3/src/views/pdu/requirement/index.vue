@@ -27,10 +27,7 @@
     </div>    
 
   </div>
-     </div>
-
-
-        <div class="line"></div>    
+     </div>   
     </div>
     </template>
     <template #ActionBar>
@@ -119,7 +116,7 @@
       </el-form>
     </template>
     <template #Content>
-     <div v-if="switchValue && list.length > 0" style="height: 720px;margin-top:-10px;overflow: hidden;overflow-y: auto;">
+     <div v-if="switchValue && list.length > 0" class="table-height">
     <!-- 三相数据显示 -->
       <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"   @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
@@ -1670,6 +1667,12 @@ window.addEventListener('resize', function() {
 }
 
 @media screen and (min-width:2048px) {
+  .table-height{
+    height: 78vh;
+    margin-top:-10px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;
@@ -1737,6 +1740,12 @@ window.addEventListener('resize', function() {
 }
 
 @media screen and (max-width:2048px) and (min-width:1600px) {
+  .table-height{
+    height: 720px;
+    margin-top:-10px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;
@@ -1805,6 +1814,12 @@ window.addEventListener('resize', function() {
 }
 
 @media screen and (max-width:1600px) {
+  .table-height{
+    height: 600px;
+    margin-top:-10px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;

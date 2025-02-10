@@ -11,6 +11,7 @@ import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekD
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.outlet.BoxOutletBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalRealtimeDo;
@@ -101,6 +102,7 @@ import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
+import static com.github.yulichang.method.SqlMethod.collect;
 
 /**
  * 始端箱索引 Service 实现类
@@ -392,7 +394,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return map;
     }
 
-    private List<String> getEsStrings(String index, String start, String end, BoxIndex boxIndex) throws IOException {
+    private List<String> getEsStrings(String index, String start, String end, BoxIndex boxIndex){
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -414,7 +416,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<String> list = new ArrayList<>();
             for (SearchHit hit : searchResponse.getHits()) {
                 String sourceAsString = hit.getSourceAsString();
-                list.add(sourceAsString);
+                if (sourceAsString.length()>2) {
+                    list.add(sourceAsString);
+                }
             }
             return list;
         } catch (Exception e) {
@@ -511,9 +515,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         Map<String, String> positionByKey = getPositionByKeys(list);
         vo.setLocation(positionByKey.get(boxIndex.getBoxKey()));
         vo.setDevKey(boxIndex.getBoxKey());
-        vo.setPowApparent(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("pow_apparent"));
+
         vo.setRunStatus(boxIndex.getRunStatus());
-        vo.setPowerFactor(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("power_factor"));
+        if (Objects.nonNull(jsonObject)) {
+            vo.setPowApparent(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("pow_apparent"));
+            vo.setPowerFactor(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("power_factor"));
+        }
         return vo;
     }
 
@@ -1316,24 +1323,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 Integer loopNum = jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("loop_num");
                 for (Integer i = 1; i <= loopNum; i++) {
                     VoHdaLoopResVO vo = new VoHdaLoopResVO();
-                    List<BusHdaLoopAvgResVO> busHdaLoopAvgResVOS = collect.get(i);
-                    List<BigDecimal> vols = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getVolAvgValue).collect(Collectors.toList());
-                    List<BigDecimal> curs = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getCurAvgValue).collect(Collectors.toList());
                     vo.setLineId(i);
-                    vo.setVol(vols);
-                    vo.setCur(curs);
-//                    vol.add(vols);
-//                    cur.add(curs);
+                    List<BusHdaLoopAvgResVO> busHdaLoopAvgResVOS = collect.get(i);
+                    if (!CollectionUtils.isEmpty(busHdaLoopAvgResVOS)) {
+                        List<BigDecimal> vols = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getVolAvgValue).collect(Collectors.toList());
+                        List<BigDecimal> curs = busHdaLoopAvgResVOS.stream().map(BusHdaLoopAvgResVO::getCurAvgValue).collect(Collectors.toList());
+                        vo.setVol(vols);
+                        vo.setCur(curs);
+                    }
                     list1.add(vo);
                 }
 
             }
-//            map.put("A", dayList1);
-//            map.put("B", dayList2);
-//            map.put("C", dayList3);
             map.put("loop", list1);
-//            map.put("vol",vol);
-//            map.put("cur",cur);
             map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         }
         return map;
@@ -1882,12 +1884,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             List<String> outletHour = getData(startTime, endTime, ids, "box_hda_outlet_hour", new String[]{"box_id,eq_value"});
+            if (CollectionUtils.isEmpty(outletHour)){
+                return map;
+            }
             List<BoxPFDetail> strList = outletHour.stream()
                     .map(str -> JsonUtils.parseObject(str, BoxPFDetail.class))
                     .collect(Collectors.toList());
 
             Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
-//            Map<String, List> map = new HashMap<>();
             for (String key : pfMap.keySet()) {
                 List<BoxPFDetail> list = pfMap.get(key);
                 map.put(key, list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
@@ -1921,10 +1925,45 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             detail.setOutletId(i + 1);
             detail.setPowerFactorAvgValue(powerFactor.get(i));
             detail.setCreateTime(time);
-
+            strList.add(detail);
+           List list = new ArrayList();
+           list.add(detail.getPowerFactorAvgValue());
+            map.put(String.valueOf(detail.getOutletId()) ,list);
+        }
+        Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
+        for (String key : pfMap.keySet()) {
+            List<BoxPFDetail> list = pfMap.get(key);
+            map.put(key, list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
         }
         map.put("time", strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
         map.put("table", strList);
+        return map;
+    }
+
+    @Override
+    public Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO){
+        Map map = new HashMap<>();
+        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+
+        if (boxIndex != null) {
+            String index;
+            if (pageReqVO.getTimeType().equals(0)) {
+                index = "box_hda_outlet_hour";
+            } else {
+                index = "box_hda_outlet_day";
+            }
+
+            String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
+            String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
+            List<String> list = getEsStrings(index, start, end, boxIndex);
+            if (CollectionUtils.isEmpty(list)){
+                return map;
+            }
+            List<BoxOutletBaseDo> baseDos = list.stream().map(i -> JsonUtils.parseObject(i, BoxOutletBaseDo.class)).collect(Collectors.toList());
+            map = baseDos.stream().collect(Collectors.groupingBy(BoxOutletBaseDo::getOutletId));
+            map.put("time",baseDos.stream().map(BoxBaseDo::getCreateTime).distinct().collect(Collectors.toList()));
+            return map;
+        }
         return map;
     }
 
@@ -2196,14 +2235,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 endTime = localDateTimeToString(pageReqVO.getNewTime());
             }
             List<Integer> ids = Arrays.asList(pageReqVO.getBoxId());
-            List<String> data = getData(startTime, endTime, ids, index, new String[]{"box_id,eq_value"});
-
+            List<String> data = getData(startTime, endTime, ids, index, new String[]{"box_id","line_id","cur_max_value","cur_max_time",
+                    "pow_active_max_value","pow_active_max_time"});
+            if (CollectionUtils.isEmpty(data)){
+                return result;
+            }
+            List<BoxLineHourDo> lineHourDos = data.stream().map(i -> JsonUtils.parseObject(i, BoxLineHourDo.class))
+                    .sorted(Comparator.comparing(BoxLineBaseDo::getCurMaxTime)).collect(Collectors.toList());
             if (pageReqVO.getLineType() == 0) {
                 result.getSeries().add(new RequirementLineSeries().setName("A路最大电流"));
                 result.getSeries().add(new RequirementLineSeries().setName("B路最大电流"));
                 result.getSeries().add(new RequirementLineSeries().setName("C路最大电流"));
-                data.forEach(str -> {
-                    BoxLineHourDo lineDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+                lineHourDos.forEach(lineDo -> {
+//                    BoxLineHourDo lineDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
                     if (lineDo.getLineId() == 1) {
                         result.getTime().add(lineDo.getCurMaxTime().toString("yyyy-MM-dd HH"));
                     }
@@ -2727,7 +2771,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 SearchHits hits = searchResponse.getHits();
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
-                    list.add(str);
+                    if (str.length()>2) {
+                        list.add(str);
+                    }
                 }
             }
             return list;

@@ -29,7 +29,6 @@
             <span>{{ statusNumber.cur_max_value }}</span>
           </div>
         </div>
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -59,7 +58,8 @@
           >
             自定义
           </el-button>     
-          <el-date-picker  style="padding-left: 10px;"
+          <el-date-picker  
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -68,11 +68,12 @@
             @change="handleMonthPick"
             class="!w-160px"
           />
-          <el-date-picker  style="padding-left: 10px;"
+          <el-date-picker  
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 2"
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
-            type="daterange"
+            type="datetimerange"
             :shortcuts="shortcuts"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
@@ -83,7 +84,8 @@
         </el-form-item>
 
         <el-form-item>
-          <el-form-item label="网络地址" prop="devKey">
+          <span>网络地址：</span>
+          <el-form-item prop="devKey">
             <el-autocomplete
               v-model="queryParams.devKey"
               :fetch-suggestions="querySearch"
@@ -111,12 +113,13 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1 && visMode == 0 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y:auto;" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+      <div v-if="switchValue !== 2  && list.length > 0" class="table-height">
+        <el-table v-show="switchValue == 1 && visMode == 0 && list.length > 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
-        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
+        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l1MaxCur }}
@@ -124,7 +127,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
-        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
+        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l2MaxCur }}
@@ -132,7 +135,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
-        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
+        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l3MaxCur }}
@@ -161,7 +164,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-table v-show="switchValue == 1 && visMode == 1 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y:auto;" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+      <el-table v-show="switchValue == 1 && visMode == 1 && list.length > 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
@@ -214,16 +217,16 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
-            <div class="info">
+            <div class="info" style="margin-left:10px;font-size: 15px;">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量功率</el-tag>
           </div>           
           <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
@@ -236,17 +239,16 @@
         <!-- <div class="arrayItem" v-for="item in list" :key="item.devKey"> -->
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
-            <div class="info">
-              
+            <div class="info" style="margin-left:10px;font-size: 15px;">
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量电流</el-tag>
           </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
@@ -254,6 +256,7 @@
         </template>
       </div>
 
+      </div>
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -266,34 +269,39 @@
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 
-      <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
-        <div>
-          结果所在位置：（<el-tag>{{ location }}</el-tag>） 时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
-        </div>
-        <div style="margin-left:55vw; margin-top:-4vh;">
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ?  'primary' : ``"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type=" switchChartOrTable == 1 ?  'primary' : ``"
-          >
-            数据
-          </el-button>
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+      <el-dialog v-model="detailVis" width="70vw" height="58vh" >
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;margin-top:-50px;">
+          <div>
+            <span style="font-weight:bold;font-size:20px;margin-right:10px;">{{queryParams.lineType == 0 ? `电流详情`: `功率详情`}}</span>
+            <span style="margin-right:10px;">结果所在位置：{{ location }}</span>
+            <span>时间段: {{ queryParams.oldTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ queryParams.newTime }}</span>
+          </div>
+          <div style="display: flex; gap: 10px;margin-right:30px;"> <!-- 子div用于包含按钮，并设置按钮之间的间距 -->
+            <el-button
+              @click="switchChartOrTable = 0"
+              :type="switchChartOrTable == 0 ? 'primary' : ''"
+            >
+              图表
+            </el-button>
+            <el-button
+              @click="switchChartOrTable = 1"
+              :type="switchChartOrTable == 1 ? 'primary' : ''"
+            >
+              数据
+            </el-button>
+            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
         </div>
         <div style="margin-top:3vh;">
-          <RequirementLine v-show="switchChartOrTable == 0" width="68vw" height="58vh" :list="requirementLine"  />
-          <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+          <RequirementLine v-if="switchChartOrTable == 0" width="68vw" height="58vh" :list="requirementLine"  />
+          <el-table style="height:550px;ovrflow:hidden;overflow-y:auto;" v-if="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
             <el-table-column label="设备识别码" align="center" prop="devKey" />
-            <el-table-column label="时间" align="center" prop="create_time" />
             <el-table-column label="相" align="center" prop="line" />
+            <el-table-column label="最大电流时间" align="center" prop="cur_max_time" />
             <el-table-column label="最大电流" align="center" prop="cur_max_value" />
+            <el-table-column label="最大有功功率时间" align="center" prop="pow_active_max_time" />
             <el-table-column label="最大有功功率" align="center" prop="pow_active_max_value" />
           </el-table>
         </div>
@@ -521,6 +529,8 @@ const handleDayPick = () => {
     queryParams.oldTime = queryParams.timeArr[0];
     queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
   }
+
+  handleQuery();
 }
 
 const handleMonthPick = () => {
@@ -582,7 +592,6 @@ const getList = async () => {
     list.value = data.list
     var tableIndex = 0;
     list.value.forEach((obj) => {
-
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
       obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
@@ -593,6 +602,9 @@ const getList = async () => {
       obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
       obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
       obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
+      obj.l1MaxCurTime = obj.l1MaxCurTime?.slice(0,16);
+      obj.l2MaxCurTime = obj.l2MaxCurTime?.slice(0,16);
+      obj.l3MaxCurTime = obj.l3MaxCurTime?.slice(0,16);
     });
 
     total.value = data.total
@@ -643,6 +655,7 @@ const openDetail = async (row) =>{
   pfTableList.value.forEach(item => item.pow_active_max_value = item.pow_active_max_value+'KW')
 
   const lineData = await IndexApi.getBoxLineCurLine(queryParams);
+  console.log('requirementLine1111111111111',requirementLine.value);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
   location.value = row.location != null ? row.location : row.devKey
@@ -982,7 +995,14 @@ onMounted(async() => {
   }
 }
 
-.arrayContainer {
+@media screen and (min-width:2048px){
+  .table-height{
+    height: 76vh;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top: -10px;
+  }
+  .arrayContainer {
   display: flex;
   flex-wrap: wrap;
   .arrayItem {
@@ -1041,6 +1061,147 @@ onMounted(async() => {
       bottom: 8px;
       cursor: pointer;
     }
+  }
+  }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .table-height{
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top: -10px;
+  }
+  .arrayContainer {
+  display: flex;
+  flex-wrap: wrap;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 60px;
+        height: 30px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+  }
+}
+
+@media screen and (max-width:1600px){
+  .table-height{
+    height: 600px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top: -10px;
+  }
+  .arrayContainer {
+  display: flex;
+  flex-wrap: wrap;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 60px;
+        height: 30px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
   }
 }
 

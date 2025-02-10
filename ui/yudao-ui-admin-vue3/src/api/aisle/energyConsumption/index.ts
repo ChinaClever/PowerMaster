@@ -7,9 +7,12 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/aisle/eq-data/page`, params })
   },
 
-   // 查询电量费数据分页
-   getBillDataPage: async (params: any) => {
-    return await request.get({ url: `/aisle/eq-data/bill-page`, params })
+  // 查询电量费数据分页
+  //getBillDataPage: async (params: any) => {
+  //  return await request.get({ url: `/aisle/eq-data/bill-page`, params })
+  //},
+  getBillDataPage: async (data: any) => {
+    return await request.post({ url: `/aisle/eq-data/bill-page`, data })
   },
 
   // 查询电量数据详情

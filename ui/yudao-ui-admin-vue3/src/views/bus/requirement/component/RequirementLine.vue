@@ -24,12 +24,12 @@ const time = ref()
 const legendList = ref()
 const formatter = ref();
 
-series.value = prop.list.series;
-if(  series.value != null && series.value?.length > 0){
-  legendList.value =  series.value?.map(item => item.name)
-}
-formatter.value = prop.list.formatter;
-time.value = prop.list.time;
+//series.value = prop.list.series;
+//if(  series.value != null && series.value?.length > 0){
+//  legendList.value =  series.value?.map(item => item.name)
+//}
+//formatter.value = prop.list.formatter;
+//time.value = prop.list.time;
 
 // 设置饼图的选项
 const echartsOption = ref({
@@ -65,6 +65,18 @@ const echartsOption = ref({
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: series,
 })
+
+watchEffect(() => {
+  // 直接访问即可，watchEffect会自动跟踪变化
+
+  series.value = prop.list.series;
+  if(  series.value != null && series.value?.length > 0){
+    legendList.value =  series.value?.map(item => item.name)
+  }
+  formatter.value = prop.list.formatter;
+  time.value = prop.list.time;
+
+});
 
 onUnmounted(() => {
   console.log('onUnmounted******')

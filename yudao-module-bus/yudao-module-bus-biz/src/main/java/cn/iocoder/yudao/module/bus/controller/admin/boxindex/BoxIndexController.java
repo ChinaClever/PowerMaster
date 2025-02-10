@@ -168,10 +168,10 @@ public class BoxIndexController {
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBoxPFDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         Map boxPFDetail = indexService.getBoxPFDetail(pageReqVO);
-        if (boxPFDetail == null){
+        if (CollectionUtils.isEmpty(boxPFDetail)){
             boxPFDetail = indexService.getBoxPFDetailNow(pageReqVO);
         }
-        if (boxPFDetail == null){
+        if (CollectionUtils.isEmpty(boxPFDetail)){
             throw exception(NOT_DETAIL);
         }
         return success(boxPFDetail);
@@ -181,8 +181,8 @@ public class BoxIndexController {
     @PostMapping("/pf/detailExcel")
     public void getBoxPFDetailExcel(@RequestBody BoxIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
         Map boxPFDetail = indexService.getBoxPFDetail(pageReqVO);
-        List<BusPFTableRes> tableList = (List<BusPFTableRes>) boxPFDetail.get("table");
-        ExcelUtils.write(response, "插接箱功率因数详情.xlsx", "数据", BusPFTableRes.class,tableList);
+        List<BoxPFDetail> tableList = (List<BoxPFDetail>) boxPFDetail.get("table");
+        ExcelUtils.write(response, "插接箱功率因数详情.xlsx", "数据", BoxPFDetail.class,tableList);
     }
 
     @PostMapping("/boxharmonicpage")
@@ -369,14 +369,20 @@ public class BoxIndexController {
     }
 
     @PostMapping("/avg/boxHdaLine/form")
-    @Operation(summary = "获得插接箱报表平均电流电压详细信息")
+    @Operation(summary = "获得插接箱报表相平均电流电压详细信息")
     public CommonResult<Map> getAvgBoxHdaLineForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBoxHdaLineForm(pageReqVO));
     }
     @PostMapping("/avg/boxHdaLoop/form")
-    @Operation(summary = "获得插接箱报表平均电流电压详细信息")
+    @Operation(summary = "获得插接箱报表回路平均电流电压详细信息")
     public CommonResult<Map> getAvgBoxHdaLoopForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBoxHdaLoopForm(pageReqVO));
+    }
+
+    @PostMapping("/avg/boxHdaOutlet/form")
+    @Operation(summary = "获得插接箱报表输出位详细信息")
+    public CommonResult<Map> getAvgBoxHdaOutletForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBoxHdaOutletForm(pageReqVO));
     }
 
     @GetMapping("/statistics")

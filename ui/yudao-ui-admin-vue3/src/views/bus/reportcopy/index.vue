@@ -982,20 +982,29 @@ const getList = async () => {
 const baseInfoList = await IndexApi.getReportBasicInformationByBusResVO(queryParams);
 console.log('baseInfoList',baseInfoList)
 // 对数据进行处理，保留三位小数
-const processedData = baseInfoList.map(item => {
-            return {
-                boxName: item.boxName,
-                devKey: item.devKey,
-                runStatus: item.runStatus,
-                powApparent: parseFloat(item.powApparent.toFixed(3)),
-                powActiveOne: parseFloat(item.powActiveOne.toFixed(3)),
-                powActiveTwo: parseFloat(item.powActiveTwo.toFixed(3)),
-                powActiveThree: parseFloat(item.powActiveThree.toFixed(3))
-            };
-        });
-        // 将处理后的数据存储在 tableData.value 中
-        tableData.value = processedData;
-console.log('tableData.value',tableData.value)
+// 辅助函数：处理数值并保留三位小数
+function formatNumber(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0; // 或者返回其他默认值
+    }
+    return Number(value.toFixed(3));
+}
+
+const processedData = baseInfoList.map(item => ({
+    boxName: item.boxName,
+    devKey: item.devKey,
+    runStatus: item.runStatus,
+    powApparent: formatNumber(item.powApparent),
+    powActiveOne: formatNumber(item.powActiveOne),
+    powActiveTwo: formatNumber(item.powActiveTwo),
+    powActiveThree: formatNumber(item.powActiveThree)
+}));
+
+// 将处理后的数据存储在 tableData.value 中
+tableData.value = processedData;
+
+// 输出最终的 tableData.value
+console.log('tableData.value', tableData.value);
 
 
   visControll.visAllReport = true;

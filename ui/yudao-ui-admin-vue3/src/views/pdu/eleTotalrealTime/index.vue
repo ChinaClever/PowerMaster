@@ -104,52 +104,6 @@
           </template>
         </el-table-column>
       </el-table> 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- <el-table :datv-loading="loading" :data="list"  :show-overflow-tooltip="true" >
-            
-        <el-table-column label="序号" align="center" width="80px">
-          <template #default="{ $index }">
-            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
-          </template>   
-        </el-table-column> -->
-       <!-- 遍历其他列 -->
-        <!-- <el-table-column label= '所在位置'  align = 'center' prop= 'address' , istrue:true, width='150%'/>
-       <el-table-column label= '网络地址' align= 'center' prop= 'location' , istrue:true, width= '150px'/>
-       <el-table-column label= '开始电能' align='center' istrue: true>
-        <el-table-column label='开始电能(kWh)' align= 'center' prop= 'eleActiveStart' , istrue:true, formatter: formatEle ,width= '130px'/>
-        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin' , formatter: formatTime1, width= '130px'  istrue:true/>
-      </el-table-column>
-        <el-table-column label= '结束电能' align= 'center' istrue: true>
-          <el-table-column label= '结束电能(kWh)' align= 'center' prop= 'eleActiveEnd' , istrue:true, formatter: formatEle,width= '130px'/>
-          <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax' , formatter: formatTime1, width= '130px'  istrue:true/>
-        </el-table-column>
-        <el-table-column label= '耗电量(kWh)' align= 'center' prop= 'eleActive' ,istrue: true,formatter: formatEle ,width= '130px'/>
-        <el-table-column label="操作" align="center">
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
-            >
-            设备详情
-            </el-button>
-          </template>
-        </el-table-column>
-       
- -->
-      
       </div>
       <!-- 分页 -->
       <Pagination

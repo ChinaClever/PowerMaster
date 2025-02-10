@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.entity.es.box.outlet;
 
 import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -30,6 +31,7 @@ public class BoxOutletBaseDo extends BoxBaseDo {
     /**
      * 最大有功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("pow_active_max_time")
     private DateTime powActiveMaxTime;
 
@@ -42,6 +44,7 @@ public class BoxOutletBaseDo extends BoxBaseDo {
     /**
      * 最小有功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("pow_active_min_time")
     private DateTime powActiveMinTime;
 
@@ -61,6 +64,7 @@ public class BoxOutletBaseDo extends BoxBaseDo {
     /**
      * 最大视在功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("pow_apparent_max_time")
     private DateTime powApparentMaxTime;
 
@@ -74,6 +78,7 @@ public class BoxOutletBaseDo extends BoxBaseDo {
     /**
      * 最小视在功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("pow_apparent_min_time")
     private DateTime powApparentMinTime;
 
@@ -93,6 +98,7 @@ public class BoxOutletBaseDo extends BoxBaseDo {
     /**
      * 最大无功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("pow_reactive_max_time")
     private DateTime powReactiveMaxTime;
 
@@ -106,6 +112,7 @@ public class BoxOutletBaseDo extends BoxBaseDo {
     /**
      * 最小无功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("pow_reactive_min_time")
     private DateTime powReactiveMinTime;
 

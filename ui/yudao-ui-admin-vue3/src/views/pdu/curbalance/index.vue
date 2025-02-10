@@ -42,7 +42,6 @@
             >
           </div>
         </div>
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -147,7 +146,7 @@
         </div>
     </template>
     <template #Content>
-     <div v-if="switchValue && list.length > 0" style="height: 720px;margin-top:-10px;overflow: hidden;overflow-y: auto;">
+     <div v-if="switchValue && list.length > 0" class="table-height">
       <el-table
         v-show="switchValue == 3"
         :data="list"
@@ -1568,6 +1567,12 @@ onActivated(() => {
 }
 
 @media screen and (min-width: 2048px) {
+  .table-height{
+    height: 78vh;
+    margin-top:-10px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;
@@ -1636,6 +1641,12 @@ onActivated(() => {
 }
 
 @media screen and (max-width: 2048px) and (min-width: 1600px) {
+  .table-height{
+    height: 720px;
+    margin-top:-10px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;
@@ -1704,6 +1715,12 @@ onActivated(() => {
 }
 
 @media screen and (max-width: 1600px) {
+  .table-height{
+    height: 600px;
+    margin-top:-10px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;

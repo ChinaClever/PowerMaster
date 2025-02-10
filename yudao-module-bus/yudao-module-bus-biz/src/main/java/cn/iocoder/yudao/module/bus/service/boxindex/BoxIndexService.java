@@ -151,4 +151,6 @@ public interface BoxIndexService {
     List<String> findKeys(String key);
 
     Map getBoxPFDetailNow(BoxIndexPageReqVO pageReqVO);
+
+    Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO) throws IOException;
 }
