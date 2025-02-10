@@ -166,17 +166,19 @@
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" :width="computedWidth" height="58vh" :list="eleList"/>
           </div>
-          <div class="pageBox" v-if="visControll.pfVis">
+          <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电流历史曲线趋势图
             </div>
-            <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
+            <!--<div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>-->
+            <CurLine class="adaptiveStyle" :list="curVolData"/>
           </div>
-          <div class="pageBox" v-if="visControll.pfVis">
+          <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电压历史曲线趋势图
             </div>
-            <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>
+            <!--<div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>-->
+            <VolLine class="adaptiveStyle" :list="curVolData"/>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -282,6 +284,8 @@ import PFLine from './component/PFLine.vue'
 import vol from './component/vol.vue'
 import cur from './component/cur.vue'
 import Bar from './component/Bar.vue'
+import CurLine from './component/curLine.vue'
+import VolLine from './component/volLine.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
 import Radar from './component/Radar.vue'
@@ -289,7 +293,7 @@ import { Flag } from '@element-plus/icons-vue/dist/types';
 import { size } from 'min-dash';
 import { viewDepthKey } from 'vue-router';
 import { Bottom } from '@element-plus/icons-vue/dist/types';
-import { ElMessageBox, ElMessage } from 'element-plus'
+//import { ElMessageBox, ElMessage } from 'element-plus'
 import { remove } from 'nprogress';
 
 // 创建一个响应式引用来存储窗口宽度
@@ -318,11 +322,12 @@ const updateWindowWidth = () => {
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
-const lineidChartContainer = ref<HTMLElement | null>(null);
-let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
-const lineidChartContainerOne = ref<HTMLElement | null>(null);
-const dateTimeName = ref('seventytwoHour')
+//let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+//const lineidChartContainer = ref<HTMLElement | null>(null);
+//let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+//const lineidChartContainerOne = ref<HTMLElement | null>(null);
+const dateTimeName = ref('seventytwoHour');
+const curVolData = ref();
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
@@ -348,6 +353,7 @@ const visControll = reactive({
   outletVis : false,
   temVis : false,
   pfVis: false,
+  flag: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -540,9 +546,9 @@ const lllChartData = ref({
 
 const lineidDateTimes = ref([] as string[])
 
-const lineidBeforeChartUnmount = () => {
-lineidChart?.dispose() // 销毁图表实例
-}
+//const lineidBeforeChartUnmount = () => {
+//lineidChart?.dispose() // 销毁图表实例
+//}
 
 const filterTimesFromDate = (dateTimeStrings, targetDate) => {
   const targetDateObj = new Date(targetDate);
@@ -556,31 +562,37 @@ const filterTimesFromDate = (dateTimeStrings, targetDate) => {
  
 // 获取当前日期（或者您可以指定任意日期）
 const currentDate = new Date().toISOString().split('T')[0];
-
 //获取PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async () => {
   const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value})
-  console.log('dateTimes',result.dateTimes)
+  curVolData.value = result;
+  if(curVolData.value?.dateTimes != null && curVolData.value?.dateTimes?.length > 0){
+    visControll.flag = true;
+  }else{
+    visControll.flag = false;
+  }
+  //console.log('dateTimes',result.dateTimes)
+  console.log('result111111111111',result);
   //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
 
-  const lData = result.l
-  const llData = result.ll
-  const lllData = result.lll
-
-  lData.forEach(item => {
-    lChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
-    lChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
-  })
-
-  llData.forEach(item => {
-    llChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
-    llChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
-  })
-
-  lllData.forEach(item => {
-    lllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
-    lllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
-  })
+  //const lData = result.l
+  //const llData = result.ll
+  //const lllData = result.lll
+//
+  //lData.forEach(item => {
+  //  lChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
+  //  lChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
+  //})
+//
+  //llData.forEach(item => {
+  //  llChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
+  //  llChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
+  //})
+//
+  //lllData.forEach(item => {
+  //  lllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
+  //  lllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
+  //})
 
   //if(dateTimeName.value === 'twentyfourHour'){
   //  lineidDateTimes.value = result.dateTimes.map(extractTime)
@@ -595,124 +607,124 @@ const PDUHdaLineHisdata = async () => {
 }
 
 
-const lineidFlashChartData = async () =>{
-  lineidBeforeChartUnmount()
-
-  await PDUHdaLineHisdata()
-
-  // 创建新的图表实例
-  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
-  // 设置新的配置对象
-  if (lineidChart) {
-    lineidChart.setOption({
-      title: { text: ''},
-      tooltip: { trigger: 'axis',      formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
-            result += 'A';
-          }
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
-      }},
-      legend: {
-        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
-        selectedMode: 'multiple'
-      },
-      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:lineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'L1-电流',
-          type: 'line',
-          data: lChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4
-        },
-        {
-          name: 'L2-电流',
-          type: 'line',
-          data: llChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        },
-        {
-          name: 'L3-电流',
-          type: 'line',
-          data: lllChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        }
-      ]
-    })
-  }
-
-  lineidChartOne = echarts.init(document.getElementById('lineidChartContainerOne'));
-  // 设置新的配置对象
-  if (lineidChartOne) {
-    lineidChartOne.setOption({
-      title: { text: ''},
-      tooltip: { trigger: 'axis',      formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
-            result += 'V';
-          } 
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
-      }},
-      legend: {
-        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
-        selectedMode: 'multiple'
-      },
-      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:lineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'L1-电压',
-          type: 'line',
-          data: lChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4
-        },
-        {
-          name: 'L2-电压',
-          type: 'line',
-          data: llChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        },
-        {
-          name: 'L3-电压',
-          type: 'line',
-          data: lllChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        }
-      ]
-    })
-  }
-}
+//const lineidFlashChartData = async () =>{
+//  lineidBeforeChartUnmount()
+//
+//  await PDUHdaLineHisdata()
+//
+//  // 创建新的图表实例
+//  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+//  // 设置新的配置对象
+//  if (lineidChart) {
+//    lineidChart.setOption({
+//      title: { text: ''},
+//      tooltip: { trigger: 'axis',      formatter: function (params) {
+//        let result = params[0].name + '<br>';
+//        params.forEach(param => {
+//          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+//          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
+//            result += 'A';
+//          }
+//          result += '<br>';
+//        });
+//        return result.trimEnd(); // 去除末尾多余的换行符
+//      }},
+//      legend: {
+//        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
+//        selectedMode: 'multiple'
+//      },
+//      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+//      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//      xAxis: {
+//        type: 'category',nameLocation: 'end',
+//        boundaryGap: false,
+//        data:lineidDateTimes.value
+//      },
+//      yAxis: {
+//        type: 'value'
+//      },
+//      series: [
+//        {
+//          name: 'L1-电流',
+//          type: 'line',
+//          data: lChartData.value.curValueList,
+//          symbol: 'circle',
+//          symbolSize: 4
+//        },
+//        {
+//          name: 'L2-电流',
+//          type: 'line',
+//          data: llChartData.value.curValueList,
+//          symbol: 'circle',
+//          symbolSize: 4,
+//        },
+//        {
+//          name: 'L3-电流',
+//          type: 'line',
+//          data: lllChartData.value.curValueList,
+//          symbol: 'circle',
+//          symbolSize: 4,
+//        }
+//      ]
+//    })
+//  }
+//
+//  lineidChartOne = echarts.init(document.getElementById('lineidChartContainerOne'));
+//  // 设置新的配置对象
+//  if (lineidChartOne) {
+//    lineidChartOne.setOption({
+//      title: { text: ''},
+//      tooltip: { trigger: 'axis',      formatter: function (params) {
+//        let result = params[0].name + '<br>';
+//        params.forEach(param => {
+//          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+//          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+//            result += 'V';
+//          } 
+//          result += '<br>';
+//        });
+//        return result.trimEnd(); // 去除末尾多余的换行符
+//      }},
+//      legend: {
+//        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+//        selectedMode: 'multiple'
+//      },
+//      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+//      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//      xAxis: {
+//        type: 'category',nameLocation: 'end',
+//        boundaryGap: false,
+//        data:lineidDateTimes.value
+//      },
+//      yAxis: {
+//        type: 'value'
+//      },
+//      series: [
+//        {
+//          name: 'L1-电压',
+//          type: 'line',
+//          data: lChartData.value.volValueList,
+//          symbol: 'circle',
+//          symbolSize: 4
+//        },
+//        {
+//          name: 'L2-电压',
+//          type: 'line',
+//          data: llChartData.value.volValueList,
+//          symbol: 'circle',
+//          symbolSize: 4,
+//        },
+//        {
+//          name: 'L3-电压',
+//          type: 'line',
+//          data: lllChartData.value.volValueList,
+//          symbol: 'circle',
+//          symbolSize: 4,
+//        }
+//      ]
+//    })
+//  }
+//}
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -893,8 +905,8 @@ const outletItemStyle = ref({
 });
 const temp1 = ref([]) as any
 const getList = async () => {
-  await PDUHdaLineHisdata()
-
+  await PDUHdaLineHisdata();
+  
   loading.value = true
   eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
   
@@ -917,8 +929,9 @@ const getList = async () => {
   }
   
   const data = await PDUDeviceApi.getPDUPFLine(queryParams);
+  console.log('getPDUPFLine',data);
   pfLineList.value = data.pfLineRes;
-  console.log("pfLineList.value",pfLineList.value)
+  console.log("pfLineList.value",pfLineList.value);
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     visControll.pfVis = true;
   }else {
@@ -1180,7 +1193,7 @@ const handleQuery = async () => {
       await getList();
       initChart();
       await PDUHdaLineHisdata();
-      await lineidFlashChartData();
+      //await lineidFlashChartData();
       queryParams.devKey = null;
     }
   }
@@ -1327,10 +1340,10 @@ const formRef = ref()
 //   }
 // }
 
-window.addEventListener('resize', function() {
-  lineidChart.resize();
-  lineidChartOne.resize();
-});
+//window.addEventListener('resize', function() {
+//  lineidChart.resize();
+//  lineidChartOne.resize();
+//});
 /** 初始化 **/
 onMounted( async () =>  {
   getNavList()
