@@ -298,9 +298,10 @@
           <RequirementLine v-if="switchChartOrTable == 0" width="68vw" height="58vh" :list="requirementLine"  />
           <el-table style="height:550px;ovrflow:hidden;overflow-y:auto;" v-if="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
             <el-table-column label="设备识别码" align="center" prop="devKey" />
-            <el-table-column label="时间" align="center" prop="create_time" />
             <el-table-column label="相" align="center" prop="line" />
+            <el-table-column label="最大电流时间" align="center" prop="cur_max_time" />
             <el-table-column label="最大电流" align="center" prop="cur_max_value" />
+            <el-table-column label="最大有功功率时间" align="center" prop="pow_active_max_time" />
             <el-table-column label="最大有功功率" align="center" prop="pow_active_max_value" />
           </el-table>
         </div>

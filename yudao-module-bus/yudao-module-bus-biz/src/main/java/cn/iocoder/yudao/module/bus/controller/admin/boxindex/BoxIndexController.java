@@ -380,7 +380,7 @@ public class BoxIndexController {
     }
 
     @PostMapping("/avg/boxHdaOutlet/form")
-    @Operation(summary = "获得插接箱报表回路平均电流电压详细信息")
+    @Operation(summary = "获得插接箱报表输出位详细信息")
     public CommonResult<Map> getAvgBoxHdaOutletForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBoxHdaOutletForm(pageReqVO));
     }

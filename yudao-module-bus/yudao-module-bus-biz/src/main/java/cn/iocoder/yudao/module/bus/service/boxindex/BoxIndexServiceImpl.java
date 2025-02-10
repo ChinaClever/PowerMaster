@@ -102,6 +102,7 @@ import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
+import static com.github.yulichang.method.SqlMethod.collect;
 
 /**
  * 始端箱索引 Service 实现类
@@ -415,7 +416,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<String> list = new ArrayList<>();
             for (SearchHit hit : searchResponse.getHits()) {
                 String sourceAsString = hit.getSourceAsString();
-                list.add(sourceAsString);
+                if (sourceAsString.length()>2) {
+                    list.add(sourceAsString);
+                }
             }
             return list;
         } catch (Exception e) {
@@ -1939,9 +1942,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Override
     public Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO){
-        HashMap<String, Object> map = new HashMap<>();
+        Map map = new HashMap<>();
         BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
-        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+
         if (boxIndex != null) {
             String index;
             if (pageReqVO.getTimeType().equals(0)) {
@@ -1953,10 +1956,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
             String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
             List<String> list = getEsStrings(index, start, end, boxIndex);
+            if (CollectionUtils.isEmpty(list)){
+                return map;
+            }
             List<BoxOutletBaseDo> baseDos = list.stream().map(i -> JsonUtils.parseObject(i, BoxOutletBaseDo.class)).collect(Collectors.toList());
-            Map<Integer, List<BoxOutletBaseDo>> collect = baseDos.stream().collect(Collectors.groupingBy(BoxOutletBaseDo::getOutletId));
+            map = baseDos.stream().collect(Collectors.groupingBy(BoxOutletBaseDo::getOutletId));
+            map.put("time",baseDos.stream().map(BoxBaseDo::getCreateTime).distinct().collect(Collectors.toList()));
+            return map;
         }
-        return null;
+        return map;
     }
 
     @Override
@@ -2229,13 +2237,17 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<Integer> ids = Arrays.asList(pageReqVO.getBoxId());
             List<String> data = getData(startTime, endTime, ids, index, new String[]{"box_id","line_id","cur_max_value","cur_max_time",
                     "pow_active_max_value","pow_active_max_time"});
-
+            if (CollectionUtils.isEmpty(data)){
+                return result;
+            }
+            List<BoxLineHourDo> lineHourDos = data.stream().map(i -> JsonUtils.parseObject(i, BoxLineHourDo.class))
+                    .sorted(Comparator.comparing(BoxLineBaseDo::getCurMaxTime)).collect(Collectors.toList());
             if (pageReqVO.getLineType() == 0) {
                 result.getSeries().add(new RequirementLineSeries().setName("A路最大电流"));
                 result.getSeries().add(new RequirementLineSeries().setName("B路最大电流"));
                 result.getSeries().add(new RequirementLineSeries().setName("C路最大电流"));
-                data.forEach(str -> {
-                    BoxLineHourDo lineDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+                lineHourDos.forEach(lineDo -> {
+//                    BoxLineHourDo lineDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
                     if (lineDo.getLineId() == 1) {
                         result.getTime().add(lineDo.getCurMaxTime().toString("yyyy-MM-dd HH"));
                     }
