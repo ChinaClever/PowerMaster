@@ -190,13 +190,13 @@
             <div class="page-conTitle">
               回路电流曲线
             </div>
-            <!-- <LoopCurLine class="adaptiveStyle" :list="curvolLoopList"/> -->
+            <LoopCurLine class="adaptiveStyle" :list="curvolLoopList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               回路电压曲线
             </div>
-            <!-- <LoopVolLine class="adaptiveStyle" :list="curvolLoopList"/> -->
+            <LoopVolLine class="adaptiveStyle" :list="curvolLoopList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -777,7 +777,7 @@ const getList = async () => {
   console.log('curvolList',curvolList.value)
 
   curvolLoopList.value = await IndexApi.getAvgBoxHdaLoopForm(queryParams);
-  console.log('curvolLoopList',curvolLoopList.value)
+  console.log('curvolLoopList111111111111111111111111111',curvolLoopList.value)
 
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;

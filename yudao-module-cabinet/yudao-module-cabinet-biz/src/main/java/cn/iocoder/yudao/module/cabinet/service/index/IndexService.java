@@ -64,4 +64,6 @@ public interface IndexService {
     Map getCabinetPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     List<Integer> idList();
+
+    List<CabinetRackRspVO> getRackByCabinet(Integer id);
 }
