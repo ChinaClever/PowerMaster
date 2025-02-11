@@ -45,6 +45,11 @@ export const IndexApi = {
     return await request.download({ url: `/cabinet/index/export-excel`, params })
   },
 
+  // 获取机架信息
+  getRackByCabinet: async (params: any) => {
+    return await request.get({ url: `/cabinet/index/getRackByCabinet`, params })
+  },
+
   getConsumeData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/ele`,params})
   },

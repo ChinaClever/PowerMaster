@@ -42,7 +42,6 @@ export const CabinetApi = {
     return await request.get({ url: `/cabinet/restorerCabinet`,params})
   },
 
-
   // 获取机柜配置信息
   getCabinetInfoItem: async (params: any) => {
     return await request.get({ url: `/cabinet/detailV2`, params })

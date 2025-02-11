@@ -2755,7 +2755,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
-            builder.fetchSource(heads, null);
+        //    builder.fetchSource(heads, null);
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
                     .must(QueryBuilders.termsQuery("box_id", ids))));

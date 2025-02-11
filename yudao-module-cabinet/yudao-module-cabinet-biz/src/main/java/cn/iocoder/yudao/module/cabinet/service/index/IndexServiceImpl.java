@@ -11,12 +11,11 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetEnvSensorMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
-import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
@@ -25,6 +24,9 @@ import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
@@ -58,6 +60,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
 
@@ -100,6 +103,9 @@ public class IndexServiceImpl implements IndexService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Resource
+    private RackIndexDoMapper rackIndexDoMapper;
 
     @Override
     public Integer createIndex(IndexSaveReqVO createReqVO) {
@@ -327,6 +333,7 @@ public class IndexServiceImpl implements IndexService {
                 reactivePowB.setName("B平均无功功率");
                 bLineRes.getSeries().add(apparentPowB);
                 bLineRes.getSeries().add(activePowB);
+                bLineRes.getSeries().add(reactivePowB);
 
                 if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                     cabinetPowHourDoList.forEach(hourdo -> {
@@ -436,6 +443,10 @@ public class IndexServiceImpl implements IndexService {
                 result.put("AactivePowMaxTime",maxActiveA.getActiveAMaxTime());
                 result.put("AactivePowMinValue",minActiveA.getActiveAMinValue());
                 result.put("AactivePowMinTime",minActiveA.getActiveAMinTime());
+                result.put("AreactivePowMaxValue",maxReactiveA.getReactiveAMaxValue());
+                result.put("AreactivePowMaxTime",maxReactiveA.getReactiveAMaxTime());
+                result.put("AreactivePowMinValue",minReactiveA.getReactiveAMinValue());
+                result.put("AreactivePowMinTime",minReactiveA.getReactiveAMinTime());
 
 
                 result.put("BapparentPowMaxValue",  maxApparentB.getApparentBMaxValue());
@@ -446,6 +457,10 @@ public class IndexServiceImpl implements IndexService {
                 result.put("BactivePowMaxTime",     maxActiveB.getActiveBMaxTime());
                 result.put("BactivePowMinValue",    minActiveB.getActiveBMinValue());
                 result.put("BactivePowMinTime",     minActiveB.getActiveBMinTime());
+                result.put("BreactivePowMaxValue", maxReactiveB.getReactiveBMaxValue());
+                result.put("BreactivePowMaxTime", maxReactiveB.getReactiveBMaxTime());
+                result.put("BreactivePowMinValue", minReactiveB.getReactiveBMinValue());
+                result.put("BreactivePowMinTime", minReactiveB.getReactiveBMinTime());
 
             }
         }catch (Exception e){
@@ -500,7 +515,7 @@ public class IndexServiceImpl implements IndexService {
             List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, id)
                     .eq(CabinetEnvSensor::getChannel, 1)
-                    .eq(CabinetEnvSensor::getSensorType, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
                     .orderByAsc(CabinetEnvSensor::getPosition));
             List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
@@ -622,7 +637,7 @@ public class IndexServiceImpl implements IndexService {
             List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, id)
                     .eq(CabinetEnvSensor::getChannel, 2)
-                    .eq(CabinetEnvSensor::getSensorType, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
                     .orderByAsc(CabinetEnvSensor::getPosition));
             List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
@@ -764,6 +779,91 @@ public class IndexServiceImpl implements IndexService {
     public List<Integer> idList() {
         return cabIndexMapper.selectList().stream().limit(10).collect(Collectors.toList())
                 .stream().map(IndexDO::getId).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CabinetRackRspVO> getRackByCabinet(Integer id) {
+        List<CabinetRackRspVO> vos = new ArrayList<>();
+        // 查询 CabinetPdu
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id));
+        if (cabinetPdu == null) {
+            return vos;
+        }
+        // 查询 RackIndex 列表
+        List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>().eq(RackIndex::getCabinetId, id));
+        if (CollectionUtils.isEmpty(rackIndexList)) {
+            return vos;
+        }
+        for (RackIndex rackIndex : rackIndexList) {
+            List<Integer> outletIdA = rackIndex.getOutletIdA();
+            List<Integer> outletIdB = rackIndex.getOutletIdB();
+            String pduKeyA = cabinetPdu.getPduKeyA();
+            String pduKeyB = cabinetPdu.getPduKeyB();
+            // 获取 A 相 pdu 数据
+            Object redisValueA = redisTemplate.opsForValue().get(REDIS_KEY_PDU + pduKeyA);
+            JSONObject pduDataA = null;
+            if (redisValueA != null) {
+                JSONObject jsonObjectA = (JSONObject) redisValueA;
+                pduDataA = JSONObject.parseObject(jsonObjectA.getString("pdu_data"));
+            }
+            // 获取 B 相 pdu 数据
+            Object redisValueB = redisTemplate.opsForValue().get(REDIS_KEY_PDU + pduKeyB);
+            JSONObject pduDataB = null;
+            if (redisValueB != null) {
+                JSONObject jsonObjectB = (JSONObject) redisValueB;
+                pduDataB = JSONObject.parseObject(jsonObjectB.getString("pdu_data"));
+            }
+            // 计算 A 相功率
+            double powActive = 0;
+            if (pduDataA != null) {
+                JSONObject pduTotalDataA = JSONObject.parseObject(pduDataA.getString("pdu_total_data"));
+                if (pduTotalDataA != null) {
+                    powActive = pduTotalDataA.getDoubleValue("pow_active");
+                }
+            }
+            // 计算 B 相功率
+            double powActiveB = 0;
+            if (pduDataB != null) {
+                JSONObject pduTotalDataB = JSONObject.parseObject(pduDataB.getString("pdu_total_data"));
+                if (pduTotalDataB != null) {
+                    powActiveB = pduTotalDataB.getDoubleValue("pow_active");
+                }
+            }
+            // 计算总功率
+            double totalPowActive = powActive + powActiveB;
+            // 获取 cur_value 数组
+            JSONArray curValueArray = new JSONArray();
+            if (pduDataA != null) {
+                JSONObject outputItemList = pduDataA.getJSONObject("output_item_list");
+                if (outputItemList != null) {
+                    curValueArray = outputItemList.getJSONArray("cur_value");
+                }
+            }
+            // 计算 A 相电流总和
+            double sumA = 0;
+            for (Integer index : outletIdA) {
+                if (index >= 0 && index < curValueArray.size()) {
+                    sumA += curValueArray.getDoubleValue(index);
+                }
+            }
+            // 计算 B 相电流总和
+            double sumB = 0;
+            for (Integer index : outletIdB) {
+                if (index >= 0 && index < curValueArray.size()) {
+                    sumB += curValueArray.getDoubleValue(index);
+                }
+            }
+            // 创建 CabinetRackRspVO 对象并添加到结果列表
+            CabinetRackRspVO vo = CabinetRackRspVO.builder()
+                    .id(rackIndex.getId())
+                    .name(rackIndex.getRackName())
+                    .totalPower(totalPowActive)
+                    .aCurrent(sumA)
+                    .bCurrent(sumB)
+                    .build();
+            vos.add(vo);
+        }
+        return vos;
     }
 
     /**

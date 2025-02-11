@@ -11,4 +11,6 @@ public class VoHdaLoopResVO {
         private List vol;
 
         private List cur;
+
+        private List<String> dateTimes;
 }

@@ -130,4 +130,12 @@ public class IndexController {
     public List<Integer> idList() {
         return indexService.idList();
     }
+
+    @GetMapping("/getRackByCabinet")
+    @Operation(summary = "根据机柜id获取机架")
+    public CommonResult<List<CabinetRackRspVO>> getRackByCabinet(@RequestParam("id") Integer id){
+        return success(indexService.getRackByCabinet(id));
+
+    }
+
 }

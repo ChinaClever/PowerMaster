@@ -566,6 +566,9 @@ const currentDate = new Date().toISOString().split('T')[0];
 const PDUHdaLineHisdata = async () => {
   const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value})
   curVolData.value = result;
+
+
+  
   if(curVolData.value?.dateTimes != null && curVolData.value?.dateTimes?.length > 0){
     visControll.flag = true;
   }else{
@@ -1057,9 +1060,10 @@ const getList = async () => {
   const newDate = new Date(queryParams.newTime);
   
   
-  console.log(typeof tableData.value)
+  console.log('`````````````', tableData.value)
+  console.log('表格的数据',temp)
   Object.values(tableData.value).forEach((item: any)=>item.devKey== temp[1].baseInfoValue&&newDate>=new Date(item.startTime)&&new Date(item.startTime)>=oldDate?temp1.value.push(item):console.log("no"))
-  
+  console.log('temp1',temp1.value)
   
 }
 

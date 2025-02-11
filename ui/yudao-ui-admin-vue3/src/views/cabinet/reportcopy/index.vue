@@ -191,13 +191,38 @@
                         </template>
                       </el-table-column>
                     </el-table-column>
-                    
                   </el-table>
                 </div>
               </el-col>
-              <!-- <el-col :span="serChartContainerWidth">
-                <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
-              </el-col> -->
+            </el-row>
+          </div>
+
+          <div class="pageBox" >
+            <div class="page-conTitle">
+              机架基本信息
+            </div>
+            <br/>
+            <el-row :gutter="24" >
+              <el-col :span="24 - serChartContainerWidth">
+                <div class="centered-div">
+                  <el-table 
+                    :data="rack" 
+                    :header-cell-style="arraySpanMethod"
+                    >
+                    <el-table-column  align="center" label="序号" type="index" prop="id" />
+                    <el-table-column  align="center" label="名称" prop="name"  />
+                    <el-table-column  align="center" label="总功率" prop="totalPower" />
+                    <el-table-column  align="center" label="A路电流" prop="acurrent" />
+                    <el-table-column  align="center" label="B路电流" prop="bcurrent" />
+                    <el-table-column label="操作" align="center">
+                    <template #default="scope">
+                    <el-button @click="generateDailyReport(scope.row.id)">日报</el-button>
+                    <el-button @click="generateMonthlyReport(scope.row.id)">月报</el-button>
+                    </template>
+      </el-table-column>
+                  </el-table>
+                </div>
+              </el-col>
             </el-row>
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
@@ -212,25 +237,25 @@
             <div class="page-conTitle">
               A路相电流历史曲线趋势图
             </div>
-            <div ref="lineidChartContainerA" id="AlineidChartContainerA" class="adaptiveStyle"></div>
+            <ACurLine class="adaptiveStyle" :list="AcurVolData" v-if="dataLoaded"/>
           </div>
           <div class="pageBox" v-if="isPDU">
             <div class="page-conTitle">
               A路相电压历史曲线趋势图
             </div>
-            <div ref="lineidChartContainerOneA" id="lineidChartContainerOneA" class="adaptiveStyle"></div>
+            <AVolLine class="adaptiveStyle" :list="AcurVolData" v-if="dataLoaded"/>
           </div>
           <div class="pageBox" v-if="isPDU">
             <div class="page-conTitle">
               B路相电流历史曲线趋势图
             </div>
-            <div ref="lineidChartContainerB" id="AlineidChartContainerB" class="adaptiveStyle"></div>
+            <BcurLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
           </div>
           <div class="pageBox" v-if="isPDU">
             <div class="page-conTitle">
               B路相电压历史曲线趋势图
             </div>
-            <div ref="lineidChartContainerOneB" id="lineidChartContainerOneB" class="adaptiveStyle"></div>
+            <BVolLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -244,6 +269,7 @@
             </div>
             <p class="paragraph">本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVA， 发生时间{{powData.reactivePowMaxTime}}。最小有功功率{{powData.reactivePowMinValue}}kVA， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.ApowVis">
@@ -252,6 +278,7 @@
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AreactivePowMaxValue}}kVA， 发生时间{{powData.AreactivePowMaxTime}}。最小有功功率{{powData.AreactivePowMinValue}}kVA， 发生时间{{powData.AreactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="aLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.BpowVis">
@@ -260,7 +287,14 @@
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BreactivePowMaxValue}}kVA， 发生时间{{powData.BreactivePowMaxTime}}。最小有功功率{{powData.BreactivePowMinValue}}kVA， 发生时间{{powData.BreactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="bLineList"/>
+          </div>
+          <div class="pageBox" v-if="visControll.BpowVis">
+            <div class="page-conTitle" >
+              机架耗电电量排名（先写死，后续根据需要修改）
+            </div>
+            <HorizontalBar :width="computedWidth" height="58vh" />
           </div>
           <!-- <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
@@ -270,7 +304,7 @@
           </div> -->
           <div class="pageBox" v-if="visControll.iceTemVis">
             <div class="page-conTitle">
-              前门温度曲线
+             冷通道温度曲线
             </div>
             <p class="paragraph" v-show="iceTemList.temMaxValue">本周期内，最高温度{{iceTemList.temMaxValue}}°C， 最高温度发生时间{{iceTemList.temMaxTime}}，由温度传感器{{iceTemList.temMaxSensorId}}采集得到</p>
             <p class="paragraph" v-show="iceTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{iceTemList.temMinValue}}°C， 最高温度发生时间{{iceTemList.temMinTime}}，由温度传感器{{iceTemList.temMinSensorId}}采集得到</p>
@@ -278,7 +312,7 @@
           </div>
           <div class="pageBox" v-if="visControll.hotTemVis">
             <div class="page-conTitle">
-              后门温度曲线
+              热通道温度曲线
             </div>
             <p class="paragraph" v-show="hotTemList.temMaxValue">本周期内，最高温度{{hotTemList.temMaxValue}}°C， 最高温度发生时间{{hotTemList.temMaxTime}}，由温度传感器{{hotTemList.temMaxSensorId}}采集得到</p>
             <p class="paragraph" v-show="hotTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{hotTemList.temMinValue}}°C， 最高温度发生时间{{hotTemList.temMinTime}}，由温度传感器{{hotTemList.temMinSensorId}}采集得到</p>
@@ -305,10 +339,18 @@ import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-
+import ACurLine from './component/AcurLine.vue'
+import AVolLine from './component/AvolLine.vue'
+import BCurLine from './component/BCurLine.vue'
+import BVolLine from './component/BvolLine.vue'
+import HorizontalBar from './component/HorizontalBar.vue'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
+
+const AcurVolData = ref();
+const BcurVolData = ref();
+const dataLoaded = ref(false);
 
 const pfLineList = ref() as any;
 const iceTemList = ref([]) as any;
@@ -413,6 +455,17 @@ const handleDayPick = () => {
   
 }
 
+const { push } = useRouter()
+
+const generateDailyReport = (id) => {
+      push('/u/rackreport?id='+id+'&Type='+0);
+    };
+
+    const generateMonthlyReport = (id) => {
+      push('/u/rackreport?id='+id+'&Type='+1);
+    };
+
+
 const handleMonthPick = () => {
 
   if(queryParams.oldTime){
@@ -478,7 +531,6 @@ const queryParams = reactive({
 const serverRoomArr =  ref([]) as any
 
 //折叠功能
-
 
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
@@ -694,333 +746,28 @@ const isPDU = ref(true);
 const PDUHdaLineHisdata = async () => {
   try {
     const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value });
-  console.log('result', result);
 
-    //清空数组
-    AlChartData.value.volValueList.length = 0;
-    AlChartData.value.curValueList.length = 0;
-    BlChartData.value.volValueList.length = 0;
-    BlChartData.value.curValueList.length = 0;
-    AllChartData.value.volValueList.length = 0;
-    AllChartData.value.curValueList.length = 0;
-    AlllChartData.value.volValueList.length = 0;
-    AlllChartData.value.curValueList.length = 0;
-    BllChartData.value.volValueList.length = 0;
-    BllChartData.value.curValueList.length = 0;
-    BlllChartData.value.volValueList.length = 0;
-    BllChartData.value.curValueList.length = 0;
-
-
-
-  // 处理 A 对象的数据
-  const aData = result.A;
-  const aLData = aData.l;
-  const aLlData = aData.ll;
-  const aLllData = aData.lll;
-
-    console.log('kdflkdnfd',aLData)
-
-  aLData.forEach(item => {
-    AlChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
-    AlChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
-  });
-
-  console.log('kdf1111111111111111lkdnfd',AlChartData)
-
-  aLlData.forEach(item => {
-    AllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
-    AllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
-  });
-
-  aLllData.forEach(item => {
-    AlllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
-    AlllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
-  });
-
-  // 处理 B 对象的数据
-  const bData = result.B;
-  const bLData = bData.l;
-  const bLlData = bData.ll;
-  const bLllData = bData.lll;
-
-  bLData.forEach(item => {
-    BlChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
-    BlChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
-  });
-
-  bLlData.forEach(item => {
-    BllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
-    BllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
-  });
-
-  bLllData.forEach(item => {
-    BlllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1));
-    BlllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2));
-  });
-
-  console.log('lineidDateTimes1dsssssssssssssss',visControll.flag)
-  console.log('lineidDateTimes1tttttttttttttttttt',isPDU)
-
-  // 处理日期时间
-  if (dateTimeName.value === 'twentyfourHour') {
-    AlineidDateTimes.value = filterTimesFromDate(aData.dateTimes, currentDate).map(item => item.substring(11, 16));
-  } else if (dateTimeName.value === 'seventytwoHour') {
-    AlineidDateTimes.value = aData.dateTimes.map(item => item.substring(0, 10));
-  }
-  //处理日期时间
-  if (dateTimeName.value === 'twentyfourHour') {
-    BlineidDateTimes.value = filterTimesFromDate(bData.dateTimes, currentDate).map(item => item.substring(11, 16));
-  } else if (dateTimeName.value === 'seventytwoHour') {
-    BlineidDateTimes.value = bData.dateTimes.map(item => item.substring(0, 10));
-  }
-
-  console.log('time1222222222222',AlineidDateTimes.value)
-  console.log('time1222222222222',BlineidDateTimes.value)
+    AcurVolData.value = result.A;
+    BcurVolData.value = result.B;
+    dataLoaded.value = true;
   }catch (error) {
     isPDU.value = false;
-  }finally{
-    console.log('finally1111111111',isPDU.value);
   }
-   
 };
-
-const lineidBeforeChartUnmount = () => {
-lineidChartA?.dispose() // 销毁图表实例
-lineidChartB?.dispose()
-}
-
-const lineidFlashChartData = async () =>{
-  lineidBeforeChartUnmount()
-
-  await PDUHdaLineHisdata()
-  console.log('askjdlkasmdklamsdk111111111111111111',AlChartData.value.curValueList)
-  // 创建新的图表实例
-  lineidChartA = echarts.init(document.getElementById('lineidChartContainerA'));
-  // 设置新的配置对象
-  if (lineidChartA) {
-    lineidChartA.setOption({
-      title: { text: ''},
-      tooltip: { trigger: 'axis',      formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
-            result += 'A';
-          }
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
-      }},
-      legend: {
-        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
-        selectedMode: 'multiple'
-      },
-      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:AlineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'L1-电流',
-          type: 'line',
-          data: AlChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4
-        },
-        {
-          name: 'L2-电流',
-          type: 'line',
-          data: AllChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        },
-        {
-          name: 'L3-电流',
-          type: 'line',
-          data: AlllChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        }
-      ]
-    })
-  }
-
-  lineidChartOneA = echarts.init(document.getElementById('lineidChartContainerOneA'));
-  // 设置新的配置对象
-  if (lineidChartOneA) {
-    lineidChartOneA.setOption({
-      title: { text: ''},
-      tooltip: { trigger: 'axis',      formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
-            result += 'V';
-          } 
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
-      }},
-      legend: {
-        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
-        selectedMode: 'multiple'
-      },
-      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:AlineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'L1-电压',
-          type: 'line',
-          data: AlChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4
-        },
-        {
-          name: 'L2-电压',
-          type: 'line',
-          data: AllChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        },
-        {
-          name: 'L3-电压',
-          type: 'line',
-          data: AlllChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        }
-      ]
-    })
-  }
-
-  // 创建新的图表实例
-  lineidChartB = echarts.init(document.getElementById('lineidChartContainerB'));
-  // 设置新的配置对象
-  if (lineidChartB) {
-    lineidChartB.setOption({
-      title: { text: ''},
-      tooltip: { trigger: 'axis',      formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
-            result += 'A';
-          }
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
-      }},
-      legend: {
-        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
-        selectedMode: 'multiple'
-      },
-      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:BlineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'L1-电流',
-          type: 'line',
-          data: BlChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4
-        },
-        {
-          name: 'L2-电流',
-          type: 'line',
-          data: BllChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        },
-        {
-          name: 'L3-电流',
-          type: 'line',
-          data: BlllChartData.value.curValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        }
-      ]
-    })
-  }
-
-  lineidChartOneB = echarts.init(document.getElementById('lineidChartContainerOneB'));
-  // 设置新的配置对象
-  if (lineidChartOneB) {
-    lineidChartOneB.setOption({
-      title: { text: ''},
-      tooltip: { trigger: 'axis',      formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
-            result += 'V';
-          } 
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
-      }},
-      legend: {
-        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
-        selectedMode: 'multiple'
-      },
-      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:BlineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'L1-电压',
-          type: 'line',
-          data: BlChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4
-        },
-        {
-          name: 'L2-电压',
-          type: 'line',
-          data: BllChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        },
-        {
-          name: 'L3-电压',
-          type: 'line',
-          data: BlllChartData.value.volValueList,
-          symbol: 'circle',
-          symbolSize: 4,
-        }
-      ]
-    })
-  }
-
+const rack = ref([] as any);
+//获取机架信息
+const getRackByCabinet = async () => {
+  const result = await IndexApi.getRackByCabinet({id : queryParams.Id});
   
+  // 保留俩位小数
+  for (let i = 0; i < result.length; i++) {
+    result[i].acurrent = result[i].acurrent?.toFixed(2);
+    result[i].bcurrent = result[i].bcurrent?.toFixed(2);
+    result[i].totalPower = result[i].totalPower?.toFixed(3);
+  }
+  rack.value = result;
+  console.log("机架信息",result);
+  console.log("机架信息",rack.value);
 }
 
 const handleIceQuery = async () => {
@@ -1043,6 +790,20 @@ const handleIceQuery = async () => {
     }
   }
 }
+
+const windowWidth = ref(window.innerWidth);
+
+
+// 计算属性，根据窗口宽度返回不同的width值
+const computedWidth = computed(() => {
+  if (windowWidth.value >= 2400) {
+    return '90vw';
+  } else if (windowWidth.value >= 1600) {
+    return '70vw';
+  } else {
+    return '80vw';
+  }
+});
 
 const handleHotQuery = async () => {
   if(queryParams.Id != null){
@@ -1187,7 +948,8 @@ const handleQuery = async () => {
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
       await PDUHdaLineHisdata();
-      await lineidFlashChartData();
+      // await lineidFlashChartData();
+      await getRackByCabinet();
       queryParams.devKey = null;
     }
   }
@@ -1241,6 +1003,7 @@ onMounted( async () =>  {
   // initChart();
   getNavList();
   idList.value = await loadAll();
+  
 })
 </script>
 <style scoped lang="scss">
