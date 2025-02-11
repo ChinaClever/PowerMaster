@@ -53,9 +53,8 @@ public interface RoomMenuService {
     /**
      * 获取机房-机架菜单
      *
-     * @param id 机房id
      */
-    List<RoomMenuDTO> roomRackMenuList(Integer id);
+    List<RoomMenuDTO> roomRackMenuList();
 
 
     /**
