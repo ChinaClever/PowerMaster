@@ -208,6 +208,13 @@
             <p v-show="temData.temNMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N相最高温度{{temData.temNMaxValue}}°C， 最高温度发生时间{{temData.temNMaxTime}}&nbsp;&nbsp;最低温度{{temData.temNMinValue}}°C， 最低温度发生时间{{temData.temNMinTime}}</p>            
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
+
+          <div class="pageBox" v-if="visControll.flag">
+            <div class="page-conTitle">
+              输出位电量排名
+            </div>
+            <HorizontalBar :width="computedWidth" height="58vh" :list="outletList" />
+          </div>
         </div>
 
         <div class="pageBox"  v-if="visControll.temVis">
@@ -268,14 +275,15 @@ import Bar from './component/Bar.vue';
 import EnvTemLine from './component/EnvTemLine.vue';
 import LoopCurLine from './component/LoopCurLine.vue';
 import LoopVolLine from './component/LoopVolLine.vue';
-
+import HorizontalBar from './component/HorizontalBar.vue';
 
 /** PDU设备 列表 */
-defineOptions({ name: 'PDUDevice' })
+defineOptions({ name: 'PDUDevice' });
 
-const temp1 = ref([]) as any
-const curvolList = ref() as any
-const curvolLoopList = ref() as any
+const temp1 = ref([]) as any;
+const curvolList = ref() as any;
+const curvolLoopList = ref() as any;
+const outletList = ref() as any;
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
@@ -290,10 +298,30 @@ const visControll = reactive({
   outletVis : false,
   temVis : false,
   pfVis: false,
+  flag: false,
 })
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
+
+// 创建一个响应式引用来存储窗口宽度
+const windowWidth = ref(window.innerWidth);
+
+// 计算属性，根据窗口宽度返回不同的width值
+const computedWidth = computed(() => {
+  if (windowWidth.value >= 2400) {
+    return '90vw';
+  } else if (windowWidth.value >= 1600) {
+    return '70vw';
+  } else {
+    return '80vw';
+  }
+});
+
+// 监听窗口尺寸变化并更新windowWidth的值
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
+};
 
 interface RadarData{
   index: number;
@@ -772,6 +800,14 @@ const getList = async () => {
   }else{
     visControll.powVis = false;
   }
+
+  outletList.value = await IndexApi.getAvgBoxHdaOutletForm(queryParams);
+  if(outletList.value.time != null && outletList.value.time.length > 0){
+    visControll.flag = true;
+  }else{
+    visControll.flag = false;
+  }
+  console.log('outletRankData.value',outletList.value);
   
   curvolList.value = await IndexApi.getAvgBoxHdaLineForm(queryParams);
   console.log('curvolList',curvolList.value)

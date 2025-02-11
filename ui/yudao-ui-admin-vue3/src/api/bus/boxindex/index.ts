@@ -221,4 +221,9 @@ export const IndexApi = {
        getBoxIndexStatisticsAll: async () => {
         return await request.get({ url: `/box/index/statisticsAll` })
       },
+
+  //插接箱报表的输出位的图表数据
+  getAvgBoxHdaOutletForm: async (data: any) => {
+    return await request.post({ url: `/box/index/avg/boxHdaOutlet/form`, data })
+  },
 }

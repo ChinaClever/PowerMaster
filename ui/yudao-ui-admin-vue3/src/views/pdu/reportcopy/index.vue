@@ -212,7 +212,7 @@
               输出位电量排名
             </div>
             <HorizontalBar :width="computedWidth" height="58vh" :list="outletList" />
-          </div>       
+          </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               温度曲线
@@ -272,23 +272,23 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
-import { AlarmApi } from '@/api/system/notify/alarm'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption';
+import { AlarmApi } from '@/api/system/notify/alarm';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
 import * as echarts from 'echarts';
-import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
-import type Node from 'element-plus/es/components/tree/src/model/node'
-import Line from './component/Line.vue'
-import PFLine from './component/PFLine.vue'
-import vol from './component/vol.vue'
-import cur from './component/cur.vue'
-import Bar from './component/Bar.vue'
-import CurLine from './component/curLine.vue'
-import VolLine from './component/volLine.vue'
-import HorizontalBar from './component/HorizontalBar.vue'
-import EnvTemLine from './component/EnvTemLine.vue'
-import Radar from './component/Radar.vue'
+import { ElTree } from 'element-plus';
+import { CabinetApi } from '@/api/cabinet/info';
+import type Node from 'element-plus/es/components/tree/src/model/node';
+import Line from './component/Line.vue';
+import PFLine from './component/PFLine.vue';
+import vol from './component/vol.vue';
+import cur from './component/cur.vue';
+import Bar from './component/Bar.vue';
+import CurLine from './component/curLine.vue';
+import VolLine from './component/volLine.vue';
+import HorizontalBar from './component/HorizontalBar.vue';
+import EnvTemLine from './component/EnvTemLine.vue';
+import Radar from './component/Radar.vue';
 import { Flag } from '@element-plus/icons-vue/dist/types';
 import { size } from 'min-dash';
 import { viewDepthKey } from 'vue-router';
@@ -959,10 +959,12 @@ const getList = async () => {
   }
   
   outletRankData.value = await PDUDeviceApi.getOutLetData(queryParams);
+  console.log('outletRankData.value', outletRankData.value);
   if(outletRankData.value?.barRes?.series[0]){
     outletRankData.value.barRes.series[0].itemStyle = outletItemStyle.value;
   }
   outletList.value = outletRankData.value.barRes;
+  console.log('outletList.value', outletList.value);
   if(outletList.value?.time != null  && outletList.value?.time?.length > 0){
     visControll.outletVis = true;
   }else{
