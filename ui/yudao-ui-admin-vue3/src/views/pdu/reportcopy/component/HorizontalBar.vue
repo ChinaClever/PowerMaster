@@ -50,6 +50,8 @@ watchEffect(() => {
     legendList.value =  series.value?.map(item => item.name)
   }
   time.value = prop.list.time;
+  console.log('time.value', time.value);
+  console.log('series.value', series.value);
 });
 
 

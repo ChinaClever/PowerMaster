@@ -19,40 +19,52 @@ const prop = defineProps({
   }
 })
 
-const series = ref()
-const time = ref()
-const legendList = ref()
+const series = ref({});
 
-// 设置饼图的选项
-const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
-  tooltip: { trigger: 'axis',
-    formatter: function(params) {
-      var result = params[0].name + '<br>';
-      for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker  + "消耗电能" + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(1) + ' kWh' ;
-        result += '<br>';
-      }
-      return result;
-    } 
-  },
-  xAxis: { type: 'value' },
-  yAxis: {type: 'category' , data : time},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-  series: series,
-})
+const time = ref([]);
+const legendList = ref([]);
 
-watchEffect(() => {
-  // 直接访问即可，watchEffect会自动跟踪变化
+const count = ref({});
+const length = ref();
 
-  series.value = prop.list.series;
-  if(  series.value != null && series.value?.length > 0){
-    legendList.value =  series.value?.map(item => item.name)
+// 初始化 count 的每个属性为数组
+for (let i = 1; i < Object.keys(prop.list).length; i++) {
+  count.value[i] = ref([]); // 或者直接使用 []，如果不需要深度响应式
+}
+for (let i = 1; i < Object.keys(prop.list).length; i++) {
+  count.value[i].push(...prop.list[i].map(item => item.pow_active_avg_value));
+}
+
+for (let i = 1; i < (Object.keys(prop.list).length); i++) {
+  series.value[i - 1] = {
+    name: `输出位${i}`,
+    data: count.value[i],
+    type: 'line',
   }
-  time.value = prop.list.time;
-});
+}
 
+for (let i = 1; i < Object.keys(prop.list).length; i++) {
+  legendList.value.push(series.value[i - 1].name);
+}
 
+console.log('prop.list.length',Object.keys(prop.list).length);
+console.log('prop.list',prop.list);
+console.log('countcountvcountc',count.value[2]);
+console.log('series.value',series.value);
+console.log('legendList.value',legendList.value);
+console.log('time.value',time.value);
+
+const echartsOption = ref({
+  legend: { data:legendList.value },
+  xAxis: {
+    type: 'category',
+    data: prop.list.time
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: series.value
+})
 
 onUnmounted(() => {
   console.log('onUnmounted******')
