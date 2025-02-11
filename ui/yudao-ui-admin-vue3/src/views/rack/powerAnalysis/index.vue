@@ -3,21 +3,6 @@
     <template #NavInfo>
    <br/>    <br/> 
         <div class="nav_data">
-          <!-- <div class="carousel-container"> -->
-            <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-              </el-carousel-item>
-            </el-carousel> -->
-          <!-- </div> -->
-          <!-- <div class="nav_content">
-            <el-descriptions title="全部机架新增能耗记录" direction="vertical" :column="1" border >
-              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions>
-          </div> -->
-          
           <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">最近一天 :</span>
@@ -412,13 +397,8 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await IndexApi.getRackAll({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+    const res = await CabinetApi.getRackMenuAll({})
+  navList.value = res
 }
 
 // 获取导航的数据显示

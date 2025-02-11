@@ -385,7 +385,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     }
 
     @Override
-    public List<RoomMenuDTO> roomRackMenuList(Integer id) {
+    public List<RoomMenuDTO> roomRackMenuList() {
         try {
 
             //获取机柜列表
@@ -399,7 +399,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
             //获取机房
             List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
-                    .eq(Objects.nonNull(id), RoomIndex::getId, id));
+                    .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
             //机架列表
             List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()

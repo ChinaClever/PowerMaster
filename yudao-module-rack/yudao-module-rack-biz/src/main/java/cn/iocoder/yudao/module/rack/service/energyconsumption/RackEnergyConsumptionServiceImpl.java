@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.rack.service.energyconsumption;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -11,6 +12,7 @@ import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTo
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeRespVO;
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -25,6 +27,7 @@ import org.elasticsearch.search.aggregations.metrics.ValueCount;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -32,6 +35,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.iocoder.yudao.module.rack.constant.RackConstant.REDIS_KEY_RACK;
 
 @Service
 public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionService {
@@ -44,6 +49,8 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
     private RackHistoryDataService rackHistoryDataService;
     @Autowired
     private RackIndexService rackIndexService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public PageResult<Object> getEQDataPage(RackEnergyConsumptionPageReqVO pageReqVO) throws IOException {
@@ -70,7 +77,7 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] rackIds = pageReqVO.getRackIds();
-        if (rackIds != null){
+        if (ObjectUtil.isNotEmpty(rackIds)){
             searchSourceBuilder.query(QueryBuilders.termsQuery("rack_id", rackIds));
         }
         // 搜索请求对象
@@ -88,7 +95,21 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         // 搜索结果
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        hits.forEach(searchHit ->{
+            Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+            Object obj = redisTemplate.opsForValue().get(REDIS_KEY_RACK + "rack_id");
+            if (ObjectUtil.isNotEmpty(obj)) {
+                JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
+                String rackName = jsonObject.getString("rack_name");
+                String roomName = jsonObject.getString("room_name");
+                String cabinetName = jsonObject.getString("cabinet_name");
+                sourceAsMap.put("location",   roomName + "-"  + cabinetName);
+                sourceAsMap.put("rackName",rackName);
+                sourceAsMap.put("roomName",roomName);
+                sourceAsMap.put("cabinetName",cabinetName);
+            }
+            mapList.add(sourceAsMap);
+                });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果

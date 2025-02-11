@@ -29,9 +29,9 @@ public class RackEnergyConsumptionController {
     @Resource
     private RackEnergyConsumptionService rackEnergyConsumptionService;
 
-    @GetMapping("/page")
+    @PostMapping("/page")
     @Operation(summary = "获得机架电量数据分页")
-    public CommonResult<PageResult<Object>> getEQDataPage(RackEnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getEQDataPage(@RequestBody RackEnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = rackEnergyConsumptionService.getEQDataPage(pageReqVO);
         return success(pageResult);
     }
