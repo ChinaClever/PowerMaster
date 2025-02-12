@@ -1061,12 +1061,7 @@ public class CabinetServiceImpl implements CabinetService {
     @Override
     public CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int roomId, String type) throws IOException {
 
-
         CabinetDistributionDetailsResVO vo = new CabinetDistributionDetailsResVO();
-        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_CABINET + roomId + "-" + id);
-        if (Objects.isNull(obj)) {
-            return null;
-        }
         CabinetIndex cabinetIndex = cabinetIndexMapper.selectById(id);
         vo.setPduBox(cabinetIndex.getPduBox());
         if (cabinetIndex.getPduBox()){
@@ -1077,6 +1072,10 @@ public class CabinetServiceImpl implements CabinetService {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, id));
             vo.setKeyA(cabinetPdu.getPduKeyA());
             vo.setKeyB(cabinetPdu.getPduKeyB());
+        }
+        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_CABINET + roomId + "-" + id);
+        if (Objects.isNull(obj)) {
+            return vo;
         }
         JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
         JSONObject apath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");

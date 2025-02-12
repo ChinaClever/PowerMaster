@@ -351,8 +351,8 @@ const getRedisData = async () => {
   keyB.value = result.keyB.split('-').slice(0, 2).join('-');
   keyAlocation.value = result.keyA;
   keyBlocation.value = result.keyB;
-  console.log('keyA.value',keyA.value);
-  console.log('keyB.value',keyB.value);
+  console.log('keyA',keyAlocation.value);
+  console.log('keyB',keyBlocation.value);
   console.log('pduBox.value',pduBox.value);
   console.log('result',result);
   resultData.value = result;

@@ -48,10 +48,10 @@
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
-              <div style="margin-right:30px;margin-left:-20px;">
-                <div>总视在功率：{{item.powApparentTotal || '0.00'}}</div>
-                <div>A路视在功率：{{item.powApparentA || '0.00'}}</div>
-                <div>B路视在功率：{{item.powApparentB || '0.00'}}</div>
+              <div style="margin-right:15px;margin-left:-15px;">
+                <div>总视在功率：{{item.powApparentTotal || '0.00'}}kVA</div>
+                <div>A路视在功率：{{item.powApparentA || '0.00'}}kVA</div>
+                <div>B路视在功率：{{item.powApparentB || '0.00'}}kVA</div>
               </div>
               <div class="progress">
                 <div class="left" :style="`flex: ${item.apow || '0.00'}`">{{item.apow || '0.00'}}%</div>
@@ -121,7 +121,7 @@
               </div>
             </div> -->
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
-            <button v-if="item.apow != null || item.bpow != null" class="detail" @click.prevent="showDialog(item)" >详情</button>
+            <button v-if="!item.pduBox && (item.apow != null || item.bpow != null)" class="detail" @click.prevent="showDialog(item)" >详情</button>
           </div>
         </div>
 
@@ -192,23 +192,24 @@
 
         <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
-          <el-table-column label="总视在功率" min-width="90" align="center" prop="powApparentTotal" />
-          <el-table-column label="A路视在功率" min-width="90" align="center" prop="powApparentA" />
-          <el-table-column label="B路视在功率" min-width="90" align="center" prop="powApparentB" />
+          <el-table-column label="所在位置" min-width="90" align="center" prop="roomName" />
+          <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
+          <el-table-column label="A路视在功率(kVA)" min-width="90" align="center" prop="powApparentA" />
+          <el-table-column label="B路视在功率(kVA)" min-width="90" align="center" prop="powApparentB" />
           <el-table-column label="A路占比" min-width="90" align="center" prop="aPow" />
           <el-table-column label="B路占比" min-width="90" align="center" prop="bPow" />
-        <el-table-column label="操作" width="100px" align="center">
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="showDialog(scope.row)"
-              style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
-            >
-            设备详情
-            </el-button>
-          </template>
-        </el-table-column>
+          <el-table-column  label="操作" width="100px" align="center">
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="showDialog(scope.row)"
+                style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
+              >
+              设备详情
+              </el-button>
+            </template>
+          </el-table-column>
         
           <!-- <el-table-column label="操作" width="100px">
           <template #default="scope">

@@ -61,6 +61,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -82,7 +83,7 @@
               <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item)">详情</button>
           </div>
         </div>
         <Pagination
@@ -105,7 +106,7 @@
               <el-button
                 link
                 type="primary"
-                @click="toDetail(scope.row.roomId, scope.row.id)"
+                @click="toDetail(scope.row)"
                 style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
               >
               设备详情
@@ -212,6 +213,9 @@ const getTableData = async(reset = false) => {
       tableData.value = res.list.map(item => {
         const roomName = item.roomName || ''; // 处理 null 值
         return {
+          roomName: roomName,
+          cabinetName: item.cabinetName,
+          roomId: item.roomId,
           id: item.id,
           local: roomName + '-' + item.cabinetName,
           company: item.company ,
@@ -227,6 +231,10 @@ const getTableData = async(reset = false) => {
     }
 }
 
+const resetQuery = () => {
+ queryParams.company = undefined;
+  getTableData(true)
+}
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
@@ -253,8 +261,8 @@ const handleCheck = (row) => {
 }
 
 // 跳转详情
-const toDetail = (roomId, id) => {
-  push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
+const toDetail = (row) => {
+  push({path: '/cabinet/cab/energyDetail', state: row})
 }
 
 onBeforeMount(() => {
@@ -397,7 +405,7 @@ onBeforeMount(() => {
       display: flex;
       align-items: center;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 35px 0 93px;
       }
       .info {
         line-height: 1.7;
