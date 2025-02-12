@@ -104,14 +104,14 @@
     <el-row  v-show="hasData">
       <el-col :span="19">
       <el-radio-group v-model="typeRadio">
-        <el-radio-button label="电流" value="电流" @click="switchChartContainer = 0"/>
-        <el-radio-button label="电压" value="电压" @click="switchChartContainer = 2"/>
-        <el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled" @click="switchChartContainer =1"/>
-        <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer =3"/>
-        <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer =4"/>
-        <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =5"/>
-        <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =6"/>
-      </el-radio-group>
+        <el-radio-button label="电流" value="电流" @click="switchChartContainer = 0;"/>
+        <el-radio-button label="电压" value="电压" @click="switchChartContainer = 2;"/>
+        <el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled" @click="switchChartContainer = 1;"/>
+        <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer = 3;"/>
+        <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer = 4;"/>
+        <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer = 5;"/>
+        <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer = 6;"/>
+      </el-radio-group> 
     </el-col>
     <el-col :span="5">
       <el-radio-group v-model="timeRadio">
@@ -212,6 +212,8 @@ const loadPercentage = ref();
 const xAxisLabel = ref('');
 
 const devKeyList = ref([]);
+const switchType = ref(1);
+
 const loadAll = async () => {
   //debugger
   var data = await BusPowerLoadDetailApi.getBusdevKeyList();
@@ -693,18 +695,23 @@ const isHaveData = ref(true)
 watch(() => switchChartContainer.value,async () => {
   if(switchChartContainer.value === 0){
     visContro.value.curVis = true;
+    switchType.value = 1;
   }
   else if(switchChartContainer.value === 2){
     visContro.value.volVis = true;
+    switchType.value = 1;
   }
   else if(switchChartContainer.value === 3){
     visContro.value.activeVis = true;
+    switchType.value = 0;
   }
   else if(switchChartContainer.value === 4){
     visContro.value.reactiveVis = true;
+    switchType.value = 0;
   }
   else if(switchChartContainer.value === 5){
     visContro.value.currentVis = true;
+    switchType.value = 0;
   }
   //else if(switchChartContainer.value === 6){
   //  visContro.value.factorVis = true
@@ -718,7 +725,7 @@ const getCVLineChartData =async () => {
   const data = await CabinetApi.getBusLineChartDetailData({
     id: 178,
     roomId: 115,
-    type: 1,
+    type: switchType.value,
     granularity: "SeventyHours"
   });
   curChartData.value = data;

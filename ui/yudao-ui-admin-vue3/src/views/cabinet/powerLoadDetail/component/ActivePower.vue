@@ -17,28 +17,16 @@ const props = defineProps({
   }
 })
 
-const L1Data = ref();
-const L2Data = ref();
-const createTimeData = ref();
-//const L3Data = ref();
-
-//if(props.curChartData.value != null){
-//  if(props.timeRadio === '近一小时'){
-//    L1Data.value = props.curChartData.value.L1.map((item) => item.pow_active.toFixed(3))
-//    L2Data.value = props.curChartData.value.L2.map((item) => item.pow_active.toFixed(3))
-//    //L3Data.value = props.curChartData.value.L3.map((item) => item.pow_active.toFixed(3))
-//  }else{
-//    L1Data.value = props.curChartData.value.L1.map((item) => item.pow_active_avg_value.toFixed(3));
-//    L2Data.value = props.curChartData.value.L2.map((item) => item.pow_active_avg_value.toFixed(3));
-//    //L3Data.value = props.curChartData.value.L3.map((item) => item.pow_active_avg_value.toFixed(3));
-//  }
-//}
+const L1Data = ref([]);
+const L2Data = ref([]);
+const L3Data = ref([]);
+const createTimeData = ref([]);
 
 if(props.curChartData != null){
-  L1Data.value = props.curChartData.a.map((item) => item.powActive);
-  L2Data.value = props.curChartData.b.map((item) => item.powActive);
-  createTimeData.value = props.curChartData.a.map((item) => item.createTime);
-  //L3Data.value = props.curChartData.value.L3.map((item) => item.curValue.toFixed(2));
+  L1Data.value = props.curChartData.aPath.map((item) => item.powActiveA);
+  L2Data.value = props.curChartData.aPath.map((item) => item.powActiveB);
+  L3Data.value = props.curChartData.aPath.map((item) => item.powActiveTotal);
+  createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
 }
 
 console.log('L1Data', L1Data.value);
@@ -67,7 +55,7 @@ const chartOptions = {
   series: [
     {name: '总有功功率', type: 'line', symbol: 'none', data: L1Data.value },
     {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
-    //{name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
+    {name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
   ],
 }
 </script>

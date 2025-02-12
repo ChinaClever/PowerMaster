@@ -17,33 +17,23 @@ const props = defineProps({
   }
 })
 
-const L1Data = ref();
-const L2Data = ref();
-const createTimeData = ref();
-//const L3Data = ref()
-
-//if(props.curChartData.value != null){
-//  if(props.timeRadio === '近一小时'){
-//    L1Data.value = props.curChartData.value.L1.map((item) => item.vol_value.toFixed(1))
-//    L2Data.value = props.curChartData.value.L2.map((item) => item.vol_value.toFixed(1))
-//    L3Data.value = props.curChartData.value.L3.map((item) => item.vol_value.toFixed(1))
-//  }else{
-//    L1Data.value = props.curChartData.value.L1.map((item) => item.vol_value_avg_value.toFixed(1));
-//    L2Data.value = props.curChartData.value.L2.map((item) => item.vol_value_avg_value.toFixed(1));
-//    L3Data.value = props.curChartData.value.L3.map((item) => item.vol_value_avg_value.toFixed(1));
-//  }
-//}
+const L1Data = ref([]);
+const L2Data = ref([]);
+const L3Data = ref([]);
+const L4Data = ref([]);
+const L5Data = ref([]);
+const L6Data = ref([]);
+const createTimeData = ref([]);
 
 if(props.curChartData != null){
-  L1Data.value = props.curChartData.a.map((item) => item.volValue);
-  L2Data.value = props.curChartData.b.map((item) => item.volValue);
-  createTimeData.value = props.curChartData.a.map((item) => item.createTime);
-  //L3Data.value = props.curChartData.value.L3.map((item) => item.curValue.toFixed(2));
+  L1Data.value = props.curChartData.aPathVc.map((item) => item.volValue);
+  L2Data.value = props.curChartData.bPathVc.map((item) => item.volValue);
+  L3Data.value = props.curChartData.aPathVc.map((item) => item.volValuel);
+  L4Data.value = props.curChartData.bPathVc.map((item) => item.volValuel);
+  L5Data.value = props.curChartData.aPathVc.map((item) => item.volValuell);
+  L6Data.value = props.curChartData.bPathVc.map((item) => item.volValuell);
+  createTimeData.value = props.curChartData.aPathVc.map((item) => item.createTime);
 }
-
-console.log('L1Data', L1Data.value);
-console.log('L2Data', L2Data.value);
-console.log('createTimeData', createTimeData.value);
 
 const chartOptions = {
   title: { text: ''},
@@ -67,10 +57,10 @@ const chartOptions = {
   series: [
     {name: 'A-L1', type: 'line', symbol: 'none', data: L1Data.value },
     {name: 'A-L2', type: 'line', symbol: 'none', data: L2Data.value},
-    //{name: 'A-L3', type: 'line', symbol: 'none', data: L3Data.value},
-    //{name: 'B-L1', type: 'line', symbol: 'none', data: L1Data.value },
-    //{name: 'B-L2', type: 'line', symbol: 'none', data: L2Data.value},
-    //{name: 'B-L3', type: 'line', symbol: 'none', data: L3Data.value},
+    {name: 'A-L3', type: 'line', symbol: 'none', data: L3Data.value},
+    {name: 'B-L1', type: 'line', symbol: 'none', data: L4Data.value},
+    {name: 'B-L2', type: 'line', symbol: 'none', data: L5Data.value},
+    {name: 'B-L3', type: 'line', symbol: 'none', data: L6Data.value},
   ],
 }
 </script>

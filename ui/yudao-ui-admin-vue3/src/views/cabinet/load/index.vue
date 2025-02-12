@@ -295,6 +295,7 @@ const getTableData = async(reset = false) => {
  
   try {
     const res = await CabinetApi.getIndexLoadPage(queryParams)
+    console.log('res66666666', res);
     if (!res) {
       // 可以选择设置一个空数组和总页数为0，或者显示错误消息
       listPage.value = [];
