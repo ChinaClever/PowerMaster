@@ -36,11 +36,12 @@
         <div v-for="item in deviceLeft" :key="item.id" class="device">
           <div class="name"><span>设备名称： {{item.rackName}}</span><span style="margin-left:100px;">高度：{{item.uHeight}}</span></div>
           <div class="info">
-            <div>型号：{{item.rackType}}</div>
+            <div><span>型号：{{item.rackType}}</span><span style="margin-left:100px;">状态：</span><span  v-if="item.runStatus==0"> 关机</span><span v-else> 开机</span> </div>
             <!--<div>占用：{{item.uHeight}}</div>-->
             <div>功率：{{item.powActive}}KW</div>
             <div>电流：{{item.curValue}}A</div>
           </div>
+
         </div>
       </div>
       <div style="width:20%;height:100%;">

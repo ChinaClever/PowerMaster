@@ -153,8 +153,8 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-  startNum: 0,
-  endNum: 100,
+  startNum: undefined as number | undefined,
+  endNum: undefined as number | undefined,
 });
 const pageSizeArr = ref([24,36,48,96]);
 const butColor = ref(0);
@@ -246,8 +246,8 @@ const handleSelectStatus = (index) => {
 const toggleAllStatus = () => {
   butColor.value = 0;
   onclickColor.value = -1;
-  queryParams.startNum = 0;
-  queryParams.endNum = 100;
+   queryParams.startNum = undefined;
+   queryParams.endNum = undefined;
   getTableData();
 }
 
