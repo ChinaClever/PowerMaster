@@ -106,8 +106,8 @@ public class CabinetController {
      */
     @Operation(summary = "机柜功率详情")
     @GetMapping("/cabinet/detail")
-    public CommonResult<JSONObject> getCabinetDetail(@Param("id") int id) {
-        JSONObject dto = cabinetService.getCabinetDetail(id);
+    public CommonResult<Map> getCabinetDetail(@Param("id") int id) {
+        Map dto = cabinetService.getCabinetDetail(id);
         return success(dto);
     }
 

@@ -1,6 +1,6 @@
 <template>
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机柜报表">
-    <template #NavInfo>
+    <template #NavInfo >
       <div >
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
@@ -57,17 +57,6 @@
             class="!w-240px"
           />
         </el-form-item> -->
-
-        <el-form-item label="机柜Id" prop="ipAddr" >
-          <el-autocomplete
-            v-model="queryParams.Id"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-140px"
-            placeholder="请输入id"
-            @select="handleQuery"
-          />
-        </el-form-item>
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
             @click="queryParams.timeType = 0;dateTimeName='twentyfourHour';now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
@@ -123,6 +112,7 @@
         </el-form-item>
         <el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleExport"  ><Icon icon="ep:search" class="mr-5px" :loading="true" /> 导出</el-button>
         </el-form-item>
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
@@ -130,6 +120,7 @@
       </el-form>
     </template>
     <template #Content>
+      <div id="pdfRef">
       <div v-show="visControll.visAllReport" class="page" >
         <div class="page-con">
           <div class="pageBox" >
@@ -249,7 +240,7 @@
             <div class="page-conTitle">
               B路相电流历史曲线趋势图
             </div>
-            <BcurLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
+            <BBCurLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
           </div>
           <div class="pageBox" v-if="isPDU">
             <div class="page-conTitle">
@@ -321,6 +312,7 @@
         </div>
         
       </div>
+    </div>
     </template>
   </CommonMenu>
 
@@ -341,9 +333,18 @@ import EnvTemLine from './component/EnvTemLine.vue'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import ACurLine from './component/AcurLine.vue'
 import AVolLine from './component/AvolLine.vue'
-import BCurLine from './component/BCurLine.vue'
+import BBCurLine from './component/BcurLine.vue'
 import BVolLine from './component/BvolLine.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
+// 引入方法
+import { htmlPdf } from "@/utils/htmlToPDF.js"  
+	// 导出成PDF
+	const handleExport = (name) => {
+	  var fileName= '机柜报表'
+	  const fileList = document.getElementsByClassName('pdfRef')   // 很重要
+	  htmlPdf(fileName, document.querySelector('#pdfRef'), fileList)
+	}
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -749,6 +750,9 @@ const PDUHdaLineHisdata = async () => {
 
     AcurVolData.value = result.A;
     BcurVolData.value = result.B;
+    console.log('BBBBBBBBBBBBBBBBBBBBBBBB', BcurVolData.value);
+    console.log('BBBBBBBBBBBBBBBBBBBBBBBB', BcurVolData.value);
+
     dataLoaded.value = true;
   }catch (error) {
     isPDU.value = false;
@@ -885,7 +889,8 @@ const handleConsumeQuery = async () => {
 const handleDetailQuery = async () => {
   var temp = [] as any;
   
-  var CabinetInfo = await CabinetApi.getCabinetDetail({id : queryParams.Id});
+  var CabinetInfo1 = await CabinetApi.getCabinetDetail({id : queryParams.Id});
+  var CabinetInfo = CabinetInfo1.redisData;
   var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
   var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
   var percentageValue = 50 as any;
@@ -906,7 +911,7 @@ const handleDetailQuery = async () => {
   
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
+    baseInfoValue : CabinetInfo1?.name,
     consumeName : "当前总视在功率",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
     percentageName: "当前AB路占比",
