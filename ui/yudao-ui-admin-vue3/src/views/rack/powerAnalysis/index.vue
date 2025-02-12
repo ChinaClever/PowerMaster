@@ -159,7 +159,7 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref()
 const queryParams = reactive({
   pageNo: 1, 
   pageSize: 15,
@@ -279,16 +279,20 @@ const tableColumns = ref([
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '100px'},
 ]) as any;
 
+const start = ref('')
+const end = ref('')
+
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
-    if ( selectTimeRange.value != undefined){
+    if ( start.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -439,6 +443,8 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
+  start.value = useRoute().query.start as string;
+  end.value = useRoute().query.end as string;
   getNavList()
   getNavNewData()
   getList();

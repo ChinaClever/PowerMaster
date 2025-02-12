@@ -177,18 +177,29 @@ public class CabinetServiceImpl implements CabinetService {
     }
 
     @Override
-    public JSONObject getCabinetDetail(int id) {
-
+    public Map getCabinetDetail(int id) {
+        HashMap result = new HashMap();
         try {
-
+            String name = new String();
             CabinetIndex index = cabinetIndexMapper.selectById(id);
+            AisleIndex aisleIndex = aisleIndexMapper.selectById(index.getAisleId());
+            RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
+            if (Objects.nonNull(roomIndex)){
+                name = name + roomIndex.getRoomName() + "-";
+            }
+            if (Objects.nonNull(aisleIndex)){
+                name = aisleIndex.getAisleName() + "-";
+            }
+            name = name + index.getCabinetName();
             //获取redis数据
             String key = REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + id;
-            return JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
+            result.put("redisData",JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key))));
+            result.put("name",name);
+            return result;
         } catch (Exception e) {
             log.error("获取基础数据失败: ", e);
         }
-        return new JSONObject();
+        return result;
     }
 
     @Override

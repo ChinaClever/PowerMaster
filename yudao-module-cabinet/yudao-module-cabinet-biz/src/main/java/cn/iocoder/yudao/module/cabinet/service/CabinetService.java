@@ -36,7 +36,7 @@ public interface CabinetService {
      *
      * @param id 机柜id
      */
-    JSONObject getCabinetDetail(int id);
+    Map getCabinetDetail(int id);
 
     /**
      * 获取机柜信息
