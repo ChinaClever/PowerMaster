@@ -34,6 +34,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -430,51 +431,6 @@ const getTableData = async(reset = false) => {
       company: queryParams.company
     })
     if (res.list) {
-      // const list = res.list.map(item => {
-      //   const tableItem = {} as any
-      //   tableItem.local = item.room_name + '-' + item.cabinet_name
-      //   tableItem.id = item.cabinet_key.split('-')[1]
-      //   const PathA = item.cabinet_power.path_a
-      //   const PathB = item.cabinet_power.path_b
-      //   if (PathA && PathA.cur_value.length > 0) { // A路电流
-      //   console.log('PathA.cur_value', PathA.cur_value)
-      //     PathA.cur_value.forEach((item, index) => {
-      //       tableItem['Ia'+index] = item.toFixed(2)
-      //     })
-      //   }
-      //   if (PathA && PathA.vol_value && PathA.vol_value.length > 0) { // A路电压
-      //     PathA.vol_value.forEach((item, index) => {
-      //       tableItem['Ua'+index] = item.toFixed(2)
-      //     })
-      //   }
-      //   if (PathA && PathA.pow_value && PathA.pow_value.length > 0) { // A路功率
-      //     PathA.pow_value.forEach((item, index) => {
-      //       tableItem['Pa'+index] = item.toFixed(2)
-      //     })
-      //   }
-      //   if (PathB && PathB.cur_value && PathB.cur_value.length > 0) { // B路电流
-      //     PathB.cur_value.forEach((item, index) => {
-      //       tableItem['Ib'+index] = item.toFixed(2)
-      //     })
-      //   }
-      //   if (PathB && PathB.vol_value && PathB.vol_value.length > 0) { // B路电压
-      //     PathB.vol_value.forEach((item, index) => {
-      //       tableItem['Ub'+index] = item.toFixed(2)
-      //     })
-      //   }
-      //   if (PathB && PathB.pow_value && PathB.pow_value.length > 0) { // B路功率
-      //     PathB.pow_value.forEach((item, index) => {
-      //       tableItem['Pb'+index] = item.toFixed(2)
-      //     })
-      //   }
-      //   if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
-      //     if (item.cabinet_power.path_a.pow_apparent == 0) tableItem.abdlzb = 0
-      //     else tableItem.abdlzb = Math.floor((item.cabinet_power.path_a.pow_apparent / item.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100)
-      //     if (item.cabinet_power.path_a.pow_active == 0) tableItem.abglzb = 0
-      //     else tableItem.abglzb = Math.floor((item.cabinet_power.path_a.pow_active / item.cabinet_power.total_data.pow_active as any).toFixed(2) * 100)
-      //   }
-      //   return tableItem
-      // })
       tableData.value = res.list
       queryParams.pageTotal = res.total
     }
@@ -483,6 +439,10 @@ const getTableData = async(reset = false) => {
   }
 }
 
+const resetQuery = () => {
+ queryParams.company = undefined;
+  getTableData(true)
+}
 // 获取平衡度
 const getBalanceDegree = async () => {
   const res = await PDUDeviceApi.getPDUDevicePage({
