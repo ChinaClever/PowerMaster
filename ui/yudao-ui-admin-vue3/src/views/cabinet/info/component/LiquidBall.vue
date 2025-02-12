@@ -21,6 +21,7 @@ const props = defineProps({
 })
 const color = ref('');
 const echartsOption = reactive<any>({});
+console.log('props.precent666',props.precent);
 console.log('props.precent',Math.round(props.precent));
 
 const judgeColor = () => {
@@ -49,7 +50,7 @@ watch(() => props.precent,(val) => {
         fontWeight: 'bold', // 设置字体粗细
         color: props.precent == 0 ? '#fff' : color.value,
         formatter: (params) => {
-          if (params.data == 0) {
+          if (params.data == null) {
             return '未绑定'
           } else {
             return Math.round(val) + '%'

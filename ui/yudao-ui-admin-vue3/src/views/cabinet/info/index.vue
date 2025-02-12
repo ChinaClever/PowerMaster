@@ -103,8 +103,8 @@
       </el-form>
     </template>
     <template #Content>
-      <div v-show="switchValue && listPage.length > 0" class="table-height">
-        <el-table v-show="switchValue == 1" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <div v-if="switchValue && listPage.length > 0" class="table-height">
+        <el-table v-show="switchValue == 1" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
