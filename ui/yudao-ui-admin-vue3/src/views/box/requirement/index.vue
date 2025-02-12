@@ -615,7 +615,7 @@ const getListAll = async () => {
   try {
         const allData = await IndexApi.getBoxLineMax(queryParams)
     //设置左边数量
-    statusNumber.location = allData.location;
+    statusNumber.location = allData.location?allData.location:allData.devKey;
     statusNumber.devKey = allData.devKey;
     statusNumber.busName = allData.busName;
     statusNumber.lineName = allData.lineName;

@@ -312,7 +312,7 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
-            <span>所在位置：{{ location }}</span>
+            <span>所在位置：{{ location? location:'未绑定'}}</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
 
@@ -453,7 +453,7 @@ const createFilter = (queryString: string) => {
 const openPFDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location : row.devKey;
+  location.value = row.location;
   devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;

@@ -248,7 +248,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
+            <span style="margin-right:10px">所在位置：{{ curlocation? curlocation:'未绑定'}}</span>
             <span>网络地址：{{ curdevkey }}</span>
           </div>
         </template>
@@ -358,8 +358,8 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
-            <span>网络地址：{{ curlocation }}</span>
+            <span style="margin-right:10px">所在位置：{{ vollocation?vollocation:'未绑定' }}</span>
+            <span>网络地址：{{ voldevkey }}</span>
           </div>
         </template>
         <!-- 自定义的主要内容 -->

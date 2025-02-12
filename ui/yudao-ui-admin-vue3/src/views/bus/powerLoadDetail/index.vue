@@ -14,7 +14,7 @@
   <hr/> <br/> -->
   <div class="header_app">
     <div class="header_app_text">
-      <span style="margin-right:10px;">机房：{{ roomName }}</span>
+      <span style="margin-right:10px;">机房：{{ roomName? roomName : '未绑定'}}</span>
       <span style="margin-right:10px;">名称：{{ busName }}</span>
       <span style="margin-right:10px;">所在位置：{{ devKey }}</span>
     </div>

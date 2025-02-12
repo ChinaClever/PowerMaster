@@ -610,7 +610,7 @@ const toDetail = (row) =>{
   console.log('row',row);
   const devKey = row.devKey;
   const busId = row.busId;
-  const location = row.location ? row.location : devKey;
+  const location = row.location;
   const busName = row.busName;
   push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location , busName}});
 }
