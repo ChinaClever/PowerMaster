@@ -10,7 +10,7 @@
       <el-button @click="addTemColor">添加温度范围颜色</el-button>
       <el-button @click="deleteTemColor" v-if="formData.colorArr.length > 0">删除最后一个</el-button>
       <div><br/></div>
-      <div style="display:blcock;width:50%;margin-left:-30px;">
+      <div style="display:blcock;width:100%;margin-left:-30px;">
         <div v-for="item in formData.colorArr" :key="item.id" style="width:100%;">        
         <el-form-item>
           <span style="width:80px;">冷通道温度</span>
@@ -20,7 +20,7 @@
         </el-form-item>    
       </div>
       </div>
-      <div style="display:blcock;width:50%;margin-left:50%;margin-top:-152px;">
+      <!--<div style="display:blcock;width:50%;margin-left:50%;margin-top:-152px;">
         <div v-for="item in formData.colorArr" :key="item.id" style="width:100%;">        
         <el-form-item>
           <span style="width:80px;">热通道温度</span>
@@ -29,7 +29,7 @@
           颜色<el-color-picker v-model="item.color" />      
         </el-form-item>    
       </div>
-      </div>
+      </div>-->
     </el-form>
     <template #footer>
       <el-button @click="submitForm" type="primary" :disabled="formLoading">确 定</el-button>
