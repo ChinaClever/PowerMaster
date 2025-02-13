@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="机架报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true"  :load="loadNode" navTitle="机架报表">
     <template #NavInfo>
       <div >
         <br/>

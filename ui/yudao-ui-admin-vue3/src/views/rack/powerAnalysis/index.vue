@@ -165,7 +165,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  rackIds:[]
+  rackIds: [] as (string | undefined)[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -445,6 +445,10 @@ const handleExport = async () => {
 onMounted(() => {
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
+  const queryRackId = useRoute().query.rackId as string  
+  if (queryRackId!== undefined) {
+  queryParams.rackIds.push(queryRackId);
+  }
   getNavList()
   getNavNewData()
   getList();
