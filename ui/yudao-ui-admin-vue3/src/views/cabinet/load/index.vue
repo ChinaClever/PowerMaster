@@ -7,7 +7,6 @@
           <div class="name">微模块机房</div>
           <div>机房202</div>
         </div> -->
-        <div class="line"></div>
         <div class="status">
           <div class="box">
             <div class="top">
@@ -46,8 +45,6 @@
             <div class="value"><span class="number">{{statusNumber.total}}</span>个</div>
           </div>
         </div>
-
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -86,12 +83,13 @@
         <el-form-item style="margin-left: auto">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />视在功率</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />有功功率</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(3)" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />无功功率</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(2)" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 2" style="width: 100%;" v-loading="loading" :data="listPage" class="loadContainer">
+      <el-table v-show="switchValue == 2" style="width: 100%;" :data="listPage" class="loadContainer">
         <el-table-column label="位置" min-width="110" align="center" prop="roomName,cabinetName" >
           <template #default="scope">
             {{ scope.row.roomName }}-{{ scope.row.cabinetName }}
@@ -105,8 +103,10 @@
         <el-table-column label="总有功功率(kW)" min-width="110" align="center" prop="activeTotal" :formatter="formatnumThree" />
         <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" :formatter="formatnumThree" />
         <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" :formatter="formatnumThree" />
+        <el-table-column label="A路无功功率(kVar)" min-width="120" align="center" prop="powReactivea" :formatter="formatnumThree" />
+        <el-table-column label="B路无功功率(kVar)" min-width="120" align="center" prop="powReactiveb" :formatter="formatnumThree" />
         <el-table-column label="更新时间" min-width="110" align="center" prop="dataUpdateTime" />
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" min-width="90" align="center">
           <template #default="scope">
             <el-button
               link
@@ -119,7 +119,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div v-show="(switchValue == 0 || switchValue == 1) && listPage.length > 0" v-loading="loading" class="loadContainer">
+      <div v-show="(switchValue == 0 || switchValue == 1 || switchValue == 3) && listPage.length > 0" v-loading="loading" class="loadContainer">
         <div class="loadItem" v-for="load in listPage" :key="load.key">
           <div class="content">
             <div class="info" v-if="switchValue == 0">
@@ -128,10 +128,16 @@
               <div>B路视在功率：{{formatNumber(load.powApparentb,3) || '0.000'}}KVA</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
-            <div class="info" v-else>
+            <div class="info" v-else-if="switchValue == 1">
               <div>总有功功率：{{formatNumber(load.activeTotal,3)|| '0.000'}}kW</div>
               <div>A路有功功率：{{formatNumber(load.powActivea,3)|| '0.000'}}kW</div>
               <div>B路有功功率：{{formatNumber(load.powActiveb,3)|| '0.000'}}kW</div>
+              <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
+            </div>
+            <div class="info" v-else-if="switchValue == 3">
+              <div>总无功功率：{{formatNumber(load.reactiveTotal,3)|| '0.000'}}kVar</div>
+              <div>A路无功功率：{{formatNumber(load.powReactivea,3)|| '0.000'}}kVar</div>
+              <div>B路无功功率：{{formatNumber(load.powReactiveb,3)|| '0.000'}}kVar</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
@@ -200,6 +206,7 @@ const queryParams = reactive({
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
+const flashListTimer = ref();
 
 function formatApparentPower(row, column, cellValue ) {
   // 假设保留两位小数
@@ -405,9 +412,24 @@ const toMachineDetail = (row) => {
 }
 
 onBeforeMount(() => {
-  getNavList()
-  getTableData()
-  getLoadStatusList()
+  getNavList();
+  getTableData();
+  getLoadStatusList();
+  flashListTimer.value = setInterval((getTableData), 5000);
+})
+
+onBeforeUnmount(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
 })
 </script>
 
@@ -502,13 +524,14 @@ onBeforeMount(() => {
     display: flex;
     flex-wrap: wrap;
     .box {
-      height: 70px;
+      height: 30px;
       width: 50%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
+      margin-top: 30px;
       .top {
         display: flex;
         align-items: center;
