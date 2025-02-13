@@ -17,6 +17,7 @@ const props = defineProps({
   }
 })
 
+console.log('props',props.curChartData);
 const L1Data = ref([]);
 const L2Data = ref([]);
 const L3Data = ref([]);
@@ -54,8 +55,8 @@ const chartOptions = {
   },
   series: [
     {name: '总有功功率', type: 'line', symbol: 'none', data: L1Data.value },
-    {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
-    {name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
+    {name: 'A路有功功率', type: 'line', symbol: 'none', data: L2Data.value},
+    {name: 'B路有功功率', type: 'line', symbol: 'none', data: L3Data.value},
   ],
 }
 </script>

@@ -8,29 +8,22 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  createTimeData:{
-    type: Array,
-    required: true,
-  },
   timeRadio:{
     required: true,
   }
 })
 
-const L1Data = ref()
-const L2Data = ref()
-const L3Data = ref()
+console.log('props',props.curChartData);
+const L1Data = ref([]);
+const L2Data = ref([]);
+const L3Data = ref([]);
+const createTimeData = ref([]);
 
-if(props.curChartData.value != null){
-  if(props.timeRadio === '近一小时'){
-    L1Data.value = props.curChartData.value.L1.map((item) => item.power_factor.toFixed(2))
-    L2Data.value = props.curChartData.value.L2.map((item) => item.power_factor.toFixed(2))
-    L3Data.value = props.curChartData.value.L3.map((item) => item.power_factor.toFixed(2))
-  }else{
-    L1Data.value = props.curChartData.value.L1.map((item) => item.power_factor_avg_value.toFixed(2));
-    L2Data.value = props.curChartData.value.L2.map((item) => item.power_factor_avg_value.toFixed(2));
-    L3Data.value = props.curChartData.value.L3.map((item) => item.power_factor_avg_value.toFixed(2));
-  }
+if(props.curChartData != null){
+  L1Data.value = props.curChartData.aPath.map((item) => item.powerFactorA);
+  L2Data.value = props.curChartData.aPath.map((item) => item.powerFactorB);
+  L3Data.value = props.curChartData.aPath.map((item) => item.powerFactorTotal);
+  createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
 }
 
 const chartOptions = {

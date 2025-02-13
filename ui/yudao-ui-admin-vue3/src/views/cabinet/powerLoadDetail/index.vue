@@ -106,7 +106,7 @@
       <el-radio-group v-model="typeRadio">
         <el-radio-button label="电流" value="电流" @click="switchChartContainer = 0;"/>
         <el-radio-button label="电压" value="电压" @click="switchChartContainer = 2;"/>
-        <el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled" @click="switchChartContainer = 1;"/>
+        <!--<el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled" @click="switchChartContainer = 1;"/>-->
         <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer = 3;"/>
         <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer = 4;"/>
         <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer = 5;"/>
@@ -133,14 +133,14 @@
     <ActivePower v-if="visContro.activeVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 4">
-    <ReactivePower v-if="visContro.reactiveVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <ReactivePower v-if="visContro.reactiveVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 5">
     <CurrentPower v-if="visContro.currentVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
-  <!--<div v-else-if="switchChartContainer === 6">
-    <CurrentPower v-if="visContro.factorVis" style="width: 85vw; height: 340px;" :createTimeData="createTimeData" :curChartData="curChartData" :timeRadio="timeRadio"/>
-  </div>-->
+  <div v-else-if="switchChartContainer === 6">
+    <PowerFactor v-if="visContro.factorVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+  </div>
   </div>
 </div>
 </template>
@@ -442,7 +442,13 @@ let myChart3 = null as echarts.ECharts | null;
 
 const getDetailData =async () => {
  try {
-    const data = await CabinetApi.getBusDetailData(queryParams);
+    const data = await CabinetApi.getBusDetailData({
+      id: 178,
+      roomId: 115,
+      type: 0,
+      //id: history?.state.cabinet,
+      //roomId: history?.state.roomId,
+    });
     console.log('data1111111111',data);
     if (data != null){
       hasData.value = true
@@ -692,46 +698,52 @@ const flashChartData = async () =>{
 }
 const isHaveData = ref(true)
 
-watch(() => switchChartContainer.value,async () => {
-  if(switchChartContainer.value === 0){
-    visContro.value.curVis = true;
-    switchType.value = 1;
+const updateChart = async (type, visKey) => {
+  switchType.value = type; // 设置 switchType
+  console.log(visKey); // 打印当前操作的标识
+  await getCVLineChartData(); // 获取数据
+
+  // 重置所有 visContro 状态
+  Object.keys(visContro.value).forEach((key) => {
+    visContro.value[key] = false;
+  });
+
+  // 设置当前 visContro 状态
+  visContro.value[visKey] = true;
+};
+
+watch(
+  () => switchChartContainer.value,
+  async (newValue) => {
+    const actions = {
+      0: () => updateChart(1, 'curVis'),
+      2: () => updateChart(1, 'volVis'),
+      3: () => updateChart(0, 'activeVis'),
+      4: () => updateChart(0, 'reactiveVis'),
+      5: () => updateChart(0, 'currentVis'),
+      6: () => updateChart(0, 'factorVis'),
+    };
+
+    if (actions[newValue]) {
+      await actions[newValue]();
+    }
   }
-  else if(switchChartContainer.value === 2){
-    visContro.value.volVis = true;
-    switchType.value = 1;
-  }
-  else if(switchChartContainer.value === 3){
-    visContro.value.activeVis = true;
-    switchType.value = 0;
-  }
-  else if(switchChartContainer.value === 4){
-    visContro.value.reactiveVis = true;
-    switchType.value = 0;
-  }
-  else if(switchChartContainer.value === 5){
-    visContro.value.currentVis = true;
-    switchType.value = 0;
-  }
-  //else if(switchChartContainer.value === 6){
-  //  visContro.value.factorVis = true
-  //}
-  await getCVLineChartData();
-})
+);
 
 // 获取折线图数据
 const getCVLineChartData =async () => {
-  console.log('1111',curChartData.value);
+  console.log('switchType.value',switchType.value);
   const data = await CabinetApi.getBusLineChartDetailData({
-    id: 178,
-    roomId: 115,
+    //id: 178,
+    //roomId: 115,
+    id: history?.state.cabinet,
+    roomId: history?.state.roomId,
     type: switchType.value,
     granularity: "SeventyHours"
   });
+
   curChartData.value = data;
-  if(switchChartContainer.value === 0){
-    visContro.value.curVis = true;
-  }
+
   //const data = await CabinetApi.getBusLineChartDetailData(queryParams);
   console.log('获取折线图数据',data);
   console.log('curChartData.value',curChartData.value);
@@ -893,9 +905,9 @@ const handleQuery = async () => {
 onMounted(async () => {
   try {
     //devKeyList.value = await loadAll();
-    //await getDetailData();
+    await getDetailData();
     await getCVLineChartData();
-    console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
+    visContro.value.curVis = true;
     initChart();
     initChart1();
     //initChart2()
