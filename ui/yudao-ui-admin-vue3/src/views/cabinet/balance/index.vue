@@ -122,7 +122,7 @@
             </div> -->
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
             <!--<button v-if="item.apow != null || item.bpow != null" class="detail" @click.prevent="showDialog(item)" >详情</button>-->
-            <button v-if="item.pduBox === true" class="detail" @click.prevent="showDialog(item)" >详情</button>
+            <button v-if="item.pduBox === false" class="detail" @click.prevent="showDialog(item)" >详情</button>
           </div>
         </div>
 
@@ -202,7 +202,7 @@
           <el-table-column label="操作" width="100px" align="center">
             <template #default="scope">
               <el-button
-                v-if="scope.pduBox === true"
+                v-if="scope.row.pduBox === false"
                 link
                 type="primary"
                 @click="showDialog(scope.row)"
