@@ -61,8 +61,8 @@ export const IndexApi = {
   getTemData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/tem`,params})
   },
-  getCabinetEnvPage: async (params) => {
-    return await request.get({ url: `/cabinet/index/env/page`,params})
+  getCabinetEnvPage: async (data : any) => {
+    return await request.post({ url: `/cabinet/env/page`,data})
   },
   getCabinetIceTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/ice`,params})

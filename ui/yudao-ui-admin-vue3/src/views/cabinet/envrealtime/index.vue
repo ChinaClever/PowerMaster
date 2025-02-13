@@ -83,7 +83,7 @@
             <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色
           </el-button>
         </el-form-item>
-        <el-form-item label="公司名称" prop="company">
+        <el-form-item prop="company">
           <el-input
             v-model="queryParams.company"
             placeholder="请输入公司名称"
@@ -419,23 +419,23 @@ const getList = async () => {
     console.log('data',data);
 
     list.value = data.list
-    var tableIndex = 0;
+    // var tableIndex = 0;
 
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      obj.iceTopTem = obj.iceTopTem?.toFixed(1);
-      obj.iceTopHum = obj.iceTopHum?.toFixed(1);
-      obj.iceMidTem = obj.iceMidTem?.toFixed(1);
-      obj.iceMidHum = obj.iceMidHum?.toFixed(1);
-      obj.iceBomTem = obj.iceBomTem?.toFixed(1);
-      obj.iceBomHum = obj.iceBomHum?.toFixed(1);
-      obj.hotTopTem = obj.hotTopTem?.toFixed(1);
-      obj.hotTopHum = obj.hotTopHum?.toFixed(1);
-      obj.hotMidTem = obj.hotMidTem?.toFixed(1);
-      obj.hotMidHum = obj.hotMidHum?.toFixed(1);
-      obj.hotBomTem = obj.hotBomTem?.toFixed(1);
-      obj.hotBomHum = obj.hotBomHum?.toFixed(1);
-    });
+    // list.value.forEach((obj) => {
+    //   obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+    //   obj.iceTopTem = obj.iceTopTem?.toFixed(1);
+    //   obj.iceTopHum = obj.iceTopHum?.toFixed(1);
+    //   obj.iceMidTem = obj.iceMidTem?.toFixed(1);
+    //   obj.iceMidHum = obj.iceMidHum?.toFixed(1);
+    //   obj.iceBomTem = obj.iceBomTem?.toFixed(1);
+    //   obj.iceBomHum = obj.iceBomHum?.toFixed(1);
+    //   obj.hotTopTem = obj.hotTopTem?.toFixed(1);
+    //   obj.hotTopHum = obj.hotTopHum?.toFixed(1);
+    //   obj.hotMidTem = obj.hotMidTem?.toFixed(1);
+    //   obj.hotMidHum = obj.hotMidHum?.toFixed(1);
+    //   obj.hotBomTem = obj.hotBomTem?.toFixed(1);
+    //   obj.hotBomHum = obj.hotBomHum?.toFixed(1);
+    // });
 
     total.value = data.total
   } finally {

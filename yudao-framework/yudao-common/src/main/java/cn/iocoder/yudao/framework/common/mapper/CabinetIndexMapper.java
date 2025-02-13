@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
@@ -47,4 +48,5 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
 
     List<CabinetIndexBoxResVO> selectCabinetBox();
 
+    Page<CabinetCfg> selectCabinetEnvPage(Page page, CabinetIndexVo pageReqVO);
 }

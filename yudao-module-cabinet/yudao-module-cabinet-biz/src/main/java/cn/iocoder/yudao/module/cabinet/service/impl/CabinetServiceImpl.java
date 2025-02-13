@@ -29,6 +29,7 @@ import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.service.ICabinetEnvSensorService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -722,15 +723,18 @@ public class CabinetServiceImpl implements CabinetService {
                 if (Objects.nonNull(total)) {
                     vo.setActiveTotal(total.getBigDecimal("pow_active"));
                     vo.setApparentTotal(total.getBigDecimal("pow_apparent"));
+                    vo.setPowReactiveTotal(total.getBigDecimal("pow_reactive"));
                 }
                 vo.setLoadFactor(jsonObject.getBigDecimal("load_factor").setScale(2, RoundingMode.HALF_UP));
                 if (Objects.nonNull(apath)) {
                     vo.setPowActivea(apath.getBigDecimal("pow_active"));
                     vo.setPowApparenta(apath.getBigDecimal("pow_apparent"));
+                    vo.setPowReactivea(apath.getBigDecimal("pow_reactive"));
                 }
                 if (Objects.nonNull(bpath)) {
                     vo.setPowActiveb(bpath.getBigDecimal("pow_active"));
                     vo.setPowApparentb(bpath.getBigDecimal("pow_apparent"));
+                    vo.setPowReactiveb(bpath.getBigDecimal("pow_reactive"));
                 }
                 vo.setDataUpdateTime(jsonObject.getString("date_time"));
             }
@@ -968,7 +972,44 @@ public class CabinetServiceImpl implements CabinetService {
 
     @Override
     public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(CabinetIndexVo pageReqVO) {
-        return null;
+        PageResult<CabinetEnvAndHumRes> pageResult = new PageResult<CabinetEnvAndHumRes>();
+        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+      Page<CabineIndexCfgVO> envPage=cabinetIndexMapper.selectIndexLoadPage(page,pageReqVO);
+        List<CabineIndexCfgVO> records = envPage.getRecords();
+        if (!CollectionUtils.isEmpty(records)) {
+            List<CabinetEnvAndHumRes> res = BeanUtils.toBean(records, CabinetEnvAndHumRes.class);
+            List<String> collect = res.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
+            List<Object> list = redisTemplate.opsForValue().multiGet(collect);
+            Map<String,JSONObject> keyMap = list.stream().filter(i -> Objects.nonNull(i))
+                    .collect(Collectors.toMap(i -> JSON.parseObject(JSONObject.toJSONString(i)).getString("cabinet_key"), x -> JSON.parseObject(JSONObject.toJSONString(x))));
+            for (CabinetEnvAndHumRes env : res) {
+                StringJoiner joiner = new StringJoiner("-");
+                if (!StringUtils.isEmpty(env.getRoomName())) {
+                    joiner.add(env.getRoomName());
+                }
+                joiner.add(env.getCabinetName());
+                env.setLocation(joiner.toString());
+                JSONObject jsonObject = keyMap.get(env.getRoomId() + "-" + env.getId());
+                if (jsonObject == null){
+                    continue;
+                }
+                JSONObject cabinetEnv = jsonObject.getJSONObject("cabinet_env");
+                if (cabinetEnv != null){
+                    JSONArray humAverage = cabinetEnv.getJSONArray("hum_average");
+                    if (!CollectionUtils.isEmpty(humAverage)){
+                        env.setIceAverageHum(humAverage.getBigDecimal(0));
+                        env.setHotAverageHum(humAverage.getBigDecimal(1));
+                    }
+                    JSONArray temAverage = cabinetEnv.getJSONArray("tem_average");
+                    if (!CollectionUtils.isEmpty(temAverage)){
+                        env.setIceAverageTem(temAverage.getBigDecimal(0));
+                        env.setHotAverageTem(temAverage.getBigDecimal(1));
+                    }
+                }
+            }
+            pageResult.setList(res).setTotal(envPage.getTotal());
+        }
+        return pageResult;
     }
 
     @Override
