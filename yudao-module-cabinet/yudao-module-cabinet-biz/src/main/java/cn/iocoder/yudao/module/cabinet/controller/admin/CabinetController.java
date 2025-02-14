@@ -247,9 +247,9 @@ public class CabinetController {
         return success(resultMap);
     }
 
-    @PostMapping("/env/page")
+    @PostMapping("/cabinet/env/page")
     @Operation(summary = "获得机柜环境分页")
-    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid CabinetIndexVo pageReqVO) {
+    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@RequestBody @Valid CabinetIndexVo pageReqVO) {
         return success(cabinetService.getCabinetEnvPage(pageReqVO));
     }
 }

@@ -49,15 +49,15 @@
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
-              <div style="margin-right:15px;margin-left:-15px;">
+              <div style="margin-right:30px;margin-left: 5px;">
                 <div>总视在功率：{{item.powApparentTotal || '0.00'}}kVA</div>
                 <div>A路视在功率：{{item.powApparentA || '0.00'}}kVA</div>
                 <div>B路视在功率：{{item.powApparentB || '0.00'}}kVA</div>
               </div>
               <div class="progress">
-                <div class="left" :style="`flex: ${item.apow || '0.00'}`">{{item.apow || '0.00'}}%</div>
+                <div class="left" :style="`flex: ${Math.floor(item.apow || 0)}`">{{Math.floor(item.apow || 0)}}%</div>
                 <div class="line"></div>
-                <div class="right" :style="`flex: ${item.bpow || '0.00'}`">{{item.bpow || '0.00'}}%</div>
+                <div class="right" :style="`flex: ${Math.floor(item.bpow || 0)}`">{{Math.floor(item.bpow || 0)}}%</div>
                 <div class="tip">
                   <span>A路</span>
                   <span>B路</span>
@@ -122,7 +122,8 @@
               </div>
             </div> -->
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
-            <button v-if="!item.pduBox && (item.apow != null || item.bpow != null)" class="detail" @click.prevent="showDialog(item)" >详情</button>
+            <!--<button v-if="item.apow != null || item.bpow != null" class="detail" @click.prevent="showDialog(item)" >详情</button>-->
+            <button v-if="item.pduBox === false" class="detail" @click.prevent="showDialog(item)" >详情</button>
           </div>
         </div>
 
@@ -199,9 +200,10 @@
           <el-table-column label="B路视在功率(kVA)" min-width="90" align="center" prop="powApparentB" />
           <el-table-column label="A路占比" min-width="90" align="center" prop="aPow" />
           <el-table-column label="B路占比" min-width="90" align="center" prop="bPow" />
-          <el-table-column  label="操作" width="100px" align="center">
+          <el-table-column label="操作" width="100px" align="center">
             <template #default="scope">
               <el-button
+                v-if="scope.row.pduBox === false"
                 link
                 type="primary"
                 @click="showDialog(scope.row)"
@@ -427,11 +429,13 @@ const getTableData = async(reset = false) => {
       cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
       runStatus: [],
-      pduBox: 0,
+      // pduBox: 0,
       company: queryParams.company
     })
+    queryParams.company = undefined;
     if (res.list) {
       tableData.value = res.list
+      console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {

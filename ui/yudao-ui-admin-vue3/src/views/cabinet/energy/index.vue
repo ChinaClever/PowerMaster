@@ -205,7 +205,7 @@ const getTableData = async(reset = false) => {
       cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
       runStatus: [],
-      pduBox: 0,
+      // pduBox: 0,
       timeGranularity:queryParams.timeGranularity,
       company: queryParams.company
     })
