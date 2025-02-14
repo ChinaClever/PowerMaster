@@ -1,13 +1,16 @@
 <template>
-    <el-form
-      ref="formRef"
-      :model="formData"
-      :rules="formRules"
-      label-width="200px"
-      v-loading="formLoading"
-    >
-      <el-row :gutter="24">
-        <el-col :span="8" >
+  <el-form
+    ref="formRef"
+    :model="formData"
+    :rules="formRules"
+    label-width="200px"
+    v-loading="formLoading"
+  >
+    <!-- 1. 数据接收与存储相关 -->
+    <div style="border: 1px solid #ccc; padding: 5px; margin-bottom: 15px;">
+      <b style="font-size: 20px;margin-bottom: 10px;">1. 数据接收与变化存储相关</b>
+      <el-row :gutter="24" style="margin-top: 10px;">
+        <el-col :span="24">
           <el-form-item label="数据接收端口" prop="receivePort">
             <el-input type="number" v-model="formData.receivePort" placeholder="请输入数据接收端口" />
           </el-form-item>
@@ -22,61 +25,52 @@
           </el-form-item>
           <el-form-item label="rediskey过期时间（秒）" prop="redisExpire">
             <el-input type="number" v-model="formData.redisExpire" placeholder="请输入rediskey过期时间（分钟）" />
-          </el-form-item>          
-          <el-form-item label="离线告警开关" prop="offLineAlarm">
-            <el-radio-group v-model="formData.offLineAlarm">
-              <el-radio :label="1">开启</el-radio>
-              <el-radio :label="0">关闭</el-radio>
-            </el-radio-group>
           </el-form-item>
-          <el-form-item label="离线告警时长（秒）" prop="offLineDuration">
-            <el-input type="number" v-model="formData.offLineDuration" placeholder="请输入离线告警时长（分钟）" />
-          </el-form-item>
-          <el-form-item label="状态告警开关" prop="statusAlarm">
-            <el-radio-group v-model="formData.statusAlarm">
-              <el-radio :label="1">开启</el-radio>
-              <el-radio :label="0">关闭</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-col>
-        <el-col :span="8" >
-          <el-form-item label="定时任务开关" prop="fixStore">
-            <el-radio-group v-model="formData.fixStore">
-              <el-radio :label="1">开启</el-radio>
-              <el-radio :label="0">关闭</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="定时存储定时任务配置" prop="fixStoreCronValue">
-            每
-            <el-input :disabled="formData.fixStore == 0"  size="small" style="width: 70px" type="number" :min="1" :max="formData.fixStoreCronType == 3 ? 24 : 60" v-model="formData.fixStoreCronValue" />
-            <el-select :disabled="formData.fixStore == 0" size="small" v-model="formData.fixStoreCronType" placeholder="时间" clearable style="width: 80px">
-              <el-option
-                label="秒钟"
-                :value="1"
-              />
-              <el-option
-                label="分钟"
-                :value="2"
-              />
-              <el-option
-                label="小时"
-                :value="3"
-              />
-            </el-select>
-            执行一次
-          </el-form-item>
-          <el-form-item label="变化存储开关" prop="changeStore">
+          <el-row :gutter="24">
+            <el-col :span="12">
+              <el-form-item label="定时记录" prop="fixStore">
+                <el-radio-group v-model="formData.fixStore">
+                  <el-radio :label="1">开启</el-radio>
+                  <el-radio :label="0">关闭</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="定时存储时间间隔" prop="fixStoreCronValue">
+                每
+                <el-input :disabled="formData.fixStore == 0"  size="small" style="width: 70px" type="number" :min="1" :max="formData.fixStoreCronType == 3 ? 24 : 60" v-model="formData.fixStoreCronValue" />
+                <el-select :disabled="formData.fixStore == 0" size="small" v-model="formData.fixStoreCronType" placeholder="时间" clearable style="width: 80px">
+                  <el-option
+                    label="秒钟"
+                    :value="1"
+                  />
+                  <el-option
+                    label="分钟"
+                    :value="2"
+                  />
+                  <el-option
+                    label="小时"
+                    :value="3"
+                  />
+                </el-select>
+                执行一次
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="24">
+            <el-col :span="12">
+          <el-form-item label="变化记录" prop="changeStore">
             <el-radio-group v-model="formData.changeStore">
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
-
-          <el-form-item label="变化存储定时任务配置" prop="changeStoreCronValue">
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="变化存储时间间隔" prop="changeStoreCronValue">
             每
             <el-input prop="changeStoreCronValue" :disabled="formData.changeStore == 0"  size="small" style="width: 70px" type="number" :min="1" :max="formData.changeStoreCronType == 3 ? 24 : 60" v-model="formData.changeStoreCronValue" />
             <el-select :disabled="formData.changeStore == 0" size="small" v-model="formData.changeStoreCronType" placeholder="时间" clearable style="width: 80px">
-            
               <el-option
                 label="秒钟"
                 :value="1"
@@ -92,13 +86,19 @@
             </el-select>
             执行一次
           </el-form-item>
-          <el-form-item label="电能存储开关" prop="eleStore">
+        </el-col>
+      </el-row>
+      <el-row :gutter="24">
+        <el-col :span="12">
+          <el-form-item label="电能记录" prop="eleStore">
             <el-radio-group v-model="formData.eleStore">
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="电能存储定时任务配置" prop="eleStoreCronValue">
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="电能存储时间间隔" prop="eleStoreCronValue">
             每
             <el-input prop="eleStoreCronValue" :disabled="formData.eleStore == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.eleStoreCronType == 3 ? 24 : 60" v-model="formData.eleStoreCronValue" />
             <el-select :disabled="formData.eleStore == 0" size="small" v-model="formData.eleStoreCronType" placeholder="时间" clearable style="width: 80px">
@@ -118,45 +118,41 @@
             执行一次
           </el-form-item>
         </el-col>
-        <el-col :span="8">
-          <el-form-item label="配置推送的mq" prop="pushMqs">
-            <el-checkbox-group :disabled="formData.timingPush == null || formData.alarmPush == null ||formData.changePush == null ||(formData.timingPush === 0 && formData.alarmPush === 0 && formData.changePush === 0)" v-model="formData.pushMqs">
-              <el-checkbox label="1" value="1">kafka</el-checkbox>
-              <el-checkbox label="2" value="2">RocketMQ</el-checkbox>
-              <el-checkbox label="3" value="3">RabbitMQ</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-          <el-form-item label="定时推送开关" prop="timingPush">
-            <el-radio-group v-model="formData.timingPush" >
+      </el-row>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!-- 2. 告警相关 -->
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+      <b style="font-size: 20px;margin-bottom: 10px;">2. 告警相关</b>
+      <el-row :gutter="24" style="margin-top: 10px;">
+        <el-col :span="24">
+          <el-form-item label="离线告警开关" prop="offLineAlarm">
+            <el-radio-group v-model="formData.offLineAlarm">
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="定时推送任务配置" prop="timingPushCronValue">
-              每
-              <el-input prop="timingPushCronValue" :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.timingPushCronType == 3 ? 24 : 60" v-model="formData.timingPushCronValue" />
-              <el-select :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" v-model="formData.timingPushCronType" placeholder="时间" clearable style="width: 80px">
-                <el-option
-                    label="秒钟"
-                    :value="1"
-                />
-                <el-option
-                  label="分钟"
-                  :value="2"
-                />
-                <el-option
-                  label="小时"
-                  :value="3"
-                />
-              </el-select>
-              执行一次
+          <el-form-item label="离线告警时长（秒）" prop="offLineDuration">
+            <el-input type="number" v-model="formData.offLineDuration" placeholder="请输入离线告警时长（分钟）" />
           </el-form-item>
+          <el-form-item label="状态告警开关" prop="statusAlarm">
+            <el-radio-group v-model="formData.statusAlarm">
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-row :gutter="24">
+            <el-col :span="12">
           <el-form-item label="告警推送开关" prop="alarmPush">
             <el-radio-group v-model="formData.alarmPush" >
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
+        </el-col>
+        <el-col :span="12">
           <el-form-item label="告警推送任务配置" prop="alarmPushCronValue">
               每
               <el-input prop="alarmPushCronValue" :disabled="formData.alarmPush == null ||formData.alarmPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.alarmPushCronType == 3 ? 24 : 60" v-model="formData.alarmPushCronValue" />
@@ -176,12 +172,58 @@
               </el-select>
               执行一次
           </el-form-item>
+        </el-col>
+      </el-row>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!-- 3. 定时任务与推送相关 -->
+    <!-- <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+      <b style="font-size: 20px;margin-bottom: 10px;">3. 定时任务与推送相关</b>
+      <el-row :gutter="24" style="margin-top: 10px;">
+        <el-col :span="24">
+          <el-row :gutter="24">
+            <el-col :span="12">
+          <el-form-item label="定时推送开关" prop="timingPush">
+            <el-radio-group v-model="formData.timingPush" >
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="定时推送任务配置" prop="timingPushCronValue">
+              每
+              <el-input prop="timingPushCronValue" :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.timingPushCronType == 3 ? 24 : 60" v-model="formData.timingPushCronValue" />
+              <el-select :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" v-model="formData.timingPushCronType" placeholder="时间" clearable style="width: 80px">
+                <el-option
+                    label="秒钟"
+                    :value="1"
+                />
+                <el-option
+                  label="分钟"
+                  :value="2"
+                />
+                <el-option
+                  label="小时"
+                  :value="3"
+                />
+              </el-select>
+              执行一次
+          </el-form-item>
+        </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="12">
           <el-form-item label="变化推送开关" prop="changePush">
             <el-radio-group v-model="formData.changePush" >
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
+          </el-col>
+          <el-col :span="12">
           <el-form-item label="变化推送任务配置" prop="changePushCronValue">
             每
               <el-input prop="changePushCronValue" :disabled="formData.changePush == null || formData.changePush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.changePushCronType == 3 ? 24 : 60" v-model="formData.changePushCronValue" />
@@ -201,14 +243,25 @@
               </el-select>
               执行一次
           </el-form-item>
-          
+        </el-col>
+          </el-row>
+          <el-form-item label="配置推送的mq" prop="pushMqs">
+            <el-checkbox-group :disabled="formData.timingPush == null || formData.alarmPush == null ||formData.changePush == null ||(formData.timingPush === 0 && formData.alarmPush === 0 && formData.changePush === 0)" v-model="formData.pushMqs">
+              <el-checkbox label="1" value="1">kafka</el-checkbox>
+              <el-checkbox label="2" value="2">RocketMQ</el-checkbox>
+              <el-checkbox label="3" value="3">RabbitMQ</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
         </el-col>
       </el-row>
-      <el-row justify="end">
-        <el-button @click="submitForm" type="primary" :disabled="formLoading">保 存</el-button>
-      </el-row>
-    </el-form>
+    </div> -->
+
+    <el-row justify="end">
+      <el-button @click="submitForm" type="primary" :disabled="formLoading">保 存</el-button>
+    </el-row>
+  </el-form>
 </template>
+
 <script setup lang="ts">
 import { DcConfigApi, DcConfigVO } from '@/api/pdu/dcconfig'
 
