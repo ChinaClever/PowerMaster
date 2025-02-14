@@ -69,12 +69,26 @@
       >
         <el-form-item>
           <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
-            全部 
+            全部
           </button>
+           
           <template v-for="(status, index) in statusList" :key="index">
-            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)" style="width:70px;">{{status.name}}</button>
-            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)" style="width:70px;">{{status.name}}</button>
+              <button
+                class="btn_normal normal"
+                @click.prevent="handleSelectStatus(index)"
+                :style="{
+                  backgroundColor: isSelected(index) ? 'white' : status.color,
+                  borderColor: status.color,
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  color:isSelected(index) ? '#000' : 'white'
+                }"
+                style="width: 90px;"
+              >
+                {{ status.name }}
+              </button>
           </template>
+
           <el-button
             type="primary"
             plain
@@ -294,6 +308,10 @@ import { IndexApi } from '@/api/cabinet/index'
 const butColor = ref(0);
 const onclickColor = ref(-1);
 
+// 存储当前选中的按钮索引
+const selectedIndex = ref<number | null>(null);
+const allSelected = ref<boolean>(false);
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -318,7 +336,7 @@ const toCabinetEnvDetail = (row) =>{
   // push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
 }
 
-const statusList = ref([]);
+const statusList:any = ref([]);
 
 const getCabinetColorAll = async () => {
   const res = await IndexApi.getCabinetColorAll()
@@ -493,14 +511,24 @@ const getNavList = async() => {
 
 const handleSelectStatus = (index) => {
   butColor.value = 1;
-  onclickColor.value = index;
+  if(allSelected.value) {
+     allSelected.value = false;
+  }
+  selectedIndex.value = index;
   queryParams.startNum = statusList[index].startNum;
   queryParams.endNum = statusList[index].endNum;
   handleQuery();
 }
 
+// 检查按钮是否被选中（即是否应该变为灰色）
+const isSelected = (index: number): boolean => {
+  return selectedIndex.value !== null && selectedIndex.value !== index;
+};
+
 const toggleAllStatus = () => {
   butColor.value = 0;
+  allSelected.value = !allSelected.value;
+  selectedIndex.value = null;
   onclickColor.value = -1;
   queryParams.startNum = 0;
   queryParams.endNum = 100;
@@ -706,12 +734,11 @@ onActivated(() => {
   }
 }
 .btn_normal {
-  border: 1px solid #3bbb00;
+  border: none;
   background-color: #fff;
   margin-right: 8px;
 }
 .normal {
-  background-color: #3bbb00;
   color: #fff;
   &:hover {
     color: #fff;
