@@ -233,14 +233,14 @@ public class CabinetController {
         return success(cabinetService.getCabinetIndexBalancePage(pageReqVO));
     }
 
-    @PostMapping("/loadPage/detail")
+    @PostMapping("/cabinet/loadPage/detail")
     @Operation(summary = "查询电力负荷详情")
     public CommonResult<CabinetPowerLoadDetailRespVO> getBusDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
         CabinetPowerLoadDetailRespVO detailRespVO = cabinetService.getDetailData(reqVO);
         return success(detailRespVO);
     }
 
-    @PostMapping("/loadPage/chart-detail")
+    @PostMapping("/cabinet/loadPage/chart-detail")
     @Operation(summary = "查询电力负荷详情 折线图数据")
     public CommonResult<Map<String, List<CabinetLoadPageChartResVO>>> getBusLineChartDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
         Map<String, List<CabinetLoadPageChartResVO>> resultMap = cabinetService.getLineChartDetailData(reqVO);

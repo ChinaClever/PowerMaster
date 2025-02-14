@@ -220,7 +220,6 @@ const loadAll = async () => {
   var objectArray = data.map((str) => {
     return { value: str };
   });
-  console.log(objectArray)
   return objectArray;
 }
 
@@ -442,14 +441,14 @@ let myChart3 = null as echarts.ECharts | null;
 
 const getDetailData =async () => {
  try {
-    const data = await CabinetApi.getBusDetailData({
-      id: 178,
-      roomId: 115,
+    const data = await CabinetApi.getCabinetDetailData({
+      // id: 178,
+      // roomId: 115,
       type: 0,
-      //id: history?.state.cabinet,
-      //roomId: history?.state.roomId,
+      id: history?.state.cabinet,
+      roomId: history?.state.roomId,
     });
-    console.log('data1111111111',data);
+    // console.log('data1111111111',data);
     if (data != null){
       hasData.value = true
       runLoad.value = formatNumber(data.runLoad, 2);
@@ -700,7 +699,7 @@ const isHaveData = ref(true)
 
 const updateChart = async (type, visKey) => {
   switchType.value = type; // 设置 switchType
-  console.log(visKey); // 打印当前操作的标识
+  // console.log(visKey); // 打印当前操作的标识
   await getCVLineChartData(); // 获取数据
 
   // 重置所有 visContro 状态
@@ -732,8 +731,8 @@ watch(
 
 // 获取折线图数据
 const getCVLineChartData =async () => {
-  console.log('switchType.value',switchType.value);
-  const data = await CabinetApi.getBusLineChartDetailData({
+  // console.log('switchType.value',switchType.value);
+  const data = await CabinetApi.getCabinetLineChartDetailData({
     //id: 178,
     //roomId: 115,
     id: history?.state.cabinet,
@@ -745,8 +744,8 @@ const getCVLineChartData =async () => {
   curChartData.value = data;
 
   //const data = await CabinetApi.getBusLineChartDetailData(queryParams);
-  console.log('获取折线图数据',data);
-  console.log('curChartData.value',curChartData.value);
+  // console.log('获取折线图数据',data);
+  // console.log('curChartData.value',curChartData.value);
 }
 //const getLineChartData =async () => {
 // try {
@@ -795,7 +794,6 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         curChartData.value = allLineData.value;
-        console.log('1');
         break;
       case '电压':
         curChartData.value = allLineData.value
@@ -822,7 +820,6 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         curChartData.value = allLineData.value;
-        console.log('2');
         break;
       case '电压':
         curChartData.value = allLineData.value;
@@ -849,7 +846,6 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         curChartData.value = allLineData.value;
-        console.log('3');
         break;
       case '电压':
         curChartData.value = allLineData.value;

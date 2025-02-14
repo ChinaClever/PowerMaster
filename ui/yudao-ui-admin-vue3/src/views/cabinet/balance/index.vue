@@ -49,7 +49,7 @@
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
-              <div style="margin-right:30px;margin-left: 5px;">
+              <div style="margin-right:10px;margin-left: 5px;">
                 <div>总视在功率：{{item.powApparentTotal || '0.00'}}kVA</div>
                 <div>A路视在功率：{{item.powApparentA || '0.00'}}kVA</div>
                 <div>B路视在功率：{{item.powApparentB || '0.00'}}kVA</div>
@@ -323,7 +323,8 @@ const balanceObj = reactive({
 })
 
 const getBalanceDetail = async(item) => {
-  const res = await CabinetApi.getDetail({id:item});
+  const data = await CabinetApi.getDetail({id:item});
+  const res =data.redisData
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100

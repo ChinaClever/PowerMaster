@@ -23,12 +23,12 @@ export const CabinetApi = {
   },
 
   //获取电力负荷详情
-  getBusDetailData: async (data: any) => {
-    return await request.post({ url: `/loadPage/detail`, data })
+  getCabinetDetailData: async (data: any) => {
+    return await request.post({ url: `/cabinet/loadPage/detail`, data })
   },
 
   //获取电力负荷详情折线图
-  getBusLineChartDetailData: async (data: any) => {
-    return await request.post({ url: `/loadPage/chart-detail`, data })
+  getCabinetLineChartDetailData: async (data: any) => {
+    return await request.post({ url: `/cabinet/loadPage/chart-detail`, data })
   },
 }
