@@ -1,14 +1,22 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetIndexBoxResVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectKey;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author luowei
@@ -29,4 +37,16 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     CabineIndexCfgVO selectCabineIndexCfgById(int id);
 
     Page<CabineIndexCfgVO> selectIndexLoadPage(@Param("page") Page page, @Param("req") CabinetIndexVo req);
+
+    List<CabineIndexCfgVO> selectIndexLoadPage(@Param("req") CabinetIndexVo req);
+
+    Map<String, Integer> selectLoadStatusCount();
+
+    CabinetCapacityStatisticsResVO getCapacitystatistics();
+
+    List<CabinetPduResVO> selectListAndPdu();
+
+    List<CabinetIndexBoxResVO> selectCabinetBox();
+
+    Page<CabinetCfg> selectCabinetEnvPage(Page page, CabinetIndexVo pageReqVO);
 }

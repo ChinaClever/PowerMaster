@@ -45,6 +45,11 @@ export const IndexApi = {
     return await request.download({ url: `/cabinet/index/export-excel`, params })
   },
 
+  // 获取机架信息
+  getRackByCabinet: async (params: any) => {
+    return await request.get({ url: `/cabinet/index/getRackByCabinet`, params })
+  },
+
   getConsumeData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/ele`,params})
   },
@@ -56,8 +61,8 @@ export const IndexApi = {
   getTemData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/tem`,params})
   },
-  getCabinetEnvPage: async (params) => {
-    return await request.get({ url: `/cabinet/index/env/page`,params})
+  getCabinetEnvPage: async (data : any) => {
+    return await request.post({ url: `/cabinet/env/page`,data})
   },
   getCabinetIceTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/ice`,params})
@@ -67,6 +72,10 @@ export const IndexApi = {
   },
   getCabinetPFLine : async (params) => {
     return await request.get({ url: `/cabinet/index/report/pfline`, params })
+  },
+  // 查询所有颜色
+  getCabinetColorAll : async () => {
+    return await request.get({ url: `/cabinet/tem-color/all` })
   },
 
   idList: async () => {

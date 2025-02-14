@@ -13,7 +13,10 @@
  <!-- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/> -->
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})
+    <div class="header_app_text">
+      <span style="margin-right:10px;">机房：{{ roomName? roomName : '未绑定'}}</span>
+      <span style="margin-right:10px;">名称：{{ busName }}</span>
+      <span style="margin-right:10px;">所在位置：{{ devKey }}</span>
     </div>
     <div class="header_app_text_other1">
           <el-col :span="10">
@@ -144,26 +147,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from 'vue';
 import * as echarts from 'echarts';
-import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 import { ElMessage } from 'element-plus';
-import { formatDate} from '@/utils/formatTime'
+import { formatDate} from '@/utils/formatTime';
 import { has } from 'lodash-es';
-const queryFormRef = ref() // 搜索的表单
+const queryFormRef = ref(); // 搜索的表单
 const input = ref('')
 // const value1 = ref('')
-const hasData = ref(true)
-const location = ref(history?.state?.location)
-const busName = ref(history?.state?.busName)
+const hasData = ref(true);
+const location = ref(history?.state?.location);
+const busName = ref(history?.state?.busName);
+const roomName = ref(history?.state?.roomName);
+const devKey = ref(history?.state?.devKey);
 const instance = getCurrentInstance();
-const typeRadio = ref('电流')
-const timeRadio = ref('近一小时')
-const isHourDisabled = ref(false)
-const isDayAndMonthDisabled = ref(false)
-const isPowActiveDisabled = ref(true)
-const isLoadRateDisabled = ref(false)
-const switchChartContainer = ref(0)
+const typeRadio = ref('电流');
+const timeRadio = ref('近一小时');
+const isHourDisabled = ref(false);
+const isDayAndMonthDisabled = ref(false);
+const isPowActiveDisabled = ref(true);
+const isLoadRateDisabled = ref(false);
+const switchChartContainer = ref(0);
  let intervalId: number | null = null; // 定时器
 const queryParams = reactive({
   id: history?.state?.busId as number | undefined,
@@ -188,7 +193,7 @@ const powReactivepPercentage = ref();
 const loadPercentage = ref();
 const xAxisLabel = ref('');
 
-const devKeyList = ref([])
+const devKeyList = ref([]);
 const loadAll = async () => {
   //debugger
   var data = await BusPowerLoadDetailApi.getBusdevKeyList();
@@ -378,7 +383,7 @@ const initChart1 = () => {
             type: 'pie',
             radius: '50%',
             label: {
-              formatter: '{b}: {d}%',
+              formatter: '{b}: {c}%',
             },
             data: [
               { value: powReactivepPercentage.value, name: '无功功率', },

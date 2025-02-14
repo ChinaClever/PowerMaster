@@ -57,10 +57,6 @@ public interface IndexService {
 
     Map getReportPowDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
-//    Map getReportOutLetDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
-
-    PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO);
-
     Map getCabinetEnvIceTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     Map getCabinetEnvHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
@@ -68,4 +64,6 @@ public interface IndexService {
     Map getCabinetPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     List<Integer> idList();
+
+    List<CabinetRackRspVO> getRackByCabinet(Integer id);
 }

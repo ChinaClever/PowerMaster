@@ -1,9 +1,9 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <div ref="chartDom" :style="{ height, width }"></div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, reactive } from 'vue';
 import * as echarts from 'echarts';
 
 const props = defineProps({
@@ -12,27 +12,18 @@ const props = defineProps({
     required: true
   },
   height: {
-    type: [Number,String],
+    type: [Number, String],
+    default: '300px'
   },
   width: {
-    type: [Number,String],
+    type: [Number, String],
+    default: '300px'
   }
 });
 
 // 使用 ref 来获取 DOM 元素
 const chartDom = ref<HTMLDivElement | null>(null);
 let myChart: echarts.ECharts | null = null;
-
-// 计算每个数据项的百分比
-const dataWithPercent = computed(() => {
-  const total = props.max.L1 + props.max.L2 + props.max.L3;
-  return [
-    
-    { value: props.max.L1, name: 'A相电压',itemStyle: { color: '#075F71' } },
-    { value: props.max.L2, name: 'B相电压' ,itemStyle: { color: '#119CB5' }},
-    { value: props.max.L3, name: 'C相电压',itemStyle: { color: '#45C0C9' } }
-  ];
-});
 
 // 图表配置
 const echartsOption = reactive({
@@ -52,7 +43,7 @@ const echartsOption = reactive({
       },
       label: {
         show: true,
-        position: 'inside', // 将标签显示在饼图内部
+        position: 'inside',
         formatter: (params) => {
           return `${params.value}V`;
         },
@@ -70,17 +61,55 @@ const echartsOption = reactive({
         show: false
       },
       padAngle: 1,
-      data: dataWithPercent.value
+      data: []
     }
   ]
 });
 
-// 组件挂载时初始化图表
-onMounted(() => {
+// 初始化图表
+const initChart = () => {
   if (chartDom.value) {
     myChart = echarts.init(chartDom.value);
-    myChart.setOption(option);
+    myChart.setOption(echartsOption);
   }
+};
+
+// 更新图表数据
+const updateChart = () => {
+  if (myChart) {
+    myChart.setOption({
+      series: [
+        {
+          data: echartsOption.series[0].data
+        }
+      ]
+    });
+  }
+};
+
+// 计算每个数据项的百分比
+watch(
+  () => props.max,
+  (newMax) => {
+    const total = newMax.L1 + newMax.L2 + newMax.L3;
+    echartsOption.series[0].data = [
+      { value: newMax.L1, name: 'A相电压', itemStyle: { color: '#075F71' } },
+      { value: newMax.L2, name: 'B相电压', itemStyle: { color: '#119CB5' } },
+      { value: newMax.L3, name: 'C相电压', itemStyle: { color: '#45C0C9' } }
+    ];
+    updateChart();
+  },
+  { deep: true }
+);
+
+// 组件挂载时初始化图表
+onMounted(() => {
+  initChart();
+  // 初始化数据
+  watch(
+    () => props.max,
+    { immediate: true }
+  );
 });
 
 // 组件卸载时销毁图表

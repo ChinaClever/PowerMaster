@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekDo;
@@ -25,6 +26,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -40,6 +42,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
@@ -53,6 +56,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -79,6 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -87,10 +92,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
@@ -101,6 +103,8 @@ import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_API_AUDIT_FAIL;
 
 /**
  * 始端箱索引 Service 实现类
@@ -132,6 +136,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
 
     public static final String REDIS_KEY_CABINET = "packet:cabinet:";
 
@@ -182,6 +189,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException {
         // 返回数据
+        BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaUpdateWrapper<BusIndexDO>().eq(BusIndexDO::getBusKey, pageReqVO.getDevKey()).last("limit 1"));
         BusPowerLoadDetailRespVO respVO = new BusPowerLoadDetailRespVO();
         String startTime;
         String endTime;
@@ -194,12 +202,12 @@ public class BusIndexServiceImpl implements BusIndexService {
                 startTime = localDateTimeToString(LocalDateTime.now().minusHours(1));
                 endTime = localDateTimeToString(LocalDateTime.now());
                 searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                        .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                        .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             } else {
                 startTime = localDateTimeToString(pageReqVO.getOldTime());
                 endTime = localDateTimeToString(pageReqVO.getNewTime());
                 searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                        .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                        .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             }
             searchSourceBuilder.sort("pow_apparent", SortOrder.DESC);
             // 执行搜索
@@ -225,7 +233,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             endTime = localDateTimeToString(LocalDateTime.now());
             searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                    .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                    .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             searchSourceBuilder.sort("pow_apparent_max_value", SortOrder.DESC);
             // 执行搜索
             searchRequest.source(searchSourceBuilder);
@@ -719,22 +727,9 @@ public class BusIndexServiceImpl implements BusIndexService {
         String startTime = localDateTimeToString(pageReqVO.getOldTime());
         String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        builder.size(1);
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
-                .gte(startTime).lt(endTime))));
-        builder.sort("cur_max_value", SortOrder.DESC);
-//        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
-        // 设置搜索条件
-        searchRequest.source(builder);
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
-        LineMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineMaxResVO.class);
+        String mess = getSearchResponse(index, startTime, endTime);
+        if (mess == null) return null;
+        LineMaxResVO resVO = JsonUtils.parseObject(mess, LineMaxResVO.class);
         if (Objects.nonNull(resVO)) {
             BusIndexDO busIndexDO = busIndexMapper.selectById(resVO.getBusId());
             resVO.setDevKey(busIndexDO.getBusKey());
@@ -783,6 +778,32 @@ public class BusIndexServiceImpl implements BusIndexService {
         return resVO;
     }
 
+    private String getSearchResponse(String index, String startTime, String endTime) throws IOException {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.size(1);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                    .gte(startTime).lt(endTime))));
+            builder.sort("cur_max_value", SortOrder.DESC);
+//        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
+            // 设置搜索条件
+            searchRequest.source(builder);
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse.getHits().getTotalHits().value == 0) {
+                return null;
+            }
+            return searchResponse.getHits().getAt(0).getSourceAsString();
+        }catch (Exception e){
+            log.error("母线需量报错"+e);
+            return null;
+        }
+    }
+
     @Override
     public BusIndexStatisticsResVO getBusIndexStatistics() {
         return busIndexMapper.selectBusIndexStatistics();
@@ -805,10 +826,82 @@ public class BusIndexServiceImpl implements BusIndexService {
         Map<String, String> positionByKey = getPositionByKey(list);
         vo.setLocation(positionByKey.get(busIndexDO.getBusKey()));
         vo.setDevKey(busIndexDO.getBusKey());
-        vo.setPowApparent(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("pow_apparent"));
         vo.setRunStatus(busIndexDO.getRunStatus());
-        vo.setPowerFactor(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("power_factor"));
+        if (Objects.nonNull(jsonObject)) {
+            vo.setPowApparent(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("pow_apparent"));
+            vo.setPowerFactor(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("power_factor"));
+        }
         return vo;
+    }
+
+
+    public List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) {
+
+        String devKey = pageReqVO.getDevKey();
+
+        QueryWrapper<BoxIndex> queryWrapper = new QueryWrapper();
+        queryWrapper.select("box_key","run_status");
+        queryWrapper.eq("bus_key", devKey);
+        List<BoxIndex> boxIndexList = boxIndexMapper.selectList(queryWrapper);
+        List<String> boxKeyList = new ArrayList<>();
+        List<BoxReportcopyResVO> vos = new ArrayList<>();
+        for (BoxIndex boxIndex : boxIndexList) {
+            BoxReportcopyResVO vo = new BoxReportcopyResVO();
+            vo.setDevKey(boxIndex.getBoxKey());
+            vo.setRunStatus(boxIndex.getRunStatus());
+            ValueOperations ops = redisTemplate.opsForValue();
+            JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+            // 获取 box_name 字段的值
+            if (Objects.isNull(jsonObject)){
+                vos.add(vo);
+                return vos;
+            }
+            String boxName = jsonObject.getString("box_name");
+            vo.setBoxName(boxName);
+            // 获取 box_total_data 中的 pow_apparent 字段的值
+            JSONObject boxData1 = jsonObject.getJSONObject("box_data");
+            JSONObject boxTotalData = boxData1.getJSONObject("box_total_data");
+            if (boxTotalData != null) {
+                Double powApparent = boxTotalData.getDouble("pow_apparent");
+                vo.setPowApparent(powApparent);
+                System.out.println("box_total_data.pow_apparent: " + powApparent);
+            } else {
+                System.out.println("box_total_data is null");
+            }
+            // 获取 outlet_item_list 中的 pow_active 数组的值
+            JSONObject boxData = jsonObject.getJSONObject("box_data");
+            if (boxData != null) {
+                JSONObject outletItemList = boxData.getJSONObject("outlet_item_list");
+                if (outletItemList != null) {
+                    JSONArray powActiveArray = outletItemList.getJSONArray("pow_active");
+                    if (powActiveArray != null) {
+                        for (int i = 0; i < powActiveArray.size(); i++) {
+                            Double powActiveValue = powActiveArray.getDouble(i);
+                            if (i == 0) {
+                                vo.setPowActiveOne(powActiveValue);
+                            } else if (i == 1) {
+                                vo.setPowActiveTwo(powActiveValue);
+                            } else if (i == 2) {
+                                vo.setPowActiveThree(powActiveValue);
+                            }
+                            System.out.println("outlet_item_list.pow_active[" + i + "]: " + powActiveValue);
+                        }
+                    } else {
+                        System.out.println("outlet_item_list.pow_active array is null");
+                    }
+                } else {
+                    System.out.println("outlet_item_list is null");
+                }
+            } else {
+                System.out.println("box_data is null");
+            }
+            vos.add(vo);
+            if (jsonObject != null){
+                boxKeyList.add(jsonObject.toJSONString());
+            }
+        }
+        return vos;
+
     }
 
     @Override
@@ -932,6 +1025,18 @@ public class BusIndexServiceImpl implements BusIndexService {
             log.error("获取数据失败：", e);
             return null;
         }
+    }
+
+    @Override
+    public List<String> findKeys(String key) {
+        if (key == null || key.length()<8){
+            throw exception(KEY_SHORT);
+        }
+        Integer flag = 0;
+        if (key.length()<=10){
+            flag =1;
+        }
+        return busIndexMapper.findKeys(key,flag);
     }
 
     @Override
@@ -1508,7 +1613,12 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO) {
         try {
-            List<BusIndexDO> searchList = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>().inIfPresent(BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()));
+            LambdaQueryWrapper<BusIndexDO> queryWrapper = new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,0);
+            if (ObjectUtils.isNotEmpty(pageReqVO.getDevKey()) || ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList())){
+                queryWrapper.and(wq ->wq.in(ObjectUtils.isNotEmpty(pageReqVO.getBusDevKeyList()),BusIndexDO::getBusKey, pageReqVO.getBusDevKeyList()).or()
+                        .likeLeft(ObjectUtils.isNotEmpty(pageReqVO.getDevKey()), BusIndexDO::getBusKey, pageReqVO.getDevKey()));
+            }
+            List<BusIndexDO> searchList = busIndexMapper.selectList(queryWrapper);
 
             if (CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);
@@ -1560,30 +1670,30 @@ public class BusIndexServiceImpl implements BusIndexService {
 
                 MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
                 busLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
-                busLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                busLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 MaxValueAndCreateTime curl2 = curMap.get(id).get(2);
                 if (curl2 != null) {
                     busLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
-                    busLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 MaxValueAndCreateTime curl3 = curMap.get(id).get(3);
                 if (curl3 != null) {
                     busLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
-                    busLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
 
                 MaxValueAndCreateTime powl1 = powMap.get(id).get(1);
                 busLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
-                busLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                busLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 MaxValueAndCreateTime powl2 = powMap.get(id).get(2);
                 if (powl2 != null) {
                     busLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
-                    busLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 MaxValueAndCreateTime powl3 = powMap.get(id).get(3);
                 if (powl3 != null) {
                     busLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
-                    busLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    busLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 result.add(busLineRes);
             }
@@ -2201,53 +2311,57 @@ public class BusIndexServiceImpl implements BusIndexService {
             String startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
             String endTime = DateUtil.formatDateTime(TimeUtil.getEndOfDay(calendar.getTime()));
 
-            log.info("startTime : " + startTime + "endTime：" + endTime);
+            LocalDate old = LocalDate.now().minusDays(1);
+            LocalDate now = LocalDate.now();
+            List<BusActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
+            for (int i = 0; i < 24; i++) {
+                String oldDay = LocalDateTimeUtil.format(LocalDateTime.of(old, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
+                dto.setDateTime(oldDay);
+                dto.setActivePow("0");
+                yesterdayList.add(dto);
+                BusActivePowTrendDTO dto1 = new BusActivePowTrendDTO();
+                String nowDay = LocalDateTimeUtil.format(LocalDateTime.of(now, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                dto1.setDateTime(nowDay);
+                dto1.setActivePow("");
+                todayList.add(dto1);
+            }
             //获取昨日数据
             List<String> yesterdayData = getData(startTime, endTime, vo, "bus_hda_total_hour");
 
 
-            List<BusActivePowTrendDTO> yesterdayList = new ArrayList<>();
+//            List<BusActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            Map<String, BusActivePowTrendDTO> yesMap = yesterdayList.stream().collect(Collectors.toMap(BusActivePowTrendDTO::getDateTime, x -> x));
             yesterdayData.forEach(str -> {
                 BusTotalHourDo hourDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
-                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
-                dto.setActivePow(hourDo.getPowActiveAvgValue());
                 String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                yesterdayList.add(dto);
+                BusActivePowTrendDTO dto = yesMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getPowActiveAvgValue(),3)));
             });
-
 
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
             endTime = DateUtil.formatDateTime(DateTime.now());
-
-            log.info("startTime : " + startTime + "endTime：" + endTime);
             //获取今日数据
-            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
-
+//            List<BusActivePowTrendDTO> todayList = new ArrayList<>();
+            Map<String, BusActivePowTrendDTO> todayMap = todayList.stream().collect(Collectors.toMap(BusActivePowTrendDTO::getDateTime, x -> x));
             List<String> todayData = getData(startTime, endTime, vo, "bus_hda_total_hour");
             todayData.forEach(str -> {
                 BusTotalHourDo hourDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
                 String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
-                BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
-                if (Objects.isNull(dto)) {
-                    dto = new BusActivePowTrendDTO();
-                }
-                dto.setActivePow(hourDo.getPowActiveAvgValue());
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                todayList.add(dto);
+                BusActivePowTrendDTO dto = todayMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getPowActiveAvgValue(),3)));
             });
 
             powDTO.setYesterdayList(yesterdayList);
             powDTO.setTodayList(todayList);
             //获取峰值
-            BusActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
-            BusActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
-            powDTO.setTodayMax(todayMax.getActivePow());
+            BusActivePowTrendDTO yesterdayMax = yesterdayList.stream().filter(i-> ObjectUtils.isNotEmpty(i.getActivePow())).max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
+            BusActivePowTrendDTO todayMax = todayList.stream().filter(i-> ObjectUtils.isNotEmpty(i.getActivePow())).max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
+            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
             powDTO.setTodayMaxTime(todayMax.getDateTime());
             powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(yesterdayMax.getActivePow());
+            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
 
             return powDTO;
         } catch (Exception e) {
@@ -2445,6 +2559,10 @@ public class BusIndexServiceImpl implements BusIndexService {
         result.put("activePowMaxTime", null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime", null);
+        result.put("reactivePowMaxTime",null);
+        result.put("reactivePowMaxValue", null);
+        result.put("reactivePowMinTime",null);
+        result.put("reactivePowMinValue", null);
         try {
             BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getBusKey, devKey));
 
@@ -2473,6 +2591,9 @@ public class BusIndexServiceImpl implements BusIndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
+                totalLineRes.getSeries().add(totalReactivePow);
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
 
@@ -2481,6 +2602,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
 
                     });
@@ -2488,6 +2610,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
                         totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                     });
@@ -2503,6 +2626,11 @@ public class BusIndexServiceImpl implements BusIndexService {
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_active_min_value");
                 BusTotalHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, BusTotalHourDo.class);
 
+                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_max_value");
+                BusTotalHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, BusTotalHourDo.class);
+                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_min_value");
+                BusTotalHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, BusTotalHourDo.class);
+
                 result.put("totalLineRes", totalLineRes);
 
                 result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
@@ -2513,6 +2641,10 @@ public class BusIndexServiceImpl implements BusIndexService {
                 result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
                 result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMaxValue", totalMaxReactive.getPowReactiveMaxValue());
+                result.put("reactivePowMaxTime", totalMaxReactive.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("reactivePowMinValue", totalMinReactive.getPowReactiveMinValue());
+                result.put("reactivePowMinTime", totalMinReactive.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
             }
         } catch (Exception e) {
@@ -2651,6 +2783,8 @@ public class BusIndexServiceImpl implements BusIndexService {
             return jsonObject != null ? jsonObject.toJSONString() : null;
         }
     }
+
+
 
     @Override
     public PageResult<BusIndexRes> getDeletedPage(BusIndexPageReqVO pageReqVO) {
@@ -3308,7 +3442,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
                     .must(QueryBuilders.termsQuery("bus_id", ids))));
-            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+//            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(2000);

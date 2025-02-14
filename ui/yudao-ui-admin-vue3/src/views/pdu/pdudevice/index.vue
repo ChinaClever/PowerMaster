@@ -2,11 +2,6 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="PDU配电">
     <template #NavInfo>
       <div>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-
-        </div> -->
-        <!-- <div class="line"></div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -33,8 +28,6 @@
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div>
-        <div class="line"></div>
-
       </div>
     </template>
     <template #ActionBar>
@@ -145,7 +138,7 @@
       </el-form>      
     </template>
     <template #Content >
-     <div v-if="switchValue && list.length > 0" style="height: 720px;overflow: hidden;overflow-y: auto;margin-top: -10px;">
+     <div v-if="switchValue && list.length > 0" class="table-height">
       <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -202,7 +195,7 @@
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
-              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
             详情
             </el-button>
@@ -252,7 +245,7 @@
           @pagination="getDeletedList"
         />               
       <!-- 阵列模式分页 --> 
-      <div class="arrayContainer" v-show="!switchValue && list.length > 0"> 
+      <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -336,11 +329,11 @@ import { get } from 'http';
 defineOptions({ name: 'PDUDevice' });
 
 const { push } = useRouter();
-const navList = ref([]) as any // 左侧导航栏树结构列表
+const navList = ref([]) as any; // 左侧导航栏树结构列表
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48,96])
-const switchValue = ref(0)
+const pageSizeArr = ref([24,36,48,96]);
+const switchValue = ref(0);
 const showPagination = ref(0);
 
 const butColor = ref(0);
@@ -360,7 +353,6 @@ const loadAll = async () => {
   var objectArray = data.map((str) => {
     return { value: str };
   });
-  console.log(objectArray)
   return objectArray;
 }
 
@@ -443,28 +435,27 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.cabinetIds = null;
-    queryDeletedPageParams.cabinetIds = null;
+    queryParams.pduKeyList = null;
     getDeletedList();
     getList();
     return;
   }
-  const ids = [] as any
+  const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 4) {
+      pduKeys.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
-    queryDeletedPageParams.cabinetIds = [-1]
-  }else{
-    queryParams.cabinetIds = ids
-    queryDeletedPageParams.cabinetIds = ids
-  }
 
+    queryParams.pduKeyList = [-1]
+    queryDeletedPageParams.pduKeyList = [-1]
+  }else{
+    queryParams.pduKeyList = pduKeys
+    queryDeletedPageParams.pduKeyList = pduKeys
+  }
   getList();
   getDeletedList();
 }
@@ -541,6 +532,7 @@ const queryParamsAll = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds:[],
+  pduKeyList:[] ,
 }) as any
 const queryDeletedPageParams = reactive({
   pageNo: 1,
@@ -560,18 +552,13 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams);
-    console.log('data',data);
     list.value = data.list
     var tableIndex = 0;
-    // var normal = 0;
-    // var offline = 0;
-    // var alarm = 0;
-    // var warn = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
-        //offline++;
+
         return;
       }
       const splitArray = obj.dataUpdateTime.split(' ');
@@ -582,35 +569,8 @@ const getList = async () => {
       obj.ele = obj.ele.toFixed(1);
       obj.pf = obj.pf.toFixed(2);
       
-      // if(obj.status == 0){
-      //   normal++;
-      // } else if (obj.status == 1){
-      //   warn++;
-      // } else if (obj.status == 2){
-      //   alarm++;
-      // } 
     });
-    // const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
-    // allList.value = allData.list
-    // allList.value.forEach((objAll) => {
-    //   if(objAll?.dataUpdateTime == null && objAll?.pow == null){
-    //     objAll.status = 5;
-    //     offline++;
-    //     return;
-    //   }  
-    //   if(objAll?.status == 0){
-    //     normal++;
-    //   } else if (objAll?.status == 1){
-    //     warn++;
-    //   } else if (objAll?.status == 2){
-    //     alarm++;
-    //   }          
-    // });    
-    //设置左边数量
-    // statusNumber.normal = normal;
-    // statusNumber.offline = offline;
-    // statusNumber.alarm = alarm;
-    // statusNumber.warn = warn;
+
     total.value = data.total;
     getListAll();
   } finally {
@@ -641,10 +601,6 @@ const getListNoLoading = async () => {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
     list.value = data.list
     var tableIndex = 0;
-    // var normal = 0;
-    // var offline = 0;
-    // var alarm = 0;
-    // var warn = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
@@ -659,36 +615,8 @@ const getListNoLoading = async () => {
       obj.pow = obj?.pow?.toFixed(3);
       obj.ele = obj?.ele?.toFixed(1);
       obj.pf = obj?.pf?.toFixed(2);
-
-      // if(obj?.status == 0){
-      //   normal++;
-      // } else if (obj?.status == 1){
-      //   warn++;
-      // } else if (obj?.status == 2){
-      //   alarm++;
-      // }
     });
-    // const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
-    // allList.value = allData.list
-    // allList.value.forEach((objAll) => {
-    //   if(objAll?.dataUpdateTime == null && objAll?.pow == null){
-    //     objAll.status = 5;
-    //     offline++;
-    //     return;
-    //   }  
-    //   if(objAll?.status == 0){
-    //     normal++;
-    //   } else if (objAll?.status == 1){
-    //     warn++;
-    //   } else if (objAll?.status == 2){
-    //     alarm++;
-    //   }          
-    // });
-    // //设置左边数量
-    // statusNumber.normal = normal;
-    // statusNumber.offline = offline;
-    // statusNumber.alarm = alarm;
-    // statusNumber.warn = warn;
+
 
     total.value = data.total
   } catch (error) {
@@ -711,12 +639,9 @@ const getListAll = async () => {
 
 // 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
@@ -831,10 +756,10 @@ onMounted(async () => {
   getListAll();
   // flashListTimer.value = setInterval(() => {
   //        setTimeout(() => {
-  //         //getList()
+  //         getList()
   //      }, 0);
-  // }, 5000);
-  flashListTimer.value = setInterval((getList), 5000);
+  // }, 10000);
+  flashListTimer.value = setInterval((getList), 10000);
 })
 
 onBeforeUnmount(()=>{
@@ -1175,9 +1100,15 @@ onActivated(() => {
 }
 
 @media screen and (min-width:2048px){
+  .table-height{
+    height: 76vh;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top:-10px;
+  }
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 78vh;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1255,6 +1186,12 @@ onActivated(() => {
 }
 
 @media screen and (max-width:2048px) and (min-width:1600px) {
+  .table-height{
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top:-10px;
+  }
   .arrayContainer {
     width:100%;
     height: 720px;
@@ -1336,9 +1273,15 @@ onActivated(() => {
 }
 
 @media screen and (max-width:1600px) {
+  .table-height{
+    height: 600px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-top:-10px;
+  }
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 600px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;

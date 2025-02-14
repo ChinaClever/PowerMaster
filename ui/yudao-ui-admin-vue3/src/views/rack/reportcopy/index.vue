@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="机架报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true"  :load="loadNode" navTitle="机架报表">
     <template #NavInfo>
       <div >
         <br/>
@@ -234,6 +234,9 @@ import { ElTree } from 'element-plus'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 
 
 /** PDU设备 列表 */
@@ -716,6 +719,52 @@ onMounted( async () =>  {
   // initChart();
 
   idList.value = await loadAll();
+
+
+  let id = route.query?.id as string | undefined;
+  let Type = route.query?.Type as string | undefined;
+
+  if (id != undefined) {
+    queryParams.id = id;
+    console.log("id",Type);
+    if (Type == '0') {
+      queryParams.timeType = 0;
+      console.log('1111')
+      now.value = new Date();
+      console.log('222')
+      now.value.setHours(0,0,0,0);
+      console.log('333',now)
+      queryParams.oldTime = getFullTimeByDate(now.value);
+      console.log('444')
+      queryParams.newTime = null;
+      console.log('555')
+      queryParams.timeArr = null;
+      console.log('666')
+      visControll.visAllReport = false;
+      console.log('777')
+      switchValue.value = 0;
+      console.log('888')
+      await handleDayPick();
+      await handleQuery();
+      await handleQuery();
+    }else {
+      console.log("id111111",Type);
+      queryParams.timeType = 1;
+      now.value = new Date();
+      now.value.setDate(1);
+      now.value.setHours(0,0,0,0);
+      queryParams.oldTime = getFullTimeByDate(now.value);
+      queryParams.newTime = null;
+      queryParams.timeArr = null;
+      visControll.visAllReport = false;
+      switchValue.value = 1;
+      await handleMonthPick();
+      await handleQuery();
+      await handleQuery();
+    }
+  }
+
+
 })
 </script>
 <style scoped lang="scss">

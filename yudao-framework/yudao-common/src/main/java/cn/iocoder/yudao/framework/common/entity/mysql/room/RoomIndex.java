@@ -23,7 +23,7 @@ public class RoomIndex implements Serializable {
 
     @Schema(description = "机房id", example = "2")
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
 
     /**

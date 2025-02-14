@@ -1,10 +1,10 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <div ref="chartDom" :style="{height: height, width: width}"></div>
 </template>
 
 <script setup lang="ts">
-import 'echarts'
-import { reactive, watch, defineProps, onUnmounted } from 'vue';
+import * as echarts from 'echarts';
+import { ref, watch, defineProps, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   max: {
@@ -12,29 +12,29 @@ const props = defineProps({
     required: true
   },
   height: {
-    type: [Number,String],
+    type: [Number, String],
+    default: '300px'
   },
   width: {
-    type: [Number,String],
+    type: [Number, String],
+    default: '300px'
   }
 });
 
+console.log('maxdata111111111',props.max);
 // 使用 ref 来获取 DOM 元素
 const chartDom = ref<HTMLDivElement | null>(null);
 let myChart: echarts.ECharts | null = null;
 
 // 计算每个数据项的百分比
-const dataWithPercent = computed(() => {
-  const total = props.max.L1 + props.max.L2 + props.max.L3;
-  return [
-  { value: props.max.L1, name: 'A相电流', percent: ((props.max.L1 / total) * 100).toFixed(2) + '%' ,itemStyle: { color: '#E5B849' }},
-    { value: props.max.L2, name: 'B相电流', percent: ((props.max.L2 / total) * 100).toFixed(2) + '%' ,itemStyle: { color: '#C8603A' }},
-    { value: props.max.L3, name: 'C相电流', percent: ((props.max.L3 / total) * 100).toFixed(2) + '%' ,itemStyle: { color: '#AD3762' }}
-  ];
-});
+const dataWithPercent = ref([
+  { value: 0, name: 'A相电流', percent: '0%', itemStyle: { color: '#E5B849' }},
+  { value: 0, name: 'B相电流', percent: '0%', itemStyle: { color: '#C8603A' }},
+  { value: 0, name: 'C相电流', percent: '0%', itemStyle: { color: '#AD3762' }}
+]);
 
 // 图表配置
-const echartsOption = reactive({
+const echartsOption = {
   tooltip: {
     trigger: 'item',
     formatter: function (params: any) {
@@ -64,14 +64,69 @@ const echartsOption = reactive({
       data: dataWithPercent.value
     }
   ]
-});
+};
+
+// 初始化图表
+const initChart = () => {
+  if (chartDom.value) {
+    myChart = echarts.init(chartDom.value);
+    myChart.setOption(echartsOption);
+  }
+};
+
+// 更新图表数据
+const updateChart = () => {
+  if (myChart) {
+    myChart.setOption({
+      series: [
+        {
+          data: dataWithPercent.value
+        }
+      ]
+    });
+  }
+};
+
+// 监听 max 变化并更新数据
+watch(() => props.max, (newMax) => {
+  const total = newMax.L1 + newMax.L2 + newMax.L3;
+  dataWithPercent.value = [
+    { 
+      value: newMax.L1, 
+      name: 'A相电流', 
+      percent: ((newMax.L1 / total) * 100).toFixed(2) + '%', 
+      itemStyle: { color: '#E5B849' } 
+    },
+    { 
+      value: newMax.L2, 
+      name: 'B相电流', 
+      percent: ((newMax.L2 / total) * 100).toFixed(2) + '%', 
+      itemStyle: { color: '#C8603A' } 
+    },
+    { 
+      value: newMax.L3, 
+      name: 'C相电流', 
+      percent: ((newMax.L3 / total) * 100).toFixed(2) + '%', 
+      itemStyle: { color: '#AD3762' } 
+    }
+  ];
+  updateChart();
+}, { deep: true });
+
+watch(() => props.max, (newVal) => {
+  echartsOption.series[0].data = dataWithPercent.value;
+  if (myChart) {
+    myChart.setOption({
+      series: [{
+        data: dataWithPercent.value
+      }]
+    });
+  }
+}, { deep: true });
 
 // 组件挂载时初始化图表
 onMounted(() => {
-  if (chartDom.value) {
-    myChart = echarts.init(chartDom.value);
-    myChart.setOption(option);
-  }
+  initChart();
 });
 
 // 组件卸载时销毁图表
@@ -83,7 +138,6 @@ onUnmounted(() => {
 });
 </script>
 
-
 <style lang="scss" scoped>
-
+/* 图表容器样式 */
 </style>

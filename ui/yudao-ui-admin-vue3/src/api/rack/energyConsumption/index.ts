@@ -4,8 +4,8 @@ import request from '@/config/axios'
 export const EnergyConsumptionApi = {
 
   // 查询机架电量数据分页
-  getEQDataPage: async (params: any) => {
-    return await request.get({ url: `/rack/eq-data/page`, params })
+  getEQDataPage: async (data: any) => {
+    return await request.post({ url: `/rack/eq-data/page`, data })
   },
 
    // 查询机架电量费数据分页

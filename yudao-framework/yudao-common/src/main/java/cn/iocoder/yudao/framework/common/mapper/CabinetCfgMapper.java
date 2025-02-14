@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetRunStatusVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
+import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,7 +40,7 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
      * 查询全部的机柜配电状态
      * @return
      */
-    Map<String,Integer> selectRunStatus();
+    CabinetRunStatusResVO selectRunStatus();
 
     /**
      * 设备恢复

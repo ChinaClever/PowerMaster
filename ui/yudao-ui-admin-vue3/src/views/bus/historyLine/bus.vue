@@ -914,7 +914,6 @@ function totalRealtimeLegendListener(realtimeChart) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
-  debugger
   var tooltipContent = ''; 
   params.forEach(function(item) {
     switch( item.seriesName ){
@@ -1380,10 +1379,16 @@ onMounted( async () => {
   const queryBusId = useRoute().query.busId as string  | undefined;
   const queryLocation = useRoute().query.location as string;
   queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
+  console.log('cesi',queryLocation)
   if (queryParams.busId != undefined){
     await getList(); 
-    nowAddress.value = queryLocation
-    nowAddressTemp.value = queryLocation
+    if (queryLocation) {
+      nowAddress.value = '';
+    }else{
+      nowAddress.value = queryLocation;
+      nowAddressTemp.value = queryLocation
+    }
+    
     initChart();
   }
 })

@@ -16,7 +16,7 @@ public class RoomCfg implements Serializable {
 
     @Schema(description = "机房配置id", example = "2")
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     @Schema(description = "关联机房id", example = "2")
     private int roomId;

@@ -174,18 +174,19 @@
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
+          <div class="content" style="padding-left: 50px;">
+            <div class="info" >                  
+              <div  v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
+              <div  v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
+              <div  v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
+            </div> 
             <div class="icon">
               <div v-if="item.acurThd != null">
                 <br/>
                 电流谐波
               </div> 
             </div>
-            <div class="info" >                  
-              <div  v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
-              <div  v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
-              <div  v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
-            </div>          
+                     
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <!-- <div class="status" v-if="valueMode == 0">
@@ -286,18 +287,18 @@
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
+          <div class="content" style="padding-left: 50px;">
+            <div class="info" >                  
+              <div  v-if="item.avolThd != null">Ua:{{item.avolThd}}</div>
+              <div  v-if="item.bvolThd != null">Ub:{{item.bvolThd}}</div>
+              <div  v-if="item.cvolThd != null">Uc:{{item.cvolThd}}</div>
+            </div> 
             <div class="icon">
               <div v-if="item.avolThd != null">
                 <br/>
                 电压谐波
               </div> 
-            </div>
-            <div class="info" >                  
-              <div  v-if="item.avolThd != null">Ua:{{item.avolThd}}</div>
-              <div  v-if="item.bvolThd != null">Ub:{{item.bvolThd}}</div>
-              <div  v-if="item.cvolThd != null">Uc:{{item.cvolThd}}</div>
-            </div>          
+            </div>         
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <!-- <div class="status" v-if="valueMode == 0">
@@ -554,13 +555,36 @@ const getList = async () => {
 
 const getListAll = async () => {
   try {
+    const data = await IndexApi.getBusHarmonicPage(queryParams)
+
     const allData = await IndexApi.getBusIndexStatistics()
     //设置左边数量
-    statusNumber.normal = allData.normal;
-    statusNumber.offline = allData.offline;
-    statusNumber.alarm = allData.alarm;
-    statusNumber.warn = allData.warn;
-    busTotal.value = allData.total
+    if(allData) {
+      statusNumber.normal = allData.normal;
+      statusNumber.offline = allData.offline;
+      statusNumber.alarm = allData.alarm;
+      statusNumber.warn = allData.warn;
+      busTotal.value = allData.total
+    }
+    
+    list.value = data.list
+    console.log('list.value',list.value)
+    var tableIndex = 0;
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.acurThd == null){
+        return;
+      } 
+      obj.acurThd = obj.acurThd?.toFixed(2);
+      obj.bcurThd = obj.bcurThd?.toFixed(2);
+      obj.ccurThd = obj.ccurThd?.toFixed(2);
+      obj.avolThd = obj.avolThd?.toFixed(2);
+      obj.bvolThd = obj.bvolThd?.toFixed(2);
+      obj.cvolThd = obj.cvolThd?.toFixed(2);
+    });
+
+    list.value = data.list
   } catch (error) {
     
   }
@@ -586,7 +610,7 @@ const toDetail = (row) =>{
   console.log('row',row);
   const devKey = row.devKey;
   const busId = row.busId;
-  const location = row.location ? row.location : devKey;
+  const location = row.location;
   const busName = row.busName;
   push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location , busName}});
 }
@@ -675,7 +699,7 @@ onMounted(async () => {
   getNavList();
   getListAll();
 
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -984,7 +1008,7 @@ onActivated(() => {
     padding-top: 40px;
     position: relative;
     .content {
-      padding-left: 20px;
+      padding-left: 50px;
       display: flex;
       align-items: center;
       .count_img {

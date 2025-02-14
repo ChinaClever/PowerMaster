@@ -6,30 +6,41 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>正常
+              <div class="tag empty"></div>未绑定
             </div>
-            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
+            <div class="value"><span class="number">{{Unbound}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载
+              <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
+            <div class="value"><span class="number">{{Normal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
+            <div class="value"><span class="number">{{Warning}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">{{sumInform}}</span>个</div>
+            <div class="value"><span class="number">{{Alarm}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">{{Offline}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div></div>全部
+            </div>
+            <div class="value"><span class="number">{{totalAll}}</span>个</div>
           </div>
         </div>
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -49,14 +60,15 @@
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
             <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
+          <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
         </el-form-item>
-        <div>
+        <div style="margin-left:10px;">
           <el-form-item v-show="switchValue"  label="公司名称" prop="company">
             <el-input
               v-model="queryParams.company"
               placeholder="请输入公司名称"
               clearable
-              class="!w-160px"
+              class="!w-130px"
               height="35"
             />
           </el-form-item >
@@ -72,15 +84,18 @@
               collapse-tags />
           </el-form-item>
           <el-form-item>
-            <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
-            <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
+            <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData()"><Icon icon="ep:search" />搜索</el-button>
+            <!--<el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>-->
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0);showPagination = 0;" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
+          <!-- <el-button @click="handleSwitchModal(0);showPagination = 0;" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
           <el-button @click="handleSwitchModal(1);showPagination = 0;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
-          
-          <el-button @click="handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
+          <el-button @click="handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button> -->
+
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0);switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1);switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchLogicRemoveModal(2,true);switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
           <!--  <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button> 
   --> 
          
@@ -88,8 +103,8 @@
       </el-form>
     </template>
     <template #Content>
-      <div v-show="switchValue && listPage.length > 0" style="height:710px">
-        <el-table v-show="switchValue == 1"  style="height: 710px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <div v-if="switchValue && listPage.length > 0" class="table-height">
+        <el-table v-show="switchValue == 1" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -106,11 +121,13 @@
         <el-table-column v-if="queryParams.showCol.includes(3)" label="总电能(kWh)" min-width="110" align="center" prop="eleTotal" />
         <el-table-column v-if="queryParams.showCol.includes(5)" label="A视在功率(kVA)" min-width="140" align="center" prop="apparentA" />
         <el-table-column v-if="queryParams.showCol.includes(6)" label="A有功功率(kW)" min-width="130" align="center" prop="activeA" />
+        <el-table-column v-if="queryParams.showCol.includes(17)" label="A无功功率(kVar)" min-width="130" align="center" prop="reactiveA"/>
         <el-table-column v-if="queryParams.showCol.includes(7)" label="A电能(kWh)" min-width="110" align="center" prop="eleA" />
         <el-table-column v-if="queryParams.showCol.includes(9)" label="B视在功率(kVA)" min-width="140" align="center" prop="apparentB" />
         <el-table-column v-if="queryParams.showCol.includes(10)" label="B有功功率(kW)" min-width="130" align="center" prop="activeB" />
+        <el-table-column v-if="queryParams.showCol.includes(18)" label="B无功功率(kVar)" min-width="130" align="center" prop="reactiveB"/>
         <el-table-column v-if="queryParams.showCol.includes(11)" label="B电能(kWh)" min-width="110" align="center" prop="eleB" />
-        <el-table-column v-if="queryParams.showCol.includes(12)" label="无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
+        <el-table-column v-if="queryParams.showCol.includes(12)" label="总无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
         <el-table-column v-if="queryParams.showCol.includes(13)" label="功率因素" align="center" prop="powerFactorTotal" />
         <el-table-column v-if="queryParams.showCol.includes(15)" label="负载比(%)" min-width="110" align="center" prop="loadFactor" />
         <el-table-column v-if="queryParams.showCol.includes(14)" label="所属公司" min-width="110" align="center" prop="company" />
@@ -148,7 +165,7 @@
         </el-table-column>
         <el-table-column label="状态" min-width="110" align="center">
             <template #default="scope">
-                 <div>{{ scope.row.pduBox === 0 ? 'PDU' : '母线' }}</div>
+                <div :style="{color: statusList[scope.row.runStatus].color}">{{statusList[scope.row.runStatus] && statusList[scope.row.runStatus].name}}</div>
             </template>
         </el-table-column>
         
@@ -174,6 +191,7 @@
       <Pagination
         v-if="showPagination == 1"
         :total="queryParams.pageTotal"
+        :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="handleSwitchLogicRemoveModal(2,false)"
@@ -182,35 +200,37 @@
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
-            <div class="info">
+            <div v-if="item.status !== 5" class="info" style="margin-left:10px;">
               <div>视在功率：{{item.apparentTotal}}KVA</div>
               <div>有功功率：{{item.activeTotal}}KW</div>
-              <div>功率因素：{{item.powerFactorTotal}}</div>
+              <div>无功功率：{{item.powerReactiveTotal}}KVAR</div>
               <!-- 负载率： -->
             </div>
+            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor || ''" /></div>
           </div>
           <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
-          <div v-if="item.status == 0" class="status-empty">空载</div>
-          <div v-if="item.status == 1" class="status-normal">正常</div>
-          <div v-if="item.status == 2" class="status-warn">预警</div>
-          <div v-if="item.status == 3" class="status-error">告警</div>
-          <div v-if="item.status == 4" class="status-unbound">未绑定</div>
-          <div v-if="item.status == 5" class="status-offline">离线</div>
-          <button class="detail" @click.prevent="toMachineDetail(item)">详情</button>
+          <div v-if="item.status == 0" class="status-empty">未绑定</div>
+          <!--<div v-if="item.status == 0" class="status-unbound">正常</div>-->
+          <div v-else-if="item.status == 1" class="status-normal">正常</div>
+          <div v-else-if="item.status == 2" class="status-warn">预警</div>
+          <div v-else-if="item.status == 3" class="status-error">告警</div>
+          <!--<div v-else-if="item.status == 4" class="status-error">故障</div>-->
+          <div v-else-if="item.status == 4" class="status-offline">离线</div>
+          <button v-if="item.status !== 4" class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
       <Pagination
         v-if="showPagination == 0"
         :total="queryParams.pageTotal"
+        :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
-        @pagination="getTableData(false)"
+        @pagination="getTableData()"
       />
       <template v-if="listPage.length == 0 && !switchValue">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
-      <!-- <div v-if="listPage.length == 0 && !switchValue" style="display:flex;"> -->
+      <!--<div v-if="listPage.length == 0 && !switchValue" style="display:flex;">-->
         
       <!-- </div> -->
     </template>
@@ -221,36 +241,41 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import MachineForm from './component/MachineForm.vue'
-import LiquidBall from './component/LiquidBall.vue'
-import { CabinetApi } from '@/api/cabinet/info'
+import MachineForm from './component/MachineForm.vue';
+import LiquidBall from './component/LiquidBall.vue';
+import { CabinetApi } from '@/api/cabinet/info';
 import { Console } from 'console';
 // import MyButton from '@/components/MyButton/MyButton.vue';
 
-const { push } = useRouter() // 路由跳转
-const message = useMessage() // 消息弹窗
-const machineForm = ref() // 机柜表单组件
-const colNode = ref() // 展示列组件
-const loading = ref(false)
+const { push } = useRouter(); // 路由跳转
+const message = useMessage(); // 消息弹窗
+const machineForm = ref(); // 机柜表单组件
+const colNode = ref(); // 展示列组件
+const loading = ref(false);
 const butColor = ref(0);
 const onclickColor = ref(-1);
 // const isCloseNav = ref(false) // 左侧导航是否收起
-const isFirst = ref(true) // 是否第一次调用getTableData函数
-const switchValue = ref(0) // 0:阵列 1：表格
-const showPagination = ref(0)
-const listPage = ref<any>([]) // 表格数据
-const deletedList = ref<any>([]) //已删除的
-const navList = ref([]) // 左侧导航列表数据
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
+const isFirst = ref(true); // 是否第一次调用getTableData函数
+const switchValue = ref(0); // 0:阵列 1：表格
+const showPagination = ref(0);
+const listPage = ref<any>([]); // 表格数据
+const deletedList = ref<any>([]); //已删除的
+const navList = ref([]); // 左侧导航列表数据
+const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
+const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16]);
+const pageSizeArr = ref([24,36,48,96]);
+const total = ref(0) // 列表的总页数
+const deletedTotal = ref(0) // 已删除PDU设备列表的总页数
+// 运行状态 0：未绑定 1：正常 2：预警 3：告警 4：离线
+const Unbound = ref();
+const Normal = ref();
+const Warning = ref();
+const Alarm = ref();
+const Offline = ref();
+const totalAll = ref();
 
-// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
-const sumNoload = ref();
-const sumNormal = ref();
-const sumEarly = ref();
-const sumInform = ref();
-const sumDidnot = ref();
-const sumOffline = ref();
+const flashListTimer = ref();
+const flashListTimerCopy = ref();
 
 const optionsCol = reactive([{
   value: 0,
@@ -261,9 +286,18 @@ const optionsCol = reactive([{
   }, {
     value: 2,
     label: '总AB有功功率'
-  }, {
+  },
+  {
+    value: 12,
+    label: '总AB无功功率'
+  },
+  {
     value: 3,
-    label: '总AB电能'
+    label: '总AB有功电能'
+  },
+  {
+    value: 13,
+    label: '总功率因素'
   }],
 },{
   value: 4,
@@ -275,8 +309,11 @@ const optionsCol = reactive([{
     value: 6,
     label: 'A有功功率'
   }, {
+    value: 17,
+    label: 'A无功功率'
+  }, {
     value: 7,
-    label: 'A电能'
+    label: 'A有功电能'
   }],
 },{
   value: 8,
@@ -287,17 +324,24 @@ const optionsCol = reactive([{
   }, {
     value: 10,
     label: 'B有功功率'
+  },{
+    value: 18,
+    label: 'B无功功率'
   }, {
     value: 11,
-    label: 'B电能'
+    label: 'B有功电能'
   }],
-},{
-  value: 12,
-  label: '无功功率'
-},{
-  value: 13,
-  label: '功率因素'
-},{
+},
+//{
+//  value: 12,
+//  label: '无功功率'
+//}
+//,
+//{
+//  value: 13,
+//  label: '功率因素'
+//}
+{
   value: 14,
   label: '所属公司'
 },{
@@ -319,7 +363,7 @@ const queryParams = reactive({
 
 const statusList = reactive([
   {
-    name: '空载',
+    name: '未绑定',
     selected: true,
     value: 0,
     cssClass: 'btn_empty',
@@ -351,17 +395,9 @@ const statusList = reactive([
     color: '#fa3333'
   },
   {
-    name: '未绑定',
-    selected: true,
-    value: 4,
-    cssClass: 'btn_unbound',
-    activeClass: 'btn_unbound unbound',
-    color: '#05ebfc'
-  },
-  {
     name: '离线',
     selected: true,
-    value: 5,
+    value: 4,
     cssClass: 'btn_offline',
     activeClass: 'btn_offline offline',
     color: '#7700ff'
@@ -370,7 +406,7 @@ const statusList = reactive([
 const props = { multiple: true }
 
 // 接口获取机柜列表
-const getTableData = async(reset = false) => {
+const getTableData = async() => {
   let ids;
   if(cabinetIds.value.length == 0){
     ids = null;
@@ -378,7 +414,7 @@ const getTableData = async(reset = false) => {
     ids =cabinetIds.value
   }
   loading.value = true
-  if (reset) queryParams.pageNo = 1
+  //if (reset) queryParams.pageNo = 1
   try {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
@@ -388,7 +424,7 @@ const getTableData = async(reset = false) => {
       runStatus: queryParams.runStatus,
       company: queryParams.company
     })
-    console.log('res',res)
+
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -397,17 +433,28 @@ const getTableData = async(reset = false) => {
           cabinetName: item.cabinet_name,
           roomName: item.room_name,
           status: item.status,
-          apparentTotal: formatNumber(item.cabinet_power.total_data.pow_apparent, 3),
-          apparentA: formatNumber(item.cabinet_power.path_a?.pow_apparent, 3),
-          apparentB: formatNumber(item.cabinet_power.path_b?.pow_apparent, 3),
-          activeTotal: formatNumber(item.cabinet_power.total_data.pow_active, 3),
-          activeA: formatNumber(item.cabinet_power.path_a?.pow_active, 3),
-          activeB: formatNumber(item.cabinet_power.path_b?.pow_active, 3),
-          eleTotal: formatNumber(item.cabinet_power.total_data.ele_active, 1),
-          eleA: formatNumber(item.cabinet_power.path_a?.ele_active, 1),
-          eleB: formatNumber(item.cabinet_power.path_b?.ele_active, 1),
+          //apparentTotal: formatNumber(item.cabinet_power.total_data.pow_apparent, 3),
+          //apparentA: formatNumber(item.cabinet_power.path_a?.pow_apparent, 3),
+          //apparentB: formatNumber(item.cabinet_power.path_b?.pow_apparent, 3),
+          //activeTotal: formatNumber(item.cabinet_power.total_data.pow_active, 3),
+          //activeA: formatNumber(item.cabinet_power.path_a?.pow_active, 3),
+          //activeB: formatNumber(item.cabinet_power.path_b?.pow_active, 3),
+          //eleTotal: formatNumber(item.cabinet_power.total_data.ele_active, 1),
+          //eleA: formatNumber(item.cabinet_power.path_a?.ele_active, 1),
+          //eleB: formatNumber(item.cabinet_power.path_b?.ele_active, 1),
+          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
+          apparentA: item.cabinet_power.path_a?.pow_apparent.toFixed(3),
+          apparentB: item.cabinet_power.path_b?.pow_apparent.toFixed(3),
+          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
+          activeA: item.cabinet_power.path_a?.pow_active.toFixed(3),
+          activeB: item.cabinet_power.path_b?.pow_active.toFixed(3),
+          reactiveA: item.cabinet_power.path_a?.pow_reactive.toFixed(3),
+          reactiveB: item.cabinet_power.path_b?.pow_reactive.toFixed(3),
+          eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
+          eleA: item.cabinet_power.path_a?.ele_active.toFixed(1),
+          eleB: item.cabinet_power.path_b?.ele_active.toFixed(1),
           powerFactorTotal: item.cabinet_power.total_data.power_factor,
-          powerReactiveTotal: formatNumber(item.cabinet_power.total_data.pow_reactive, 3),
+          powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
           loadFactor: formatLoadFactor(item.load_factor),
           abzb: '-' as number | string
         }
@@ -417,22 +464,15 @@ const getTableData = async(reset = false) => {
         }
         return tableItem
       })
-      listPage.value = list
-      queryParams.pageTotal = res.total
-      //console.log('listPage', listPage.value)
-      // console.log(res.runStatus);
+      listPage.value = list;
+      queryParams.pageTotal = res.total;
+
     }
   } finally {
     loading.value = false
   }
 }
 
-const formatNumber = (value, precision) => {
-  if (typeof value === 'number' && !isNaN(value)) {
-    return value.toFixed(precision);
-  }
-  return 0;
-};
 
 const formatLoadFactor = (value) => {
   if (typeof value === 'number' && !isNaN(value)) {
@@ -444,32 +484,36 @@ const formatLoadFactor = (value) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  navList.value = res
+  const res = await CabinetApi.getRoomMenuAll({});
+  navList.value = res;
 
     const resStatus =await CabinetApi.getCabinetInfoStatus();
-    sumNoload.value = resStatus.list[0].sumNoload;
-    sumNormal.value = resStatus.list[0].sumNormal;
-    sumEarly.value = resStatus.list[0].sumEarly;
-    sumInform.value = resStatus.list[0].sumInform;
+    Unbound.value = resStatus.unbound;
+    Normal.value = resStatus.normal;
+    Warning.value = resStatus.warning;
+    Alarm.value = resStatus.alarm;
+    Offline.value = resStatus.offline;
+    totalAll.value = resStatus.total;
 }
+
 
 // 保存机柜修改/删除
 const saveMachine = async() => {
-  getNavList()
+  getTableData();
+  getNavList();
 }
 
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   showPagination.value = 0;
   if (switchValue.value == value) return
-  switchValue.value = value
+  switchValue.value = value;
   if (value == 0) { // 阵列
-    queryParams.pageSize = 24
+    queryParams.pageSize = 24;
   } else {
-    queryParams.pageSize = 24
+    queryParams.pageSize = 24;
   }
-  getTableData(true)
+  getTableData();
 }
 
 //已删除
@@ -483,6 +527,7 @@ const handleSwitchLogicRemoveModal = async (value, reset = false) =>{
     })
     deletedList.value = res.list;
     queryParams.pageTotal = res.total
+    deletedTotal.value = res.total;
 }
 
 //恢复设备
@@ -502,20 +547,16 @@ const handleRestore = async(id) =>{
 
 //处理表格双击事件
 const handleDbclick = (e) => {
-  console.log('处理表格双击事件', e, e.id)
   push('/cabinet/cab/detail')
 }
 
 // 处理阵列双击事件
 const handleArrayDbclick = (key) => {
-  // console.log('处理阵列双击事件', key)
   openForm('edit', key)
 }
 
 // 处理状态选择事件
 const handleSelectStatus = (index) => {
-  // console.log('处理状态选择事件', index, event)
-  //statusList[index].selected = !statusList[index].selected
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.runStatus = [index];
@@ -529,27 +570,17 @@ const toggleAllStatus = () => {
   getTableData();
 }
 
-
-
-
-
 // 跳转详情页
 const toMachineDetail = (key) => {
-  console.log('key',key.cabinet_key.split('-')[0]);
-  console.log('key',key.cabinet_key.split('-')[1]);
-  console.log('key',key);
-  const devKey = '172.16.101.2-1';
-  const busId = 6;
   const id = key.cabinet_key.split('-')[1]
   const roomId = key.cabinet_key.split('-')[0];
   const type = 'hour';
   const location = key.roomName;
-  const busName = key.cabinetName;
-  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName ,id ,roomId , type}})
+  const cabinetName = key.cabinetName;
+  push({path: '/cabinet/cab/detail', state: {location , cabinetName ,id ,roomId , type}})
 }
 
 const handleCheck = (row) => {
-  // console.log('handleCheck!', row);
   isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
@@ -558,7 +589,7 @@ const handleCheck = (row) => {
     }
   })
   cabinetIds.value = ids
-  getTableData(true)
+  getTableData()
 }
 
 // 打开 编辑/添加 表单弹窗
@@ -570,7 +601,6 @@ const openForm = async(type: string, key?: string) => {
     try {
       loading.value = true
       const res = await CabinetApi.getCabinetInfoItem({id})
-      // console.log('res', res)
       machineForm.value.open(type, res)
     } finally {
       loading.value =false
@@ -590,9 +620,8 @@ const handleDelete = async (key: string) => {
     message.success('删除成功')
     // 刷新列表
     await getNavList()
-    getTableData(true)
+    getTableData()
   } catch (error) {
-    // console.log(error)
   }
 }
 
@@ -604,10 +633,32 @@ const cascaderChange = (_row) => {
 
 onBeforeMount(() => {
   getNavList();
-  getTableData(false);
-
+  getTableData();
+  flashListTimer.value = setInterval((getTableData), 5000);
+  flashListTimerCopy.value = setInterval((getNavList), 5000);
 })
 
+onBeforeUnmount(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+  if(flashListTimerCopy.value){
+    clearInterval(flashListTimerCopy.value)
+    flashListTimerCopy.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+  if(flashListTimerCopy.value){
+    clearInterval(flashListTimerCopy.value)
+    flashListTimerCopy.value = null;
+  }
+})
 </script>
 
 <style scoped lang="scss">
@@ -730,7 +781,7 @@ onBeforeMount(() => {
     display: flex;
     flex-wrap: wrap;
     .box {
-      height: 70px;
+      height: 50px;
       width: 50%;
       box-sizing: border-box;
       display: flex;
@@ -796,8 +847,8 @@ onBeforeMount(() => {
   }
   .line {
     height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
+    margin-top: 30px;
+    margin-bottom: 10px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
@@ -832,8 +883,13 @@ onBeforeMount(() => {
 }
 
 @media screen and (min-width:2048px){
+  .table-height{
+    height: 76vh;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
-    height: 720px;
+    height: 78vh;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -962,6 +1018,11 @@ onBeforeMount(() => {
 }
 
 @media screen and (max-width:2048px) and (min-width:1600px){
+  .table-height{
+    height: 710px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
     height: 720px;
     overflow: hidden;
@@ -1092,8 +1153,13 @@ onBeforeMount(() => {
 }
 
 @media screen and (max-width:1600px){
+  .table-height{
+    height: 600px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
   .arrayContainer {
-    height: 720px;
+    height: 600px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;

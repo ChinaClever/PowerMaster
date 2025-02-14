@@ -5,34 +5,34 @@
         <div class="header">
           <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
         </div>
-        <div class="line"></div>
-        <!-- <div class="status">
+        <!-- <div class="line"></div> -->
+        <div class="status" style="margin-top:20px">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
+              <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>小电流
+              <div class="tag empty"></div>离线
             </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
+              <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
+              <!--<div class="tag error"></div>-->总共
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.total }}</span>个</div>
           </div>
-        </div> -->
-        <div class="line"></div>
+        </div>
+        <!-- <div class="line"></div> -->
 
       </div>
     </template>
@@ -273,9 +273,13 @@
             </div>  
             
             <div class="icon" >
-              <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line' && item.outletPowFactor.length >1" style="font-size: 18px;">
                 <span style="font-size: 20px; ">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line' && item.outletPowFactor.length <=1" style="font-size: 18px; padding-top: 10px;">
+                <span style="font-size: 20px;"></span>功率因数
+              </div>
+
               <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
                 <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>                
@@ -283,13 +287,11 @@
 
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status" >
             <div class="status">
               <el-tag v-if="item.status === 1" type="success">正常</el-tag>
               <el-tag v-else-if="item.status === 0" type="info">离线</el-tag>
-              <el-tag v-else-if="item.status === 2">告警</el-tag>
+              <el-tag v-else-if="item.status === 2" type="danger">告警</el-tag>
             </div>
-          </div>
           <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 0">详情</button>
         </div>
         </template>
@@ -310,7 +312,7 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
-            <span>所在位置：{{ location }}</span>
+            <span>所在位置：{{ location? location:'未绑定'}}</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
 
@@ -324,7 +326,7 @@
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
@@ -339,13 +341,15 @@
           </div>
         </div>
         <br/>
-        <PFDetail v-show="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList" />
-        <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
-          <el-table-column label="时间" align="center" prop="time"/>
-          <el-table-column label="输出位1功率因数" align="center" prop="powerFactorAvgValueA"/>
-          <el-table-column label="输出位2功率因数" align="center" prop="powerFactorAvgValueB"/>
-          <el-table-column label="输出位3功率因数" align="center" prop="powerFactorAvgValueC"/>
+        <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList" />
+        <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+          <el-table :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;" >
+          <el-table-column label="时间" align="center" prop="create_time"/>
+          <el-table-column label="输出位" align="center" prop="outlet_id"/>
+          <el-table-column label="功率因数" align="center" prop="power_factor_avg_value"/>
+          <!-- <el-table-column label="输出位3功率因数" align="center" prop="powerFactorAvgValueC"/> -->
         </el-table>
+        </div>
       </el-dialog>
     </template>
   </CommonMenu>
@@ -390,7 +394,12 @@ const loadAll = async () => {
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
-
+const statusNumber = reactive({
+  normal : 0,
+  alarm : 0,
+  offline : 0,
+  total : 0
+});
 const statusList = reactive([
   {
     name: '离线',
@@ -404,24 +413,33 @@ const statusList = reactive([
     selected: true,
     value: 1,
     cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
     name: '告警',
     selected: true,
     value: 2,
     cssClass: 'btn_error',
-    activeClass: 'btn_error error'
+    activeClass: 'btn_error error',
+    color: '#fa3333'
   }
 ])
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -435,12 +453,22 @@ const createFilter = (queryString: string) => {
 const openPFDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location : row.devKey;
+  location.value = row.location;
   devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;
 }
+const getListAll = async () => {
+  try {
+    const allData = await IndexApi.getBoxIndexStatistics();
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.total = allData.total;
+      } finally {
 
+  }
+}
 const disabledDate = (date) => {
   // 获取今天的日期
   const today = new Date();
@@ -612,22 +640,21 @@ const getDetail = async () => {
   console.log('pfESList.value',pfESList.value);
 
   pfTableList.value = data?.table;
+  console.log('pfTableList',pfTableList.value);
   pfTableList.value?.forEach((obj) => {
-    console.log(obj,obj.powerFactorAvgValueA);
-    obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
-    obj.powerFactorAvgValueB = obj?.powerFactorAvgValueB?.toFixed(2);
-    obj.powerFactorAvgValueC = obj?.powerFactorAvgValueC?.toFixed(2);
+    console.log(obj,obj.powerFactorAvgValue);
+    obj.power_factor_avg_value = obj?.power_factor_avg_value?.toFixed(2);
   });
 }
 const getList = async () => {
   loading.value = true;
   try {
     const data = await IndexApi.getBoxPFPage(queryParams);
-    console.log('data',data);
+    // console.log('data',data);
 
     list.value = data.list;
 
-    console.log('list.value',list.value);
+    // console.log('list.value',list.value);
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
@@ -800,7 +827,8 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
+  getListAll();
   getNavList();
   getTypeMaxValue();
   flashListTimer.value = setInterval((getList), 5000);
@@ -1117,7 +1145,7 @@ onActivated(() => {
         align-items: center;
         height: 100%;
         .icon {
-          font-size: 20px;
+          font-size: 18px;
           width: 100px;
           height: 50px;
           margin-left:30px;
@@ -1418,7 +1446,6 @@ onActivated(() => {
 }
 
 :deep(.el-tag){
-  margin-top: -15px;
-  margin-right:-130px;
+ margin-right:-60px;
 }
 </style>

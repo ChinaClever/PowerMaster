@@ -116,4 +116,6 @@ public class CabineIndexCfgVO {
      * 所属于公司
      */
     private String company;
+
+    private String roomName;
 }

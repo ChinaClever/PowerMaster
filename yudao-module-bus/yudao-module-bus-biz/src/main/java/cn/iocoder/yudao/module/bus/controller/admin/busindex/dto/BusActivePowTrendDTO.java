@@ -22,6 +22,6 @@ public class BusActivePowTrendDTO {
     /**
      * 有功功率
      */
-    @Schema(description = "有功功率", example = "0.11")
-    private float activePow;
+    @Schema(description = "有功功率")
+    private String activePow;
 }

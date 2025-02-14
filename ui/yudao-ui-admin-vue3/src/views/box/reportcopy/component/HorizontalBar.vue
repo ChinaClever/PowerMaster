@@ -10,49 +10,64 @@ const prop = defineProps({
     required: true
   },
   height: {
-    type: [Number,String],
+    type: [Number, String],
     default: 60
   },
   width: {
-    type: [Number,String],
+    type: [Number, String],
     default: 60
   }
 })
 
-const series = ref()
-const time = ref()
-const legendList = ref()
+const series = ref([]);
+const time = ref([]);
+const legendList = ref([]);
+const count = ref([]);
 
-// 设置饼图的选项
-const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
-  tooltip: { trigger: 'axis',
-    formatter: function(params) {
-      var result = params[0].name + '<br>';
-      for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker  + "消耗电能" + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(1) + ' kWh' ;
-        result += '<br>';
-      }
-      return result;
-    } 
-  },
-  xAxis: { type: 'value' },
-  yAxis: {type: 'category' , data : time},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-  series: series,
-})
+// 检查 prop.list 是否为空
+if (Object.keys(prop.list).length === 0) {
+  console.warn('prop.list is empty');
+} else {
+  const keys = Object.keys(prop.list);
+  const length = keys.length;
 
-watchEffect(() => {
-  // 直接访问即可，watchEffect会自动跟踪变化
-
-  series.value = prop.list.series;
-  if(  series.value != null && series.value?.length > 0){
-    legendList.value =  series.value?.map(item => item.name)
+  // 初始化 count 数组
+  for (let i = 0; i < length; i++) {
+    count.value.push([]);
+    if (Array.isArray(prop.list[keys[i]])) {
+      count.value[i].push(...prop.list[keys[i]].map(item => item.pow_active_avg_value));
+    }
   }
-  time.value = prop.list.time;
-});
 
+  // 构建 series 和 legendList
+  for (let i = 0; i < length-1; i++) {
+    series.value.push({
+      name: `输出位${i + 1}`,
+      data: count.value[i],
+      type: 'line',
+      symbol: 'circle',
+      symbolSize: 4
+    });
+    legendList.value.push(`输出位${i + 1}`);
+  }
 
+  // 初始化时间轴数据
+  if (prop.list.time) {
+    time.value = prop.list.time;
+  }
+}
+
+const echartsOption = computed(() => ({
+  legend: { data: legendList.value },
+  xAxis: {
+    type: 'category',
+    data: time.value
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: series.value
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')

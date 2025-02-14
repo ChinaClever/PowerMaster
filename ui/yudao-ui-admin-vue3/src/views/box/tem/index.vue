@@ -154,11 +154,15 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <img  class="icon"  src="@/assets/imgs/temicon.png" />    
-            <div class="info" >                  
-              <div :style="{backgroundColor : item.atemColor}" v-if="item.atem != null">A: {{item.atem}}°C</div>
-              <div :style="{backgroundColor : item.btemColor}" v-if="item.btem != null">B: {{item.btem}}°C</div>
-              <div :style="{backgroundColor : item.ctemColor}" v-if="item.ctem != null">C: {{item.ctem}}°C</div>
-              <div :style="{backgroundColor : item.ntemColor}" v-if="item.ntem != null">N: {{item.ntem}}°C</div>
+            <div class="info flex-container">
+              <div class="flex-row">
+                <div :style="{backgroundColor: item.atemColor}" v-if="item.atem != null">A:{{item.atem}}°C</div>
+                <div :style="{backgroundColor: item.ctemColor}" v-if="item.ctem != null">C:{{item.ctem}}°C</div>
+              </div>
+              <div class="flex-row">
+                <div :style="{backgroundColor: item.btemColor}" v-if="item.btem != null">B:{{item.btem}}°C</div>
+                <div :style="{backgroundColor: item.ntemColor}" v-if="item.ntem != null">N:{{item.ntem}}°C</div>
+              </div>
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -187,7 +191,9 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">温度详情</span>
-            <span>所在位置：{{ location }}</span>
+            <span>机房：{{ location }}&nbsp;&nbsp;</span>
+            <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+            <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
 
@@ -201,7 +207,7 @@
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
@@ -216,8 +222,9 @@
           </div>
         </div>
         <br/>
-        <TemDetail v-show="switchChartOrTable == 0" width="75vw" height="70vh"  :list="temESList"  />
-        <el-table v-show="switchChartOrTable == 1" :data="temTableList" :stripe="true" :show-overflow-tooltip="true" >
+        <TemDetail v-if="switchChartOrTable == 0" width="75vw" height="70vh"  :list="temESList"  />
+        <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+          <el-table :data="temTableList" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;">
           <el-table-column label="时间" align="center" prop="temAvgTime" />
           <el-table-column label="A相温度" align="center" prop="temAvgValueA" >
             <template #default="scope" >
@@ -248,6 +255,7 @@
             </template>
           </el-table-column>
         </el-table>
+        </div>
       </el-dialog>
     </template>
   </CommonMenu>
@@ -272,6 +280,8 @@ defineOptions({ name: 'PDUDevice' })
 
 const location = ref() as any;
 const devkey = ref() as any;
+const busName = ref() as any;
+const boxName = ref() as any;
 const detailVis = ref(false);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -335,13 +345,20 @@ const toggleAllStatus = () => {
   handleQuery();
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -382,7 +399,9 @@ const handleCheck = async (row) => {
 const openTemDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location : row.devKey;
+  location.value = row.location ? row.location : '未绑定'
+  busName.value = row.busName
+  boxName.value = row.boxName
   devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;
@@ -1268,5 +1287,21 @@ onActivated(() => {
   width: 80%;
   height: 80%;
   margin-top: 100px;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+}
+ 
+.flex-row {
+  display: flex;
+  justify-content: space-between;
+}
+ 
+.flex-row > div {
+  flex: 1;
+  margin: 10px;
+  text-align: center;
 }
 </style>

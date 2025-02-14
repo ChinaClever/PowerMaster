@@ -19,7 +19,7 @@ public class CabinetIndex implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
 
     /**
@@ -89,4 +89,9 @@ public class CabinetIndex implements Serializable {
 
     @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)
     private  Integer count;
+
+    /**
+     * 使用高度
+     */
+    private Integer cabinetUseHeight;
 }

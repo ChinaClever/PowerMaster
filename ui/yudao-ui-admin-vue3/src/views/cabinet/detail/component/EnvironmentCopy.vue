@@ -27,8 +27,14 @@ const echartsOption = reactive({
     axisPointer: {
       type: 'shadow'
     },
-     formatter: function (params) {
-      return `${params[0].seriesName}<br/>${params[0].name}: ${Math.abs(params[0].data)}KVA`;
+    formatter: function (params) {
+      if(params[0].name === '视在功率'){
+        return `${params[0].name}: ${Math.abs(params[0].value)}KVAR`
+      }else if(params[0].name === '有功功率'){
+        return `${params[0].name}: ${Math.abs(params[0].value)}KW`
+      }else{  
+        return `${params[0].name}: ${Math.abs(params[0].value)}KVA`
+      }
     }
   },
   grid: {
@@ -43,7 +49,7 @@ const echartsOption = reactive({
   },
   yAxis: {
     type: 'category',
-    data: ['现在功率', '有功功率', '无功功率']
+    data: ['无功功率', '有功功率', '视在功率']
   },
   series: [
     {
@@ -52,11 +58,17 @@ const echartsOption = reactive({
       label: {
         show: true,
         position: 'inside',
-        formatter: (params) => `${params.value}`+'KVA',
+        formatter: (params) => {
+          const unitMap = ['KVAR', 'KW', 'KVA'];
+          return `${params.value}${unitMap[params.dataIndex]}`;
+        },
         fontSize: 14,
         fontWeight: 'bold'
       },
-      data: [props.loadFactor.powApparentB, props.loadFactor.powActiveB, props.loadFactor.powReactiveB]
+      data: [
+        {value:props.loadFactor.powReactiveB,itemStyle: { color: 'purple' }},
+        {value:props.loadFactor.powActiveB,itemStyle: { color: 'green' }},
+        {value:props.loadFactor.powApparentB,itemStyle: { color: 'blue' }}]
     }
   ]
 })

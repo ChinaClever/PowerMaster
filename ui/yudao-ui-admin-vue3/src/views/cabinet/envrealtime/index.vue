@@ -67,14 +67,14 @@
         :inline="true"
         label-width="68px"                          
       >
-        <!-- <el-form-item>
-          <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
-        </el-form-item> -->
         <el-form-item>
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部 
+          </button>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)" style="width:70px;">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)" style="width:70px;">{{status.name}}</button>
+          </template>
           <el-button
             type="primary"
             plain
@@ -82,6 +82,18 @@
           >
             <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色
           </el-button>
+        </el-form-item>
+        <el-form-item prop="company">
+          <el-input
+            v-model="queryParams.company"
+            placeholder="请输入公司名称"
+            clearable
+            class="!w-160px"
+            height="35"
+          />
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+
           <el-button
             type="success"
             plain
@@ -196,7 +208,8 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location }}</div>
           <div class="content">
-            <div class="icon" >
+            <div class="icon">1111111111</div>
+            <!--<div class="icon" >
               <div v-if="false" >
                 1                                    
               </div>              
@@ -208,8 +221,8 @@
               <div v-if="item.hotTopHum != null && switchTemAndHum == 1" >上层湿度：{{item.hotTopHum}}%</div>
               <div v-if="item.hotMidHum != null && switchTemAndHum == 1" >中层湿度：{{item.hotMidHum}}%</div>
               <div v-if="item.hotBomHum != null && switchTemAndHum == 1" >下层湿度：{{item.hotBomHum}}%</div>
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            </div>
+              <div>AB路占比：{{item.fzb}}</div>
+            </div>-->
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
@@ -223,18 +236,25 @@
           <div class="devKey">{{ item.location }}</div>
           <div class="content">
             <div class="icon" >
-              <div v-if="false" >
-                1
-              </div>              
+              <div style="margin-top:5px;">
+                T
+              </div>
+              <div style="margin-top:10px;">
+                H
+              </div>           
             </div>
-            <div class="info">                  
-              <div v-if="item.iceTopTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceTopTemColor }">上层温度：{{item.iceTopTem}}°C</div>
-              <div v-if="item.iceMidTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceMidTemColor }">中层温度：{{item.iceMidTem}}°C</div>
-              <div v-if="item.iceBomTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceBomTemColor }">下层温度：{{item.iceBomTem}}°C</div>
-              <div v-if="item.iceTopHum != null && switchTemAndHum == 1" >上层湿度：{{item.iceTopHum}}%</div>
-              <div v-if="item.iceMidHum != null && switchTemAndHum == 1" >中层湿度：{{item.iceMidHum}}%</div>
-              <div v-if="item.iceBomHum != null && switchTemAndHum == 1" >下层湿度：{{item.iceBomHum}}%</div>
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            <div class="info" style="margin-left:30px;">
+              <!--<div style="margin-top:-20px;margin-left:20px;"><span>冷</span><span style="margin-left:50px;">热</span></div>-->
+              <div style="margin-bottom:10px;"><span>冷</span><span style="margin-left:50px;">热</span></div>
+              <div style="margin-bottom:10px;"><span>0</span><span style="margin-left:50px;">0</span></div>
+              <div><span>0%</span><span style="margin-left:50px;">0%</span></div>
+              <!--<div :style="{ backgroundColor : item.iceTopTemColor }">上层温度：{{item.iceTopTem}}°C</div>
+              <div :style="{ backgroundColor : item.iceMidTemColor }">中层温度：{{item.iceMidTem}}°C</div>
+              <div :style="{ backgroundColor : item.iceBomTemColor }">下层温度：{{item.iceBomTem}}°C</div>
+              <div >上层湿度：{{item.iceTopHum}}%</div>
+              <div >中层湿度：{{item.iceMidHum}}%</div>
+              <div >下层湿度：{{item.iceBomHum}}%</div>
+              <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -271,6 +291,8 @@ import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/cabinet/index'
 
+const butColor = ref(0);
+const onclickColor = ref(-1);
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -296,36 +318,23 @@ const toCabinetEnvDetail = (row) =>{
   // push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
 }
 
-const statusList = reactive([
-  {
-    name: '<15%',
-    selected: true,
-    value: 2,
-    cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
-  },
-  {
-    name: '15%-30%',
-    selected: true,
-    value: 3,
-    cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
-  },
-  {
-    name: '>30%',
-    selected: true,
-    value: 4,
-    cssClass: 'btn_error',
-    activeClass: 'btn_error error'
-  },
-  {
-    name: '小电流',
-    selected: true,
-    value: 1,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
-  },
-])
+const statusList = ref([]);
+
+const getCabinetColorAll = async () => {
+  const res = await IndexApi.getCabinetColorAll()
+  console.log('res', res)
+  if (res != null) {
+  statusList.value = res.map(item => ({
+      name: `${item.min}°C ~ ${item.max}°C`,
+      selected: true, // 根据实际情况设置默认选中状态
+      cssClass: 'btn_normal',// 根据实际情况设置样式类
+      activeClass: 'btn_normal normal',// 根据实际情况设置样式类
+      value: 0,
+      color: item.color
+    }));
+  }
+}
+
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -403,28 +412,30 @@ const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
+
   loading.value = true
   try {
     const data = await IndexApi.getCabinetEnvPage(queryParams);
+    console.log('data',data);
 
     list.value = data.list
-    var tableIndex = 0;
+    // var tableIndex = 0;
 
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      obj.iceTopTem = obj.iceTopTem?.toFixed(1);
-      obj.iceTopHum = obj.iceTopHum?.toFixed(1);
-      obj.iceMidTem = obj.iceMidTem?.toFixed(1);
-      obj.iceMidHum = obj.iceMidHum?.toFixed(1);
-      obj.iceBomTem = obj.iceBomTem?.toFixed(1);
-      obj.iceBomHum = obj.iceBomHum?.toFixed(1);
-      obj.hotTopTem = obj.hotTopTem?.toFixed(1);
-      obj.hotTopHum = obj.hotTopHum?.toFixed(1);
-      obj.hotMidTem = obj.hotMidTem?.toFixed(1);
-      obj.hotMidHum = obj.hotMidHum?.toFixed(1);
-      obj.hotBomTem = obj.hotBomTem?.toFixed(1);
-      obj.hotBomHum = obj.hotBomHum?.toFixed(1);
-    });
+    // list.value.forEach((obj) => {
+    //   obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+    //   obj.iceTopTem = obj.iceTopTem?.toFixed(1);
+    //   obj.iceTopHum = obj.iceTopHum?.toFixed(1);
+    //   obj.iceMidTem = obj.iceMidTem?.toFixed(1);
+    //   obj.iceMidHum = obj.iceMidHum?.toFixed(1);
+    //   obj.iceBomTem = obj.iceBomTem?.toFixed(1);
+    //   obj.iceBomHum = obj.iceBomHum?.toFixed(1);
+    //   obj.hotTopTem = obj.hotTopTem?.toFixed(1);
+    //   obj.hotTopHum = obj.hotTopHum?.toFixed(1);
+    //   obj.hotMidTem = obj.hotMidTem?.toFixed(1);
+    //   obj.hotMidHum = obj.hotMidHum?.toFixed(1);
+    //   obj.hotBomTem = obj.hotBomTem?.toFixed(1);
+    //   obj.hotBomHum = obj.hotBomHum?.toFixed(1);
+    // });
 
     total.value = data.total
   } finally {
@@ -480,13 +491,22 @@ const getNavList = async() => {
 //   window.open(url, '_blank');
 // }
 
-// const handleSelectStatus = (index) => {
-//   statusList[index].selected = !statusList[index].selected
-//   const status =  statusList.filter(item => item.selected)
-//   const statusArr = status.map(item => item.value)
-//   queryParams.color = statusArr;
-//   handleQuery();
-// }
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.startNum = statusList[index].startNum;
+  queryParams.endNum = statusList[index].endNum;
+  handleQuery();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.startNum = 0;
+  queryParams.endNum = 100;
+  handleQuery();
+}
+
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -536,7 +556,8 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  getList()
+  getCabinetColorAll();
+  getList();
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 60000);
 })
@@ -619,23 +640,61 @@ onActivated(() => {
   }
 }
 
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+
+.btn_fault,
 .btn_offline,
 .btn_normal,
 .btn_warn,
-.btn_error {
-  width: 58px;
-  height: 35px;
+.btn_error{
+  width: 125px;
+  height: 32px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
   &:hover {
     color: #7bc25a;
   }
 }
 .btn_offline {
   border: 1px solid #aaa;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.btn_fault{
+  border: 1px solid orange;
   background-color: #fff;
   margin-right: 8px;
 }
@@ -845,7 +904,6 @@ onActivated(() => {
       .icon {
         width: 60px;
         height: 30px;
-        margin: 0 28px;
         text-align: center;
       }
     }

@@ -69,6 +69,11 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/eq/page`, data })
   },
 
+  // 获取分段电能电费 
+  boxFindKeys: async (params: any) => {
+    return await request.get({ url: `/box/index/findKeys`, params})
+  },
+
   getEqMax: async () => {
     return await request.post({ url: `/box/index/eq/maxEq`})
   },
@@ -216,4 +221,9 @@ export const IndexApi = {
        getBoxIndexStatisticsAll: async () => {
         return await request.get({ url: `/box/index/statisticsAll` })
       },
+
+  //插接箱报表的输出位的图表数据
+  getAvgBoxHdaOutletForm: async (data: any) => {
+    return await request.post({ url: `/box/index/avg/boxHdaOutlet/form`, data })
+  },
 }

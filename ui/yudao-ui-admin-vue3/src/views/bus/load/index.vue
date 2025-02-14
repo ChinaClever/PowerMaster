@@ -375,13 +375,20 @@ const toggleAllStatus = () => {
   handleQuery();
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+    if(queryString.length>7){
+    var results = await IndexApi.findKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -521,7 +528,7 @@ const getList = async () => {
   }
 }
 const getLoadRateStatus = async () => {
-      const data = await IndexApi.getLoadRateStatus()
+    const data = await IndexApi.getLoadRateStatus()
     statusNumber.greaterNinety = data.greaterNinety;
     statusNumber.lessThirty = data.lessThirty;
     statusNumber.greaterThirty = data.greaterThirty;
@@ -573,11 +580,13 @@ const getNavList = async() => {
 }
 
 const toDetail = (row) =>{
+  console.log('row',row);
+  const roomName = row.rooName;
   const devKey = row.devKey;
   const busId = row.busId
   const location = row.location != null ? row.location : devKey;
   const busName = row.busName;
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName }})
+  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName,roomName }})
 }
 
 
@@ -999,7 +1008,7 @@ onUpdated(() => {
 @media screen and (min-width:2048px){
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 78vh;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1162,7 +1171,7 @@ onUpdated(() => {
 @media screen and (max-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 600px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;

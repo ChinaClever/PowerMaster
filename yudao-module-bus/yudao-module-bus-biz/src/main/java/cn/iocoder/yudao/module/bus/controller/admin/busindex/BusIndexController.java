@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -223,7 +224,7 @@ public class BusIndexController {
     @PostMapping("/eq/page")
     public CommonResult<PageResult<BusIndexDTO>> getEqPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDTO> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getBusDevKeyList()) || ObjectUtil.isNotEmpty(pageReqVO.getDevKey())){
             pageResult =  indexService.getEqPage(pageReqVO);
         }else {
             pageResult = indexService.getEqPage1(pageReqVO);
@@ -402,9 +403,22 @@ public class BusIndexController {
         return success(indexService.getReportBasicInformationResVO(pageReqVO));
     }
 
+    @PostMapping("/report/basicInformationbybus")
+    @Operation(summary = "获得插接箱报表数据-基础数据")
+    public CommonResult<List<BoxReportcopyResVO>> getReportBasicInformationByBusResVO(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getReportBasicInformationByBusResVO(pageReqVO));
+    }
+
     @GetMapping("balance/statistics")
     @Operation(summary = "获得始端箱设备不平衡度统计")
     public CommonResult<BalanceStatisticsVO> getBusBalanceStatistics() {
         return success(indexService.getBusBalanceStatistics());
+    }
+
+
+    @GetMapping("/findKeys")
+    @Operation(summary = "模糊查询")
+    public CommonResult<List<String>> findKeys(@RequestParam(value = "key") String key) {
+        return success(indexService.findKeys(key));
     }
 }

@@ -1,7 +1,11 @@
 <template>
 <div class="change" style="background-color: #E7E7E7;">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
+    <div class="header_app_text">
+        <span style="margin-right:10px;">机房：{{ roomName?roomName : '未绑定' }}</span>
+        <span style="margin-right:10px;">名称：{{ busName }}</span>
+        <span style="margin-right:10px;">网络地址：{{ devKey }}</span> 
+    </div>
     <div class="header_app_text_other1">
           <el-col :span="10" >
             <el-form
@@ -36,7 +40,7 @@
     <div class="center-part">
       <div class="left-part">
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
-        <div style="height:85%"><Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" /></div>
+        <div style="height:85%"><Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="Math.round(redisData.loadFactor)" /></div>
         <div style="height:15%;display:flex;align-items: center;margin-left:5px">              
             <p style="color:black;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA(发生时间：{{peakDemandTime}})</p>
         </div>
@@ -144,23 +148,26 @@
 
 <script setup lang="ts">
 
-import { ref } from 'vue'
-import Gauge from './component/Gauge.vue'
-import MarkLine from './component/MarkLine.vue'
-import PowReactiveLine from './component/PowReactiveLine.vue'
-import PowActiveLine from './component/PowActiveLine.vue'
-import { IndexApi } from '@/api/bus/busindex'
-import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { ref } from 'vue';
+import Gauge from './component/Gauge.vue';
+import MarkLine from './component/MarkLine.vue';
+import PowReactiveLine from './component/PowReactiveLine.vue';
+import PowActiveLine from './component/PowActiveLine.vue';
+import { IndexApi } from '@/api/bus/busindex';
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 
 const peakDemand = ref(0);
-const peakDemandTime = ref('')
+const peakDemandTime = ref('');
 const redisData = ref() as any;
 const loadRateList = ref() as any;
 const powActiveList = ref() as any;
 const powReactiveList = ref() as any;
-const selectedOption = ref('current')
-const location = ref(history?.state?.location)
-const busName = ref(history?.state?.busName)
+const selectedOption = ref('current');
+const location = ref(history?.state?.location);
+const busName = ref(history?.state?.busName);
+const roomName = ref(history?.state?.roomName);
+const devKey = ref(history?.state?.devKey);
+
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
@@ -223,7 +230,9 @@ const getRedisData = async () => {
   if(redisData.value.loadFactor != null){
     visContro.value.gaugeVis = true;
   }
-  
+
+//   redisData.value.loadFactor = Math.round(redisData.value.loadFactor);
+
   if(redisData.value.loadFactor >= 100 ){
     console.log(redisData.value.loadFactor+'负载率爆表了')
     redisData.value.loadFactor = 100

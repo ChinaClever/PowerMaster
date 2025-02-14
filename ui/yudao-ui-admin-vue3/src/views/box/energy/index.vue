@@ -69,16 +69,16 @@
         <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-              <div class="info">
+              <div class="info" style="margin-left:-10px;">
                 <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" style="margin-left:20%;"/>
             </div>
             <div class="room">{{item.location}}</div>
             <!-- <div class="name">{{item.boxName}}</div> -->
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location,item.boxName)" >详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.local,item.boxName, item)" >详情</button>
           </div>
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
@@ -190,9 +190,11 @@ const getTableData = async(reset = false) => {
         return {
           id: item.id,
           devKey:item.devKey,
-          // location: item.location ? item.location : item.devKey+'-'+item.boxName,
-          location: item.location || (item.devKey && item.boxName ? item.devKey +'-'+ item.boxName : null),
+          location: item.location ? item.location+'-'+item.busName +'-'+item.boxName : item.devKey+'-'+item.boxName,
+          // location: item.location || (item.devKey && item.boxName ? item.devKey +'-'+ item.boxName : null),
+          // location: item.location ||  item.devKey  +'-'+ item.boxName,
           local : item.location,
+          busName: item.busName,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
@@ -228,13 +230,22 @@ const loadAll = async () => {
   });
   return objectArray;
 }
-const querySearch = (queryString: string, cb: any) => {
 
-  const results = queryString
+
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -303,8 +314,12 @@ const handleCheck = (row) => {
 
 
 // 跳转详情
-const toDetail = (roomId, id,location,boxName) => {
-  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,location,boxName}})
+const toDetail = (roomId, id,local,boxName, item) => {
+  const devKey = item.devKey;
+  const busName = item.busName;
+  const roomName = item.local ? item.local : '未绑定';
+  console.log('item',item);
+  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
 }
 onMounted(async () => {
   devKeyList.value = await loadAll();

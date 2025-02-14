@@ -104,7 +104,7 @@
         select
         t1.id as id,
         t1.bus_key as `unique`,
-        t1.bus_name as `name`,
+        concat(t1.bus_key,'-',t1.bus_name) as `name`,
         '6' as type,
         '2' as parentType
         from bus_index t1

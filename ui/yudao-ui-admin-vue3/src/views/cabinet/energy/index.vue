@@ -2,73 +2,55 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜用能">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
-        </div> -->
-        <div class="line"></div>
-        <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
+        <div style="font-size:14px; margin-top:45px; margin-left:20px">
+          <div ><span>用能最大机柜：</span>
           </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>空载
-            </div>
-            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
+          <div>
+            <span>昨日：</span>
+            <span>{{ busName1 }}</span>
           </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
+          <div >
+            <span>上周：</span>
+            <span>{{ busName2 }}</span>
           </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>告警
-            </div>
-            <div class="value"><span class="number">{{sumInform}}</span>个</div>
+          <div >
+            <span>上月：</span>
+            <span>{{ busName3 }}</span>
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
+        <!-- <div class="status-container">
+          <div class="status-item">用能最大机柜：</div>
+          <div class="status-item">昨日用能：{{  }}</div>
+          <div class="status-item">上周用能：{{  }}</div>
+          <div class="status-item">上月用能：{{  }}</div>
+        </div>
+        <div class="line"></div> -->
     </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
         :model="queryParams"
         :inline="true"
-        label-width="68px"
+        label-width="90px"
       >
-        <div>
-          <el-form-item label="公司名称" prop="username">
+        <div style="margin-left:-30px;">
+          <el-form-item label="用能排序"  label-width="100px">
+          <el-button @click="changeTimeGranularity('yesterday')"
+          >
+            昨日
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastWeek')"
+          >
+            上周
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastMonth')"
+          >
+            上月
+          </el-button>
+        </el-form-item>
+          <el-form-item label="公司名称" prop="username" style="margin-left:50px;">
             <el-input
               v-model="queryParams.company"
               placeholder="请输入公司名称"
@@ -79,11 +61,12 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0);switchFlagValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1);switchFlagValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -92,17 +75,25 @@
         <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-              <div class="info">
+              <div class="info" style="margin-left:-10px;">
                 <div>昨日：{{item.yesterdayEq}}kW·h</div>
                 <div>上周：{{item.lastWeekEq}}kW·h</div>
                 <div>上月：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">用能详情</button>
+            <button class="detail" @click.prevent="toDetail(item)">详情</button>
           </div>
         </div>
+        <Pagination
+          v-if="switchFlagValue == 0"
+          :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
+          v-model:page="queryParams.pageNo"
+          v-model:limit="queryParams.pageSize"
+          @pagination="getTableData(false)"
+        />
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
@@ -110,9 +101,23 @@
           <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" />
           <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" />
           <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" />
+          <el-table-column label="操作" align="center">
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="toDetail(scope.row)"
+                style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
+              >
+              设备详情
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <Pagination
+          v-if="switchFlagValue == 1"
           :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
@@ -137,19 +142,24 @@ const sumEarly = ref();
 const sumInform = ref();
 const sumDidnot = ref();
 const sumOffline = ref();
-
+const busName1 = ref('无数据')
+const busName2 = ref('无数据')
+const busName3 = ref('无数据')
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const switchFlagValue = ref(0); // 0:阵列 1：表格
 const queryParams = reactive({
+  timeGranularity: undefined,
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
 })
+const pageSizeArr = ref([24,36,48,96]);
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -157,17 +167,35 @@ const getNavList = async() => {
   navList.value = res
 }
 
-const statistics = async() => {
-  const resStatus =await CabinetApi.getCabinetInfoStatus();
-    sumNoload.value = resStatus.list[0].sumNoload;
-    sumNormal.value = resStatus.list[0].sumNormal;
-    sumEarly.value = resStatus.list[0].sumEarly;
-    sumInform.value = resStatus.list[0].sumInform;
+const changeTimeGranularity = (value) => {
+  queryParams.timeGranularity = value;
+  getTableData(true);
+}
+
+
+const getMaxData = async() => {
+    try {
+    const res = await CabinetApi.getEqMax()
+    if (res) {
+        //借用type值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
+        const dataList = res
+        dataList.forEach(item => {
+          if(item.type == 0){
+            busName1.value = item.location
+          }else if (item.type == 1){
+            busName2.value = item.location
+          }else if (item.type == 2){
+            busName3.value = item.location
+          }
+        })
+    }
+  } finally {
+
+  }
 }
 
 // 获取表格数据
 const getTableData = async(reset = false) => {
-  console.log('getTableData', queryParams)
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
@@ -177,13 +205,17 @@ const getTableData = async(reset = false) => {
       cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
       runStatus: [],
-      pduBox: 0,
+      // pduBox: 0,
+      timeGranularity:queryParams.timeGranularity,
       company: queryParams.company
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
         const roomName = item.roomName || ''; // 处理 null 值
         return {
+          roomName: roomName,
+          cabinetName: item.cabinetName,
+          roomId: item.roomId,
           id: item.id,
           local: roomName + '-' + item.cabinetName,
           company: item.company ,
@@ -193,12 +225,16 @@ const getTableData = async(reset = false) => {
         }
       })
       queryParams.pageTotal = res.total
+     }
+    } finally {
+      tableLoading.value = false
     }
-  } finally {
-    tableLoading.value = false
-  }
 }
 
+const resetQuery = () => {
+ queryParams.company = undefined;
+  getTableData(true)
+}
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
@@ -206,7 +242,7 @@ const handleSwitchModal = (value) => {
   if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
-    queryParams.pageSize = 10
+    queryParams.pageSize = 15
   }
   getTableData(true)
 }
@@ -225,15 +261,14 @@ const handleCheck = (row) => {
 }
 
 // 跳转详情
-const toDetail = (roomId, id) => {
-  console.log('跳转详情', id)
-  push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
+const toDetail = (row) => {
+  push({path: '/cabinet/cab/energyDetail', state: row})
 }
 
 onBeforeMount(() => {
   getNavList()
   getTableData()
-  statistics()
+  getMaxData()
 })
 </script>
 
@@ -370,7 +405,7 @@ onBeforeMount(() => {
       display: flex;
       align-items: center;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 35px 0 93px;
       }
       .info {
         line-height: 1.7;
@@ -384,10 +419,10 @@ onBeforeMount(() => {
       font-size: 13px;
     }
     .detail {
-      width: 55px;
-      height: 20px;
+      width: 40px;
+      height: 25px;
       cursor: pointer;
-      font-size: 12px;
+      //font-size: 12px;
       padding: 0;
       border: 1px solid #ccc;
       display: flex;
@@ -396,8 +431,19 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      top: 4px;
+      bottom: 4px;
     }
   }
+}
+
+.status-container {
+  width: 100%;
+  margin-left: 10px;
+}
+
+.status-item {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
 }
 </style>

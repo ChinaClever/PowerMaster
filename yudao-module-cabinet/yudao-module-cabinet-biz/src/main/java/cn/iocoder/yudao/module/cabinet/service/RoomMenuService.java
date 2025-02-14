@@ -46,17 +46,15 @@ public interface RoomMenuService {
     /**
      * 获取机房菜单
      *
-     * @param id 机房id
      */
-    List<RoomPduMenuDTO> roomPduMenuList(Integer id);
+    List<RoomPduMenuDTO> roomPduMenuList();
 
 
     /**
      * 获取机房-机架菜单
      *
-     * @param id 机房id
      */
-    List<RoomMenuDTO> roomRackMenuList(Integer id);
+    List<RoomMenuDTO> roomRackMenuList();
 
 
     /**

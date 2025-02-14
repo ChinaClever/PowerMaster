@@ -21,7 +21,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
 
     default PageResult<BoxIndex> selectPage(BoxIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BoxIndex>()
-                .eqIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
+                .likeIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
                 .inIfPresent(BoxIndex::getBoxKey,reqVO.getBoxDevKeyList())
                 .inIfPresent(BoxIndex::getId,reqVO.getBoxIds())
                 .eqIfPresent(BoxIndex::getIpAddr, reqVO.getIpAddr())
@@ -34,7 +34,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
-                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time asc"));
     }
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
@@ -45,7 +45,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
 
     default PageResult<BoxIndex> selectPageAll(BoxIndexPageReqVO reqVO){
         return selectPage(reqVO, new LambdaQueryWrapperX<BoxIndex>()
-                .eqIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
+                .likeIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
                 .inIfPresent(BoxIndex::getBoxKey,reqVO.getBoxDevKeyList())
                 .inIfPresent(BoxIndex::getId,reqVO.getBoxIds())
                 .eqIfPresent(BoxIndex::getIpAddr, reqVO.getIpAddr())
@@ -58,7 +58,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
 //                .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
-                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time asc"));
     }
 
     BusIndexStatisticsResVO getBoxIndexStatisticsAll();

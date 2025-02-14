@@ -22,7 +22,7 @@ public class AisleBox implements Serializable {
 
     @Schema(description = "主键id", example = "1")
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 柜列id

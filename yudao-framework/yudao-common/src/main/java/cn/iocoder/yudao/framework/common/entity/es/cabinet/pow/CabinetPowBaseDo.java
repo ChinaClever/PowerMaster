@@ -211,6 +211,48 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
     private float reactiveBAvgValue;
 
     /**
+     * a路最大无功功率
+     */
+    @JsonProperty("reactive_a_max_value")
+    private float reactiveAMaxValue;
+    /**
+     * a路最大无功功率时间
+     */
+    @JsonProperty("reactive_a_max_time")
+    private String reactiveAMaxTime;
+    /**
+     * a路最小无功功率时间
+     */
+    @JsonProperty("reactive_a_min_time")
+    private String reactiveAMinTime;
+    /**
+     * a路最小无功功率
+     */
+    @JsonProperty("reactive_a_min_value")
+    private float reactiveAMinValue;
+
+    /**
+     * b路最大无功功率
+     */
+    @JsonProperty("reactive_b_max_value")
+    private float reactiveBMaxValue;
+    /**
+     * b路最大无功功率时间
+     */
+    @JsonProperty("reactive_b_max_time")
+    private String reactiveBMaxTime;
+    /**
+     * b路最小无功功率时间
+     */
+    @JsonProperty("reactive_b_min_time")
+    private String reactiveBMinTime;
+    /**
+     * b路最小无功功率
+     */
+    @JsonProperty("reactive_b_min_value")
+    private float reactiveBMinValue;
+
+    /**
      * 总平均功率因素
      */
     @JsonProperty("factor_total_avg_value")
@@ -234,5 +276,7 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      */
     @JsonProperty("load_rate_total_avg_value")
     private float loadRateTotalAvgValue;
+
+
 
 }

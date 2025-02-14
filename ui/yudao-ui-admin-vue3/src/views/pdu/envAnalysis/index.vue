@@ -3,38 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <template v-if="queryParams.granularity == 'realtime' && queryParams.timeRange != null">
-          <span>{{queryParams.timeRange[0]}}</span>
-          <span>至</span>
-          <span>{{queryParams.timeRange[1]}}</span>
-        </template>
-        <br/>
-      </div>
-      <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="最高温度 | 发生时间">
-            <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最低温度 | 发生时间">
-            <span>{{ formatNumber(minTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="minTemDataTimeTemp">{{ minTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-    </div> -->
-
+       
     <div class="nav_header" style="font-size: 14px;">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
@@ -118,7 +87,7 @@
         :inline="true"
         label-width="70px"
       >
-      <el-form-item label="监测点" prop="detect">
+      <el-form-item label="传感器" prop="detect">
         <el-select
           v-model="detect"
           class="!w-130px"
@@ -467,7 +436,13 @@ const getList = async () => {
         type: 'warning',
       });
     }
-  } finally {
+  } catch (error) {
+    ElMessage({
+      message: '暂无数据',
+      type: 'warning',
+    });
+} 
+  finally {
     loading.value = false;
     a.value=0;
     b.value=0;
@@ -884,29 +859,44 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  navList.value = res
+  let arr = [] as any
+  var temp = await CabinetApi.getRoomPDUList()
+  arr = arr.concat(temp);
+  navList.value = arr
 }
-
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 /** 搜索按钮操作 */
 const handleQuery = () => {
-    queryParams.pduId = undefined;
+  
     
-    // const firstChar = detect.value[0];
+   // const firstChar = detect.value[0];
     const secondChar = detect.value[0];
     if (secondChar != null){    
     // queryParams.channel = Number(firstChar);
     queryParams.sensorId = Number(secondChar);
+    // 更新路由查询参数
+    const querySensorId = String(Number(secondChar));
+        router.push({
+            query: {
+                ...route.query, // 保留现有查询参数
+                sensorId: querySensorId // 添加或更新 sensorId 参数
+            }
+        });
     }
     needFlush.value++;
 }
-
 /** 初始化 **/
 onMounted( async () => {
+  console.log('22231');
   getNavList()
   // 获取路由参数中的 pdu_id
   let queryPduId = useRoute().query.pduId as string | undefined;
   let querySensorId = useRoute().query.sensorId as string | undefined;
+  detect.value = querySensorId;
+        console.log(detect);
+      console.log(detect.value); // 打印最新的值
   let queryLocation = useRoute().query.location as string;
   let queryAddress = useRoute().query.address as string;
   let queryDetectValue = useRoute().query.detectValue as string;
@@ -920,7 +910,7 @@ onMounted( async () => {
       nowAddress.value = queryAddress;
     }
     nowLocation.value = queryLocation
-    detect.value = queryDetectValue == null ? undefined : queryDetectValue
+    // detect.value = queryDetectValue == null ? undefined : queryDetectValue
     initChart();
   }
 })

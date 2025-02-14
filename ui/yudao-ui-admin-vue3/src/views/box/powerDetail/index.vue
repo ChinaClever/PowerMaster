@@ -1,14 +1,21 @@
 <template>
+  <div style="padding-left:20px;height:30px;font-size: 15px;">
+    <span style="color:black;font-size:14px;">机房: {{location}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">母线: {{busName || redisData?.busName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">插接箱: {{boxName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">网络地址: {{devKey}}</span>
+  </div>
+
 <div style="background-color: #E7E7E7;" class="centainer-height">
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
         <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
-            <span style="color:black;font-weight:bold;">负载率</span>
-            <div style="margin-left:300px;">
-                <span style="color:black;font-size:14px;">最大负载率: </span>
-                <span style="color:black;font-size:14px;">发生时间: </span>
+            <span style="color:black;font-weight:bold;height:20px;width:100px;">负载率</span>
+            <div style="margin-left:100px;">
+                <span style="color:black;font-size:14px;margin-right:10px;">最大负载率: {{redisData?.loadFactorValue}}</span>
+                <span style="color:black;font-size:14px;">发生时间: {{redisData?.loadFactorTime}}</span>
             </div>
         </div>
         <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
@@ -20,8 +27,8 @@
         <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>-->
-        <div style="height:340px;width:100%;margin-top:-30px;">
-            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :data="redisData.loadFactor" />
+        <div style="height:100%;width:100%;margin-top:-10px;">
+            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :data="Math.round(redisData.loadFactor)" />
         </div>
         <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
             <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
@@ -34,15 +41,15 @@
           <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">总功率</div>
           <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
-        <div class="center-top-right-part">
-          <div style="margin-left:100px;margin-top:-70px;margin-bottom:50px">
-            <span style="color:black;font-size:14px;">最大功率: </span>
-            <span style="color:black;font-size:14px;">发生时间: </span>
+        <div class="center-top-right-part" style="top:25%;">
+          <div style="margin-top:-70px;margin-bottom:50px;margin-left:-60px;">
+            <span style="color:black;font-size:14px;">最大功率: {{redisData?.powActiveValue}}kW&nbsp;&nbsp;</span>
+            <span style="color:black;font-size:14px;">发生时间: {{redisData?.powActiveTime}}</span>
           </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">额定功率:</span><span style="font-size:16px;">{{redisData?.powApparentTotal}}KVA</span>
+          <div class="label-container" >
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">额定功率:</span><span style="font-size:16px;">1000 KVA</span>
           </div>
-          <div class="label-container">
+          <div class="label-container" >
             <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">视在功率:</span><span style="font-size:16px;">{{redisData?.totalPowApparent}}kVA</span>
           </div>
           <div class="label-container">
@@ -64,7 +71,7 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 70px;">
+            top: 25%;">
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:50px;font-size:14px;">A温度:</span><span style="font-size:16px;">{{redisData?.temValue[0]}}℃</span>
           </div>
@@ -91,15 +98,15 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 50px;">
+            top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.lineVolValue[0]}}V</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.lineVolValue[0]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.lineVolValue[1]}}V</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.lineVolValue[1]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.lineVolValue[2]}}V</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.lineVolValue[2]}}V</span>
           </div>
         </div>
     </div>
@@ -114,22 +121,22 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 50px;">
+            top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.lineCurValue[0]}}A</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.lineCurValue[0]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.lineCurValue[1]}}A</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.lineCurValue[1]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.lineCurValue[2]}}A</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.lineCurValue[2]}}A</span>
           </div>
         </div>
     </div>
     <div class="bottom-part">
       <div style="display: inline-block;
         width: 50%;
-        height: 230px;">
+        height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率因数</div>
           <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
@@ -137,18 +144,18 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 20px;">
+            top: 15%;">
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.totalPowerFactor.toFixed(2)}}</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:85px;font-size:14px;">总功率因数:</span><span style="font-size:16px;">{{redisData?.totalPowerFactor.toFixed(2)}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">A相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:85px;font-size:14px;">A相功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">B相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:85px;font-size:14px;">B相功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">C相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:85px;font-size:14px;">C相功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
           </div>
         </div>
     </div>
@@ -163,7 +170,7 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30px;">
+            top: 25%;">
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[0]}}kW</span>
           </div>
@@ -173,9 +180,9 @@
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0]}}kVA</span>
           </div>
-          <div class="label-container">
+          <!-- <div class="label-container">
             <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
-          </div>
+          </div> -->
         </div>
     </div>
     <div class="bottom-part">
@@ -189,7 +196,7 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30px;">
+            top: 25%;">
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[1]}}kW</span>
           </div>
@@ -199,9 +206,9 @@
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1]}}kVA</span>
           </div>
-          <div class="label-container">
+          <!-- <div class="label-container">
             <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
-          </div>
+          </div> -->
         </div>
     </div>
     <div class="bottom-part">
@@ -215,7 +222,7 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30px;">
+            top: 25%;">
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[2]}}kW</span>
           </div>
@@ -225,18 +232,24 @@
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2]}}kVA</span>
           </div>
-          <div class="label-container">
+          <!-- <div class="label-container">
             <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
-          </div>
+          </div> -->
         </div>
     </div>
     <div style="width:98.5%;heigth:100%;">
-      <div style="margin-top:30px;background-color:#fff;font-weight:bold;">
+      <div style="margin:8px 0 0 0px;background-color:#fff;font-weight:bold;">
         <span style="margin-left:10px;">回路数据</span>
       </div>
       <el-table :data="tableData" border style="width: 100%;">
-        <el-table-column align="center" prop="loopId" label="编号" width="100px" />
-        <el-table-column label="断路器状态" prop="breakerStatus" align="center" width="450px" />
+        <el-table-column align="center" prop="loopId" label="编号" width="100%" />
+        <el-table-column  label="断路器状态" prop="breakerStatus" align="center" width="200">
+          <template #default="scope">   
+            <el-tag v-if="scope.row.breakerStatus == '断开'" type="danger">断开</el-tag>
+            <el-tag v-else-if="scope.row.breakerStatus == '闭合'" type="success">闭合</el-tag>
+          </template>
+        </el-table-column>
+
           <!--<el-table-column label="A相" align="center" prop="acur" width="150px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.acur != null">
@@ -259,13 +272,13 @@
             </template>
           </el-table-column>
         </el-table-column>-->
-        <el-table-column align="center" prop="loopVolValue" label="电压" width="150"/>
-        <el-table-column align="center" prop="loopCurValue" label="电流" width="150" />
-        <el-table-column align="center" prop="loopPowValue" label="有功功率" width="150" />
-        <el-table-column align="center" prop="loopPowReactive" label="无功功率" width="150" />
-        <el-table-column align="center" prop="loopPowApparent" label="视在功率" width="150"/>
-        <el-table-column align="center" prop="loopPowerFactor" label="功率因数" width="150" />
-        <el-table-column align="center" prop="loopEleActive" label="电能" />
+        <el-table-column align="center" prop="loopVolValue" label="电压(V)" width="200"/>
+        <el-table-column align="center" prop="loopCurValue" label="电流(A)" width="200" />
+        <el-table-column align="center" prop="loopPowValue" label="有功功率(kW)" width="200" />
+        <el-table-column align="center" prop="loopPowReactive" label="无功功率(kVar)" width="200" />
+        <el-table-column align="center" prop="loopPowApparent" label="视在功率(kVA)" width="200"/>
+        <el-table-column align="center" prop="loopPowerFactor" label="功率因数" width="200" />
+        <el-table-column align="center" prop="loopEleActive" label="电能(kWh)" />
       </el-table>
     </div>
   </div>
@@ -300,6 +313,8 @@ const loadRateList = ref() as any;
 const selectedOption = ref('current')
 const location = ref(history?.state?.location);
 const busName = ref(history?.state?.busName);
+const devKey = ref(history?.state?.devKey);
+const boxName = ref(history?.state?.boxName);
 const id = ref(history?.state?.id);
 const roomId = ref(history?.state?.roomId);
 const type = ref(history?.state.type);
@@ -423,7 +438,7 @@ const createFilter = (queryString: string) => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  await getRedisData();
+  getRedisData();
 })
 
 

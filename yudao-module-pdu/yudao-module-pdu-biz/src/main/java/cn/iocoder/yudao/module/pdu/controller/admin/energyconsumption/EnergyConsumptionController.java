@@ -31,18 +31,17 @@ public class EnergyConsumptionController {
     @Autowired
     private EnergyConsumptionService energyConsumptionService;
 
-    @GetMapping("/page")
+    @PostMapping("/page")
     @Operation(summary = "获得pdu电量数据分页")
-    public CommonResult<PageResult<Object>> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getEQDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/export-excel")
+    @PostMapping("/export-excel")
     @Operation(summary = "导出pdu能耗趋势数据 Excel")
-//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportEQDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list1 = energyConsumptionService.getEQDataPage(pageReqVO).getList();
@@ -60,18 +59,17 @@ public class EnergyConsumptionController {
 
     }
 
-    @GetMapping("/bill-page")
+    @PostMapping("/bill-page")
     @Operation(summary = "获得pdu电费数据分页")
-    public CommonResult<PageResult<Object>> getBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBillDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getBillDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/bill-export-excel")
+    @PostMapping("/bill-export-excel")
     @Operation(summary = "导出pdu电费统计数据 Excel")
-//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBillDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportBillDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list1 = energyConsumptionService.getBillDataPage(pageReqVO).getList();
@@ -137,18 +135,18 @@ public class EnergyConsumptionController {
 
     }
 
-    @GetMapping("/realtime-page")
+    @PostMapping("/realtime-page")
     @Operation(summary = "获得pdu电量实时数据分页")
-    public CommonResult<PageResult<Object>> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getRealtimeEQDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getRealtimeEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/realtime-export-excel")
+    @PostMapping("/realtime-export-excel")
     @Operation(summary = "导出pdu电能记录数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportRealtimeEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportRealtimeEQDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list1 = energyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
@@ -198,14 +196,14 @@ public class EnergyConsumptionController {
 
     @PostMapping("ele_total_realtime")
     @Operation(summary = "获取实时电量")
-    public CommonResult<PageResult<EleTotalRealtimeRespVO>> getEleTotalRealtime( EleTotalRealtimeReqDTO reqDTO) throws IOException {
+    public CommonResult<PageResult<EleTotalRealtimeRespVO>> getEleTotalRealtime(@RequestBody EleTotalRealtimeReqDTO reqDTO) throws IOException {
         PageResult<EleTotalRealtimeRespVO> list = energyConsumptionService.getEleTotalRealtime(reqDTO,true);
         return success(list);
     }
 
-    @GetMapping("ele_total_realtimeExcel")
+    @PostMapping("ele_total_realtimeExcel")
     @Operation(summary = "获取实时电量导出")
-    public void getEleTotalRealtimeExcel( EleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
+    public void getEleTotalRealtimeExcel(@RequestBody EleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
         PageResult<EleTotalRealtimeRespVO> list = energyConsumptionService.getEleTotalRealtime(reqDTO,false);
         ExcelUtils.write(response, "pdu实时电能记录数据.xlsx", "数据", EleTotalRealtimeRespVO.class,
                 BeanUtils.toBean(list.getList(), EleTotalRealtimeRespVO.class));

@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress == null ? '暂未绑定设备' : nowAddress}}</span>
           <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
           <br/>
 
@@ -94,7 +94,7 @@
       <div v-loading="loading">
         <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
-            <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
+            <div ref="chartContainer" id="chartContainer" style="width: 75vw; height: 65vh;"></div>
           </el-tab-pane>
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
@@ -545,7 +545,8 @@ const getList = async () => {
         type: 'warning',
       });
     }
-  } finally {
+  } 
+  finally {
     loading.value = false;
     a.value=0;
     b.value=0;
@@ -731,8 +732,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
                                   "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
                                   "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,   }
             },
-            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
+            toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value}
             ],
@@ -1087,11 +1088,12 @@ const handleQuery = () => {
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  let queryBoxId = useRoute().query.boxId as string | undefined;
+  //let queryBoxId = useRoute().query.boxId as string | undefined;
   let queryDevKey = useRoute().query.devKey as string;
   let queryLocation = useRoute().query.location as string;
-  queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
-  if (queryParams.boxId != undefined){
+  //queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
+  queryParams.devkey = queryDevKey;
+  if (queryParams.devkey != undefined){
     await getList();
     if (queryLocation == null) {
       nowAddress.value = '';

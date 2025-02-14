@@ -119,7 +119,14 @@
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
-          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>   
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>  
+          <el-table-column v-if="valueMode == 0" label="总功率因素" align="center" prop="apf" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.totalPf != null">
+                {{ scope.row.totalPf }}
+              </el-text>
+            </template>
+          </el-table-column> 
           <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.apf != null">
@@ -211,7 +218,7 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
-            <span>所在位置：{{ location }}</span>
+            <span>所在位置：{{ location?location:'未绑定' }}</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
 
@@ -225,7 +232,7 @@
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
@@ -241,12 +248,14 @@
         </div>
         <br/>
         <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
-        <el-table style="height:550px;ovrflow:hidden;overflow-y:auto;" v-if="switchChartOrTable == 1" :data="pfTableList" :show-overflow-tooltip="true" >
+        <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+          <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
           <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
           <el-table-column label="C相功率因素" align="center" prop="powerFactorAvgValueC" />
         </el-table>
+        </div>
       </el-dialog>
     </template>
   </CommonMenu>
@@ -347,7 +356,7 @@ const createFilter = (queryString: string) => {
 const openPFDetail = async (row) =>{
   queryParams.busId = row.busId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location : row.devKey;
+  location.value = row.location;
   busName.value = row.busName;
   devkey.value = row.devKey;
   console.log('row',row);

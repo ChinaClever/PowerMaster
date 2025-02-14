@@ -27,6 +27,7 @@ const gaugeData = [
   {
     value: props.loadFactor.temValue[0],
     name: 'A',
+    itemStyle: { color: '#B47660' },
     title: {
       offsetCenter: ['-60%', '80%']
     },
@@ -37,6 +38,7 @@ const gaugeData = [
   {
     value: props.loadFactor.temValue[1],
     name: 'B',
+    itemStyle: { color: '#C8603A' },
     title: {
       offsetCenter: ['-20%', '80%']
     },
@@ -47,6 +49,7 @@ const gaugeData = [
   {
     value: props.loadFactor.temValue[2],
     name: 'C',
+    itemStyle: { color: '#AD3762' },
     title: {
       offsetCenter: ['20%', '80%']
     },
@@ -57,6 +60,7 @@ const gaugeData = [
   {
     value: props.loadFactor.temValue[3],
     name: 'N',
+    itemStyle: { color: '#E5B849' },
     title: {
       offsetCenter: ['60%', '80%']
     },
@@ -104,7 +108,7 @@ const chartOptions = computed(() => ( {
         color: '#fff',
         backgroundColor: 'inherit',
         borderRadius: 3,
-        formatter: '{value}%'
+        formatter: '{value}℃'
       }
     }
   ]

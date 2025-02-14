@@ -1,26 +1,11 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电能记录" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-      <!-- <div class="line"></div> -->
+
       <br/>    <br/> 
     
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div> -->
-        <!-- <div class="nav_content">
-          <el-descriptions title="" direction="vertical" :column="1" border >
-            <el-descriptions-item label="总电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="总电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="相电能"><span>{{ navLineData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="回路电能" ><span>{{ navLoopData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="输出位电能" ><span>{{ navOutletData }} 条</span></el-descriptions-item>
-          </el-descriptions>
-        </div> -->
+
 
         <div class="descriptions-container" style="font-size: 14px;">
           <div >
@@ -69,7 +54,7 @@
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
-        v-model="queryParams.timeRange"
+        v-model="selectTimeRange"
         type="datetimerange"
         :shortcuts="shortcuts"
         range-separator="-"
@@ -123,25 +108,27 @@
 </template>
 
 <script setup lang="ts">
-import dayjs from 'dayjs'
-import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
-import { HistoryDataApi } from '@/api/pdu/historydata'
-import { CabinetApi } from '@/api/cabinet/info'
+import dayjs from 'dayjs';
+import download from '@/utils/download';
+import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption';
+import { HistoryDataApi } from '@/api/pdu/historydata';
+import { CabinetApi } from '@/api/cabinet/info';
 import PDUImage from '@/assets/imgs/PDU.jpg';
-import { ElMessage } from 'element-plus'
-defineOptions({ name: 'PowerRecords' })
+import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { ElMessage } from 'element-plus';
+defineOptions({ name: 'PowerRecords' });
 
-const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
-const navLineData = ref(0)
-const navLoopData = ref(0)
-const navOutletData = ref(0)
-const loading = ref(true)
-const message = useMessage() // 消息弹窗
+const navList = ref([]) as any; // 左侧导航栏树结构列表
+const navTotalData = ref(0);
+const navLineData = ref(0);
+const navLoopData = ref(0);
+const navOutletData = ref(0);
+const loading = ref(true);
+const message = useMessage(); // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
-const total = ref(0)
-const realTotel = ref(0) // 数据的真实总条数
+const total = ref(0);
+const realTotel = ref(0); // 数据的真实总条数
+const selectTimeRange = ref(undefined)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -151,10 +138,10 @@ const queryParams = reactive({
   type: 'total',
   timeRange: undefined as any,
   ipArray: [],
-})
-const pageSizeArr = ref([15,30,50,100])
-const queryFormRef = ref()
-const exportLoading = ref(false)
+});
+const pageSizeArr = ref([15,30,50,100]);
+const queryFormRef = ref();
+const exportLoading = ref(false);
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -270,6 +257,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+     
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -396,12 +391,9 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
@@ -441,12 +433,24 @@ const handleExport = async () => {
     exportLoading.value = false
   }
 }
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 初始化 **/
 onMounted(() => {
-  getNavList()
-  getNavOneDayData()
+  getNavList();
+  getNavOneDayData();
   getTypeMaxValue();
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getList();
 })
 </script>

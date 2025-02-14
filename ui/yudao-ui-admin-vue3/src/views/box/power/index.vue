@@ -100,7 +100,7 @@
       </el-form>
     </template>
     <template #Content>
-      <div v-if="switchValue !== 0  && list.length > 0" style="height:720px;margin-top:-10px;">
+      <div v-if="switchValue !== 0  && list.length > 0" style="height:720px;margin-top:-10px;overflow-y: auto;">
         <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -215,7 +215,7 @@
         <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="总视在功率(kVA)" align="center" prop="creactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powApparent">
-              {{ scope.row.powApparent }}
+              {{ scope.row.powApparent.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -244,7 +244,7 @@
         <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="总有功功率(kW)" align="center" prop="cactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powActive">
-              {{ scope.row.powActive }}
+              {{ scope.row.powActive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -272,7 +272,7 @@
         <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powReactive">
-              {{ scope.row.powReactive }}
+              {{ scope.row.powReactive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -657,7 +657,7 @@
               <div>
                 <div v-for="(outletApparentPow,index) in item.outletApparentPow" :key="index">
                   <el-text  v-if="item.outletApparentPow != null">
-                    {{outletLineText[index]}}{{outletApparentPow}}kVar
+                    {{outletLineText[index]}}{{outletApparentPow}}kVa
                   </el-text>
                 </div>
               </div>
@@ -684,8 +684,11 @@
               <!--<div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
                 电压
               </div>-->
-              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line'">
-                总有功率
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length <= 1">
+                有功功率
+              </div>
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length > 1">
+                {{ item.powActive.toFixed(3) }}kW<br/><span style="font-size: 15px; ">总有功功率</span>
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
@@ -693,11 +696,17 @@
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
                 有功功率
               </div>-->
-              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'" >
-                总无功率
+              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'  && item.outletReactivePow.length <= 1" >
+                无功功率
               </div>
-              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'" >
+              <div v-if="valueMode == 3 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
+                {{ item.powReactive.toFixed(3) }}kVar<br/><span style="font-size: 15px; ">总无功功率</span>
+              </div>
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'  && item.outletApparentPow.length <= 1" >
                 视在功率
+              </div>
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line' && item.outletApparentPow.length > 1" >
+                {{ item.powApparent.toFixed(3) }}kVa<br/><span style="font-size: 15px; ">总视在功率</span>
               </div>
              <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
                 无功功率
@@ -815,14 +824,21 @@ const loadAll = async () => {
   return objectArray;
 };
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
-};
+  }
+}
 
 const createFilter = (queryString: string) => {
   return (devKeyList) => {
@@ -980,8 +996,15 @@ const getList = async () => {
       const selectedElements = [];
       const indicesToSelect = [2, 5, 8];
       for (let j = 0; j < indicesToSelect.length; j++) {
-        if (j < loopCur.length){
-          selectedElements.push(loopCur[indicesToSelect[j]]);
+        if (Array.isArray(loopCur) && Array.isArray(indicesToSelect) && j < loopCur.length) {
+          const index = indicesToSelect[j];
+          if (index >= 0 && index < loopCur.length) {
+            selectedElements.push(loopCur[index]);
+          } else {
+            console.warn('Index out of bounds:', index);
+          }
+        } else {
+          console.warn('Invalid loopCur or indicesToSelect array');
         }
       }
 
@@ -997,13 +1020,73 @@ const getList = async () => {
 const getListAll = async () => {
   try {
     const allData = await IndexApi.getBoxIndexStatistics();
+
+    const data = await IndexApi.getBoxRedisPage(queryParams);
     //设置左边数量
     statusNumber.normal = allData.normal;
     statusNumber.offline = allData.offline;
     statusNumber.alarm = allData.alarm;
     statusNumber.total = allData.total;
-  } catch (error) {
-    
+
+    list.value = data.list;
+    var tableIndex = 0;
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.phaseCur == null){
+        return;
+      }
+      for(var i= 0;i < obj.phaseCur.length; i++)
+      {
+        obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+        obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+        obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+        obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+        obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      
+      for(var i= 0;i < obj.loopCur.length; i++)
+      {
+        obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
+        obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
+        obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
+        obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
+      } 
+      
+      for(var i= 0;i < obj.outletActivePow.length; i++)
+      {
+        obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
+        obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
+        obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
+    });
+
+    for(let i = 0; i < list.value.length; i++){
+      const loopCur = list.value[i].loopCur;
+      const selectedElements = [];
+      const indicesToSelect = [2, 5, 8];
+      for (let j = 0; j < indicesToSelect.length; j++) {
+        if (Array.isArray(loopCur) && Array.isArray(indicesToSelect) && j < loopCur.length) {
+          const index = indicesToSelect[j];
+          if (index >= 0 && index < loopCur.length) {
+            selectedElements.push(loopCur[index]);
+          } else {
+            console.warn('Index out of bounds:', index);
+          }
+        } else {
+          console.warn('Invalid loopCur or indicesToSelect array');
+        }
+      }
+
+      list.value[i].loopCur = selectedElements;
+    }
+
+    total.value = data.total;
+
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -1083,8 +1166,10 @@ const getNavList = async() => {
 const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
-  const location = row.location != null ? row.location : row.devKey;
-  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}});
+  const boxName = row.boxName;
+  const busName = row.busName;
+  const location = row.location != null ? row.location : '未绑定';
+  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location,busName}});
 };
 
 const defaultSelected = ref(['line']);
@@ -1205,7 +1290,7 @@ onMounted(async () => {
   getListAll();
   //getTypeMaxValue();
   // flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1227,8 +1312,7 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    // flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
@@ -1382,7 +1466,7 @@ onActivated(() => {
         flex-direction: row;
         align-items: self-end;
         justify-content: space-between;
-        font-size: 13px;
+        font-size: 20px;
         .value {
           font-size: 15px;
           font-weight: bold;
@@ -1521,10 +1605,10 @@ onActivated(() => {
         align-items: center;
         height: 100%;
         .icon {
-          font-size: 20px;
+          font-size: 18px;
           width: 100px;
-          height: 50px;
-          margin-left:20px;
+          height: 60px;
+          margin-left:60px;
           text-align: center;
           .text-pf{
             font-size: 16px;

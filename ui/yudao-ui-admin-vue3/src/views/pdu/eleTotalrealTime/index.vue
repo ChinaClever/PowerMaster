@@ -3,27 +3,11 @@
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
-          <!-- <div class="carousel-container">
-            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-              </el-carousel-item>
-            </el-carousel>
-          </div>
-          <div class="nav_content">
-            <el-descriptions title="全部PDU新增能耗记录" direction="vertical" :column="1" width="60px" border >
-              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions>
-          </div>
-        </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">按时间范围查询实时能耗</span>
           </div>
         </div>
-        
       </div>
     </template>
     <template #ActionBar>
@@ -34,29 +18,6 @@
          :inline="true"
          label-width="auto"
        >
-         <!-- <el-form-item label="参数类型" prop="type">
-          <el-cascader
-            v-model="typeDefaultSelected"
-            collapse-tags
-            :options="typeSelection"
-            collapse-tags-tooltip
-            :show-all-levels="true"
-            @change="typeCascaderChange"
-            class="!w-140px"
-          />
-        </el-form-item>
-
-         <el-form-item label="颗粒度" prop="granularity">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择天/周/月"
-              class="!w-120px" >
-              <el-option label="天" value="day" />
-              <el-option label="周" value="week" />
-              <el-option label="月" value="month" />
-            </el-select>
-          </el-form-item> -->
-
          <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
             value-format="YYYY-MM-DD"
@@ -99,10 +60,10 @@
               </el-text>
             </template>
             </el-table-column>
-        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin'   width= '165px'  >
+        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin'   width= '165px'>
           <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.createTimeMin">
-                {{ scope.row.createTimeMin }}
+                {{ formatTime1(scope.row,scope.row.createTimeMin,scope.row.createTimeMin) }}
               </el-text>
             </template>
         </el-table-column>
@@ -118,7 +79,7 @@
           <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax'  width= '165px'  >
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.createTimeMax">
-                {{ scope.row.createTimeMax }}
+                {{ formatTime1(scope.row,scope.row.createTimeMax,scope.row.createTimeMax) }}
               </el-text>
             </template>
           </el-table-column>
@@ -135,59 +96,14 @@
             <el-button
               link
               type="primary"
-              @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
+              @click="toDetails(scope.row.location,String(selectTimeRange[0]),String(selectTimeRange[1]))"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
             详情
             </el-button>
           </template>
         </el-table-column>
       </el-table> 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- <el-table :datv-loading="loading" :data="list"  :show-overflow-tooltip="true" >
-            
-        <el-table-column label="序号" align="center" width="80px">
-          <template #default="{ $index }">
-            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
-          </template>   
-        </el-table-column> -->
-       <!-- 遍历其他列 -->
-        <!-- <el-table-column label= '所在位置'  align = 'center' prop= 'address' , istrue:true, width='150%'/>
-       <el-table-column label= '网络地址' align= 'center' prop= 'location' , istrue:true, width= '150px'/>
-       <el-table-column label= '开始电能' align='center' istrue: true>
-        <el-table-column label='开始电能(kWh)' align= 'center' prop= 'eleActiveStart' , istrue:true, formatter: formatEle ,width= '130px'/>
-        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin' , formatter: formatTime1, width= '130px'  istrue:true/>
-      </el-table-column>
-        <el-table-column label= '结束电能' align= 'center' istrue: true>
-          <el-table-column label= '结束电能(kWh)' align= 'center' prop= 'eleActiveEnd' , istrue:true, formatter: formatEle,width= '130px'/>
-          <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax' , formatter: formatTime1, width= '130px'  istrue:true/>
-        </el-table-column>
-        <el-table-column label= '耗电量(kWh)' align= 'center' prop= 'eleActive' ,istrue: true,formatter: formatEle ,width= '130px'/>
-        <el-table-column label="操作" align="center">
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
-            >
-            设备详情
-            </el-button>
-          </template>
-        </el-table-column>
-       
- -->
-      
       </div>
       <!-- 分页 -->
       <Pagination
@@ -503,31 +419,6 @@ const handleQuery = () => {
  getList()
 }
 
-// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
-// const getTypeMaxValue = async () => {
-//     const data = await HistoryDataApi.getTypeMaxValue()
-//     const outletIdMaxValue = data.outlet_id_max_value;
-//     const typeSelectionValue  = [
-//     {
-//       value: "total",
-//       label: '总'
-//     },
-//     {
-//       value: "outlet",
-//       label: '输出位',
-//       children: (() => {
-//         const outlets: { value: any; label: string; }[] = [];
-//         outlets.push({ value: undefined, label: '全部' },)
-//         for (let i = 1; i <= outletIdMaxValue; i++) {
-//           outlets.push({ value: `${i}`, label: `${i}` });
-//         }
-//         return outlets;
-//       })(),
-//     },
-//   ]
-//   typeSelection.value = typeSelectionValue;
-// }
-
 // 导航栏选择后触发
 const handleCheck = async (node) => {
     let arr = [] as any
@@ -551,12 +442,9 @@ const handleCheck = async (node) => {
 
 // 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
@@ -594,8 +482,9 @@ onMounted(() => {
   getNavList()
   // getNavNewData()
   // getTypeMaxValue();
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+ 
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
   format(startOfMonth),

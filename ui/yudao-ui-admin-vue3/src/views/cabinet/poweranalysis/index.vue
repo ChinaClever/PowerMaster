@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗数据">
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
@@ -305,7 +305,8 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -335,7 +336,8 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value) ))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     	console.log('入参', queryParams);
@@ -365,7 +367,7 @@ function customTooltipFormatter(params: any[]) {
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
   tooltipContent += '<br/>'+ item.marker +'记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + ' '+ item.seriesName + ': ' + item.value + 'kWh <br/>'                 
-                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+list.value[item.dataIndex].end_ele +'kWh <br/>' 
+                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].end_ele) +'kWh <br/>' 
                     +item.marker + '开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) +'kWh <br/>'
   return tooltipContent;
 }
@@ -477,7 +479,12 @@ const handleExport = async () => {
     exportLoading.value = false
   }
 }
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location: string) => {
@@ -490,6 +497,13 @@ const id =  ref(0)
 onMounted(() => {
   getNavList()
   getNavNewData()
+//   const now = new Date()
+//       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+//    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+// selectTimeRange.value = [
+//   format(startOfMonth),
+//   format(now)
+// ];
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   id.value = useRoute().query.id as unknown as number;

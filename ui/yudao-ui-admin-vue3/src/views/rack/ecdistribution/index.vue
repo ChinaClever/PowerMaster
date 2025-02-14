@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机架能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机架能耗排名" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -118,7 +118,7 @@
         </el-tab-pane>
       </el-tabs>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 
 </template>
 
@@ -131,6 +131,7 @@ import { IndexApi } from '@/api/rack/index'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
 import download from '@/utils/download'
+import  CommonMenu1 from './CommonMenu1.vue'
 
 
 defineOptions({ name: 'ECDistribution' })
@@ -446,13 +447,15 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await IndexApi.getRackAll({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  // const res = await CabinetApi.getRoomList({})
+  // let arr = [] as any
+  // for (let i=0; i<res.length;i++){
+  // var temp = await IndexApi.getRackAll({id : res[i].id})
+  // arr = arr.concat(temp);
+  // }
+  // navList.value = arr
+  const res = await CabinetApi.getRackMenuAll({})
+  navList.value = res
 }
 
 /** 搜索按钮操作 */

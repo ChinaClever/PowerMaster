@@ -19,8 +19,10 @@ const props = defineProps({
     default: 60
   }
 })
-const color = ref('')
-const echartsOption = reactive<any>({})
+const color = ref('');
+const echartsOption = reactive<any>({});
+console.log('props.precent666',props.precent);
+console.log('props.precent',Math.round(props.precent));
 
 const judgeColor = () => {
   if (props.precent == 0) {
@@ -42,16 +44,16 @@ watch(() => props.precent,(val) => {
   echartsOption.series = [
     {
       type: 'liquidFill',
-      data: [props.precent/100], // 设置水球图的填充比例
+      data: [Math.round(val) / 100], // 设置水球图的填充比例
       label: {
         fontSize: 12, // 设置字体大小
         fontWeight: 'bold', // 设置字体粗细
         color: props.precent == 0 ? '#fff' : color.value,
         formatter: (params) => {
-          if (params.data == 0) {
-            return '未开通'
+          if (params.data == null) {
+            return '未绑定'
           } else {
-            return params.data * 100 + '%'
+            return Math.round(val) + '%'
           }
         }
       },
@@ -62,7 +64,7 @@ watch(() => props.precent,(val) => {
       },
       color: [color.value], //3b8bf5 // 水的颜色
       backgroundStyle: { // 球的背景色
-        color: props.precent == 0 ? '#aaa' : '#fff'
+        color: Math.round(val) == 0 ? '#aaa' : '#fff'
       }
     }
   ]

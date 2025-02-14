@@ -255,6 +255,13 @@ public class BigDemicalUtil {
         }
     }
 
+    public static <T extends Number> BigDecimal setScale(T b1,Integer scale) {
+        if (null == b1) {
+         return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(b1.doubleValue()).setScale(scale, BigDecimal.ROUND_HALF_UP);
+
+    }
     /**
      * BigDecimal的乘法运算封装
      *

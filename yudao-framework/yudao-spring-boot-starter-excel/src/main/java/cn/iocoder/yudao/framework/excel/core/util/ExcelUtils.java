@@ -14,6 +14,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Excel 工具类
@@ -36,6 +37,20 @@ public class ExcelUtils {
     public static <T> void write(HttpServletResponse response, String filename, String sheetName,
                                  Class<T> head, List<T> data) throws IOException {
         write(response, filename, sheetName, head, data, null);
+    }
+
+    public static <T> void writeA(HttpServletResponse response, String filename, String sheetName,
+                                  Class<T> head, List<T> data, List<KeyValue<ExcelColumn, List<String>>> selectMap, Set<String> columnsToExclude) throws IOException {
+        // 输出 Excel
+        EasyExcel.write(response.getOutputStream(), head).excludeColumnFieldNames(columnsToExclude)
+                .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
+                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
+                .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
+                .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
+                .sheet(sheetName).doWrite(data);
+        // 设置 header 和 contentType。写在最后的原因是，避免报错时，响应 contentType 已经被修改了
+        response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
+        response.setContentType("application/vnd.ms-excel;charset=UTF-8");
     }
 
     /**

@@ -23,12 +23,17 @@
         ci.update_time as updateTime,
         ci.create_time as createTime,
         ci.cabinet_height as cabinetHeight,
+        ci.cabinet_height as freeSpace,
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
-        cf.company
+        cf.company,
+        round((cabinet_use_height/cabinet_height)*100,2) as usedSpaceRate,
+        ri.room_name as roomName,
+        concat(ri.room_name,'-',ci.cabinet_name) as location
         from cabinet_index ci
         left join cabinet_cfg cf on ci.id = cf.cabinet_id
-        where CI.is_disabled = 0 and CI.is_deleted = 0
+        left join room_index ri on ci.room_id = ri.id
+        where ci.is_disabled = 0 and ci.is_deleted = 0
         <if test=" indexVo.pduBox != null ">
             and ci.pdu_box = #{indexVo.pduBox}
         </if>
@@ -54,19 +59,14 @@
             and ci.roomId = #{indexVo.roomId}
         </if>
         <if test=" indexVo.company != null and indexVo.company != ''">
-            and CF.company like "%"#{indexVo.company}"%"
+            and cf.company like "%"#{indexVo.company}"%"
+        </if>
+        <if test="indexVo.startNum != null and  indexVo.endNum != null">
+            and  round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN #{indexVo.startNum} and #{indexVo.endNum}
         </if>
         order by ci.create_time desc,ci.run_status asc
     </select>
-    <select id="selectRunStatus" resultType="java.util.Map">
-        select
-        sum(case when run_status = 0 then 1 else 0 end) as sumNoload,
-        sum(case when run_status = 1 then 1 else 0 end) as sumNormal,
-        sum(case when run_status = 2 then 1 else 0 end) as sumEarly,
-        sum(case when run_status = 3 then 1 else 0 end) as sumInform
-        from cabinet_index
-        where is_disabled = 0 and is_deleted = 0
-    </select>
+
 
     <!-- 获得已删除机柜分页 -->
     <select id="selectCabdeleteList" parameterType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo"
@@ -80,18 +80,31 @@
         ci.update_time as updateTime
         from cabinet_index ci
         where ci.is_disabled = 0 and ci.is_deleted = 1
-        ORDER BY  update_time desc
+        ORDER BY update_time desc
+    </select>
+    <select id="selectRunStatus" resultType="cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO">
+        select
+        sum(case when run_status = 0 then 1 else 0 end) as Unbound,
+        sum(case when run_status = 1 then 1 else 0 end) as Normal,
+        sum(case when run_status = 2 then 1 else 0 end) as Warning,
+        sum(case when run_status = 3 then 1 else 0 end) as Alarm,
+        sum(case when run_status = 4 then 1 else 0 end) as Offline,
+        count(id) as total
+        from cabinet_index
+        where is_disabled = 0 and is_deleted = 0
     </select>
 
     <!-- 设备恢复 -->
     <update id="updaterestorerCabinet">
-        update cabinet_index set  is_deleted = '0'  where id=#{id}
+        update cabinet_index set is_deleted = 0 where id=#{id}
     </update>
 
 
     <update id="updateByCabinetCfg">
-        update cabinet_cfg cg set cg.x_coordinate = #{vo.xCoordinate},cg.y_coordinate = #{vo.yCoordinate},cg.ele_alarm_day = #{vo.eleAlarmDay}, cg.ele_limit_day = #{vo.eleLimitDay}, cg.ele_alarm_month = #{vo.eleAlarmMonth}, cg.ele_limit_month = #{vo.eleLimitMonth}
-        where  cg.cabinet_id = #{vo.id}
+        update cabinet_cfg cg set cg.x_coordinate = #{vo.xCoordinate},cg.y_coordinate =
+        #{vo.yCoordinate},cg.ele_alarm_day = #{vo.eleAlarmDay}, cg.ele_limit_day = #{vo.eleLimitDay}, cg.ele_alarm_month
+        = #{vo.eleAlarmMonth}, cg.ele_limit_month = #{vo.eleLimitMonth}
+        where cg.cabinet_id = #{vo.id}
     </update>
 
 

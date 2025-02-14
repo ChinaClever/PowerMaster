@@ -46,9 +46,9 @@ const gaugeData = [
       valueAnimation: true,
       offsetCenter: ['0%', '40%']
     },
-    //itemStyle:{
-    //  color:'#B47660'
-    //}
+    itemStyle:{
+      color:'purple'
+    }
   }
 ];
 

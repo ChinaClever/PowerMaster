@@ -19,7 +19,7 @@ public class SystemMailAlarmConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 告警发送邮件

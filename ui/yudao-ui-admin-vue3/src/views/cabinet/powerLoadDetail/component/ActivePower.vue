@@ -8,36 +8,37 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  createTimeData:{
-    type: Array,
-    required: true,
-  },
+  //createTimeData:{
+  //  type: Array,
+  //  required: true,
+  //},
   timeRadio:{
     required: true,
   }
 })
 
-const L1Data = ref()
-const L2Data = ref()
-const L3Data = ref()
+console.log('props',props.curChartData);
+const L1Data = ref([]);
+const L2Data = ref([]);
+const L3Data = ref([]);
+const createTimeData = ref([]);
 
-if(props.curChartData.value != null){
-  if(props.timeRadio === '近一小时'){
-    L1Data.value = props.curChartData.value.L1.map((item) => item.pow_active.toFixed(3))
-    L2Data.value = props.curChartData.value.L2.map((item) => item.pow_active.toFixed(3))
-    L3Data.value = props.curChartData.value.L3.map((item) => item.pow_active.toFixed(3))
-  }else{
-    L1Data.value = props.curChartData.value.L1.map((item) => item.pow_active_avg_value.toFixed(3));
-    L2Data.value = props.curChartData.value.L2.map((item) => item.pow_active_avg_value.toFixed(3));
-    L3Data.value = props.curChartData.value.L3.map((item) => item.pow_active_avg_value.toFixed(3));
-  }
+if(props.curChartData != null){
+  L1Data.value = props.curChartData.aPath.map((item) => item.powActiveA);
+  L2Data.value = props.curChartData.aPath.map((item) => item.powActiveB);
+  L3Data.value = props.curChartData.aPath.map((item) => item.powActiveTotal);
+  createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
 }
+
+console.log('L1Data', L1Data.value);
+console.log('L2Data', L2Data.value);
+console.log('createTimeData', createTimeData.value);
 
 const chartOptions = {
   title: { text: ''},
   legend: { orient: 'horizontal', right: '25'},
   dataZoom:[{type: "inside"}],
-  xAxis: {type: 'category', boundaryGap: false, data:props.createTimeData},
+  xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
   yAxis: { 
     type: 'value',
     axisLabel: {
@@ -54,8 +55,8 @@ const chartOptions = {
   },
   series: [
     {name: '总有功功率', type: 'line', symbol: 'none', data: L1Data.value },
-    {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
-    {name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
+    {name: 'A路有功功率', type: 'line', symbol: 'none', data: L2Data.value},
+    {name: 'B路有功功率', type: 'line', symbol: 'none', data: L3Data.value},
   ],
 }
 </script>

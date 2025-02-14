@@ -60,7 +60,7 @@
         select
         t1.id as id,
         t1.box_key as `unique`,
-        t1.box_name as `name`,
+        concat(t1.box_key,'-',t1.box_name) as `name`,
         '7' as type,
         '6' as parentType
         from box_index t1
@@ -78,6 +78,21 @@
                 )
             </if>
         </where>
+    </select>
+    <select id="findKeys" resultType="java.lang.String">
+        select box_key from box_index
+        where is_deleted = 0
+        <if test="key != null and key != ''">
+            and box_key like concat(#{key},'%')
+        </if>
+        <if test="flag ==1">
+            GROUP BY ip_addr,box_key
+        </if>
+        limit 50
+    </select>
+    <select id="selectNameById" resultType="cn.iocoder.yudao.framework.common.vo.BoxName">
+        select box_name as name from box_index bi left join bus_index bi2 on bi.box_key = bi2.box_key
+        where id = #{boxId}
     </select>
 
 </mapper>

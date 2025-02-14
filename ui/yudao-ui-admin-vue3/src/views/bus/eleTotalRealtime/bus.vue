@@ -59,7 +59,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.devKey,row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.devKey,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
           </template>
         </el-table-column>
         
@@ -454,8 +454,8 @@ const toDetails = (devKey: string, createTimeMin : string,createTimeMax : string
 onMounted(() => {
   getNavList()
   getNavNewData()
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
   format(startOfMonth),
@@ -465,10 +465,7 @@ selectTimeRange.value = [
 });
 
 const format = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+   return dayjs(date).format('YYYY-MM-DD')
 };
 
 </script>

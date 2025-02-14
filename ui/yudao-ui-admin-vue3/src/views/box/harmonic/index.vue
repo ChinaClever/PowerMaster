@@ -122,7 +122,7 @@
     </template>
     <template #Content>
       <div v-if="switchValue !== 0 && list.length > 0">
-        <el-table v-if="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+        <el-table v-if="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -181,17 +181,17 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey +'-' +item.boxName }}</div>
           <div class="content">
+            <div class="info" >                  
+              <div v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
+              <div v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
+              <div v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
+            </div>
             <div class="icon">
               <div v-if="item.acurThd != null">
                 <br/>
                 电流谐波
               </div> 
-            </div>
-            <div class="info" >                  
-              <div v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
-              <div v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
-              <div v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
-            </div>          
+            </div>   
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <!-- <div class="status" v-if="valueMode == 0">
@@ -202,12 +202,83 @@
           <div class="status" v-if="valueMode == 0">
             <el-tag type="info" v-if="item.status == 0 " >{{statusList[0].name}}</el-tag>
             <el-tag v-else-if="item.status === 1" type="success" >{{statusList[1].name}}</el-tag>
-            <el-tag v-else-if="item.status === 2" type="success" >{{statusList[2].name}}</el-tag>
+            <el-tag v-else-if="item.status === 2" type="danger" >{{statusList[2].name}}</el-tag>
           </div>          
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
+          <button class="detail" @click="showDialog(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
         </template>
       </div>
+
+      <el-dialog v-model="dialogVisible" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <el-form
+        class="-mb-15px"
+        :model="queryParamsCopy"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="120px"
+      >      
+        <!-- <el-form-item label="网络地址" prop="devKey">
+          <el-input
+            v-model="queryParams.devKey"
+            placeholder="请输入网络地址"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-240px"
+          />
+        </el-form-item> -->
+        <el-form-item>       
+          <!--<el-tag size="large">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{boxName}})</el-tag>-->
+          <span>机房：{{ location }}&nbsp;&nbsp;</span>
+          <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+          <span>插接箱：{{boxName}}&nbsp;&nbsp;</span>
+          <span>网络地址：{{ devkey }}</span>
+          <!--<el-select
+            v-model="queryParamsCopy.harmonicType"
+            placeholder="请选择"
+            style="width: 240px"
+          >
+            <el-option label="A相电流谐波" :value = 3 />
+            <el-option label="B相电流谐波" :value = 4 />
+            <el-option label="C相电流谐波" :value = 5 />
+          </el-select>-->
+          
+        </el-form-item>
+
+        <el-form-item>
+          <el-button 
+            @click="subtractOneDay();handleDayPick()" 
+          >
+            &lt;
+          </el-button>
+          <el-date-picker
+            v-model="queryParamsCopy.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-160px"
+          />
+          <el-button 
+            @click="addtractOneDay();handleDayPick()" 
+          >
+            &gt;
+          </el-button>
+          <el-button @click="handleQueryCopy"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <div class="custom-content-container">
+            <HarmonicLine v-if="abcLineShow === true" width="70vw" height="58vh" :list="abcLineData"/>
+          </div>
+        </div>
+      </el-dialog>
 
       <Pagination
         :total="total"
@@ -229,19 +300,27 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { IndexApi } from '@/api/bus/boxindex'
-import { ElTree } from 'element-plus'
-import HarmonicColorForm from './HarmonicColorForm.vue'
-import { BoxHarmonicColorApi } from '@/api/bus/boxharmoniccolor'
+import download from '@/utils/download';
+import { IndexApi } from '@/api/bus/boxindex';
+import { ElTree } from 'element-plus';
+import HarmonicColorForm from './HarmonicColorForm.vue';
+import { BoxHarmonicColorApi } from '@/api/bus/boxharmoniccolor';
+import HarmonicRealTime from './component/HarmonicRealTime.vue';
+import HarmonicLine from './component/HarmonicLine.vue';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+const location = ref() as any;
+const devkey = ref() as any;
+const busName = ref() as any;
+const boxName = ref() as any;
+
 const butColor = ref(0);
 const onclickColor = ref(-1);
+const dialogVisible = ref(false);
 
 const harmonicColorForm = ref()
 const flashListTimer = ref();
@@ -258,6 +337,21 @@ const statusNumber = reactive({
   offline : 0,
   total : 0
 });
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
+}
 
 const queryParamsAll = reactive({
   pageNo: 1,
@@ -322,13 +416,20 @@ const loadAll = async () => {
   return objectArray;
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -339,7 +440,14 @@ const createFilter = (queryString: string) => {
   }
 }
 
-const handleClick = (row) => {
+const handleClick = async (row) => {
+  if(row.type != null  && row.type == 7){
+    queryParams.devKey = row.unique
+    const data = await IndexApi.getBoxIdByDevKey({devKey : queryParams.devKey});
+    queryParams.boxId = data;
+    haveSearch.value = false;
+    handleQueryCopy();
+  }
   console.log("click",row)
 }
 
@@ -409,6 +517,20 @@ const queryParams = reactive({
   status:[],
   cabinetIds : [],
 })as any
+
+const queryParamsCopy = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  harmonicType : 3,
+  harmonicArr:[1],
+  devKey : undefined,
+  boxId: undefined,
+  outputNumber : 10,
+  createTime: undefined,
+  timeArr:[],
+  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
+  newTime : undefined,
+}) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
@@ -475,6 +597,122 @@ const getNavList = async() => {
     })
   }
 
+}
+
+const haveSearch = ref(false);
+const harmonicRealTime = ref();
+const realTimeVis = ref(false);
+const seriesAndTimeArr = ref() as any;
+const lineVis = ref(false);
+const harmonicLine = ref([]) as any;
+
+
+const disabledDate = (date) => {
+  // 获取今天的日期
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+
+  // 如果date在今天之后，则禁用
+  if(switchValue.value == 0){
+    return date > today;
+  }else {
+    return date >= today;
+  }
+  
+}
+
+const abcLineData = ref({});
+const abcLineShow = ref(false);
+
+const getDetail = async () => {
+
+  //if(!haveSearch.value){
+  //  const data = await IndexApi.getHarmonicRedis(queryParamsCopy);
+  //  console.log('data111111',data);
+  //  harmonicRealTime.value = data;
+  //  if(harmonicRealTime.value.times != null){
+  //    realTimeVis.value = true;
+  //  }else{
+  //    realTimeVis.value = false;
+  //  }
+  //  haveSearch.value = true;
+  //}
+
+  const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
+  abcLineData.value = lineData;
+  abcLineShow.value = true;
+  console.log('abcLineData',abcLineData.value);
+  //seriesAndTimeArr.value = lineData;
+  //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
+  //  const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
+  //  harmonicLine.value.series = filteredSeries;
+  //  harmonicLine.value.time = seriesAndTimeArr.value.time;
+  //  lineVis.value = true;
+  //} else {
+  //  lineVis.value = false;
+  //}
+}
+
+const handleQueryCopy = async () => {
+  if(queryParamsCopy.oldTime){
+
+    await getDetail();
+  }
+}
+
+const handleDayPick = async () => {
+
+  if(queryParamsCopy?.oldTime ){
+    await getDetail();
+  } 
+}
+
+
+const subtractOneDay = () => {
+  var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() - 1); // 减去一天
+
+  queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const addtractOneDay = () => {
+  var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() + 1); // 减去一天
+
+  queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+watch(() => [queryParamsCopy.harmonicArr], () => {
+  if(seriesAndTimeArr.value.series != null && seriesAndTimeArr.value.series?.length > 0){
+    const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
+    harmonicLine.value.series = filteredSeries;
+    harmonicLine.value.time = seriesAndTimeArr.value.time;
+  }
+});
+
+watch(() => [queryParamsCopy.harmonicType], () => {
+  haveSearch.value = false;
+  handleQueryCopy();
+});
+
+const showDialog = async (item) => {
+  //colorFlag.value = item.color;
+  console.log('111111111111111111111',item);
+  queryParamsCopy.devKey = item.devKey;
+  queryParamsCopy.boxId = item.boxId;
+  location.value = item.location ? item.location : '未绑定';
+  devkey.value = item.devKey;
+  busName.value = item.busName;
+  boxName.value = item.boxName;
+
+  console.log('item',item);
+  dialogVisible.value = true;
+  await handleQueryCopy();
 }
 
 const toDetail = (row) =>{
@@ -915,7 +1153,7 @@ onActivated(() => {
 @media screen and (min-width:2048px){
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 78vh;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1065,7 +1303,7 @@ onActivated(() => {
 @media screen and (max-width:1600px){
   .arrayContainer {
     width:100%;
-    height: 720px;
+    height: 600px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1185,7 +1423,7 @@ onActivated(() => {
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
-  height: 80px;
+  height: 50px;
 }
 
 :deep(.el-card){
@@ -1194,5 +1432,10 @@ onActivated(() => {
 
 :deep(.el-tag){
   margin-right:-60px;
+}
+
+:deep(.el-dialog) {
+  width: 80%;
+  margin-top: 70px;
 }
 </style>

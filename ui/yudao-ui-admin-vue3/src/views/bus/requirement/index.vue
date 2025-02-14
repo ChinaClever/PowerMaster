@@ -37,7 +37,6 @@
             <span>{{ statusNumber.cur_max_value }}</span>
           </div>
         </div>
-        <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -64,7 +63,6 @@
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -75,7 +73,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item label="时间段" prop="createTime" label-width="100px">
+        <el-form-item label="时间段" prop="createTime" label-width="50px">
           <el-button 
             @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
@@ -93,10 +91,9 @@
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
-          </el-button>                            
-        </el-form-item>
-        <el-form-item>
-          <el-date-picker
+          </el-button>     
+          <el-date-picker  
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -106,6 +103,7 @@
             class="!w-160px"
           />
           <el-date-picker
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 2"
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -116,28 +114,28 @@
             :disabled-date="disabledDate"
             @change="handleDayPick"
             class="!w-200px"
-          />
-        <el-form-item style="margin-left: 10px;" v-show="showSearchBtn">
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-          <el-button
-            type="primary"
-            plain
-            @click="openForm('create')"
-            v-hasPermi="['pdu:PDU-device:create']"
-          >
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
-          </el-button>
-          <el-button
-            type="success"
-            plain
-            @click="handleExport"
-            :loading="exportLoading"
-            v-hasPermi="['pdu:PDU-device:export']"
-          >
-            <Icon icon="ep:download" class="mr-5px" /> 导出
-          </el-button>
-        </el-form-item>          
+          />                       
+        </el-form-item>
+
+        <el-form-item>
+          <el-form-item label="网络地址" prop="devKey">
+            <el-autocomplete
+              v-model="queryParams.devKey"
+              :fetch-suggestions="querySearch"
+              clearable
+              class="!w-200px"
+              placeholder="请输入网络地址"
+              @select="handleQuery"
+            />
+            <el-form-item style="margin-left: 10px">
+              <el-button @click="handleQuery"
+                ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button
+              >
+              <el-button @click="resetQuery"
+                ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button
+              >
+            </el-form-item>
+          </el-form-item>
         </el-form-item>
         <div style="float:right">
           <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
@@ -257,16 +255,16 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px" class="info">
+            <div class="info" style="margin-left:10px;font-size: 15px;">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
+            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量功率</el-tag>
           </div>           
           <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
@@ -279,16 +277,16 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">            
-            <div style="padding: 0 28px" class="info">              
+            <div class="info" style="margin-left:10px;font-size: 15px;">              
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量电流</el-tag>
           </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
@@ -313,7 +311,7 @@
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px;">{{queryParams.lineType == 0 ? `电流详情`: `功率详情`}}</span>
             <span style="margin-right:10px;">结果所在位置：{{ location }}</span>
-            <span>时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}</span>
+            <span>时间段: {{ queryParams.oldTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ queryParams.newTime }}</span>
           </div>
           <div style="display: flex; gap: 10px;margin-right:30px;"> <!-- 子div用于包含按钮，并设置按钮之间的间距 -->
             <el-button
@@ -388,6 +386,29 @@ const statusNumber = reactive({
     create_time : null,
     cur_max_value : null
 })
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList()
+  var objectArray = data.map((str) => {
+    return { value: str }
+  })
+  return objectArray
+}
+const querySearch = (queryString: string, cb: any) => {
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+  }
+}
+
+
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -451,7 +472,6 @@ const statusList = reactive([
 ])
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
     handleQuery();
@@ -556,7 +576,6 @@ const handleMonthPick = () => {
 const getListAll = async () => {
   try {
         const allData = await IndexApi.getBusLineMax(queryParams)
-        console.log('测试'+allData)
     //设置左边数量
     statusNumber.location = allData.location;
     statusNumber.devKey = allData.devKey;
@@ -656,7 +675,6 @@ const openDetail = async (row) =>{
   pfTableList.value.forEach(item => item.pow_active_max_value = item.pow_active_max_value+'KW')
 
   const lineData = await IndexApi.getBusLineCurLine(queryParams)
-  console.log('lineData',lineData);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
   location.value = row.location != null ? row.location : row.devKey
@@ -679,9 +697,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
-  queryParams.status = [];
+  queryParams.devKey = undefined;
   handleQuery()
 }
 
@@ -716,7 +732,6 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await IndexApi.getBusLineCurLineExcel(queryParams, axiosConfig)
-    console.log("data",data)
     await download.excel(data, '电流详细.xlsx')
   } catch (error) {
     // 处理异常
@@ -727,7 +742,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList();
   getNavList();
   getListAll();
@@ -1004,7 +1020,7 @@ onMounted(() => {
   .arrayItem {
     width: 25%;
     height: 140px;
-    font-size: 13px;
+    font-size: 15px;
     box-sizing: border-box;
     background-color: #eef4fc;
     border: 5px solid #fff;

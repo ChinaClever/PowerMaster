@@ -214,7 +214,7 @@
       <div v-loading="loading">
         <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
-            <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
+            <div ref="chartContainer" id="chartContainer" style="width: 75vw; height: 65vh;"></div>
           </el-tab-pane>
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
@@ -281,20 +281,20 @@
   </CommonMenu1>
 </template>
 <script setup lang="ts">
-import { IndexApi } from '@/api/bus/busindex'
+import { IndexApi } from '@/api/bus/busindex';
 import * as echarts from 'echarts';
-import { onMounted } from 'vue'
-import { EnvDataApi } from '@/api/bus/envData'
-import { formatDate } from '@/utils/formatTime'
-import dayjs from 'dayjs'
-import CommonMenu1 from './component/CommonMenu1.vue';
+import { onMounted } from 'vue';
+import { EnvDataApi } from '@/api/bus/envData';
+import { formatDate } from '@/utils/formatTime';
+import dayjs from 'dayjs';
 import download from '@/utils/download'
 
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 import { ElMessage } from 'element-plus'
 import { constant } from 'lodash-es';
+import { styleType } from 'element-plus/es/components/table-v2/src/common';
 defineOptions({ name: 'BusEnvLine' })
-
+import CommonMenu1 from './component/CommonMenu1.vue';
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -810,8 +810,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
                                   "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
                                   "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,  }
             },
-            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
+            toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value}
             ],
@@ -1135,8 +1135,9 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
-  navList.value = res
+  const res = await IndexApi.getBusMenu();
+  navList.value = res;
+  console.log('navList.value',navList.value);
 }
 
 /** 搜索按钮操作 */
@@ -1149,13 +1150,15 @@ const handleQuery = () => {
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  let queryBusId = useRoute().query.busId as string | undefined;
+  //let queryBusId = useRoute().query.busId as string | undefined;
   let queryDevKey = useRoute().query.devKey as string;
   let queryLocation = useRoute().query.location as string;
-  queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
-  if (queryParams.busId != undefined){
+  //queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
+  queryParams.devkey = queryDevKey;
+  if (queryParams.devkey != undefined){
     await getList();
-    if (queryLocation == null) {
+    console.log(queryLocation)
+    if (queryLocation) {
       nowAddress.value = '';
     } else {
       nowAddress.value = queryLocation;

@@ -26,7 +26,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
 
     default PageResult<BusIndexDO> selectPage(BusIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,false)
-                .eqIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
+                .likeIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
                 .inIfPresent(BusIndexDO::getBusKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
@@ -38,12 +38,12 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                         .inIfPresent(BusIndexDO::getLoadRateStatus, reqVO.getLoadRateStatus())
                         .inIfPresent(BusIndexDO::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
 //                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
-                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time asc"));
     }
 
     default PageResult<BusIndexDO> selectPage2(BusIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>()
-                .eqIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
+                .likeIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
                 .inIfPresent(BusIndexDO::getBusKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
@@ -53,7 +53,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
                 .in(ObjectUtil.isNotEmpty(reqVO.getStatus()), BusIndexDO::getRunStatus, reqVO.getStatus())
-                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time asc"));
     }
 
     IPage<BusAisleBarQueryVO> selectPageList(@Param("page") Page<Object> page,@Param("devkeys") String[] devkeys);
@@ -67,4 +67,6 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
     LoadRateStatus selectBusIndexLoadRateStatus();
 
     BalanceStatisticsVO getBusBalanceStatistics();
+
+    List<String> findKeys(@Param("key") String key, @Param("flag") Integer flag);
 }

@@ -11,6 +11,9 @@ import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+import java.util.Set;
+
 @Schema(description = "管理后台 - 母线插接箱（实时数据） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
@@ -70,5 +73,7 @@ public class BoxRealtimePageRespVO {
 
     @ExcelProperty("负载率(%)")
     private Double load_rate;
+
+
 
 }

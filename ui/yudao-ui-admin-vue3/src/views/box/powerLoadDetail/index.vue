@@ -13,7 +13,7 @@
   <!-- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/> -->
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp;{{busName}}-{{boxName}}</div>
+    <div class="header_app_text">机房：{{ location?location:'未绑定' }}&nbsp;&nbsp;母线：{{busName}}&nbsp;&nbsp;名称：{{boxName}}&nbsp;&nbsp;网络地址：{{devKey}}</div>
     <div class="header_app_text_other1">
           <el-col :span="10">
             <el-form
@@ -151,6 +151,7 @@ const input = ref('')
 
 const busName = ref()
 const boxName = ref()
+const devKey = ref(history?.state?.devKey)
 const location = ref(history?.state?.location)
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
@@ -562,7 +563,7 @@ const getDetailData =async () => {
     console.log('data',data);
     if (data != null){
       hasData.value = true
-      runLoad.value = data.runLoad;
+      runLoad.value = formatNumber(data.runLoad, 2);
       ratedCapacity.value = formatNumber(data.ratedCapacity, 2);
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
       powActive.value = formatNumber(data.powActive, 3);

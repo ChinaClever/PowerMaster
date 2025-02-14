@@ -113,12 +113,6 @@ public class IndexController {
         return success(indexService.getCabinetPFLine(Id,timeType,oldTime,newTime));
     }
 
-    @GetMapping("/env/page")
-    @Operation(summary = "获得机柜环境分页")
-    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid IndexPageReqVO pageReqVO) {
-        return success(indexService.getCabinetEnvPage(pageReqVO));
-    }
-
     @GetMapping("/env/ice")
     @Operation(summary = "获得机柜冷通道温度和湿度")
     public CommonResult<Map> getCabinetEnvIceTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
@@ -136,4 +130,12 @@ public class IndexController {
     public List<Integer> idList() {
         return indexService.idList();
     }
+
+    @GetMapping("/getRackByCabinet")
+    @Operation(summary = "根据机柜id获取机架")
+    public CommonResult<List<CabinetRackRspVO>> getRackByCabinet(@RequestParam("id") Integer id){
+        return success(indexService.getRackByCabinet(id));
+
+    }
+
 }

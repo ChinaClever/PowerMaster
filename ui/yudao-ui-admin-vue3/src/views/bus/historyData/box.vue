@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱历史数据">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱电力数据">
     <template #NavInfo>
         <br/>    <br/> 
       <div class="nav_data">
@@ -189,6 +189,7 @@ const queryParams = reactive({
   granularity: 'realtime',
   timeRange: undefined,
   devkeys: [],
+  columnsToExclude: ['outlet_id']
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单

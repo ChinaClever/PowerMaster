@@ -39,7 +39,7 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
-        v-show="switchValue !== 4"  
+        v-show="switchValue !== 4" 
       > <el-form-item>
         <el-form-item>
           <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
@@ -77,7 +77,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item>         
+        </el-form-item>
         </el-form-item >
       </el-form-item>
         <div style="float:right;margin-top: 1.5px;">
@@ -96,7 +96,7 @@
         :model="queryDeletedPageParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"     
+        label-width="68px"
         v-show="switchValue == 4"        
       >
         <el-form-item label="网络地址" prop="devKey">
@@ -244,7 +244,7 @@
         <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="powReactive" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powReactive">
-              {{ scope.row.powReactive }}
+              {{ scope.row.powReactive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -508,6 +508,7 @@ import { IndexApi } from '@/api/bus/busindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import Bar from './Bar.vue'
+import { error } from 'console'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
@@ -560,21 +561,26 @@ const statusList = reactive([
   }
 ])
 const devKeyList = ref([])
+
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
+  console.log('111122331313131',data);
   var objectArray = data.map((str) => {
     return { value: str };
   });
   return objectArray;
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
-    ? devKeyList.value.filter(createFilter(queryString))
-    : devKeyList.value
-  // call callback function to return suggestions
-  cb(results)
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length >= 8){
+    var results = await IndexApi.findKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      console.log('item',item);
+      arr.push({value:item})
+    });
+    cb(arr)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -731,7 +737,7 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
-    filterData()
+    //filterData()
     console.log('查询列表的数据',list.value)
     var tableIndex = 0;
 
@@ -818,42 +824,43 @@ const getNavList = async() => {
 }
 
 const toDeatil = (row) =>{
+  const roomName = row.roomName;
   const devKey = row.devKey;
   const busId = row.busId;
   const location = row.location != null ? row.location : row.devKey
   const busName = row.busName;
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
 
 }
 
-const filterData = () => {
-  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
-  console.log('data0',data0)
-  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
-  console.log('data1',data1)
-  const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
-  console.log('data2',data2)
- 
-  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
-    list.value = data0; // 仅正常状态
-  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
-    list.value = data1; // 仅告警状态
-  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
-    list.value = data2; // 仅离线状态
-  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
-    list.value = [...data0, ...data1];
-  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
-    list.value = [...data0, ...data2];
-  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
-    list.value = [...data1, ...data2];
-  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
-    list.value = [...data0, ...data1, ...data2];
-  } else {
-    list.value = list.value;
-  }
-
-  console.log('执行完毕')
-}
+//const filterData = () => {
+//  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
+//  console.log('data0',data0)
+//  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
+//  console.log('data1',data1)
+//  const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
+//  console.log('data2',data2)
+// 
+//  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
+//    list.value = data0; // 仅正常状态
+//  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
+//    list.value = data1; // 仅告警状态
+//  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
+//    list.value = data2; // 仅离线状态
+//  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
+//    list.value = [...data0, ...data1];
+//  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
+//    list.value = [...data0, ...data2];
+//  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
+//    list.value = [...data1, ...data2];
+//  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
+//    list.value = [...data0, ...data1, ...data2];
+//  } else {
+//    list.value = list.value;
+//  }
+//
+//  console.log('执行完毕')
+//}
 
 const handleSelectStatus = (index) => {
   butColor.value = 1;
@@ -872,6 +879,7 @@ const toggleAllStatus = () => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  console.log('queryParams.devKey',queryParams.devKey)
   getList()
   getDeletedList();
 }
