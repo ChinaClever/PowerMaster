@@ -389,10 +389,11 @@ const tableColumns = ref([
 //   }
 // }
 
-const getList1 = async () => {
+const getLists = async () => {
   loading.value = true
+  //&& start.value != ""
   try {
-    if ( start.value != undefined){
+    if (start.value != "" && start.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
@@ -405,7 +406,6 @@ const getList1 = async () => {
       queryParams.timeRange = undefined
     }
     queryParams.ipArray = [ip.value];
-    	console.log('详情页2', queryParams.ipArray);
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
@@ -503,7 +503,7 @@ const disabledDate = (date) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
  queryParams.pageNo = 1
- getList1()
+ getLists()
 }
 
 
@@ -611,26 +611,25 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
-  
-  //getList();
-
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   ip.value = useRoute().query.ip as string;
-  if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', ip);
-  getList1();
-  }
+  getLists();
+
+  // if (start.value != null){
+  // 	console.log('详情页', start);
+	// console.log('详情页1', ip);
+  // getLists();
+  // }
 });
 
 /** 清空按钮操作 */
 const clearQuery = () => {
-end.value= '';
-start.value='';
-ip.value='';
-queryParams.timeRange = undefined;
-queryParams.ipArray = undefined;
+  end.value= '';
+  start.value='';
+  ip.value='';
+  queryParams.timeRange = undefined;
+  queryParams.ipArray = undefined;
 }
 
 </script>
