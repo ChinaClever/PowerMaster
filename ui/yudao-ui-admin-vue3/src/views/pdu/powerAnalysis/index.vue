@@ -3,6 +3,21 @@
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
+          <!-- <div class="carousel-container">
+            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+              </el-carousel-item>
+            </el-carousel>
+          </div>
+          <div class="nav_content">
+            <el-descriptions title="全部PDU新增能耗记录" direction="vertical" :column="1" width="60px" border >
+              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
+            </el-descriptions>
+          </div>
+        </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">最近一天 :</span>
@@ -97,7 +112,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -163,7 +178,6 @@ import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
 import router from '@/router'
-import { ca } from 'element-plus/es/locale'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -242,11 +256,11 @@ const typeCascaderChange = (selected) => {
     if (!exists) {
       // 在列表行索引1(位置后面)插入输出位行 
       const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
-      tableColumns.value.splice(2, 0, newRow);
+      tableColumns.value.splice(2, 1, newRow);
     }
   }else{
     // 选择总，移除索引为 1 的位置上的行数据
-    tableColumns.value.splice(2, 1);
+    tableColumns.value.splice(1, 1);
   }
   handleQuery();
 }
@@ -339,60 +353,52 @@ const tableColumns = ref([
 ]) as any;
 
 // /** 查询列表 */
-const getList = async () => {
-  loading.value = true
-  try {
-    if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
-      queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
-    // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(selectTimeRange.value == null){
-      queryParams.timeRange = undefined
-    }
-    // queryParams.ipArray = [ip.value];
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    eqData.value = data.list.map((item) => {
-       const difference = item.end_ele - item.start_ele;
-       return difference < 0 ? item.end_ele : formatEQ(difference, 1);
-    });
+// const getList = async () => {
+//   loading.value = true
+//   try {
+//     if ( selectTimeRange.value != undefined){
+//       // 格式化时间范围 加上23:59:59的时分秒 
+//       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+//       // 结束时间的天数多加一天 ，  一天的毫秒数
+//       const oneDay = 24 * 60 * 60 * 1000;
+//       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+//       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+//     }
+//     // 时间段清空后值会变成null 此时搜索不能带上时间段
+//     if(selectTimeRange.value == null){
+//       queryParams.timeRange = undefined
+//     }
+//     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+//     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+//     eqData.value = data.list.map((item) => {
+//        const difference = item.end_ele - item.start_ele;
+//        return difference < 0 ? item.end_ele : formatEQ(difference, 1);
+//     });
 
-    list.value = data.list
-    realTotel.value = data.total
-    if (data.total > 10000){
-      total.value = 10000
-    }else{
-      total.value = data.total
-    }
+//     list.value = data.list
+//     realTotel.value = data.total
+//     if (data.total > 10000){
+//       total.value = 10000
+//     }else{
+//       total.value = data.total
+//     }
     
-  } catch (error) {
-    ElMessage.warning('暂无数据')
-    //清空表格
-    list.value = [];
-    //清空图表数据
-    eqData.value = [];
-  } 
-  finally {
-    initChart();
-    loading.value = false
-  }
-}
+//   } finally {
+//     initChart();
+//     loading.value = false
+//   }
+// }
 
-const getList1 = async () => {
+const getLists = async () => {
   loading.value = true
+  //&& start.value != ""
   try {
-    if ( start.value != undefined){
+    if (start.value != "" && start.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -400,11 +406,8 @@ const getList1 = async () => {
       queryParams.timeRange = undefined
     }
     queryParams.ipArray = [ip.value];
-    	console.log('详情页2', queryParams.ipArray);
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    //如果list为空,则显示无数据
-    
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -413,16 +416,7 @@ const getList1 = async () => {
       total.value = data.total
     }
       
-  } catch (error) {
-    ElMessage({
-    message: '暂无数据',
-    type: 'warning',
-    plain: true,
-  })
-    //将表格清空
-    list.value = [];
-  } 
-  finally {
+  } finally {
     initChart();
     loading.value = false
   }
@@ -433,7 +427,6 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
   // params.forEach(function(item) {
-   tooltipContent += '所在位置：' + (list.value[item.dataIndex].address ? list.value[item.dataIndex].address : '未绑定设备') + '<br/>'
   tooltipContent += '网络地址：'+list.value[item.dataIndex].location + '  '
   // 添加条件判断
   if (queryParams.type == 'outlet') {
@@ -510,7 +503,7 @@ const disabledDate = (date) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
  queryParams.pageNo = 1
- getList()
+ getLists()
 }
 
 
@@ -551,7 +544,6 @@ const handleCheck = async (node) => {
     if (ip.value != null ){
       arr =[ip]
     }
-    console.log('详情页', arr);
     //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
     if(arr.length == 0  && node.length != 0){
       arr.push(0)
@@ -567,9 +559,12 @@ const handleCheck = async (node) => {
 
 // 接口获取导航列表
 const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  var temp = await CabinetApi.getRoomPDUList()
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
   arr = arr.concat(temp);
+  }
   navList.value = arr
 }
 
@@ -582,8 +577,8 @@ const getNavNewData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, address: string,createTimeMin : string,createTimeMax : string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+'&start='+createTimeMin+'&end='+createTimeMax);
+const toDetails = (pduId: number, address: string) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address);
 }
 
 /** 导出按钮操作 */
@@ -610,12 +605,7 @@ const handleExport = async () => {
 const start = ref('')
 const end = ref('')
 const ip =  ref('')
-const format = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+
 /** 初始化 **/
 onMounted(() => {
   getNavList()
@@ -624,25 +614,22 @@ onMounted(() => {
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   ip.value = useRoute().query.ip as string;
-  getList();
+  getLists();
 
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  ip.value = useRoute().query.ip as string;
-  if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', ip);
-  getList1();
-  }
+  // if (start.value != null){
+  // 	console.log('详情页', start);
+	// console.log('详情页1', ip);
+  // getLists();
+  // }
 });
 
 /** 清空按钮操作 */
 const clearQuery = () => {
-end.value= '';
-start.value='';
-ip.value='';
-queryParams.timeRange = undefined;
-queryParams.ipArray = undefined;
+  end.value= '';
+  start.value='';
+  ip.value='';
+  queryParams.timeRange = undefined;
+  queryParams.ipArray = undefined;
 }
 
 </script>
