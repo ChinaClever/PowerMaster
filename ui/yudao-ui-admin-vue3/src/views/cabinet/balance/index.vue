@@ -440,7 +440,7 @@ const getTableData = async(reset = false) => {
       tableCopyData.value = tableData.value.map(item => {
         return {
           ...item,
-          roomName: item.roomName + item.cabinetName
+          roomName: item.roomName +'-' +item.cabinetName
         };
       });
             console.log('tableData.value', tableData.value);
