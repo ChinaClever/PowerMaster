@@ -75,7 +75,7 @@ const open = async (type: string) => {
   formType.value = type
   var data = await TemColorApi.getTemColorAll({});
   formData.value.colorArr = data;
-  
+  //console.log('formData.value.colorArr',formData.value.colorArr);
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
@@ -92,7 +92,7 @@ const submitForm = async () => {
     message.success(t('common.createSuccess'))
     dialogVisible.value = false
     // 发送操作成功的事件
-    emit('success')
+    emit('success');
   } finally {
     formLoading.value = false
   }

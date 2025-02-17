@@ -298,12 +298,13 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import TemColorForm from './TemColorForm.vue'
-import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
-import { IndexApi } from '@/api/cabinet/index'
+import download from '@/utils/download';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
+import TemColorForm from './TemColorForm.vue';
+import { ElTree } from 'element-plus';
+import { CabinetApi } from '@/api/cabinet/info';
+import { IndexApi } from '@/api/cabinet/index';
+import { TemColorApi, TemColorVO } from '@/api/cabinet/temcolor';
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
@@ -348,7 +349,7 @@ const getCabinetColorAll = async () => {
       cssClass: 'btn_normal',// 根据实际情况设置样式类
       activeClass: 'btn_normal normal',// 根据实际情况设置样式类
       value: 0,
-      color: item.color
+      color: item.color,
     }));
   }
 }
@@ -424,9 +425,22 @@ const queryParams = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds : [],
+  startNum: 0,
+  endNum: 0,
 })as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+
+const formData = ref({
+    colorArr : [
+      {
+        id: undefined,
+        min: undefined,
+        max: undefined,
+        color: undefined,
+      },
+    ]
+})
 
 /** 查询列表 */
 const getList = async () => {
@@ -435,6 +449,9 @@ const getList = async () => {
   try {
     const data = await IndexApi.getCabinetEnvPage(queryParams);
     console.log('data',data);
+    var data1 = await TemColorApi.getTemColorAll({});
+    formData.value.colorArr = data1;
+    console.log('formData.value.colorArr',formData.value.colorArr);
 
     list.value = data.list
     // var tableIndex = 0;
@@ -515,8 +532,8 @@ const handleSelectStatus = (index) => {
      allSelected.value = false;
   }
   selectedIndex.value = index;
-  queryParams.startNum = statusList[index].startNum;
-  queryParams.endNum = statusList[index].endNum;
+  queryParams.startNum = formData.value.colorArr[index].min;
+  queryParams.endNum = formData.value.colorArr[index].max;
   handleQuery();
 }
 

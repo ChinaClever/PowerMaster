@@ -192,7 +192,7 @@
           </div>
         </el-dialog>
 
-        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
+        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="所在位置" min-width="90" align="center" prop="roomName" />
           <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
@@ -266,6 +266,7 @@ const tableLoading = ref(false); //
 const isFirst = ref(true); // 是否第一次调用getTableData函数
 const navList = ref([]); // 左侧导航栏树结构列表
 const tableData = ref([]);
+const tableCopyData = ref([]);
 const switchValue = ref(0); // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
 const queryParams = reactive({
@@ -436,7 +437,13 @@ const getTableData = async(reset = false) => {
     queryParams.company = undefined;
     if (res.list) {
       tableData.value = res.list
-      console.log('tableData.value', tableData.value);
+      tableCopyData.value = tableData.value.map(item => {
+        return {
+          ...item,
+          roomName: item.roomName + item.cabinetName
+        };
+      });
+            console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {

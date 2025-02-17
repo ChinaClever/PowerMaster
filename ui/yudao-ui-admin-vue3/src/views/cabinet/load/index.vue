@@ -135,7 +135,7 @@
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="info" v-else-if="switchValue == 3">
-              <div>总无功功率：{{formatNumber(load.reactiveTotal,3)|| '0.000'}}kVar</div>
+              <div>总无功功率：{{formatNumber(load.powReactiveTotal,3)|| '0.000'}}kVar</div>
               <div>A路无功功率：{{formatNumber(load.powReactivea,3)|| '0.000'}}kVar</div>
               <div>B路无功功率：{{formatNumber(load.powReactiveb,3)|| '0.000'}}kVar</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
