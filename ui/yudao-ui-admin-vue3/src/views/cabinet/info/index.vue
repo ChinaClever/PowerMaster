@@ -636,7 +636,7 @@ onBeforeMount(() => {
   getNavList();
   getTableData();
   flashListTimer.value = setInterval((getTableData), 5000);
-  flashListTimerCopy.value = setInterval((getNavList), 5000);
+  // flashListTimerCopy.value = setInterval((getNavList), 5000);
 })
 
 onBeforeUnmount(()=>{

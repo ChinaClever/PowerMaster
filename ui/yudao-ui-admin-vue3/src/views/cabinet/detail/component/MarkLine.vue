@@ -40,7 +40,7 @@ const model = ref()
 //model.value = [newSeriesObject];
 model.value = prop.list.series
 // 设置饼图的选项
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   dataZoom: [{ type: "inside" }],
   tooltip: { trigger: 'axis' },
   xAxis: {
@@ -80,7 +80,7 @@ const echartsOption = reactive({
       data: factorTotal
     }
   ]
-});
+}));
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 

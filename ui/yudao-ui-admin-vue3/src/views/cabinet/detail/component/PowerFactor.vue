@@ -21,7 +21,7 @@ console.log('loadFactor',props.loadFactor)
 
 
 // 设置饼图的选项
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   series: [
     {
       type: 'gauge',
@@ -100,15 +100,15 @@ const echartsOption = reactive({
       ]
     }
   ]
-})
+}));
 
 onUnmounted(() => {
-  console.log('onUnmounted******')
+  console.log('功率因数 onUnmounted******')
 })
 
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data[0].value = newVal;
-});
+// watch(() => props.loadFactor, (newVal) => {
+//   echartsOption.series[0].data[0].value = newVal;
+// });
 
 </script>
 

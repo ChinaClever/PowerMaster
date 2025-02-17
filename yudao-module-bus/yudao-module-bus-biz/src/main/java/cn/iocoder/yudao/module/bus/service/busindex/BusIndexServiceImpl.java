@@ -191,6 +191,9 @@ public class BusIndexServiceImpl implements BusIndexService {
         // 返回数据
         BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaUpdateWrapper<BusIndexDO>().eq(BusIndexDO::getBusKey, pageReqVO.getDevKey()).last("limit 1"));
         BusPowerLoadDetailRespVO respVO = new BusPowerLoadDetailRespVO();
+        if (ObjectUtils.isEmpty(busIndexDO)) {
+            return respVO;
+        }
         String startTime;
         String endTime;
         if (pageReqVO.getTimeGranularity().equals("近一小时") || pageReqVO.getTimeGranularity().equals("今天")) {

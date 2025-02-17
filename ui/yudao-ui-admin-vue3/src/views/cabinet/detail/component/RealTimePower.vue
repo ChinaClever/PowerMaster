@@ -53,7 +53,7 @@ const gaugeData = [
 ];
 
 // 设置饼图的选项
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   series: [
     {
       type: 'gauge',
@@ -105,15 +105,15 @@ const echartsOption = reactive({
       }
     }
   ]
-});
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')
 })
 
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data[0].value = newVal;
-});
+// watch(() => props.loadFactor, (newVal) => {
+//   echartsOption.series[0].data[0].value = newVal;
+// });
 
 </script>
 

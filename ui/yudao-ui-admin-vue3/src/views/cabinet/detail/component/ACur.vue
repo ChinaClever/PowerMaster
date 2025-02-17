@@ -1,10 +1,11 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <Echart :height="height" :width="width" :options="chartOptions" />
 </template>
 
 <script lang="ts" setup>
-import 'echarts'
-import { reactive, watch, defineProps, onUnmounted } from 'vue';
+import { defineProps, computed, reactive, onUnmounted } from 'vue';
+import 'echarts';
+
 const props = defineProps({
   loadFactor: {
     type: Number,
@@ -17,12 +18,12 @@ const props = defineProps({
     type: [Number,String],
   }
 })
-console.log('loadFactor',props.loadFactor)
+console.log('loadFactor',props)
 
 
 // 设置饼图的选项
 // 设置饼图的选项
-const echartsOption = reactive({
+const chartOptions = computed(() => ({
   tooltip: {
     trigger: 'item',
     formatter: '{b} : {c}'
@@ -52,13 +53,15 @@ const echartsOption = reactive({
       ]
     }
   ]
+}));
+onUnmounted(() => {
+  console.log('组件已卸载******');
 });
-
-onMounted(() => {
-  window.addEventListener('resize', () => {
-    echartsOption.resize();
-  });
-});
+// onMounted(() => {
+//   window.addEventListener('resize', () => {
+//     chartOptions.resize();
+//   });
+// });
 </script>
 
 <style lang="scss" scoped>

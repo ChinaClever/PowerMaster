@@ -2733,13 +2733,13 @@ const query = route.query;
 
 // 将查询参数转换为适当的类型
 const devKey = query.devKey as string;
-const id = parseInt(query.id as string, 10);
+// const id = parseInt(query.id as string, 10);
 const location = query.location as string;
 const location2 =  ref('');
 location2.value = location;
 
 queryParams.devKey = devKey;
-queryParams.id = id;
+// queryParams.id = id;
 </script>
 
 <style scoped lang="scss">

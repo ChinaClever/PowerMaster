@@ -1143,6 +1143,7 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentA(apath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveA(apath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+            vo.setPowerFactorA(apath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
             vo.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentA(), vo.getPowApparentTotal()), 100));
         }
         if (Objects.nonNull(bpath)) {
@@ -1151,6 +1152,7 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+            vo.setPowerFactorB(bpath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
             vo.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentB(), vo.getPowApparentTotal()), 100));
 
             Map map = getCabinetDistributionFactor(id, roomId, type);
@@ -1175,30 +1177,35 @@ public class CabinetServiceImpl implements CabinetService {
         String endTime = null;
         String index = null;
         String key = null;
+        String[] heads = new String[0];
         switch (type) {
             case "day":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(1), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
+                heads =new String[]{"cabinet_id", "load_rate","create_time"};
                 break;
             case "hour":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_realtime";
                 key = "load_rate";
+                heads =new String[]{"cabinet_id", "load_rate","create_time"};
                 break;
             case "today":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd 00:00:00");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
+                heads =new String[]{"cabinet_id", "load_rate_total_avg_value","create_time"};
                 break;
             case "threeDay":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
+                heads =new String[]{"cabinet_id", "load_rate_total_avg_value","create_time"};
                 break;
             default:
         }
@@ -1207,7 +1214,7 @@ public class CabinetServiceImpl implements CabinetService {
         Map map = new HashMap();
         //day,today,threeDay
         List<Map<String, Object>> data = getDataEs(startTime, endTime, Collections.singletonList(id),
-                index, Map.class, new String[]{"cabinet_id", "eq_value"});
+                index, Map.class, heads);
 
         List<BigDecimal> factorA = new ArrayList<>();
         List<BigDecimal> factorB = new ArrayList<>();

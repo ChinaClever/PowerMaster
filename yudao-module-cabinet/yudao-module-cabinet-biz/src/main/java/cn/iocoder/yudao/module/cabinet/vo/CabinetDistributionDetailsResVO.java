@@ -67,6 +67,12 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "功率因素")
     private BigDecimal powerFactor;
 
+    @Schema(description = "功率因素")
+    private BigDecimal powerFactorA;
+
+    @Schema(description = "功率因素")
+    private BigDecimal powerFactorB;
+
     @Schema(description = "A不平衡比例", example = "1.00")
     private BigDecimal aPow;
 

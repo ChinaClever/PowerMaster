@@ -1,5 +1,5 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <Echart :height="height" :width="width" :options="chartOptions" />
 </template>
 
 <script lang="ts" setup>
@@ -22,7 +22,7 @@ console.log('loadFactor',props.loadFactor)
 
 // 设置饼图的选项
 // 设置饼图的选项
-const echartsOption = reactive({
+const chartOptions = computed(() => ({
   tooltip: {
     trigger: 'item',
     formatter: '{b} : {c}'
@@ -52,7 +52,7 @@ const echartsOption = reactive({
       ]
     }
   ]
-});
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')

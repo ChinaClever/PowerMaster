@@ -1,39 +1,17 @@
 <template>
 <div style="background-color: #E7E7E7;margin-bottom:20px;" class="centainer-height">
   <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
-    <div style="padding: 5px 10px;" class="header_app_text">
+    <div style="padding: 5px 10px;" class="header_app_text_left">
       <span>所在位置：{{ location }}-{{ busName }}</span>
       <span style="margin-left:10px;">A路网络地址：{{ keyAlocation }}</span>
       <span style="margin-left:10px;">B路网络地址：{{ keyBlocation }}</span>
-      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA)">A路PDU详情</el-button><el-button @click="goBus(keyB)">B路PDU详情</el-button></span>
-      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA)">A路母线详情</el-button><el-button @click="goBus(keyB)">B路母线详情</el-button></span>
+      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA,location,busName,'A路')">A路PDU详情</el-button><el-button @click="goPDU(keyB,location,busName,'B路')">B路PDU详情</el-button></span>
+      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA,location,busName,'A路')">A路母线详情</el-button><el-button @click="goBus(keyB,location,busName,'A路')">B路母线详情</el-button></span>
     </div>
-    <!--<div style="background-color: #E7E7E7;" class="header_app_text_other1">
-          <el-col :span="10" >
-            <el-form
-              class="-mb-15px"
-              :model="queryParamsSearch"
-              ref="queryFormRef"
-              :inline="true"
-              label-width="120px"
-            >
-              <el-form-item label="机柜名称" prop="devKey" style="margin-top:2px;">
-              <el-autocomplete
-                v-model="queryParamsSearch.devKey"
-                :fetch-suggestions="querySearch"
-                placeholder="请输入机柜名称"  
-                clearable
-                class="!w-160px"
-                @select="handleQuery" 
-              />
-              </el-form-item>
-            </el-form>
-          </el-col>
-    </div>-->
-    <div  style="display: flex; justify-content: flex-end; gap: 10px;" class="header_app_text">
+    <div  style="display: flex; justify-content: flex-end; gap: 10px;" class="header_app_text_right">
       <!--<el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>-->
-      <el-button @click="changeTime ('day');" :type="queryParams.timeGranularity == 'day' ? 'primary' : ''">近一小时</el-button>
-      <el-button @click="changeTime ('hour');" :type="queryParams.timeGranularity == 'hour' ? 'primary' : ''">今天</el-button>
+      <el-button @click="changeTime ('hour');" :type="queryParams.timeGranularity == 'hour' ? 'primary' : ''">近一小时</el-button>
+      <el-button @click="changeTime ('day');" :type="queryParams.timeGranularity == 'day' ? 'primary' : ''">今天</el-button>
       <el-button @click="changeTime('today');" :type="queryParams.timeGranularity == 'today' ? 'primary' : ''">近一天</el-button>
       <el-button @click="changeTime('threeDay');" :type="queryParams.timeGranularity == 'threeDay' ? 'primary' : ''">近三天</el-button>
     </div>
@@ -160,10 +138,10 @@
             <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">总功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">A路功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">A路功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactorA}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">B路功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">B路功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactorB}}</span>
           </div>
           <!--<div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="font-size:14px;">三相电压不平衡度:</span><span style="font-size:16px;">0%</span>
@@ -288,16 +266,15 @@ const keyB = ref();
 const keyAlocation = ref();
 const keyBlocation = ref();
 
-const goPDU = (row: { devKey: string;  }) => {
-  const { devKey} = row;
-  router.push({
-    path: '/pdu/pdudisplayscreen',
-    query: { devKey }
-  });
+const goPDU = (devKey,location,busName,path) => {
+
+  var name= location+'-'+busName+'-'+path;
+  console.log('跳转', devKey )
+  push({path: '/pdu/pdudisplayscreen', query: { devKey, location: name }});
 }
 
-const goBus = (devKey) => {
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey }})
+const goBus = (devKey,location,busName,path) => {
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey ,location,busName,roomName:path}})
 }
 
 const getFullTimeByDate = (date) => {
@@ -351,10 +328,10 @@ const getRedisData = async () => {
   keyB.value = result.keyB.split('-').slice(0, 2).join('-');
   keyAlocation.value = result.keyA;
   keyBlocation.value = result.keyB;
-  console.log('keyA',keyAlocation.value);
-  console.log('keyB',keyBlocation.value);
-  console.log('pduBox.value',pduBox.value);
-  console.log('result',result);
+  // console.log('keyA',keyAlocation.value);
+  // console.log('keyB',keyBlocation.value);
+  // console.log('pduBox.value',pduBox.value);
+  // console.log('result',result);
   resultData.value = result;
   
   if(resultData.value.loadFactor != null){
@@ -447,7 +424,7 @@ const getBackgroundColor = (wornStatus: number) => {
 onMounted(async () => {
   // await getDetailData();
   // await getLineChartData();
-  devKeyList.value = await loadAll();
+  // devKeyList.value = await loadAll();
   await getRedisData();
   //await getLoadRateList();
   // initChart1();
@@ -1053,9 +1030,15 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
   padding-left: 10px;
   box-shadow: 20px;
 }
-.header_app_text{                     
+.header_app_text_right{                     
   background-color: white;
-  width: 100%;
+  width: 60%;
+  align-content: center;
+  color:#606266;
+}  
+.header_app_text_left{                     
+  background-color: white;
+  width: 140%;
   align-content: center;
   color:#606266;
 }                                                       

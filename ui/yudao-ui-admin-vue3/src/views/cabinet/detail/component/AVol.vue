@@ -22,6 +22,8 @@ const props = defineProps({
   }
 });
 
+console.log('loadFactor',props)
+
 // 使用 computed 属性来创建 ECharts 配置
 const chartOptions = computed(() => ({
   tooltip: {

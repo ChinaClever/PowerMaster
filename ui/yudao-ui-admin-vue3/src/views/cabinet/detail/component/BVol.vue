@@ -23,7 +23,7 @@ const props = defineProps({
 });
 
 // 初始化ECharts配置
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   tooltip: {
     trigger: 'item'
   },
@@ -54,7 +54,7 @@ const echartsOption = reactive({
       ]
     }
   ]
-});
+}));
 
 onUnmounted(() => {
   console.log('组件已卸载******');

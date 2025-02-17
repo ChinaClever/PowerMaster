@@ -21,7 +21,7 @@ const props = defineProps({
 console.log('loadFactor1111',props.loadFactor)
 
 
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -71,15 +71,15 @@ const echartsOption = reactive({
         {value:props.loadFactor.powApparentB,itemStyle: { color: 'blue' }}]
     }
   ]
-})
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')
 })
 
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data[0].value = newVal;
-});
+// watch(() => props.loadFactor, (newVal) => {
+//   echartsOption.series[0].data[0].value = newVal;
+// });
 
 </script>
 
