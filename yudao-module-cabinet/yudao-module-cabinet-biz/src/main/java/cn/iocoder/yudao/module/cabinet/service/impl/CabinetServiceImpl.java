@@ -26,9 +26,11 @@ import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.framework.common.vo.RackIndexResVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.service.ICabinetEnvSensorService;
+import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -107,6 +109,9 @@ public class CabinetServiceImpl implements CabinetService {
 
     @Autowired
     RedisTemplate redisTemplate;
+
+    @Autowired
+    private TemColorService temColorService;
 
     @Autowired
     private PduIndexDoMapper pduIndexDoMapper;
@@ -979,6 +984,9 @@ public class CabinetServiceImpl implements CabinetService {
         PageResult<CabinetEnvAndHumRes> pageResult = new PageResult<CabinetEnvAndHumRes>();
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
         Page<CabineIndexCfgVO> envPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
+
+//        List<TemColorDO> temColorAll = temColorService.getTemColorAll();
+
         List<CabineIndexCfgVO> records = envPage.getRecords();
         if (!CollectionUtils.isEmpty(records)) {
             List<CabinetEnvAndHumRes> res = BeanUtils.toBean(records, CabinetEnvAndHumRes.class);
@@ -999,6 +1007,28 @@ public class CabinetServiceImpl implements CabinetService {
                 }
                 JSONObject cabinetEnv = jsonObject.getJSONObject("cabinet_env");
                 if (cabinetEnv != null) {
+                    JSONObject humValue = cabinetEnv.getJSONArray("hum_value").getJSONObject(0);
+                    if (Objects.nonNull(humValue)) {
+                        List<BigDecimal> front = humValue.getList("front", BigDecimal.class);
+                        env.setIceTopHum(front.get(0));
+                        env.setIceMidHum(front.get(1));
+                        env.setIceBomHum(front.get(2));
+                        List<BigDecimal> black = humValue.getList("black", BigDecimal.class);
+                        env.setHotTopHum(black.get(0));
+                        env.setHotMidHum(black.get(1));
+                        env.setHotBomHum(black.get(2));
+                    }
+                    JSONObject temValue = cabinetEnv.getJSONArray("tem_value").getJSONObject(0);
+                    if (Objects.nonNull(temValue)) {
+                        List<BigDecimal> front = temValue.getList("front", BigDecimal.class);
+                        env.setIceTopTem(front.get(0));
+                        env.setIceMidTem(front.get(1));
+                        env.setIceBomTem(front.get(2));
+                        List<BigDecimal> black = temValue.getList("black", BigDecimal.class);
+                        env.setHotTopTem(black.get(0));
+                        env.setHotMidTem(black.get(1));
+                        env.setHotBomTem(black.get(2));
+                    }
                     JSONArray humAverage = cabinetEnv.getJSONArray("hum_average");
                     if (!CollectionUtils.isEmpty(humAverage)) {
                         env.setIceAverageHum(humAverage.getBigDecimal(0));
@@ -1009,6 +1039,26 @@ public class CabinetServiceImpl implements CabinetService {
                         env.setIceAverageTem(temAverage.getBigDecimal(0));
                         env.setHotAverageTem(temAverage.getBigDecimal(1));
                     }
+
+                        String iceTopTemColor = temColorService.findColor(env.getIceTopTem());
+                        String iceMidTemColor = temColorService.findColor(env.getIceMidTem());
+                        String iceBomTemColor = temColorService.findColor(env.getIceBomTem());
+                        String iceAverageTemColor = temColorService.findColor(env.getIceAverageTem());
+
+                        String hotTopTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(),new BigDecimal("15")));
+                        String hotMidTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(),new BigDecimal("15")));
+                        String hotBomTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(),new BigDecimal("15")));
+                        String hotAverageTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(),new BigDecimal("15")));
+
+                        env.setIceAverageTemColor(iceAverageTemColor);
+                        env.setHotAverageTemColor(hotAverageTemColor);
+                        env.setIceTopTemColor(iceTopTemColor);
+                        env.setIceMidTemColor(iceMidTemColor);
+                        env.setIceBomTemColor(iceBomTemColor);
+                        env.setHotTopTemColor(hotTopTemColor);
+                        env.setHotMidTemColor(hotMidTemColor);
+                        env.setHotBomTemColor(hotBomTemColor);
+
                 }
             }
             pageResult.setList(res).setTotal(envPage.getTotal());

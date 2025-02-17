@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import cn.iocoder.yudao.module.cabinet.controller.admin.temcolor.vo.*;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
@@ -102,6 +103,11 @@ public class TemColorServiceImpl implements TemColorService {
             }
         }
         return temColorDOS;
+    }
+
+    @Override
+    public String findColor(BigDecimal iceTopTem) {
+        return temColorMapper.findColor(iceTopTem);
     }
 
 }

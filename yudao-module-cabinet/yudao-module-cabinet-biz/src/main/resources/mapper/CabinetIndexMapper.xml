@@ -91,6 +91,12 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="req.switchValue !=1 and  req.startNum !=null and req.startNum != ''">
+                and coldmax_tem between #{req.startNum} and #{req.endNum}
+            </if>
+            <if test="req.switchValue ==1 and  req.startNum !=null and req.startNum != ''">
+                and  heatmax_tem between #{req.startNum}+15 and #{req.endNum}+15
+            </if>
             <if test="req.pduBox !=null">
                 and ci.pdu_box = #{req.pduBox}
             </if>

@@ -156,9 +156,9 @@ public class CabinetEnvAndHumRes {
     @Schema(description = "热通道平均湿度")
     private BigDecimal hotAverageHum;
     //冷 平均
-    @Schema(description = "冷通道平均温度")
-    private BigDecimal iceAverageHum;
     @Schema(description = "冷通道平均湿度")
+    private BigDecimal iceAverageHum;
+    @Schema(description = "冷通道平均温度")
     private BigDecimal iceAverageTem;
 
     //热通道温度
@@ -194,9 +194,24 @@ public class CabinetEnvAndHumRes {
     private BigDecimal iceBomTem;
 
     //颜色
+    @Schema(description = "上冷通道温度颜色")
+    private String iceTopTemColor;
+    @Schema(description = "中冷通道温度颜色")
+    private String iceMidTemColor;
+    @Schema(description = "下冷通道温度颜色")
+    private String iceBomTemColor;
+
+    @Schema(description = "上热通道温度颜色")
+    private String hotTopTemColor;
+    @Schema(description = "中热通道温度颜色")
+    private String hotMidTemColor;
+    @Schema(description = "下热通道温度颜色")
+    private String hotBomTemColor;
+
     @Schema(description = "冷通道温度颜色")
-    private String iceTemColor;
+    private String iceAverageTemColor;
+
     @Schema(description = "热通道温度颜色")
-    private String hotTemColor;
+    private String hotAverageTemColor;
 
 }

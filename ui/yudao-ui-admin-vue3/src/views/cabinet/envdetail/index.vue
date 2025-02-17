@@ -80,7 +80,7 @@
 
         <el-form-item label="机柜Id" prop="ipAddr" >
           <el-input
-            v-model="queryParams.id"
+            v-model="cabinetEnvData.location"
             placeholder="请输入IP"
             clearable
             class="!w-140px"
@@ -485,7 +485,7 @@ const getList = async () => {
   await handleIceQuery();
   await handleHotQuery();
 
-  const data = await IndexApi.getCabinetEnvPage({cabinetIds : [queryParams.id]});
+  const data = await IndexApi.getCabinetEnvPage({cabinetIds : [queryParams.id],pageSize:100,pageNo:1});
   list.value = data.list
 
   list.value.forEach((obj) => {

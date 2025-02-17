@@ -9,4 +9,8 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="findColor" resultType="java.lang.String">
+        select color from cabinet_tem_color
+        where min &lt;= #{tem} and max &gt;= #{tem}
+    </select>
 </mapper>
