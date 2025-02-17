@@ -16,8 +16,8 @@
           <span style="width:80px;">冷通道温度</span>
           <el-input style="width: 30%;" type="number" v-model="item.min"  />°C~
           <el-input style="width: 30%;" type="number" v-model="item.max"  />°C
-          颜色<el-color-picker v-model="item.color" />      
-        </el-form-item>    
+          颜色<el-color-picker v-model="item.color" /><span>&nbsp;&nbsp;&nbsp;热通道温度{{item.min + 15 }}°C~{{ item.max + 15 }}°C</span> 
+        </el-form-item>
       </div>
       </div>
       <!--<div style="display:blcock;width:50%;margin-left:50%;margin-top:-152px;">
