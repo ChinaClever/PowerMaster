@@ -222,6 +222,7 @@
 import { FormRules } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import TopologyEdit from './TopologyEdit.vue'
+import { clear } from 'console'
 
 const {roomList} = defineProps({
   roomList: {
@@ -419,6 +420,7 @@ const handleSensorEdit = (data, i, index) => {
   Object.assign(sensorFormData, data)
   sensorVisible.value = true
 }
+
 const handleSensorDelete = (i, index) => {
   console.log('handleSensorDelete',i, index)
   if (i == 0) {
@@ -426,15 +428,35 @@ const handleSensorDelete = (i, index) => {
       ...sensorListLeft[index],
       sensorId: null,
       pathPdu: null,
+      //id:null,
     })
   } else {
     Object.assign(sensorListRight[index], {
       ...sensorListLeft[index],
       sensorId: null,
       pathPdu: null,
+      //id:null,
     })
   }
 }
+
+const clearData = () =>{
+  for(let index = 0; index < sensorListLeft.length; index++){
+    Object.assign(sensorListLeft[index], {
+      ...sensorListLeft[index],
+      sensorId: null,
+      pathPdu: null,
+      id:null,
+    })
+    Object.assign(sensorListRight[index], {
+      ...sensorListRight[index],
+      sensorId: null,
+      pathPdu: null,
+      id:null,
+    })
+  }
+}
+
 const submitSensorForm = async(data) => {
   // 校验表单
   if (!sensorForm) return
@@ -447,8 +469,8 @@ const submitSensorForm = async(data) => {
   } else {
     Object.assign(sensorListRight[index], sensorFormData)
   }
-  sensorVisible.value = false
-  console.log('sensorListLeft', sensorListLeft, sensorListRight)
+  sensorVisible.value = false;
+  console.log('sensorListLeft', sensorListLeft, sensorListRight);
 }
 const handleChange = (val: string[]) => {
   console.log(val)
@@ -463,10 +485,12 @@ const sensorForm = ref() // 传感器表单 Ref
 
 /** 打开弹窗 */
 const open = async (type: string, data, roomList) => {
-  dialogVisible.value = true
-  dialogTitle.value = type == 'edit' ? '编辑': '添加'
-  formType.value = type
-  resetForm()
+  dialogVisible.value = true;
+  clearData();
+  dialogTitle.value = type == 'edit' ? '编辑': '添加';
+  formType.value = type;
+  resetForm();
+  
   // sensorListLeft.forEach(item => {
   //   item.sensorId = null
   //   item.pathPdu = ''
@@ -493,6 +517,12 @@ const open = async (type: string, data, roomList) => {
       }
     })
   }
+  //for(let i = 0; i < sensorListLeft.length; i++){
+  //  sensorListLeft[i].pathPdu = '';
+  //  sensorListLeft[i].id = null;
+  //  sensorListRight[i].pathPdu = '';
+  //  sensorListRight[i].id = null;
+  //}
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
@@ -530,7 +560,6 @@ const open = async (type: string, data, roomList) => {
   // }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
-
 watch(() => machineFormData.value.powCapacity, (newValue) => {
 });
 
@@ -553,6 +582,7 @@ const submitForm = async () => {
       ...machineFormData.value,
     })
     console.log('res', res, machineFormData.value)
+    //console.log('sensorListLeft111', sensorListLeft, sensorListRight);
     // const data = machineFormData.value as unknown as UserApi.UserVO
     // if (formType.value === 'create') {
     //   await UserApi.createUser(data)
@@ -562,11 +592,11 @@ const submitForm = async () => {
     //   message.success(t('common.updateSuccess'))
     // }
     dialogVisible.value = false
-    resetForm()
+    resetForm();
     // 发送操作成功的事件
-    emit('success')
+    emit('success');
   } finally {
-    formLoading.value = false
+    formLoading.value = false;
   }
 }
 

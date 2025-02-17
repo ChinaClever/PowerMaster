@@ -465,6 +465,7 @@ const getTableData = async() => {
         return tableItem
       })
       listPage.value = list;
+      console.log('listPage.value', listPage.value);
       queryParams.pageTotal = res.total;
 
     }
