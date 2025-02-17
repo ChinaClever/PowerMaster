@@ -200,6 +200,7 @@ const lineChartQueryParams = reactive({
   id: history?.state?.busId as number | undefined,
   granularity: 'realtime',
 })
+
 const runLoad = ref();
 const ratedCapacity = ref();
 const reserveMargin = ref();
@@ -502,29 +503,6 @@ watch( ()=>typeRadio.value, async(value)=>{
   }
 });
 
-// 监听切换时间颗粒度
-watch( ()=>timeRadio.value, async(value)=>{
-  if ( value == '近一小时'){
-    // 选近一小时不能选有效电能
-    isPowActiveDisabled.value = true
-    isLoadRateDisabled.value = false
-    lineChartQueryParams.granularity = 'realtime'
-  }else if (value == '近一天'){
-    isPowActiveDisabled.value = false
-    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
-    lineChartQueryParams.granularity = 'hour'
-  }else if (value == '近三天'){
-    isPowActiveDisabled.value = false
-    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
-    lineChartQueryParams.granularity = 'SeventyHours'
-  }else{
-    isPowActiveDisabled.value = false
-    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
-    lineChartQueryParams.granularity = 'day'
-  }
-  await getCVLineChartData();
-});
-
 //刷新图
 const flashChartData = async () =>{
   await getDetailData();
@@ -729,6 +707,33 @@ watch(
   }
 );
 
+
+// 监听切换时间颗粒度
+watch( ()=>timeRadio.value, async(value)=>{
+  if ( value == '近一小时'){
+    // 选近一小时不能选有效电能
+    isPowActiveDisabled.value = true
+    isLoadRateDisabled.value = false
+    lineChartQueryParams.granularity = 'realtime'
+    await getCVLineChartData();
+  }else if (value == '近一天'){
+    isPowActiveDisabled.value = false
+    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
+    lineChartQueryParams.granularity = 'hour'
+    await getCVLineChartData();
+  }else if (value == '近三天'){
+    isPowActiveDisabled.value = false
+    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
+    lineChartQueryParams.granularity = 'SeventyHours'
+    await getCVLineChartData();
+  }else{
+    isPowActiveDisabled.value = false
+    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
+    lineChartQueryParams.granularity = 'day'
+    await getCVLineChartData();
+  }
+});
+
 // 获取折线图数据
 const getCVLineChartData =async () => {
   // console.log('switchType.value',switchType.value);
@@ -738,10 +743,12 @@ const getCVLineChartData =async () => {
     id: history?.state.cabinet,
     roomId: history?.state.roomId,
     type: switchType.value,
-    granularity: "SeventyHours"
+    granularity: lineChartQueryParams.granularity,
+    //granularity: "SeventyHours"
   });
 
   curChartData.value = data;
+  console.log('curChartData.value', curChartData.value);
 
   //const data = await CabinetApi.getBusLineChartDetailData(queryParams);
   // console.log('获取折线图数据',data);

@@ -3,40 +3,46 @@
 </template>
 
 <script setup>
+import { ref, watch } from 'vue';
+
 const props = defineProps({
   curChartData: {
     type: Array,
     required: true,
   },
-  timeRadio:{
+  timeRadio: {
     required: true,
   }
-})
+});
 
-console.log('props',props.curChartData);
+console.log('props', props.curChartData);
+
 const L1Data = ref([]);
 const L2Data = ref([]);
 const L3Data = ref([]);
 const createTimeData = ref([]);
 
-if(props.curChartData != null){
-  L1Data.value = props.curChartData.aPath.map((item) => item.powerFactorA);
-  L2Data.value = props.curChartData.aPath.map((item) => item.powerFactorB);
-  L3Data.value = props.curChartData.aPath.map((item) => item.powerFactorTotal);
-  createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
-}
-
-const chartOptions = {
-  title: { text: ''},
-  legend: { orient: 'horizontal', right: '25'},
-  dataZoom:[{type: "inside"}],
-  xAxis: {type: 'category', boundaryGap: false, data:props.createTimeData},
-  yAxis: { 
+const chartOptions = ref({
+  title: { text: '' },
+  legend: { orient: 'horizontal', right: '25' },
+  dataZoom: [{ type: "inside" }],
+  xAxis: { type: 'category', boundaryGap: false, data: createTimeData.value },
+  yAxis: {
     type: 'value',
     axisLabel: {
-      formatter: function(value) {
-          return value;
+      formatter: function (value) {
+        return value + ' KW';
       }
+    }
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let result = '';
+      params.forEach(item => {
+        result += `${item.seriesName}: ${item.value} <br/>`;
+      });
+      return result;
     }
   },
   grid: {
@@ -46,11 +52,43 @@ const chartOptions = {
     bottom: '10%', // 设置下侧边距
   },
   series: [
-    {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value },
-    {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-    {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+    { name: '总功率因素', type: 'line', symbol: 'none', data: L1Data.value },
+    { name: 'A路功率因素', type: 'line', symbol: 'none', data: L2Data.value },
+    { name: 'B路功率因素', type: 'line', symbol: 'none', data: L3Data.value },
   ],
-}
+});
+
+const updateChartData = () => {
+  if (props.curChartData && props.curChartData.aPath) {
+    L1Data.value = props.curChartData.aPath.map((item) => item.powerFactorA);
+    L2Data.value = props.curChartData.aPath.map((item) => item.powerFactorB);
+    L3Data.value = props.curChartData.aPath.map((item) => item.powerFactorTotal);
+    createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
+
+    chartOptions.value = {
+      ...chartOptions.value,
+      xAxis: { ...chartOptions.value.xAxis, data: createTimeData.value },
+      series: [
+        { ...chartOptions.value.series[0], data: L1Data.value },
+        { ...chartOptions.value.series[1], data: L2Data.value },
+        { ...chartOptions.value.series[2], data: L3Data.value },
+      ],
+    };
+  }
+};
+
+// 初始化时更新一次数据
+updateChartData();
+
+watch(
+  () => props.curChartData,
+  (newData) => {
+    if (newData && newData.aPath) { // 确保 newData 和 newData.aPath 存在
+      updateChartData();
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <style lang="less" scope>
