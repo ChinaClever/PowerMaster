@@ -27,11 +27,11 @@ console.log('curChartData11111', props.curChartData);
 
 if (props.curChartData != null) {
   L1Data.value = props.curChartData.aPathVc.map((item) => item.curValue);
-  L2Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
-  L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuel);
-  L4Data.value = props.curChartData.bPathVc.map((item) => item.curValuel);
-  L5Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
-  L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
+  L2Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
+  L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuelll);
+  L4Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
+  L5Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
+  L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuelll);
   createTimeData.value = props.curChartData.aPathVc.map((item) => item.createTime);
 }
 
@@ -85,11 +85,11 @@ watch(
   (newData, oldData) => {
     if (newData != null) {
       L1Data.value = props.curChartData.aPathVc.map((item) => item.curValue);
-      L2Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
-      L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuel);
-      L4Data.value = props.curChartData.bPathVc.map((item) => item.curValuel);
-      L5Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
-      L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
+      L2Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
+      L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuelll);
+      L4Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
+      L5Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
+      L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuelll);
       createTimeData.value = props.curChartData.aPathVc.map((item) => item.createTime);
       chartOptions.value = {
         ...chartOptions.value,
