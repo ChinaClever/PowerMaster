@@ -23,21 +23,16 @@ const L5Data = ref([]);
 const L6Data = ref([]);
 const createTimeData = ref([]);
 
-console.log('curChartData11111', props.curChartData);
 
 if (props.curChartData != null) {
   L1Data.value = props.curChartData.aPathVc.map((item) => item.curValue);
-  L2Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
-  L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuel);
-  L4Data.value = props.curChartData.bPathVc.map((item) => item.curValuel);
-  L5Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
-  L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
+  L2Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
+  L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuelll);
+  L4Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
+  L5Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
+  L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuelll);
   createTimeData.value = props.curChartData.aPathVc.map((item) => item.createTime);
 }
-
-console.log('L1Data', L1Data.value);
-console.log('L2Data', L2Data.value);
-console.log('createTimeData', createTimeData.value);
 
 const chartOptions = ref({
   title: { text: '' },

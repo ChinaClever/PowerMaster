@@ -52,26 +52,26 @@ const chartOptions = ref({
     bottom: '10%', // 设置下侧边距
   },
   series: [
-    { name: '总功率因素', type: 'line', symbol: 'none', data: L1Data.value },
-    { name: 'A路功率因素', type: 'line', symbol: 'none', data: L2Data.value },
-    { name: 'B路功率因素', type: 'line', symbol: 'none', data: L3Data.value },
+    { name: '总功率因素', type: 'line', symbol: 'none', data:  L3Data.value },
+    { name: 'A路功率因素', type: 'line', symbol: 'none', data: L1Data.value },
+    { name: 'B路功率因素', type: 'line', symbol: 'none', data: L2Data.value },
   ],
 });
 
 const updateChartData = () => {
   if (props.curChartData && props.curChartData.aPath) {
-    L1Data.value = props.curChartData.aPath.map((item) => item.powerFactorA);
-    L2Data.value = props.curChartData.aPath.map((item) => item.powerFactorB);
-    L3Data.value = props.curChartData.aPath.map((item) => item.powerFactorTotal);
+    L1Data.value = props.curChartData.aPath.map((item) => item.powerFactorA || 0);
+    L2Data.value = props.curChartData.aPath.map((item) => item.powerFactorB || 0);
+    L3Data.value = props.curChartData.aPath.map((item) => item.powerFactorTotal || 0);
     createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
 
     chartOptions.value = {
       ...chartOptions.value,
       xAxis: { ...chartOptions.value.xAxis, data: createTimeData.value },
       series: [
-        { ...chartOptions.value.series[0], data: L1Data.value },
-        { ...chartOptions.value.series[1], data: L2Data.value },
-        { ...chartOptions.value.series[2], data: L3Data.value },
+        { ...chartOptions.value.series[0], data: L3Data.value },
+        { ...chartOptions.value.series[1], data: L1Data.value },
+        { ...chartOptions.value.series[2], data: L2Data.value },
       ],
     };
   }

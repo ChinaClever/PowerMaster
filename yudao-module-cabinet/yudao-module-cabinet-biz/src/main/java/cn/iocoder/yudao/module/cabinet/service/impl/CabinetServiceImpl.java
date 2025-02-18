@@ -1395,21 +1395,21 @@ public class CabinetServiceImpl implements CabinetService {
                     index = "cabinet_hda_pow_hour";
                     heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
                             "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
-                            "factor_a_avg_value,", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
+                            "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
                     start = LocalDateTime.now().minusDays(1).format(formatter);
                     break;
                 case "SeventyHours":
                     index = "cabinet_hda_pow_hour";
                     heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
                             "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
-                            "factor_a_avg_value,", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
+                            "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
                     start = LocalDateTime.now().minusDays(3).format(formatter);
                     break;
                 default:
                     index = "cabinet_hda_pow_day";
                     heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
                             "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
-                            "factor_a_avg_value,", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
+                            "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
                     start = LocalDateTime.now().minusMonths(1).format(formatter);
             }
             List<Map<String, Object>> mapList = getDataEsChart(start, end, idKey, cabinet, index, heads);

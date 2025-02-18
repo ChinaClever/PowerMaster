@@ -26,11 +26,12 @@ const createTimeData = ref([]);
 
 if (props.curChartData != null) {
   L1Data.value = props.curChartData.aPathVc.map(item => item.volValue);
-  L2Data.value = props.curChartData.bPathVc.map(item => item.volValue);
-  L3Data.value = props.curChartData.aPathVc.map(item => item.volValuel || 0); 
-  L4Data.value = props.curChartData.bPathVc.map(item => item.volValuel || 0); 
-  L5Data.value = props.curChartData.aPathVc.map(item => item.volValuell || 0);
-  L6Data.value = props.curChartData.bPathVc.map(item => item.volValuell || 0);
+  L2Data.value = props.curChartData.aPathVc.map(item => item.volValuell || 0); 
+  L3Data.value = props.curChartData.aPathVc.map(item => item.volValuelll || 0);
+  
+  L4Data.value = props.curChartData.bPathVc.map(item => item.volValue);
+  L5Data.value = props.curChartData.bPathVc.map(item => item.volValuell || 0); 
+  L6Data.value = props.curChartData.bPathVc.map(item => item.volValuelll || 0);
   createTimeData.value = props.curChartData.aPathVc.map(item => item.createTime);
 }
 
