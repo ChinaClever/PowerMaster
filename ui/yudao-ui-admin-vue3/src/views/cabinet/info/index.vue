@@ -548,7 +548,13 @@ const handleRestore = async(id) =>{
 
 //处理表格双击事件
 const handleDbclick = (e) => {
-  push('/cabinet/cab/detail')
+  const id = e.cabinet_key.split('-')[1]
+  const roomId = e.cabinet_key.split('-')[0];
+  const type = 'hour';
+  const location = e.roomName;
+  const cabinetName = e.cabinetName;
+  push({path: '/cabinet/cab/detail', state: {location , cabinetName ,id ,roomId , type}})
+  //push('/cabinet/cab/detail')
 }
 
 // 处理阵列双击事件
