@@ -120,7 +120,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div v-show="(switchValue == 0 || switchValue == 1 || switchValue == 3) && listPage.length > 0" v-loading="loading" class="loadContainer">
+      <div v-show="(switchValue == 0 || switchValue == 1 || switchValue == 3) && listPage.length > 0"  class="loadContainer">
         <div class="loadItem" v-for="load in listPage" :key="load.key">
           <div class="content">
             <div class="info" v-if="switchValue == 0">

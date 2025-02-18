@@ -50,9 +50,9 @@
             <!-- 电流 -->
             <div class="progressContainer">
               <div style="margin-right:10px;margin-left: 5px;">
-                <div>总视在功率：{{item.powApparentTotal || '0.00'}}kVA</div>
-                <div>A路视在功率：{{item.powApparentA || '0.00'}}kVA</div>
-                <div>B路视在功率：{{item.powApparentB || '0.00'}}kVA</div>
+                <div>总视在功率：{{item.powApparentTotal.toFixed(3) || '0.000'}}kVA</div>
+                <div>A路视在功率：{{item.powApparentA.toFixed(3) || '0.000'}}kVA</div>
+                <div>B路视在功率：{{item.powApparentB.toFixed(3) || '0.000'}}kVA</div>
               </div>
               <div class="progress">
                 <div class="left" :style="`flex: ${Math.floor(item.apow || 0)}`">{{Math.floor(item.apow || 0)}}%</div>
