@@ -88,13 +88,13 @@
                   <div style="position:relative;" :style="{flex: item.usedSpace}">
                     <div style="position:absolute;top:50px;left:5px;">剩余量</div>
                   </div>
-                  <div class="fill" :style="{flex: 100-item.usedSpaceRate}">{{100-item.usedSpaceRate}}%</div>
+                  <div class="fill" :style="{flex: item.usedSpaceRate}">{{item.usedSpaceRate}}%</div>
                 </div>
                 <div class="bottom"></div>
               </div>
             </div>
             <div class="room">{{item.roomName}}-{{item.name}}</div>
-            <div style="position: absolute;width:70px;height:30px;top:5px;right:5px;">剩余量100%</div>
+            <div style="position: absolute;width:70px;height:30px;top:5px;right:5px;">剩余量{{item.usedSpaceRate}}%</div>
             <button class="detail" @click.prevent="toDetail(item.id,item.roomId)">详情</button>
           </div>
         </div>

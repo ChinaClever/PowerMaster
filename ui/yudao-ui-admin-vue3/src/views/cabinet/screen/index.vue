@@ -34,12 +34,12 @@
       </div>-->
       <div class="deviceList">
         <div v-for="item in deviceLeft" :key="item.id" class="device">
-          <div class="name"><span>设备名称： {{item.rackName}}</span><span style="margin-left:100px;">高度：{{item.uHeight}}</span></div>
+          <div class="name"><span>设备名称： {{item.rackName}}</span><span style="margin-left:100px;"></span></div>
           <div class="info">
-            <div><span>型号：{{item.rackType}}</span><span style="margin-left:100px;">状态：</span><span  v-if="item.runStatus==0"> 关机</span><span v-else> 开机</span> </div>
+            <div><span>型号：{{item.rackType}}</span><span style="margin-left:100px;">状态：</span><span  v-if="item.runStatus==0" style="color:grey"> 关机</span><span v-else style="color:green"> 开机</span> </div>
             <!--<div>占用：{{item.uHeight}}</div>-->
             <div>功率：{{item.powActive}}KW</div>
-            <div>电流：{{item.curValue}}A</div>
+            <div><span>电流：{{item.curValue}}A</span><span style="margin-left:100px;">高度：{{item.uHeight}}</span></div>
           </div>
 
         </div>
@@ -214,30 +214,30 @@ getData();
     width: 260px;
     height: fit-content;
     box-sizing: border-box;
-    &::before {
-      content: "";
-      position: absolute;
-      bottom: -15px; /* 控制梯形的上方边长 */
-      left: 20px;
-      width: 12px;
-      height: 0;
-      border-bottom: 15px solid #90b8df; /* 控制梯形的底边长度和颜色 */
-      border-left: 10px solid transparent; /* 控制梯形的左侧斜边 */
-      border-right: 10px solid transparent; /* 控制梯形的右侧斜边 */
-      transform: rotateX(180deg)
-    }
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: -15px; /* 控制梯形的上方边长 */
-      right: 20px;
-      width: 12px;
-      height: 0;
-      border-bottom: 15px solid #90b8df; /* 控制梯形的底边长度和颜色 */
-      border-left: 10px solid transparent; /* 控制梯形的左侧斜边 */
-      border-right: 10px solid transparent; /* 控制梯形的右侧斜边 */
-      transform: rotateX(180deg)
-    }
+    // &::before {
+    //   content: "";
+    //   position: absolute;
+    //   bottom: -15px; /* 控制梯形的上方边长 */
+    //   left: 20px;
+    //   width: 12px;
+    //   height: 0;
+    //   border-bottom: 15px solid #90b8df; /* 控制梯形的底边长度和颜色 */
+    //   border-left: 10px solid transparent; /* 控制梯形的左侧斜边 */
+    //   border-right: 10px solid transparent; /* 控制梯形的右侧斜边 */
+    //   transform: rotateX(180deg)
+    // }
+    // &::after {
+    //   content: "";
+    //   position: absolute;
+    //   bottom: -15px; /* 控制梯形的上方边长 */
+    //   right: 20px;
+    //   width: 12px;
+    //   height: 0;
+    //   border-bottom: 15px solid #90b8df; /* 控制梯形的底边长度和颜色 */
+    //   border-left: 10px solid transparent; /* 控制梯形的左侧斜边 */
+    //   border-right: 10px solid transparent; /* 控制梯形的右侧斜边 */
+    //   transform: rotateX(180deg)
+    // }
     .mainBorder {
       // height: calc(100% - 20px);
       background-color: #90b8df;

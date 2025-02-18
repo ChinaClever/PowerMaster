@@ -27,7 +27,7 @@
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
         cf.company,
-        round((cabinet_use_height/cabinet_height)*100,2) as usedSpaceRate,
+        100 - round((cabinet_use_height/cabinet_height)*100,2) as usedSpaceRate,
         ri.room_name as roomName,
         concat(ri.room_name,'-',ci.cabinet_name) as location
         from cabinet_index ci

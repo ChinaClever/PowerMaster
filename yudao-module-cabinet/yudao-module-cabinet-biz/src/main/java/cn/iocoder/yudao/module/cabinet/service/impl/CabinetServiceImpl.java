@@ -615,15 +615,10 @@ public class CabinetServiceImpl implements CabinetService {
     public PageResult<CabinetIndexDTO> getCapacityPage(CabinetIndexVo vo) {
         try {
             Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
-            //获取机柜列表
-//            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())) {
-//                List<Integer> list = new ArrayList<>();
-//                list.add(-1);
-//                vo.setCabinetIds(list);
-//            }
+
             //获取机柜列表
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
-//            List<CabinetIndexDTO> result = new ArrayList<>();
+
             List<CabinetIndexDTO> result = indexDTOPage.getRecords();
 
             List<Integer> ids = result.stream().map(CabinetIndexDTO::getId).distinct().collect(Collectors.toList());
@@ -1234,7 +1229,7 @@ public class CabinetServiceImpl implements CabinetService {
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
-                heads =new String[]{"cabinet_id", "load_rate","create_time"};
+                heads =new String[]{"cabinet_id", "load_rate_total_avg_value","create_time"};
                 break;
             case "hour":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1), "yyyy-MM-dd HH:mm:ss");
@@ -1271,6 +1266,7 @@ public class CabinetServiceImpl implements CabinetService {
         List<BigDecimal> factorTotal = new ArrayList<>();
         List<BigDecimal> loadRate = new ArrayList<>();
         List<String> createTime = new ArrayList<>();
+      data=data.stream().sorted(Comparator.comparing(i ->i.get("create_time").toString())).collect(Collectors.toList());
         if (Objects.nonNull(data)) {
             switch (index) {
                 case "cabinet_hda_pow_realtime":

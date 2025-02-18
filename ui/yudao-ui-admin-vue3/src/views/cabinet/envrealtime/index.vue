@@ -429,7 +429,7 @@ const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
-  console.log('switchValue',switchValue)
+  getCabinetColorAll();
   queryParams.switchValue = switchValue.value
   loading.value = true
   try {
@@ -582,7 +582,7 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  getCabinetColorAll();
+  // getCabinetColorAll();
   getList();
   getNavList();
   // flashListTimer.value = setInterval((getListNoLoading), 60000);
