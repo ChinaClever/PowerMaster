@@ -238,8 +238,8 @@
             </div>
             <div class="info" style="margin-left:30px;">
               <div style="margin-bottom:10px;"><span>冷</span><span style="margin-left:50px;">热</span></div>
-              <div style="margin-bottom:10px;"  :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageTem}}</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}</span></div>
-              <div style="margin-bottom:10px;"  :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageHum}}</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageHum}}</span></div>
+              <div style="margin-bottom:10px;"  :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageTem}}℃</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
+              <div style="margin-bottom:10px;"  :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageHum}}%</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageHum}}%</span></div>
             </div>
           </div>
           <!-- <div class="status" >
@@ -263,7 +263,7 @@
             <div class="info" style="margin-left:30px;">
               <div style="margin-bottom:10px;"><span>冷</span><span style="margin-left:55px;">热</span></div>
               <div style="margin-bottom:10px;"   :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageTem}}℃</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
-              <div style="margin-bottom:10px;"   :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageHum}}℃</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageHum}}℃</span></div>
+              <div style="margin-bottom:10px;"   :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageHum}}%</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageHum}}%</span></div>
             </div>
           </div>
           <!-- <div class="status" >
