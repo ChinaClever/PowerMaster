@@ -76,7 +76,8 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button style="margin-left: 12px" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
+            <el-button style="width:60px;" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetData()" style="width:50px;margin-left:-1px;">重置</el-button>
             <!-- <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button> -->
           </el-form-item>
         </div>
@@ -317,7 +318,7 @@ const getTableData = async(reset = false) => {
     listPage.value = [];
     queryParams.pageTotal = 0;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -361,6 +362,11 @@ const getLoadStatusList = async() => {
 
 const handleClick = (row) => {
   console.log('Button clicked!', row);
+}
+
+const resetData = () => {
+  queryParams.company = undefined;
+  getTableData();
 }
 
 const handleCheck = (row) => {
@@ -759,5 +765,10 @@ onBeforeRouteLeave(()=>{
   &:hover {
     color: #7bc25a;
   }
+}
+
+.el-form {
+  display: flex;
+  flex-wrap: nowrap;
 }
 </style>
