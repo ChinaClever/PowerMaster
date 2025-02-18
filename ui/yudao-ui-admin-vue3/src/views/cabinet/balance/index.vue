@@ -50,9 +50,9 @@
             <!-- 电流 -->
             <div class="progressContainer">
               <div style="margin-right:10px;margin-left: 5px;">
-                <div>总视在功率：{{item.powApparentTotal.toFixed(3) || '0.000'}}kVA</div>
-                <div>A路视在功率：{{item.powApparentA.toFixed(3) || '0.000'}}kVA</div>
-                <div>B路视在功率：{{item.powApparentB.toFixed(3) || '0.000'}}kVA</div>
+                <div>总视在功率：{{item.powApparentTotal ? item.powApparentTotal.toFixed(3) : '0.000'}}kVA</div>
+                <div>A路视在功率：{{item.powApparentA ? item.powApparentA.toFixed(3) : '0.000'}}kVA</div>
+                <div>B路视在功率：{{item.powApparentB ? item.powApparentB.toFixed(3) : '0.000'}}kVA</div>
               </div>
               <div class="progress">
                 <div class="left" :style="`flex: ${Math.floor(item.apow || 0)}`">{{Math.floor(item.apow || 0)}}%</div>
@@ -325,7 +325,8 @@ const balanceObj = reactive({
 
 const getBalanceDetail = async(item) => {
   const data = await CabinetApi.getDetail({id:item});
-  const res =data.redisData
+  const res = data.redisData;
+  console.log('data1111', data);
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
