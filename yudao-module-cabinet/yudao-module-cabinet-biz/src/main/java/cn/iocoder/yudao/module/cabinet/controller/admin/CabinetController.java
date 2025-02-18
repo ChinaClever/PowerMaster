@@ -205,6 +205,13 @@ public class CabinetController {
         return success(pageResult);
     }
 
+    @Operation(summary = "单个机柜数据详情")
+    @GetMapping("/cabinet/capacity/detail")
+    public CommonResult<CabinetDTO> getCabinetCapacityDetail(@Param("id") int id) {
+        return success(cabinetService.getCabinetCapacityDetail(id));
+    }
+
+
     @Operation(summary = "机柜容量列表统计")
     @GetMapping("/cabinet/capacity/statistics")
     public CommonResult<CabinetCapacityStatisticsResVO> getCapacitystatistics() {

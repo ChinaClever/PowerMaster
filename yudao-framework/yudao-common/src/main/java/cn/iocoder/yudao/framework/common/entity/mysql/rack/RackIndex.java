@@ -35,6 +35,8 @@ public class RackIndex implements Serializable {
      */
     private String rackName;
 
+    private String ip;
+
     /**
      * A路输出位
      */

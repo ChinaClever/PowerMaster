@@ -39,6 +39,8 @@ public class RackIndexResVO implements Serializable {
      */
     private String rackName;
 
+    private String ip;
+
     /**
      * A路输出位
      */
@@ -91,6 +93,13 @@ public class RackIndexResVO implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updateTime;
 
-    private BigDecimal curValue;
-    private BigDecimal powActive;
+    private BigDecimal curValueA;
+
+    private BigDecimal curValueB;
+
+    private BigDecimal powActiveA;
+
+    private BigDecimal powActiveB;
+
+    private BigDecimal powActiveTotal;
 }

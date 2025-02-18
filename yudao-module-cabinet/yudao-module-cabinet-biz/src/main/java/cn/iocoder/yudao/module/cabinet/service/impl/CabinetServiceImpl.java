@@ -215,7 +215,6 @@ public class CabinetServiceImpl implements CabinetService {
     @Override
     public CabinetDTO getCabinetDetailV2(int id) {
         CabinetDTO dto = new CabinetDTO();
-
         try {
             //获取数据库保存数据
             CabineIndexCfgVO index = cabinetIndexMapper.selectCabineIndexCfgById(id);
@@ -281,8 +280,6 @@ public class CabinetServiceImpl implements CabinetService {
                         StringBuilder bKey = new StringBuilder();
                         bKey.append(REDIS_KEY_PDU);
                         bKey.append(pdu.getPduKeyB());
-//                        bKey.append(SPLIT_KEY);
-//                        bKey.append(pdu.getCasIdB());
 
                         Object bPdu = ops.get(bKey.toString());
                         if (Objects.nonNull(bPdu)) {
@@ -362,11 +359,26 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
                 if (!CollectionUtils.isEmpty(rackIndexList)) {
                     List<RackIndexResVO> bean = BeanUtils.toBean(rackIndexList, RackIndexResVO.class);
-                    bean.forEach(t -> {
-                        //TODO 测试
-                        t.setPowActive(new BigDecimal("3.3"));
-                        t.setCurValue(new BigDecimal("4.4"));
-                    });
+
+//                    List<String> rackIds = bean.stream().map(i -> "packet:rack:" + i.getId()).distinct().collect(Collectors.toList());
+//                    List list = redisTemplate.opsForValue().multiGet(rackIds);
+//                    Map<Integer, Object> rackKey = new HashMap<>();
+//                    if (Objects.nonNull(list.get(0))) {
+//                        rackKey = (Map<Integer, Object>) list.stream().collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getInteger("rack_key"), Function.identity()));
+//                    }
+//                    for (RackIndexResVO t : bean){
+//                        Object obj = rackKey.get(t.getId());
+//
+//                        JSONObject rackPower = JSON.parseObject(JSON.toJSONString(obj)).getJSONObject("rack_power");
+//                        if (Objects.nonNull(rackPower)) {
+//                            Double cura = rackPower.getJSONObject("total_data").getDouble("cur_a");
+//                            Double curb = rackPower.getJSONObject("total_data").getDouble("cur_b");
+//                            Double powApparent = rackPower.getJSONObject("total_data").getDouble("pow_apparent");
+//                            t.setPowActive(BigDecimal.valueOf(powApparent).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+//                            t.setCurValueA(BigDecimal.valueOf(cura).setScale(2, BigDecimal.ROUND_HALF_DOWN));
+//                            t.setCurValueB(BigDecimal.valueOf(curb).setScale(2, BigDecimal.ROUND_HALF_DOWN));
+//                        }
+//                    }
                     dto.setRackIndexList(bean);
                     int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0, Integer::sum);
                     int rackNum = rackIndexList.size();
@@ -1059,6 +1071,79 @@ public class CabinetServiceImpl implements CabinetService {
             pageResult.setList(res).setTotal(envPage.getTotal());
         }
         return pageResult;
+    }
+
+    @Override
+    public CabinetDTO getCabinetCapacityDetail(int id) {
+        CabinetDTO dto = new CabinetDTO();
+        try {
+            //获取数据库保存数据
+            CabineIndexCfgVO index = cabinetIndexMapper.selectCabineIndexCfgById(id);
+            if (Objects.nonNull(index)) {
+                dto.setId(id);
+                dto.setCabinetName(index.getCabinetName());
+                dto.setAisleId(index.getAisleId());
+                dto.setRoomId(index.getRoomId());
+                dto.setPowCapacity(index.getPowerCapacity());
+                dto.setRunStatus(index.getRunStatus());
+                dto.setPduBox(index.getPduBox());
+                dto.setEleAlarmDay(index.getEleAlarmDay());
+                dto.setEleAlarmMonth(index.getEleAlarmMonth());
+                dto.setEleLimitDay(index.getEleLimitDay());
+                dto.setEleLimitMonth(index.getEleLimitMonth());
+                dto.setCabinetHeight(index.getCabinetHeight());
+                dto.setType(index.getCabinetType());
+                dto.setXCoordinate(index.getXCoordinate());
+                dto.setYCoordinate(index.getYCoordinate());
+                dto.setCompany(index.getCompany());
+                //机房信息
+                List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
+                        .eq(RackIndex::getCabinetId, index.getId())
+                        .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+                if (!CollectionUtils.isEmpty(rackIndexList)) {
+                    List<RackIndexResVO> bean = BeanUtils.toBean(rackIndexList, RackIndexResVO.class);
+
+                    List<String> rackIds = bean.stream().map(i -> "packet:rack:" + i.getId()).distinct().collect(Collectors.toList());
+                    List list = redisTemplate.opsForValue().multiGet(rackIds);
+                    Map<Integer, Object> rackKey = new HashMap<>();
+                    if (Objects.nonNull(list.get(0))) {
+                        rackKey = (Map<Integer, Object>) list.stream().collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getInteger("rack_key"), Function.identity()));
+                    }
+                    for (RackIndexResVO t : bean){
+                        Object obj = rackKey.get(t.getId());
+
+                        JSONObject rackPower = JSON.parseObject(JSON.toJSONString(obj)).getJSONObject("rack_power");
+                        if (Objects.nonNull(rackPower)) {
+                            Double cura = rackPower.getJSONObject("total_data").getDouble("cur_a");
+                            Double curb = rackPower.getJSONObject("total_data").getDouble("cur_b");
+                            Double powApparent = rackPower.getJSONObject("total_data").getDouble("pow_apparent");
+
+                            Double powApparenta = rackPower.getJSONObject("path_a").getList("pow_apparent",Double.class).get(0);
+                            Double powApparentb = rackPower.getJSONObject("path_b").getList("pow_apparent",Double.class).get(0);
+
+                            t.setPowActiveTotal(BigDecimal.valueOf(powApparent).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+                            t.setCurValueA(BigDecimal.valueOf(cura).setScale(2, BigDecimal.ROUND_HALF_DOWN));
+                            t.setCurValueB(BigDecimal.valueOf(curb).setScale(2, BigDecimal.ROUND_HALF_DOWN));
+                            t.setPowActiveA(BigDecimal.valueOf(powApparenta).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+                            t.setPowActiveB(BigDecimal.valueOf(powApparentb).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+                        }
+                    }
+                    dto.setRackIndexList(bean);
+                    int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0, Integer::sum);
+                    int rackNum = rackIndexList.size();
+                    int freeSpace = dto.getCabinetHeight() - usedSpace;
+                    dto.setUsedSpace(usedSpace);
+                    dto.setRackNum(rackNum);
+                    dto.setFreeSpace(freeSpace);
+                } else {
+                    dto.setFreeSpace(dto.getCabinetHeight());
+                }
+            }
+            return dto;
+        } catch (Exception e) {
+            log.error("获取机柜信息失败：", e);
+        }
+        return dto;
     }
 
     @Override

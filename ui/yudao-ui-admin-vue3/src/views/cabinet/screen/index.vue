@@ -12,36 +12,15 @@
     </div>
     <div v-if="switchValue === 0">
       <div class="screenContiner">
-      <!--<div class="deviceList">
-        <div v-for="item in deviceRight" :key="item.id" class="device">
-          <div class="name">设备名称： {{item.rackName}}</div>
-          <div class="info">
-            <div>型号：{{item.rackType}}</div>
-            <div>占用：{{item.uHeight}}</div>
-          </div>
-        </div>
-      </div>
-      <div class="machine">
-        <div class="mainBorder">
-          <div class="main">
-            <template v-for="(item, index) in frameList" :key="index">
-              <div v-if="item.uHeight > 0" class="Uitem active" :style="`min-height: ${height}`">{{item.rackName}}</div>
-              <div v-else class="Uitem"></div>
-            </template>
-          </div>
-        </div>
-        <div class="base"></div>
-      </div>-->
       <div class="deviceList">
         <div v-for="item in deviceLeft" :key="item.id" class="device">
-          <div class="name"><span>设备名称： {{item.rackName}}</span><span style="margin-left:100px;"></span></div>
+          <div class="name"><span>设备名称：{{item.rackName}}</span><span style="margin-left:40px;">型号：{{item.rackType}}</span></div>
           <div class="info">
-            <div><span>型号：{{item.rackType}}</span><span style="margin-left:100px;">状态：</span><span  v-if="item.runStatus==0" style="color:grey"> 关机</span><span v-else style="color:green"> 开机</span> </div>
+            <div><span>IP：{{item.ip}}</span><span style="margin-left:100px;">状态：</span><span  v-if="item.runStatus==0" style="color:grey">关机</span><span v-else style="color:green"> 开机</span> </div>
             <!--<div>占用：{{item.uHeight}}</div>-->
             <div>功率：{{item.powActive}}KW</div>
-            <div><span>电流：{{item.curValue}}A</span><span style="margin-left:100px;">高度：{{item.uHeight}}</span></div>
+            <div><span>电流：A:{{item.curValueA}} B:{{item.curValueB}}</span><span style="margin-left:50px;">高度：{{item.uHeight}}</span></div>
           </div>
-
         </div>
       </div>
       <div style="width:20%;height:100%;">
@@ -80,39 +59,18 @@
       </div>
       </div>
       </div>
-      <!--<div class="local">{{cabinetInfo.roomName}}-{{cabinetInfo.cabinetName}}</div>
-      <div class="infomation">
-        <div class="infoItem">
-          <span class="num">{{cabinetInfo.cabinetHeight}}</span>
-          <span>空间总容量</span>
-        </div>
-        <div class="line"></div>
-        <div class="infoItem">
-          <span class="num">{{cabinetInfo.usedSpace}}U</span>
-          <span>已用空间</span>
-        </div>
-        <div class="line"></div>
-        <div class="infoItem">
-          <span class="num">{{cabinetInfo.freeSpace}}U</span>
-          <span>未用空间</span>
-        </div>
-        <div class="line"></div>
-        <div class="infoItem">
-          <span class="num">{{cabinetInfo.rackNum}}</span>
-          <span>设备总数</span>
-        </div>
-      </div>-->
+
     </div>
     <div v-else-if="switchValue === 1">
-      <el-table :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="名称" align="center" prop="tableId"/>
-        <el-table-column label="高度" align="center" prop="location" />
-        <el-table-column label="型号" align="center" prop="tableId"/>
-        <el-table-column label="总功率" align="center" prop="location" />
-        <el-table-column label="A路功率" align="center" prop="tableId"/>
-        <el-table-column label="B路功率" align="center" prop="location" />
-        <el-table-column label="A路电流" align="center" prop="tableId"/>
-        <el-table-column label="B路电流" align="center" prop="location" />
+      <el-table :data="deviceLeft" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="名称" align="center" prop="rackName"/>
+        <el-table-column label="高度" align="center" prop="uHeight" />
+        <el-table-column label="型号" align="center" prop="rackType"/>
+        <el-table-column label="总功率" align="center" prop="powActiveTotal" />
+        <el-table-column label="A路功率" align="center" prop="powActiveA"/>
+        <el-table-column label="B路功率" align="center" prop="powActiveB" />
+        <el-table-column label="A路电流" align="center" prop="curValueA"/>
+        <el-table-column label="B路电流" align="center" prop="curValueB" />
       </el-table>
     </div>
   </ContentWrap>
@@ -133,14 +91,11 @@ const editEnable = ref(false);
 
 
 const getData = async() => {
-  const res = await CabinetApi.getCabinetInfoItem({id: cabinetId});
+  const res = await CabinetApi.getCabinetCapacityInfoItem({id: cabinetId});
   console.log('res', res);
   cabinetInfo.value = res;
   if (res.rackIndexList && res.rackIndexList.length > 0) {
     deviceLeft.value = res.rackIndexList;
-    console.log('deviceLeft.value', deviceLeft.value);
-    //deviceLeft.value = res.rackIndexList.filter((item,index) => index%2 == 0);
-    //deviceRight.value = res.rackIndexList.filter((item,index) => index%2 == 1);
     const frames = [] as any;
     for(let i = 1; i <= res.cabinetHeight; i++) {
       frames.push({});

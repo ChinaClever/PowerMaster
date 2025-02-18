@@ -46,6 +46,12 @@ export const CabinetApi = {
   getCabinetInfoItem: async (params: any) => {
     return await request.get({ url: `/cabinet/detailV2`, params })
   },
+
+  // 获取机柜配置信息
+  getCabinetCapacityInfoItem: async (params: any) => {
+    return await request.get({ url: `/cabinet/capacity/detail`, params })
+  },
+
   // 获取机房菜单（全部）
   getRoomMenuAll: async (params: any) => {
     return await request.get({ url: `/room/menuAll`, params })

@@ -134,4 +134,6 @@ public interface CabinetService {
     CabinetCapacityStatisticsResVO getCapacitystatistics();
 
     PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(CabinetIndexVo pageReqVO);
+
+    CabinetDTO getCabinetCapacityDetail(int id);
 }
