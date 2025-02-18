@@ -60,9 +60,9 @@ const chartOptions = ref({
 
 const updateChartData = () => {
   if (props.curChartData && props.curChartData.aPath) {
-    L1Data.value = props.curChartData.aPath.map((item) => item.powerFactorA || 0);
-    L2Data.value = props.curChartData.aPath.map((item) => item.powerFactorB || 0);
-    L3Data.value = props.curChartData.aPath.map((item) => item.powerFactorTotal || 0);
+    L1Data.value = props.curChartData.aPath.map((item) => item.powerFactorA.toFixed(2));
+    L2Data.value = props.curChartData.aPath.map((item) => item.powerFactorB.toFixed(2));
+    L3Data.value = props.curChartData.aPath.map((item) => item.powerFactorTotal.toFixed(2));
     createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
 
     chartOptions.value = {
