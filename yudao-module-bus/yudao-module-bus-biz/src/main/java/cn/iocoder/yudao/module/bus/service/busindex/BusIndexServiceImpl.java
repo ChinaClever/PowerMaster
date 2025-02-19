@@ -362,12 +362,12 @@ public class BusIndexServiceImpl implements BusIndexService {
             return null;
         }
         ValueOperations ops = redisTemplate.opsForValue();
-        Map<String ,String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         //柜列
         List<AisleBar> aisleBar = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                 .in(!CollectionUtils.isEmpty(busKeys), AisleBar::getBusKey, busKeys));
         Map<String, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBusKey, AisleBar::getPath));
-        Map<Integer,String> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getAisleId,AisleBar::getBusKey));
+        Map<Integer, String> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getAisleId, AisleBar::getBusKey));
 
         if (!CollectionUtils.isEmpty(aisleBar)) {
             Set<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
@@ -380,50 +380,51 @@ public class BusIndexServiceImpl implements BusIndexService {
                     JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
                     String busKey = aisleBarKeyMap.get(json.getInteger("aisle_key"));
                     map.put(busKey, json.getString("room_name") + SPLIT_KEY
-                            + json.getString("aisle_name") + SPLIT_KEY+ aislePathMap.get(busKey) + "路");
-                }
-            }
-        }
-
-        busKeys.removeAll(map.keySet());
-
-        if (CollectionUtils.isEmpty(busKeys)) {
-            return map;
-        }
-        List<CabinetBox> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBox>()
-                .in(CabinetBox::getBoxKeyA, busKeys).or().in(CabinetBox::getBoxKeyB, busKeys));
-        if (CollectionUtils.isEmpty(cabinetBus)) {
-            return map;
-        }
-        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
-        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId,CabinetBox::getBoxKeyA));
-        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, CabinetBox::getBoxKeyB));
-
-        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
-        List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());
-        //设备位置
-        String devPosition;
-        List cabinets = ops.multiGet(cabinetRedisKeys);
-        if (!CollectionUtils.isEmpty(cabinets)) {
-            for (Object cabinet : cabinets) {
-                JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
-                devPosition = json.getString("room_name") + SPLIT_KEY + json.getString("cabinet_name");
-                if (!StringUtils.isEmpty(json.getString("aisle_name"))) {
-                    devPosition += SPLIT_KEY + json.getString("aisle_name");
-                }
-                Integer cabinetId = Integer.valueOf(json.getString("cabinet_key").split("-")[1]);
-                String devKeyA = cabinetBusMapA.get(cabinetId);
-                if (!StringUtils.isEmpty(devKeyA)) {
-                    map.put(devKeyA,devPosition + SPLIT_KEY + "A路");
-                }
-                String devKeyB = cabinetBusMapB.get(cabinetId);
-                if (!StringUtils.isEmpty(devKeyB)) {
-                    map.put(devKeyB,devPosition + SPLIT_KEY + "B路");
+                            + json.getString("aisle_name") + SPLIT_KEY + aislePathMap.get(busKey) + "路");
                 }
             }
         }
         return map;
     }
+//        busKeys.removeAll(map.keySet());
+//
+//        if (CollectionUtils.isEmpty(busKeys)) {
+//            return map;
+//        }
+//        List<CabinetBox> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBox>()
+//                .in(CabinetBox::getBoxKeyA, busKeys).or().in(CabinetBox::getBoxKeyB, busKeys));
+//        if (CollectionUtils.isEmpty(cabinetBus)) {
+//            return map;
+//        }
+//        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
+//        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId,CabinetBox::getBoxKeyA));
+//        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, CabinetBox::getBoxKeyB));
+//
+//        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
+//        List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());
+//        //设备位置
+//        String devPosition;
+//        List cabinets = ops.multiGet(cabinetRedisKeys);
+//        if (!CollectionUtils.isEmpty(cabinets)) {
+//            for (Object cabinet : cabinets) {
+//                JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+//                devPosition = json.getString("room_name") + SPLIT_KEY + json.getString("cabinet_name");
+//                if (!StringUtils.isEmpty(json.getString("aisle_name"))) {
+//                    devPosition += SPLIT_KEY + json.getString("aisle_name");
+//                }
+//                Integer cabinetId = Integer.valueOf(json.getString("cabinet_key").split("-")[1]);
+//                String devKeyA = cabinetBusMapA.get(cabinetId);
+//                if (!StringUtils.isEmpty(devKeyA)) {
+//                    map.put(devKeyA,devPosition + SPLIT_KEY + "A路");
+//                }
+//                String devKeyB = cabinetBusMapB.get(cabinetId);
+//                if (!StringUtils.isEmpty(devKeyB)) {
+//                    map.put(devKeyB,devPosition + SPLIT_KEY + "B路");
+//                }
+//            }
+//        }
+//        return map;
+//    }
 
 
 
@@ -611,24 +612,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             } else {
                 busIndexRes.setALoadRate(loadRate.getInteger(0));
             }
-//            rateList.sort(Collections.reverseOrder());
-//            Double biggest = rateList.get(0);
-//            if (biggest == 0) {
-//                busIndexRes.setColor(0);
-//            } else if (biggest < 30) {
-//                busIndexRes.setColor(1);
-//            } else if (biggest < 60) {
-//                busIndexRes.setColor(2);
-//            } else if (biggest < 90) {
-//                busIndexRes.setColor(3);
-//            } else if (biggest >= 90) {
-//                busIndexRes.setColor(4);
-//            }
-//            if (pageReqVO.getColor() != null) {
-//                if (!pageReqVO.getColor().contains(busIndexRes.getColor())) {
-//                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
-//                }
-//            }
         }
         return res;
     }
@@ -3732,47 +3715,45 @@ public class BusIndexServiceImpl implements BusIndexService {
                 bus.setLocation(positonMap.get(aisleId) + aislePathMap.get(bus.getDevKey()) + "路");
             }
         });
-        List<BusResBase> resNotInAisle = res.stream().filter(busRes -> StringUtils.isEmpty(busRes.getLocation())).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(resNotInAisle)) {
-            return;
-        }
-        for (BusResBase busResBase : resNotInAisle) {
-            List<CabinetBox> cabinetBusListA = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>()
-                    .like(CabinetBox::getBoxKeyA, busResBase.getDevKey()));
-            if (!CollectionUtils.isEmpty(cabinetBusListA)) {
-                CabinetBox cabinetBus = cabinetBusListA.get(0);
-                CabinetIndex index = cabinetIndexMapper.selectById(cabinetBus.getCabinetId());
-                String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
-                String redisKey = REDIS_KEY_CABINET + cabKey;
-                Object cabinet = ops.get(redisKey);
-                if (Objects.nonNull(cabinet)) {
-                    JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
-                    String devPosition;
-                    devPosition = json.getString("room_name");
-                    busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBusName());
-                }
-            }
-            if (busResBase.getLocation() != null) {
-                continue;
-            }
-
-            List<CabinetBox> cabinetBusListB = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>()
-                    .like(CabinetBox::getBoxKeyB, busResBase.getDevKey()));
-            if (!CollectionUtils.isEmpty(cabinetBusListB)) {
-                CabinetBox cabinetBus = cabinetBusListB.get(0);
-                CabinetIndex index = cabinetIndexMapper.selectById(cabinetBus.getCabinetId());
-                String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
-                String redisKey = REDIS_KEY_CABINET + cabKey;
-                Object cabinet = ops.get(redisKey);
-                if (Objects.nonNull(cabinet)) {
-                    JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
-                    String devPosition;
-                    devPosition = json.getString("room_name");
-                    busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBusName());
-                }
-            }
-        }
+//        List<BusResBase> resNotInAisle = res.stream().filter(busRes -> StringUtils.isEmpty(busRes.getLocation())).collect(Collectors.toList());
     }
+//        for (BusResBase busResBase : resNotInAisle) {
+//            List<CabinetBox> cabinetBusListA = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>()
+//                    .like(CabinetBox::getBoxKeyA, busResBase.getDevKey()));
+//            if (!CollectionUtils.isEmpty(cabinetBusListA)) {
+//                CabinetBox cabinetBus = cabinetBusListA.get(0);
+//                CabinetIndex index = cabinetIndexMapper.selectById(cabinetBus.getCabinetId());
+//                String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
+//                String redisKey = REDIS_KEY_CABINET + cabKey;
+//                Object cabinet = ops.get(redisKey);
+//                if (Objects.nonNull(cabinet)) {
+//                    JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+//                    String devPosition;
+//                    devPosition = json.getString("room_name");
+//                    busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBusName());
+//                }
+//            }
+//            if (busResBase.getLocation() != null) {
+//                continue;
+//            }
+//
+//            List<CabinetBox> cabinetBusListB = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>()
+//                    .like(CabinetBox::getBoxKeyB, busResBase.getDevKey()));
+//            if (!CollectionUtils.isEmpty(cabinetBusListB)) {
+//                CabinetBox cabinetBus = cabinetBusListB.get(0);
+//                CabinetIndex index = cabinetIndexMapper.selectById(cabinetBus.getCabinetId());
+//                String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
+//                String redisKey = REDIS_KEY_CABINET + cabKey;
+//                Object cabinet = ops.get(redisKey);
+//                if (Objects.nonNull(cabinet)) {
+//                    JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+//                    String devPosition;
+//                    devPosition = json.getString("room_name");
+//                    busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBusName());
+//                }
+//            }
+//        }
+
 
     private Map getESTotalAndIds(String index, String startTime, String endTime, Integer pageSize, Integer pageNo) throws IOException {
         HashMap<String, Object> result = new HashMap<>();
