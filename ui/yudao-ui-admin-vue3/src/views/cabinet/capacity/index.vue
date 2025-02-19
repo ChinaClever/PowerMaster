@@ -86,7 +86,7 @@
               <div class="shapeContainer">
                 <div class="shape">
                   <div style="position:relative;" :style="{flex: item.usedSpace}">
-                    <div style="position:absolute;top:50px;left:5px;">剩余量</div>
+                    <div style="position:absolute;top:55px;left:5px;">剩余量</div>
                   </div>
                   <div class="fill" :style="{flex: item.usedSpaceRate}">{{item.usedSpaceRate}}%</div>
                 </div>
