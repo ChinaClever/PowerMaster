@@ -228,22 +228,22 @@
         <div class="arrayItem" v-for="item in tableData" :key="item.id">
           <div class="devKey">{{ item.location }}</div>
           <div class="content">
-            <div class="icon" >
-              <div style="margin-top:5px;">
-                T
-              </div>
-              <div style="margin-top:10px;">
-                H
-              </div>           
+            <div  class="icon">
+                <div><span>类型</span></div>
+                <div><span> T </span></div>
+                <div><span> H </span></div>
             </div>
-            <div class="info" style="margin-left:30px;">
-              <div style="margin-bottom:10px;"><span>冷</span><span style="margin-left:50px;">热</span></div>
-              <div style="margin-bottom:10px;"  :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageTem}}℃</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
-              <div style="margin-bottom:10px;"  :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageHum}}%</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageHum}}%</span></div>
+            <div  class="tem">
+                <div><span>冷</span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageTem}}℃</span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageHum}}%</span></div>
+            </div>
+            <div  class="tem">
+                <div><span>热</span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }"> {{item.hotAverageHum}}% </span></div>
             </div>
           </div>
-          <!-- <div class="status" >
-          </div> -->
           <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
         </div>
       </div>
@@ -252,22 +252,22 @@
         <div class="arrayItem" v-for="item in tableData" :key="item.id">
           <div class="devKey">{{ item.location }}</div>
           <div class="content">
-            <div class="icon" >
-              <div style="margin-top:5px;">
-                T
-              </div>
-              <div style="margin-top:10px;">
-                H
-              </div>           
+            <div  class="icon">
+                <div><span>类型</span></div>
+                <div><span> T </span></div>
+                <div><span> H </span></div>
             </div>
-            <div class="info" style="margin-left:30px;">
-              <div style="margin-bottom:10px;"><span>冷</span><span style="margin-left:55px;">热</span></div>
-              <div style="margin-bottom:10px;"   :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageTem}}℃</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
-              <div style="margin-bottom:10px;"   :style="{ color : item.iceAverageTemColor }"><span>{{item.iceAverageHum}}%</span><span style="margin-left:50px;"  :style="{ color : item.hotAverageTemColor }">{{item.hotAverageHum}}%</span></div>
+            <div  class="tem">
+                <div><span>冷</span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageTem}}℃</span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageHum}}%</span></div>
+            </div>
+            <div  class="tem">
+                <div><span>热</span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }"> {{item.hotAverageHum}}% </span></div>
             </div>
           </div>
-          <!-- <div class="status" >
-          </div> -->
           <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
         </div>
       </div>
@@ -916,7 +916,7 @@ onActivated(() => {
   flex-wrap: wrap;
   .arrayItem {
     width: 25%;
-    height: 140px;
+    height: 120px;
     font-size: 13px;
     box-sizing: border-box;
     background-color: #eef4fc;
@@ -928,6 +928,11 @@ onActivated(() => {
       align-items: center;
       .icon {
         width: 60px;
+        height: 30px;
+        text-align: center;
+      }
+      .tem {
+        width: 100px;
         height: 30px;
         text-align: center;
       }
