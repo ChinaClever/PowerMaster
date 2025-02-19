@@ -596,14 +596,20 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 }
 
 // 接口获取机房导航列表
+// const getNavList = async() => {
+//   const res = await CabinetApi.getRoomList({})
+//   let arr = [] as any
+//   for (let i=0; i<res.length;i++){
+//   var temp = await IndexApi.getRackAll({id : res[i].id})
+//   arr = arr.concat(temp);
+//   }
+//   navList.value = arr
+// }
+
+// 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await IndexApi.getRackAll({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await CabinetApi.getRackMenuAll({})
+  navList.value = res
 }
 
 /** 初始化 **/

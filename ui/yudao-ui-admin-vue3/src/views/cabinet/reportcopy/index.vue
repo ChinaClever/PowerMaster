@@ -200,15 +200,16 @@
                     :data="rack" 
                     :header-cell-style="arraySpanMethod"
                     >
-                    <el-table-column  align="center" label="序号" type="index" prop="id" />
+                    <el-table-column  align="center" label="序号" type="index" prop="id" width="100px"/>
                     <el-table-column  align="center" label="名称" prop="name"  />
                     <el-table-column  align="center" label="总功率" prop="totalPower" />
-                    <el-table-column  align="center" label="A路电流" prop="acurrent" />
-                    <el-table-column  align="center" label="B路电流" prop="bcurrent" />
+                    <el-table-column  align="center" label="A路电流(A)" prop="acurrent" />
+                    <el-table-column  align="center" label="B路电流(A)" prop="bcurrent" />
                     <el-table-column label="操作" align="center">
                     <template #default="scope">
-                    <el-button @click="generateDailyReport(scope.row.id)">日报</el-button>
-                    <el-button @click="generateMonthlyReport(scope.row.id)">月报</el-button>
+                    <el-button v-if="switchValue==0" @click="generateDailyReport(scope.row.id)">详情</el-button>
+                    <el-button v-if="switchValue==1" @click="generateMonthlyReport(scope.row.id)">详情</el-button>
+                    
                     </template>
       </el-table-column>
                   </el-table>
@@ -363,7 +364,8 @@ const bLineList = ref() as any;
 const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
-
+const ele = ref();
+const factor = ref();
 let lineidChartA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainerA = ref<HTMLElement | null>(null);
 let lineidChartOneA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
@@ -673,13 +675,14 @@ const itemStyle = ref({
 }); 
 const getList = async () => {
   loading.value = true
-  
+  await handleEleQuery();
   await handleConsumeQuery();
   await handlePowQuery();
   await handleIceQuery();
   await handleHotQuery();
   await handleDetailQuery();
   await handlePFLineQuery();
+  
 
   visControll.visAllReport = true;
   loading.value = false
@@ -697,6 +700,12 @@ const handlePFLineQuery = async () => {
   }else {
     visControll.pfVis = false;
   }
+}
+
+const handleEleQuery = async () => {
+  const data = await IndexApi.getEleByCabinet(queryParams);
+  ele.value = data.ele;
+  console.log('elekasjklasncklasnckasnk',ele.value);
 }
 
 const AlChartData = ref({
@@ -746,7 +755,7 @@ const isPDU = ref(true);
 
 const PDUHdaLineHisdata = async () => {
   try {
-    const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value });
+    const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime });
 
     AcurVolData.value = result.A;
     BcurVolData.value = result.B;
@@ -928,6 +937,12 @@ const handleDetailQuery = async () => {
     baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
     consumeName : "当前总无功功率",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
+  })
+  temp.push({
+    baseInfoName : "耗电量",
+    baseInfoValue : (ele.value || 0).toFixed(3) + "kW",
+    consumeName : "当前功率因素",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '/'
   })
   CabinetTableData.value = temp;
 }
@@ -1264,8 +1279,8 @@ onMounted( async () =>  {
 }
 
 :deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
+    background: #f6f6f6 !important;
+    color: black;
 }
 :deep(.master-left .el-card__body) {
   padding: 0;

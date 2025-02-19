@@ -30,7 +30,7 @@
         sum(case when cur_unbalance_status = 4 then 1 else 0 end) as greaterThirty
         from pdu_index
         <where>
-            is_deleted =0
+            is_deleted =0 and run_status !=5
         </where>
     </select>
     <!--order by case when run_status=2 then 1 else 0 end desc-->
@@ -62,7 +62,7 @@
                     #{item}
                 </foreach>
             </if>
-            and is_deleted =0
+            and is_deleted =0 and run_status != 5
         </where>
         ORDER BY CASE WHEN run_status =4 THEN 0 ELSE 1 END, create_time asc
     </select>

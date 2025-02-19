@@ -119,8 +119,8 @@ public class PDUDeviceController {
 
     @GetMapping("/pduHdaLineHisdataByCabinet")
     @Operation(summary = "获得PDU相历史数据")
-    public CommonResult<Map> getPduHdaLineHisdataKey(Long CabinetId, String type) {
-        return success(pDUDeviceService.getPduHdaLineHisdataKeyByCabinet(CabinetId, type));
+    public CommonResult<Map> getPduHdaLineHisdataKey(Long CabinetId, String type, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(pDUDeviceService.getPduHdaLineHisdataKeyByCabinet(CabinetId, type, oldTime, newTime));
     }
 
     @GetMapping("/chartNewData")

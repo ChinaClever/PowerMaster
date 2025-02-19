@@ -138,7 +138,7 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -379,9 +379,18 @@ const getNavNewData = async() => {
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
 }
-
+const format = (date) => {
+   return dayjs(date).format('YYYY-MM-DD')
+};
 /** 初始化 **/
 onMounted(() => {
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getNavList()
   getNavNewData()
   getList();

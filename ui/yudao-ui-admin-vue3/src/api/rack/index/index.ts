@@ -59,12 +59,20 @@ export const IndexApi = {
     return await request.get({ url: `/rack/index/report/pfline`, params })
   },
 
+  getEleByRack : async (params) => {
+    return await request.get({ url: `/rack/index/eleByRack`, params })
+  },
+
   getRackAll: async (params: any) => {
     return await request.get({ url: `/room/rack/menu`, params })
   },
 
   getRackRedis: async (params: any) => {
     return await request.download({ url: `/rack/index/redisData`, params })
+  },
+
+  getOutletCur: async (params: any) => {
+    return await request.get({ url: `/rack/index/outletCur`, params })
   },
 
   idList: async () => {

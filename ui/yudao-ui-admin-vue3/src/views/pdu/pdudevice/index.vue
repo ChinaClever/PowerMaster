@@ -434,6 +434,7 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
+
   if(row.length == 0){
     queryParams.pduKeyList = null;
     getDeletedList();
@@ -443,6 +444,7 @@ const handleCheck = async (row) => {
   const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
+    console.log('row',item)
     if (item.type == 4) {
       pduKeys.push(item.unique)
       haveCabinet = true;
@@ -458,6 +460,7 @@ const handleCheck = async (row) => {
   }
   getList();
   getDeletedList();
+  console.log('呜呜呜呜',queryParams.pduKeyList)
 }
 
 

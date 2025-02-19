@@ -564,7 +564,7 @@ const filterTimesFromDate = (dateTimeStrings, targetDate) => {
 const currentDate = new Date().toISOString().split('T')[0];
 //获取PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async () => {
-  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value})
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime})
   curVolData.value = result;
 
 

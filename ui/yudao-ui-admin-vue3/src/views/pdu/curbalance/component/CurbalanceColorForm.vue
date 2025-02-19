@@ -123,6 +123,8 @@ const submitForm = async () => {
     dialogVisible.value = false
     // 发送操作成功的事件
     emit('success')
+    // 添加刷新页面的代码
+    location.reload();
   } finally {
     formLoading.value = false
   }
