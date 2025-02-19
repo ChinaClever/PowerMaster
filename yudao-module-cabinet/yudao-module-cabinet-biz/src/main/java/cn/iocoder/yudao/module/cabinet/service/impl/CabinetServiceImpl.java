@@ -1114,18 +1114,25 @@ public class CabinetServiceImpl implements CabinetService {
 
                         JSONObject rackPower = JSON.parseObject(JSON.toJSONString(obj)).getJSONObject("rack_power");
                         if (Objects.nonNull(rackPower)) {
-                            Double cura = rackPower.getJSONObject("total_data").getDouble("cur_a");
-                            Double curb = rackPower.getJSONObject("total_data").getDouble("cur_b");
-                            Double powApparent = rackPower.getJSONObject("total_data").getDouble("pow_apparent");
-
-                            Double powApparenta = rackPower.getJSONObject("path_a").getList("pow_apparent",Double.class).get(0);
-                            Double powApparentb = rackPower.getJSONObject("path_b").getList("pow_apparent",Double.class).get(0);
-
-                            t.setPowActiveTotal(BigDecimal.valueOf(powApparent).setScale(3, BigDecimal.ROUND_HALF_DOWN));
-                            t.setCurValueA(BigDecimal.valueOf(cura).setScale(2, BigDecimal.ROUND_HALF_DOWN));
-                            t.setCurValueB(BigDecimal.valueOf(curb).setScale(2, BigDecimal.ROUND_HALF_DOWN));
-                            t.setPowActiveA(BigDecimal.valueOf(powApparenta).setScale(3, BigDecimal.ROUND_HALF_DOWN));
-                            t.setPowActiveB(BigDecimal.valueOf(powApparentb).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+                            JSONObject totalData = rackPower.getJSONObject("total_data");
+                            if (Objects.nonNull(totalData)) {
+                                Double cura = totalData.getDouble("cur_a");
+                                Double curb = totalData.getDouble("cur_b");
+                                Double powApparent = totalData.getDouble("pow_apparent");
+                                t.setPowActiveTotal(BigDecimal.valueOf(powApparent).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+                                t.setCurValueA(BigDecimal.valueOf(cura).setScale(2, BigDecimal.ROUND_HALF_DOWN));
+                                t.setCurValueB(BigDecimal.valueOf(curb).setScale(2, BigDecimal.ROUND_HALF_DOWN));
+                            }
+                            JSONObject pathA = rackPower.getJSONObject("path_a");
+                            if (Objects.nonNull(pathA)) {
+                                Double powApparenta = pathA.getList("pow_apparent", Double.class).get(0);
+                                t.setPowActiveA(BigDecimal.valueOf(powApparenta).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+                            }
+                            JSONObject pathB = rackPower.getJSONObject("path_b");
+                            if (Objects.nonNull(pathB)) {
+                                Double powApparentb = pathB.getList("pow_apparent", Double.class).get(0);
+                                t.setPowActiveB(BigDecimal.valueOf(powApparentb).setScale(3, BigDecimal.ROUND_HALF_DOWN));
+                            }
                         }
                     }
                     dto.setRackIndexList(bean);
@@ -1241,12 +1248,16 @@ public class CabinetServiceImpl implements CabinetService {
         vo.setPduBox(cabinetIndex.getPduBox());
         if (cabinetIndex.getPduBox()) {
             CabinetBox cabinetBox = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>().eq(CabinetBox::getCabinetId, id));
-            vo.setKeyA(cabinetBox.getBoxKeyA());
-            vo.setKeyB(cabinetBox.getBoxKeyB());
+            if (Objects.nonNull(cabinetBox)) {
+                vo.setKeyA(cabinetBox.getBoxKeyA());
+                vo.setKeyB(cabinetBox.getBoxKeyB());
+            }
         } else {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, id));
-            vo.setKeyA(cabinetPdu.getPduKeyA());
-            vo.setKeyB(cabinetPdu.getPduKeyB());
+            if (Objects.nonNull(cabinetPdu)) {
+                vo.setKeyA(cabinetPdu.getPduKeyA());
+                vo.setKeyB(cabinetPdu.getPduKeyB());
+            }
         }
         Object obj = redisTemplate.opsForValue().get(REDIS_KEY_CABINET + roomId + "-" + id);
         if (Objects.isNull(obj)) {
@@ -1351,6 +1362,9 @@ public class CabinetServiceImpl implements CabinetService {
         List<BigDecimal> factorTotal = new ArrayList<>();
         List<BigDecimal> loadRate = new ArrayList<>();
         List<String> createTime = new ArrayList<>();
+        if (CollectionUtils.isEmpty(data)){
+            return map;
+        }
       data=data.stream().sorted(Comparator.comparing(i ->i.get("create_time").toString())).collect(Collectors.toList());
         if (Objects.nonNull(data)) {
             switch (index) {

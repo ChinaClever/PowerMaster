@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts" setup>
+import { LEFT } from '@jsplumb/browser-ui';
 import 'echarts'
 import { reactive, watch, defineProps, onUnmounted } from 'vue';
 const props = defineProps({
@@ -57,7 +58,7 @@ const echartsOption = computed(() => ({
       type: 'bar',
       label: {
         show: true,
-        position: 'inside',
+        position: 'insideLeft',
         formatter: (params) => {
           const unitMap = ['KVAR', 'KW', 'KVA'];
           return `${params.value}${unitMap[params.dataIndex]}`;
@@ -66,7 +67,7 @@ const echartsOption = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        {value:props.loadFactor.powReactiveB,itemStyle: { color: 'purple' }},
+        {value:props.loadFactor.powReactiveB,itemStyle: { color: 'purple'}},
         {value:props.loadFactor.powActiveB,itemStyle: { color: 'green' }},
         {value:props.loadFactor.powApparentB,itemStyle: { color: 'blue' }}]
     }

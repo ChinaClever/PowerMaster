@@ -86,13 +86,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0]}}V</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0] || 'N/A'}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1]}}V</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1] || 'N/A'}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2]}}V</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2] || 'N/A'}}V</span>
           </div>
         </div>
     </div>
@@ -312,6 +312,8 @@ const queryParams = reactive({
 }) as any
 
 const getRedisData = async () => {
+      visContro.value.gaugeVis = false;
+  console.log('visContro.value.gaugeVis',visContro.value.gaugeVis);
   const result = await CabinetApi.getCabinetdistributionDetails({
     id:id.value,
     roomId:roomId.value,
@@ -331,9 +333,9 @@ const getRedisData = async () => {
   // console.log('keyA',keyAlocation.value);
   // console.log('keyB',keyBlocation.value);
   // console.log('pduBox.value',pduBox.value);
-  // console.log('result',result);
+  console.log('result',result);
   resultData.value = result;
-  
+    console.log('resultData',resultData.value);
   if(resultData.value.loadFactor != null){
     visContro.value.gaugeVis = true;
   }
