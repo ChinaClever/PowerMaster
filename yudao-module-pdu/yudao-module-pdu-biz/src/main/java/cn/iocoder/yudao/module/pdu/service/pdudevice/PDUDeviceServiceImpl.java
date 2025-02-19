@@ -668,7 +668,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
     }
 
-    public Map getPduHdaLineHisdataKeyByCabinet(Long cabinetId, String type) {
+    public Map getPduHdaLineHisdataKeyByCabinet(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime) {
         HashMap resultAB = new HashMap<>();
         CabinetIndex cabinetIndex = cabinetIndexMapper.selectOne(new LambdaQueryWrapperX<CabinetIndex>().eq(CabinetIndex::getId, cabinetId));
         if (cabinetIndex.getPduBox().equals(true)){
@@ -702,8 +702,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", id));
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(formatter.format(pastTime))
-                    .to(formatter.format(now)));
+                    .from(formatter.format(oldTime))
+                    .to(formatter.format(newTime)));
             searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
             searchSourceBuilder.size(1000); // 设置返回的最大结果数
 

@@ -88,8 +88,8 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm:ss"
-          v-model="queryParams.timeRange"
+          value-format="YYYY-MM-DD"
+          v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -153,6 +153,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
+import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 const { push } = useRouter()
 /** 始端箱历史数据 列表 */
@@ -161,6 +162,7 @@ defineOptions({ name: 'BusHistoryData' })
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const navTotalData = ref(0)
 const navLineData = ref(0)
+const selectTimeRange = ref()
 const message = useMessage() // 消息弹窗
 const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
@@ -580,6 +582,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await HistoryDataApi.getBusHistoryDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -721,9 +731,18 @@ const getTypeMaxValue = async () => {
   ]
   typeSelection.value = typeSelectionValue;
 }
-
+const format = (date) => {
+   return dayjs(date).format('YYYY-MM-DD')
+};
 /** 初始化 **/
 onMounted( () => {
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getNavList()
   getBusNavNewData()
   getTypeMaxValue();

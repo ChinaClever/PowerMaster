@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.rack.controller.admin.index.vo.*;
 import cn.iocoder.yudao.module.rack.dal.dataobject.index.RackDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -58,9 +59,13 @@ public interface RackService {
 
     Map getReportPowDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
-    String getRackRedisById(Integer id);
+    Map getRackRedisById(Integer id);
 
     Map getRackPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     List<Integer> idList();
+
+    Map<String,Double> getEleByRack(String id, LocalDateTime oldTime, LocalDateTime newTime) throws IOException;
+
+    Map getOutletCur(String id, String type, LocalDateTime oldTime, LocalDateTime newTime);
 }

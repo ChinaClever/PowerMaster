@@ -675,13 +675,13 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         }else{
             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         }
-        if (cabinetIds==null && channel != null){
+        if ( channel != null){
             searchSourceBuilder.query(QueryBuilders.termQuery("sensor_id", channel));
         }
 
         //如果机柜和传感器同时筛选
         List<String> pduList = new ArrayList<>();
-        if (cabinetIds != null && channel != null){
+        if (cabinetIds != null && channel != null && cabinetIds.length>0){
             QueryWrapper<CabinetPdu> cabinetPduQueryWrapper1 = new QueryWrapper<>();
             cabinetPduQueryWrapper1.in("cabinet_id", cabinetIds);
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper1);

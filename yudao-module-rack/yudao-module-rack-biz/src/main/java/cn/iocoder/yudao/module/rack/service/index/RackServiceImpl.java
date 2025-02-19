@@ -1,20 +1,29 @@
 package cn.iocoder.yudao.module.rack.service.index;
 
 import cn.hutool.core.date.DateTime;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEqTotalDayDo;
 
 import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
+import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
+import cn.iocoder.yudao.framework.common.mapper.PduIndexDoMapper;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 
+import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -39,6 +48,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
@@ -63,6 +74,13 @@ public class RackServiceImpl implements RackService {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private CabinetPduMapper cabinetPduMapper;
+
+    @Autowired
+    private PduIndexDoMapper pduIndexDoMapper;
+
 
     @Override
     public Integer createIndex(IndexSaveReqVO createReqVO) {
@@ -281,14 +299,22 @@ public class RackServiceImpl implements RackService {
     }
 
     @Override
-    public String getRackRedisById(Integer id) {
+    public Map getRackRedisById(Integer id) {
+        Map result = new HashMap<>();
         if (id == null){
             return null;
         }else {
-            ValueOperations ops = redisTemplate.opsForValue();
-            JSONObject jsonObject = (JSONObject) ops.get("packet:rack:" + id);
-            return jsonObject != null ? jsonObject.toJSONString() : null;
+            RackDO rackDO = rackMapper.selectOne(new LambdaQueryWrapper<RackDO>().eq(RackDO::getId, id));
+            if (rackDO != null) {
+                String rackType = rackDO.getRackType();
+                result.put("rackType", rackType);
+                ValueOperations ops = redisTemplate.opsForValue();
+                JSONObject jsonObject = (JSONObject) ops.get("packet:rack:" + id);
+                result.put("rackRedis", jsonObject);
+                return result;
+            }
         }
+        return null;
     }
 
     @Override
@@ -348,6 +374,216 @@ public class RackServiceImpl implements RackService {
     public List<Integer> idList() {
         return rackMapper.selectList().stream().limit(10).collect(Collectors.toList())
                 .stream().map(RackDO::getId).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String,Double> getEleByRack(String id,  LocalDateTime oldTime, LocalDateTime newTime) throws IOException {
+        Map<String, Double> result = new HashMap<>();
+        String index = "rack_ele_total_realtime";
+        List<Integer> list = Arrays.asList(Integer.valueOf(id));
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        // 获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(oldTime).lte(newTime))
+                .must(QueryBuilders.termsQuery("rack_id", list))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1);
+
+        // 执行查询
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        Double eleTotal = null;
+        // 处理查询结果
+        if (searchResponse.getHits().getHits().length > 0) {
+            SearchHit hit = searchResponse.getHits().getHits()[0];
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            // 提取需要的字段
+            eleTotal = (Double) sourceAsMap.get("ele_total");
+        }
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest1 = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件
+        SearchSourceBuilder builder1 = new SearchSourceBuilder();
+
+        // 获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(oldTime).lte(newTime))
+                .must(QueryBuilders.termsQuery("cabinet_id", list))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.DESC);
+        // 设置搜索条件
+        searchRequest1.source(builder1);
+        builder1.size(1);
+
+        // 执行查询
+        SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+        Double eleTotal1 = null;
+        // 处理查询结果
+        if (searchResponse1.getHits().getHits().length > 0) {
+            SearchHit hit = searchResponse1.getHits().getHits()[0];
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            // 提取需要的字段
+            eleTotal1 = (Double) sourceAsMap.get("ele_total");
+        }
+        Double ele = null;
+        if (eleTotal != null && eleTotal1 != null) {
+            ele = eleTotal - eleTotal1;
+        }
+        result.put("ele", ele);
+        return result;
+    }
+
+    @Override
+    public Map getOutletCur(String id, String type, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        LineResBase lineResBaseA = new LineResBase();
+        LineResBase lineResBaseB = new LineResBase();
+        Map AList = new HashMap();
+        Map BList = new HashMap();
+        String index = null;
+        if (type.equals("0")){
+            index = "pdu_hda_outlet_hour";
+        }else {
+            index = "pdu_hda_outlet_day";
+        }
+        SearchRequest searchRequest = new SearchRequest(index);
+        RackDO rackDO = rackMapper.selectOne(new LambdaQueryWrapper<RackDO>().eq(RackDO::getId, id));
+        if (rackDO == null){
+            return null;
+        }
+        String outletIdA = rackDO.getOutletIdA();
+        String outletIdB = rackDO.getOutletIdB();
+        List<Integer> resultA = new ArrayList<>();
+        List<Integer> resultB = new ArrayList<>();
+        outletIdA = outletIdA.substring(1,outletIdA.length()-1);
+        String[] partsA = outletIdA.split(",");
+        Pattern pattern = Pattern.compile("\\d+");
+        for (String part : partsA){
+            Matcher matcher = pattern.matcher(part.trim());
+            if (matcher.find()){
+                resultA.add(Integer.parseInt(matcher.group()));
+            }
+        }
+        outletIdB = outletIdB.substring(1,outletIdB.length()-1);
+        String[] partsB = outletIdB.split(",");
+        for (String part : partsB){
+            Matcher matcher = pattern.matcher(part.trim());
+            if (matcher.find()){
+                resultB.add(Integer.parseInt(matcher.group()));
+            }
+        }
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, rackDO.getCabinetId()));
+        if (cabinetPdu == null){
+            return null;
+        }
+        String pduKeyA = cabinetPdu.getPduKeyA();
+        String pduKeyB = cabinetPdu.getPduKeyB();
+        PduIndexDo pduIndexA = pduIndexDoMapper.selectOne(new LambdaQueryWrapper<PduIndexDo>().eq(PduIndexDo::getPduKey, pduKeyA));
+        if (pduIndexA != null){
+            for (Integer i : resultA){
+                List<Float> list = new ArrayList<>();
+                List<String> list1 = new ArrayList<>();
+                // 构建查询请求
+                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                        .must(QueryBuilders.termQuery("outlet_id", i))
+                        .must(QueryBuilders.termQuery("pdu_id", pduIndexA.getId()));
+                searchSourceBuilder.query(boolQuery);
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(formatter.format(oldTime))
+                        .to(formatter.format(newTime)));
+                searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+                searchSourceBuilder.size(1000); // 设置返回的最大结果数
+                searchRequest.source(searchSourceBuilder);
+                try{
+                    SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                    if (searchResponse != null) {
+                        SearchHits hits = searchResponse.getHits();
+                        for (SearchHit hit : hits) {
+                            String str = hit.getSourceAsString();
+                            if (type.equals("0")){
+                                PduHdaOutletHourDo outletHourDo = JsonUtils.parseObject(str, PduHdaOutletHourDo.class);
+                                list.add(outletHourDo.getCurAvgValue());
+                                DateTime dateTime = new DateTime(outletHourDo.getCreateTime());
+                                list1.add(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+                            }else {
+                                PduHdaOutletDayDo outletDayDo = JsonUtils.parseObject(str, PduHdaOutletDayDo.class);
+                                list.add(outletDayDo.getCurAvgValue());
+                                DateTime dateTime = new DateTime(outletDayDo.getCreateTime());
+                                list1.add(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+                            }
+                        }
+                            }
+                    LineSeries lineSeries = new LineSeries();
+                    lineSeries.setName("A路输出位"+i+"电流");
+                    lineSeries.setData(list);
+                    lineResBaseA.getSeries().add(lineSeries);
+                    lineResBaseA.setTime(list1);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        }
+        PduIndexDo pduIndexB = pduIndexDoMapper.selectOne(new LambdaQueryWrapper<PduIndexDo>().eq(PduIndexDo::getPduKey, pduKeyB));
+        if (pduIndexB != null){
+            for (Integer i : resultB){
+                List<Float> list = new ArrayList<>();
+                List<String> list1 = new ArrayList<>();
+                // 构建查询请求
+                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                        .must(QueryBuilders.termQuery("outlet_id", i))
+                        .must(QueryBuilders.termQuery("pdu_id", pduIndexB.getId()));
+                searchSourceBuilder.query(boolQuery);
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(formatter.format(oldTime))
+                        .to(formatter.format(newTime)));
+                searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+                searchSourceBuilder.size(1000);
+                searchRequest.source(searchSourceBuilder);
+                try{
+                    SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                    if (searchResponse != null) {
+                        SearchHits hits = searchResponse.getHits();
+                        for (SearchHit hit : hits) {
+                            String str = hit.getSourceAsString();
+                            if (type.equals("0")){
+                                PduHdaOutletHourDo outletHourDo = JsonUtils.parseObject(str, PduHdaOutletHourDo.class);
+                                list.add(outletHourDo.getCurAvgValue());
+                                DateTime dateTime = new DateTime(outletHourDo.getCreateTime());
+                                list1.add(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+                            }else {
+                                PduHdaOutletDayDo outletDayDo = JsonUtils.parseObject(str, PduHdaOutletDayDo.class);
+                                list.add(outletDayDo.getCurAvgValue());
+                                DateTime dateTime = new DateTime(outletDayDo.getCreateTime());
+                                list1.add(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+                            }
+                        }
+                    }
+                    LineSeries lineSeries = new LineSeries();
+                    lineSeries.setName("B路输出位"+i+"电流");
+                    lineSeries.setData(list);
+                    lineResBaseB.getSeries().add(lineSeries);
+                    lineResBaseB.setTime(list1);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            }
+        result.put("A",lineResBaseA);
+        result.put("B",lineResBaseB);
+        return result;
     }
 
     /**

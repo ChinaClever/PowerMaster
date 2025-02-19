@@ -5,7 +5,7 @@
       <div class="nav_data">
 
         <div class="nav_header">      
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress=='null'?'':nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
         </div>
         <br/> 
@@ -162,9 +162,10 @@ import { pa } from 'element-plus/es/locale';
 import download from '@/utils/download'
 defineOptions({ name: 'ECDistribution' })
 import  CommonMenu1 from './CommonMenu1.vue'
+import { now } from 'lodash-es';
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const nowAddress = ref('')// 导航栏的位置信息
+const nowAddress = ref()// 导航栏的位置信息
 const nowLocation = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
@@ -712,8 +713,11 @@ onMounted(async () => {
   if (queryParams.pduId != undefined){
     await getLineChartData();
     // await getRankChartData();
-    nowAddress.value = queryAddress;
+    
+      nowAddress.value = queryAddress
+   console.log('jahsdjkashdj',nowAddress.value)
     nowAddressTemp.value = queryAddress;
+    console.log('11111111',nowAddress.value)
     initLineChart();
     initRankChart();
   }
