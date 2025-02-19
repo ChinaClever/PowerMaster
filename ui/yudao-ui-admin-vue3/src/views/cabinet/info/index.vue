@@ -144,14 +144,26 @@
         </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180px">
           <template #default="scope">
-            <el-button
+            <el-button 
               type="primary"
               @click="openForm('edit', scope.row.cabinet_key)">编辑
             </el-button>
-            <el-button
-              type="danger"
-              @click="handleDelete(scope.row.cabinet_key)">删除
-            </el-button>
+              <el-button v-if ="scope.row.cabinetBoxes !== null"
+                type="danger"  style="margin-left: 2px"
+                @click="handleDelete(scope.row.id,2)">删除母线
+              </el-button>
+              <el-button v-else-if ="scope.row.cabinetPdus !== null"
+                type="danger" style="margin-left: 2px"
+                @click="handleDelete(scope.row.id,1)">删除pdu
+              </el-button> 
+              <el-button v-else-if ="scope.row.rackIndices !== null"
+                type="danger" style="margin-left: 2px"
+                @click="handleDelete(scope.row.id,3)">删除机架
+              </el-button>
+              <el-button v-else
+                type="danger" style="margin-left: 2px"
+                @click="handleDelete(scope.row.id,4)">删除机柜
+              </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -206,7 +218,7 @@
               <div>无功功率：{{item.powerReactiveTotal}}KVAR</div>
               <!-- 负载率： -->
             </div>
-            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor || ''" /></div>
+            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.powerFactorTotal*100 || ''" /></div>
           </div>
           <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
           <div v-if="item.status == 0" class="status-empty">未绑定</div>
@@ -429,10 +441,14 @@ const getTableData = async() => {
       const list = res.list.map(item => {
         const tableItem = {
           company: item.company,
+          id: item.id,
           cabinet_key: item.cabinet_key,
           cabinetName: item.cabinet_name,
           roomName: item.room_name,
           status: item.status,
+          cabinetBoxes: item.cabinetBoxes,
+          cabinetPdus: item.cabinetPdus,
+          rackIndices: item.rackIndices,
           //apparentTotal: formatNumber(item.cabinet_power.total_data.pow_apparent, 3),
           //apparentA: formatNumber(item.cabinet_power.path_a?.pow_apparent, 3),
           //apparentB: formatNumber(item.cabinet_power.path_b?.pow_apparent, 3),
@@ -616,13 +632,15 @@ const openForm = async(type: string, key?: string) => {
 }
 
 // 处理删除事件
-const handleDelete = async (key: string) => {
+const handleDelete = async (id: number, index: number) => {
   try {
     // 删除的二次确认
     await message.delConfirm()
+    console.log(id, index)
     // 发起删除
     await CabinetApi.deleteCabinetInfo({
-      id: key.split('-')[1]
+      id: id,
+      type: index
     })
     message.success('删除成功')
     // 刷新列表

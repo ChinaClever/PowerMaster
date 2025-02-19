@@ -3,9 +3,11 @@ package cn.iocoder.yudao.module.cabinet.service.impl;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowRealtimeDo;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowTrendDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
@@ -13,6 +15,7 @@ import cn.iocoder.yudao.module.cabinet.service.CabinetPowService;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -28,7 +31,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.*;
@@ -124,62 +131,59 @@ public class CabinetPowServiceImpl implements CabinetPowService {
             //获取昨日数据
             List<String> yesterdayData = getData(startTime, endTime, vo, CABINET_HDA_POW_HOUR);
 
-
+            LocalDate old = LocalDate.now().minusDays(1);
+            LocalDate now = LocalDate.now();
+            //获取今日数据
+            List<CabinetActivePowTrendDTO> todayList = new ArrayList<>();
             List<CabinetActivePowTrendDTO> yesterdayList = new ArrayList<>();
+
+            for (int i = 0; i < 24; i++) {
+                String oldDay = LocalDateTimeUtil.format(LocalDateTime.of(old, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                CabinetActivePowTrendDTO dto = new CabinetActivePowTrendDTO();
+                dto.setDateTime(oldDay);
+                dto.setActivePow("0");
+                yesterdayList.add(dto);
+                CabinetActivePowTrendDTO dto1 = new CabinetActivePowTrendDTO();
+                String nowDay = LocalDateTimeUtil.format(LocalDateTime.of(now, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                dto1.setDateTime(nowDay);
+                dto1.setActivePow("");
+                todayList.add(dto1);
+            }
+
+//            List<CabinetActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            Map<String, CabinetActivePowTrendDTO> yesMap = yesterdayList.stream().collect(Collectors.toMap(CabinetActivePowTrendDTO::getDateTime, x -> x));
             yesterdayData.forEach(str -> {
                 CabinetPowHourDo hourDo = JsonUtils.parseObject(str, CabinetPowHourDo.class);
-                CabinetActivePowTrendDTO dto = new CabinetActivePowTrendDTO();
-                dto.setActivePow(hourDo.getActiveTotalAvgValue());
-                String dateTime = null;
-                try {
-                    Date date = DateUtils.parseDate(hourDo.getCreateTime(), DatePattern.NORM_DATETIME_PATTERN);
-                    dateTime = DateUtil.format(date, HOUR_FORMAT) + TIME_STR;
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                yesterdayList.add(dto);
+                String dateTime = LocalDateTimeUtil.format(LocalDateTimeUtil.parse(hourDo.getCreateTime(),"yyyy-MM-dd HH:mm:ss"),"yyyy-MM-dd HH:mm");
+                CabinetActivePowTrendDTO dto = yesMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalAvgValue(), 3)));
             });
 
 
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
             endTime = DateUtil.formatDateTime(DateTime.now());
 
-            log.info("startTime : " + startTime + "endTime：" + endTime);
-            //获取今日数据
-            List<CabinetActivePowTrendDTO> todayList = new ArrayList<>();
+//            log.info("startTime : " + startTime + "endTime：" + endTime);
 
+            Map<String, CabinetActivePowTrendDTO> todayMap = todayList.stream().collect(Collectors.toMap(CabinetActivePowTrendDTO::getDateTime, x -> x));
             List<String> todayData = getData(startTime, endTime, vo, CABINET_HDA_POW_HOUR);
             todayData.forEach(str -> {
                 CabinetPowHourDo hourDo = JsonUtils.parseObject(str, CabinetPowHourDo.class);
-                String dateTime = null;
-                try {
-                    Date date = DateUtils.parseDate(hourDo.getCreateTime(), DatePattern.NORM_DATETIME_PATTERN);
-                    dateTime = DateUtil.format(date, HOUR_FORMAT) + TIME_STR;
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-
-                CabinetActivePowTrendDTO dto = new CabinetActivePowTrendDTO();
-                if (Objects.isNull(dto)) {
-                    dto = new CabinetActivePowTrendDTO();
-                }
-                dto.setActivePow(hourDo.getActiveTotalAvgValue());
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                todayList.add(dto);
+                String dateTime = LocalDateTimeUtil.format(LocalDateTimeUtil.parse(hourDo.getCreateTime(),"yyyy-MM-dd HH:mm:ss"),"yyyy-MM-dd HH:mm");
+                CabinetActivePowTrendDTO dto = todayMap.get(dateTime);
+                dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalAvgValue(), 3)));
             });
-
             powDTO.setYesterdayList(yesterdayList);
             powDTO.setTodayList(todayList);
             //获取峰值
             CabinetActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(CabinetActivePowTrendDTO::getActivePow)).orElse(new CabinetActivePowTrendDTO());
             CabinetActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(CabinetActivePowTrendDTO::getActivePow)).orElse(new CabinetActivePowTrendDTO());
-            powDTO.setTodayMax(todayMax.getActivePow());
+            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
             powDTO.setTodayMaxTime(todayMax.getDateTime());
             powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(yesterdayMax.getActivePow());
+            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
+
+
 
             return powDTO;
         } catch (Exception e) {

@@ -1462,7 +1462,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
             endTime = DateUtil.formatDateTime(DateTime.now());
 
-            log.info("startTime : " + startTime + "endTime：" + endTime);
+//            log.info("startTime : " + startTime + "endTime：" + endTime);
             //获取今日数据
             Map<String, BusActivePowTrendDTO> todayMap = todayList.stream().collect(Collectors.toMap(BusActivePowTrendDTO::getDateTime, x -> x));
             List<String> todayData = getData(startTime, endTime, vo, "box_hda_total_hour");

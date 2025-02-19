@@ -265,13 +265,11 @@ const getActivePowTrend = async() => {
       }
     ]
   }
-  console.log('获取机柜有功功率趋势', res)
 }
 // 获取机柜用能环比
 const getMachineEleChain = async() => {
   const res = await BoxEnergyApi.getEleChain({id:queryParams.busId})
   Object.assign(EleChain, res)
-  console.log('获取机柜用能环比', EleChain)
 }
 // 获取机柜能耗趋势
 const getMachineEleTrend = async(type) => {

@@ -1034,13 +1034,13 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
 }
 .header_app_text_right{                     
   background-color: white;
-  width: 60%;
+  width: 20%;
   align-content: center;
   color:#606266;
 }  
 .header_app_text_left{                     
   background-color: white;
-  width: 140%;
+  width: 180%;
   align-content: center;
   color:#606266;
 }                                                       
