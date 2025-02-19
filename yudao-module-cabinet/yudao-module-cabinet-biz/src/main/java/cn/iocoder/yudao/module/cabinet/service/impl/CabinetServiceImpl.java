@@ -614,7 +614,8 @@ public class CabinetServiceImpl implements CabinetService {
                         //逻辑删除
                         delete = cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
                                 .eq(CabinetIndex::getId, id)
-                                .set(CabinetIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
+                                .set(CabinetIndex::getIsDeleted, DelEnums.DELETE.getStatus())
+                                .set(CabinetIndex::getCabinetUseHeight,0));
                         //删除环境信息
                         envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
                                 .eq(CabinetEnvSensor::getCabinetId, id));
