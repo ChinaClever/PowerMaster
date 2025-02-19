@@ -63,64 +63,9 @@
                   <span>B路</span>
                 </div>
               </div>
-              <!-- <div class="progress" v-else>
-                <div class="left" :style="`flex: ${item.apow || '0.00'}`">{{item.apow || '0.00'}}%</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex:  ${item.bpow || '0.00'}`">{{item.bpow || '0.00'}}%</div>
-                <div class="tip">
-                  <span>A路</span>
-                  <span>B路</span>
-                </div>
-              </div> -->
+
             </div>
-            <!-- 功率 -->
-            <!-- <div class="progressContainer">
-              <div class="text">功率占比：</div>
-              <div class="progress" v-if="item.abglzb">
-                <div class="left" :style="`flex: ${item.abglzb}`">{{item.abglzb}}%</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex: ${100 - item.abglzb}`">{{100 - item.abglzb}}%</div>
-              </div>
-              <div class="progress" v-else>
-                <div class="left" :style="`flex: 50`">null</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex: 50`">null</div>
-              </div>
-              <div class="tip">
-                <span>A路</span>
-                B路
-              </div>
-            </div> -->
-            <!-- 电流 -->
-            <!-- <div class="content" v-if="switchValue == 1">
-              <div class="road">A路</div>
-              <div class="valueList">
-                <div>Ia：{{item.Ia0 || '0.00'}}A</div>
-                <div>Ia：{{item.Ia1 || '0.00'}}A</div>
-                <div>Ia：{{item.Ia2 || '0.00'}}A</div>
-              </div>
-              <div class="road">B路</div>
-              <div class="valueList">
-                <div>Ia：{{item.Ib0 || '0.00'}}A</div>
-                <div>Ia：{{item.Ib1 || '0.00'}}A</div>
-                <div>Ia：{{item.Ib2 || '0.00'}}A</div>
-              </div>
-            </div> -->
-            <!-- 功率 -->
-            <!-- <div class="content" v-if="switchValue == 1">
-              <div class="road">A路</div>
-              <div class="valueList">
-                <div>Pa：{{item.Pa0 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pa1 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pa2 || '0.00'}}Kw</div>
-              </div>
-              <div class="road">B路</div>
-              <div class="valueList">
-                <div>Pa：{{item.Pb0 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pb1 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pb2 || '0.00'}}Kw</div>
-              </div>
-            </div> -->
+
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
             <!--<button v-if="item.apow != null || item.bpow != null" class="detail" @click.prevent="showDialog(item)" >详情</button>-->
             <button v-if="item.pduBox === false" class="detail" @click.prevent="showDialog(item)" >详情</button>
@@ -633,6 +578,32 @@ const curlocation = ref();
 const apow = ref(null);
 const bpow = ref(null);
 
+
+// 处理对话框关闭
+const handleClose = () => {
+  dialogVisibleCur.value = false;
+
+  balanceObj.pow_apparent_percent= 0;
+  balanceObj.pow_active_percent= 0;
+  balanceObj.cur_valueA= [];
+  balanceObj.cur_valueB= [];
+  balanceObj.imbalanceValueA= 0;
+  balanceObj.imbalanceValueB= 0;
+  balanceObj.colorIndex= 0;
+
+//   const balanceObj = reactive({
+//   pow_apparent_percent: 0,
+//   pow_active_percent: 0,
+//   cur_valueA: [],
+//   cur_valueB: [],
+//   imbalanceValueA: 0,
+//   imbalanceValueB: 0,
+//   colorIndex: 0,
+// })
+  // const list = zoomOut(formData.value)
+  // emit('update:modelValue', list)
+}
+
 const showDialog = async (item) => {
   cabinetId.value = item.id || 1;
   colorFlag.value = item.color;
@@ -645,6 +616,7 @@ const showDialog = async (item) => {
   await getBalanceDetail(item.id);
   await getBalanceDegree();
   await getBalanceTrend();
+
 }
 
 // 处理切换 表格/阵列 模式
