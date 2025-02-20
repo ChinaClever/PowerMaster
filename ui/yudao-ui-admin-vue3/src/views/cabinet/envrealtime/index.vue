@@ -73,7 +73,7 @@
           </button>
            
           <template v-for="(status, index) in statusList" :key="index">
-              <button
+              <button v-if="switchValue == 1"
                 class="btn_normal normal"
                 @click.prevent="handleSelectStatus(index)"
                 :style="{
@@ -85,8 +85,26 @@
                 }"
                 style="width: 90px;"
               >
-                {{ status.name }}
+              {{ status.startNum+15 }}°C ~ {{ status.endNum+15 }}°C
               </button>
+              <button v-else
+                   class="btn_normal normal"
+                @click.prevent="handleSelectStatus(index)"
+                :style="{
+                  backgroundColor: isSelected(index) ? 'white' : status.color,
+                  borderColor: status.color,
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  color:isSelected(index) ? '#000' : 'white'
+                }"
+                style="width: 90px;"
+              >
+              {{ status.name }}
+              </button>
+
+              <!--       name: `${item.min}°C ~ ${item.max}°C`,
+      startNum: item.min,
+      endNum: item.max, -->
           </template>
 
           <el-button
@@ -121,9 +139,9 @@
         <div style="float:right">
           <!-- <el-button @click="switchTemAndHum = 0;" :type="switchTemAndHum == 0 ? 'primary' : ''"><Icon icon="mdi:temperature-celsius" style="margin-right: 4px" />温度</el-button>
           <el-button @click="switchTemAndHum = 1;" :type="switchTemAndHum == 1 ? 'primary' : ''"><Icon icon="carbon:humidity" style="margin-right: 4px" />温度</el-button> -->
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />冷通道</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />热通道</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />环境表格</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;handleQuery();" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />冷通道</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;handleQuery();" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />热通道</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 2;handleQuery();" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />环境表格</el-button>
         </div>
       </el-form>
     </template>
@@ -332,6 +350,8 @@ const toCabinetEnvDetail = (row) =>{
   // push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
 }
 
+
+
 const statusList:any = ref([]);
 
 const getCabinetColorAll = async () => {
@@ -511,10 +531,16 @@ const handleSelectStatus = (index) => {
   if(allSelected.value) {
      allSelected.value = false;
   }
+  colorIndex.value = index;
   selectedIndex.value = index;
-
+  if(switchValue.value ==1){
+  queryParams.startNum = statusList.value[index].startNum+15;
+  queryParams.endNum = statusList.value[index].endNum+15;
+  }else{
   queryParams.startNum = statusList.value[index].startNum;
   queryParams.endNum = statusList.value[index].endNum;
+  }
+
   handleQuery();
 }
 
@@ -523,8 +549,10 @@ const isSelected = (index: number): boolean => {
   return selectedIndex.value !== null && selectedIndex.value !== index;
 };
 
+const colorIndex = ref(0);
 const toggleAllStatus = () => {
   butColor.value = 0;
+  colorIndex.value = 0;
   allSelected.value = !allSelected.value;
   selectedIndex.value = null;
   onclickColor.value = -1;
@@ -537,12 +565,20 @@ const toggleAllStatus = () => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  if(switchValue.value ==1){
+  queryParams.startNum = statusList.value[colorIndex.value].startNum+15;
+  queryParams.endNum = statusList.value[colorIndex.value].endNum+15;
+  }else{
+  queryParams.startNum = statusList.value[colorIndex.value].startNum;
+  queryParams.endNum = statusList.value[colorIndex.value].endNum;
+  }
   getList()
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
     butColor.value = 0;
+    colorIndex.value =0;
   allSelected.value = !allSelected.value;
   selectedIndex.value = null;
   onclickColor.value = -1;
