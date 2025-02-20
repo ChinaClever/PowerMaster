@@ -48,10 +48,10 @@
             <span class="value">{{ maxActivePowDataTimeTemp }}</span>
           </div>
           <br/>
-          <div v-if="minActivePowDataTemp" class="description-item">
-            <span class="label">最小值 :</span>
-            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
-          </div>
+          <div v-if="minActivePowDataTemp!== null && minActivePowDataTemp!== undefined" class="description-item">
+    <span class="label">最小值 :</span>
+    <span>{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
+  </div>
           <div v-if="minActivePowDataTimeTemp" class="description-item">
             <span class="label">发生时间 :</span>
             <span class="value">{{ minActivePowDataTimeTemp }}</span>
@@ -469,6 +469,8 @@ loading.value = true
     } else if(status.value == 1 ||status.value == 2){
       maxActivePowDataTemp.value = Math.max(...totalActivePowMaxValueData.value);
       minActivePowDataTemp.value = Math.min(...totalActivePowMinValueData.value);
+      console.log('kasdk',totalActivePowMaxValueData.value)
+      console.log('kasdk',createTimeData.value)
       totalActivePowMaxValueData.value.forEach(function(num, index) {
         if (num == maxActivePowDataTemp.value){
           maxActivePowDataTimeTemp.value = createTimeData.value[index]

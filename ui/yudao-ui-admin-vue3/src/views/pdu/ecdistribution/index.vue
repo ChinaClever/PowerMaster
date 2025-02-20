@@ -703,21 +703,18 @@ onMounted(async () => {
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
-      
       const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
        selectTimeRange.value = [selectedStartTime, selectedEndTime];
   // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string | undefined;
   const queryAddress = useRoute().query.address as string;
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  console.log('11111撒大声地',queryParams.pduId)
   if (queryParams.pduId != undefined){
     await getLineChartData();
     // await getRankChartData();
-    
-      nowAddress.value = queryAddress
-   console.log('jahsdjkashdj',nowAddress.value)
+    nowAddress.value = queryAddress;
     nowAddressTemp.value = queryAddress;
-    console.log('11111111',nowAddress.value)
     initLineChart();
     initRankChart();
   }

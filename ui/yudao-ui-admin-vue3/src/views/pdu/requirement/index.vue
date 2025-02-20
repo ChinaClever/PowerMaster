@@ -257,7 +257,7 @@
             <el-button
               link
               type="primary"
-              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1);"
+              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day',1, scope.row.l1MaxPow);"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -1382,6 +1382,8 @@ const showDialog = (id, type,flagValue,l1MaxCur) => {
 const showDialogOne = (id,type,flagValue,l1MaxPow) => {
   lineidChartOne?.dispose()
   getLineid(id, type,flagValue)
+  console.log('l1MaxPow',l1MaxPow)
+  console.log('id',id)
   if(l1MaxPow!= null && l1MaxPow != undefined && l1MaxPow != 0){
   dialogVisibleOne.value = true
 }else {
