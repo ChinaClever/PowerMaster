@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.elasticsearch.action.search.SearchRequest;
@@ -38,6 +39,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -134,39 +137,35 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public List<Object> getLocationsAndNameByBoxIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>();
-        for (Map<String, Object> map : mapList) {
-            Object boxId = map.get("box_id");
-            if (boxId instanceof Integer) {
-                // 查询位置
-                BoxIndex boxIndex = boxIndexMapper.selectById((int) boxId);
-                if (boxIndex != null) {
-                    map.put("dev_key", boxIndex.getBoxKey());
-                    map.put("bus_name", boxIndex.getBoxName());
-//                    map.put("ip_addr", boxIndex.getIpAddr());
-                    // 创建一个列表来存放要传递的对象 用于获取位置信息
-                    List<BoxResBase> boxResBaseList = new ArrayList<>();
-                    BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
-                    boxResBase.setBoxId((Integer) boxId);
-                    boxResBase.setBoxName(boxIndex.getBoxName());
-                    boxResBase.setDevKey(boxIndex.getBoxKey());
-                    boxResBaseList.add(boxResBase);// 将对象添加到列表中
-                    try {
-                        boxIndexService.getPosition(boxResBaseList);
-                        map.put("location", boxResBaseList.get(0).getLocation());
-                    } catch (Exception e) {
+        List<Integer> boxIds = mapList.stream().map(i ->Integer.valueOf(i.get("box_id").toString())).collect(Collectors.toList());
+        List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getId, boxIds));
+        if (!CollectionUtils.isEmpty(boxIndices)){
+            List<String> devKeys = boxIndices.stream().map(BoxIndex::getBoxKey).distinct().collect(Collectors.toList());
+            Map<String, String> keysMap = boxIndexService.getPositionByKeys(devKeys);
+            Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, Function.identity()));
+
+            for (Map<String, Object> map : mapList) {
+                Object boxId = map.get("box_id");
+                if (boxId instanceof Integer) {
+                    // 查询位置
+                    BoxIndex boxIndex =boxIndexMap.get((int) boxId);
+                    if (boxIndex != null) {
+                        map.put("dev_key", boxIndex.getBoxKey());
+                        map.put("bus_name", boxIndex.getBoxName());
+                        map.put("location",keysMap.get(boxIndex.getBoxKey()));
+                    } else {
+                        map.put("dev_key", null);
                         map.put("location", null);
                     }
-
                 } else {
                     map.put("dev_key", null);
                     map.put("location", null);
                 }
-            } else {
-                map.put("dev_key", null);
-                map.put("location", null);
+                resultList.add(map);
             }
-            resultList.add(map);
         }
+
+
         return resultList;
     }
 

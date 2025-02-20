@@ -111,7 +111,7 @@
         <where>
             t1.is_deleted = 0
             <if test="busKeys !=null and busKeys.size >0">
-                NOT EXISTS (
+               and NOT EXISTS (
                 SELECT 1
                 FROM (
                 <foreach collection="busKeys" item="key" separator="union all">

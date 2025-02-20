@@ -494,7 +494,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
 
             List<RoomMenuDTO> menuDTOS = new ArrayList<>();
-            List<String> busKeys = null;
+            List<String> busKeys = new ArrayList<>();
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
@@ -529,7 +529,8 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
                 List<AisleBar>  barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                         .in(AisleBar::getAisleId,ids));
-                busKeys = barList.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
+                List<String> collect = barList.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
+                busKeys.addAll(collect);
                 if (!CollectionUtils.isEmpty(barList)){
                     barList.forEach(aisleBar -> {
                         if (StringUtils.isNotEmpty(aisleBar.getBusKey())){
@@ -586,7 +587,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
             List<CabinetIndexBoxResVO> cabinetIndexList = cabinetIndexMapper.selectCabinetBox();
 
             List<RoomMenuDTO> menuDTOS = new ArrayList<>();
-            List<String> boxKeys = null;
+            List<String> boxKeys = new ArrayList<>();
             List<BoxIndex> boxIndexlist1 = null;
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
@@ -614,12 +615,13 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setName(vo.getCabinetName());
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setType(MenuTypeEnums.CABINET.getType());
-                    roomMenuDTO.setParentType(vo.getRoomId());
+                    roomMenuDTO.setParentType(MenuTypeEnums.ROOM.getType());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.CABINET.getType()) + SPLIT + vo.getId());
                     menuDTOS.add(roomMenuDTO);
                 });
                 Map<String, List<CabinetIndexBoxResVO>> aBoxs = cabinetIndexList.stream().filter(i -> ObjectUtils.isNotEmpty(i.getBoxKeyA()))
                         .collect(Collectors.groupingBy(CabinetIndexBoxResVO::getBoxKeyA));
+                boxKeys.addAll(aBoxs.keySet());
                 aBoxs.keySet().forEach(key ->{
                     List<CabinetIndexBoxResVO> vos = aBoxs.get(key);
                     for (CabinetIndexBoxResVO vo : vos) {
@@ -638,6 +640,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
                 Map<String, List<CabinetIndexBoxResVO>> bBoxs = cabinetIndexList.stream().filter(i -> ObjectUtils.isNotEmpty(i.getBoxKeyB()))
                         .collect(Collectors.groupingBy(CabinetIndexBoxResVO::getBoxKeyB));
+                boxKeys.addAll(bBoxs.keySet());
                 bBoxs.keySet().forEach(key ->{
                     List<CabinetIndexBoxResVO> vos = bBoxs.get(key);
                     for (CabinetIndexBoxResVO vo : vos) {
@@ -695,9 +698,11 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     List<AisleBox> boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
                             .in(AisleBox::getAisleBarId,aisleBarIds));
                     List<String> barKeys=boxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
+
                     boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
                             .in(BoxIndex::getBoxKey,barKeys).eq(BoxIndex::getIsDeleted,0));
-                    boxKeys=boxIndexlist1.stream().map(BoxIndex::getBoxKey).collect(Collectors.toList());
+                    List<String> collect = boxIndexlist1.stream().map(BoxIndex::getBoxKey).collect(Collectors.toList());
+                    boxKeys.addAll(collect);
                     Collections.sort(boxIndexlist1, Comparator.comparing(BoxIndex::getBoxName));
                     if (!CollectionUtils.isEmpty(boxIndexlist1)) {
                         boxIndexlist1.forEach(aisleBox -> {
@@ -728,7 +733,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
             roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + -1);
             roomMenuDTO.setParentId(0);
             roomMenuDTO.setParentType(0);
-
+            boxKeys.stream().distinct().collect(Collectors.toList());
             List<RoomMenuDTO> boxIndices = boxIndexMapper.queryRoomMenuDTO(boxKeys);
             roomMenuDTO.setChildren(boxIndices);
             roomMenuDTOS.add(roomMenuDTO);

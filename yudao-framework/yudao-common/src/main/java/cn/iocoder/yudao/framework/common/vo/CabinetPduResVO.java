@@ -57,4 +57,6 @@ public class CabinetPduResVO implements Serializable {
      * 机房编号
      */
     private int roomId;
+
+    private String roomName;
 }

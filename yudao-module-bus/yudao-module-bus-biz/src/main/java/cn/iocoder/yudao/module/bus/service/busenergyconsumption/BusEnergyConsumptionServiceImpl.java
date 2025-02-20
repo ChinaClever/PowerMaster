@@ -588,6 +588,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             SearchHits hits = searchResponse.getHits();
             hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
             // 匹配到的总记录数
+            mapList.stream().map(i ->i.get("box_id")).collect(Collectors.toList());
             Long totalHits = hits.getTotalHits().value;
             // 返回的结果
 

@@ -20,6 +20,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
@@ -28,6 +29,7 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.AisleBoxResVO;
+import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetBoxResVO;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BusConstants;
@@ -3836,43 +3838,31 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (CollectionUtils.isEmpty(keys)) {
             return map;
         }
-        List<String> boxKeys = boxIndices.stream().map(BoxIndex::getBoxKey).collect(Collectors.toList());
-        List<CabinetBox> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBox>()
-                .in(CabinetBox::getBoxKeyA, boxKeys).or().in(CabinetBox::getBoxKeyB, boxKeys));
-        if (CollectionUtils.isEmpty(cabinetBus)) {
-            return map;
-        }
-        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
-        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i -> i.getBoxKeyA() + i.getOutletIdA()));
-        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i -> i.getBoxKeyB() + i.getOutletIdB()));
-
-        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
-        List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());
+        List<CabinetBoxResVO> cabs = cabinetBusMapper.selectCabinetByBoxKey(keys);
         //设备位置
         String devPosition;
-        List cabinets = ops.multiGet(cabinetRedisKeys);
-        if (!CollectionUtils.isEmpty(cabinets)) {
-            for (Object cabinet : cabinets) {
-                JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
-                devPosition = json.getString("room_name") + SPLIT_KEY + json.getString("cabinet_name");
-                if (!StringUtils.isEmpty(json.getString("aisle_name"))) {
-                    devPosition += SPLIT_KEY + json.getString("aisle_name");
-                }
-                Integer cabinetId = Integer.valueOf(json.getString("cabinet_key").split("-")[1]);
-                String devKeyA = cabinetBusMapA.get(cabinetId);
-                if (!StringUtils.isEmpty(devKeyA)) {
-                    if (Objects.isNull(collect.get(devKeyA))) {
-                        map.put(devKeyA, devPosition + SPLIT_KEY + "A路");
+
+        if (!CollectionUtils.isEmpty(cabs)) {
+            Map<String, List<CabinetBoxResVO>> collect1 = cabs.stream().collect(Collectors.groupingBy(CabinetBoxResVO::getBoxKeyA));
+            Map<String, List<CabinetBoxResVO>> collect2 = cabs.stream().collect(Collectors.groupingBy(CabinetBoxResVO::getBoxKeyB));
+            for (String key : keys) {
+                List<CabinetBoxResVO> resVOS = collect1.get(key);
+                if (!CollectionUtils.isEmpty(resVOS)){
+                    devPosition = resVOS.get(0).getRoomName() ;//+ SPLIT_KEY +resVOS.get(0).getCabinetName()
+                    if (Objects.isNull(collect.get(key))) {
+                        map.put(key, devPosition + SPLIT_KEY + "A路");
                     } else {
-                        map.put(devKeyA, devPosition + SPLIT_KEY + "A路" + SPLIT_KEY + collect.get(devKeyA));
+                        map.put(key, devPosition + SPLIT_KEY + "A路" + SPLIT_KEY + collect.get(key));
                     }
-                }
-                String devKeyB = cabinetBusMapB.get(cabinetId);
-                if (!StringUtils.isEmpty(devKeyB)) {
-                    if (Objects.isNull(collect.get(devKeyB))) {
-                        map.put(devKeyB, devPosition + SPLIT_KEY + "B路");
-                    } else {
-                        map.put(devKeyB, devPosition + SPLIT_KEY + "B路" + SPLIT_KEY + collect.get(devKeyA));
+                }else {
+                    resVOS = collect2.get(key);
+                    if (!CollectionUtils.isEmpty(resVOS)){
+                        devPosition = resVOS.get(0).getRoomName();
+                        if (Objects.isNull(collect.get(key))) {
+                            map.put(key, devPosition + SPLIT_KEY + "B路");
+                        } else {
+                            map.put(key, devPosition + SPLIT_KEY + "B路" + SPLIT_KEY + collect.get(key));
+                        }
                     }
                 }
             }

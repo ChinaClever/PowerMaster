@@ -67,7 +67,7 @@
         <where>
             t1.is_deleted = 0
             <if test="boxKeys !=null and boxKeys.size >0">
-                NOT EXISTS (
+              and  NOT EXISTS (
                 SELECT 1
                 FROM (
                 <foreach collection="boxKeys" item="key" separator="union all">
