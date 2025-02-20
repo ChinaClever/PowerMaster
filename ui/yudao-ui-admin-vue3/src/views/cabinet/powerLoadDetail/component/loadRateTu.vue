@@ -15,8 +15,6 @@ const props = defineProps({
   }
 });
 
-const L1Data = ref([]);
-const L2Data = ref([]);
 const L3Data = ref([]);
 const createTimeData = ref([]);
 
@@ -29,7 +27,7 @@ const chartOptions = ref({
     type: 'value',
     axisLabel: {
       formatter: function (value) {
-        return value + ' KW';
+        return value + ' %';
       }
     }
   },
@@ -38,7 +36,7 @@ const chartOptions = ref({
     formatter: function (params) {
       let result = '';
       params.forEach(item => {
-        result += `${item.seriesName}: ${item.value} kVar<br/>`;
+        result += `${item.seriesName}: ${item.value} %<br/>`;
       });
       return result;
     }
@@ -50,26 +48,20 @@ const chartOptions = ref({
     bottom: '10%', // 设置下侧边距
   },
   series: [
-    { name: '总无功功率', type: 'line', symbol: 'none', data: L1Data.value },
-    { name: 'A路无功功率', type: 'line', symbol: 'none', data: L2Data.value },
-    { name: 'B路无功功率', type: 'line', symbol: 'none', data: L3Data.value },
+    { name: '负载率', type: 'line', symbol: 'none', data:  L3Data.value }
   ],
 });
 
 const updateChartData = () => {
   if (props.curChartData && props.curChartData.aPath) {
-    L1Data.value = props.curChartData.aPath.map((item) => item.powReactiveA.toFixed(3));
-    L2Data.value = props.curChartData.aPath.map((item) => item.powReactiveB.toFixed(3));
-    L3Data.value = props.curChartData.aPath.map((item) => item.powReactiveTotal.toFixed(3));
+    L3Data.value = props.curChartData.aPath.map((item) => item.loadRateTotal.toFixed(2)*100);
     createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
 
     chartOptions.value = {
       ...chartOptions.value,
       xAxis: { ...chartOptions.value.xAxis, data: createTimeData.value },
       series: [
-        { ...chartOptions.value.series[0], data: L1Data.value },
-        { ...chartOptions.value.series[1], data: L2Data.value },
-        { ...chartOptions.value.series[2], data: L3Data.value },
+        { ...chartOptions.value.series[0], data: L3Data.value },
       ],
     };
   }

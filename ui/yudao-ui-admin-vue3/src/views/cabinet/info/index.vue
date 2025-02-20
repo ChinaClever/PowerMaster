@@ -481,7 +481,6 @@ const getTableData = async() => {
         return tableItem
       })
       listPage.value = list;
-      console.log('listPage.value', listPage.value);
       queryParams.pageTotal = res.total;
 
     }
@@ -636,7 +635,6 @@ const handleDelete = async (id: number, index: number) => {
   try {
     // 删除的二次确认
     await message.delConfirm()
-    console.log(id, index)
     // 发起删除
     await CabinetApi.deleteCabinetInfo({
       id: id,

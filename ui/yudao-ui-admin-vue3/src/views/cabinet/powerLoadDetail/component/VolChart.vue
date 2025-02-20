@@ -10,8 +10,6 @@ const props = defineProps({
   curChartData: Object,
 });
 
-console.log('props.curChartData111666', props.curChartData);
-
 const { curChartData } = toRefs(props);
 
 const height = ref(400);

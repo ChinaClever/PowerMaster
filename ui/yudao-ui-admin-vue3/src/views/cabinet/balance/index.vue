@@ -81,9 +81,9 @@
                 <div class="label">有功功率：</div>
                 <div class="progressContainer">
                   <div class="progress">
-                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(2)}}%</div>
+                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
                     <div class="line"></div>
-                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(2)}}%</div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
                   </div>
                 </div>
               </div>
@@ -91,9 +91,9 @@
                 <div class="label">视在功率：</div>
                 <div class="progressContainer">
                   <div class="progress">
-                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent}}%</div>
+                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
                     <div class="line"></div>
-                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent}}%</div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
                   </div>
                 </div>
               </div>
@@ -140,11 +140,11 @@
         <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="所在位置" min-width="90" align="center" prop="roomName" />
-          <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
-          <el-table-column label="A路视在功率(kVA)" min-width="90" align="center" prop="powApparentA" />
-          <el-table-column label="B路视在功率(kVA)" min-width="90" align="center" prop="powApparentB" />
-          <el-table-column label="A路占比" min-width="90" align="center" prop="aPow" />
-          <el-table-column label="B路占比" min-width="90" align="center" prop="bPow" />
+          <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" :formatter="formatEle"/>
+          <el-table-column label="A路视在功率(kVA)" min-width="90" align="center" prop="powApparentA"  :formatter="formatEle"/>
+          <el-table-column label="B路视在功率(kVA)" min-width="90" align="center" prop="powApparentB"  :formatter="formatEle"/>
+          <el-table-column label="A路占比" min-width="90" align="center" prop="apow" />
+          <el-table-column label="B路占比" min-width="90" align="center" prop="bpow" />
           <el-table-column label="操作" width="100px" align="center">
             <template #default="scope">
               <el-button
@@ -158,28 +158,7 @@
               </el-button>
             </template>
           </el-table-column>
-        
-          <!-- <el-table-column label="操作" width="100px">
-          <template #default="scope">
-            <el-button size="small" link @click="openListenerFieldForm(scope.row, scope.$index)">详情</el-button>
-          </template>
-        </el-table-column> -->
-          <!-- <el-table-column label="A路" align="center">
-            <el-table-column label="I1(A)" min-width="90" align="center" prop="acurValueOne" />
-            <el-table-column label="I2(A)" min-width="90" align="center" prop="acurValueTwe" />
-            <el-table-column label="I3(A)" min-width="90" align="center" prop="acurValueThree" />
-            <el-table-column label="P1(kW)" min-width="90" align="center" prop="bpowValueOne" />
-            <el-table-column label="P2(kW)" min-width="90" align="center" prop="bpowValueTwe" />
-            <el-table-column label="P3(kW)" min-width="90" align="center" prop="bpowValueThree" />
-          </el-table-column>
-          <el-table-column label="B路"  align="center">
-            <el-table-column label="I1(A)" min-width="90" align="center" prop="bcurValueOne" />
-            <el-table-column label="I2(A)" min-width="90" align="center" prop="bcurValueTwe" />
-            <el-table-column label="I3(A)" min-width="90" align="center" prop="bcurValueThree" />
-            <el-table-column label="P1(kW)" min-width="90" align="center" prop="bpowValueOne" />
-            <el-table-column label="P2(kW)" min-width="90" align="center" prop="bpowValueTwe" />
-            <el-table-column label="P3(kW)" min-width="90" align="center" prop="bpowValueThree" />
-          </el-table-column> -->
+      
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
@@ -271,7 +250,7 @@ const balanceObj = reactive({
 const getBalanceDetail = async(item) => {
   const data = await CabinetApi.getDetail({id:item});
   const res = data.redisData;
-  console.log('data1111', data);
+  // console.log('data1111', data);
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
@@ -389,7 +368,7 @@ const getTableData = async(reset = false) => {
           roomName: item.roomName +'-' +item.cabinetName
         };
       });
-            console.log('tableData.value', tableData.value);
+            // console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {
@@ -512,6 +491,18 @@ const getBalanceTrend = async () => {
       ]
     }
   }
+}
+
+// 格式化电能列数据，保留1位小数
+function formatEle(_row: any, _column: any, cellValue: number): string {
+  console.log(cellValue);
+  if (cellValue === null) {
+    return '';
+  }
+    if (cellValue === 0) {
+    return '0';
+  }
+  return Number(cellValue).toFixed(3);
 }
 
 const ALineOption = ref<EChartsOption>({
