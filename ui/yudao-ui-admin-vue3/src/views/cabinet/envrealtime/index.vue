@@ -159,31 +159,31 @@
         <el-table-column label="前门" align="center" >
           <el-table-column label="上" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.iceTopTem != null && switchTemAndHum == 0" :style="{ color : scope.row.iceTopTemColor }">
-                {{ scope.row.iceTopTem }}°C
+              <el-text v-if="switchTemAndHum == 0" :style="{ color : scope.row.iceTopTemColor }">
+                 {{ scope.row.iceTopTem === null ? '--' : scope.row.iceTopTem }}°C  
               </el-text>
-              <el-text v-if="scope.row.iceTopHum != null && switchTemAndHum == 1">
-                {{ scope.row.iceTopHum }}%
+              <el-text v-if="switchTemAndHum == 1">
+                 {{ scope.row.iceTopHum === null ? '--' : scope.row.iceTopHum }}%  
               </el-text>
             </template>
           </el-table-column>        
           <el-table-column label="中" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.iceMidTem != null && switchTemAndHum == 0" :style="{ color : scope.row.iceMidTemColor }">
-                {{ scope.row.iceMidTem }}°C
+              <el-text v-if="switchTemAndHum == 0" :style="{ color : scope.row.iceMidTemColor }">
+                {{ scope.row.iceMidTem === null ? '--' : scope.row.iceMidTem }}°C  
               </el-text>
-              <el-text v-if="scope.row.iceMidHum != null && switchTemAndHum == 1">
-                {{ scope.row.iceMidHum }}%
+              <el-text v-if="switchTemAndHum == 1">
+                {{ scope.row.iceMidHum === null ? '--' : scope.row.iceMidHum }}%  
               </el-text>                
             </template>
           </el-table-column>     
           <el-table-column label="下" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.iceBomTem != null && switchTemAndHum == 0" :style="{ color : scope.row.iceBomTemColor }">
-                {{ scope.row.iceBomTem }}°C
+              <el-text v-if="switchTemAndHum == 0" :style="{ color : scope.row.iceBomTemColor }">
+                {{ scope.row.iceBomTem === null ? '--' : scope.row.iceBomTem }}°C  
               </el-text>          
-              <el-text v-if="scope.row.iceBomHum != null && switchTemAndHum == 1">
-                {{ scope.row.iceBomHum }}%
+              <el-text v-if="switchTemAndHum == 1">
+                {{ scope.row.iceBomHum === null ? '--' : scope.row.iceBomHum }}%  
               </el-text>   
             </template>
           </el-table-column>     
@@ -191,31 +191,31 @@
         <el-table-column label="后门" align="center" >
           <el-table-column label="上" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.hotTopTem != null && switchTemAndHum == 0" :style="{ color : scope.row.hotTopTemColor }">
-                {{ scope.row.hotTopTem }}°C
+              <el-text v-if="switchTemAndHum == 0" :style="{ color : scope.row.hotTopTemColor }">
+                 {{ scope.row.hotTopTem === null ? '--' : scope.row.hotTopTem }}°C  
               </el-text>       
-              <el-text v-if="scope.row.hotTopHum != null && switchTemAndHum == 1">
-                {{ scope.row.hotTopHum }}%
+              <el-text v-if="switchTemAndHum == 1">
+                 {{ scope.row.hotTopHum === null ? '--' : scope.row.hotTopHum }}%  
               </el-text>            
             </template>
           </el-table-column>        
           <el-table-column label="中" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.hotMidTem != null && switchTemAndHum == 0" :style="{ color : scope.row.hotMidTemColor }">
-                {{ scope.row.hotMidTem }}°C
+              <el-text v-if="switchTemAndHum == 0" :style="{ color : scope.row.hotMidTemColor }">
+                  {{ scope.row.hotMidTem === null ? '--' : scope.row.hotMidTem }}°C  
               </el-text>               
-              <el-text v-if="scope.row.hotMidHum != null && switchTemAndHum == 1">
-                {{ scope.row.hotMidHum }}%
+              <el-text v-if="switchTemAndHum == 1">
+                  {{ scope.row.hotMidHum === null ? '--' : scope.row.hotMidHum }}%  
               </el-text>    
             </template>
           </el-table-column>     
           <el-table-column label="下" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.hotBomTem != null && switchTemAndHum == 0" :style="{ color : scope.row.hotBomTemColor }">
-                {{ scope.row.hotBomTem }}°C
+              <el-text v-if="switchTemAndHum == 0" :style="{ color : scope.row.hotBomTemColor }">
+                {{ scope.row.hotBomTem === null ? '--' : scope.row.hotBomTem }}°C  
               </el-text>             
-              <el-text v-if="scope.row.hotBomHum != null && switchTemAndHum == 1">
-                {{ scope.row.hotBomHum }}%
+              <el-text v-if="switchTemAndHum == 1">
+                 {{ scope.row.hotBomHum === null ? '--' : scope.row.hotBomHum }}%  
               </el-text>   
             </template>
           </el-table-column> 
@@ -253,13 +253,21 @@
             </div>
             <div  class="tem">
                 <div><span>冷</span></div>
-                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageTem}}℃</span></div>
-                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageHum}}%</span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">
+                     {{ item.iceAverageTem === null ? '--' : item.iceAverageTem }}℃  
+                </span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">
+                     {{ item.iceAverageHum === null ? '--' : item.iceAverageHum }}% 
+                </span></div>
             </div>
             <div  class="tem">
                 <div><span>热</span></div>
-                <div><span :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
-                <div><span :style="{ color : item.hotAverageTemColor }"> {{item.hotAverageHum}}% </span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }">
+                    {{ item.hotAverageTem === null ? '--' : item.hotAverageTem }}℃  
+                </span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }">
+                    {{ item.hotAverageHum === null ? '--' : item.hotAverageHum }}% 
+                </span></div>
             </div>
           </div>
           <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
@@ -277,13 +285,21 @@
             </div>
             <div  class="tem">
                 <div><span>冷</span></div>
-                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageTem}}℃</span></div>
-                <div><span :style="{ color : item.iceAverageTemColor }">{{item.iceAverageHum}}%</span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">
+                   {{ item.iceAverageTem === null ? '--' : item.iceAverageTem }}℃  
+                 </span></div>
+                <div><span :style="{ color : item.iceAverageTemColor }">
+                   {{ item.iceAverageHum === null ? '--' : item.iceAverageHum }}% 
+                </span></div>
             </div>
             <div  class="tem">
                 <div><span>热</span></div>
-                <div><span :style="{ color : item.hotAverageTemColor }">{{item.hotAverageTem}}℃</span></div>
-                <div><span :style="{ color : item.hotAverageTemColor }"> {{item.hotAverageHum}}% </span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }">
+                   {{ item.hotAverageTem === null ? '--' : item.hotAverageTem }}℃  
+                </span></div>
+                <div><span :style="{ color : item.hotAverageTemColor }"> 
+                   {{ item.hotAverageHum === null ? '--' : item.hotAverageHum }}% 
+                </span></div>
             </div>
           </div>
           <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
