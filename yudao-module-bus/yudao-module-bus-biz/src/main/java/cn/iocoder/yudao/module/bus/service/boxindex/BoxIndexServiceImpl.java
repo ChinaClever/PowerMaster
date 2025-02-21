@@ -3789,6 +3789,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 //        List<Object> list = redisTemplate.opsForValue().multiGet(redisKey);
 
         Map<String, BoxNameVO> map = new HashMap<>();
+        if (CollectionUtils.isEmpty(keys)){
+            return map;
+        }
         Map<String, List<AisleBoxResVO>> collect = new HashMap<>();
         List<CabinetBoxResVO> cabinetBoxResVOList = cabinetBusMapper.selectCabinetByBoxKey(keys);
         List<AisleBoxResVO> aisleBoxList = aisleBoxMapper.selectAisleByBoxKey(keys);
