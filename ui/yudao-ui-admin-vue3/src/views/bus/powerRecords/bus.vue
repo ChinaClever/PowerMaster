@@ -64,9 +64,9 @@
 
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
-        value-format="YYYY-MM-DD"
+        format="YYYY-MM-DD HH:mm:ss"
         v-model="selectTimeRange"
-        type="daterange"
+        type="datetimerange"
         :shortcuts="shortcuts"
         range-separator="-"
         start-placeholder="开始时间"
@@ -141,6 +141,7 @@ const total = ref(0);
 const timeRangeType = ref('day');
 const realTotel = ref(0); // 数据的真实总条数
 const selectTimeRange = ref<Date[] | undefined>(undefined);
+
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -228,14 +229,13 @@ function formatLineId(_row: any, _column: any, cellValue: number): string {
 // 时间段快捷选项
 const shortcuts = [
     {
-        text: '最近一天',
-        value: async () => {
-            const end = new Date();
-            const start = new Date();
-            start.setHours(start.getHours() - 24);
-            timeRangeType.value = 'day';
-            return [start, end];
-        }
+      text: '最近一天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 1)
+      return [start, end]
+    },
     },
     {
     text: '最近一个月',
@@ -244,6 +244,9 @@ const shortcuts = [
       const start = new Date()
       start.setMonth(start.getMonth() - 1)
       timeRangeType.value = 'month';
+      console.log('2222222222',start)
+            console.log('33333333333333',end)
+            console.log('444444',selectTimeRange)
       return [start, end]
     },
   },
@@ -290,15 +293,17 @@ const getList = async () => {
     }
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])));
+      const selectedStartTime = formatDate(selectTimeRange.value[0]);
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])));
+      const selectedEndTime = formatDate(selectTimeRange.value[1]);
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined;
     }
+    console.log('11111111111111111',selectTimeRange);
+    console.log('queryParams',queryParams.timeRange);
     const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams);
     console.log('data',data);
     list.value = data.list

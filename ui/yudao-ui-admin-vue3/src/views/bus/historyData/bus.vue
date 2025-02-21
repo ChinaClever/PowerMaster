@@ -88,7 +88,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD"
+          format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
