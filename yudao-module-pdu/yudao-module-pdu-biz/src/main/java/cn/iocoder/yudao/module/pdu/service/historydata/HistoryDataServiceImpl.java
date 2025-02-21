@@ -1094,7 +1094,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public Map<String, Object> getEnvNavNewData() throws IOException {
-        String[] indices = new String[]{"pdu_env_realtime", "pdu_env_hour", "pdu_env_day"};
+        String[] indices = new String[]{"pdu_env_realtime", "pdu_env_realtime", "pdu_env_realtime"};
         String[] name = new String[]{"hour", "day", "week"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
 
