@@ -83,28 +83,41 @@
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
-          <el-table-column label="位置" min-width="110" align="center" prop="local" />
+          <el-table-column label="位置" min-width="150" align="center" prop="local" />
           <el-table-column label="设备名称" align="center" prop="boxName" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
+          <el-table-column label="昨日用能(kW·h)" min-width="80" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.yesterdayEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" >
+          <el-table-column label="上周用能(kW·h)" min-width="80" align="center" prop="lastWeekEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.lastWeekEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="上月用能(kW·h)" min-width="80" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.lastMonthEq }}
               </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" min-width="110" align="center" >
+            <template #default="scope" >
+            <el-button
+              link
+              type="primary"
+              @click="toDetail(scope.row.roomId, scope.row.id,scope.row.roomName,scope.row.boxName, scope.row)"
+              v-if=" scope.row.status != null && scope.row.status != 0"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+            >
+            设备详情
+            </el-button>
             </template>
           </el-table-column>
         </el-table>
