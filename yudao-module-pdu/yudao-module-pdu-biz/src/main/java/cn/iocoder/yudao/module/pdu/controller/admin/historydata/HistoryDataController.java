@@ -141,9 +141,9 @@ public class HistoryDataController {
         return success(pageResult);
     }
 
-    @GetMapping("/env-pageByCabinet")
+    @PostMapping("/env-pageByCabinet")
     @Operation(summary = "获得pdu环境数据分页1")
-    public CommonResult<PageResult<Object>> getEnvDataPageByCabinet(EnvDataPageReqVo pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getEnvDataPageByCabinet(@RequestBody EnvDataPageReqVo pageReqVO) throws IOException {
         PageResult<Object> pageResult = historyDataService.getEnvDataPageByCabinet(pageReqVO);
         return success(pageResult);
     }

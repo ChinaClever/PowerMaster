@@ -12,8 +12,8 @@ export const EnvDataApi = {
   },
 
   // 查询pdu环境数据分页
-  getEnvDataPageByCabinet: async (params: any) => {
-    return await request.get({ url: `/pdu/history-data/env-pageByCabinet`, params })
+  getEnvDataPageByCabinet: async (data: any) => {
+    return await request.post({ url: `/pdu/history-data/env-pageByCabinet`, data })
   },
 
   // 查询pdu环境数据详情
