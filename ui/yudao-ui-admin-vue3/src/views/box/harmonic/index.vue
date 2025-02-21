@@ -230,7 +230,7 @@
         </el-form-item> -->
         <el-form-item>       
           <!--<el-tag size="large">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{boxName}})</el-tag>-->
-          <span>机房：{{ location }}&nbsp;&nbsp;</span>
+          <span>机房：{{ roomName }}&nbsp;&nbsp;</span>
           <span>母线：{{ busName }}&nbsp;&nbsp;</span>
           <span>插接箱：{{boxName}}&nbsp;&nbsp;</span>
           <span>网络地址：{{ devkey }}</span>
@@ -317,7 +317,7 @@ const location = ref() as any;
 const devkey = ref() as any;
 const busName = ref() as any;
 const boxName = ref() as any;
-
+const roomName = ref() as any;
 const butColor = ref(0);
 const onclickColor = ref(-1);
 const dialogVisible = ref(false);
@@ -448,7 +448,6 @@ const handleClick = async (row) => {
     haveSearch.value = false;
     handleQueryCopy();
   }
-  console.log("click",row)
 }
 
 const handleCheck = async (row) => {
@@ -540,7 +539,6 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
     list.value = data.list
-    console.log('data',data);
 
     //获取颜色范围
     //var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
@@ -631,7 +629,6 @@ const getDetail = async () => {
 
   //if(!haveSearch.value){
   //  const data = await IndexApi.getHarmonicRedis(queryParamsCopy);
-  //  console.log('data111111',data);
   //  harmonicRealTime.value = data;
   //  if(harmonicRealTime.value.times != null){
   //    realTimeVis.value = true;
@@ -644,7 +641,6 @@ const getDetail = async () => {
   const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
   abcLineData.value = lineData;
   abcLineShow.value = true;
-  console.log('abcLineData',abcLineData.value);
   //seriesAndTimeArr.value = lineData;
   //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
   //  const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
@@ -701,16 +697,13 @@ watch(() => [queryParamsCopy.harmonicType], () => {
 });
 
 const showDialog = async (item) => {
-  //colorFlag.value = item.color;
-  console.log('111111111111111111111',item);
   queryParamsCopy.devKey = item.devKey;
   queryParamsCopy.boxId = item.boxId;
   location.value = item.location ? item.location : '未绑定';
+  roomName.value = item.roomName  ? item.roomName : '未绑定';
   devkey.value = item.devKey;
   busName.value = item.busName;
   boxName.value = item.boxName;
-
-  console.log('item',item);
   dialogVisible.value = true;
   await handleQueryCopy();
 }
@@ -724,7 +717,6 @@ const toDetail = (row) =>{
 }
 
 const handleSelectStatus = (index) => {
-  console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.status = [index];

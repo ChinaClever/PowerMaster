@@ -33,4 +33,5 @@ public class BoxIndexRes  extends BoxResBase{
     @Schema(description = "数据更新时间")
     private String dataUpdateTime;
 
+
 }

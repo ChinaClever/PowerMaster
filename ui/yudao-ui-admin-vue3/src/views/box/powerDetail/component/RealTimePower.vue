@@ -21,7 +21,7 @@ console.log('loadFactor',props.loadFactor)
 
 const gaugeData = [
   {
-    value: props.loadFactor.totalPowApparent,
+    value: props.loadFactor.totalPowApparent.toFixed(3),
     itemStyle: { color: '#C8603A' },
     detail: {
       valueAnimation: true,
@@ -29,7 +29,7 @@ const gaugeData = [
     }
   },
   {
-    value: props.loadFactor.totalPowActive,
+    value: props.loadFactor.totalPowActive.toFixed(3),
     itemStyle: { color: '#AD3762' },
     detail: {
       valueAnimation: true,
@@ -37,7 +37,7 @@ const gaugeData = [
     }
   },
   {
-    value: props.loadFactor.totalPowReactive,
+    value: props.loadFactor.totalPowReactive.toFixed(3),
     itemStyle: { color: '#E5B849' },
     detail: {
       valueAnimation: true,

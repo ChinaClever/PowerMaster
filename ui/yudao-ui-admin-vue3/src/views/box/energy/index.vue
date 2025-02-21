@@ -78,7 +78,7 @@
             </div>
             <div class="room">{{item.location}}</div>
             <!-- <div class="name">{{item.boxName}}</div> -->
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.local,item.boxName, item)" >详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.roomName,item.boxName, item)" >详情</button>
           </div>
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
@@ -169,7 +169,6 @@ const changeTimeGranularity = (value) => {
 }
 // 获取表格数据
 const getTableData = async(reset = false) => {
-  console.log('getTableData', queryParams)
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
@@ -184,13 +183,13 @@ const getTableData = async(reset = false) => {
       boxDevKeyList : queryParams.boxDevKeyList,
       timeGranularity : queryParams.timeGranularity
     })
-    console.log('res',res);
     if (res.list) {
       tableData.value = res.list.map(item => {
         return {
           id: item.id,
           devKey:item.devKey,
-          location: item.location ? item.location+'-'+item.busName +'-'+item.boxName : item.devKey+'-'+item.boxName,
+          roomName: item.roomName,
+          location: item.location,
           // location: item.location || (item.devKey && item.boxName ? item.devKey +'-'+ item.boxName : null),
           // location: item.location ||  item.devKey  +'-'+ item.boxName,
           local : item.location,
@@ -210,7 +209,6 @@ const getTableData = async(reset = false) => {
 }
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  console.log('handleQuery', queryParamsDevKey.value)
   if(queryParamsDevKey.value !=null && queryParamsDevKey.value != ''){
     queryParams.boxDevKeyList = [queryParamsDevKey.value]
   }else{
@@ -314,11 +312,10 @@ const handleCheck = (row) => {
 
 
 // 跳转详情
-const toDetail = (roomId, id,local,boxName, item) => {
+const toDetail = (roomId, id,room,boxName, item) => {
   const devKey = item.devKey;
   const busName = item.busName;
-  const roomName = item.local ? item.local : '未绑定';
-  console.log('item',item);
+  const roomName = room ? room : '未绑定';
   push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
 }
 onMounted(async () => {

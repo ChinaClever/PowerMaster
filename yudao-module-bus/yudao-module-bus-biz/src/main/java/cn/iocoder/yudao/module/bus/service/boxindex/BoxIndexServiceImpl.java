@@ -559,7 +559,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             res.add(boxIndexRes);
         }
         Map<String, BoxIndexRes> resMap = res.stream().collect(Collectors.toMap(BoxIndexRes::getDevKey, Function.identity()));
-        getPosition(res);
+        List<String> keys = res.stream().map(BoxResBase::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = getRoomByKeys(keys);
+//        getPosition(res);
         for (Object o : redisList) {
             if (Objects.isNull(o)) {
                 continue;
@@ -580,24 +582,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else {
                 boxIndexRes.setALoadRate(loadRate.getInteger(0));
             }
-//            rateList.sort(Collections.reverseOrder());
-//            Double biggest = rateList.get(0);
-//            if (biggest == 0) {
-//                boxIndexRes.setColor(0);
-//            } else if (biggest / 100 < 30) {
-//                boxIndexRes.setColor(1);
-//            } else if (biggest / 100 < 60) {
-//                boxIndexRes.setColor(2);
-//            } else if (biggest / 100 < 90) {
-//                boxIndexRes.setColor(3);
-//            } else if (biggest / 100 >= 90) {
-//                boxIndexRes.setColor(4);
-//            }
-//            if (pageReqVO.getColor() != null) {
-//                if (!pageReqVO.getColor().contains(boxIndexRes.getColor())) {
-//                    res.removeIf(box -> box.getBoxId().equals(boxIndexRes.getBoxId()));
-//                }
-//            }
+            BoxNameVO boxNameVO = roomByKeys.get(devKey);
+            if (Objects.nonNull(boxNameVO)){
+                boxIndexRes.setLocation(boxNameVO.getLocaltion());
+                boxIndexRes.setBusName(boxNameVO.getBusName());
+                boxIndexRes.setRoomName(boxNameVO.getRoomName());
+            }
         }
         return new PageResult<>(res, boxIndexDOPageResult.getTotal());
     }
@@ -617,7 +607,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             res.add(boxRedisDataRes);
         }
         Map<String, BoxRedisDataRes> resMap = res.stream().collect(Collectors.toMap(BoxRedisDataRes::getDevKey, Function.identity()));
-        getPosition(res);
+        List<String> keys = res.stream().map(BoxResBase::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = getRoomByKeys(keys);
         for (Object o : redisList) {
             if (Objects.isNull(o)) {
                 continue;
@@ -627,6 +618,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 continue;
             }
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
+
             BoxRedisDataRes boxRedisDataRes = resMap.get(devKey);
             //相数据解析
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
@@ -699,6 +691,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxRedisDataRes.setPowApparent(boxTotalData.getBigDecimal("pow_apparent"));//总视在功率
             boxRedisDataRes.setPowReactive(boxTotalData.getBigDecimal("pow_reactive"));//总无功功率
 
+            BoxNameVO boxNameVO = roomByKeys.get(devKey);
+            if (Objects.nonNull(boxNameVO)){
+                boxRedisDataRes.setLocation(boxNameVO.getLocaltion());
+                boxRedisDataRes.setBusName(boxNameVO.getBusName());
+                boxRedisDataRes.setRoomName(boxNameVO.getRoomName());
+            }
+
         }
         return new PageResult<>(res, boxIndexDOPageResult.getTotal());
     }
@@ -741,14 +740,16 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<Double> eleActive = loopItemList.getList("ele_active", Double.class);//电能
             BoxLoopItemResVO loopItemResVO = new BoxLoopItemResVO();
             loopItemResVO.setLoopId(i + 1);
-            loopItemResVO.setBreakerStatus(breakerStatus.get(i));
-            loopItemResVO.setLoopCurValue(curList.get(i));
-            loopItemResVO.setLoopVolValue(volList.get(i));
-            loopItemResVO.setLoopPowReactive(powReactive.get(i));
-            loopItemResVO.setLoopPowApparent(powApparent.get(i));
-            loopItemResVO.setLoopPowValue(powValue.get(i));
-            loopItemResVO.setLoopPowerFactor(powerFactor.get(i));
-            loopItemResVO.setLoopEleActive(eleActive.get(i));
+            if (i+1 <= breakerStatus.size()){
+                loopItemResVO.setBreakerStatus(breakerStatus.get(i));
+            }
+            loopItemResVO.setLoopCurValue(BigDecimal.valueOf(curList.get(i)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            loopItemResVO.setLoopVolValue(BigDecimal.valueOf(volList.get(i)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
+            loopItemResVO.setLoopPowReactive(BigDecimal.valueOf(powReactive.get(i)).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            loopItemResVO.setLoopPowApparent(BigDecimal.valueOf(powApparent.get(i)).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            loopItemResVO.setLoopPowValue(BigDecimal.valueOf(powValue.get(i)).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            loopItemResVO.setLoopPowerFactor(BigDecimal.valueOf(powerFactor.get(i)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            loopItemResVO.setLoopEleActive(BigDecimal.valueOf(eleActive.get(i)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             list.add(loopItemResVO);
         }
         vo.setBoxLoopItemResVO(list);
@@ -804,7 +805,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (hits.getTotalHits().value > 0) {
                 SearchHit hit = hits.getAt(0);
                 vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
-                vo.setLoadFactorValue(hit.getSourceAsMap().get("load_rate").toString());
+                vo.setLoadFactorValue((Double)hit.getSourceAsMap().get("load_rate"));
             }
         }
         if (true) {
@@ -1153,7 +1154,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     BoxNameVO nameVO = map.get(boxIndex.getBoxKey());
                     if (Objects.nonNull(nameVO)) {
                         boxIndexDTO.setBusName(nameVO.getBusName());
-                        boxIndexDTO.setLocation(nameVO.getRoomName());
+                        boxIndexDTO.setLocation(nameVO.getLocaltion());
+                        boxIndexDTO.setRoomName(nameVO.getRoomName());
                     }
                     boxIndexDTO.setBoxName(boxIndex.getBoxName());
                     boxIndexDTO.setYesterdayEq(yesterdayMap.get(id));
@@ -1240,7 +1242,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 BoxNameVO nameVO = map.get(dto.getDevKey());
                 if (Objects.nonNull(nameVO)) {
                     dto.setBusName(nameVO.getBusName());
-                    dto.setLocation(nameVO.getRoomName());
+                    dto.setLocation(nameVO.getLocaltion());
+                    dto.setRoomName(nameVO.getRoomName());
                 }
                 dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
                 dto.setLastWeekEq(weekMap.get(dto.getId()));
@@ -1550,7 +1553,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             res.add(boxBalanceDataRes);
         }
         Map<String, BoxBalanceDataRes> resMap = res.stream().collect(Collectors.toMap(BoxBalanceDataRes::getDevKey, Function.identity()));
-        getPosition(res);
+        List<String> keys = res.stream().map(BoxResBase::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = getRoomByKeys(keys);
         for (Object o : redisList) {
             if (Objects.isNull(o)) {
                 continue;
@@ -1561,6 +1565,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxBalanceDataRes boxBalanceDataRes = resMap.get(devKey);
+
+            BoxNameVO boxNameVO = roomByKeys.get(devKey);
+            if (Objects.nonNull(boxNameVO)){
+                boxBalanceDataRes.setLocation(boxNameVO.getLocaltion());
+                boxBalanceDataRes.setBusName(boxNameVO.getBusName());
+                boxBalanceDataRes.setRoomName(boxNameVO.getRoomName());
+            }
+
+
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             List<Double> curList = lineItemList.getList("cur_value", Double.class);
             List<Double> volList = lineItemList.getList("vol_value", Double.class);
@@ -1725,7 +1738,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             res.add(boxTemRes);
         }
         Map<String, BoxTemRes> resMap = res.stream().collect(Collectors.toMap(BoxTemRes::getDevKey, Function.identity()));
-        getPosition(res);
+        List<String> keys = res.stream().map(BoxResBase::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = getRoomByKeys(keys);
         for (Object o : redisList) {
             if (Objects.isNull(o)) {
                 continue;
@@ -1733,6 +1747,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxTemRes boxTemRes = resMap.get(devKey);
+
+            BoxNameVO boxNameVO = roomByKeys.get(devKey);
+            if (Objects.nonNull(boxNameVO)){
+                boxTemRes.setLocation(boxNameVO.getLocaltion());
+                boxTemRes.setBusName(boxNameVO.getBusName());
+                boxTemRes.setRoomName(boxNameVO.getRoomName());
+            }
+
             boxTemRes.setBusName(jsonObject.getString("bus_name"));
             JSONObject envItemList = jsonObject.getJSONObject("env_item_list");
             JSONArray temValue = envItemList.getJSONArray("tem_value");
@@ -1835,7 +1857,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             res.add(boxPFRes);
         }
         Map<String, BoxPFRes> resMap = res.stream().collect(Collectors.toMap(BoxPFRes::getDevKey, Function.identity()));
-        getPosition(res);
+        List<String> keys = res.stream().map(BoxResBase::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = getRoomByKeys(keys);
         for (Object o : redisList) {
             if (Objects.isNull(o)) {
                 continue;
@@ -1846,7 +1869,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxPFRes boxPFRes = resMap.get(devKey);
-
+            BoxNameVO boxNameVO = roomByKeys.get(devKey);
+            if (Objects.nonNull(boxNameVO)){
+                boxPFRes.setLocation(boxNameVO.getLocaltion());
+                boxPFRes.setBusName(boxNameVO.getBusName());
+                boxPFRes.setRoomName(boxNameVO.getRoomName());
+            }
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray phasePFValue = lineItemList.getJSONArray("power_factor");
 
@@ -1985,7 +2013,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             res.add(boxHarmonicRes);
         }
         Map<String, BoxHarmonicRes> resMap = res.stream().collect(Collectors.toMap(BoxHarmonicRes::getDevKey, Function.identity()));
-        getPosition(res);
+        List<String> keys = res.stream().map(BoxResBase::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = getRoomByKeys(keys);
         for (Object o : redisList) {
             if (Objects.isNull(o)) {
                 continue;
@@ -1999,7 +2028,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxHarmonicRes.setBusName(jsonObject.getString("bus_name"));
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");
-
+            BoxNameVO boxNameVO = roomByKeys.get(devKey);
+            if (Objects.nonNull(boxNameVO)){
+                boxHarmonicRes.setLocation(boxNameVO.getLocaltion());
+                boxHarmonicRes.setBusName(boxNameVO.getBusName());
+                boxHarmonicRes.setRoomName(boxNameVO.getRoomName());
+            }
             for (int i = 0; i < 3; i++) {
 
                 BigDecimal curThdValue = BigDemicalUtil.safeDivide(curThd.getDoubleValue(i), 100);
@@ -2166,6 +2200,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<BoxIndex> boxIndices = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>()
                     .inIfPresent(BoxIndex::getId, ids));
 
+            List<String> keys = boxIndices.stream().map(BoxIndex::getBoxKey).distinct().collect(Collectors.toList());
+            Map<String, BoxNameVO> roomByKeys = getRoomByKeys(keys);
+
             for (BoxIndex boxIndex : boxIndices) {
                 Integer id = boxIndex.getId();
 
@@ -2175,6 +2212,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxLineRes.setBoxId(boxIndex.getId());
                 boxLineRes.setDevKey(boxIndex.getBoxKey());
                 boxLineRes.setBoxName(boxIndex.getBoxName());
+
+                BoxNameVO boxNameVO = roomByKeys.get(boxIndex.getBoxKey());
+                if (Objects.nonNull(boxNameVO)){
+                    boxLineRes.setLocation(boxNameVO.getLocaltion());
+                    boxLineRes.setBusName(boxNameVO.getBusName());
+                    boxLineRes.setRoomName(boxNameVO.getRoomName());
+                }
 
                 if (curMap.get(id) == null) {
                     continue;
@@ -2208,10 +2252,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
 
                 result.add(boxLineRes);
-            }
-
-            if (!CollectionUtils.isEmpty(result)) {
-                getPosition(result);
             }
 
             return new PageResult<BoxLineRes>(result, total);

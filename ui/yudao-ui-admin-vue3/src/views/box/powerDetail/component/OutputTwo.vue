@@ -62,9 +62,9 @@ const chartOptions = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.linePowActive[1], name: '有功功率', itemStyle: { color: '#B47660' } },
-        { value: props.loadFactor.linePowReactive[1], name: '无功功率', itemStyle: { color: '#C8603A' } },
-        { value: props.loadFactor.linePowApparent[1], name: '现在功率', itemStyle: { color: '#AD3762' } },
+        { value: props.loadFactor.linePowActive[1].toFixed(3), name: '有功功率', itemStyle: { color: '#B47660' } },
+        { value: props.loadFactor.linePowReactive[1].toFixed(3), name: '无功功率', itemStyle: { color: '#C8603A' } },
+        { value: props.loadFactor.linePowApparent[1].toFixed(3), name: '现在功率', itemStyle: { color: '#AD3762' } },
         // { value: props.loadFactor.linePowerFactor[1].toFixed(2), name: '现在功率', itemStyle: { color: '#E5B849' } },
       ]
     }

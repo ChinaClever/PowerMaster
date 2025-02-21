@@ -5,7 +5,7 @@
       <ContentWrap>
         <!--<el-tag size="large">
         </el-tag>-->
-        <span style="margin-right:10px;">机房：{{ location }}</span>
+        <span style="margin-right:10px;">机房：{{ roomName }}</span>
         <span style="margin-right:10px;">母线：{{ busName }}</span>
         <span style="margin-right:10px;">插接箱：{{ boxName }}</span>
         <span style="margin-right:10px;">网络地址：{{ devKey }}</span>
@@ -104,7 +104,8 @@ import { IndexApi } from '@/api/bus/boxindex'
 import { BoxEnergyApi } from '@/api/bus/boxenergy'
 import 'echarts/lib/component/dataZoom';
 
-const location = ref(history?.state?.roomName );
+const roomName = ref(history?.state?.roomName);
+console.log('roomName',roomName)
 const boxName = ref(history?.state?.boxName );
 const busName = ref(history?.state?.busName );
 const devKey = ref(history?.state?.devKey );

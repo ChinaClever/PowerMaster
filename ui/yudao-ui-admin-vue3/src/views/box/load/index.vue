@@ -585,7 +585,8 @@ const toDetail = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
   const location = row.location != null ? row.location : devKey;
-  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey, boxId ,location}});
+  const roomName =row.roomName;
+  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey, boxId ,location,roomName}});
 }
 
 

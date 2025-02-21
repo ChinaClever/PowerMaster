@@ -26,7 +26,7 @@ public class BoxPowerDetailRedisResVO {
     private String powActiveTime;
 
     @Schema(description = "负载率最大")
-    private String loadFactorValue;
+    private Double loadFactorValue;
 
     @Schema(description = "有功功率最大")
     private String powActiveValue;
