@@ -129,7 +129,7 @@
               link
               type="primary"
               @click="openTemDetail(scope.row)"
-              v-if=" scope.row.status != null && scope.row.status != 1"
+              v-if=" scope.row.status != null && scope.row.status != 0"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
@@ -138,7 +138,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.boxId)"
-              v-if="scope.row.status == 1"
+              v-if="scope.row.status == 0"
               style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
