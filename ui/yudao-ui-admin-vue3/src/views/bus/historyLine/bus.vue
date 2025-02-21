@@ -4,10 +4,11 @@
       <br/>    <br/> 
       <div class="nav_data">
 
-        <div class="nav_header" style="font-size: 14px;">
-          <span v-if="nowAddress">{{nowAddress}}</span>
-          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+        <div class="nav_header" style="font-size: 14px; text-align:center;">
+          <span v-if="nowAddress">{{nowAddress.value}}</span>
           <br/>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+          
       </div>
       
         <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
@@ -1372,23 +1373,22 @@ const handleQuery = () => {
   needFlush.value++;
 }
 
+
+  const queryBusId =ref(history?.state?.boxId);
+  const queryLocation = ref(history?.state?.location);
 /** 初始化 **/
 onMounted( async () => { 
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryBusId = useRoute().query.busId as string  | undefined;
-  const queryLocation = useRoute().query.location as string;
-  queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
-  console.log('cesi',queryLocation)
+  queryParams.busId = queryBusId;
   if (queryParams.busId != undefined){
-    await getList(); 
     if (queryLocation) {
       nowAddress.value = '';
     }else{
       nowAddress.value = queryLocation;
       nowAddressTemp.value = queryLocation
     }
-    
+    await getList(); 
     initChart();
   }
 })

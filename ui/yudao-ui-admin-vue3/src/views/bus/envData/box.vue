@@ -446,8 +446,10 @@ const handleQuery = () => {
 
 /** 详情操作*/
 const toDetails = (boxId: number, dev_key: string, location: string) => {
-  push('/bus/record/envAnalysis/box?boxId='+boxId+'&devKey='+dev_key+'&location='+location);
+  const devKey = dev_key;
+  push({path: '/bus/record/envAnalysis/box', state: {boxId,devKey,location}})
 }
+
 
 /** 导出按钮操作 */
 const handleExport = async () => {

@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
+import cn.iocoder.yudao.module.bus.vo.BoxNameVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
@@ -35,10 +36,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -140,10 +138,10 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         List<Integer> boxIds = mapList.stream().map(i ->Integer.valueOf(i.get("box_id").toString())).collect(Collectors.toList());
         List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getId, boxIds));
         if (!CollectionUtils.isEmpty(boxIndices)){
-            List<String> devKeys = boxIndices.stream().map(BoxIndex::getBoxKey).distinct().collect(Collectors.toList());
-            Map<String, String> keysMap = boxIndexService.getPositionByKeys(devKeys);
             Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, Function.identity()));
+            List<String> devKeys = boxIndices.stream().map(BoxIndex::getBoxKey).distinct().collect(Collectors.toList());
 
+            Map<String, BoxNameVO> roomByKeys = boxIndexService.getRoomByKeys(devKeys);
             for (Map<String, Object> map : mapList) {
                 Object boxId = map.get("box_id");
                 if (boxId instanceof Integer) {
@@ -152,7 +150,10 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     if (boxIndex != null) {
                         map.put("dev_key", boxIndex.getBoxKey());
                         map.put("bus_name", boxIndex.getBoxName());
-                        map.put("location",keysMap.get(boxIndex.getBoxKey()));
+                        BoxNameVO boxNameVO = roomByKeys.get(boxIndex.getBoxKey());
+                        if (Objects.nonNull(boxNameVO)) {
+                            map.put("location", boxNameVO.getLocaltion());
+                        }
                     } else {
                         map.put("dev_key", null);
                         map.put("location", null);

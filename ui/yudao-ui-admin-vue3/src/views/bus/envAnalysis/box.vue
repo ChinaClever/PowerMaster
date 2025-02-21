@@ -3,9 +3,11 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-          <span v-if="nowAddress">{{nowAddress == null ? '暂未绑定设备' : nowAddress}}</span>
-          <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
-          <br/>
+        <div  style="font-size: 14px; text-align:center;">
+          <span v-if="nowAddress">{{nowAddress.value}}</span>
+             <br/>
+          <span v-if="nowIpAddr">( {{nowIpAddr.value}} ) </span>
+        </div>
 
     <div class="descriptions-container" v-if="loading2" style="font-size: 14px;">
           <div  class="description-item" v-if="queryParams.granularity != 'day'" >
@@ -1084,23 +1086,23 @@ const handleQuery = () => {
     needFlush.value++;
 }
 
+
+  const queryDevKey = ref(history?.state?.devKey);
+  const queryboxId = ref(history?.state?.boxId);
+  const queryLocation = ref(history?.state?.location);
 /** 初始化 **/
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  //let queryBoxId = useRoute().query.boxId as string | undefined;
-  let queryDevKey = useRoute().query.devKey as string;
-  let queryLocation = useRoute().query.location as string;
-  //queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
   queryParams.devkey = queryDevKey;
   if (queryParams.devkey != undefined){
-    await getList();
     if (queryLocation == null) {
       nowAddress.value = '';
     } else {
       nowAddress.value = queryLocation;
     }
     nowIpAddr.value = queryDevKey
+    await getList();
     initChart();
   }
 })

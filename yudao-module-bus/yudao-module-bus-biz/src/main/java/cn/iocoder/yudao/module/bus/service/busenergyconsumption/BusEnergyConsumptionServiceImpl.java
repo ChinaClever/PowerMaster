@@ -5,13 +5,16 @@ import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
+import cn.iocoder.yudao.module.bus.vo.BoxNameVO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -65,6 +68,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     private BoxIndexMapper boxIndexMapper;
     @Autowired
     private AisleBarMapper aisleBarMapper;
+    @Autowired
+    private BoxIndexService boxIndexService;
 
     private Integer[] getBusIdsByDevkeys(String[] devkeys) {
         // 创建 QueryWrapper
@@ -1045,35 +1050,20 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         } else {
             records = busIndexMapper.selectBoxPageList(reqDTO.getDevkeys());
         }
-        Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
-        Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
-        List aisles = ops.multiGet(redisKeys);
-        Map<Integer, String> positonMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(records)) {
-            for (Object aisle : aisles) {
-                if (aisle == null) {
-                    continue;
-                }
-                JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
-                String devPosition = json.getString("room_name") + SPLIT_KEY
-                        + json.getString("aisle_name") + SPLIT_KEY;
-                positonMap.put(json.getInteger("aisle_key"), devPosition);
-            }
-        }
-        Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
-                .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
+        List<String> keys = records.stream().map(BusAisleBarQueryVO::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = boxIndexService.getRoomByKeys(keys);
+
         for (BusAisleBarQueryVO record : records) {
             BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
-            Integer aisleId = keyMap.get(record.getDevKey());
-            String localtion = positonMap.get(aisleId);
+
             resVO.setId(record.getId())
                     .setBusName(record.getBusName()).setDevKey(record.getDevKey());
-            if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
-                resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
-            } else {
-                if (Objects.nonNull(localtion))
-                    resVO.setLocation(localtion + "路");
+
+            BoxNameVO boxNameVO = roomByKeys.get(record.getDevKey());
+            if (Objects.nonNull(boxNameVO)){
+                resVO.setLocation(boxNameVO.getLocaltion());
             }
+
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])

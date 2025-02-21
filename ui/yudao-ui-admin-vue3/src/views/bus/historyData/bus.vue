@@ -677,7 +677,7 @@ const handleQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (busId: number, location?: string) => {
-  push('/bus/record/historyLine/bus?busId='+busId+'&location='+location);
+  push({path: '/bus/record/historyLine/box', state: {busId,location}})
 }
 
 /** 导出按钮操作 */

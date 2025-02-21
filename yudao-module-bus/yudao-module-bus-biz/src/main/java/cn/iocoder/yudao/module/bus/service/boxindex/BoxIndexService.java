@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.BoxNameVO;
 import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 
@@ -153,4 +154,6 @@ public interface BoxIndexService {
     Map getBoxPFDetailNow(BoxIndexPageReqVO pageReqVO);
 
     Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    Map<String, BoxNameVO> getRoomByKeys(List<String> keys);
 }

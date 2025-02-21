@@ -4,10 +4,11 @@
       <br/>    <br/> 
       <div class="nav_data">
       
-        <div class="nav_header" style="font-size: 14px;">
-          <span v-if="nowAddress">{{nowAddress}}</span>
+        <div class="nav_header" style="font-size: 14px; text-align:center;">
+          <span v-if="nowAddress">{{nowAddress.value}}</span>
+           <br/>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
-          <br/>
+         
       </div>
       
         <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
@@ -200,10 +201,10 @@ const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const message = useMessage() // 消息弹窗
-const nowAddress = ref('')// 导航栏的位置信息
-const nowLocation = ref('')// 导航栏的位置信息
-const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowAddress = ref()// 导航栏的位置信息
+const nowLocation = ref()// 导航栏的位置信息
+const nowAddressTemp = ref()// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowLocationTemp = ref()// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 列表数据
 const headerData = ref<any[]>([]);
@@ -1643,19 +1644,19 @@ const handleExport1 = async () => {
     exportLoading.value = false
   }
 }
+
+  const queryBoxId =ref(history?.state?.boxId);
+  const queryLocation = ref(history?.state?.location);
 /** 初始化 **/
 onMounted( async () => { 
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryBoxId = useRoute().query.boxId as string  | undefined;
-  const queryLocation = useRoute().query.location as string;
-  queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
+  queryParams.boxId = queryBoxId;
   getTypeMaxValue();
-
   if (queryParams.boxId != undefined){
-    await getList(); 
     nowAddress.value = queryLocation
     nowAddressTemp.value = queryLocation
+    await getList(); 
     initChart();
   }
 })

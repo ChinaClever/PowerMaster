@@ -883,8 +883,9 @@ const handleQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (boxId: number, location?: string) => {
-  push('/bus/record/historyLine/box?boxId='+boxId+'&location='+location);
+  push({path: '/bus/record/historyLine/box', state: {boxId,location}})
 }
+
 
 /** 导出按钮操作 */
 const handleExport = async () => {
