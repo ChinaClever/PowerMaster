@@ -1306,6 +1306,6 @@ onActivated(() => {
 }
 
 :deep(.el-tag){
-  margin-right:-60px;
+  margin-right: 0px;
 }
 </style>
