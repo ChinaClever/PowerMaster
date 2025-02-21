@@ -380,6 +380,7 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    console.log('getList', queryParams.timeRange)
     const data = await EnvDataApi.getEnvDataPageByCabinet(queryParams)
     list.value = data.list
     realTotel.value = data.total

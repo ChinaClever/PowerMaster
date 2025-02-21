@@ -827,20 +827,44 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
 
-        QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
-        cabinetPduQueryWrapper.select("pdu_key_a", "pdu_key_b");
-        if (cabinetIds == null){
-            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper);
-            for (CabinetPdu cabinetPdu1 : cabinetPduList){
-                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(),null );//String.valueOf(cabinetPdu1.getCasIdA())
-                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(),null);
-                if (ipA != null) {
-                    pduIds.add(String.valueOf(ipA));
-                }
-                if (ipB != null) {
-                    pduIds.add(String.valueOf(ipB));
-                }
+        Map<String, Object> resultItem = new HashMap<>();
+        QueryWrapper<CabinetPdu> wrapper = new QueryWrapper<>();
+        wrapper.select("pdu_key_a", "pdu_key_b");
+        List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(wrapper);
+
+        // 收集所有需要查询的 pdu_key
+        Set<String> allPduKeys = new HashSet<>();
+        for (CabinetPdu cabinetPdu : cabinetPduList) {
+            if (cabinetPdu.getPduKeyA() != null) {
+                allPduKeys.add(cabinetPdu.getPduKeyA());
             }
+            if (cabinetPdu.getPduKeyB() != null) {
+                allPduKeys.add(cabinetPdu.getPduKeyB());
+            }
+        }
+
+        // 批量查询所有 pdu_key 对应的 PduIndex 记录
+        QueryWrapper<PduIndex> pduIndexQueryWrapper = new QueryWrapper<>();
+        pduIndexQueryWrapper.in("pdu_key", allPduKeys);
+        List<PduIndex> pduIndexList = pduIndexMapper.selectList(pduIndexQueryWrapper);
+
+        // 将查询结果存入 Map，方便快速查找
+        Map<String, Integer> pduKeyToIdMap = new HashMap<>();
+        for (PduIndex pduIndex : pduIndexList) {
+            pduKeyToIdMap.put(pduIndex.getPduKey(), Math.toIntExact(pduIndex.getId()));
+        }
+
+        // 从 Map 中获取对应的 pduId
+        for (CabinetPdu cabinetPdu : cabinetPduList) {
+            Integer ipA = pduKeyToIdMap.get(cabinetPdu.getPduKeyA());
+            Integer ipB = pduKeyToIdMap.get(cabinetPdu.getPduKeyB());
+            if (ipA != null) {
+                pduIds.add(String.valueOf(ipA));
+            }
+            if (ipB != null) {
+                pduIds.add(String.valueOf(ipB));
+            }
+        }
             if (!pduIds.isEmpty()) {
                 searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
             }else{
@@ -850,7 +874,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                         .setTotal(0L);
                 return pageResult;
             }
-        }
+
 
         if (cabinetIds==null && channel != null){
             searchSourceBuilder.query(QueryBuilders.termQuery("sensor_id", channel));
@@ -861,8 +885,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (cabinetIds != null && channel != null){
             QueryWrapper<CabinetPdu> cabinetPduQueryWrapper1 = new QueryWrapper<>();
             cabinetPduQueryWrapper1.in("cabinet_id", cabinetIds);
-            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper1);
-            for (CabinetPdu cabinetPdu1 : cabinetPduList){
+            List<CabinetPdu> cabinetPduList1 = cabinetPduMapper.selectList(cabinetPduQueryWrapper1);
+            for (CabinetPdu cabinetPdu1 : cabinetPduList1){
                 Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(),null );//String.valueOf(cabinetPdu1.getCasIdA())
                 Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(),null);
                 if (ipA != null) {

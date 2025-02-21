@@ -512,20 +512,42 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
     public Map<String, Object> getSumDataByCabinet(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException {
         Map<String, Object> resultItem = new HashMap<>();
-        QueryWrapper<CabinetPdu> wrapper = new QueryWrapper();
+        QueryWrapper<CabinetPdu> wrapper = new QueryWrapper<>();
         wrapper.select("pdu_key_a", "pdu_key_b");
         List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(wrapper);
+
+        // 收集所有需要查询的 pdu_key
+        Set<String> allPduKeys = new HashSet<>();
+        for (CabinetPdu cabinetPdu : cabinetPduList) {
+            if (cabinetPdu.getPduKeyA() != null) {
+                allPduKeys.add(cabinetPdu.getPduKeyA());
+            }
+            if (cabinetPdu.getPduKeyB() != null) {
+                allPduKeys.add(cabinetPdu.getPduKeyB());
+            }
+        }
+
+        // 批量查询所有 pdu_key 对应的 PduIndex 记录
+        QueryWrapper<PduIndex> pduIndexQueryWrapper = new QueryWrapper<>();
+        pduIndexQueryWrapper.in("pdu_key", allPduKeys);
+        List<PduIndex> pduIndexList = pduIndexMapper.selectList(pduIndexQueryWrapper);
+
+        // 将查询结果存入 Map，方便快速查找
+        Map<String, Integer> pduKeyToIdMap = new HashMap<>();
+        for (PduIndex pduIndex : pduIndexList) {
+            pduKeyToIdMap.put(pduIndex.getPduKey(), Math.toIntExact(pduIndex.getId()));
+        }
+
+        // 从 Map 中获取对应的 pduId
         List<String> pduIds = new ArrayList<>();
-        if (!cabinetPduList.isEmpty()) {
-            for (CabinetPdu cabinetPdu1 : cabinetPduList) {
-                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(), null);//String.valueOf(cabinetPdu1.getCasIdA())
-                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(), null);
-                if (ipA != null) {
-                    pduIds.add(String.valueOf(ipA));
-                }
-                if (ipB != null) {
-                    pduIds.add(String.valueOf(ipB));
-                }
+        for (CabinetPdu cabinetPdu : cabinetPduList) {
+            Integer ipA = pduKeyToIdMap.get(cabinetPdu.getPduKeyA());
+            Integer ipB = pduKeyToIdMap.get(cabinetPdu.getPduKeyB());
+            if (ipA != null) {
+                pduIds.add(String.valueOf(ipA));
+            }
+            if (ipB != null) {
+                pduIds.add(String.valueOf(ipB));
             }
         }
 
