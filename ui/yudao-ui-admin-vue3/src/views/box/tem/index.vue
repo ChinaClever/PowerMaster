@@ -655,7 +655,7 @@ const handleDelete = async (id: number) => {
     await IndexApi.deleteIndex(id);
     message.success(t('common.delSuccess'));
     // 刷新列表
-    // await getList()
+    await getList()
   } catch {}
 }
 
@@ -1022,6 +1022,10 @@ onActivated(() => {
         margin: 0 28px;
         text-align: center;
       }
+      .info{
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
     }
     .devKey{
       position: absolute;
@@ -1096,6 +1100,10 @@ onActivated(() => {
         margin: 0 28px;
         text-align: center;
       }
+      .info{
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
     }
     .devKey{
       position: absolute;
@@ -1170,6 +1178,10 @@ onActivated(() => {
         margin: 0 28px;
         text-align: center;
       }
+      .info{
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
     }
     .devKey{
       position: absolute;
