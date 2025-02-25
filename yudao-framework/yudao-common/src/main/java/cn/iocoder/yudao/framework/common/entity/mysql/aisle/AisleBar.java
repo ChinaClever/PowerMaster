@@ -36,6 +36,8 @@ public class AisleBar implements Serializable {
      */
     private String busKey;
 
+    private Integer boxNum;
+
     /**
      * 始端箱名称
      */

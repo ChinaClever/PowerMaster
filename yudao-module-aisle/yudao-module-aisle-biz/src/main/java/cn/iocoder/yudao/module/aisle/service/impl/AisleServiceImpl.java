@@ -108,8 +108,7 @@ public class AisleServiceImpl implements AisleService {
     @Autowired
     RackIndexDoMapper rackIndexDoMapper;
 
-    @Value("${aisle-refresh-url}")
-    public String adder;
+
 
     @Resource
     CabinetApi cabinetApi;
@@ -117,6 +116,8 @@ public class AisleServiceImpl implements AisleService {
     @Autowired
     private RestHighLevelClient client;
 
+    @Value("${aisle-refresh-url}")
+    public String adder;
     public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
     /**
@@ -126,8 +127,6 @@ public class AisleServiceImpl implements AisleService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer aisleSave(AisleSaveVo aisleSaveVo) {
-
-        try {
             //柜列信息
             AisleIndex index = new AisleIndex();
             index.setAisleName(aisleSaveVo.getAisleName());
@@ -149,7 +148,7 @@ public class AisleServiceImpl implements AisleService {
                 if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                         && "x".equals(aisleSaveVo.getDirection())){
                     //横向
-                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getAisleLength()> roomIndex.getXLength() +1){
+                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()> roomIndex.getXLength() +1){
                         throw new RuntimeException("柜列长度超出");
                     }
                 }
@@ -187,8 +186,6 @@ public class AisleServiceImpl implements AisleService {
 
             Integer barIdA;
             Integer barIdB;
-
-
 
             //母线信息
             List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
@@ -373,14 +370,11 @@ public class AisleServiceImpl implements AisleService {
 
                 }
             }
-
-            return index.getId();
-        }finally {
             //刷新柜列计算服务缓存
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
-        }
 
+            return index.getId();
     }
 
     @Override
@@ -401,7 +395,7 @@ public class AisleServiceImpl implements AisleService {
                     AisleBar  bar = BeanUtils.toBean(barVo,AisleBar.class);
                     bar.setAisleId(aisleId);
                     bar.setBusKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + barVo.getCasAddr());
-
+                    bar.setBoxNum(barVo.getBoxList().size());
                     aisleBarMapper.insert(bar);
 
                     List<AisleBoxDTO> boxList = barVo.getBoxList();
@@ -412,6 +406,8 @@ public class AisleServiceImpl implements AisleService {
                             box.setAisleBarId(bar.getId());
                             //box.setBarId(barVo.getBarId());
                             box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + boxDTO.getCasAddr());
+                            box.setBusKey(barVo.getDevIp());
+                            box.setBoxType(boxDTO.getType());
                             aisleBoxMapper.insert(box);
                         });
                     }
