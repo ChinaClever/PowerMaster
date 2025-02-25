@@ -76,6 +76,12 @@ public class AisleSaveVo {
     private Integer aisleLength;
 
     /**
+     * 长度
+     */
+    @Schema(description = "长度", example = "0")
+    private Integer length;
+
+    /**
      * 类型
      */
     @Schema(description = "类型", example = "0")
