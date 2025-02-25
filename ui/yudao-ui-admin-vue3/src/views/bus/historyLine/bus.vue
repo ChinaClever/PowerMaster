@@ -5,10 +5,10 @@
       <div class="nav_data">
 
         <div class="nav_header" style="font-size: 14px; text-align:center;">
-          <span v-if="nowAddress">{{nowAddress.value}}</span>
-          <br/>
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <!-- <br/> -->
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
-          
+          <br/>
       </div>
       
         <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
@@ -1376,18 +1376,17 @@ const handleQuery = () => {
 
   const queryBusId =ref(history?.state?.busId);
   const queryLocation = ref(history?.state?.location);
+  const queryDevKey = ref(history?.state?.dev_key);
+
 /** 初始化 **/
 onMounted( async () => { 
   getNavList()
   // 获取路由参数中的 pdu_id
   queryParams.busId = queryBusId;
   if (queryParams.busId != undefined){
-    if (queryLocation) {
-      nowAddress.value = '';
-    }else{
-      nowAddress.value = queryLocation;
-      nowAddressTemp.value = queryLocation
-    }
+    
+      nowAddressTemp.value = queryLocation.value?queryLocation.value:'未绑定'
+      nowLocationTemp.value = queryDevKey.value
     await getList(); 
     initChart();
   }

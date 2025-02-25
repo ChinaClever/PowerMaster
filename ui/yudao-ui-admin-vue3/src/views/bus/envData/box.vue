@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接温度数据" >
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱温度数据" >
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
@@ -86,7 +86,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="false">
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">

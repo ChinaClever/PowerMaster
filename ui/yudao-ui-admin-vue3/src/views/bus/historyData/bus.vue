@@ -122,7 +122,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.bus_id, row.location)">详情</el-button>
+              <el-button link type="primary" @click="toDetails(row.bus_id, row.location, row.dev_key)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -676,8 +676,8 @@ const handleQuery = () => {
 }
 
 //详情操作 跳转电力分析
-const toDetails = (busId: number, location?: string) => {
-  push({path: '/bus/record/historyLine/bus', state: {busId,location}})
+const toDetails = (busId: number, location?: string, dev_key?: string) => {
+  push({path: '/bus/record/historyLine/bus', state: {busId,location,dev_key}})
 }
 
 /** 导出按钮操作 */
