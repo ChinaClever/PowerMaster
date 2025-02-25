@@ -20,7 +20,7 @@
           <div >
             <span>插接箱新增电能记录</span>
           </div>
-          <div class="description-item">
+          <div class="description-item" v-if="navLoopData">
             <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
@@ -455,15 +455,15 @@ const getNavOneDayData = async(timeRangeTypee) => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
+  getList()
   queryParams.pageNo = 1
   getNavOneDayData(timeRangeType)
-  getList()
+  
 }
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData(timeRangeType)
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startStr = formatDate(startOfMonth);
@@ -471,6 +471,7 @@ onMounted(() => {
   selectTimeRange.value = [startStr, endStr];
   getTypeMaxValue();
   getList();
+  getNavOneDayData(timeRangeType)
 })
 
 const formatDate = (date) => {
