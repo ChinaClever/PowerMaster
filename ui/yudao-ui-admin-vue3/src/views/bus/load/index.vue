@@ -515,6 +515,12 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   //loading.value = true
   try {
+    const res = await IndexApi.getLoadRateStatus()
+    statusNumber.greaterNinety = res.greaterNinety;
+    statusNumber.lessThirty = res.lessThirty;
+    statusNumber.greaterThirty = res.greaterThirty;
+    statusNumber.greaterSixty = res.greaterSixty;
+    
     const data = await IndexApi.getIndexPage(queryParams)
     list.value = data.list
     console.log('list',list.value)

@@ -68,7 +68,7 @@
           collapse-tags-tooltip
           :show-all-levels="true"
           @change="typeCascaderChange"
-          class="!w-110px"
+          class="!w-130px"
         />
       </el-form-item>
 
@@ -93,7 +93,7 @@
             collapse-tags-tooltip
             :show-all-levels="false"
             @change="cascaderChange"
-            class="!w-180px"
+            class="!w-200px"
           />
         </el-form-item>
 
@@ -107,7 +107,7 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate" 
-          class="!w-335px"
+          class="!w-280px"
         />
         </el-form-item>
         <!-- <div style="float:right; padding-right:78px"> -->
