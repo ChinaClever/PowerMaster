@@ -38,6 +38,7 @@ public class RackDO  {
      */
     private String rackName;
 
+    private String rackIp;
     /**
      * A路PDU输出位
      */
