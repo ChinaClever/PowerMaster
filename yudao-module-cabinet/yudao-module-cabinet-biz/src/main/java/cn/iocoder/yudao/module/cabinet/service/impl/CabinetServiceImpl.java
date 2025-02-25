@@ -147,8 +147,7 @@ public class CabinetServiceImpl implements CabinetService {
 
                 List<String> keys = records.stream().map(dto -> REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId()).distinct().collect(Collectors.toList());
                 List list = redisTemplate.opsForValue().multiGet(keys);
-                list.remove(null);
-                Map<String, Object> redisMap = (Map<String, Object>) list.stream().collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getString("cabinet_key"), Function.identity()));
+                Map<String, Object> redisMap = (Map<String, Object>) list.stream().filter(itr ->Objects.nonNull(itr)).collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getString("cabinet_key"), Function.identity()));
                 records.forEach(dto -> {
                     Object obj = redisMap.get(dto.getRoomId() + "-" + dto.getId());
 //                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
