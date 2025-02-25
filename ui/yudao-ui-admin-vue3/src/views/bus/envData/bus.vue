@@ -64,7 +64,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
@@ -373,10 +373,10 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(selectTimeRange.value[0])
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(selectTimeRange.value[1])
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     const data = await EnvDataApi.getBusEnvDataPage(queryParams)
@@ -481,7 +481,7 @@ const getNavNewData = async() => {
   lastWeekTotalData.value = res.week
 }
 const format = (date) => {
-   return dayjs(date).format('YYYY-MM-DD')
+   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
 };
 /** 初始化 **/
 onMounted( () => {

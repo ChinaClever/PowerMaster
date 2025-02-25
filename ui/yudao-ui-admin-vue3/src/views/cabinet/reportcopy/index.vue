@@ -202,7 +202,7 @@
                     >
                     <el-table-column  align="center" label="序号" type="index" prop="id" width="100px"/>
                     <el-table-column  align="center" label="名称" prop="name"  />
-                    <el-table-column  align="center" label="总功率" prop="totalPower" />
+                    <el-table-column  align="center" label="总功率(kW)" prop="totalPower" />
                     <el-table-column  align="center" label="A路电流(A)" prop="acurrent" />
                     <el-table-column  align="center" label="B路电流(A)" prop="bcurrent" />
                     <el-table-column label="操作" align="center">
@@ -311,7 +311,22 @@
             <EnvTemLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
           </div>
         </div>
-        
+        <div class="pageBox" v-if="visControll.iceTemVis">
+            <div class="page-conTitle">
+             冷通道湿度曲线
+            </div>
+            <p class="paragraph" v-show="iceTemList.humMaxValue">本周期内，最高湿度{{iceTemList.humMaxValue}}%RH， 最高湿度发生时间{{iceTemList.humMaxTime}}，由湿度传感器{{iceTemList.humMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="iceTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{iceTemList.humMinValue}}%RH， 最高湿度发生时间{{iceTemList.humMinTime}}，由湿度传感器{{iceTemList.humMinSensorId}}采集得到</p>
+            <EnvHumLine class="Container" width="70vw" height="58vh" :list="iceTemList" />
+          </div>
+          <div class="pageBox" v-if="visControll.hotTemVis">
+            <div class="page-conTitle">
+              热通道湿度曲线
+            </div>
+            <p class="paragraph" v-show="hotTemList.humMaxValue">本周期内，最高湿度{{hotTemList.humMaxValue}}%RH， 最高湿度发生时间{{hotTemList.humMaxTime}}，由湿度传感器{{hotTemList.humMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="hotTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{hotTemList.humMinValue}}%RH， 最高湿度发生时间{{hotTemList.humMinTime}}，由湿度传感器{{hotTemList.humMinSensorId}}采集得到</p>
+            <EnvHumLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
+        </div>
       </div>
     </div>
     </template>

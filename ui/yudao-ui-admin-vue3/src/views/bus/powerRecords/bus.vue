@@ -18,7 +18,7 @@
 
         <div class="descriptions-container" style="font-size: 14px;">
           <div >
-            <span>始端箱近一天新增电能记录</span>
+            <span>始端箱新增电能记录</span>
           </div>
           <div class="description-item">
             <span class="label">电能 :</span>
@@ -398,8 +398,12 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async (timeRangeType) => {
-    const res = await EnergyConsumptionApi.getNavOneDayData(timeRangeType.value);
+const getNavOneDayData = async (timeRangeTypee) => {
+  const timeRangeType = timeRangeTypee.value;
+  const oldTime = queryParams.timeRange[0];
+  const newTime = queryParams.timeRange[1];
+  var parms = {timeRangeType,oldTime,newTime}
+    const res = await EnergyConsumptionApi.getNavOneDayData(parms);
     navTotalData.value = res.total;
     navLineData.value =res.line;
 };

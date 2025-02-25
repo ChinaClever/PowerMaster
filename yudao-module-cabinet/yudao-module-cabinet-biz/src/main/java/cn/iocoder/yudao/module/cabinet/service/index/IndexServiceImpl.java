@@ -483,6 +483,12 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinValue",null);
         result.put("temMinTime",null);
         result.put("temMinSensorId",null);
+        result.put("humMaxValue",null);
+        result.put("humMaxTime",null);
+        result.put("humMaxSensorId",null);
+        result.put("humMinValue",null);
+        result.put("humMinTime",null);
+        result.put("humMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
             if (cabinetPdu == null){
@@ -573,6 +579,10 @@ public class IndexServiceImpl implements IndexService {
             PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
             String temMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "tem_min_value");
             PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+            String humMaxValue = getPDUMaxData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_max_value");
+            PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+            String humMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_min_value");
+            PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
             if(temMax != null){
                 result.put("temMaxValue",temMax.getTemMaxValue());
                 result.put("temMaxTime",temMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -582,6 +592,16 @@ public class IndexServiceImpl implements IndexService {
                 result.put("temMinValue", temMin.getTemMinValue());
                 result.put("temMinTime",temMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("temMinSensorId",temMin.getSensorId());
+            }
+            if (humMax != null){
+                result.put("humMaxValue", humMax.getHumMaxValue());
+                result.put("humMaxTime",humMax.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMaxSensorId",humMax.getSensorId());
+            }
+            if (humMin != null){
+                result.put("humMinValue", humMin.getHumMinValue());
+                result.put("humMinTime",humMin.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMinSensorId",humMin.getSensorId());
             }
             return result;
         } catch (Exception e){
@@ -605,6 +625,12 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinValue",null);
         result.put("temMinTime",null);
         result.put("temMinSensorId",null);
+        result.put("humMaxValue",null);
+        result.put("humMaxTime",null);
+        result.put("humMaxSensorId",null);
+        result.put("humMinValue",null);
+        result.put("humMinTime",null);
+        result.put("humMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
             if (cabinetPdu == null){
@@ -695,6 +721,10 @@ public class IndexServiceImpl implements IndexService {
             PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
             String temMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "tem_min_value");
             PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+            String humMaxValue = getPDUMaxData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_max_value");
+            PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+            String humMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_min_value");
+            PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
             if(temMax != null){
                 result.put("temMaxValue",temMax.getTemMaxValue());
                 result.put("temMaxTime",temMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -705,7 +735,16 @@ public class IndexServiceImpl implements IndexService {
                 result.put("temMinTime",temMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("temMinSensorId",temMin.getSensorId());
             }
-
+            if(humMax != null){
+                result.put("humMaxValue",humMax.getHumMaxValue());
+                result.put("humMaxTime",humMax.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMaxSensorId",humMax.getSensorId());
+            }
+            if(humMin != null){
+                result.put("humMinValue", humMin.getHumMinValue());
+                result.put("humMinTime",humMin.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMinSensorId",humMin.getSensorId());
+            }
             return result;
         } catch (Exception e){
             log.error("获取数据失败",e);

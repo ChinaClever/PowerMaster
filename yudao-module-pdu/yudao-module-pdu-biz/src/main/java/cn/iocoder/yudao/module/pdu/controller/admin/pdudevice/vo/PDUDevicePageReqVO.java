@@ -60,6 +60,8 @@ public class PDUDevicePageReqVO extends PageParam {
 
     private List<String> pduKeyList;
 
+    private String curbance;
+
     public String getDevKey(){
         return devKey;
     }

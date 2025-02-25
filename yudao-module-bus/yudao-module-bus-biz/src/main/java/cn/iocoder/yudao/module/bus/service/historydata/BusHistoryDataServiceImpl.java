@@ -135,37 +135,38 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public List<Object> getLocationsAndNameByBoxIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>();
-        List<Integer> boxIds = mapList.stream().map(i ->Integer.valueOf(i.get("box_id").toString())).collect(Collectors.toList());
-        List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getId, boxIds));
-        if (!CollectionUtils.isEmpty(boxIndices)){
-            Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, Function.identity()));
-            List<String> devKeys = boxIndices.stream().map(BoxIndex::getBoxKey).distinct().collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(mapList)) {
+            List<Integer> boxIds = mapList.stream().map(i -> Integer.valueOf(i.get("box_id").toString())).collect(Collectors.toList());
+            List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getId, boxIds));
+            if (!CollectionUtils.isEmpty(boxIndices)) {
+                Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, Function.identity()));
+                List<String> devKeys = boxIndices.stream().map(BoxIndex::getBoxKey).distinct().collect(Collectors.toList());
 
-            Map<String, BoxNameVO> roomByKeys = boxIndexService.getRoomByKeys(devKeys);
-            for (Map<String, Object> map : mapList) {
-                Object boxId = map.get("box_id");
-                if (boxId instanceof Integer) {
-                    // 查询位置
-                    BoxIndex boxIndex =boxIndexMap.get((int) boxId);
-                    if (boxIndex != null) {
-                        map.put("dev_key", boxIndex.getBoxKey());
-                        map.put("bus_name", boxIndex.getBoxName());
-                        BoxNameVO boxNameVO = roomByKeys.get(boxIndex.getBoxKey());
-                        if (Objects.nonNull(boxNameVO)) {
-                            map.put("location", boxNameVO.getLocaltion());
+                Map<String, BoxNameVO> roomByKeys = boxIndexService.getRoomByKeys(devKeys);
+                for (Map<String, Object> map : mapList) {
+                    Object boxId = map.get("box_id");
+                    if (boxId instanceof Integer) {
+                        // 查询位置
+                        BoxIndex boxIndex = boxIndexMap.get((int) boxId);
+                        if (boxIndex != null) {
+                            map.put("dev_key", boxIndex.getBoxKey());
+                            map.put("bus_name", boxIndex.getBoxName());
+                            BoxNameVO boxNameVO = roomByKeys.get(boxIndex.getBoxKey());
+                            if (Objects.nonNull(boxNameVO)) {
+                                map.put("location", boxNameVO.getLocaltion());
+                            }
+                        } else {
+                            map.put("dev_key", null);
+                            map.put("location", null);
                         }
                     } else {
                         map.put("dev_key", null);
                         map.put("location", null);
                     }
-                } else {
-                    map.put("dev_key", null);
-                    map.put("location", null);
+                    resultList.add(map);
                 }
-                resultList.add(map);
             }
         }
-
 
         return resultList;
     }

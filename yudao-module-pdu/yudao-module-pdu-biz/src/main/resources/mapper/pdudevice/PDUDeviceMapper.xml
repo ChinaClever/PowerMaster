@@ -66,4 +66,37 @@
         </where>
         ORDER BY CASE WHEN run_status =4 THEN 0 ELSE 1 END, create_time asc
     </select>
+
+    <select id="selectCurbanceQuery" resultType="cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex">
+        SELECT
+        id,pdu_key pduKey,ip_addr ipAddr,cascade_id cascadeId,
+        node_id nodeId,is_deleted isDeleted,run_status runStatus,
+        create_time createTime,update_time updateTime,cur_unbalance_status curUnbalanceStatus
+        FROM pdu_index
+        <where>
+            <if test="pduVo.pduKeyList !=null and pduVo.pduKeyList.size>0">
+                and pdu_key IN
+                <foreach item="item" collection="pduVo.pduKeyList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="pduVo.devKey != null and pduVo.devKey != ''">
+                and pdu_key = #{pduVo.devKey}
+            </if>
+            <if test="pduVo.status != null and pduVo.status.size >0">
+                and run_status in
+                <foreach item="item" collection="pduVo.status" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="pduVo.color !=null and pduVo.color.size >0">
+                and cur_unbalance_status in
+                <foreach item="item" collection="pduVo.color" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            and is_deleted =0 and run_status !=5
+        </where>
+        ORDER BY CASE WHEN run_status =4 THEN 0 ELSE 1 END, create_time asc
+    </select>
 </mapper>

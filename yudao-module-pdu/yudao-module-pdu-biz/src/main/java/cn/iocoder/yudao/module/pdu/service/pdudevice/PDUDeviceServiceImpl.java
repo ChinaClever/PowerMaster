@@ -139,8 +139,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 return new PageResult<PDUDeviceDO>(result, 0L);
             }
         }
-        pduIndexPageResult = pDUDeviceMapper.selectQuery(new Page<>(pageReqVO.getPageNo(),pageReqVO.getPageSize()),pageReqVO);
-
+        if (pageReqVO.getCurbance()==null) {
+            pduIndexPageResult = pDUDeviceMapper.selectQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
+        }else {
+            pduIndexPageResult = pDUDeviceMapper.selectCurbanceQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
+        }
         List<PduIndex> pduIndices = pduIndexPageResult.getRecords();
         List redisList = getMutiRedis(pduIndices);
 
