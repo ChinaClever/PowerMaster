@@ -1374,7 +1374,7 @@ const handleQuery = () => {
 }
 
 
-  const queryBusId =ref(history?.state?.boxId);
+  const queryBusId =ref(history?.state?.busId);
   const queryLocation = ref(history?.state?.location);
 /** 初始化 **/
 onMounted( async () => { 
