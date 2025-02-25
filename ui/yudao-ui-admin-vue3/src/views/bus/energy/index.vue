@@ -57,8 +57,14 @@
         </el-form-item>         
         </el-form-item >
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button 
+                @click="pageSizeArr = [24, 36, 48, 96];
+                handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button 
+              @click="
+              pageSizeArr = [15, 25, 30, 50, 100];
+              queryParams.pageSize = 15;
+              handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -120,6 +126,7 @@
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
@@ -150,6 +157,7 @@ const lastMonthMaxEq = ref(0)
 const busName1 = ref('无数据')
 const busName2 = ref('无数据')
 const busName3 = ref('无数据')
+const pageSizeArr = ref([24, 36, 48, 96])
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
@@ -283,7 +291,7 @@ const handleSwitchModal = (value) => {
   if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
-    queryParams.pageSize = 10
+    queryParams.pageSize = 15
   }
   getTableData(true)
 }
