@@ -962,14 +962,14 @@ volMaxValues.value = {
   L2: item.bvol.toFixed(1),
   L3: item.cvol.toFixed(1)
 };
-  if(item.status==5){
-    ElMessage({
-      message: '设备未启动',
-      type: 'warning',
-      duration: 2000
-    })
-    return;
-  }
+  // if(item.status==5){
+  //   ElMessage({
+  //     message: '设备未启动',
+  //     type: 'warning',
+  //     duration: 2000
+  //   })
+  //   return;
+  // }
   dialogVisibleVol.value = true
   vollocation.value = item.devKey
   getBalanceDetail(item)
@@ -1067,13 +1067,15 @@ const queryParams = reactive({
   cascadeNum: undefined,
   serverRoomData: undefined,
   status: [],
-  cabinetIds: []
+  cabinetIds: [],
+  curbance: 1
 }) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
+  getCurbalanceColor();
   loading.value = true
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
@@ -1098,6 +1100,7 @@ const getCurbalanceColor = async () => {
   }
 }
 
+provide('parentMethod', getCurbalanceColor);
 
 const getNavAList = async() => {
     const resStatus =await PDUDeviceApi.getBalancedDistribution();

@@ -369,8 +369,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             searchRequest = new SearchRequest(indices[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo[i].format(formatter))
-                    .to(now.format(formatter)));
+                    .from(timeAgo[0].format(formatter))
+                    .to(timeAgo[1].format(formatter)));
             String format = now.format(formatter);
             // 添加计数聚合
             if (indices[0].contains("bus")) {
@@ -408,30 +408,30 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     }
 
     @Override
-    public Map<String, Object> getOneDaySumData(String timeRangeType) throws IOException {
+    public Map<String, Object> getOneDaySumData(String timeRangeType,LocalDateTime oldTime,LocalDateTime newTime) throws IOException {
         String[] indices = new String[]{"bus_ele_total_realtime","bus_ele_line"};
         String[] name = new String[]{"total", "line"};
-        LocalDateTime[] timeAgo;
+        LocalDateTime[] timeAgo = {oldTime,newTime};
 
-        switch (timeRangeType) {
-            case "day":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
-                break;
-            case "week":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
-                break;
-            case "month":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
-                break;
-            case "sixMonths":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
-                break;
-            case "year":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
-        }
+//        switch (timeRangeType) {
+//            case "day":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
+//                break;
+//            case "week":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1),LocalDateTime.now().minusWeeks(1)};
+//                break;
+//            case "month":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1),LocalDateTime.now().minusMonths(1)};
+//                break;
+//            case "sixMonths":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6),LocalDateTime.now().minusMonths(6)};
+//                break;
+//            case "year":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1),LocalDateTime.now().minusYears(1)};
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
+//        }
 
         Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map; // 确保 map 已经正确初始化并且不是 null
@@ -779,30 +779,30 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     }
 
     @Override
-    public Map<String, Object> getBoxOneDaySumData(String timeRangeType) throws IOException {
+    public Map<String, Object> getBoxOneDaySumData(String timeRangeType,LocalDateTime oldTime,LocalDateTime newTime) throws IOException {
         String[] indices = new String[]{"box_ele_total_realtime","box_ele_line","box_ele_loop","box_ele_outlet"};
         String[] name = new String[]{"total", "line", "loop", "outlet"};
-        LocalDateTime[] timeAgo;
+        LocalDateTime[] timeAgo = {oldTime,newTime};
 
-        switch (timeRangeType) {
-            case "day":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
-                break;
-            case "week":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
-                break;
-            case "month":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
-                break;
-            case "sixMonths":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
-                break;
-            case "year":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
-        }
+//        switch (timeRangeType) {
+//            case "day":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
+//                break;
+//            case "week":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
+//                break;
+//            case "month":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
+//                break;
+//            case "sixMonths":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
+//                break;
+//            case "year":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
+//        }
         Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
     }

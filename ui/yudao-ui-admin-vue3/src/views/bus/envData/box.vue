@@ -63,7 +63,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
@@ -480,7 +480,7 @@ const getNavNewData = async() => {
   lastWeekTotalData.value = res.week
 }
 const format = (date) => {
-   return dayjs(date).format('YYYY-MM-DD')
+   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
 };
 /** 初始化 **/
 onMounted( () => {

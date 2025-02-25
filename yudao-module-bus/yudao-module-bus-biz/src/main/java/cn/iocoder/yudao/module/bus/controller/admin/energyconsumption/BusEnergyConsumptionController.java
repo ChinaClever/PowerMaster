@@ -10,12 +10,14 @@ import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.bus.service.busenergyconsumption.BusEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -156,10 +158,10 @@ public class BusEnergyConsumptionController {
         return success(map);
     }
 
-    @GetMapping("/bus/one-day/{timeRangeType}")
+    @GetMapping("/bus/one-day")
     @Operation(summary = "获得始端箱能耗最近一天插入的数据量")
-    public CommonResult<Map<String, Object>> getOneDaySumData(@PathVariable("timeRangeType")String timeRangeType) throws IOException {
-        Map<String, Object> map = busEnergyConsumptionService.getOneDaySumData(timeRangeType);
+    public CommonResult<Map<String, Object>> getOneDaySumData(String timeRangeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        Map<String, Object> map = busEnergyConsumptionService.getOneDaySumData(timeRangeType,oldTime,newTime);
         return success(map);
     }
 
@@ -294,10 +296,10 @@ public class BusEnergyConsumptionController {
         return success(map);
     }
 
-    @GetMapping("/box/one-day/{timeRangeType}")
+    @GetMapping("/box/one-day/")
     @Operation(summary = "获得插接箱能耗最近一天插入的数据量")
-    public CommonResult<Map<String, Object>> getBoxOneDaySumData(@PathVariable("timeRangeType")String timeRangeType) throws IOException {
-        Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData(timeRangeType);
+    public CommonResult<Map<String, Object>> getBoxOneDaySumData(String timeRangeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData(timeRangeType,oldTime,newTime);
         return success(map);
     }
 
