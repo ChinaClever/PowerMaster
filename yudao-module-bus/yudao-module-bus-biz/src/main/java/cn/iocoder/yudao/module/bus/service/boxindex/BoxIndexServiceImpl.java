@@ -2412,16 +2412,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
             if (boxIndex != null) {
                 String index;
+                String outIndex;
                 Integer Id = boxIndex.getId();
 
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     index = "box_hda_total_hour";
+                    outIndex = "box_hda_outlet_hour";
                     if (oldTime.equals(newTime)) {
                         newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                     }
 
                 } else {
                     index = "box_hda_total_day";
+                    outIndex = "box_hda_outlet_day";
                     oldTime = oldTime.plusDays(1);
                     newTime = newTime.plusDays(1);
                 }
@@ -2429,12 +2432,29 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> data = getData(startTime, endTime, Arrays.asList(Id), index, new String[]{"box_id,eq_value"});
+                    List<String> outData1 = getOutData(startTime, endTime, Arrays.asList(Id), outIndex, new String[]{"box_id,eq_value"}, 1);
+                    List<BoxOutletBaseDo> collect1 = outData1.stream().map(str -> JsonUtils.parseObject(str, BoxOutletBaseDo.class)).collect(Collectors.toList());
+                List<String> outData2 = getOutData(startTime, endTime, Arrays.asList(Id), outIndex, new String[]{"box_id,eq_value"}, 2);
+                List<BoxOutletBaseDo> collect2 = outData2.stream().map(str -> JsonUtils.parseObject(str, BoxOutletBaseDo.class)).collect(Collectors.toList());
+                List<String> outData3 = getOutData(startTime, endTime, Arrays.asList(Id), outIndex, new String[]{"box_id,eq_value"}, 3);
+                List<BoxOutletBaseDo> collect3 = outData3.stream().map(str -> JsonUtils.parseObject(str, BoxOutletBaseDo.class)).collect(Collectors.toList());
+
+
                 List<BoxTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, BoxTotalHourDo.class)).collect(Collectors.toList());
 
                 LineSeries totalPFLine = new LineSeries();
                 totalPFLine.setName("总平均功率因素");
+                LineSeries PFOutOne = new LineSeries();
+                PFOutOne.setName("输出位一平均功率因素");
+                LineSeries PFOutTwo = new LineSeries();
+                PFOutTwo.setName("输出位二平均功率因素");
+                LineSeries PFOutThree = new LineSeries();
+                PFOutThree.setName("输出位三平均功率因素");
 
                 totalLineRes.getSeries().add(totalPFLine);
+                totalLineRes.getSeries().add(PFOutOne);
+                totalLineRes.getSeries().add(PFOutTwo);
+                totalLineRes.getSeries().add(PFOutThree);
 
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     powList.forEach(hourdo -> {
@@ -2443,10 +2463,28 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
 
                     });
+                    collect1.forEach(hourdo -> {
+                        PFOutOne.getData().add(hourdo.getPowerFactorAvgValue());
+                    });
+                    collect2.forEach(hourdo -> {
+                        PFOutTwo.getData().add(hourdo.getPowerFactorAvgValue());
+                    });
+                    collect3.forEach(hourdo -> {
+                        PFOutThree.getData().add(hourdo.getPowerFactorAvgValue());
+                    });
                 } else {
                     powList.forEach(hourdo -> {
                         totalPFLine.getData().add(hourdo.getPowerFactorAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                    });
+                    collect1.forEach(hourdo -> {
+                        PFOutOne.getData().add(hourdo.getPowerFactorAvgValue());
+                    });
+                    collect2.forEach(hourdo -> {
+                        PFOutTwo.getData().add(hourdo.getPowerFactorAvgValue());
+                    });
+                    collect3.forEach(hourdo -> {
+                        PFOutThree.getData().add(hourdo.getPowerFactorAvgValue());
                     });
                 }
                 result.put("pfLineRes", totalLineRes);
@@ -2815,6 +2853,53 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
                     if (str.length()>2) {
+                        list.add(str);
+                    }
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    private List<String> getOutData(String startTime, String endTime, List<Integer> ids, String index, String[] heads,  Integer outletId) throws IOException {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            //    builder.fetchSource(heads, null);
+
+            // 构建布尔查询，组合多个条件
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            // 添加时间范围条件
+            boolQuery.must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+            // 添加 box_id 条件
+            boolQuery.must(QueryBuilders.termsQuery("box_id", ids));
+
+            // 添加 outlet_id 条件
+            if (outletId != null) {
+                boolQuery.must(QueryBuilders.termQuery("outlet_id", outletId));
+            }
+
+            // 使用 constant_score 查询包装布尔查询
+            builder.query(QueryBuilders.constantScoreQuery(boolQuery));
+
+//            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(3000);
+
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    if (str.length() > 2) {
                         list.add(str);
                     }
                 }

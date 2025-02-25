@@ -346,6 +346,7 @@ import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
+import EnvHumLine from './component/EnvHumLine.vue'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import ACurLine from './component/AcurLine.vue'
 import AVolLine from './component/AvolLine.vue'
@@ -551,19 +552,22 @@ const serverRoomArr =  ref([]) as any
 //折叠功能
 
 const getNavList = async() => {
+  
   const res = await CabinetApi.getRoomMenuAll({})
   serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
-  }
+  // const res = await CabinetApi.getRoomMenuAll({})
+  // serverRoomArr.value = res
+  // if (res && res.length > 0) {
+  //   const room = res[0]
+  //   const keys = [] as string[]
+  //   room.children.forEach(child => {
+  //     if(child.children.length > 0) {
+  //       child.children.forEach(son => {
+  //         keys.push(son.id + '-' + son.type)
+  //       })
+  //     }
+  //   })
+  // }
 }
 
 const handleClick = (row) => {
