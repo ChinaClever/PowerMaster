@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetAisleVO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
@@ -1415,12 +1416,12 @@ public class RoomServiceImpl implements RoomService {
                 detailDTO.setDirection(aisleIndex.getDirection());
                 detailDTO.setXCoordinate(aisleIndex.getXCoordinate());
                 detailDTO.setYCoordinate(aisleIndex.getYCoordinate());
-                List<CabinetDTO> aisleCabinetDTOList = new ArrayList<>();
-                Map<Integer,CabinetDTO> cabMap = new HashMap<>();
+                List<CabinetAisleVO> aisleCabinetDTOList = new ArrayList<>();
+                Map<Integer,CabinetAisleVO> cabMap = new HashMap<>();
                 List<CabinetIndex> cabs = cabinetIndexMap.get(aisleIndex.getId());
                 if (!CollectionUtils.isEmpty(cabs)){
                     cabs.forEach(cabinetIndex ->{
-                        CabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,CabinetDTO.class);
+                        CabinetAisleVO cabinetDTO = BeanUtils.toBean(cabinetIndex,CabinetAisleVO.class);
                         CabinetCfg cfg = cabinetCfgMap.get(cabinetIndex.getId());
                         if (Objects.nonNull(cfg)){
                             //cabinetDTO.setCabinetName(cfg.getCabinetName());
@@ -1461,10 +1462,10 @@ public class RoomServiceImpl implements RoomService {
                 }
 
                 for (int i = 0; i< aisleIndex.getAisleLength();i ++ ){
-                    CabinetDTO cabinetDTO = cabMap.get(i+1);
+                    CabinetAisleVO cabinetDTO = cabMap.get(i+1);
                     if (Objects.isNull(cabinetDTO)){
 
-                        cabinetDTO = new CabinetDTO();
+                        cabinetDTO = new CabinetAisleVO();
                         cabinetDTO.setIndex(i+1);
                     }
                     aisleCabinetDTOList.add(i,cabinetDTO);
