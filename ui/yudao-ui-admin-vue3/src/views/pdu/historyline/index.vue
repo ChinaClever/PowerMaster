@@ -662,7 +662,10 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                 legend: { data: ['电压(V)', '电流(A)', '有功功率(kW)', '视在功率(kVA)', '功率因素'],
                           selected: {  "电压(V)": false, "电流(A)": true, "有功功率(kW)": false, "视在功率(kVA)": false, '功率因素': false }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-                toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+                toolbox: {
+                  feature: {  restore:{}, saveAsImage: {}},
+                  top:'50'
+                },
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
@@ -699,7 +702,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                                   '平均视在功率(kVA)': false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,'平均有功功率(kW)': false, "最大有功功率(kW)": false, "最小有功功率(kW)": false}
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'50'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -785,7 +788,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                                     "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false}
                       },
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'30'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value},
               ],
@@ -868,7 +871,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                         selected: { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false}
                       },
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'50'},
               xAxis: [{type: 'category', boundaryGap: false, data: createTimeData.value},],
               yAxis: { type: 'value'},
               series: [

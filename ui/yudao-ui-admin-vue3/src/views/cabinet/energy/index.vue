@@ -233,6 +233,7 @@ const getTableData = async(reset = false) => {
 
 const resetQuery = () => {
  queryParams.company = undefined;
+   queryParams.timeGranularity = undefined;
   getTableData(true)
 }
 // 处理切换 表格/阵列 模式

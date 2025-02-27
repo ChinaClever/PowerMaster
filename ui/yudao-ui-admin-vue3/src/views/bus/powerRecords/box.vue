@@ -18,9 +18,9 @@
 
         <div class="descriptions-container" style="font-size: 14px;">
           <div >
-            <span>插接箱近一天新增电能记录</span>
+            <span>插接箱新增电能记录</span>
           </div>
-          <div class="description-item">
+          <div class="description-item" v-if="navLoopData">
             <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
@@ -441,8 +441,12 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async(timeRangeType) => {
-  const res = await EnergyConsumptionApi.getBoxNavOneDayData(timeRangeType.value)
+const getNavOneDayData = async(timeRangeTypee) => {
+  const timeRangeType = timeRangeTypee.value;
+  const oldTime = queryParams.timeRange[0];
+  const newTime = queryParams.timeRange[1];
+  var parms = {timeRangeType,oldTime,newTime}
+  const res = await EnergyConsumptionApi.getBoxNavOneDayData(parms)
   navTotalData.value = res.total
   navLineData.value = res.line
   navLoopData.value = res.loop
@@ -451,15 +455,15 @@ const getNavOneDayData = async(timeRangeType) => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
+  getList()
   queryParams.pageNo = 1
   getNavOneDayData(timeRangeType)
-  getList()
+  
 }
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData(timeRangeType)
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startStr = formatDate(startOfMonth);
@@ -467,6 +471,7 @@ onMounted(() => {
   selectTimeRange.value = [startStr, endStr];
   getTypeMaxValue();
   getList();
+  getNavOneDayData(timeRangeType)
 })
 
 const formatDate = (date) => {

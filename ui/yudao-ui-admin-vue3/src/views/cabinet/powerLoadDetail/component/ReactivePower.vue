@@ -15,8 +15,6 @@ const props = defineProps({
   }
 });
 
-console.log('props', props.curChartData);
-
 const L1Data = ref([]);
 const L2Data = ref([]);
 const L3Data = ref([]);

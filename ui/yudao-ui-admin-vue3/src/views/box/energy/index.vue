@@ -59,8 +59,14 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="
+            pageSizeArr = [24, 36, 48, 96];
+            handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button 
+            @click="
+              pageSizeArr = [15, 25, 30, 50, 100];
+              queryParams.pageSize = 15;
+              handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -78,38 +84,52 @@
             </div>
             <div class="room">{{item.location}}</div>
             <!-- <div class="name">{{item.boxName}}</div> -->
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.local,item.boxName, item)" >详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.roomName,item.boxName, item)" >详情</button>
           </div>
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
-          <el-table-column label="位置" min-width="110" align="center" prop="local" />
+          <el-table-column label="位置" min-width="150" align="center" prop="local" />
           <el-table-column label="设备名称" align="center" prop="boxName" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
+          <el-table-column label="昨日用能(kW·h)" min-width="80" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.yesterdayEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" >
+          <el-table-column label="上周用能(kW·h)" min-width="80" align="center" prop="lastWeekEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.lastWeekEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="上月用能(kW·h)" min-width="80" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.lastMonthEq }}
               </el-text>
             </template>
           </el-table-column>
+          <el-table-column label="操作" min-width="110" align="center" >
+            <template #default="scope" >
+            <el-button
+              link
+              type="primary"
+              @click="toDetail(scope.row.roomId, scope.row.id,scope.row.roomName,scope.row.boxName, scope.row)"
+              v-if=" scope.row.status != null && scope.row.status != 0"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+            >
+            设备详情
+            </el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
@@ -138,6 +158,7 @@ const queryParamsDevKey = ref(undefined)
 const boxName1 = ref('无数据')
 const boxName2 = ref('无数据')
 const boxName3 = ref('无数据')
+const pageSizeArr = ref([24, 36, 48, 96])
 
 const queryParams = reactive({
   company: undefined,
@@ -169,7 +190,6 @@ const changeTimeGranularity = (value) => {
 }
 // 获取表格数据
 const getTableData = async(reset = false) => {
-  console.log('getTableData', queryParams)
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
@@ -184,13 +204,13 @@ const getTableData = async(reset = false) => {
       boxDevKeyList : queryParams.boxDevKeyList,
       timeGranularity : queryParams.timeGranularity
     })
-    console.log('res',res);
     if (res.list) {
       tableData.value = res.list.map(item => {
         return {
           id: item.id,
           devKey:item.devKey,
-          location: item.location ? item.location+'-'+item.busName +'-'+item.boxName : item.devKey+'-'+item.boxName,
+          roomName: item.roomName,
+          location: item.location,
           // location: item.location || (item.devKey && item.boxName ? item.devKey +'-'+ item.boxName : null),
           // location: item.location ||  item.devKey  +'-'+ item.boxName,
           local : item.location,
@@ -210,7 +230,6 @@ const getTableData = async(reset = false) => {
 }
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  console.log('handleQuery', queryParamsDevKey.value)
   if(queryParamsDevKey.value !=null && queryParamsDevKey.value != ''){
     queryParams.boxDevKeyList = [queryParamsDevKey.value]
   }else{
@@ -284,7 +303,7 @@ const handleSwitchModal = (value) => {
   if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
-    queryParams.pageSize = 10
+    queryParams.pageSize = 15
   }
   getTableData(true)
 }
@@ -314,11 +333,10 @@ const handleCheck = (row) => {
 
 
 // 跳转详情
-const toDetail = (roomId, id,local,boxName, item) => {
+const toDetail = (roomId, id,room,boxName, item) => {
   const devKey = item.devKey;
   const busName = item.busName;
-  const roomName = item.local ? item.local : '未绑定';
-  console.log('item',item);
+  const roomName = room ? room : '未绑定';
   push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
 }
 onMounted(async () => {

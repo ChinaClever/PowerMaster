@@ -439,7 +439,8 @@ const openBindingFrom = (type) => {
   const frameListCopy = frameList.value as any
   console.log('openBindingFrom', frameListCopy, index,frameListCopy.length)
   const data = frameListCopy[index].length > 0 ? frameListCopy[index][0] : {}
-  binding.value.open(type, data, operateMenu.value.Uindex, cabinetInfo.value.outletA, cabinetInfo.value.outletB, stopData.value)
+  binding.value.open(type, data, operateMenu.value.Uindex, cabinetInfo.value.outletA, cabinetInfo.value.outletB)
+  // binding.value.open(type, data, operateMenu.value.Uindex, cabinetInfo.value.outletA, cabinetInfo.value.outletB, stopData.value)
 }
 
 // 处理表单添加/编辑成功

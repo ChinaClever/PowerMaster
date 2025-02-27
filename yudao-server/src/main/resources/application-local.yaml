@@ -74,12 +74,33 @@ spring:
   #          password: JSm:g(*%lU4ZAkz06cd52KqT3)i1?H7W
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
-  redis:
-    host: 192.168.1.245 # 地址
-    port: 6379 # 端口
-    database: 0 # 数据库索引
+#  redis:
+#    host: 192.168.1.245 # 地址
+#    port: 6379 # 端口
+#    database: 0 # 数据库索引
 #    password: dev # 密码，建议生产环境开启
-
+  redis:
+    cluster:
+      nodes:
+        - 192.168.1.245:7001
+        - 192.168.1.245:7002
+        - 192.168.1.245:7003
+        - 192.168.1.245:7004
+        - 192.168.1.245:7005
+        - 192.168.1.245:7006
+    # 密码
+#    password: 123456
+    # 连接超时时间
+    timeout: 10s
+    # 是否开启ssl
+    ssl.enabled: false
+    database: 0
+    lettuce:
+      pool:
+        max-active: 20  # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1  # 最大阻塞等待时间（负数表示没有限制）
+        max-idle: 5  # 连接池中最大空闲连接
+        min-idle: 0  # 连接池中最小空闲连接
 --- #################### 定时任务相关配置 ####################
 
 # Quartz 配置项，对应 QuartzProperties 配置类

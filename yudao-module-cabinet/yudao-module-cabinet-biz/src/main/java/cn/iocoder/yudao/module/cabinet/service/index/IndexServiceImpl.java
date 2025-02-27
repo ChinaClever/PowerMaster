@@ -28,6 +28,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hpsf.Decimal;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -482,6 +483,12 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinValue",null);
         result.put("temMinTime",null);
         result.put("temMinSensorId",null);
+        result.put("humMaxValue",null);
+        result.put("humMaxTime",null);
+        result.put("humMaxSensorId",null);
+        result.put("humMinValue",null);
+        result.put("humMinTime",null);
+        result.put("humMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
             if (cabinetPdu == null){
@@ -572,6 +579,10 @@ public class IndexServiceImpl implements IndexService {
             PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
             String temMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "tem_min_value");
             PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+            String humMaxValue = getPDUMaxData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_max_value");
+            PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+            String humMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_min_value");
+            PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
             if(temMax != null){
                 result.put("temMaxValue",temMax.getTemMaxValue());
                 result.put("temMaxTime",temMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -581,6 +592,16 @@ public class IndexServiceImpl implements IndexService {
                 result.put("temMinValue", temMin.getTemMinValue());
                 result.put("temMinTime",temMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("temMinSensorId",temMin.getSensorId());
+            }
+            if (humMax != null){
+                result.put("humMaxValue", humMax.getHumMaxValue());
+                result.put("humMaxTime",humMax.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMaxSensorId",humMax.getSensorId());
+            }
+            if (humMin != null){
+                result.put("humMinValue", humMin.getHumMinValue());
+                result.put("humMinTime",humMin.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMinSensorId",humMin.getSensorId());
             }
             return result;
         } catch (Exception e){
@@ -604,6 +625,12 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinValue",null);
         result.put("temMinTime",null);
         result.put("temMinSensorId",null);
+        result.put("humMaxValue",null);
+        result.put("humMaxTime",null);
+        result.put("humMaxSensorId",null);
+        result.put("humMinValue",null);
+        result.put("humMinTime",null);
+        result.put("humMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
             if (cabinetPdu == null){
@@ -694,6 +721,10 @@ public class IndexServiceImpl implements IndexService {
             PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
             String temMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "tem_min_value");
             PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+            String humMaxValue = getPDUMaxData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_max_value");
+            PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+            String humMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_min_value");
+            PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
             if(temMax != null){
                 result.put("temMaxValue",temMax.getTemMaxValue());
                 result.put("temMaxTime",temMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -704,7 +735,16 @@ public class IndexServiceImpl implements IndexService {
                 result.put("temMinTime",temMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("temMinSensorId",temMin.getSensorId());
             }
-
+            if(humMax != null){
+                result.put("humMaxValue",humMax.getHumMaxValue());
+                result.put("humMaxTime",humMax.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMaxSensorId",humMax.getSensorId());
+            }
+            if(humMin != null){
+                result.put("humMinValue", humMin.getHumMinValue());
+                result.put("humMinTime",humMin.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMinSensorId",humMin.getSensorId());
+            }
             return result;
         } catch (Exception e){
             log.error("获取数据失败",e);
@@ -864,6 +904,71 @@ public class IndexServiceImpl implements IndexService {
             vos.add(vo);
         }
         return vos;
+    }
+
+    @Override
+    public Map<String, Double> getEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) throws IOException {
+        Map<String, Double> result = new HashMap<>();
+        String index = "cabinet_ele_total_realtime";
+        List<Integer> list = Arrays.asList(Integer.valueOf(id));
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        // 获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(oldTime).lte(newTime))
+                .must(QueryBuilders.termsQuery("cabinet_id", list))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1);
+
+        // 执行查询
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        Double eleTotal = null;
+        // 处理查询结果
+        if (searchResponse.getHits().getHits().length > 0) {
+            SearchHit hit = searchResponse.getHits().getHits()[0];
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            // 提取需要的字段
+             eleTotal = (Double) sourceAsMap.get("ele_total");
+        }
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest1 = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件
+        SearchSourceBuilder builder1 = new SearchSourceBuilder();
+
+        // 获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(oldTime).lte(newTime))
+                .must(QueryBuilders.termsQuery("cabinet_id", list))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.DESC);
+        // 设置搜索条件
+        searchRequest1.source(builder1);
+        builder1.size(1);
+
+        // 执行查询
+        SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+        Double eleTotal1 = null;
+        // 处理查询结果
+        if (searchResponse1.getHits().getHits().length > 0) {
+            SearchHit hit = searchResponse1.getHits().getHits()[0];
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            // 提取需要的字段
+             eleTotal1 = (Double) sourceAsMap.get("ele_total");
+        }
+        Double ele = null;
+        if (eleTotal != null && eleTotal1 != null) {
+            ele = eleTotal - eleTotal1;
+        }
+        result.put("ele", ele);
+        return result;
     }
 
     /**

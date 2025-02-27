@@ -30,7 +30,7 @@
 </template>
 <script setup lang="ts">
 import { CurbalanceColorApi, CurbalanceColorVO } from '@/api/pdu/curbalancecolor'
-
+import { inject } from 'vue';
 /** PDU不平衡度颜色 表单 */
 defineOptions({ name: 'CurbalanceColorForm' })
 
@@ -48,7 +48,6 @@ const formData = ref({
   rangeThree: undefined,
   rangeFour: undefined,
 })
-
 const validateRangeOrder = (rule, value, callback) => {
   // 检查范围是否为空
   if (!formData.value.rangeOne || !formData.value.rangeTwo || !formData.value.rangeThree || !formData.value.rangeFour) {
@@ -105,7 +104,7 @@ const open = async (type: string) => {
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
 /** 提交表单 */
-const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
+const emit = defineEmits(['success', 'custom-event']); // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
   await formRef.value.validate()

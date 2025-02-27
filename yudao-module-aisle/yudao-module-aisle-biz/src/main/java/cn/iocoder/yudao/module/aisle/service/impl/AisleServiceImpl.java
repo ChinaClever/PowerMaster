@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleBoxDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetAisleVO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEleTotalRealtimeDo;
@@ -36,6 +37,7 @@ import cn.iocoder.yudao.module.aisle.service.AisleService;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
 import cn.iocoder.yudao.module.cabinet.api.CabinetApi;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -65,7 +67,6 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -97,7 +98,7 @@ public class AisleServiceImpl implements AisleService {
     @Resource
     CabinetIndexMapper cabinetIndexMapper;
     @Resource
-    CabinetCfgDoMapper  cabinetCfgDoMapper;
+    CabinetCfgDoMapper cabinetCfgDoMapper;
     @Resource
     BusIndexDoMapper busIndexDoMapper;
     @Resource
@@ -108,8 +109,6 @@ public class AisleServiceImpl implements AisleService {
     @Autowired
     RackIndexDoMapper rackIndexDoMapper;
 
-    @Value("${aisle-refresh-url}")
-    public String adder;
 
     @Resource
     CabinetApi cabinetApi;
@@ -117,252 +116,164 @@ public class AisleServiceImpl implements AisleService {
     @Autowired
     private RestHighLevelClient client;
 
+    @Value("${aisle-refresh-url}")
+    public String adder;
     public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
     /**
      * 柜列保存
+     *
      * @param aisleSaveVo 保存参数
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer aisleSave(AisleSaveVo aisleSaveVo) {
+        //柜列信息
+        AisleIndex index = new AisleIndex();
+        index.setAisleName(aisleSaveVo.getAisleName());
+        index.setAisleLength(aisleSaveVo.getAisleLength());
+        index.setRoomId(aisleSaveVo.getRoomId());
 
-        try {
-            //柜列信息
-            AisleIndex index = new AisleIndex();
-            index.setAisleName(aisleSaveVo.getAisleName());
-            index.setAisleLength(aisleSaveVo.getAisleLength());
-            index.setRoomId(aisleSaveVo.getRoomId());
-            //index.setType(aisleSaveVo.getType());
-            index.setPduBar(aisleSaveVo.getPduBar());
-//            index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
-//            index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
-//            index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
-//            index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
-            index.setDirection(aisleSaveVo.getDirection());
-            index.setXCoordinate(aisleSaveVo.getXCoordinate());
-            index.setYCoordinate(aisleSaveVo.getYCoordinate());
+        index.setPduBar(aisleSaveVo.getPduBar());
 
-            Integer roomId = aisleSaveVo.getRoomId();
-            RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
-            if (Objects.nonNull(roomIndex)){
-                if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
-                        && "x".equals(aisleSaveVo.getDirection())){
-                    //横向
-                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getAisleLength()> roomIndex.getXLength() +1){
-                        throw new RuntimeException("柜列长度超出");
-                    }
-                }
-                if ( StringUtils.isNotEmpty(aisleSaveVo.getDirection())
-                        && "y".equals(aisleSaveVo.getDirection())){
-                    //纵向
-                    if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getAisleLength()>roomIndex.getYLength() + 1){
-                        throw new RuntimeException("柜列长度超出");
-                    }
+        index.setDirection(aisleSaveVo.getDirection());
+        index.setXCoordinate(aisleSaveVo.getXCoordinate());
+        index.setYCoordinate(aisleSaveVo.getYCoordinate());
+
+        Integer roomId = aisleSaveVo.getRoomId();
+        RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
+        if (Objects.nonNull(roomIndex)) {
+            if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
+                    && "x".equals(aisleSaveVo.getDirection())) {
+                //横向
+                if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength() > roomIndex.getXLength() + 1) {
+                    throw new RuntimeException("柜列长度超出");
                 }
             }
-
-            if (Objects.nonNull(aisleSaveVo.getId())){
-                //编辑
-                AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
-                        .eq(AisleIndex::getId,aisleSaveVo.getId()));
-                if (Objects.nonNull(aisleIndex)){
-                    index.setId(aisleSaveVo.getId());
-                    aisleIndexMapper.updateById(index);
-                }
-
-            }else {
-                //新增
-                aisleIndexMapper.insert(index);
-            }
-
-
-            String busIpA;
-
-            String busNameA;
-
-            String busIpB;
-
-            String busNameB;
-
-            Integer barIdA;
-            Integer barIdB;
-
-
-
-            //母线信息
-            List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                    .eq(AisleBar::getAisleId,index.getId()));
-            List<AisleBarDTO> barVos = new ArrayList<>();
-            if (Objects.nonNull(aisleSaveVo.getBarA())){
-                barVos.add(aisleSaveVo.getBarA());
-                busIpA = aisleSaveVo.getBarA().getDevIp();
-                busNameA = aisleSaveVo.getBarA().getBusName();
-                barIdA = aisleSaveVo.getBarA().getBarId();
-            } else {
-                busNameA = "";
-                busIpA = "";
-                barIdA = null;
-            }
-            if (Objects.nonNull(aisleSaveVo.getBarB())){
-                barVos.add(aisleSaveVo.getBarB());
-                busIpB = aisleSaveVo.getBarB().getDevIp();
-                busNameB = aisleSaveVo.getBarB().getBusName();
-                barIdB = aisleSaveVo.getBarB().getBarId();
-            } else {
-                busNameB = "";
-                busIpB = "";
-                barIdB = null;
-            }
-
-            if (!CollectionUtils.isEmpty(barVos)){
-                if (!CollectionUtils.isEmpty(aisleBars)){
-                    List<Integer> ids = aisleBars.stream().map(AisleBar::getId).collect(Collectors.toList());
-                    ids.forEach(this::deleteBus);
-
-                }
-                AisleBusSaveVo busSaveVo = new AisleBusSaveVo();
-                busSaveVo.setAisleId(index.getId());
-                busSaveVo.setBarVos(barVos);
-                aisleBusSave(busSaveVo);
-            }else {
-                //删除绑定关系
-                if (!CollectionUtils.isEmpty(aisleBars)){
-                    List<Integer> ids = aisleBars.stream().map(AisleBar::getId).collect(Collectors.toList());
-                    ids.forEach(this::deleteBus);
+            if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
+                    && "y".equals(aisleSaveVo.getDirection())) {
+                //纵向
+                if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getAisleLength() > roomIndex.getYLength() + 1) {
+                    throw new RuntimeException("柜列长度超出");
                 }
             }
+        }
 
-            //已有机柜
-            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                    .eq(CabinetIndex::getRoomId,aisleSaveVo.getRoomId())
-                    .eq(CabinetIndex::getAisleId,index.getId()));
-            //机柜信息
-            if (!CollectionUtils.isEmpty(aisleSaveVo.getCabinetList())){
-                //更改后的机柜列表
-                List<Integer> ids =  aisleSaveVo.getCabinetList().stream().map(CabinetVo::getId).filter(id -> id >0).collect(Collectors.toList());
+        if (Objects.nonNull(aisleSaveVo.getId())) {
+            //编辑
+            AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
+                    .eq(AisleIndex::getId, aisleSaveVo.getId()));
+            if (Objects.nonNull(aisleIndex)) {
+                index.setId(aisleSaveVo.getId());
+                aisleIndexMapper.updateById(index);
+            }
 
-
-
-                if (!CollectionUtils.isEmpty(ids)){
-                    //需要删除的机柜
-                    List<CabinetIndex> indices = cabinetIndexMapper.selectList(new LambdaUpdateWrapper<CabinetIndex>()
-                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                            .eq(CabinetIndex::getRoomId,aisleSaveVo.getRoomId())
-                            .eq(CabinetIndex::getAisleId,index.getId()).notIn(CabinetIndex::getId,ids));
-
-                    //删除不在更改后机柜中的机架
-                    if (!CollectionUtils.isEmpty(indices)){
-                        rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
-                                .in(RackIndex::getCabinetId,indices.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
-                    }
-
-                    //需要删除的机柜
-                    if (!CollectionUtils.isEmpty(indices)){
-                        indices.forEach(cabinetIndex -> {
-                            try {
-                                cabinetApi.delCabinet(cabinetIndex.getId());
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-
-                    }
+        } else {
+            //新增
+            aisleIndexMapper.insert(index);
+        }
 
 
-                }else {
+        String busIpA;
 
-                    //清空该柜列机柜及机架
-                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
-                        rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
-                                .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
-                    }
-                    //需要删除的机柜
-                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
-                        cabinetIndexList.forEach(cabinetIndex -> {
-                            try {
-                                cabinetApi.delCabinet(cabinetIndex.getId());
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+        String busNameA;
 
-                    }
+        String busIpB;
 
-                }
+        String busNameB;
 
-                //新增/保存
-                aisleSaveVo.getCabinetList().forEach(cabinetVo -> {
-                    cabinetVo.setRoomId(aisleSaveVo.getRoomId());
-                    cabinetVo.setAisleId(index.getId());
-                    if (aisleSaveVo.getPduBar().equals(PduBoxEnums.BUS.getValue())){
-                        cabinetVo.setBusIpA(busIpA);
-                        cabinetVo.setBarIdA(barIdA);
-                        cabinetVo.setBusIpB(busIpB);
-                        cabinetVo.setBarIdB(barIdB);
+        Integer barIdA;
+        Integer barIdB;
 
-                        if (Objects.isNull(cabinetVo.getAddrA()) && Objects.nonNull(cabinetVo.getBoxIndexA())){
-                            AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
-                                    .eq(AisleBar::getAisleId,index.getId())
-                                    .eq(AisleBar::getBusKey,barIdA));
-                                    //.eq(AisleBar::getDevIp,busIpA));
-                            if (Objects.nonNull(bar)){
-                                AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
-                                        .eq(AisleBox::getAisleBarId,bar.getId())
-                                        .eq(AisleBox::getBoxType,0)
-                                        .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexA()));
-                               // cabinetVo.setAddrA(Objects.nonNull(box)?box.getCasAddr():null);
+        //母线信息
+        List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                .eq(AisleBar::getAisleId, index.getId()));
+        List<AisleBarDTO> barVos = new ArrayList<>();
+        if (Objects.nonNull(aisleSaveVo.getBarA())) {
+            barVos.add(aisleSaveVo.getBarA());
+            busIpA = aisleSaveVo.getBarA().getDevIp();
+            busNameA = aisleSaveVo.getBarA().getBusName();
+            barIdA = aisleSaveVo.getBarA().getBarId();
+        } else {
+            busNameA = "";
+            busIpA = "";
+            barIdA = null;
+        }
+        if (Objects.nonNull(aisleSaveVo.getBarB())) {
+            barVos.add(aisleSaveVo.getBarB());
+            busIpB = aisleSaveVo.getBarB().getDevIp();
+            busNameB = aisleSaveVo.getBarB().getBusName();
+            barIdB = aisleSaveVo.getBarB().getBarId();
+        } else {
+            busNameB = "";
+            busIpB = "";
+            barIdB = null;
+        }
 
-                            }
+        if (!CollectionUtils.isEmpty(barVos)) {
+            if (!CollectionUtils.isEmpty(aisleBars)) {
+                List<Integer> ids = aisleBars.stream().map(AisleBar::getId).collect(Collectors.toList());
+                ids.forEach(this::deleteBus);
 
-                        }
-                        if (Objects.isNull(cabinetVo.getAddrB()) && Objects.nonNull(cabinetVo.getBoxIndexB())){
-                            AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
-                                    .eq(AisleBar::getAisleId,index.getId())
-                                    .eq(AisleBar::getBusKey,barIdB));
-                                    //.eq(AisleBar::getDevIp,busIpB));
-                            if (Objects.nonNull(bar)){
-                                AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
-                                        .eq(AisleBox::getAisleBarId,bar.getId())
-                                        .eq(AisleBox::getBoxType,0)
-                                        .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexB()));
-                                //cabinetVo.setAddrB(Objects.nonNull(box)?box.getCasAddr():null);
+            }
+            AisleBusSaveVo busSaveVo = new AisleBusSaveVo();
+            busSaveVo.setAisleId(index.getId());
+            busSaveVo.setBarVos(barVos);
+            aisleBusSave(busSaveVo);
+        } else {
+            //删除绑定关系
+            if (!CollectionUtils.isEmpty(aisleBars)) {
+                List<Integer> ids = aisleBars.stream().map(AisleBar::getId).collect(Collectors.toList());
+                ids.forEach(this::deleteBus);
+            }
+        }
 
-                            }
+        //已有机柜
+        List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
+                .eq(CabinetIndex::getRoomId, aisleSaveVo.getRoomId())
+                .eq(CabinetIndex::getAisleId, index.getId()));
+        //机柜信息
+        if (!CollectionUtils.isEmpty(aisleSaveVo.getCabinetList())) {
+            //更改后的机柜列表
+            List<Integer> ids = aisleSaveVo.getCabinetList().stream().map(CabinetVo::getId).filter(id -> id > 0).collect(Collectors.toList());
 
-                        }
-                    }
-                    cabinetVo.setPduBox(aisleSaveVo.getPduBar());
 
-                    if (Objects.nonNull(cabinetVo.getIndex())
-                            && StringUtils.isNotEmpty(aisleSaveVo.getDirection())
-                            && "x".equals(aisleSaveVo.getDirection())){
-                        //横向
-                        cabinetVo.setXCoordinate(aisleSaveVo.getXCoordinate() + cabinetVo.getIndex() - 1);
-                        cabinetVo.setYCoordinate(aisleSaveVo.getYCoordinate());
-                    }
-                    if (Objects.nonNull(cabinetVo.getIndex())
-                            && StringUtils.isNotEmpty(aisleSaveVo.getDirection())
-                            && "y".equals(aisleSaveVo.getDirection())){
-                        //纵向
-                        cabinetVo.setYCoordinate(aisleSaveVo.getYCoordinate() + cabinetVo.getIndex() - 1);
-                        cabinetVo.setXCoordinate(aisleSaveVo.getXCoordinate());
-                    }
-                    try {
-                        cabinetApi.saveCabinet(cabinetVo);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-            }else {
-                //清空该柜列机柜及机架
-                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+            if (!CollectionUtils.isEmpty(ids)) {
+                //需要删除的机柜
+                List<CabinetIndex> indices = cabinetIndexMapper.selectList(new LambdaUpdateWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getRoomId, aisleSaveVo.getRoomId())
+                        .eq(CabinetIndex::getAisleId, index.getId()).notIn(CabinetIndex::getId, ids));
+
+                //删除不在更改后机柜中的机架
+                if (!CollectionUtils.isEmpty(indices)) {
                     rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
-                            .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
+                            .in(RackIndex::getCabinetId, indices.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
+                }
+
+                //需要删除的机柜
+                if (!CollectionUtils.isEmpty(indices)) {
+                    indices.forEach(cabinetIndex -> {
+                        try {
+                            cabinetApi.delCabinet(cabinetIndex.getId());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+                }
+
+
+            } else {
+
+                //清空该柜列机柜及机架
+                if (!CollectionUtils.isEmpty(cabinetIndexList)) {
+                    rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
+                            .in(RackIndex::getCabinetId, cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
                 }
                 //需要删除的机柜
-                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                if (!CollectionUtils.isEmpty(cabinetIndexList)) {
                     cabinetIndexList.forEach(cabinetIndex -> {
                         try {
                             cabinetApi.delCabinet(cabinetIndex.getId());
@@ -372,15 +283,95 @@ public class AisleServiceImpl implements AisleService {
                     });
 
                 }
+
             }
 
-            return index.getId();
-        }finally {
-            //刷新柜列计算服务缓存
-            log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
-        }
+            //新增/保存
+            aisleSaveVo.getCabinetList().forEach(cabinetVo -> {
+                cabinetVo.setRoomId(aisleSaveVo.getRoomId());
+                cabinetVo.setAisleId(index.getId());
+                if (aisleSaveVo.getPduBar().equals(PduBoxEnums.BUS.getValue())) {
+                    cabinetVo.setBusIpA(busIpA);
+                    cabinetVo.setBarIdA(barIdA);
+                    cabinetVo.setBusIpB(busIpB);
+                    cabinetVo.setBarIdB(barIdB);
 
+                    if (Objects.isNull(cabinetVo.getAddrA()) && Objects.nonNull(cabinetVo.getBoxIndexA())) {
+                        AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
+                                .eq(AisleBar::getAisleId, index.getId())
+                                .eq(AisleBar::getBusKey, barIdA));
+                        //.eq(AisleBar::getDevIp,busIpA));
+                        if (Objects.nonNull(bar)) {
+                            AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
+                                    .eq(AisleBox::getAisleBarId, bar.getId())
+                                    .eq(AisleBox::getBoxType, 0)
+                                    .eq(AisleBox::getBoxIndex, cabinetVo.getBoxIndexA()));
+                            // cabinetVo.setAddrA(Objects.nonNull(box)?box.getCasAddr():null);
+
+                        }
+
+                    }
+                    if (Objects.isNull(cabinetVo.getAddrB()) && Objects.nonNull(cabinetVo.getBoxIndexB())) {
+                        AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
+                                .eq(AisleBar::getAisleId, index.getId())
+                                .eq(AisleBar::getBusKey, barIdB));
+                        //.eq(AisleBar::getDevIp,busIpB));
+                        if (Objects.nonNull(bar)) {
+                            AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
+                                    .eq(AisleBox::getAisleBarId, bar.getId())
+                                    .eq(AisleBox::getBoxType, 0)
+                                    .eq(AisleBox::getBoxIndex, cabinetVo.getBoxIndexB()));
+                            //cabinetVo.setAddrB(Objects.nonNull(box)?box.getCasAddr():null);
+
+                        }
+
+                    }
+                }
+                cabinetVo.setPduBox(aisleSaveVo.getPduBar());
+
+                if (Objects.nonNull(cabinetVo.getIndex())
+                        && StringUtils.isNotEmpty(aisleSaveVo.getDirection())
+                        && "x".equals(aisleSaveVo.getDirection())) {
+                    //横向
+                    cabinetVo.setXCoordinate(aisleSaveVo.getXCoordinate() + cabinetVo.getIndex() - 1);
+                    cabinetVo.setYCoordinate(aisleSaveVo.getYCoordinate());
+                }
+                if (Objects.nonNull(cabinetVo.getIndex())
+                        && StringUtils.isNotEmpty(aisleSaveVo.getDirection())
+                        && "y".equals(aisleSaveVo.getDirection())) {
+                    //纵向
+                    cabinetVo.setYCoordinate(aisleSaveVo.getYCoordinate() + cabinetVo.getIndex() - 1);
+                    cabinetVo.setXCoordinate(aisleSaveVo.getXCoordinate());
+                }
+                try {
+                    cabinetApi.saveCabinet(cabinetVo);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            //清空该柜列机柜及机架
+            if (!CollectionUtils.isEmpty(cabinetIndexList)) {
+                rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
+                        .in(RackIndex::getCabinetId, cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
+            }
+            //需要删除的机柜
+            if (!CollectionUtils.isEmpty(cabinetIndexList)) {
+                cabinetIndexList.forEach(cabinetIndex -> {
+                    try {
+                        cabinetApi.delCabinet(cabinetIndex.getId());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+            }
+        }
+        //刷新柜列计算服务缓存
+        log.info("刷新计算服务缓存 --- " + adder);
+        HttpUtil.get(adder);
+
+        return index.getId();
     }
 
     @Override
@@ -389,37 +380,41 @@ public class AisleServiceImpl implements AisleService {
         try {
             Integer aisleId = busSaveVo.getAisleId();
 
-            if (!CollectionUtils.isEmpty(busSaveVo.getBarVos())){
+            if (!CollectionUtils.isEmpty(busSaveVo.getBarVos())) {
                 //绑定始端箱
                 List<AisleBarDTO> barVos = busSaveVo.getBarVos();
                 //先删除
                 aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                        .eq(AisleBar::getAisleId,aisleId));
+                        .eq(AisleBar::getAisleId, aisleId));
                 aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                        .eq(AisleBox::getAisleId,aisleId));
+                        .eq(AisleBox::getAisleId, aisleId));
+                List<String> collect = barVos.stream().map(AisleBarDTO::getDevIp).distinct().collect(Collectors.toList());
+                if (collect.size() < 2) {
+                    throw new RuntimeException("A路与B路始端箱IP不能相同");
+                }
                 barVos.forEach(barVo -> {
-                    AisleBar  bar = BeanUtils.toBean(barVo,AisleBar.class);
+                    AisleBar bar = BeanUtils.toBean(barVo, AisleBar.class);
                     bar.setAisleId(aisleId);
-                    bar.setBusKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + barVo.getCasAddr());
-
+                    bar.setBusKey(barVo.getDevIp());
+                    bar.setBoxNum(barVo.getBoxList().size());
                     aisleBarMapper.insert(bar);
 
                     List<AisleBoxDTO> boxList = barVo.getBoxList();
-                    if (!CollectionUtils.isEmpty(boxList)){
-                        boxList.forEach(boxDTO ->{
-                            AisleBox box = BeanUtils.toBean(boxDTO,AisleBox.class);
+                    if (!CollectionUtils.isEmpty(boxList)) {
+                        boxList.forEach(boxDTO -> {
+                            AisleBox box = BeanUtils.toBean(boxDTO, AisleBox.class);
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
-                            //box.setBarId(barVo.getBarId());
-                            box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + boxDTO.getCasAddr());
+                            box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + boxDTO.getCasAddr());
+                            box.setBusKey(barVo.getDevIp());
+                            box.setBoxType(boxDTO.getType());
                             aisleBoxMapper.insert(box);
                         });
                     }
-
                 });
 
             }
-        }finally {
+        } finally {
             //刷新柜列计算服务缓存
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
@@ -431,10 +426,10 @@ public class AisleServiceImpl implements AisleService {
     @Override
     public void batchDeleteBox(List<Integer> boxIds) {
         try {
-            if (!CollectionUtils.isEmpty(boxIds)){
+            if (!CollectionUtils.isEmpty(boxIds)) {
                 aisleBoxMapper.deleteBatchIds(boxIds);
             }
-        }finally {
+        } finally {
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
         }
@@ -447,14 +442,14 @@ public class AisleServiceImpl implements AisleService {
     public void deleteBus(Integer barId) {
         try {
             //删除母线需要先删除插接箱
-            List<AisleBox>  boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                    .eq(AisleBox::getAisleBarId,barId));
-            if (!CollectionUtils.isEmpty(boxList)){
+            List<AisleBox> boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+                    .eq(AisleBox::getAisleBarId, barId));
+            if (!CollectionUtils.isEmpty(boxList)) {
                 aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                        .eq(AisleBox::getAisleBarId,barId));
+                        .eq(AisleBox::getAisleBarId, barId));
             }
             aisleBarMapper.deleteById(barId);
-        }finally {
+        } finally {
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
         }
@@ -467,32 +462,32 @@ public class AisleServiceImpl implements AisleService {
         try {
             //删除柜列
             AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
-            if (Objects.nonNull(aisleIndex)){
+            if (Objects.nonNull(aisleIndex)) {
                 List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                        .eq(CabinetIndex::getAisleId,aisleIndex.getId()));
-                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                        .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getAisleId, aisleIndex.getId()));
+                if (!CollectionUtils.isEmpty(cabinetIndexList)) {
                     throw new RuntimeException("存在未删除机柜，不可删除");
                 }
                 //逻辑删除
-                if (aisleIndex.getIsDelete().equals(DelEnums.NO_DEL.getStatus())){
+                if (aisleIndex.getIsDelete().equals(DelEnums.NO_DEL.getStatus())) {
                     aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
                             .eq(AisleIndex::getId, aisleId)
                             .set(AisleIndex::getIsDelete, DelEnums.DELETE.getStatus()));
 
                     //1.删除绑定关系
                     aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                            .eq(AisleBox::getAisleId,aisleId));
+                            .eq(AisleBox::getAisleId, aisleId));
                     aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                            .eq(AisleBar::getAisleId,aisleId));
+                            .eq(AisleBar::getAisleId, aisleId));
 
-                }else {
+                } else {
                     //物理删除
                     //1.删除绑定关系
                     aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                            .eq(AisleBox::getAisleId,aisleId));
+                            .eq(AisleBox::getAisleId, aisleId));
                     aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                            .eq(AisleBar::getAisleId,aisleId));
+                            .eq(AisleBar::getAisleId, aisleId));
                     //2.删除柜列
                     aisleIndexMapper.deleteById(aisleId);
                 }
@@ -502,7 +497,7 @@ public class AisleServiceImpl implements AisleService {
 
             boolean flag = redisTemplate.delete(key);
             log.info("key: " + key + " flag : " + flag);
-        }finally {
+        } finally {
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
         }
@@ -512,58 +507,52 @@ public class AisleServiceImpl implements AisleService {
     @Override
     public AisleDetailDTO getAisleDetail(Integer aisleId) throws IOException {
         AisleDetailDTO detailDTO = new AisleDetailDTO();
-
         AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
-
-        if (Objects.nonNull(aisleIndex)){
+        ValueOperations ops = redisTemplate.opsForValue();
+        if (Objects.nonNull(aisleIndex)) {
             detailDTO.setAisleName(aisleIndex.getAisleName());
             detailDTO.setId(aisleId);
             detailDTO.setLength(aisleIndex.getAisleLength());
-            //detailDTO.setType(aisleIndex.getType());
             detailDTO.setPduBar(aisleIndex.getPduBar());
-//            detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
-//            detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
-//            detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
-//            detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
             detailDTO.setDirection(aisleIndex.getDirection());
             detailDTO.setXCoordinate(aisleIndex.getXCoordinate());
             detailDTO.setYCoordinate(aisleIndex.getYCoordinate());
 
             Integer roomId = aisleIndex.getRoomId();
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
-            if (Objects.nonNull(roomIndex)){
+            if (Objects.nonNull(roomIndex)) {
                 detailDTO.setRoomName(roomIndex.getRoomName());
                 detailDTO.setRoomId(roomId);
             }
-
         }
 
         //母线
-        List<AisleBar>  aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .eq(AisleBar::getAisleId,aisleId));
+        List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                .eq(AisleBar::getAisleId, aisleId));
 
-
-        if (!CollectionUtils.isEmpty(aisleBars)){
+        if (!CollectionUtils.isEmpty(aisleBars)) {
             //key
             List<String> keys = aisleBars.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
-            List<BusIndex>  busIndexList = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
-                    .in(BusIndex::getBusKey,keys));
-            Map<String,Integer>  idMap;
-            Map<Integer,Double> yesterdayMap = new HashMap<>();
+            List<BusIndex> busIndexList = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
+                    .in(BusIndex::getBusKey, keys));
+            Map<String, Integer> idMap;
+            Map<Integer, Double> yesterdayMap = new HashMap<>();
 
+            List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+                    .eq(AisleBox::getAisleId, aisleId));
             //获取昨日统计用电
-            if (!CollectionUtils.isEmpty(busIndexList)){
+            if (!CollectionUtils.isEmpty(busIndexList)) {
                 List<Integer> ids = busIndexList.stream().map(BusIndex::getId).distinct().collect(Collectors.toList());
-                idMap = busIndexList.stream().collect(Collectors.toMap(BusIndex::getBusKey,BusIndex::getId));
+                idMap = busIndexList.stream().collect(Collectors.toMap(BusIndex::getBusKey, BusIndex::getId));
 
                 String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-                String endTime =DateUtil.formatDateTime(DateTime.now());
-                List<String>  yesterdayList = getData(startTime,endTime, ids,BUS_EQ_TOTAL_DAY,BUS_ID);
+                String endTime = DateUtil.formatDateTime(DateTime.now());
+                List<String> yesterdayList = getData(startTime, endTime, ids, BUS_EQ_TOTAL_DAY, BUS_ID);
 
-                if (!CollectionUtils.isEmpty(yesterdayList)){
+                if (!CollectionUtils.isEmpty(yesterdayList)) {
                     yesterdayList.forEach(str -> {
                         BusEqTotalDayDo dayDo = JsonUtils.parseObject(str, BusEqTotalDayDo.class);
-                        yesterdayMap.put(dayDo.getBusId(),dayDo.getEq());
+                        yesterdayMap.put(dayDo.getBusId(), dayDo.getEq());
                     });
                 }
             } else {
@@ -571,43 +560,43 @@ public class AisleServiceImpl implements AisleService {
             }
 
 
-            Map<String,Integer>  boxIdMap;
-            Map<Integer,Map<Integer,Double>> boxYesterdayMap = new HashMap<>();
+            Map<String, Integer> boxIdMap;
+            Map<Integer, Map<Integer, Double>> boxYesterdayMap = new HashMap<>();
+            Map<String, BoxIndex> boxIndexMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(aisleBoxList)) {
 
-            List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                    .eq(AisleBox::getAisleId,aisleId));
-            if (!CollectionUtils.isEmpty(aisleBoxList)){
                 //获取id
                 List<String> boxKeys = aisleBoxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
-                List<BoxIndex>  boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                        .in(BoxIndex::getBoxKey,boxKeys));
+                List<BoxIndex> boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
+                        .in(BoxIndex::getBoxKey, boxKeys));
+                boxIndexMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getBoxKey, Function.identity()));
                 //获取昨日统计用电
-                if (!CollectionUtils.isEmpty(boxIndexList)){
+                if (!CollectionUtils.isEmpty(boxIndexList)) {
                     List<Integer> ids = boxIndexList.stream().map(BoxIndex::getId).distinct().collect(Collectors.toList());
-                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getBoxKey,BoxIndex::getId));
+                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getBoxKey, BoxIndex::getId));
 
                     String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-                    String endTime =DateUtil.formatDateTime(DateTime.now());
-                    List<String>  yesterdayList = null;
+                    String endTime = DateUtil.formatDateTime(DateTime.now());
+                    List<String> yesterdayList = null;
                     try {
-                        yesterdayList = getData(startTime,endTime, ids,BOX_EQ_OUTLET_DAY,BOX_ID);
+                        yesterdayList = getData(startTime, endTime, ids, BOX_EQ_OUTLET_DAY, BOX_ID);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
 
-                    if (!CollectionUtils.isEmpty(yesterdayList)){
+                    if (!CollectionUtils.isEmpty(yesterdayList)) {
 
                         yesterdayList.forEach(str -> {
                             BoxEqOutletDayDo dayDo = JsonUtils.parseObject(str, BoxEqOutletDayDo.class);
 
-                            Map<Integer,Double> outletMap = boxYesterdayMap.get(dayDo.getBoxId());
-                            if (Objects.nonNull(outletMap)){
-                                outletMap.put(dayDo.getOutletId(),dayDo.getEq());
-                            }else {
+                            Map<Integer, Double> outletMap = boxYesterdayMap.get(dayDo.getBoxId());
+                            if (Objects.nonNull(outletMap)) {
+                                outletMap.put(dayDo.getOutletId(), dayDo.getEq());
+                            } else {
                                 outletMap = new HashMap<>();
-                                outletMap.put(dayDo.getOutletId(),dayDo.getEq());
+                                outletMap.put(dayDo.getOutletId(), dayDo.getEq());
                             }
-                            boxYesterdayMap.put(dayDo.getBoxId(),outletMap);
+                            boxYesterdayMap.put(dayDo.getBoxId(), outletMap);
                         });
                     }
                 } else {
@@ -616,24 +605,118 @@ public class AisleServiceImpl implements AisleService {
             } else {
                 boxIdMap = new HashMap<>();
             }
-
-
+            Map<Integer, List<AisleBox>> collect = aisleBoxList.stream().collect(Collectors.groupingBy(AisleBox::getAisleBarId));
+            Map<String, BoxIndex> finalBoxIndexMap = boxIndexMap;
             aisleBars.forEach(aisleBar -> {
                 AisleBarDTO barVo = BeanUtils.toBean(aisleBar, AisleBarDTO.class);
-                List<AisleBox> boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                        .eq(AisleBox::getAisleBarId,aisleBar.getId()));
+                barVo.setDevIp(aisleBar.getBusKey());
+                Object busObject = ops.get(REDIS_KEY_BUS + aisleBar.getBusKey());
+                if (Objects.nonNull(busObject)) {
+                    JSONObject data = JSON.parseObject(JSON.toJSONString(busObject));
+                    JSONObject busData = data.containsKey(BUS_DATA) ? data.getJSONObject(BUS_DATA) : new JSONObject();
+                    JSONObject envData = data.containsKey(ENV_ITEM_LIST) ? data.getJSONObject(ENV_ITEM_LIST) : new JSONObject();
+                    //温度数据
+                    if (envData.containsKey(TEM_VALUE)) {
+                        barVo.setTemData(envData.getObject(TEM_VALUE, float[].class));
+                    }
+                    //相数据
+                    if (busData.containsKey(LINE_ITEM_LIST)) {
+                        JSONObject lineData = busData.getJSONObject(LINE_ITEM_LIST);
+                        //负载率
+                        if (lineData.containsKey(LOAD_RATE)) {
+                            barVo.setLineLoadRate(lineData.getObject(LOAD_RATE, float[].class));
+                        }
+                        //电流
+                        if (lineData.containsKey(CUR_VALUE)) {
+                            barVo.setLineCur(lineData.getObject(CUR_VALUE, float[].class));
+                        }
+                        //电压
+                        if (lineData.containsKey(VOL_VALUE)) {
+                            barVo.setLineVol(lineData.getObject(VOL_VALUE, float[].class));
+                        }
+                        //有功功率
+                        if (lineData.containsKey(POW_ACTIVE)) {
+                            barVo.setPowActive(lineData.getObject(POW_ACTIVE, float[].class));
+                        }
+                        //视在功率
+                        if (lineData.containsKey(POW_APPARENT)) {
+                            barVo.setPowApparent(lineData.getObject(POW_APPARENT, float[].class));
+                        }
+                        //无功功率
+                        if (lineData.containsKey(POW_REACTIVE)) {
+                            barVo.setPowReactive(lineData.getObject(POW_REACTIVE, float[].class));
+                        }
+                        //功率因素
+                        if (lineData.containsKey(POWER_FACTOR)) {
+                            barVo.setPowerFactor(lineData.getObject(POWER_FACTOR, float[].class));
+                        }
+                    }
+                }
+
+                List<AisleBox> boxList = collect.get(aisleBar.getId());
                 List<AisleBoxDTO> boxDTOList = new ArrayList<>();
-                if (!CollectionUtils.isEmpty(boxList)){
-
+                if (!CollectionUtils.isEmpty(boxList)) {
                     boxList.forEach(box -> {
-                        AisleBoxDTO boxDTO = BeanUtils.toBean(box, AisleBoxDTO.class);
-                        //获取输出位用电量
-                        int boxId = boxIdMap.getOrDefault(box.getBoxKey(),0);
-                        Map<Integer,Double> outletEq = boxYesterdayMap.getOrDefault(boxId,new HashMap<>());
+                        BoxIndex boxIndex = finalBoxIndexMap.get(box.getBoxKey());
 
-                        if (!CollectionUtils.isEmpty(outletEq.values())){
+                        AisleBoxDTO boxDTO = BeanUtils.toBean(box, AisleBoxDTO.class);
+                        boxDTO.setBoxName(boxDTO.getBoxName());
+
+                        Object boxObject = ops.get(REDIS_KEY_BOX + box.getBoxKey());
+                        if (Objects.nonNull(boxObject)) {
+                            JSONObject data = JSON.parseObject(JSON.toJSONString(boxObject));
+                            JSONObject boxData = data.containsKey(BOX_DATA) ? data.getJSONObject(BOX_DATA) : new JSONObject();
+                            JSONObject envData = data.containsKey(ENV_ITEM_LIST) ? data.getJSONObject(ENV_ITEM_LIST) : new JSONObject();
+                            //温度数据
+                            if (envData.containsKey(TEM_VALUE)) {
+                                boxDTO.setTemData(envData.getObject(TEM_VALUE, float[].class));
+                            }
+                            //相数据
+                            if (boxData.containsKey(LINE_ITEM_LIST)) {
+                                JSONObject lineData = boxData.getJSONObject(LINE_ITEM_LIST);
+                                //负载率
+                                if (lineData.containsKey(LOAD_RATE)) {
+                                    boxDTO.setLineLoadRate(lineData.getObject(LOAD_RATE, float[].class));
+                                }
+                                //电流
+                                if (lineData.containsKey(CUR_VALUE)) {
+                                    boxDTO.setLineCur(lineData.getObject(CUR_VALUE, float[].class));
+                                }
+                                //电压
+                                if (lineData.containsKey(VOL_VALUE)) {
+                                    boxDTO.setLineVol(lineData.getObject(VOL_VALUE, float[].class));
+                                }
+
+                            }
+                            //输出位数据
+                            if (boxData.containsKey(OUTLET_ITEM_LIST)) {
+                                JSONObject outletData = boxData.getJSONObject(OUTLET_ITEM_LIST);
+                                //有功功率
+                                if (outletData.containsKey(POW_ACTIVE)) {
+                                    boxDTO.setPowActive(outletData.getObject(POW_ACTIVE, float[].class));
+                                }
+                                //视在功率
+                                if (outletData.containsKey(POW_APPARENT)) {
+                                    boxDTO.setPowApparent(outletData.getObject(POW_APPARENT, float[].class));
+                                }
+                                //无功功率
+                                if (outletData.containsKey(POW_REACTIVE)) {
+                                    boxDTO.setPowReactive(outletData.getObject(POW_REACTIVE, float[].class));
+                                }
+                                //功率因素
+                                if (outletData.containsKey(POWER_FACTOR)) {
+                                    boxDTO.setPowerFactor(outletData.getObject(POWER_FACTOR, float[].class));
+                                }
+                            }
+                        }
+
+                        //获取输出位用电量
+                        int boxId = boxIdMap.getOrDefault(box.getBoxKey(), 0);
+                        Map<Integer, Double> outletEq = boxYesterdayMap.getOrDefault(boxId, new HashMap<>());
+
+                        if (!CollectionUtils.isEmpty(outletEq.values())) {
                             Double[] eqList = new Double[outletEq.values().size()];
-                            outletEq.keySet().forEach(id -> eqList[id-1] = outletEq.get(id));
+                            outletEq.keySet().forEach(id -> eqList[id - 1] = outletEq.get(id));
                             boxDTO.setYesterdayEq(eqList);
                         }
                         boxDTOList.add(boxDTO);
@@ -641,58 +724,148 @@ public class AisleServiceImpl implements AisleService {
                 }
                 //获取昨日用电量
                 String key = aisleBar.getBusKey();
-                int busId = idMap.getOrDefault(key,0);
+                int busId = idMap.getOrDefault(key, 0);
                 barVo.setYesterdayEq(yesterdayMap.getOrDefault(busId, 0.0));
 
                 barVo.setBoxList(boxDTOList.stream().sorted(Comparator.comparing(AisleBoxDTO::getBoxIndex)).collect(Collectors.toList()));
-                if ("A".equals(aisleBar.getPath())){
+                if ("A".equals(aisleBar.getPath())) {
                     detailDTO.setBarA(barVo);
                 }
-                if ("B".equals(aisleBar.getPath())){
+                if ("B".equals(aisleBar.getPath())) {
                     detailDTO.setBarB(barVo);
                 }
-
-
             });
         }
-
         //机柜
         List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                .eq(CabinetIndex::getAisleId,aisleId)
-                .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                .eq(CabinetIndex::getAisleId, aisleId)
+                .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                 .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus()));
-        List<CabinetDTO> aisleCabinetDTOList = new ArrayList<>();
-       if (!CollectionUtils.isEmpty(cabinetIndexList)){
+        List<CabinetAisleVO> aisleCabinetDTOList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(cabinetIndexList)) {
+            List<Integer> ids = cabinetIndexList.stream().map(CabinetIndex::getId).distinct().collect(Collectors.toList());
+            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            String endTime = DateUtil.formatDateTime(DateTime.now());
+            List<String> yesterdayList = getData(startTime, endTime, ids, CABINET_EQ_TOTAL_DAY, CABINET_ID);
+            Map<Integer, Double> yesterdayMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(yesterdayList)) {
+                yesterdayList.forEach(str -> {
+                    CabinetEqTotalDayDo dayDo = JsonUtils.parseObject(str, CabinetEqTotalDayDo.class);
+                    yesterdayMap.put(dayDo.getCabinetId(), dayDo.getEqValue());
+                });
+            }
+            cabinetIndexList.forEach(cabinetIndex -> {
+                CabinetAisleVO cabinetDTO = BeanUtils.toBean(cabinetIndex, CabinetAisleVO.class);
+                if ("x".equals(aisleIndex.getDirection())) {
+                    //横向
+                    cabinetDTO.setIndex(cabinetDTO.getXCoordinate() - aisleIndex.getXCoordinate() + 1);
+                }
+                if ("y".equals(aisleIndex.getDirection())) {
+                    //纵向
+                    cabinetDTO.setIndex(cabinetDTO.getYCoordinate() - aisleIndex.getYCoordinate() + 1);
+                }
+                cabinetDTO.setYesterdayEq(yesterdayMap.getOrDefault(cabinetIndex.getId(), 0.0));
+                Object cabObject = ops.get(REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId());
+                if (Objects.nonNull(cabObject)) {
+                    JSONObject data = JSON.parseObject(JSON.toJSONString(cabObject));
+                    JSONObject cabData = data.containsKey(CABINET_POWER) ? data.getJSONObject(CABINET_POWER) : new JSONObject();
+                    JSONObject envData = data.containsKey(CABINET_ENV) ? data.getJSONObject(CABINET_ENV) : new JSONObject();
+                    //负载率
+                    if (data.containsKey(LOAD_FACTOR)) {
+                        cabinetDTO.setLoadRate(data.getFloatValue(LOAD_FACTOR));
+                    }
+                    //A数据
+                    if (cabData.containsKey(PATH_A)) {
+                        JSONObject aData = cabData.getJSONObject(PATH_A);
+                        //电流
+                        if (aData.containsKey(CUR_VALUE)) {
+                            cabinetDTO.setLineCurA(aData.getObject(CUR_VALUE, float[].class));
+                        }
+                        //电压
+                        if (aData.containsKey(VOL_VALUE)) {
+                            cabinetDTO.setLineVolA(aData.getObject(VOL_VALUE, float[].class));
+                        }
+                        //有功功率
+                        if (aData.containsKey(POW_ACTIVE)) {
+                            cabinetDTO.setPowActiveA(aData.getFloatValue(POW_ACTIVE));
+                        }
+                        //视在功率
+                        if (aData.containsKey(POW_APPARENT)) {
+                            cabinetDTO.setPowApparentA(aData.getFloatValue(POW_APPARENT));
+                        }
+                        //无功功率
+                        if (aData.containsKey(POW_REACTIVE)) {
+                            cabinetDTO.setPowReactiveA(aData.getFloatValue(POW_REACTIVE));
+                        }
+                        //功率因素
+                        if (aData.containsKey(POWER_FACTOR)) {
+                            cabinetDTO.setPowerFactorA(aData.getFloatValue(POWER_FACTOR));
+                        }
+                    }
 
-           List<Integer> ids = cabinetIndexList.stream().map(CabinetIndex::getId).distinct().collect(Collectors.toList());
-
-           String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-           String endTime =DateUtil.formatDateTime(DateTime.now());
-           List<String>  yesterdayList = getData(startTime,endTime, ids,CABINET_EQ_TOTAL_DAY,CABINET_ID);
-           Map<Integer,Double> yesterdayMap = new HashMap<>();
-           if (!CollectionUtils.isEmpty(yesterdayList)){
-               yesterdayList.forEach(str -> {
-                   CabinetEqTotalDayDo dayDo = JsonUtils.parseObject(str, CabinetEqTotalDayDo.class);
-                   yesterdayMap.put(dayDo.getCabinetId(),dayDo.getEqValue());
-               });
-           }
-           cabinetIndexList.forEach(cabinetIndex ->{
-               CabinetDTO cabinetDTO = cabinetApi.getDetail(cabinetIndex.getId());
-               if ("x".equals(aisleIndex.getDirection())){
-                   //横向
-                   cabinetDTO.setIndex(cabinetDTO.getXCoordinate() - aisleIndex.getXCoordinate() + 1);
-               }
-               if ("y".equals(aisleIndex.getDirection())){
-                   //纵向
-                   cabinetDTO.setIndex(cabinetDTO.getYCoordinate() - aisleIndex.getYCoordinate() + 1);
-               }
-               cabinetDTO.setYesterdayEq(yesterdayMap.getOrDefault(cabinetIndex.getId(), 0.0));
-               aisleCabinetDTOList.add(cabinetDTO);
-           });
-           detailDTO.setCabinetList(aisleCabinetDTOList.stream().sorted(Comparator.comparing(CabinetDTO::getIndex)).collect(Collectors.toList()));
-       }
-
-       return detailDTO;
+                    //b数据
+                    if (cabData.containsKey(PATH_B)) {
+                        JSONObject bData = cabData.getJSONObject(PATH_B);
+                        //电流
+                        if (bData.containsKey(CUR_VALUE)) {
+                            cabinetDTO.setLineCurB(bData.getObject(CUR_VALUE, float[].class));
+                        }
+                        //电压
+                        if (bData.containsKey(VOL_VALUE)) {
+                            cabinetDTO.setLineVolB(bData.getObject(VOL_VALUE, float[].class));
+                        }
+                        //有功功率
+                        if (bData.containsKey(POW_ACTIVE)) {
+                            cabinetDTO.setPowActiveB(bData.getFloatValue(POW_ACTIVE));
+                        }
+                        //视在功率
+                        if (bData.containsKey(POW_APPARENT)) {
+                            cabinetDTO.setPowApparentB(bData.getFloatValue(POW_APPARENT));
+                        }
+                        //无功功率
+                        if (bData.containsKey(POW_REACTIVE)) {
+                            cabinetDTO.setPowReactiveB(bData.getFloatValue(POW_REACTIVE));
+                        }
+                        //功率因素
+                        if (bData.containsKey(POWER_FACTOR)) {
+                            cabinetDTO.setPowerFactorB(bData.getFloatValue(POWER_FACTOR));
+                        }
+                    }
+                    //总数据
+                    if (cabData.containsKey(TOTAL_DATA)) {
+                        JSONObject totalData = cabData.getJSONObject(TOTAL_DATA);
+                        //有功功率
+                        if (totalData.containsKey(POW_ACTIVE)) {
+                            cabinetDTO.setPowActive(totalData.getFloatValue(POW_ACTIVE));
+                        }
+                        //视在功率
+                        if (totalData.containsKey(POW_APPARENT)) {
+                            cabinetDTO.setPowApparent(totalData.getFloatValue(POW_APPARENT));
+                        }
+                        //无功功率
+                        if (totalData.containsKey(POW_REACTIVE)) {
+                            cabinetDTO.setPowReactive(totalData.getFloatValue(POW_REACTIVE));
+                        }
+                        //功率因素
+                        if (totalData.containsKey(POWER_FACTOR)) {
+                            cabinetDTO.setPowerFactor(totalData.getFloatValue(POWER_FACTOR));
+                        }
+                    }
+                    //温度
+                    if (envData.containsKey("tem_average")) {
+                        JSONArray temAverage = envData.getJSONArray("tem_average");
+                        if (!CollectionUtils.isEmpty(temAverage)) {
+                            cabinetDTO.setTemData(temAverage.getBigDecimal(0));
+                            cabinetDTO.setTemDataHot(temAverage.getBigDecimal(1));
+//                            cabinetDTO.setTemData(Math.max(maxB, maxF));
+                        }
+                    }
+                }
+                aisleCabinetDTOList.add(cabinetDTO);
+            });
+            detailDTO.setCabinetList(aisleCabinetDTOList.stream().sorted(Comparator.comparing(CabinetAisleVO::getIndex)).collect(Collectors.toList()));
+        }
+        return detailDTO;
     }
 
     @Override
@@ -700,17 +873,17 @@ public class AisleServiceImpl implements AisleService {
         List<AisleListDTO> aisleListDTOList = new ArrayList<>();
 
         List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
-                .eq(RoomIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+                .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
         List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
-                .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
-        Map<Integer,List<AisleIndex>>  map = new HashMap<>();
-        if (!CollectionUtils.isEmpty(aisleIndexList)){
+                .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+        Map<Integer, List<AisleIndex>> map = new HashMap<>();
+        if (!CollectionUtils.isEmpty(aisleIndexList)) {
             map.putAll(aisleIndexList.stream().collect(Collectors.groupingBy(AisleIndex::getRoomId)));
         }
-        if (!CollectionUtils.isEmpty(roomIndexList)){
+        if (!CollectionUtils.isEmpty(roomIndexList)) {
             roomIndexList.forEach(roomIndex -> {
-                if (Objects.nonNull(map.get(roomIndex.getId()))){
+                if (Objects.nonNull(map.get(roomIndex.getId()))) {
                     AisleListDTO aisleListDTO = new AisleListDTO();
                     aisleListDTO.setRoomId(roomIndex.getId());
                     aisleListDTO.setRoomName(roomIndex.getRoomName());
@@ -734,56 +907,56 @@ public class AisleServiceImpl implements AisleService {
         detailDTO.setId(aisleId);
 
         //母线
-        List<AisleBar>  aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .eq(AisleBar::getAisleId,aisleId));
+        List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                .eq(AisleBar::getAisleId, aisleId));
         List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                .eq(AisleBox::getAisleId,aisleId));
+                .eq(AisleBox::getAisleId, aisleId));
         //始端箱
-        if (!CollectionUtils.isEmpty(aisleBars)){
+        if (!CollectionUtils.isEmpty(aisleBars)) {
             aisleBars.forEach(aisleBar -> {
                 BusDetailDataDTO busDTO = new BusDetailDataDTO();
 
                 String key = aisleBar.getBusKey();
-                String busKey =  REDIS_KEY_BUS + key;
+                String busKey = REDIS_KEY_BUS + key;
                 Object busObject = ops.get(busKey);
                 if (Objects.nonNull(busObject)) {
                     JSONObject data = JSON.parseObject(JSON.toJSONString(busObject));
                     JSONObject busData = data.containsKey(BUS_DATA) ? data.getJSONObject(BUS_DATA) : new JSONObject();
-                    JSONObject envData = data.containsKey(ENV_ITEM_LIST)?data.getJSONObject(ENV_ITEM_LIST):new JSONObject();
+                    JSONObject envData = data.containsKey(ENV_ITEM_LIST) ? data.getJSONObject(ENV_ITEM_LIST) : new JSONObject();
                     //温度数据
-                    if (envData.containsKey(TEM_VALUE)){
-                        busDTO.setTemData(envData.getObject(TEM_VALUE,float[].class));
+                    if (envData.containsKey(TEM_VALUE)) {
+                        busDTO.setTemData(envData.getObject(TEM_VALUE, float[].class));
                     }
                     //相数据
-                    if (busData.containsKey(LINE_ITEM_LIST)){
+                    if (busData.containsKey(LINE_ITEM_LIST)) {
                         JSONObject lineData = busData.getJSONObject(LINE_ITEM_LIST);
                         //负载率
-                        if (lineData.containsKey(LOAD_RATE)){
-                            busDTO.setLineLoadRate(lineData.getObject(LOAD_RATE,float[].class));
+                        if (lineData.containsKey(LOAD_RATE)) {
+                            busDTO.setLineLoadRate(lineData.getObject(LOAD_RATE, float[].class));
                         }
                         //电流
-                        if (lineData.containsKey(CUR_VALUE)){
-                            busDTO.setLineCur(lineData.getObject(CUR_VALUE,float[].class));
+                        if (lineData.containsKey(CUR_VALUE)) {
+                            busDTO.setLineCur(lineData.getObject(CUR_VALUE, float[].class));
                         }
                         //电压
-                        if (lineData.containsKey(VOL_VALUE)){
-                            busDTO.setLineVol(lineData.getObject(VOL_VALUE,float[].class));
+                        if (lineData.containsKey(VOL_VALUE)) {
+                            busDTO.setLineVol(lineData.getObject(VOL_VALUE, float[].class));
                         }
                         //有功功率
-                        if (lineData.containsKey(POW_ACTIVE)){
-                            busDTO.setPowActive(lineData.getObject(POW_ACTIVE,float[].class));
+                        if (lineData.containsKey(POW_ACTIVE)) {
+                            busDTO.setPowActive(lineData.getObject(POW_ACTIVE, float[].class));
                         }
                         //视在功率
-                        if (lineData.containsKey(POW_APPARENT)){
-                            busDTO.setPowApparent(lineData.getObject(POW_APPARENT,float[].class));
+                        if (lineData.containsKey(POW_APPARENT)) {
+                            busDTO.setPowApparent(lineData.getObject(POW_APPARENT, float[].class));
                         }
                         //无功功率
-                        if (lineData.containsKey(POW_REACTIVE)){
-                            busDTO.setPowReactive(lineData.getObject(POW_REACTIVE,float[].class));
+                        if (lineData.containsKey(POW_REACTIVE)) {
+                            busDTO.setPowReactive(lineData.getObject(POW_REACTIVE, float[].class));
                         }
                         //功率因素
-                        if (lineData.containsKey(POWER_FACTOR)){
-                            busDTO.setPowerFactor(lineData.getObject(POWER_FACTOR,float[].class));
+                        if (lineData.containsKey(POWER_FACTOR)) {
+                            busDTO.setPowerFactor(lineData.getObject(POWER_FACTOR, float[].class));
                         }
 
                     }
@@ -792,63 +965,63 @@ public class AisleServiceImpl implements AisleService {
                 busDTO.setDevKey(key);
 
                 //插接箱
-                List<BoxDetailDataDTO> boxList =  new ArrayList<>();
+                List<BoxDetailDataDTO> boxList = new ArrayList<>();
 
-                if (!CollectionUtils.isEmpty(aisleBoxList)){
-                    
+                if (!CollectionUtils.isEmpty(aisleBoxList)) {
+
                     aisleBoxList.forEach(box -> {
-                        if (box.getAisleBarId().equals(aisleBar.getId())){
+                        if (box.getAisleBarId().equals(aisleBar.getId())) {
                             BoxDetailDataDTO boxDto = new BoxDetailDataDTO();
 
                             boxDto.setId(box.getId());
                             String devKey = box.getBoxKey();
-                            String boxKey =  REDIS_KEY_BOX + devKey;
+                            String boxKey = REDIS_KEY_BOX + devKey;
                             Object boxObject = ops.get(boxKey);
                             boxDto.setDevKey(devKey);
                             boxDto.setBoxIndex(box.getBoxIndex());
                             if (Objects.nonNull(boxObject)) {
                                 JSONObject data = JSON.parseObject(JSON.toJSONString(boxObject));
                                 JSONObject boxData = data.containsKey(BOX_DATA) ? data.getJSONObject(BOX_DATA) : new JSONObject();
-                                JSONObject envData = data.containsKey(ENV_ITEM_LIST)?data.getJSONObject(ENV_ITEM_LIST):new JSONObject();
+                                JSONObject envData = data.containsKey(ENV_ITEM_LIST) ? data.getJSONObject(ENV_ITEM_LIST) : new JSONObject();
                                 //温度数据
-                                if (envData.containsKey(TEM_VALUE)){
-                                    boxDto.setTemData(envData.getObject(TEM_VALUE,float[].class));
+                                if (envData.containsKey(TEM_VALUE)) {
+                                    boxDto.setTemData(envData.getObject(TEM_VALUE, float[].class));
                                 }
                                 //相数据
-                                if (boxData.containsKey(LINE_ITEM_LIST)){
+                                if (boxData.containsKey(LINE_ITEM_LIST)) {
                                     JSONObject lineData = boxData.getJSONObject(LINE_ITEM_LIST);
                                     //负载率
-                                    if (lineData.containsKey(LOAD_RATE)){
-                                        boxDto.setLineLoadRate(lineData.getObject(LOAD_RATE,float[].class));
+                                    if (lineData.containsKey(LOAD_RATE)) {
+                                        boxDto.setLineLoadRate(lineData.getObject(LOAD_RATE, float[].class));
                                     }
                                     //电流
-                                    if (lineData.containsKey(CUR_VALUE)){
-                                        boxDto.setLineCur(lineData.getObject(CUR_VALUE,float[].class));
+                                    if (lineData.containsKey(CUR_VALUE)) {
+                                        boxDto.setLineCur(lineData.getObject(CUR_VALUE, float[].class));
                                     }
                                     //电压
-                                    if (lineData.containsKey(VOL_VALUE)){
-                                        boxDto.setLineVol(lineData.getObject(VOL_VALUE,float[].class));
+                                    if (lineData.containsKey(VOL_VALUE)) {
+                                        boxDto.setLineVol(lineData.getObject(VOL_VALUE, float[].class));
                                     }
 
                                 }
                                 //输出位数据
-                                if (boxData.containsKey(OUTLET_ITEM_LIST)){
+                                if (boxData.containsKey(OUTLET_ITEM_LIST)) {
                                     JSONObject outletData = boxData.getJSONObject(OUTLET_ITEM_LIST);
                                     //有功功率
-                                    if (outletData.containsKey(POW_ACTIVE)){
-                                        boxDto.setPowActive(outletData.getObject(POW_ACTIVE,float[].class));
+                                    if (outletData.containsKey(POW_ACTIVE)) {
+                                        boxDto.setPowActive(outletData.getObject(POW_ACTIVE, float[].class));
                                     }
                                     //视在功率
-                                    if (outletData.containsKey(POW_APPARENT)){
-                                        boxDto.setPowApparent(outletData.getObject(POW_APPARENT,float[].class));
+                                    if (outletData.containsKey(POW_APPARENT)) {
+                                        boxDto.setPowApparent(outletData.getObject(POW_APPARENT, float[].class));
                                     }
                                     //无功功率
-                                    if (outletData.containsKey(POW_REACTIVE)){
-                                        boxDto.setPowReactive(outletData.getObject(POW_REACTIVE,float[].class));
+                                    if (outletData.containsKey(POW_REACTIVE)) {
+                                        boxDto.setPowReactive(outletData.getObject(POW_REACTIVE, float[].class));
                                     }
                                     //功率因素
-                                    if (outletData.containsKey(POWER_FACTOR)){
-                                        boxDto.setPowerFactor(outletData.getObject(POWER_FACTOR,float[].class));
+                                    if (outletData.containsKey(POWER_FACTOR)) {
+                                        boxDto.setPowerFactor(outletData.getObject(POWER_FACTOR, float[].class));
                                     }
 
                                 }
@@ -858,10 +1031,10 @@ public class AisleServiceImpl implements AisleService {
                     });
                 }
                 busDTO.setBoxList(boxList.stream().sorted(Comparator.comparing(BoxDetailDataDTO::getBoxIndex)).collect(Collectors.toList()));
-                if ("A".equals(aisleBar.getPath())){
+                if ("A".equals(aisleBar.getPath())) {
                     detailDTO.setBarA(busDTO);
                 }
-                if ("B".equals(aisleBar.getPath())){
+                if ("B".equals(aisleBar.getPath())) {
                     detailDTO.setBarB(busDTO);
                 }
             });
@@ -869,125 +1042,124 @@ public class AisleServiceImpl implements AisleService {
 
         //机柜
         List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                .eq(CabinetIndex::getAisleId,aisleId)
-                .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                .eq(CabinetIndex::getAisleId, aisleId)
+                .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                 .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus()));
 
         List<CabinetDetailDataDTO> cabList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(cabinetIndexList)){
+        if (!CollectionUtils.isEmpty(cabinetIndexList)) {
 
             List<CabinetCfg> cabinetCfgs = cabinetCfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
-                    .in(CabinetCfg::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
-            Map<Integer,CabinetCfg> cfgMap = new HashMap<>();
-            if (!CollectionUtils.isEmpty(cabinetCfgs)){
+                    .in(CabinetCfg::getCabinetId, cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
+            Map<Integer, CabinetCfg> cfgMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(cabinetCfgs)) {
                 cfgMap.putAll(cabinetCfgs.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId, Function.identity())));
             }
 
-            cabinetIndexList.forEach(cabinetIndex ->{
+            cabinetIndexList.forEach(cabinetIndex -> {
                 CabinetDetailDataDTO cabDto = new CabinetDetailDataDTO();
                 cabDto.setId(cabinetIndex.getId());
                 cabDto.setXCoordinate(cfgMap.get(cabinetIndex.getId()).getXCoordinate());
                 cabDto.setYCoordinate(cfgMap.get(cabinetIndex.getId()).getYCoordinate());
-                String cabKey =  REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId();
-                Object cabObject = ops.get(cabKey);
+                Object cabObject = ops.get(REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId());
                 if (Objects.nonNull(cabObject)) {
                     JSONObject data = JSON.parseObject(JSON.toJSONString(cabObject));
                     JSONObject cabData = data.containsKey(CABINET_POWER) ? data.getJSONObject(CABINET_POWER) : new JSONObject();
-                    JSONObject envData = data.containsKey(CABINET_ENV)?data.getJSONObject(CABINET_ENV):new JSONObject();
+                    JSONObject envData = data.containsKey(CABINET_ENV) ? data.getJSONObject(CABINET_ENV) : new JSONObject();
                     //负载率
-                    if (data.containsKey(LOAD_FACTOR)){
+                    if (data.containsKey(LOAD_FACTOR)) {
                         cabDto.setLoadRate(data.getFloatValue(LOAD_FACTOR));
                     }
                     //A数据
-                    if (cabData.containsKey(PATH_A)){
+                    if (cabData.containsKey(PATH_A)) {
                         JSONObject aData = cabData.getJSONObject(PATH_A);
                         //电流
-                        if (aData.containsKey(CUR_VALUE)){
-                            cabDto.setLineCurA(aData.getObject(CUR_VALUE,float[].class));
+                        if (aData.containsKey(CUR_VALUE)) {
+                            cabDto.setLineCurA(aData.getObject(CUR_VALUE, float[].class));
                         }
                         //电压
-                        if (aData.containsKey(VOL_VALUE)){
-                            cabDto.setLineVolA(aData.getObject(VOL_VALUE,float[].class));
+                        if (aData.containsKey(VOL_VALUE)) {
+                            cabDto.setLineVolA(aData.getObject(VOL_VALUE, float[].class));
                         }
                         //有功功率
-                        if (aData.containsKey(POW_ACTIVE)){
+                        if (aData.containsKey(POW_ACTIVE)) {
                             cabDto.setPowActiveA(aData.getFloatValue(POW_ACTIVE));
                         }
                         //视在功率
-                        if (aData.containsKey(POW_APPARENT)){
+                        if (aData.containsKey(POW_APPARENT)) {
                             cabDto.setPowApparentA(aData.getFloatValue(POW_APPARENT));
                         }
                         //无功功率
-                        if (aData.containsKey(POW_REACTIVE)){
+                        if (aData.containsKey(POW_REACTIVE)) {
                             cabDto.setPowReactiveA(aData.getFloatValue(POW_REACTIVE));
                         }
                         //功率因素
-                        if (aData.containsKey(POWER_FACTOR)){
+                        if (aData.containsKey(POWER_FACTOR)) {
                             cabDto.setPowerFactorA(aData.getFloatValue(POWER_FACTOR));
                         }
                     }
 
                     //b数据
-                    if (cabData.containsKey(PATH_B)){
+                    if (cabData.containsKey(PATH_B)) {
                         JSONObject bData = cabData.getJSONObject(PATH_B);
                         //电流
-                        if (bData.containsKey(CUR_VALUE)){
-                            cabDto.setLineCurB(bData.getObject(CUR_VALUE,float[].class));
+                        if (bData.containsKey(CUR_VALUE)) {
+                            cabDto.setLineCurB(bData.getObject(CUR_VALUE, float[].class));
                         }
                         //电压
-                        if (bData.containsKey(VOL_VALUE)){
-                            cabDto.setLineVolB(bData.getObject(VOL_VALUE,float[].class));
+                        if (bData.containsKey(VOL_VALUE)) {
+                            cabDto.setLineVolB(bData.getObject(VOL_VALUE, float[].class));
                         }
                         //有功功率
-                        if (bData.containsKey(POW_ACTIVE)){
+                        if (bData.containsKey(POW_ACTIVE)) {
                             cabDto.setPowActiveB(bData.getFloatValue(POW_ACTIVE));
                         }
                         //视在功率
-                        if (bData.containsKey(POW_APPARENT)){
+                        if (bData.containsKey(POW_APPARENT)) {
                             cabDto.setPowApparentB(bData.getFloatValue(POW_APPARENT));
                         }
                         //无功功率
-                        if (bData.containsKey(POW_REACTIVE)){
+                        if (bData.containsKey(POW_REACTIVE)) {
                             cabDto.setPowReactiveB(bData.getFloatValue(POW_REACTIVE));
                         }
                         //功率因素
-                        if (bData.containsKey(POWER_FACTOR)){
+                        if (bData.containsKey(POWER_FACTOR)) {
                             cabDto.setPowerFactorB(bData.getFloatValue(POWER_FACTOR));
                         }
                     }
                     //总数据
-                    if (cabData.containsKey(TOTAL_DATA)){
+                    if (cabData.containsKey(TOTAL_DATA)) {
                         JSONObject totalData = cabData.getJSONObject(TOTAL_DATA);
                         //有功功率
-                        if (totalData.containsKey(POW_ACTIVE)){
+                        if (totalData.containsKey(POW_ACTIVE)) {
                             cabDto.setPowActive(totalData.getFloatValue(POW_ACTIVE));
                         }
                         //视在功率
-                        if (totalData.containsKey(POW_APPARENT)){
+                        if (totalData.containsKey(POW_APPARENT)) {
                             cabDto.setPowApparent(totalData.getFloatValue(POW_APPARENT));
                         }
                         //无功功率
-                        if (totalData.containsKey(POW_REACTIVE)){
+                        if (totalData.containsKey(POW_REACTIVE)) {
                             cabDto.setPowReactive(totalData.getFloatValue(POW_REACTIVE));
                         }
                         //功率因素
-                        if (totalData.containsKey(POWER_FACTOR)){
+                        if (totalData.containsKey(POWER_FACTOR)) {
                             cabDto.setPowerFactor(totalData.getFloatValue(POWER_FACTOR));
                         }
                     }
 
                     //温度
-                    if (envData.containsKey(TEM_VALUE)){
+                    if (envData.containsKey(TEM_VALUE)) {
                         JSONObject temData = envData.getJSONObject(TEM_VALUE);
 
-                        double[] front = temData.getObject("front",double[].class);
-                        double[] black = temData.getObject("black",double[].class);
+                        double[] front = temData.getObject("front", double[].class);
+                        double[] black = temData.getObject("black", double[].class);
                         double maxF = Arrays.stream(front).max().getAsDouble();
                         double maxB = Arrays.stream(black).max().getAsDouble();
                         cabDto.setTemData(Math.max(maxB, maxF));
                     }
                 }
-               cabList.add(cabDto);
+                cabList.add(cabDto);
             });
             detailDTO.setCabinetList(cabList.stream()
                     .sorted(Comparator.comparing(CabinetDetailDataDTO::getXCoordinate))
@@ -1006,67 +1178,67 @@ public class AisleServiceImpl implements AisleService {
 
         dataDTO.setId(aisleId);
 
-        String aisleKey =  REDIS_KEY_AISLE + aisleId;
+        String aisleKey = REDIS_KEY_AISLE + aisleId;
         Object aisleObject = ops.get(aisleKey);
         if (Objects.nonNull(aisleObject)) {
             JSONObject data = JSON.parseObject(JSON.toJSONString(aisleObject));
             JSONObject aisleData = data.containsKey(AISLE_POWER) ? data.getJSONObject(AISLE_POWER) : new JSONObject();
 
-            if (aisleData.containsKey(TOTAL_DATA)){
+            if (aisleData.containsKey(TOTAL_DATA)) {
                 JSONObject totalData = aisleData.getJSONObject(TOTAL_DATA);
                 //有功功率
-                if (totalData.containsKey(POW_ACTIVE)){
+                if (totalData.containsKey(POW_ACTIVE)) {
                     dataDTO.setPowActive(totalData.getFloatValue(POW_ACTIVE));
                 }
                 //视在功率
-                if (totalData.containsKey(POW_APPARENT)){
+                if (totalData.containsKey(POW_APPARENT)) {
                     dataDTO.setPowApparent(totalData.getFloatValue(POW_APPARENT));
                 }
                 //无功功率
-                if (totalData.containsKey(POW_REACTIVE)){
+                if (totalData.containsKey(POW_REACTIVE)) {
                     dataDTO.setPowReactive(totalData.getFloatValue(POW_REACTIVE));
                 }
                 //功率因素
-                if (totalData.containsKey(POWER_FACTOR)){
+                if (totalData.containsKey(POWER_FACTOR)) {
                     dataDTO.setPowerFactor(totalData.getFloatValue(POWER_FACTOR));
                 }
             }
         }
 
 
-         //母线
-        List<AisleBar>  aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .eq(AisleBar::getAisleId,aisleId));
+        //母线
+        List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                .eq(AisleBar::getAisleId, aisleId));
         //始端箱
-        if (!CollectionUtils.isEmpty(aisleBars)){
+        if (!CollectionUtils.isEmpty(aisleBars)) {
             aisleBars.forEach(aisleBar -> {
                 String key = aisleBar.getBusKey();
-                String busKey =  REDIS_KEY_BUS + key;
+                String busKey = REDIS_KEY_BUS + key;
                 Object busObject = ops.get(busKey);
                 if (Objects.nonNull(busObject)) {
                     JSONObject data = JSON.parseObject(JSON.toJSONString(busObject));
                     JSONObject busData = data.containsKey(BUS_DATA) ? data.getJSONObject(BUS_DATA) : new JSONObject();
 
                     //相数据
-                    if (busData.containsKey(LINE_ITEM_LIST)){
+                    if (busData.containsKey(LINE_ITEM_LIST)) {
                         JSONObject lineData = busData.getJSONObject(LINE_ITEM_LIST);
 
                         //电流
-                        if (lineData.containsKey(CUR_VALUE)){
-                            if ("A".equals(aisleBar.getPath())){
-                                dataDTO.setBarLineCurA(lineData.getObject(CUR_VALUE,float[].class));
+                        if (lineData.containsKey(CUR_VALUE)) {
+                            if ("A".equals(aisleBar.getPath())) {
+                                dataDTO.setBarLineCurA(lineData.getObject(CUR_VALUE, float[].class));
                             }
-                            if ("B".equals(aisleBar.getPath())){
-                                dataDTO.setBarLineCurB(lineData.getObject(CUR_VALUE,float[].class));
+                            if ("B".equals(aisleBar.getPath())) {
+                                dataDTO.setBarLineCurB(lineData.getObject(CUR_VALUE, float[].class));
                             }
                         }
                         //电压
-                        if (lineData.containsKey(VOL_VALUE)){
-                            if ("A".equals(aisleBar.getPath())){
-                                dataDTO.setBarLineVolA(lineData.getObject(VOL_VALUE,float[].class));
+                        if (lineData.containsKey(VOL_VALUE)) {
+                            if ("A".equals(aisleBar.getPath())) {
+                                dataDTO.setBarLineVolA(lineData.getObject(VOL_VALUE, float[].class));
                             }
-                            if ("B".equals(aisleBar.getPath())){
-                                dataDTO.setBarLineVolB(lineData.getObject(VOL_VALUE,float[].class));
+                            if ("B".equals(aisleBar.getPath())) {
+                                dataDTO.setBarLineVolB(lineData.getObject(VOL_VALUE, float[].class));
                             }
                         }
 
@@ -1078,62 +1250,62 @@ public class AisleServiceImpl implements AisleService {
 
         //机柜
         List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                .eq(CabinetIndex::getAisleId,aisleId)
-                .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                .eq(CabinetIndex::getAisleId, aisleId)
+                .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                 .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus()));
 
         List<CabinetMainDataDTO> cabList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(cabinetIndexList)){
-            cabinetIndexList.forEach(cabinetIndex ->{
+        if (!CollectionUtils.isEmpty(cabinetIndexList)) {
+            cabinetIndexList.forEach(cabinetIndex -> {
                 CabinetMainDataDTO cabDto = new CabinetMainDataDTO();
                 cabDto.setId(cabinetIndex.getId());
                 cabDto.setCabinetName(cabinetIndex.getCabinetName());
 
-                String cabKey =  REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId();
+                String cabKey = REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId();
                 Object cabObject = ops.get(cabKey);
                 if (Objects.nonNull(cabObject)) {
                     JSONObject data = JSON.parseObject(JSON.toJSONString(cabObject));
                     JSONObject cabData = data.containsKey(CABINET_POWER) ? data.getJSONObject(CABINET_POWER) : new JSONObject();
                     //A数据
-                    if (cabData.containsKey(PATH_A)){
+                    if (cabData.containsKey(PATH_A)) {
                         JSONObject aData = cabData.getJSONObject(PATH_A);
 
                         //有功功率
-                        if (aData.containsKey(POW_ACTIVE)){
+                        if (aData.containsKey(POW_ACTIVE)) {
                             cabDto.setPowActiveA(aData.getFloatValue(POW_ACTIVE));
                         }
                         //视在功率
-                        if (aData.containsKey(POW_APPARENT)){
+                        if (aData.containsKey(POW_APPARENT)) {
                             cabDto.setPowApparentA(aData.getFloatValue(POW_APPARENT));
                         }
                         //无功功率
-                        if (aData.containsKey(POW_REACTIVE)){
+                        if (aData.containsKey(POW_REACTIVE)) {
                             cabDto.setPowReactiveA(aData.getFloatValue(POW_REACTIVE));
                         }
                         //功率因素
-                        if (aData.containsKey(POWER_FACTOR)){
+                        if (aData.containsKey(POWER_FACTOR)) {
                             cabDto.setPowerFactorA(aData.getFloatValue(POWER_FACTOR));
                         }
                     }
 
                     //b数据
-                    if (cabData.containsKey(PATH_B)){
+                    if (cabData.containsKey(PATH_B)) {
                         JSONObject bData = cabData.getJSONObject(PATH_B);
 
                         //有功功率
-                        if (bData.containsKey(POW_ACTIVE)){
+                        if (bData.containsKey(POW_ACTIVE)) {
                             cabDto.setPowActiveB(bData.getFloatValue(POW_ACTIVE));
                         }
                         //视在功率
-                        if (bData.containsKey(POW_APPARENT)){
+                        if (bData.containsKey(POW_APPARENT)) {
                             cabDto.setPowApparentB(bData.getFloatValue(POW_APPARENT));
                         }
                         //无功功率
-                        if (bData.containsKey(POW_REACTIVE)){
+                        if (bData.containsKey(POW_REACTIVE)) {
                             cabDto.setPowReactiveB(bData.getFloatValue(POW_REACTIVE));
                         }
                         //功率因素
-                        if (bData.containsKey(POWER_FACTOR)){
+                        if (bData.containsKey(POWER_FACTOR)) {
                             cabDto.setPowerFactorB(bData.getFloatValue(POWER_FACTOR));
                         }
                     }
@@ -1172,6 +1344,7 @@ public class AisleServiceImpl implements AisleService {
 
     /**
      * 柜列始端箱单个删除
+     *
      * @param id
      */
     @Override
@@ -1183,37 +1356,44 @@ public class AisleServiceImpl implements AisleService {
 
     /**
      * 获取数据
+     *
      * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param ids 机柜id列表
-     * @param index 索引表
+     * @param endTime   结束时间
+     * @param ids       机柜id列表
+     * @param index     索引表
      */
-    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index,String idStr) throws IOException {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index, String idStr) throws IOException {
+        try {
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                .must(QueryBuilders.termsQuery(idStr, ids))));
-        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(10000);
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery(idStr, ids))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
+
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
-        }
-        return list;
+            return list;
 
+        } catch (Exception e) {
+            log.error("获取数据异常：", e);
+        }
+        return null;
     }
 
     /**
@@ -1268,7 +1448,7 @@ public class AisleServiceImpl implements AisleService {
         double thisWeekEq = getDayEq(startTime, endTime, id);
         eqDataDTO.setThisWeekEq(thisWeekEq);
 
-       List<String> list = getData(startTime, endTime, id, AISLE_EQ_TOTAL_WEEK);
+        List<String> list = getData(startTime, endTime, id, AISLE_EQ_TOTAL_WEEK);
 
         Map<String, Double> eqMap = new HashMap<>();
 
@@ -1351,6 +1531,7 @@ public class AisleServiceImpl implements AisleService {
         }
         return eq;
     }
+
     /**
      * @param startTime
      * @param endTime
@@ -1391,7 +1572,7 @@ public class AisleServiceImpl implements AisleService {
 
             TopHits tophits = aggregations.get(top);
             SearchHits sophistsHits = tophits.getHits();
-            if (null != sophistsHits.getHits() && sophistsHits.getHits().length>0){
+            if (null != sophistsHits.getHits() && sophistsHits.getHits().length > 0) {
                 SearchHit hit = sophistsHits.getHits()[0];
                 realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), AisleEleTotalRealtimeDo.class);
             }
@@ -1413,31 +1594,31 @@ public class AisleServiceImpl implements AisleService {
      */
     private List<String> getData(String startTime, String endTime, int id, String index) throws IOException {
         try {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                .must(QueryBuilders.termQuery(AISLE_ID, id))));
-        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(10000);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termQuery(AISLE_ID, id))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
-        }
-        return list;
-        }catch (Exception e){
+            return list;
+        } catch (Exception e) {
             log.error(e.getMessage());
         }
         return null;

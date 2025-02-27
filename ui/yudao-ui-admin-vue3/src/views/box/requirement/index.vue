@@ -329,6 +329,7 @@ import { ElTree } from 'element-plus'
 const startTime = ref() as any;
 const endTime = ref() as any;
 const location = ref();
+const roomName = ref();
 const visMode = ref(0);
 const requirementLine = ref([]) as any;
 const detailVis = ref(false);
@@ -557,6 +558,7 @@ const list = ref([
     ele:null,
     devKey:null,
     location:null,
+    roomName:null,
     dataUpdateTime : "",
     pduAlarm:"",
     pf:null
@@ -654,6 +656,7 @@ const openDetail = async (row) =>{
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
   location.value = row.location != null ? row.location : row.devKey
+  roomName.value = row.roomName;
   startTime.value = lineData.time[0];
   endTime.value = lineData.time[lineData.time.length - 1];
   detailVis.value = true;

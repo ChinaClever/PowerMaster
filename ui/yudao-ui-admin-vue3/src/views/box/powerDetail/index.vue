@@ -1,6 +1,6 @@
 <template>
   <div style="padding-left:20px;height:30px;font-size: 15px;">
-    <span style="color:black;font-size:14px;">机房: {{location}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">机房: {{roomName}}&nbsp;&nbsp;</span>
     <span style="color:black;font-size:14px;">母线: {{busName || redisData?.busName}}&nbsp;&nbsp;</span>
     <span style="color:black;font-size:14px;">插接箱: {{boxName}}&nbsp;&nbsp;</span>
     <span style="color:black;font-size:14px;">网络地址: {{devKey}}</span>
@@ -13,8 +13,8 @@
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
         <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
             <span style="color:black;font-weight:bold;height:20px;width:100px;">负载率</span>
-            <div style="margin-left:100px;">
-                <span style="color:black;font-size:14px;margin-right:10px;">最大负载率: {{redisData?.loadFactorValue}}</span>
+            <div style="margin-left:-20px;">
+                <span style="color:black;font-size:14px;margin-right:10px;">最大负载率: {{redisData?.loadFactorValue.toFixed(0)}}%</span>
                 <span style="color:black;font-size:14px;">发生时间: {{redisData?.loadFactorTime}}</span>
             </div>
         </div>
@@ -42,7 +42,7 @@
           <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div class="center-top-right-part" style="top:25%;">
-          <div style="margin-top:-70px;margin-bottom:50px;margin-left:-60px;">
+          <div style="margin-top:-70px;margin-bottom:50px;margin-left:-150px;">
             <span style="color:black;font-size:14px;">最大功率: {{redisData?.powActiveValue}}kW&nbsp;&nbsp;</span>
             <span style="color:black;font-size:14px;">发生时间: {{redisData?.powActiveTime}}</span>
           </div>
@@ -50,13 +50,13 @@
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">额定功率:</span><span style="font-size:16px;">1000 KVA</span>
           </div>
           <div class="label-container" >
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">视在功率:</span><span style="font-size:16px;">{{redisData?.totalPowApparent}}kVA</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">视在功率:</span><span style="font-size:16px;">{{redisData?.totalPowApparent.toFixed(3)}}kVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">有功功率:</span><span style="font-size:16px;">{{redisData?.totalPowActive}}kW</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">有功功率:</span><span style="font-size:16px;">{{redisData?.totalPowActive.toFixed(3)}}kW</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.totalPowReactive}}kVar</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.totalPowReactive.toFixed(3)}}kVar</span>
           </div>
         </div>
       </div>
@@ -100,13 +100,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.lineVolValue[0]}}V</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.lineVolValue[0].toFixed(1)}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.lineVolValue[1]}}V</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.lineVolValue[1].toFixed(1)}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.lineVolValue[2]}}V</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.lineVolValue[2].toFixed(1)}}V</span>
           </div>
         </div>
     </div>
@@ -123,13 +123,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.lineCurValue[0]}}A</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.lineCurValue[0].toFixed(2)}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.lineCurValue[1]}}A</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.lineCurValue[1].toFixed(2)}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.lineCurValue[2]}}A</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.lineCurValue[2].toFixed(2)}}A</span>
           </div>
         </div>
     </div>
@@ -172,13 +172,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[0]}}kW</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[0].toFixed(3)}}kW</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[0]}}kVar</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[0].toFixed(3)}}kVar</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0]}}kVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0].toFixed(3)}}kVA</span>
           </div>
           <!-- <div class="label-container">
             <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
@@ -198,13 +198,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[1]}}kW</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[1].toFixed(3)}}kW</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[1]}}kVar</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[1].toFixed(3)}}kVar</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1]}}kVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1].toFixed(3)}}kVA</span>
           </div>
           <!-- <div class="label-container">
             <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
@@ -224,13 +224,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[2]}}kW</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[2].toFixed(3)}}kW</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[2]}}kVar</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[2].toFixed(3)}}kVar</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2]}}kVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2].toFixed(3)}}kVA</span>
           </div>
           <!-- <div class="label-container">
             <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
@@ -311,6 +311,7 @@ const peakDemandTime = ref('');
 const resultData = ref() as any;
 const loadRateList = ref() as any;
 const selectedOption = ref('current')
+const roomName = ref(history?.state?.roomName);
 const location = ref(history?.state?.location);
 const busName = ref(history?.state?.busName);
 const devKey = ref(history?.state?.devKey);
@@ -361,19 +362,6 @@ const queryParams = reactive({
 
 const getRedisData = async () => {
   const data =  await IndexApi.getBoxPowerRedisData(queryParams);
-  console.log('data',data);
-  //let loopItem = {} as any;
-  //for (let key in data) {  
-  //  if (data.hasOwnProperty(key)) {  
-  //      // 排除null值，但保留updateTime  
-  //      if (data[key] !== null && key != 'updateTime') { 
-  //          loopItem[key] = data[key].toFixed(2); // 注意这将转换为字符串  
-  //      }else if (data[key] == null){
-  //          loopItem[key] = '/';
-  //      }
-  //  }  
-  //}
-  //loopItem['updateTime'] = data['updateTime'];
   redisData.value = data;
   tableData.value = redisData.value.boxLoopItemResVO;
 

@@ -34,7 +34,9 @@
             </if>
         </where>
     </select>
-
+<!--        ab.aisle_id AS aisleId,
+        ab.box_key AS barKey,
+        ab1.path AS path-->
     <select id="selectBoxPageList" resultType="cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO">
         SELECT
         bi.id AS id,
@@ -45,14 +47,9 @@
         bi.box_name AS busName,
         bi.is_deleted AS isDeleted,
         bi.create_time AS createTime,
-        bi.update_time AS updateTime,
-        ab.aisle_id AS aisleId,
-        ab.box_key AS barKey,
-        ab1.path AS path
+        bi.update_time AS updateTime
         FROM
         box_index bi
-        LEFT JOIN aisle_box ab ON bi.box_key = ab.box_key
-        LEFT JOIN aisle_bar ab1 ON ab1.id = ab.aisle_id
         <where>
             bi.is_deleted = 0
             <if test="devkeys != null and devkeys.length > 0">
@@ -62,6 +59,7 @@
                 </foreach>
             </if>
         </where>
+        order by bi.run_status desc
     </select>
     <select id="selectBusIndexStatistics"
             resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO">

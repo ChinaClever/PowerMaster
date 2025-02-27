@@ -340,7 +340,7 @@
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right;margin-left: 10px;" >关闭</el-button>
     <span style="font-size: 20px; font-weight: bold;margin-top: -10px;">均衡配电详情</span>
-    <span style="margin-left: 15px;margin-top: -3px;">所在位置：{{ location }}</span>
+    <span style="margin-left: 15px;margin-top: -3px;">所在位置：{{ location?location:'未绑定' }}</span>
     <span style="margin-left: 15px;margin-top: -3px;">网络地址：{{ vollocation }}</span>
     <span style="float: right;margin-top: 3px;">时间：{{ createTimes }} - {{ endTimes }}</span>
     <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
@@ -529,7 +529,6 @@ const BarFlag = ref(false);
 
 const statusList = reactive([
   {
-    name: '<15%',
     selected: true,
     value: 2,
     cssClass: 'btn_normal',
@@ -537,7 +536,6 @@ const statusList = reactive([
     color: '#3bbb00'
   },
   {
-    name: '15%-30%',
     selected: true,
     value: 3,
     cssClass: 'btn_warn',
@@ -545,7 +543,6 @@ const statusList = reactive([
     color:'#ffc402'
   },
   {
-    name: '>30%',
     selected: true,
     value: 4,
     cssClass: 'btn_error',
@@ -954,21 +951,7 @@ const volMaxValues = ref({
 });
 const itemValue = ref();
 const showDialogVol = (item) => {
-  if(item.status==5){
-    ElMessage({
-      message: '设备未启动',
-      type: 'warning',
-      duration: 2000
-    })
-    return;
-  }
-  dialogVisibleVol.value = true
-  vollocation.value = item.devKey
-  getBalanceDetail(item)
-  getBalanceTrend(item)
-  curUnblance1.value = balanceObj.imbalanceValueA
-// 将 item 的属性赋值给 barMaxValues
-barMaxValues.value = {
+  barMaxValues.value = {
   L1: item.acur.toFixed(2),
   L2: item.bcur.toFixed(2),
   L3: item.ccur.toFixed(2)
@@ -979,6 +962,21 @@ volMaxValues.value = {
   L2: item.bvol.toFixed(1),
   L3: item.cvol.toFixed(1)
 };
+  // if(item.status==5){
+  //   ElMessage({
+  //     message: '设备未启动',
+  //     type: 'warning',
+  //     duration: 2000
+  //   })
+  //   return;
+  // }
+  dialogVisibleVol.value = true
+  vollocation.value = item.devKey
+  getBalanceDetail(item)
+  getBalanceTrend(item)
+  curUnblance1.value = balanceObj.imbalanceValueA
+// 将 item 的属性赋值给 barMaxValues
+
 BarFlag.value = true;
 }
 
@@ -1017,7 +1015,7 @@ const handleCheck = async (row) => {
   const pduKeys = [] as any
   var haveCabinet = false
   row.forEach((item) => {
-    if (item.type == 3) {
+    if (item.type == 4) {
       pduKeys.push(item.unique)
       haveCabinet = true
     }
@@ -1069,13 +1067,15 @@ const queryParams = reactive({
   cascadeNum: undefined,
   serverRoomData: undefined,
   status: [],
-  cabinetIds: []
+  cabinetIds: [],
+  curbance: 1
 }) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
+  getCurbalanceColor();
   loading.value = true
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
@@ -1100,6 +1100,7 @@ const getCurbalanceColor = async () => {
   }
 }
 
+provide('parentMethod', getCurbalanceColor);
 
 const getNavAList = async() => {
     const resStatus =await PDUDeviceApi.getBalancedDistribution();

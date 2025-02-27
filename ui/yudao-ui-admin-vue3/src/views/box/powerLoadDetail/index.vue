@@ -13,7 +13,7 @@
   <!-- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/> -->
   <div class="header_app">
-    <div class="header_app_text">机房：{{ location?location:'未绑定' }}&nbsp;&nbsp;母线：{{busName}}&nbsp;&nbsp;名称：{{boxName}}&nbsp;&nbsp;网络地址：{{devKey}}</div>
+    <div class="header_app_text">机房：{{ roomName?roomName:'未绑定' }}&nbsp;&nbsp;母线：{{busName}}&nbsp;&nbsp;名称：{{boxName}}&nbsp;&nbsp;网络地址：{{devKey}}</div>
     <div class="header_app_text_other1">
           <el-col :span="10">
             <el-form
@@ -153,6 +153,7 @@ const busName = ref()
 const boxName = ref()
 const devKey = ref(history?.state?.devKey)
 const location = ref(history?.state?.location)
+const roomName = ref(history?.state?.roomName)
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
 const timeRadio = ref('近一小时')
@@ -163,6 +164,7 @@ const isLoadRateDisabled = ref(false)
 const switchChartContainer = ref(0)
 const hasData = ref(true)
  let intervalId: number | null = null; // 定时器
+
 const queryParams = reactive({
   id: history?.state?.boxId as number | undefined,
   devKey : history?.state?.devKey as string | undefined,
@@ -193,7 +195,6 @@ const loadAll = async () => {
   var objectArray = data.map((str) => {
     return { value: str };
   });
-  console.log(objectArray)
   return objectArray;
 }
 
@@ -560,7 +561,6 @@ const initChart3 = () => {
 const getDetailData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getBoxDetailData(queryParams);
-    console.log('data',data);
     if (data != null){
       hasData.value = true
       runLoad.value = formatNumber(data.runLoad, 2);
@@ -572,7 +572,6 @@ const getDetailData =async () => {
       powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
       powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2);
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
-      console.log('1111111111111',loadPercentage.value);
       //loadPercentage.value = 7 测试数据
       if (loadPercentage.value <= 40){
         xAxisLabel.value = '正常运行'
@@ -772,7 +771,6 @@ watch( ()=>timeRadio.value, async(value)=>{
   await getLineChartData();
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log(L1Data.value)
     myChart2?.setOption({
     title: { text: ''},
     tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -842,7 +840,6 @@ watch( ()=>timeRadio.value, async(value)=>{
   }
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log(L1Data.value)
     myChart3?.setOption({
     title: { text: ''},
     tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -1437,7 +1434,6 @@ const handleQuery = async () => {
     queryParams.devKey = queryParamsSearch.devKey;
     await getBoxIdAndLocation();
     await flashChartData();
-    console.log(queryParams.devKey)
 }
 
 /** 初始化 **/

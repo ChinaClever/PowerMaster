@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true"  :load="loadNode" navTitle="机架报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :dataList="navList" :load="loadNode" navTitle="机架报表">
     <template #NavInfo>
       <div >
         <br/>
@@ -45,7 +45,7 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="120px"
+        style="float: left;"
       >
         <!-- <el-form-item label="网络地址" prop="devKey">
           <el-input
@@ -57,7 +57,7 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机架Id" prop="ipAddr" >
+        <!-- <el-form-item label="机架Id" prop="ipAddr" >
           <el-autocomplete
             v-model="queryParams.id"
             :fetch-suggestions="querySearch"
@@ -67,7 +67,7 @@
             @keyup.enter="handleQuery"
             @select="handleQuery"
           />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
@@ -192,6 +192,18 @@
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
+          <div class="pageBox" v-if="visControll.lineVisA">
+            <div class="page-conTitle">
+              A路输出位电流趋势图
+            </div>
+            <ALine class="Container"  width="70vw" height="58vh" :list="AList"/>
+          </div>
+          <div class="pageBox" v-if="visControll.lineVisB">
+            <div class="page-conTitle">
+              B路输出位电流趋势图
+            </div>
+            <BLine class="Container"  width="70vw" height="58vh" :list="BList"/>
+          </div>
           <div class="pageBox"  v-if="visControll.ApowVis">
             <div class="page-conTitle">
               A路平均功率曲线
@@ -232,6 +244,8 @@ import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
 import Line from './component/Line.vue'
+import ALine from './component/ALine.vue'
+import BLine from './component/BLine.vue';
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import { useRoute, useRouter } from 'vue-router';
@@ -243,6 +257,7 @@ const router = useRouter();
 defineOptions({ name: 'PDUDevice' })
 
 const pfLineList = ref() as any;
+const ele = ref();
 const eleList = ref() as any;
 const totalLineList = ref() as any;
 const aLineList = ref() as any;
@@ -251,6 +266,8 @@ const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 const location = ref() as any;
+const AList = ref() as any;
+const BList = ref() as any;
 
 const visControll = reactive({
   visAllReport : false,
@@ -263,6 +280,8 @@ const visControll = reactive({
   ApowVis :false,
   BpowVis : false,
   pfVis: false,
+  lineVisA : false,
+  lineVisB : false
 })
 const serChartContainerWidth = ref(0)
 
@@ -396,6 +415,14 @@ const queryParams = reactive({
 }) as any
 
 //折叠功能
+
+const navList = ref([]) // 左侧导航列表数据
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRackMenuAll({})
+  navList.value = res
+}
 
 const loadNode = async (node: any, resolve: (data: Tree[]) => void) => {
   if (node.level === 0) {
@@ -536,11 +563,14 @@ const itemStyle = ref({
 }); 
 const getList = async () => {
   loading.value = true
-  
+  await handleEleQuery();
   await handleConsumeQuery();
   await handlePowQuery();
   await handleDetailQuery();
   await handlePFLineQuery();
+  await handleLineQuery();
+  
+  
 
   visControll.visAllReport = true;
   loading.value = false
@@ -558,6 +588,12 @@ const handlePFLineQuery = async () => {
   }
 }
 
+const handleEleQuery = async () => {
+  const data = await IndexApi.getEleByRack(queryParams);
+  console.log('data',data);
+  ele.value = data.ele;
+  console.log('elekasjklasncklasnckasnk',ele.value);
+}
 
 const handlePowQuery = async () => {
   powData.value = await IndexApi.getPowData(queryParams);
@@ -620,8 +656,8 @@ const handleConsumeQuery = async () => {
 const handleDetailQuery = async () => {
   var temp = [] as any;
   
-  var rackInfo =  await IndexApi.getRackRedis(queryParams);
-
+  var rackInfo1 =  await IndexApi.getRackRedis(queryParams);
+  var rackInfo = rackInfo1.rackRedis;
   console.log("rackInfo",rackInfo)
   
   if(rackInfo != null){
@@ -638,13 +674,43 @@ const handleDetailQuery = async () => {
       consumeValue : rackInfo?.rack_power != null ? (rackInfo?.rack_power?.total_data?.pow_active?.toFixed(3) + "kW") : '/',
     })
     temp.push({
+      baseInfoName : "名称",
+      baseInfoValue : rackInfo?.rack_name != null ? rackInfo.rack_name : '/',
       consumeName : "当前总无功功率",
       consumeValue : rackInfo?.rack_power != null ? rackInfo?.rack_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
+    })
+    temp.push({
+      baseInfoName : "型号",
+      baseInfoValue : rackInfo1?.rackType != null ? rackInfo1.rackType : '/',
+      consumeName : "当前功率因数",
+      consumeValue : rackInfo?.rack_power != null ? rackInfo?.rack_power?.total_data?.power_factor?.toFixed(2) : '/'
+      
+    })
+    temp.push({
+      baseInfoName : "IP地址",
+      baseInfoValue : '暂无字段，后续需添加',
+      consumeName : "耗电量",
+      consumeValue : (ele.value || 0).toFixed(3) + "kW",
     })
     location.value = temp[0].baseInfoValue;
     CabinetTableData.value = temp;
   }
   
+}
+
+const handleLineQuery = async () => {
+  const result = await IndexApi.getOutletCur({id: queryParams.id,type: switchValue.value,oldTime : queryParams.oldTime,newTime : queryParams.newTime});
+  AList.value = result.A;
+  BList.value = result.B;
+  console.log('result',AList.value?.time?.length);
+  if(AList.value?.time != null && AList.value?.time?.length > 0){
+    visControll.lineVisA = true;
+  }
+  console.log("result ", visControll.lineVisA)
+  if(BList.value?.time != null && BList.value?.time?.length > 0){
+    visControll.lineVisB = true;
+
+  }
 }
 
 watch(filterText, (val) => {
@@ -670,6 +736,7 @@ const handleQuery = async () => {
       queryParams.devKey = null;
     }
   }
+  
   
 }
 
@@ -717,7 +784,8 @@ const handleQuery = async () => {
 onMounted( async () =>  {
   // getList();
   // initChart();
-
+  
+  getNavList();
   idList.value = await loadAll();
 
 
@@ -1031,7 +1099,7 @@ onMounted( async () =>  {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-:deep(.el-form .el-form-item) {
-  margin-right: 0;
-}
+// :deep(.el-form .el-form-item) {
+//   margin-right: 0;
+// }
 </style>

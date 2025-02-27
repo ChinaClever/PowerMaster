@@ -11,7 +11,9 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
+import cn.iocoder.yudao.module.bus.vo.BoxNameVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.elasticsearch.action.search.SearchRequest;
@@ -34,10 +36,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -134,39 +135,39 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public List<Object> getLocationsAndNameByBoxIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>();
-        for (Map<String, Object> map : mapList) {
-            Object boxId = map.get("box_id");
-            if (boxId instanceof Integer) {
-                // 查询位置
-                BoxIndex boxIndex = boxIndexMapper.selectById((int) boxId);
-                if (boxIndex != null) {
-                    map.put("dev_key", boxIndex.getBoxKey());
-                    map.put("bus_name", boxIndex.getBoxName());
-//                    map.put("ip_addr", boxIndex.getIpAddr());
-                    // 创建一个列表来存放要传递的对象 用于获取位置信息
-                    List<BoxResBase> boxResBaseList = new ArrayList<>();
-                    BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
-                    boxResBase.setBoxId((Integer) boxId);
-                    boxResBase.setBoxName(boxIndex.getBoxName());
-                    boxResBase.setDevKey(boxIndex.getBoxKey());
-                    boxResBaseList.add(boxResBase);// 将对象添加到列表中
-                    try {
-                        boxIndexService.getPosition(boxResBaseList);
-                        map.put("location", boxResBaseList.get(0).getLocation());
-                    } catch (Exception e) {
+        if (!CollectionUtils.isEmpty(mapList)) {
+            List<Integer> boxIds = mapList.stream().map(i -> Integer.valueOf(i.get("box_id").toString())).collect(Collectors.toList());
+            List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getId, boxIds));
+            if (!CollectionUtils.isEmpty(boxIndices)) {
+                Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, Function.identity()));
+                List<String> devKeys = boxIndices.stream().map(BoxIndex::getBoxKey).distinct().collect(Collectors.toList());
+
+                Map<String, BoxNameVO> roomByKeys = boxIndexService.getRoomByKeys(devKeys);
+                for (Map<String, Object> map : mapList) {
+                    Object boxId = map.get("box_id");
+                    if (boxId instanceof Integer) {
+                        // 查询位置
+                        BoxIndex boxIndex = boxIndexMap.get((int) boxId);
+                        if (boxIndex != null) {
+                            map.put("dev_key", boxIndex.getBoxKey());
+                            map.put("bus_name", boxIndex.getBoxName());
+                            BoxNameVO boxNameVO = roomByKeys.get(boxIndex.getBoxKey());
+                            if (Objects.nonNull(boxNameVO)) {
+                                map.put("location", boxNameVO.getLocaltion());
+                            }
+                        } else {
+                            map.put("dev_key", null);
+                            map.put("location", null);
+                        }
+                    } else {
+                        map.put("dev_key", null);
                         map.put("location", null);
                     }
-
-                } else {
-                    map.put("dev_key", null);
-                    map.put("location", null);
+                    resultList.add(map);
                 }
-            } else {
-                map.put("dev_key", null);
-                map.put("location", null);
             }
-            resultList.add(map);
         }
+
         return resultList;
     }
 

@@ -530,30 +530,32 @@ const format = (date) => {
   return `${year}-${month}-${day}`;
 };
 /** 详情操作*/
+// const toDetails = (boxId: number, location: string,devkey: string) => {
+//   push('/bus/nenghao/ecdistribution/box?boxId='+boxId+'&location='+location+'&devKey='+devkey);
+// }
+
+// 跳转详情页
 const toDetails = (boxId: number, location: string,devkey: string) => {
-  push('/bus/nenghao/ecdistribution/box?boxId='+boxId+'&location='+location+'&devKey='+devkey);
+  const id = boxId
+  const devKey = devkey;
+  const locationName = location;
+  push({path: '/bus/nenghao/ecdistribution/box', state: {id,devKey,locationName}})
 }
 
-const start = ref('')
-const end = ref('')
-const devKey =  ref('')
+
+
+const start = ref(history?.state?.start);
+const end = ref(history?.state?.end);
+const devKey =  ref(history?.state?.devKey);
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  devKey.value = useRoute().query.devKey as string;
+
   const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
-// selectTimeRange.value = [
-//   format(startOfMonth),
-//   format(now)
-// ];
+
   if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', devKey);
   getList1();
   }else{
       getList();

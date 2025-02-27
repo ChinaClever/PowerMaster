@@ -73,6 +73,10 @@ export const IndexApi = {
   getCabinetPFLine : async (params) => {
     return await request.get({ url: `/cabinet/index/report/pfline`, params })
   },
+
+  getEleByCabinet : async (params) => {
+    return await request.get({ url: `/cabinet/index/getEleByCabinet`, params })
+  },
   // 查询所有颜色
   getCabinetColorAll : async () => {
     return await request.get({ url: `/cabinet/tem-color/all` })

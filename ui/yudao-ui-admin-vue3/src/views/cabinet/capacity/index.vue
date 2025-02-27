@@ -64,6 +64,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -262,6 +263,15 @@ const handleCheck = (row) => {
   })
   cabinetIds.value = ids
   getTableData(true)
+}
+
+const resetQuery = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.company = undefined;
+   queryParams.startNum = undefined;
+   queryParams.endNum = undefined;
+  getTableData()
 }
 
 // 处理切换 表格/阵列 模式

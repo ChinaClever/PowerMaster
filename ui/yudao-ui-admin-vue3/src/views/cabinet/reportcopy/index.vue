@@ -200,15 +200,16 @@
                     :data="rack" 
                     :header-cell-style="arraySpanMethod"
                     >
-                    <el-table-column  align="center" label="序号" type="index" prop="id" />
+                    <el-table-column  align="center" label="序号" type="index" prop="id" width="100px"/>
                     <el-table-column  align="center" label="名称" prop="name"  />
-                    <el-table-column  align="center" label="总功率" prop="totalPower" />
-                    <el-table-column  align="center" label="A路电流" prop="acurrent" />
-                    <el-table-column  align="center" label="B路电流" prop="bcurrent" />
+                    <el-table-column  align="center" label="总功率(kW)" prop="totalPower" />
+                    <el-table-column  align="center" label="A路电流(A)" prop="acurrent" />
+                    <el-table-column  align="center" label="B路电流(A)" prop="bcurrent" />
                     <el-table-column label="操作" align="center">
                     <template #default="scope">
-                    <el-button @click="generateDailyReport(scope.row.id)">日报</el-button>
-                    <el-button @click="generateMonthlyReport(scope.row.id)">月报</el-button>
+                    <el-button v-if="switchValue==0" @click="generateDailyReport(scope.row.id)">详情</el-button>
+                    <el-button v-if="switchValue==1" @click="generateMonthlyReport(scope.row.id)">详情</el-button>
+                    
                     </template>
       </el-table-column>
                   </el-table>
@@ -310,7 +311,22 @@
             <EnvTemLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
           </div>
         </div>
-        
+        <div class="pageBox" v-if="visControll.iceTemVis">
+            <div class="page-conTitle">
+             冷通道湿度曲线
+            </div>
+            <p class="paragraph" v-show="iceTemList.humMaxValue">本周期内，最高湿度{{iceTemList.humMaxValue}}%RH， 最高湿度发生时间{{iceTemList.humMaxTime}}，由湿度传感器{{iceTemList.humMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="iceTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{iceTemList.humMinValue}}%RH， 最高湿度发生时间{{iceTemList.humMinTime}}，由湿度传感器{{iceTemList.humMinSensorId}}采集得到</p>
+            <EnvHumLine class="Container" width="70vw" height="58vh" :list="iceTemList" />
+          </div>
+          <div class="pageBox" v-if="visControll.hotTemVis">
+            <div class="page-conTitle">
+              热通道湿度曲线
+            </div>
+            <p class="paragraph" v-show="hotTemList.humMaxValue">本周期内，最高湿度{{hotTemList.humMaxValue}}%RH， 最高湿度发生时间{{hotTemList.humMaxTime}}，由湿度传感器{{hotTemList.humMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="hotTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{hotTemList.humMinValue}}%RH， 最高湿度发生时间{{hotTemList.humMinTime}}，由湿度传感器{{hotTemList.humMinSensorId}}采集得到</p>
+            <EnvHumLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
+        </div>
       </div>
     </div>
     </template>
@@ -330,6 +346,7 @@ import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
+import EnvHumLine from './component/EnvHumLine.vue'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import ACurLine from './component/AcurLine.vue'
 import AVolLine from './component/AvolLine.vue'
@@ -363,7 +380,8 @@ const bLineList = ref() as any;
 const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
-
+const ele = ref();
+const factor = ref();
 let lineidChartA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainerA = ref<HTMLElement | null>(null);
 let lineidChartOneA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
@@ -534,19 +552,22 @@ const serverRoomArr =  ref([]) as any
 //折叠功能
 
 const getNavList = async() => {
+  
   const res = await CabinetApi.getRoomMenuAll({})
   serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
-  }
+  // const res = await CabinetApi.getRoomMenuAll({})
+  // serverRoomArr.value = res
+  // if (res && res.length > 0) {
+  //   const room = res[0]
+  //   const keys = [] as string[]
+  //   room.children.forEach(child => {
+  //     if(child.children.length > 0) {
+  //       child.children.forEach(son => {
+  //         keys.push(son.id + '-' + son.type)
+  //       })
+  //     }
+  //   })
+  // }
 }
 
 const handleClick = (row) => {
@@ -673,13 +694,14 @@ const itemStyle = ref({
 }); 
 const getList = async () => {
   loading.value = true
-  
+  await handleEleQuery();
   await handleConsumeQuery();
   await handlePowQuery();
   await handleIceQuery();
   await handleHotQuery();
   await handleDetailQuery();
   await handlePFLineQuery();
+  
 
   visControll.visAllReport = true;
   loading.value = false
@@ -697,6 +719,12 @@ const handlePFLineQuery = async () => {
   }else {
     visControll.pfVis = false;
   }
+}
+
+const handleEleQuery = async () => {
+  const data = await IndexApi.getEleByCabinet(queryParams);
+  ele.value = data.ele;
+  console.log('elekasjklasncklasnckasnk',ele.value);
 }
 
 const AlChartData = ref({
@@ -746,7 +774,7 @@ const isPDU = ref(true);
 
 const PDUHdaLineHisdata = async () => {
   try {
-    const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value });
+    const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime });
 
     AcurVolData.value = result.A;
     BcurVolData.value = result.B;
@@ -928,6 +956,12 @@ const handleDetailQuery = async () => {
     baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
     consumeName : "当前总无功功率",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
+  })
+  temp.push({
+    baseInfoName : "耗电量",
+    baseInfoValue : (ele.value || 0).toFixed(3) + "kW",
+    consumeName : "当前功率因素",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '/'
   })
   CabinetTableData.value = temp;
 }
@@ -1264,8 +1298,8 @@ onMounted( async () =>  {
 }
 
 :deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
+    background: #f6f6f6 !important;
+    color: black;
 }
 :deep(.master-left .el-card__body) {
   padding: 0;

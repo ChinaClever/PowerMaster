@@ -201,7 +201,7 @@
               link
               type="primary"
               @click="openTemDetail(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
               设备详情
@@ -210,7 +210,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
+              v-if="scope.row.status == 0"
               style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
@@ -228,12 +228,13 @@
             <img class="icon" style="height: 60px;" src="@/assets/imgs/temicon.png" />
             <div class="info">
               <div>
-              <span v-if="item.atem != null">A: {{ item.atem }}°C</span>
-              <span v-if="item.btem != null" style="margin-left: 20px;">B: {{ item.btem }}°C</span>
+              <span v-if="item.atem != null">A:{{ item.atem }}°C</span>
+              <span v-if="item.btem != null" style="margin-left: 20px;">B:{{ item.btem }}°C</span>
               </div>
+            <br/>
               <div>
-              <span v-if="item.ctem != null">C: {{ item.ctem }}°C</span>
-              <span v-if="item.ntem != null" style="margin-left: 20px;">N: {{ item.ntem }}°C</span>
+              <span v-if="item.ctem != null">C:{{ item.ctem }}°C</span>
+              <span v-if="item.ntem != null" style="margin-left: 20px;">N:{{ item.ntem }}°C</span>
               </div>
             </div>
           </div>
@@ -1067,15 +1068,16 @@ onActivated(() => {
         .icon {
           font-size: 20px;
           width: 60px;
-          height: 30px;
-          margin: 0 25px 39px;
+          height: 60px;
+          margin: 0 40px;
           text-align: center;
           .text-pf{
             font-size: 16px;
           }
         }
         .info{
-          font-size: 16px;
+          margin: 10px;
+          font-size: 14px;
           margin-bottom: 20px;
         }
       }
@@ -1149,14 +1151,14 @@ onActivated(() => {
           font-size: 20px;
           width: 60px;
           height: 30px;
-          margin: 0 25px 39px;
+          margin: 0 40px;
           text-align: center;
           .text-pf{
             font-size: 16px;
           }
         }
         .info{
-          font-size: 16px;
+          font-size: 14px;
           margin-bottom: 20px;
         }
       }
@@ -1229,14 +1231,14 @@ onActivated(() => {
           font-size: 20px;
           width: 60px;
           height: 30px;
-          margin: 0 25px 39px;
+          margin: 0 40px;
           text-align: center;
           .text-pf{
             font-size: 16px;
           }
         }
         .info{
-          font-size: 16px;
+          font-size: 14px;
           margin-bottom: 20px;
         }
       }

@@ -129,7 +129,7 @@
               link
               type="primary"
               @click="openTemDetail(scope.row)"
-              v-if=" scope.row.status != null && scope.row.status != 1"
+              v-if=" scope.row.status != null && scope.row.status != 0"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
@@ -138,7 +138,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.boxId)"
-              v-if="scope.row.status == 1"
+              v-if="scope.row.status == 0"
               style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
@@ -191,7 +191,7 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">温度详情</span>
-            <span>机房：{{ location }}&nbsp;&nbsp;</span>
+            <span>机房：{{ roomName }}&nbsp;&nbsp;</span>
             <span>母线：{{ busName }}&nbsp;&nbsp;</span>
             <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span> 网络地址：{{ devkey }}</span>
@@ -279,6 +279,7 @@ import TemDetail from './component/TemDetail.vue'
 defineOptions({ name: 'PDUDevice' })
 
 const location = ref() as any;
+const roomName = ref() as any;
 const devkey = ref() as any;
 const busName = ref() as any;
 const boxName = ref() as any;
@@ -400,6 +401,7 @@ const openTemDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : '未绑定'
+  roomName.value = row.roomName
   busName.value = row.busName
   boxName.value = row.boxName
   devkey.value = row.devKey;
@@ -653,7 +655,7 @@ const handleDelete = async (id: number) => {
     await IndexApi.deleteIndex(id);
     message.success(t('common.delSuccess'));
     // 刷新列表
-    // await getList()
+    await getList()
   } catch {}
 }
 
@@ -1020,6 +1022,10 @@ onActivated(() => {
         margin: 0 28px;
         text-align: center;
       }
+      .info{
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
     }
     .devKey{
       position: absolute;
@@ -1094,6 +1100,10 @@ onActivated(() => {
         margin: 0 28px;
         text-align: center;
       }
+      .info{
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
     }
     .devKey{
       position: absolute;
@@ -1168,6 +1178,10 @@ onActivated(() => {
         margin: 0 28px;
         text-align: center;
       }
+      .info{
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
     }
     .devKey{
       position: absolute;

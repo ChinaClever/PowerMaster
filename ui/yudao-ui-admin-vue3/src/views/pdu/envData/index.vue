@@ -73,8 +73,8 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm"
-          v-model="queryParams.timeRange"
+          format="YYYY-MM-DD HH:mm:ss"
+          v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -154,12 +154,15 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/pdu/envData'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+
 import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'PDUEnvHistoryData' })
+const selectTimeRange = ref()
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const lastHourTotalData = ref(0)
@@ -192,7 +195,7 @@ const carouselItems = ref([
 // 时间段快捷选项
 const shortcuts = [
     {
-    text: '最近一小时',
+      text: '最近一小时',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -378,6 +381,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(selectTimeRange.value[0])
+     
+      const selectedEndTime = formatDate(selectTimeRange.value[1])
+     // selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await EnvDataApi.getEnvDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -520,9 +531,21 @@ const getNavNewData = async() => {
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
 }
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 初始化 **/
 onMounted( () => {
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getNavList()
   getNavNewData()
   getList()

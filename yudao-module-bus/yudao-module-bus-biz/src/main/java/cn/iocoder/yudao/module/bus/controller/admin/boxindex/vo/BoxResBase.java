@@ -23,4 +23,6 @@ public class BoxResBase {
 
     @Schema(description = "始端箱名称")
     private String busName;
+
+    private String roomName;
 }

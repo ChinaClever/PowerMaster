@@ -482,14 +482,14 @@ const initChart = () => {
         realtimeChart.setOption({
           title: { text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['温度','湿度'], selected: { 温度: true, 湿度: false}},
+          legend: { data: ['温度℃','湿度%RH'], selected: { 温度: true, 湿度: false}},
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
           toolbox: {feature: {  restore:{}, saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: '温度', type: 'line', symbol: 'none', data: temValueData.value},
-            {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value},
+            {name: '温度℃', type: 'line', symbol: 'none', data: temValueData.value},
+            {name: '湿度%RH', type: 'line', symbol: 'none', data: humValueData.value},
           ],
           dataZoom:[{type: "inside"}],
         });

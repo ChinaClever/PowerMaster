@@ -981,7 +981,14 @@ const handleSuccess = (formData: any) => {
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
+  // getStatistics;
   try {
+    const res = await IndexApi.getBalanceStatistics()
+    statusNumber.smallCurrent = res.smallCurrent;
+    statusNumber.lessFifteen = res.lessFifteen;
+    statusNumber.greaterFifteen = res.greaterFifteen;
+    statusNumber.greaterThirty = res.greaterThirty;
+    
     const data = await IndexApi.getBalancePage(queryParams)
     var tableIndex = 0;
     data.list.forEach((obj) => {

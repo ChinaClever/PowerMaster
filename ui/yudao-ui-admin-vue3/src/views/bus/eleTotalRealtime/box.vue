@@ -447,11 +447,14 @@ const handleExport = async () => {
 }
 
 
-/** 详情操作*/
+
+// 跳转详情页
 const toDetails = (devKey: string, createTimeMin : string,createTimeMax : string) => {
-  push('/bus/nenghao/powerAnalysis/box?start='+createTimeMin+
-  '&end='+createTimeMax+'&devKey='+ devKey);
+  const start = createTimeMin
+  const end = createTimeMax;
+  push({path: '/bus/nenghao/powerAnalysis/box', state: {devKey,start,end}})
 }
+
 
 /** 初始化 **/
 onMounted(async() => {

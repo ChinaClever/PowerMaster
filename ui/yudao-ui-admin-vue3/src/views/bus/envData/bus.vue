@@ -65,7 +65,7 @@
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
           value-format="YYYY-MM-DD HH:mm:ss"
-          v-model="queryParams.timeRange"
+          v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -87,7 +87,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="false">
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -131,6 +131,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/bus/envData'
+import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
@@ -146,6 +147,7 @@ const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
+const selectTimeRange = ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -369,6 +371,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(selectTimeRange.value[0])
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(selectTimeRange.value[1])
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await EnvDataApi.getBusEnvDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -438,7 +448,8 @@ const handleQuery = () => {
 
 /** 详情操作*/
 const toDetails = (busId: number, dev_key: string, location: string) => {
-  push('/bus/record/envAnalysis/bus?busId='+busId+'&devKey='+dev_key+'&location='+location);
+  const devKey = dev_key;
+  push({path: '/bus/record/envAnalysis/bus', state: {busId,devKey,location}})
 }
 
 /** 导出按钮操作 */
@@ -469,9 +480,18 @@ const getNavNewData = async() => {
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
 }
-
+const format = (date) => {
+   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+};
 /** 初始化 **/
 onMounted( () => {
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getNavList()
   getNavNewData()
   getList()

@@ -5,7 +5,7 @@
       <div class="nav_data">
 
         <div class="nav_header">      
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress=='null'?'':nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
         </div>
         <br/> 
@@ -162,9 +162,10 @@ import { pa } from 'element-plus/es/locale';
 import download from '@/utils/download'
 defineOptions({ name: 'ECDistribution' })
 import  CommonMenu1 from './CommonMenu1.vue'
+import { now } from 'lodash-es';
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const nowAddress = ref('')// 导航栏的位置信息
+const nowAddress = ref()// 导航栏的位置信息
 const nowLocation = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
@@ -702,13 +703,13 @@ onMounted(async () => {
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
-      
       const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
        selectTimeRange.value = [selectedStartTime, selectedEndTime];
   // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string | undefined;
   const queryAddress = useRoute().query.address as string;
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  console.log('11111撒大声地',queryParams.pduId)
   if (queryParams.pduId != undefined){
     await getLineChartData();
     // await getRankChartData();

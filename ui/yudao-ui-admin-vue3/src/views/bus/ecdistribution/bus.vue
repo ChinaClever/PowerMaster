@@ -3,37 +3,6 @@
     <template #NavInfo>
       
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>  -->
-      <!-- <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div> -->
-      <!-- <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div> -->
-
       <div class="nav_header">       
           <span v-if="nowAddress">{{nowAddress?'暂未绑定设备':nowAddress}}</span>
           <span v-if="devKey">({{devKey}})</span>
@@ -181,7 +150,7 @@ const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
 const loading = ref(false) 
 const loading2 = ref(false)
-const devKye = ref('')
+const devKye = ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -541,22 +510,27 @@ const handleQuery = async() => {
   // initRankChart();
 }
 
+
+const queryLocation = ref(history?.state?.location);// 导航栏的位置信息
+const queryDevkey = ref(history?.state?.devKey); // 导航栏的位置信息
+const queryBusId = ref(history?.state?.busId);
+
 /** 初始化 **/ 
 onMounted(async () => {
   getNavList()
   // 获取路由参数中的 bus_id
   
-  const queryBusId = useRoute().query.busId as string | undefined;
-  const queryLocation = useRoute().query.location as string;
-  const queryDevkey = useRoute().query.devKey as string;
-  queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
-  queryParams.devkey =queryDevkey? queryDevkey : undefined;
+  // const queryBusId = useRoute().query.busId as string | undefined;
+  // const queryLocation = useRoute().query.location as string;
+  // const queryDevkey = useRoute().query.devKey as string;
+  queryParams.busId = queryBusId.value as number | undefined;
+  queryParams.devkey =queryDevkey.value as string | undefined;
   devKye.value = queryDevkey? queryDevkey : undefined
   if (queryParams.busId != undefined){
-    await getLineChartData();
     nowAddress.value = queryLocation;
     devKey.value = queryDevkey;
     nowAddressTemp.value = queryLocation;
+    await getLineChartData();
     initLineChart();
   }
 })

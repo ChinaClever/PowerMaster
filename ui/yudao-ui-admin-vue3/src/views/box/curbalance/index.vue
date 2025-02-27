@@ -231,7 +231,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">机房：{{ curlocation? curlocation : '未绑定' }}</span>
+            <span style="margin-right:10px">机房：{{ curRoomName? curRoomName : '未绑定' }}</span>
             <span>母线：{{ busName }}&nbsp;&nbsp;</span>
             <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span>网络地址：{{ curdevkey }}</span>
@@ -342,7 +342,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
-            <span style="margin-right:10px">机房：{{ vollocation? vollocation : '未绑定' }}</span>
+            <span style="margin-right:10px">机房：{{ volRoomName? volRoomName : '未绑定' }}</span>
             <span>母线：{{ busName }}&nbsp;&nbsp;</span>
             <span>插接箱：{{ boxName }}&nbsp;&nbsp;</span>
             <span>网络地址：{{ voldevkey }}</span>
@@ -472,8 +472,8 @@ const statusNumber = reactive({
 })
 
 const location = ref();
-const curlocation = ref();
-const vollocation = ref();
+const curRoomName = ref();
+const volRoomName = ref();
 const boxName = ref();
 const busName = ref();
 
@@ -578,7 +578,6 @@ const createFilter = (queryString: string) => {
 }
 
 const handleClick = (row) => {
-  console.log("click",row)
 }
 
 const handleCheck = async (row) => {
@@ -750,7 +749,6 @@ const getCurBalance = async () => {
 }
 
 const handleSuccess = (formData: any) => {
-  console.log('Received formData:', formData);
   if(formData != null){
     statusList[0].name = '<' + formData.rangeOne + '%';
     statusList[1].name = formData.rangeTwo + '%-' +  formData.rangeThree + "%";
@@ -763,7 +761,6 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBalancePage(queryParams)
-    console.log('data',data);
      var tableIndex = 0;
     // var lessFifteen = 0;
     // var greaterFifteen = 0;
@@ -819,7 +816,8 @@ const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
   const location = row.location ? row.location : devKey;
-  push({path: '/bus/boxmonitor/boxbalancedetail', state: { devKey, boxId ,location }})
+  const roomName = row.roomName;
+  push({path: '/bus/boxmonitor/boxbalancedetail', state: { devKey, boxId ,location,roomName }})
 }
 
 const colorFlag = ref(0);
@@ -828,9 +826,8 @@ const showDialogCur = (item) => {
   colorFlag.value = item.color-1;
   dialogVisibleCur.value = true;
   curdevkey.value = item.devKey;
-  curlocation.value = item.location;
+  curRoomName.value = item.roomName;
   boxName.value = item.boxName;
-  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -839,9 +836,8 @@ const showDialogVol = (item) => {
   colorFlag.value = item.color-1;
   dialogVisibleVol.value = true;
   voldevkey.value = item.devKey;
-  vollocation.value = item.location;
+  volRoomName.value = item.roomName;
   boxName.value = item.boxName;
-  // busName.value = item.busName;
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -851,8 +847,6 @@ const vol_valueACopy = ref([]);
 
 const getBalanceDetail = async(item) => {
   const res = await IndexApi.getBoxBalanceDetail({devKey: item.devKey});
-  console.log('11111111', res);
- 
   // 定义默认值
   const defaultCurrentValue = [0.00, 0.00, 0.00];
   const defaultVoltageValue = [0.0, 0.0, 0.0];
@@ -943,7 +937,6 @@ const getBalanceTrend = async (item) => {
   const res = await IndexApi.getBoxBalanceTrend({
     boxId: item.boxId
   })
-  console.log('22222222',res)
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime);
     if(res[0].cur && res[0].cur.length == 1) {
@@ -987,7 +980,6 @@ const getBalanceTrend = async (item) => {
         },
       ]
     }
-    console.log('ALineOption', ALineOption)
     if (res[0].vol && res[0].vol.length == 1) {
       BLineOption.value.xAxis = {
         type: 'category',
@@ -1033,7 +1025,6 @@ const getBalanceTrend = async (item) => {
 }
 
 const handleSelectStatus = (index) => {
-  console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.curUnbalanceStatus = [index];

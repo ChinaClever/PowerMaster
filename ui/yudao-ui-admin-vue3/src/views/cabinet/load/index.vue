@@ -366,6 +366,9 @@ const handleClick = (row) => {
 
 const resetData = () => {
   queryParams.company = undefined;
+    butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.loadStatus = [];
   getTableData();
 }
 

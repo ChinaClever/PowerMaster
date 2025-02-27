@@ -6,6 +6,7 @@
 import { ref, onMounted, onUnmounted, watch, reactive } from 'vue';
 import * as echarts from 'echarts';
 
+// 定义组件的 props
 const props = defineProps({
   max: {
     type: Object,
@@ -25,7 +26,7 @@ const props = defineProps({
 const chartDom = ref<HTMLDivElement | null>(null);
 let myChart: echarts.ECharts | null = null;
 
-// 图表配置
+// 图表配置，使用 reactive 使其响应式
 const echartsOption = reactive({
   tooltip: {
     trigger: 'item'
@@ -70,6 +71,8 @@ const echartsOption = reactive({
 const initChart = () => {
   if (chartDom.value) {
     myChart = echarts.init(chartDom.value);
+    // 初始化时更新数据
+    updateChartData(props.max);
     myChart.setOption(echartsOption);
   }
 };
@@ -87,17 +90,22 @@ const updateChart = () => {
   }
 };
 
-// 计算每个数据项的百分比
+// 计算每个数据项并更新图表数据
+const updateChartData = (newMax: any) => {
+  const total = newMax.L1 + newMax.L2 + newMax.L3;
+  echartsOption.series[0].data = [
+    { value: newMax.L1, name: 'A相电压', itemStyle: { color: '#075F71' } },
+    { value: newMax.L2, name: 'B相电压', itemStyle: { color: '#119CB5' } },
+    { value: newMax.L3, name: 'C相电压', itemStyle: { color: '#45C0C9' } }
+  ];
+  updateChart();
+};
+
+// 监听 props.max 的变化并更新图表数据
 watch(
   () => props.max,
   (newMax) => {
-    const total = newMax.L1 + newMax.L2 + newMax.L3;
-    echartsOption.series[0].data = [
-      { value: newMax.L1, name: 'A相电压', itemStyle: { color: '#075F71' } },
-      { value: newMax.L2, name: 'B相电压', itemStyle: { color: '#119CB5' } },
-      { value: newMax.L3, name: 'C相电压', itemStyle: { color: '#45C0C9' } }
-    ];
-    updateChart();
+    updateChartData(newMax);
   },
   { deep: true }
 );
@@ -105,11 +113,6 @@ watch(
 // 组件挂载时初始化图表
 onMounted(() => {
   initChart();
-  // 初始化数据
-  watch(
-    () => props.max,
-    { immediate: true }
-  );
 });
 
 // 组件卸载时销毁图表

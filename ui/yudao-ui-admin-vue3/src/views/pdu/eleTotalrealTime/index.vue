@@ -146,7 +146,7 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref<Date[] | undefined>(undefined);
+const selectTimeRange = ref();
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},

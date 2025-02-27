@@ -39,7 +39,7 @@ public class RackIndexResVO implements Serializable {
      */
     private String rackName;
 
-    private String ip;
+    private String rackIp;
 
     /**
      * A路输出位

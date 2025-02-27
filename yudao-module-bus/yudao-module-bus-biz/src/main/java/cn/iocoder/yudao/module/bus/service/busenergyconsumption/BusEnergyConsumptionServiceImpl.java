@@ -5,13 +5,16 @@ import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
+import cn.iocoder.yudao.module.bus.vo.BoxNameVO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -65,6 +68,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     private BoxIndexMapper boxIndexMapper;
     @Autowired
     private AisleBarMapper aisleBarMapper;
+    @Autowired
+    private BoxIndexService boxIndexService;
 
     private Integer[] getBusIdsByDevkeys(String[] devkeys) {
         // 创建 QueryWrapper
@@ -364,8 +369,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             searchRequest = new SearchRequest(indices[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo[i].format(formatter))
-                    .to(now.format(formatter)));
+                    .from(timeAgo[0].format(formatter))
+                    .to(timeAgo[1].format(formatter)));
+            String format = now.format(formatter);
             // 添加计数聚合
             if (indices[0].contains("bus")) {
                 searchSourceBuilder.aggregation(
@@ -402,30 +408,30 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     }
 
     @Override
-    public Map<String, Object> getOneDaySumData(String timeRangeType) throws IOException {
+    public Map<String, Object> getOneDaySumData(String timeRangeType,LocalDateTime oldTime,LocalDateTime newTime) throws IOException {
         String[] indices = new String[]{"bus_ele_total_realtime","bus_ele_line"};
         String[] name = new String[]{"total", "line"};
-        LocalDateTime[] timeAgo;
+        LocalDateTime[] timeAgo = {oldTime,newTime};
 
-        switch (timeRangeType) {
-            case "day":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
-                break;
-            case "week":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
-                break;
-            case "month":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
-                break;
-            case "sixMonths":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
-                break;
-            case "year":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
-        }
+//        switch (timeRangeType) {
+//            case "day":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
+//                break;
+//            case "week":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1),LocalDateTime.now().minusWeeks(1)};
+//                break;
+//            case "month":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1),LocalDateTime.now().minusMonths(1)};
+//                break;
+//            case "sixMonths":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6),LocalDateTime.now().minusMonths(6)};
+//                break;
+//            case "year":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1),LocalDateTime.now().minusYears(1)};
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
+//        }
 
         Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map; // 确保 map 已经正确初始化并且不是 null
@@ -588,6 +594,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             SearchHits hits = searchResponse.getHits();
             hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
             // 匹配到的总记录数
+            mapList.stream().map(i ->i.get("box_id")).collect(Collectors.toList());
             Long totalHits = hits.getTotalHits().value;
             // 返回的结果
 
@@ -772,30 +779,30 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     }
 
     @Override
-    public Map<String, Object> getBoxOneDaySumData(String timeRangeType) throws IOException {
+    public Map<String, Object> getBoxOneDaySumData(String timeRangeType,LocalDateTime oldTime,LocalDateTime newTime) throws IOException {
         String[] indices = new String[]{"box_ele_total_realtime","box_ele_line","box_ele_loop","box_ele_outlet"};
         String[] name = new String[]{"total", "line", "loop", "outlet"};
-        LocalDateTime[] timeAgo;
+        LocalDateTime[] timeAgo = {oldTime,newTime};
 
-        switch (timeRangeType) {
-            case "day":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
-                break;
-            case "week":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
-                break;
-            case "month":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
-                break;
-            case "sixMonths":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
-                break;
-            case "year":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
-        }
+//        switch (timeRangeType) {
+//            case "day":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
+//                break;
+//            case "week":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
+//                break;
+//            case "month":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
+//                break;
+//            case "sixMonths":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
+//                break;
+//            case "year":
+//                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
+//        }
         Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
     }
@@ -1044,35 +1051,20 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         } else {
             records = busIndexMapper.selectBoxPageList(reqDTO.getDevkeys());
         }
-        Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
-        Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
-        List aisles = ops.multiGet(redisKeys);
-        Map<Integer, String> positonMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(records)) {
-            for (Object aisle : aisles) {
-                if (aisle == null) {
-                    continue;
-                }
-                JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
-                String devPosition = json.getString("room_name") + SPLIT_KEY
-                        + json.getString("aisle_name") + SPLIT_KEY;
-                positonMap.put(json.getInteger("aisle_key"), devPosition);
-            }
-        }
-        Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
-                .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
+        List<String> keys = records.stream().map(BusAisleBarQueryVO::getDevKey).distinct().collect(Collectors.toList());
+        Map<String, BoxNameVO> roomByKeys = boxIndexService.getRoomByKeys(keys);
+
         for (BusAisleBarQueryVO record : records) {
             BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
-            Integer aisleId = keyMap.get(record.getDevKey());
-            String localtion = positonMap.get(aisleId);
+
             resVO.setId(record.getId())
                     .setBusName(record.getBusName()).setDevKey(record.getDevKey());
-            if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
-                resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
-            } else {
-                if (Objects.nonNull(localtion))
-                    resVO.setLocation(localtion + "路");
+
+            BoxNameVO boxNameVO = roomByKeys.get(record.getDevKey());
+            if (Objects.nonNull(boxNameVO)){
+                resVO.setLocation(boxNameVO.getLocaltion());
             }
+
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])

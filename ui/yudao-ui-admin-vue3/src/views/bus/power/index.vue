@@ -94,7 +94,7 @@
       <el-form
         class="-mb-15px"
         :model="queryDeletedPageParams"
-        ref="queryFormRef"
+        ref="queryFormRef2"
         :inline="true"
         label-width="68px"
         v-show="switchValue == 4"        
@@ -887,6 +887,7 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  queryFormRef2.value.resetFields()
   butColor.value = 0;
   queryParams.status = [];
   onclickColor.value = -1;

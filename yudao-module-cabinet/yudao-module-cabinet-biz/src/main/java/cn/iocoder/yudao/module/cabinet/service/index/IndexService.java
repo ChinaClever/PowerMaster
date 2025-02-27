@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service.index;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import javax.validation.*;
@@ -7,6 +8,7 @@ import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.*;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import org.apache.poi.hpsf.Decimal;
 
 /**
  * 机柜索引 Service 接口
@@ -66,4 +68,6 @@ public interface IndexService {
     List<Integer> idList();
 
     List<CabinetRackRspVO> getRackByCabinet(Integer id);
+
+    Map<String, Double> getEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) throws IOException;
 }

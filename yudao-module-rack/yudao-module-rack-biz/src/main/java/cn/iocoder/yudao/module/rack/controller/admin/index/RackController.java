@@ -113,7 +113,7 @@ public class RackController {
     @GetMapping("/redisData")
     @Operation(summary = "获得机架索引")
     @Parameter(name = "Id", description = "编号", required = true, example = "1024")
-    public String getRackRedisById(@RequestParam("id") Integer Id) {
+    public Map getRackRedisById(@RequestParam("id") Integer Id) {
         return rackService.getRackRedisById(Id);
     }
 
@@ -121,5 +121,20 @@ public class RackController {
     @Operation(summary = "获得机架id列表")
     public List<Integer> idList() {
         return rackService.idList();
+    }
+
+    @GetMapping("/eleByRack")
+    @Operation(summary = "获得机架耗电量")
+    public CommonResult<Map<String, Double>> getEleByRack(String id,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        return success(rackService.getEleByRack(id,oldTime,newTime));
+    }
+
+    /**
+     * 获取输出位电流
+     */
+    @GetMapping("/outletCur")
+    @Operation(summary = "获得机架输出位电流")
+    public CommonResult<Map> getOutletCur(String id,String type,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        return success(rackService.getOutletCur(id,type,oldTime,newTime));
     }
 }

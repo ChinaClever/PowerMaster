@@ -32,12 +32,12 @@ public class AisleBox implements Serializable {
 
 
     /**
-     *  唯一标识
+     *  插接箱
      */
     private String boxKey;
 
     /**
-     * 插接箱名称
+     * 母线名称
      */
     private String busKey;
     /**

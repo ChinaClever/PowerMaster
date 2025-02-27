@@ -257,8 +257,9 @@
             <el-button
               link
               type="primary"
-              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1);"
+              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day',1, scope.row.l1MaxPow);"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
             详情
             </el-button>
@@ -356,7 +357,7 @@
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
           <div><h3>功率详情</h3></div> 
-          <div>所在位置：{{ location }}<span style="margin-left: 10px;">网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</span><span style="float: right;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
+          <div>所在位置：{{ location?location:'未绑定' }}<span style="margin-left: 10px;">网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</span><span style="float: right;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
         </template>
 
         <!-- 自定义的主要内容 -->
@@ -415,7 +416,7 @@
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
           <div><h3>需量电流详情</h3></div> 
-          <div>所在位置：{{location}} 
+          <div>所在位置：{{location?location:'未绑定'}} 
             网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="float: right;">{{ createTimes }} - {{ endTimes }}</span>
           </div>
           
@@ -624,7 +625,8 @@ const handleCheck = async (row) => {
   const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
+    console.log('row',item)
+    if (item.type == 4) {
       pduKeys.push(item.unique)
       haveCabinet = true;
     }
@@ -634,6 +636,7 @@ const handleCheck = async (row) => {
   }else{
     queryParams.pduKeyList = pduKeys
   }
+  console.log('呜呜呜呜',queryParams.pduKeyList)
 
   getList();
 }
@@ -1379,6 +1382,8 @@ const showDialog = (id, type,flagValue,l1MaxCur) => {
 const showDialogOne = (id,type,flagValue,l1MaxPow) => {
   lineidChartOne?.dispose()
   getLineid(id, type,flagValue)
+  console.log('l1MaxPow',l1MaxPow)
+  console.log('id',id)
   if(l1MaxPow!= null && l1MaxPow != undefined && l1MaxPow != 0){
   dialogVisibleOne.value = true
 }else {

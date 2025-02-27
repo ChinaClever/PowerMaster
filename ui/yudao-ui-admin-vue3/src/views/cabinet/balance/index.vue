@@ -63,64 +63,9 @@
                   <span>B路</span>
                 </div>
               </div>
-              <!-- <div class="progress" v-else>
-                <div class="left" :style="`flex: ${item.apow || '0.00'}`">{{item.apow || '0.00'}}%</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex:  ${item.bpow || '0.00'}`">{{item.bpow || '0.00'}}%</div>
-                <div class="tip">
-                  <span>A路</span>
-                  <span>B路</span>
-                </div>
-              </div> -->
+
             </div>
-            <!-- 功率 -->
-            <!-- <div class="progressContainer">
-              <div class="text">功率占比：</div>
-              <div class="progress" v-if="item.abglzb">
-                <div class="left" :style="`flex: ${item.abglzb}`">{{item.abglzb}}%</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex: ${100 - item.abglzb}`">{{100 - item.abglzb}}%</div>
-              </div>
-              <div class="progress" v-else>
-                <div class="left" :style="`flex: 50`">null</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex: 50`">null</div>
-              </div>
-              <div class="tip">
-                <span>A路</span>
-                B路
-              </div>
-            </div> -->
-            <!-- 电流 -->
-            <!-- <div class="content" v-if="switchValue == 1">
-              <div class="road">A路</div>
-              <div class="valueList">
-                <div>Ia：{{item.Ia0 || '0.00'}}A</div>
-                <div>Ia：{{item.Ia1 || '0.00'}}A</div>
-                <div>Ia：{{item.Ia2 || '0.00'}}A</div>
-              </div>
-              <div class="road">B路</div>
-              <div class="valueList">
-                <div>Ia：{{item.Ib0 || '0.00'}}A</div>
-                <div>Ia：{{item.Ib1 || '0.00'}}A</div>
-                <div>Ia：{{item.Ib2 || '0.00'}}A</div>
-              </div>
-            </div> -->
-            <!-- 功率 -->
-            <!-- <div class="content" v-if="switchValue == 1">
-              <div class="road">A路</div>
-              <div class="valueList">
-                <div>Pa：{{item.Pa0 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pa1 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pa2 || '0.00'}}Kw</div>
-              </div>
-              <div class="road">B路</div>
-              <div class="valueList">
-                <div>Pa：{{item.Pb0 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pb1 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pb2 || '0.00'}}Kw</div>
-              </div>
-            </div> -->
+
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
             <!--<button v-if="item.apow != null || item.bpow != null" class="detail" @click.prevent="showDialog(item)" >详情</button>-->
             <button v-if="item.pduBox === false" class="detail" @click.prevent="showDialog(item)" >详情</button>
@@ -136,9 +81,9 @@
                 <div class="label">有功功率：</div>
                 <div class="progressContainer">
                   <div class="progress">
-                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(2)}}%</div>
+                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
                     <div class="line"></div>
-                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(2)}}%</div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
                   </div>
                 </div>
               </div>
@@ -146,9 +91,9 @@
                 <div class="label">视在功率：</div>
                 <div class="progressContainer">
                   <div class="progress">
-                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent}}%</div>
+                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
                     <div class="line"></div>
-                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent}}%</div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
                   </div>
                 </div>
               </div>
@@ -195,11 +140,11 @@
         <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="所在位置" min-width="90" align="center" prop="roomName" />
-          <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
-          <el-table-column label="A路视在功率(kVA)" min-width="90" align="center" prop="powApparentA" />
-          <el-table-column label="B路视在功率(kVA)" min-width="90" align="center" prop="powApparentB" />
-          <el-table-column label="A路占比" min-width="90" align="center" prop="aPow" />
-          <el-table-column label="B路占比" min-width="90" align="center" prop="bPow" />
+          <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" :formatter="formatEle"/>
+          <el-table-column label="A路视在功率(kVA)" min-width="90" align="center" prop="powApparentA"  :formatter="formatEle"/>
+          <el-table-column label="B路视在功率(kVA)" min-width="90" align="center" prop="powApparentB"  :formatter="formatEle"/>
+          <el-table-column label="A路占比" min-width="90" align="center" prop="apow" />
+          <el-table-column label="B路占比" min-width="90" align="center" prop="bpow" />
           <el-table-column label="操作" width="100px" align="center">
             <template #default="scope">
               <el-button
@@ -213,28 +158,7 @@
               </el-button>
             </template>
           </el-table-column>
-        
-          <!-- <el-table-column label="操作" width="100px">
-          <template #default="scope">
-            <el-button size="small" link @click="openListenerFieldForm(scope.row, scope.$index)">详情</el-button>
-          </template>
-        </el-table-column> -->
-          <!-- <el-table-column label="A路" align="center">
-            <el-table-column label="I1(A)" min-width="90" align="center" prop="acurValueOne" />
-            <el-table-column label="I2(A)" min-width="90" align="center" prop="acurValueTwe" />
-            <el-table-column label="I3(A)" min-width="90" align="center" prop="acurValueThree" />
-            <el-table-column label="P1(kW)" min-width="90" align="center" prop="bpowValueOne" />
-            <el-table-column label="P2(kW)" min-width="90" align="center" prop="bpowValueTwe" />
-            <el-table-column label="P3(kW)" min-width="90" align="center" prop="bpowValueThree" />
-          </el-table-column>
-          <el-table-column label="B路"  align="center">
-            <el-table-column label="I1(A)" min-width="90" align="center" prop="bcurValueOne" />
-            <el-table-column label="I2(A)" min-width="90" align="center" prop="bcurValueTwe" />
-            <el-table-column label="I3(A)" min-width="90" align="center" prop="bcurValueThree" />
-            <el-table-column label="P1(kW)" min-width="90" align="center" prop="bpowValueOne" />
-            <el-table-column label="P2(kW)" min-width="90" align="center" prop="bpowValueTwe" />
-            <el-table-column label="P3(kW)" min-width="90" align="center" prop="bpowValueThree" />
-          </el-table-column> -->
+      
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
@@ -326,7 +250,7 @@ const balanceObj = reactive({
 const getBalanceDetail = async(item) => {
   const data = await CabinetApi.getDetail({id:item});
   const res = data.redisData;
-  console.log('data1111', data);
+  // console.log('data1111', data);
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
@@ -444,7 +368,7 @@ const getTableData = async(reset = false) => {
           roomName: item.roomName +'-' +item.cabinetName
         };
       });
-            console.log('tableData.value', tableData.value);
+            // console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {
@@ -569,6 +493,18 @@ const getBalanceTrend = async () => {
   }
 }
 
+// 格式化电能列数据，保留1位小数
+function formatEle(_row: any, _column: any, cellValue: number): string {
+  console.log(cellValue);
+  if (cellValue === null) {
+    return '';
+  }
+    if (cellValue === 0) {
+    return '0';
+  }
+  return Number(cellValue).toFixed(3);
+}
+
 const ALineOption = ref<EChartsOption>({
   title: {
     text: 'A路电流趋势',
@@ -633,6 +569,32 @@ const curlocation = ref();
 const apow = ref(null);
 const bpow = ref(null);
 
+
+// 处理对话框关闭
+const handleClose = () => {
+  dialogVisibleCur.value = false;
+
+  balanceObj.pow_apparent_percent= 0;
+  balanceObj.pow_active_percent= 0;
+  balanceObj.cur_valueA= [];
+  balanceObj.cur_valueB= [];
+  balanceObj.imbalanceValueA= 0;
+  balanceObj.imbalanceValueB= 0;
+  balanceObj.colorIndex= 0;
+
+//   const balanceObj = reactive({
+//   pow_apparent_percent: 0,
+//   pow_active_percent: 0,
+//   cur_valueA: [],
+//   cur_valueB: [],
+//   imbalanceValueA: 0,
+//   imbalanceValueB: 0,
+//   colorIndex: 0,
+// })
+  // const list = zoomOut(formData.value)
+  // emit('update:modelValue', list)
+}
+
 const showDialog = async (item) => {
   cabinetId.value = item.id || 1;
   colorFlag.value = item.color;
@@ -645,6 +607,7 @@ const showDialog = async (item) => {
   await getBalanceDetail(item.id);
   await getBalanceDegree();
   await getBalanceTrend();
+
 }
 
 // 处理切换 表格/阵列 模式

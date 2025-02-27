@@ -55,7 +55,7 @@ const echartsOption = computed(() => ({
       type: 'bar',
       label: {
         show: true,
-        position: 'inside',
+        position: 'insideRight',
         formatter: (params) => {
           const unitMap = ['KVAR', 'KW', 'KVA'];
           return `${-(params.value)}${unitMap[params.dataIndex]}`;

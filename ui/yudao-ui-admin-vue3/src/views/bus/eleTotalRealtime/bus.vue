@@ -446,8 +446,9 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (devKey: string, createTimeMin : string,createTimeMax : string) => {
-  push('/bus/nenghao/powerAnalysis/bus?start='+createTimeMin+
-  '&end='+createTimeMax+'&devKey='+ devKey);
+  const start = createTimeMin
+  const end = createTimeMax;
+  push({path: '/bus/nenghao/powerAnalysis/bus', state: {devKey,start,end}})
 }
 
 /** 初始化 **/
