@@ -98,6 +98,7 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
+import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.NOT_BOX;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
@@ -509,7 +510,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     public ReportBasicInformationResVO getReportBasicInformationResVO(BoxIndexPageReqVO pageReqVO) {
         BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaUpdateWrapper<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
         ReportBasicInformationResVO vo = new ReportBasicInformationResVO();
-        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+        Object obj;
+        try {
+             obj = redisTemplate.opsForValue().get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+        }catch (Exception e){
+            throw exception(NOT_BOX);
+        }
         JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
 
         ArrayList<String> list = new ArrayList<>();

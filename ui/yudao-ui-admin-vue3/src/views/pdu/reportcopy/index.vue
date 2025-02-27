@@ -1198,7 +1198,8 @@ const handleQuery = async () => {
   
   if(queryParams.ipAddr){
     if(queryParams.oldTime && queryParams.newTime){
-      queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+      // queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+      queryParams.devKey = queryParams.ipAddr;
       await getList();
       initChart();
       await PDUHdaLineHisdata();
