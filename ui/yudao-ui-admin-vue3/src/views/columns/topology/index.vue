@@ -53,12 +53,12 @@
       <div style="margin-top:-25px"></div>
       <div style="height:20px;"></div>
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
-        <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
-          <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}">
+        <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus" @dblclick="console.log(123)">
+          <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}" @dblclick="handleInitialDblick($event, 'A')">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
             <!-- <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" /> -->
           </div>
-          <div class="startBus" v-if="!machineColInfo.barB.direction">
+          <div class="startBus" v-if="!machineColInfo.barB.direction" @dblclick="handleInitialDblick($event, 'B')">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
           </div>
           <div class="maskPoint1"></div>
@@ -70,7 +70,7 @@
             <div class="busList1">
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
                 <!-- 插接箱 -->
-                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'A')">
+                <div v-if="bus.type == 0 || bus.outletNum > 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'A')">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
                   <div class="pointContainer">
                     <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_A-${pointIndex}`"></div>
@@ -100,7 +100,7 @@
             <div class="busList2">
               <template v-for="(bus, index) in machineColInfo.barB.boxList" :key="index">
                 <!-- 插接箱 -->
-                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'B')">
+                <div v-if="bus.type == 0 || bus.outletNum > 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'B')">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
                   <div class="pointContainer">
                     <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_B-${pointIndex}`"></div>
@@ -201,10 +201,10 @@
           </div>
         </div>
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
-          <div class="startBus" :style="{opacity: machineColInfo.barA.direction}">
+          <div class="startBus" :style="{opacity: machineColInfo.barA.direction}" @dblclick="handleInitialDblick($event, 'A')">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
           </div>
-          <div class="startBus" v-if="machineColInfo.barB.direction">
+          <div class="startBus" v-if="machineColInfo.barB.direction" @dblclick="handleInitialDblick($event, 'B')">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
           </div>
         </div>
@@ -581,11 +581,15 @@ const handlePluginRightClick = (e, type) => {
     type
   }
 }
+const handleInitialDblick = (e, road) => {
+  console.log('machineColInfo', machineColInfo)
+  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
+}
 const handlePluginDblick = (e, road) => {
   const targetId = e.target.id || e.target.parentNode.id
   const index = targetId.split('-')[1]
   console.log('targetId', targetId, machineColInfo, index)
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].barKey}})
+  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey}})
 }
 // 处理插接箱/连接器菜单点击事件
 const handleBoxOperate = async(type, road) => {
@@ -687,7 +691,7 @@ const handleConfig = () => {
   console.log('handleConfig', machineColInfo)
   let data = null as any | null
   if(machineColInfo.barA) {
-    console.log('machineColInfo', machineColInfo.barA)
+    console.log('machineColInfo.barA', machineColInfo.barA)
     const boxList = machineColInfo.barA.boxList
     data = {
       barIdA: machineColInfo.barA.barId,
@@ -799,37 +803,13 @@ const handleFormBox = (data) => {
 }
 // 接口获取柜列状态数据详情
 const getDataDetail = async() => {
-  const res = await MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
+  const res = await MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
   console.log('接口获取柜列状态数据详情', res)
   handleDataDetail(res)
 }
 // 处理柜列状态数据详情
 const handleDataDetail = (res) => {
-  if (res.barA) {
-    machineColInfo.barA = {
-      ...res.barA,
-      ...machineColInfo.barA,
-    }
-    // chineColInfo.barA.powerFactor ? Number(machineColInfo
-    res.barA.boxList.forEach((item, index) => {
-      machineColInfo.barA.boxList[index] = {
-        ...machineColInfo.barA.boxList[index],
-        ...item
-      }
-    })
-  }
-  if (res.barB) {
-    machineColInfo.barB = {
-      ...res.barB,
-      ...machineColInfo.barB,
-    }
-    res.barB.boxList.forEach((item, index) => {
-      machineColInfo.barB.boxList[index] = {
-        ...machineColInfo.barB.boxList[index],
-        ...item
-      }
-    })
-  }
+  console.log('machineColInfo', machineColInfo)
   res.cabinetList && res.cabinetList.forEach(cab => {
     cabinetList.value.forEach((item, index) => {
       if (item.id == cab.id) {
@@ -1316,20 +1296,20 @@ const handleDataDetail = (res) => {
 // }
 // 接口获取柜列信息
 const getMachineColInfo = async() => {
-  const res1 = MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
-  const res2 = MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
-  Promise.all([res1, res2]).then((resultList) => {
-    emit('sendList', resultList[0].roomId)
-    //push({path: '/aisle/index', state: { roomDownVal: resultList[0].roomId}})
-    Object.assign(machineColInfo, resultList[0])
-    handleCabinetList(resultList[0], resultList[1])
-    // handleBusInit(resultList[0])
-    console.log('getMachineColInfo', resultList)
-  })
+  const result = await MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
+
+  emit('sendList', result.roomId);
+    //push({path: '/aisle/index', state: { roomDownVal: result.roomId}});
+    Object.assign(machineColInfo, result);
+    handleCabinetList(result); 
+    // handleBusInit(result);
+    console.log('getMachineColInfo', result);
 }
+
 
 const saveMachineBus = async() => {
   const filterCabinet = cabinetList.value.filter(item => item.cabinetName)
+  console.log('filterCabinet', filterCabinet)
   console.log('machineColInfo', machineColInfo)
   // filterCabinet.forEach((cab, index) => {
   //   if (Number.isInteger(cab.boxIndexA)) {
@@ -1357,8 +1337,8 @@ const saveMachineBus = async() => {
   console.log('saveMachineBus', res)
 }
 // 处理机柜列表
-const handleCabinetList = async(data, status) => {
-  console.log('处理机柜列表', data, status)
+const handleCabinetList = async(data) => {
+  console.log('处理机柜列表', data)
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
     arr.push({})
@@ -1369,10 +1349,10 @@ const handleCabinetList = async(data, status) => {
   })
   console.log('arr', arr)
   cabinetList.value = arr
-  handleDataDetail(status)
+  handleDataDetail(data)
   handleCssScale()
   await toCreatConnect()
-  controlEndpointShow(false)
+  controlEndpointShow(true)
 }
 // 增加空机柜
 const addMachine = () => {
@@ -1562,12 +1542,11 @@ onBeforeUnmount(() => {
   // min-height: calc(100vh - 270px);
   .Bus {
     position: relative;
-    z-index: 1;
-    width: 86px;
     .startBus {
+      position: relative;
+      z-index: 100;
       font-size: 12px;
       color: #fcfcfce1;
-      width: 86px;
       height: 76px;
       box-sizing: border-box;
       border: 1px solid #999;

@@ -29,16 +29,16 @@
       </div>
     </div>
   </el-card>
-  <div style="height:calc(100vh - 200px);">
+  <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="`cursor: ${dragCursor};height:calc(100vh - 200px);`">
     <el-card shadow="never" style="100%">
     <div class="dragContainer" 
       ref="tableContainer"
       v-loading="loading" 
       style="overflow-x:auto;"
       @click.right="handleRightClick"
-      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height:calc(100vh - 230px);'">
+      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px;` : 'height:calc(100vh - 230px);'">
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
-      <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow" >
+      <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
         <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
         <template v-for="(formItem, index) in formParam" :key="index">
           <el-table-column :label="formItem" min-width="60" align="center" :resizable="false">
@@ -120,10 +120,11 @@
       </el-table>
     <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
       <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-        <div class="menu_item" v-if="showMenuAdd" @click="addMachine">新增</div>
-        <div class="menu_item" v-if="!showMenuAdd" @click="editMachine">编辑</div>
-        <div class="menu_item" v-if="!showMenuAdd" @click="handleJump(false)">查看</div>
-        <div class="menu_item" v-if="!showMenuAdd" @click="deleteMachine">删除</div>
+        <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div>
+        <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addMachine">新增</div>
+        <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
+        <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
+        <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div>
       </div>
     </div>
   </el-card>
@@ -249,6 +250,8 @@ const isAddRoom = ref(false) // 是否为添加机房模式
 const roomId = ref(0) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
+const dragTableViewEle = ref()
+const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
 const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(0)
@@ -335,8 +338,13 @@ const btns = [
 const dialogVisible = ref(false);
 const dialogStopDelete = ref(false);
 const editEnable = ref(false);
+const dragCursor = ref();
 const tableHeight = ref(0);
 const machineForm = ref();
+const startX = ref(0);
+const startY = ref(0);
+const scrollLeft = ref(0);
+const scrollTop = ref(0);
 
 const groupMachineFill = {
   name: 'MachineFill',
@@ -401,6 +409,7 @@ const getRoomInfo = async() => {
     const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
     const results = await Promise.all([result1, result2])
     const res = results[0];
+    console.log("res",res)
     updateCfgInfo.value=res;
     roomDownValId.value = res.id;
     const data: Record<string, any[]>[] = [];
@@ -462,6 +471,7 @@ const getRoomInfo = async() => {
       data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
     })
     tableData.value = data;
+    console.log("tableData.value".tableData.value)
     getRoomStatus(results[1])
     handleCssScale()
   } finally {
@@ -634,16 +644,18 @@ const arraySpanMethod = ({
     const td = row[getTableColCharCode(columnIndex - num)]
     const tdData = td[0]
     if (tdData && tdData.type && tdData.type == 1) { // 如果是柜列
-     // console.log('===========', td)
       if (tdData.first) { // 如果是柜列中开头第一个  合并单元格
         if (tdData.direction == 1) { // 横向
-          return [1, tdData.amount]
+          return [2, tdData.amount]
         } else { // 纵向
-          return [tdData.amount, 1]
+          return [tdData.amount, 2]
         }
       } else { // 如果不是柜列中开头第一个 该单元格不显示
         return [0, 0]
       }
+    } 
+    if (tdData && tdData.type && tdData.type == 2) { // 如果是机柜
+      return [2, 1]
     } 
   }
   return [1, 1]
@@ -652,7 +664,6 @@ const arraySpanMethod = ({
 // 右击弹出菜单
 const handleRightClick = (e) => {
   e.preventDefault()
-  if (!editEnable.value) return
   const container = e.currentTarget;
   const rect = container.getBoundingClientRect()
   const offsetX = e.clientX - Math.ceil(rect.left) + 1
@@ -671,7 +682,7 @@ const handleRightClick = (e) => {
     maxlndexX: rowColInfo.col - lndexX,
     maxlndexY: rowColInfo.row - lndexY,
   }
-  //console.log('operateMenu', operateMenu.value)
+  console.log('editEnable.value', editEnable.value)
 }
 // 判断是否展示添加菜单项
 const showMenuAdd = computed(() => {
@@ -709,6 +720,48 @@ const onEnd = ({from, to}) => {
     }
   }
 }
+//移动表格视图
+const dragTableView = () => {
+  dragCursor.value = 'grab';
+  operateMenu.value.show = false
+}
+const onMouseDown = (e) => {
+  if (dragCursor.value == 'grab') {
+    dragCursor.value = 'grabbing';
+    startX.value = e.pageX;
+    startY.value = e.pageY;
+    // 获取表格滚动区域元素
+    const tableScrollbarWrap = dragTable.value.$el.querySelector('.el-scrollbar__wrap');
+    // 获取滚动位置
+    scrollTop.value = tableScrollbarWrap.scrollTop;
+    scrollLeft.value = tableScrollbarWrap.scrollLeft;
+    return false
+  }
+}
+const onMouseMove = (e) => {
+  if (dragCursor.value == 'grabbing') {
+    const dx = e.pageX - startX.value;
+    const dy = e.pageY - startY.value;
+    dragTable.value.setScrollLeft(scrollLeft.value-dx)
+    dragTable.value.setScrollTop(scrollTop.value-dy)
+  }
+};
+const onMouseUp = () => {
+  if (dragCursor.value == 'grabbing') {
+    dragCursor.value = 'grab'
+  }
+}
+
+const onMouseLeave = () => {
+  dragCursor.value = ''
+}
+
+const onSelectStart = (e) => {
+  if(dragCursor.value == 'grabbing') {
+    e.preventDefault();
+  }
+}
+
 // 增加机柜弹框
 const addMachine = () => {
   aisleFlag.value = 1;
@@ -720,6 +773,7 @@ const editMachine = () => {
   aisleFlag.value = 2;
   const Y = operateMenu.value.lndexY;
   const X = formParam.value[operateMenu.value.lndexX];
+  console.log("machineForm",machineForm)
   machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value);
   operateMenu.value.show = false;
 }
@@ -874,7 +928,7 @@ const handleSubmit = async() => {
   console.log(rowColInfo.row)
   for(let i = 0; i < rowColInfo.row; i++) {
     for(let j = 0; j < rowColInfo.col; j++) {
-     // console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
+    //  console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
       const target = tableData.value[i][getTableColCharCode(j)][0]
       if (target && target.type == 1 && target.first) {
         console.log('target.......', target)
@@ -906,6 +960,8 @@ const handleSubmit = async() => {
     }
   }
   try {
+    console.log('aisleListend.......', aisleList)
+    console.log('cabinetList.......', cabinetList)
     loading.value = true
     const res = await MachineRoomApi.saveRoomDetail({
         id: isAddRoom.value ? '' : roomId.value,

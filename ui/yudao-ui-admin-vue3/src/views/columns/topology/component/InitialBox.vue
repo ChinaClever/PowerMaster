@@ -14,7 +14,7 @@
         <div>{{line}}%</div>
       </div>
     </template>
-    <template v-if="chosenBtn == 1 && pluginData.lineCur">
+    <template v-else-if="chosenBtn == 1 && pluginData.lineCur">
       <div class="box" v-for="(line, boxIndex) in pluginData.lineCur" :key="boxIndex">
         <div v-if="boxIndex == 0">A</div>
         <div v-if="boxIndex == 1">B</div>
@@ -22,7 +22,7 @@
         <div>{{line.toFixed(2)}}</div>
       </div>
     </template>
-    <template v-if="chosenBtn == 2 && pluginData.lineVol">
+    <template v-else-if="chosenBtn == 2 && pluginData.lineVol">
       <div class="box" v-for="(line, boxIndex) in pluginData.lineVol" :key="boxIndex">
         <div v-if="boxIndex == 0">A</div>
         <div v-if="boxIndex == 1">B</div>
@@ -64,7 +64,7 @@
       </div>
     </template>
     <template v-else>
-      <div>无</div>
+      <div>始端箱</div>
     </template>
   </div>
   

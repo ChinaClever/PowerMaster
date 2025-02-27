@@ -104,7 +104,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
-                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
+                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
@@ -125,7 +125,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
-                      <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
+                      <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
@@ -530,6 +530,8 @@ const open = async (type: string, data, machineColInfo) => {
       barIdB: machineColInfo.barIdB,
       busIpB: machineColInfo.busIpB,
     }
+    machineFormData.value.pduBox = machineFormData.value.pduBox ? 1 : 0
+    console.log(machineFormData)
   }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -542,7 +544,8 @@ const submitForm = async () => {
     if (!machineForm) return
     const valid = await machineForm.value.validate()
     if (!valid) return
-    if(machineFormData.value.pduIpA != "" && machineFormData.value.pduIpB != ""){
+    if(machineFormData.value.pduIpA != "" && machineFormData.value.pduIpB != "" && machineFormData.value.pduIpA != null && machineFormData.value.pduIpB != null){
+        console.log("machineFormData.value",machineFormData.value)
         if(machineFormData.value.pduIpA == machineFormData.value.pduIpB && machineFormData.value.casIdA == machineFormData.value.casIdB){
            message.error("PDU-IP地址相同情况下, 级联地址不能相同。");
            return;
