@@ -368,6 +368,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                 RoomPduMenuDTO pduMenuDTO = new RoomPduMenuDTO();
                 pduMenuDTO.setId(pduIndexDo.getId());
                 pduMenuDTO.setName(pduIndexDo.getPduKey());
+                pduMenuDTO.setIp(pduIndexDo.getPduKey());
                 pduMenuDTO.setType(4);
                 pduMenuDTO.setParentType(3);
                 pduMenuDTO.setUnique(pduIndexDo.getPduKey());
