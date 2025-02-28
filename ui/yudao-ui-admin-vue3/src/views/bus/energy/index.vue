@@ -82,7 +82,7 @@
             </div>
             <div class="room">{{item.location}}</div>
             <!-- <div class="name">{{item.busName}}</div> -->
-            <button class="detail" @click.prevent="toDetail(item.devKey,item.roomId, item.id,item.location,item.busName,item.roomName,item.local)" >详情</button>
+            <button class="detail" @click.prevent="toDetail(item)" >详情</button>
           </div>
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height: 720px;margin-top:-10px;overflow-y: auto;" :data="tableData" :border="true">
@@ -116,7 +116,7 @@
             <el-button
               link
               type="primary"
-              @click="toDetail(scope.row.devKey,scope.row.roomId,scope.row.id,scope.row.location,scope.row.busName,scope.row.roomName,scope.row.local)"
+              @click="toDetail(scope.row)"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             详情
@@ -248,6 +248,7 @@ const getTableData = async(reset = false) => {
           // location: item.location ? item.location : item.devKey+item.busName,
           location: item.location || (item.devKey && item.busName ? item.devKey +'-'+ item.busName : null),
           local : item.location,
+          roomName: item.roomName,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
@@ -341,9 +342,16 @@ const changeTimeGranularity = (value) => {
 }
 
 // 跳转详情
-const toDetail = (devKey,roomId, id,location,busName,roomName,local) => {
-  local = local?local : '未绑定';
-  push({path: '/bus/busmonitor/busenergydetail', state: {devKey, roomId, id,location,busName, roomName,local }})
+const toDetail = (row) => {
+  console.log('toDetail', row.roomName)
+   push({path: '/bus/busmonitor/busenergydetail', state: { devKey: row.devKey,
+      roomId: row.roomId,
+      id: row.id,
+      location: row.location,
+      busName: row.busName,
+      roomName: row.roomName,
+      local: row.local
+    }})
 }
 
 onMounted(async () => {

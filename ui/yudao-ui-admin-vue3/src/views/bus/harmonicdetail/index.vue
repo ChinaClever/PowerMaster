@@ -56,7 +56,7 @@
         
         <el-form-item>  
           <span>机房：</span>
-          <el-tag size="large">{{ location?location:'未绑定' }}</el-tag>
+          <el-tag size="large">{{ roomName?roomName:'未绑定' }}</el-tag>
           <span> 名称：</span>
           <el-tag size="large">{{ busName }}</el-tag>
           <span>网络地址：</span>
@@ -152,6 +152,7 @@ defineOptions({ name: 'PDUDevice' })
 const location = ref(history?.state?.location);
 const busName = ref(history?.state?.busName);
 const devKey = ref(history?.state?.devKey);
+const roomName = ref(history?.state?.roomName);
 const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();
