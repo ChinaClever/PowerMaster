@@ -10,6 +10,10 @@ const props = defineProps({
     type: Number,
     required: true
   },
+  status: {
+    type: Number,
+    required: true
+  },
   height: {
     type: Number,
     default: 60
@@ -25,16 +29,16 @@ console.log('props.precent666',props.precent);
 console.log('props.precent',Math.round(props.precent));
 
 const judgeColor = () => {
-  if (props.precent == 0) {
+  if (props.status == 0) {
     color.value = '#aaa'
-  } else if (props.precent < 30) {
+  } else if (props.status == 1) {//正常颜色
     color.value = '#3bbb00'
-  } else if (props.precent < 60) {
-    color.value = '#3b8bf5'
-  } else if (props.precent < 90) {
-    color.value = '#ffc402'
-  } else {
-    color.value = '#fa3333'
+  } else if (props.status == 4) {//离线颜色
+    color.value = '#7700ff'
+  } else if (props.status == 2) {
+    color.value = '#ffc402'   //预警颜色
+  } else if (props.status == 3){
+    color.value = '#fa3333'   //告警颜色
   }
 }
 
