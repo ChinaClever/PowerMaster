@@ -10,7 +10,7 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载
+              <div class="tag empty"></div>空载123
             </div>
             <div class="value"><span class="number">{{statusNumber.LoadRateZero}}</span>个</div>
           </div>
