@@ -329,7 +329,7 @@ const sensorListRight = reactive([
   {
     type: 1,
     sensorId: null,
-    position: 1,
+    position: 2,
     pathPdu: '',
     channel: 2
   },
@@ -349,6 +349,8 @@ const sensorListRight = reactive([
 ])
 const machineFormData = ref({
   roomId: '',
+  aisleId: '',
+  index: '',
   cabinetName: '',
   type: '',
   cabinetHeight: 42, //U
@@ -494,6 +496,8 @@ const open = async (type: string, data, machineColInfo) => {
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
+    aisleId: '',
+    index: '',
     type: '',
     cabinetHeight: 42,
     powCapacity: 8,
@@ -518,6 +522,9 @@ const open = async (type: string, data, machineColInfo) => {
     eleLimitMonth: 1000, // 月用能限制
   }
   machineFormData.value.roomId = machineColInfo.roomId
+  machineFormData.value.aisleId = machineColInfo.aisleId
+  machineFormData.value.index = machineColInfo.index
+  console.log("machineFormData",machineFormData)
   console.log('machineColInfo', machineColInfo)
   if (machineColInfo.barA) {
     isBusBind.value = true
@@ -557,11 +564,11 @@ const submitForm = async () => {
     const sensorListFilter = sensorList.filter(item => item.sensorId)
     console.log('sensorListFilter', sensorListFilter)
     machineFormData.value.sensorList = sensorListFilter
-    console.log('roomName', machineFormData.value)
-    // const res = await CabinetApi.saveCabinetInfo({
-    //   ...machineFormData.value,
-    // })
-    console.log('res', {...machineFormData.value}, machineFormData.value)
+    console.log('roomName', {...machineFormData.value})
+    const res = await CabinetApi.saveCabinetInfo({
+      ...machineFormData.value,
+    })
+    console.log('res', res , {...machineFormData.value}, machineFormData.value)
     dialogVisible.value = false
     // 发送操作成功的事件
     emit('success', {...machineFormData.value, addrA:null, addrB: null})

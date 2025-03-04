@@ -148,15 +148,15 @@
               type="primary"
               @click="openForm('edit', scope.row.cabinet_key)">编辑
             </el-button>
-              <el-button v-if ="scope.row.cabinetBoxes !== null"
+              <el-button v-if ="scope.row.cabinetBoxes"
                 type="danger"  style="margin-left: 2px"
                 @click="handleDelete(scope.row.id,2)">删除母线
               </el-button>
-              <el-button v-else-if ="scope.row.cabinetPdus !== null"
+              <el-button v-else-if ="scope.row.cabinetPdus"
                 type="danger" style="margin-left: 2px"
                 @click="handleDelete(scope.row.id,1)">删除pdu
               </el-button> 
-              <el-button v-else-if ="scope.row.rackIndices !== null"
+              <el-button v-else-if ="scope.row.rackIndices"
                 type="danger" style="margin-left: 2px"
                 @click="handleDelete(scope.row.id,3)">删除机架
               </el-button>
@@ -480,6 +480,7 @@ const getTableData = async() => {
         }
         return tableItem
       })
+      console.log("res.list",res.list)
       listPage.value = list;
       queryParams.pageTotal = res.total;
 

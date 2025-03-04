@@ -888,7 +888,8 @@ const submitSetting = async() => {
       roomFlagId = roomId.value; 
       messageRoomFlag = "修改成功！";
    }
-   const res = await MachineRoomApi.saveRoomDetail({
+   try {
+    const res = await MachineRoomApi.saveRoomDetail({
       id: roomFlagId,
       roomName: rowColInfo.roomName,
       xLength: rowColInfo.col,
@@ -899,11 +900,16 @@ const submitSetting = async() => {
       eleAlarmMonth: rowColInfo.eleAlarmMonth,
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
-   })
-   if(res != null || res != "")
-   message.success(messageRoomFlag);
-   dialogVisible.value = false;
-   roomId.value = res;
+    })
+    
+    if(res != null || res != "")
+    message.success(messageRoomFlag);
+    dialogVisible.value = false;
+    roomId.value = res;
+   } catch (error) {
+    console.log(error)
+   }
+   
    getRoomList();
 }
 
