@@ -218,7 +218,7 @@
               <div>无功功率：{{item.powerReactiveTotal}}KVAR</div>
               <!-- 负载率： -->
             </div>
-            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.powerFactorTotal*100 || ''" /></div>
+            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.powerFactorTotal*100 || ''" :status="item.status" /></div>
           </div>
           <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
           <div v-if="item.status == 0" class="status-empty">未绑定</div>

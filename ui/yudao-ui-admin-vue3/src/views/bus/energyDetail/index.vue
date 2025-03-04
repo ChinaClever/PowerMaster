@@ -3,7 +3,7 @@
   <div class="energy" style="background-color: #E7E7E7;">
   <div class="header_app">
     <div class="header_app_text">
-      <span style="margin-right:10px;">机房：{{location}}</span>
+      <span style="margin-right:10px;">机房：{{roomName}}</span>
       <span style="margin-right:10px;">名称：{{busName}}</span>
       <span style="margin-right:10px;">网络地址：{{ devKey }}</span>
     </div>
@@ -127,9 +127,11 @@ import { BusEnergyApi } from '@/api/bus/busenergy'
 import 'echarts/lib/component/dataZoom';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 
-const location = ref(history?.state?.local )
-const busName = ref(history?.state?.busName )
-const devKey = ref(history?.state?.devKey )
+const location = ref(history?.state?.local)
+const busName = ref(history?.state?.busName)
+const devKey = ref(history?.state?.devKey)
+const roomName = ref(history?.state?.roomName)
+
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')

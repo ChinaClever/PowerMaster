@@ -67,7 +67,7 @@ public class AisleController {
     @Operation(summary = "柜列新增/编辑")
     @PostMapping("/aisle/save")
     public CommonResult<Integer> saveAisle(@RequestBody AisleSaveVo vo) {
-        return CommonResult.success( aisleService.aisleSave(vo));
+        return CommonResult.success(aisleService.aisleSave(vo));
     }
 
 

@@ -1,5 +1,8 @@
 package cn.iocoder.yudao.framework.common.dto.cabinet;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.vo.RackIndexResVO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -50,6 +53,11 @@ public class CabinetAisleVO {
      */
     @Schema(description = "电力容量", example = "2")
     private Double powCapacity;
+    /**
+     * 机柜类型
+     */
+    @Schema(description = "机柜类型", example = "5")
+    private String cabinetType;
 
     /**
      * 数据来源
@@ -75,7 +83,7 @@ public class CabinetAisleVO {
     @Schema(description = "机柜高度", example = "5")
     private int cabinetHeight;
 
-
+    private int cabinetUseHeight;
     /**
      * 机柜类型
      */
@@ -134,10 +142,10 @@ public class CabinetAisleVO {
 
 
     @Schema(description = "A路输出位长度", example = "10")
-    private int outletA;
+    private BigDecimal outletA;
 
     @Schema(description = "B路输出位长度", example = "10")
-    private int outletB;
+    private BigDecimal outletB;
 
     /**
      * 已用空间
@@ -365,5 +373,11 @@ public class CabinetAisleVO {
      */
     @Schema(description = "热通道温度")
     private BigDecimal temDataHot;
+
+    private CabinetBox cabinetBoxes;
+
+    private CabinetPdu cabinetPdus;
+
+    private List<RackIndex> rackIndices;
 
 }

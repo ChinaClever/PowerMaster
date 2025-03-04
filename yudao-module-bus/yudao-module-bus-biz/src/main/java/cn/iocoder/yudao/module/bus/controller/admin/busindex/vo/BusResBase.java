@@ -23,4 +23,7 @@ public class BusResBase {
 
     @Schema(description = "始端箱名称")
     private String busName;
+
+    @Schema(description = "机房名称")
+    private String roomName;
 }

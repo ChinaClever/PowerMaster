@@ -212,4 +212,35 @@
         </where>
         order by ci.create_time desc
     </select>
+    <select id="selectCabineIndexCfgByAisleId"
+            resultType="cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO">
+        SELECT
+        ci.id,
+        ci.room_id,
+        ci.aisle_id,
+        ci.aisle_x,
+        ci.cabinet_type,
+        ci.cabinet_name,
+        ci.cabinet_height,
+        ci.power_capacity,
+        ci.is_disabled,
+        ci.run_status,
+        ci.load_status,
+        ci.pdu_box,
+        CI.cabinet_use_height,
+        ci.is_deleted,
+        ci.create_time,
+        ci.update_time,
+        cfg.ele_alarm_day,
+        cfg.ele_limit_day,
+        cfg.ele_alarm_month,
+        cfg.ele_limit_month,
+        cfg.x_coordinate,
+        cfg.y_coordinate,
+        cfg.company
+        FROM
+        cabinet_index ci
+        LEFT JOIN cabinet_cfg cfg on cfg.cabinet_id = ci.id
+        WHERE ci.aisle_id = #{aisleId} and ci.is_deleted = 0 and ci.is_disabled = 0
+    </select>
 </mapper>

@@ -21,6 +21,10 @@ public class AisleIndexRespVO {
     @ExcelProperty("机房id")
     private Integer roomId;
 
+    @Schema(description = "机房名称", example = "1")
+    private String roomName;
+
+
     @Schema(description = "通道名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "芋艿")
     @ExcelProperty("通道名称")
     private String name;
