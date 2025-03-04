@@ -40,4 +40,6 @@ public interface GlobalErrorCodeConstants {
 
     ErrorCode NOT_PDU = new ErrorCode(1000, "该机柜未绑定PDU");
 
+    ErrorCode NOT_BOX = new ErrorCode(1000, "该插接箱不存在");
+
 }

@@ -35,4 +35,26 @@
             </if>
         </where>
     </select>
+    <select id="selectMenuAisleByBoxId" resultType="cn.iocoder.yudao.framework.common.vo.AisleBoxVO">
+        select
+        ab.id,
+        ab.aisle_id,
+        ab.box_key,
+        ab.bus_key,
+        ab.aisle_bar_id,
+        ab.box_type,
+        ab.box_index,
+        ab.outlet_num,
+        ab.create_time,
+        ab.update_time,
+        bi.box_name
+        from aisle_box ab
+        left join box_index bi on ab.box_key = bi.box_key
+        <where>
+            ab.aisle_bar_id in
+            <foreach item="item" index="index" collection="aisleBarIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>

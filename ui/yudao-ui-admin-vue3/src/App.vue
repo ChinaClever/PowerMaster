@@ -45,6 +45,7 @@ body {
   padding: 0 !important;
   margin: 0;
   overflow: hidden;
+  scrollbar-width: none; /* 隐藏滚动条 */
 
   #app {
     @extend .size;
@@ -53,11 +54,5 @@ body {
 
 .#{$prefix-cls}-grey-mode {
   filter: grayscale(100%);
-}
-
-body, html {
-    margin: 0 !important; /* 去除默认边距，优化显示效果 */
-    padding: 0 !important; /* 去除默认边距，优化显示效果 */
-    scrollbar-width: none; /* 隐藏滚动条 */
 }
 </style>

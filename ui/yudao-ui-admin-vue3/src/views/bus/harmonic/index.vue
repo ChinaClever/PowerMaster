@@ -607,12 +607,12 @@ const getNavList = async() => {
 }
 
 const toDetail = (row) =>{
-  console.log('row',row);
   const devKey = row.devKey;
   const busId = row.busId;
   const location = row.location;
   const busName = row.busName;
-  push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location , busName}});
+  const roomName = row.roomName;
+  push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location , busName,roomName}});
 }
 
 const showDialogCur = () => {

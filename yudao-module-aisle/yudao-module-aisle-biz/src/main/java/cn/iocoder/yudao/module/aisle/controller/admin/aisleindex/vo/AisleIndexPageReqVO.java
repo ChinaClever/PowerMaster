@@ -63,4 +63,6 @@ public class AisleIndexPageReqVO extends PageParam {
     @Schema(description = "柜列类型", example = "1")
     private String type;
 
+    @Schema(description = "时间颗粒度 插接箱配电（day/hour/today/threeDay）")
+    private String timeGranularity;
 }

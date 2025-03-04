@@ -13,6 +13,7 @@ import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
+import cn.iocoder.yudao.framework.common.vo.AisleBoxVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetIndexBoxResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
@@ -175,22 +176,29 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     @Override
     public List<RoomMenuDTO> roomMenuListAll() {
         try {
-
+            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
             //获取机柜列表
             List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                     .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
                     .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
+            if (CollectionUtils.isEmpty(cabinetIndexList)){
+                return menuDTOS;
+            }
 
+            List<Integer> aisleIds = cabinetIndexList.stream().map(CabinetIndex::getAisleId).distinct().collect(Collectors.toList());
+            List<Integer> roomIds = cabinetIndexList.stream().map(CabinetIndex::getRoomId).distinct().collect(Collectors.toList());
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                    .in(AisleIndex::getId, aisleIds)
                     .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
             //获取机房
             List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .in(RoomIndex::getId, roomIds)
                     .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
 
-            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
+
 
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
@@ -367,6 +375,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                 RoomPduMenuDTO pduMenuDTO = new RoomPduMenuDTO();
                 pduMenuDTO.setId(pduIndexDo.getId());
                 pduMenuDTO.setName(pduIndexDo.getPduKey());
+                pduMenuDTO.setIp(pduIndexDo.getPduKey());
                 pduMenuDTO.setType(4);
                 pduMenuDTO.setParentType(3);
                 pduMenuDTO.setUnique(pduIndexDo.getPduKey());
@@ -695,17 +704,20 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     });
 
                     List<Integer> aisleBarIds = barList.stream().map(AisleBar::getId).collect(Collectors.toList());
-                    List<AisleBox> boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                            .in(AisleBox::getAisleBarId,aisleBarIds));
-                    List<String> barKeys=boxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
+//                    List<AisleBox> boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+//                            .in(AisleBox::getAisleBarId,aisleBarIds));
+//                    List<String> barKeys=boxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
+//
+//                    boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
+//                            .in(BoxIndex::getBoxKey,barKeys).eq(BoxIndex::getIsDeleted,0));
 
-                    boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                            .in(BoxIndex::getBoxKey,barKeys).eq(BoxIndex::getIsDeleted,0));
-                    List<String> collect = boxIndexlist1.stream().map(BoxIndex::getBoxKey).collect(Collectors.toList());
+                    List<AisleBoxVO> aisleBoxVOList = aisleBoxMapper.selectMenuAisleByBoxId(aisleBarIds);
+
+                    List<String> collect = aisleBoxVOList.stream().map(AisleBoxVO::getBoxKey).collect(Collectors.toList());
                     boxKeys.addAll(collect);
-                    Collections.sort(boxIndexlist1, Comparator.comparing(BoxIndex::getBoxName));
-                    if (!CollectionUtils.isEmpty(boxIndexlist1)) {
-                        boxIndexlist1.forEach(aisleBox -> {
+                    Collections.sort(aisleBoxVOList, Comparator.comparing(AisleBoxVO::getBoxName));
+                    if (!CollectionUtils.isEmpty(aisleBoxVOList)) {
+                        aisleBoxVOList.forEach(aisleBox -> {
                             if (StringUtils.isNotEmpty(aisleBox.getBoxKey())) {
                                 RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
                                 roomMenuDTOA.setChildren(new ArrayList<>());
@@ -714,6 +726,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                                 roomMenuDTOA.setUnique(aisleBox.getBoxKey());
                                 //父id设置柜列
 //                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBoxKey,aisleBox.getBoxKey())).getAisleBarId());
+                                roomMenuDTOA.setParentId(aisleBox.getAisleBarId());
                                 roomMenuDTOA.setParentType(MenuTypeEnums.BUS.getType());
                                 //非插接箱id  绑定ID
                                 roomMenuDTOA.setId(aisleBox.getId());
@@ -747,17 +760,18 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     @Override
     public List<RoomMenuDTO> roomAisleMenuList() {
         try {
-
+            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
                     .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
-
+            if (CollectionUtils.isEmpty(aisleIndexList)){
+                return menuDTOS;
+            }
+            List<Integer> roomIds = aisleIndexList.stream().map(AisleIndex::getRoomId).distinct().collect(Collectors.toList());
             //获取机房
             List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .in(RoomIndex::getId,roomIds)
                     .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
-
-
-            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
 
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {

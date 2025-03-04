@@ -29,40 +29,47 @@ public class AisleBarDTO {
     /**
      *  唯一标识
      */
+    @Schema(description = "唯一标识", example = "1")
     private String barKey;
 
     /**
      * 始端箱名称
      */
+    @Schema(description = "始端箱名称", example = "1")
     private String busName;
 
     /**
      * ip地址
      */
+    @Schema(description = "ip地址", example = "1")
     private String devIp;
 
     /**
      * 母线id
      */
+    @Schema(description = "母线id", example = "1")
     private Integer barId;
 
     /**
      * 级联地址
      */
+    @Schema(description = "级联地址", example = "1")
     private Integer casAddr;
 
 
     /**
      * AB路
      */
+    @Schema(description = "AB路", example = "1")
     private String path;
 
     /**
      * 方向  左0 右1
      */
+    @Schema(description = "方向  左0 右1", example = "1")
     private Integer direction;
 
-
+    @Schema(description = "插接箱", example = "1")
     private List<AisleBoxDTO>  boxList;
 
 
@@ -73,4 +80,46 @@ public class AisleBarDTO {
     private Double yesterdayEq;
 
 
+    private String devKey;
+
+    /**
+     * 相负载率
+     */
+    private float[] lineLoadRate;
+    /**
+     * 相电流
+     */
+    private  float[] lineCur;
+
+    /**
+     * 相电压
+     */
+    private  float[] lineVol;
+
+
+    /**
+     * 温度
+     */
+    private float[] temData;
+
+    /**
+     * 相功率因素
+     */
+    private float[] powerFactor;
+
+    /**
+     *  相有功功率
+     */
+    private  float[] powActive;
+
+
+    /**
+     *  相无功功率
+     */
+    private  float[] powReactive;
+
+    /**
+     *  相视在功率
+     */
+    private  float[] powApparent;
 }

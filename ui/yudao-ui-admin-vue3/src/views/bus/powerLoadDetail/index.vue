@@ -1475,6 +1475,7 @@ const handleQuery = async () => {
 onMounted(async () => {
   try {
     devKeyList.value = await loadAll();
+    await getBusIdAndLocation()
     await getDetailData();
     await getLineChartData();
     initChart();

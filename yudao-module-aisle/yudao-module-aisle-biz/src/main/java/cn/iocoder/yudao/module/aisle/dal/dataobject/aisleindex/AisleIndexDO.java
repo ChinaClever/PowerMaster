@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -21,44 +23,71 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @AllArgsConstructor
 public class AisleIndexDO {
 
-    /**
-     * 主键id
-     */
-    @TableId
+    @Schema(description = "柜列id", example = "1")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+
     /**
      * 机房id
      */
+    @Schema(description = "机房id", example = "1")
     private Integer roomId;
+
     /**
-     * 通道名称
+     * 柜列名称
      */
+    @Schema(description = "柜列名称", example = "柜列1")
     private String aisleName;
+
     /**
-     * 数据来源
+     * 数据来源 0：PDU 1：母线
      */
-    private Integer pduBar;
+    @Schema(description = "数据来源 0：PDU 1：母线", example = "0")
+    private Boolean pduBar;
+
     /**
      * 是否删除
      */
+    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
     private Integer isDelete;
+
+
     /**
      * 长度
      */
     private Integer aisleLength;
+
     /**
-     * 柜列类型
+     * 起始x坐标
      */
-    private String type;
+    @JsonProperty(value="xCoordinate")
+    private int xCoordinate;
+
+    /**
+     * 起始y坐标
+     */
+    @JsonProperty(value="yCoordinate")
+    private int yCoordinate;
+
+    /**
+     * 柜列方向 x y
+     */
+    private String direction;
+
+
+    private Double powerCapacity;
+
+    /**
+     * 更新时间
+     */
+    @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    /**
-     * 最后更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
 
 }

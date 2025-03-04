@@ -58,18 +58,18 @@ public class AisleEQRes extends AisleIndexRespVO {
      * 昨日电量
      */
     @Schema(description = "昨日电量", example = "1")
-    private Double yesterdayEq;
+    private double yesterdayEq;
 
     /**
      * 上周电量
      */
     @Schema(description = "上周电量", example = "1")
-    private Double lastWeekEq;
+    private double lastWeekEq;
 
     /**
      * 上月电量
      */
     @Schema(description = "上月电量", example = "1")
-    private Double lastMonthEq;
+    private double lastMonthEq;
 
 }
