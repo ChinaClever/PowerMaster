@@ -24,7 +24,7 @@
         <div v-if="boxIndex == 0">A</div>
         <div v-if="boxIndex == 1">B</div>
         <div v-if="boxIndex == 2">C</div>
-        <div>{{line.toFixed(2)}}</div>
+        <div>{{line.toFixed(1)}}</div>
       </div>
     </template>
     <template v-if="chosenBtn == 3 && pluginData.powerFactor">

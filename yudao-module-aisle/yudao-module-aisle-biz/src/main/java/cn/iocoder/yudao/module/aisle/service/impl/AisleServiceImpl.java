@@ -428,7 +428,8 @@ public class AisleServiceImpl implements AisleService {
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
 //                            box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + boxDTO.getCasAddr());
-//                            box.setBusKey(bar.getBusKey());
+                            box.setBoxKey(bar.getBusKey() + SPLIT_KEY + boxDTO.getCasAddr());
+                            box.setBusKey(bar.getBusKey());
                             box.setBoxType(boxDTO.getType());
                             aisleBoxMapper.insert(box);
                         });
@@ -679,11 +680,12 @@ public class AisleServiceImpl implements AisleService {
                 List<AisleBoxDTO> boxDTOList = new ArrayList<>();
                 if (!CollectionUtils.isEmpty(boxList)) {
                     boxList.forEach(box -> {
-                        BoxIndex boxIndex = finalBoxIndexMap.get(box.getBoxKey());
-
+//                        BoxIndex boxIndex = finalBoxIndexMap.get(box.getBoxKey());
                         AisleBoxDTO boxDTO = BeanUtils.toBean(box, AisleBoxDTO.class);
                         boxDTO.setBoxName(boxDTO.getBoxName());
-
+                        String[] split1 = box.getBoxKey().split("-");
+                        
+                        boxDTO.setCasAddr(Integer.parseInt(split1[split1.length-1]));
                         Object boxObject = ops.get(REDIS_KEY_BOX + box.getBoxKey());
                         if (Objects.nonNull(boxObject)) {
                             JSONObject data = JSON.parseObject(JSON.toJSONString(boxObject));
