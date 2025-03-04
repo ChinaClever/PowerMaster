@@ -1946,8 +1946,8 @@ private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
 private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
     CabinetPdu cabinetPdu = new CabinetPdu();
     cabinetPdu.setCabinetId(vo.getId());
-    cabinetPdu.setPduKeyA(vo.getPduIpA() + "-" + vo.getCasIdB());
-    cabinetPdu.setPduKeyB(vo.getPduIpB() + "-" + vo.getCasIdA());
+    cabinetPdu.setPduKeyA(vo.getPduIpA() + "-" + vo.getCasIdA());
+    cabinetPdu.setPduKeyB(vo.getPduIpB() + "-" + vo.getCasIdB());
     cabinetPdu.setId(pdu.getId());
     return cabinetPdu;
 }
