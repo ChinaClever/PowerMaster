@@ -175,7 +175,12 @@ public class AisleServiceImpl implements AisleService {
                 }
             }
         }
-
+        //新增
+        if (Objects.nonNull(aisleSaveVo.getBarA()) && Objects.nonNull(aisleSaveVo.getBarB())){
+            index.setPduBar(true);
+        }else {
+            index.setPduBar(false);
+        }
         if (Objects.nonNull(aisleSaveVo.getId())) {
             //编辑
             AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
@@ -186,7 +191,6 @@ public class AisleServiceImpl implements AisleService {
             }
 
         } else {
-            //新增
             aisleIndexMapper.insert(index);
         }
 
@@ -756,6 +760,9 @@ public class AisleServiceImpl implements AisleService {
         }
         //机柜
         List<CabineIndexCfgVO> cabinetIndexList = cabinetIndexMapper.selectCabineIndexCfgByAisleId(aisleId);
+        if (CollectionUtils.isEmpty(cabinetIndexList)){
+            return detailDTO;
+        }
         Map<Boolean, List<CabineIndexCfgVO>> map = cabinetIndexList.stream().collect(Collectors.groupingBy(CabineIndexCfgVO::getPduBox));
 
         List<CabineIndexCfgVO> voList = map.get(false);
@@ -773,8 +780,9 @@ public class AisleServiceImpl implements AisleService {
             boxMap = cabinetBoxs.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
         }
         List<Integer> idsAll = cabinetIndexList.stream().map(CabineIndexCfgVO::getId).collect(Collectors.toList());
-        List<RackIndex> rackIndices = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, idsAll));
-        Map<Integer, List<RackIndex>> rackMap = rackIndices.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
+
+//        List<RackIndex> rackIndices = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, idsAll));
+//        Map<Integer, List<RackIndex>> rackMap = rackIndices.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
 
         List<CabinetAisleVO> aisleCabinetDTOList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(cabinetIndexList)) {
@@ -799,8 +807,8 @@ public class AisleServiceImpl implements AisleService {
                     cabinetDTO.setSensorList(left);
                 }
 
-                List<RackIndex> rackIndices1 = rackMap.get(cabinetIndex.getId());
-                cabinetDTO.setRackIndices(rackIndices1);
+//                List<RackIndex> rackIndices1 = rackMap.get(cabinetIndex.getId());
+//                cabinetDTO.setRackIndices(rackIndices1);
                 cabinetDTO.setUsedSpace(cabinetIndex.getCabinetUseHeight());
                 cabinetDTO.setFreeSpace(cabinetIndex.getCabinetHeight() - cabinetIndex.getCabinetUseHeight());
                 if (cabinetIndex.getPduBox()){
