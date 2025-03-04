@@ -347,9 +347,15 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         List<Integer> roomIds = result.stream().map(AisleIndexRespVO::getRoomId).collect(Collectors.toList());
         Map<Integer, String> voMap = getPositionByIds(roomIds);
         result.forEach(dto -> {
-            dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
-            dto.setLastWeekEq(weekMap.get(dto.getId()));
-            dto.setLastMonthEq(monthMap.get(dto.getId()));
+            if (Objects.nonNull(yesterdayMap.get(dto.getId()))) {
+                dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
+            }
+            if (Objects.nonNull(weekMap.get(dto.getId()))) {
+                dto.setLastWeekEq(weekMap.get(dto.getId()));
+            }
+            if (Objects.nonNull(monthMap.get(dto.getId()))) {
+                dto.setLastMonthEq(monthMap.get(dto.getId()));
+            }
             String roomName = voMap.get(dto.getRoomId());
             if (StringUtils.isNotEmpty(roomName)) {
                 dto.setRoomName(roomName);
@@ -468,9 +474,15 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                         dto.setId(aisleIndexDO.getId());
                     }
 
-                    dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
-                    dto.setLastWeekEq(weekMap.get(dto.getId()));
-                    dto.setLastMonthEq(monthMap.get(dto.getId()));
+                    if (Objects.nonNull(yesterdayMap.get(dto.getId()))) {
+                        dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
+                    }
+                    if (Objects.nonNull(weekMap.get(dto.getId()))) {
+                        dto.setLastWeekEq(weekMap.get(dto.getId()));
+                    }
+                    if (Objects.nonNull(monthMap.get(dto.getId()))) {
+                        dto.setLastMonthEq(monthMap.get(dto.getId()));
+                    }
                     String roomName = voMap.get(dto.getRoomId());
                     if (StringUtils.isNotEmpty(roomName)) {
                         dto.setRoomName(roomName);
