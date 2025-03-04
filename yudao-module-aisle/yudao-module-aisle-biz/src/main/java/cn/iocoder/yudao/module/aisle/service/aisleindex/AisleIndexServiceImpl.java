@@ -875,6 +875,13 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
             if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
                 aisleBalanceRes.setRateA((aisleBalanceRes.getPowApparentA() / aisleBalanceRes.getPowApparentTotal()) * 100);
+            }else {
+                aisleBalanceRes.setRateA(0.0);
+            }
+            if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
+                aisleBalanceRes.setRateB((aisleBalanceRes.getPowApparentB() / aisleBalanceRes.getPowApparentTotal()) * 100);
+            }else {
+                aisleBalanceRes.setRateB(0.0);
             }
         }
         return new PageResult<>(result, aisleIndexDOPageResult.getTotal());
