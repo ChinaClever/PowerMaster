@@ -838,17 +838,38 @@ const handleOperate = (type) => {
       type: 'warning'
     }).then(async () => {
       const cabItem = cabinetList.value[index]
-      if (cabItem.boxIndexA && cabItem.boxOutletIdA) {
-        const connections = instance?.getConnections() as any
-        const targetConnect = connections?.find(item => item.source.id == ('cab-A-' + index))
-        instance?.deleteConnection(targetConnect)
+      if(cabItem.cabinetBoxes) {
+        if (cabItem.boxIndexA && cabItem.boxOutletIdA) {
+          const connections = instance?.getConnections() as any
+          const targetConnect = connections?.find(item => item.source.id == ('cab-A-' + index))
+          instance?.deleteConnection(targetConnect)
+        }
+        if (cabItem.boxIndexB && cabItem.boxOutletIdB) {
+          const connections = instance?.getConnections() as any
+          const targetConnect = connections?.find(item => item.source.id == ('cab-B-' + index))
+          instance?.deleteConnection(targetConnect)
+        }
+        await CabinetApi.deleteCabinetInfo({
+          id: cabItem.id,
+          type: 2
+        })
+      } else if(cabItem.cabinetPdus) {
+        await CabinetApi.deleteCabinetInfo({
+          id: cabItem.id,
+          type: 1
+        })
+      } else if(cabItem.rackIndices) {
+        await CabinetApi.deleteCabinetInfo({
+          id: cabItem.id,
+          type: 3
+        })
+      } else {
+        cabinetList.value.splice(index, 1, {})
+        await CabinetApi.deleteCabinetInfo({
+          id: cabItem.id,
+          type: 4
+        })
       }
-      if (cabItem.boxIndexB && cabItem.boxOutletIdB) {
-        const connections = instance?.getConnections() as any
-        const targetConnect = connections?.find(item => item.source.id == ('cab-B-' + index))
-        instance?.deleteConnection(targetConnect)
-      }
-      cabinetList.value.splice(index, 1, {})
     })
   }
   console.log('handleOperate', machineColInfo)
