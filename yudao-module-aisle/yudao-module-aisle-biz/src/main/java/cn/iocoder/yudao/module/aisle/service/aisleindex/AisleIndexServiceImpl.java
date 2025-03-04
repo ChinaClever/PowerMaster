@@ -469,7 +469,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 list.forEach(iter -> {
                     AisleEQRes dto = new AisleEQRes();
                     AisleIndexDO aisleIndexDO = boxIndexMap.get(iter.getAisleId());
-                    if (Objects.isNull(aisleIndexDO)){
+                    if (Objects.nonNull(aisleIndexDO)){
                         dto.setName(aisleIndexDO.getAisleName());
                         dto.setId(aisleIndexDO.getId());
                     }
@@ -488,6 +488,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                         dto.setRoomName(roomName);
                         dto.setLocation(roomName + SPLIT_KEY + dto.getName());
                     }
+                    result.add(dto);
                 });
 //                getPosition(result);
                 return new PageResult<>(result, searchResponse.getHits().getTotalHits().value);
