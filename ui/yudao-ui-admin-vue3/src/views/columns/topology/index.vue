@@ -743,7 +743,6 @@ const handleCabRightClick = (e) => {
 }
 // 处理插接箱/母线右击事件
 const handlePluginRightClick = (e, type) => {
-  alert(1)
   e.preventDefault()
   if (!editEnable.value) return
   const targetId = e.target.id || e.target.parentNode.id
@@ -770,7 +769,7 @@ const handlePluginDblick = (e, road) => {
   const targetId = e.target.id || e.target.parentNode.id
   const index = targetId.split('-')[1]
   console.log('targetId', targetId, machineColInfo, index)
-  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey}})
+  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
 }
 // 处理插接箱/连接器菜单点击事件
 const handleBoxOperate = async(type, road) => {
@@ -803,7 +802,7 @@ const handleJump = (data) => {
     message.error(`该机柜暂未保存绑定，无法跳转`)
     return
   }
-  push({path: '/cabinet/cab/detail', state: {id: target.id}})
+  push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: target.roomName,cabinetName: target.cabinetName}})
 }
 // 处理菜单点击事件
 const handleOperate = (type) => {
@@ -1060,7 +1059,7 @@ const handleDataDetail = (res) => {
             series: [
               {
                 name: 'load',
-                data: [cab.loadRate ? cab.loadRate.toFixed(1) : 0],
+                data: [cab.loadRate ? cab.loadRate.toFixed(0) : 0],
                 type: 'bar',
                 barWidth: '100%',
                 showBackground: true,
