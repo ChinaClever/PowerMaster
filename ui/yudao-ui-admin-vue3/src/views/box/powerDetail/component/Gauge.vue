@@ -4,79 +4,78 @@
 
 <script lang="ts" setup>
 import 'echarts'
-const {loadFactor} = defineProps({
-  loadFactor: {
+import { reactive, watch, defineProps, onUnmounted } from 'vue';
+const props = defineProps({
+  data: {
     type: Number,
     required: true
   },
   height: {
     type: [Number,String],
-    default: 60
   },
   width: {
     type: [Number,String],
-    default: 60
   }
 })
 
+console.log('1111',props.data)
+
+
 // 设置饼图的选项
-const echartsOption = reactive({
-  tooltip: {
-      formatter: "{a} <br/>{c} {b}"
-  },
-  series: [{
-      type: "gauge",
-      z: 3,
-      center: ["50%", "50%"],
-      min: 0,
-      max: 100,
-      splitNumber: 5,
-      radius: "68%",
-      pointer: {
-          itemStyle: {
-              color: "auto"
-          }
-      },
+const echartsOption = reactive( {
+  series: [
+    {
+      type: 'gauge',
       axisLine: {
-          lineStyle: {
-              width: 10,
-              color: [[.4, "#1e90ff"], [.7, "lime"], [1, "#C23531"]]
-          }
+        lineStyle: {
+          width: 25,
+          color: [
+            [0.3, '#67e0e3'],
+            [0.7, '#37a2da'],
+            [1, '#fd666d']
+          ]
+        }
+      },
+      pointer: {
+        itemStyle: {
+          color: 'auto'
+        }
       },
       axisTick: {
-          length: 10,
-          lineStyle: {
-              color: "#000"
-          }
+        distance: -40,
+        length: 8,
+        lineStyle: {
+          color: '#fff',
+          width: 2
+        }
       },
       splitLine: {
-          length: 10,
-          lineStyle: {
-              color: "auto"
-          }
+        distance: -40,
+        length: 30,
+        lineStyle: {
+          color: '#fff',
+          width: 4
+        }
       },
-      title: {
-          fontWeight: "normal",
-          fontSize: 16,
-          offsetCenter: [0, "83%"],
-          color: "#838385"
+      axisLabel: {
+        color: 'inherit',
+        distance: 40,
+        fontSize: 10,
       },
       detail: {
-          formatter: function(t) {
-              return "NaN" !== t.toString() && void 0 !== t.toString() ? t : "--"
-          },
-          shadowColor: "#fff",
-          fontWeight: "normal",
-          color: "#838385",
-          fontSize: 30,
-          offsetCenter: [0, "50%"]
+        valueAnimation: true,
+        formatter: '{value}%',
+        color: 'inherit'
       },
-      data: [{
-          value: loadFactor,
-          name:  "负载率(%)"
-      }]
-  }]
+      data: [
+        {
+          value: props.data.toFixed(2),
+        }
+      ]
+    }
+  ]
 })
+
 onUnmounted(() => {
   console.log('onUnmounted******')
 })

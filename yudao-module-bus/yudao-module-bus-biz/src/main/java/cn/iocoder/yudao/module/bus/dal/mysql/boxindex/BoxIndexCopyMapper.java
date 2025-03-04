@@ -1,14 +1,13 @@
 package cn.iocoder.yudao.module.bus.dal.mysql.boxindex;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO;
-import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -22,20 +21,45 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
 
     default PageResult<BoxIndex> selectPage(BoxIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BoxIndex>()
-                .eqIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
+                .likeIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
                 .inIfPresent(BoxIndex::getBoxKey,reqVO.getBoxDevKeyList())
                 .inIfPresent(BoxIndex::getId,reqVO.getBoxIds())
                 .eqIfPresent(BoxIndex::getIpAddr, reqVO.getIpAddr())
-//                .eqIfPresent(BoxIndex::getCasAddr, reqVO.getDevAddr())
                 .eqIfPresent(BoxIndex::getBoxId, reqVO.getBarId())
                 .eqIfPresent(BoxIndex::getRunStatus, reqVO.getRunStatus())
+                .inIfPresent(BoxIndex::getLoadRateStatus, reqVO.getColor())
                 .eqIfPresent(BoxIndex::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
+                .inIfPresent(BoxIndex::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
+                .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
-                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()), BoxIndex::getRunStatus, 0)
-                .orderByAsc(BoxIndex::getId));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time asc"));
     }
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
+
+    BalanceStatisticsVO getBoxBalanceStatistics();
+
+    LoadRateStatus getBoxIndexLoadRateStatus();
+
+    default PageResult<BoxIndex> selectPageAll(BoxIndexPageReqVO reqVO){
+        return selectPage(reqVO, new LambdaQueryWrapperX<BoxIndex>()
+                .likeIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
+                .inIfPresent(BoxIndex::getBoxKey,reqVO.getBoxDevKeyList())
+                .inIfPresent(BoxIndex::getId,reqVO.getBoxIds())
+                .eqIfPresent(BoxIndex::getIpAddr, reqVO.getIpAddr())
+                .eqIfPresent(BoxIndex::getBoxId, reqVO.getBarId())
+                .eqIfPresent(BoxIndex::getRunStatus, reqVO.getRunStatus())
+                .inIfPresent(BoxIndex::getLoadRateStatus, reqVO.getColor())
+                .eqIfPresent(BoxIndex::getNodeId, reqVO.getNodeIp())
+                .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
+                .inIfPresent(BoxIndex::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
+                .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
+//                .eqIfPresent(BoxIndex::getBoxType,0)
+                .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time asc"));
+    }
+
+    BusIndexStatisticsResVO getBoxIndexStatisticsAll();
 }

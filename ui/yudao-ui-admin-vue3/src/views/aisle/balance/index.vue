@@ -71,79 +71,28 @@
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
+              <div style="margin-right:10px;margin-left: 5px;margin-top: 30px;">
+                <div>总视在功率：{{item.powApparentTotal ? item.powApparentTotal : '0.000'}}kVA</div>
+                <div>A路视在功率：{{item.powApparentA ? item.powApparentA: '0.000'}}kVA</div>
+                <div>B路视在功率：{{item.powApparentB ? item.powApparentA: '0.000'}}kVA</div>
+              </div>
               <div class="progress" v-if="item.rateA">
                 <div class="left" :style="`flex: ${item.rateA}`">{{item.rateA}}%</div>
                 <div class="line"></div>
-                <div class="right" :style="`flex: ${100 - item.rateA}`">{{100 - item.rateA}}%</div>
-                <div class="tip">
-                  <span>A路</span>
-                  <span>B路</span>
-                </div>
-              </div>
-              <div class="progress" v-else>
-                <div class="left" :style="`flex: 50`">null</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex: 50`">null</div>
+                <div class="right" :style="`flex: ${item.rateB}`">{{ item.rateB}}%</div>
                 <div class="tip">
                   <span>A路</span>
                   <span>B路</span>
                 </div>
               </div>
             </div>
-            <!-- 功率 -->
-            <!-- <div class="progressContainer">
-              <div class="text">功率占比：</div>
-              <div class="progress" v-if="item.abglzb">
-                <div class="left" :style="`flex: ${item.abglzb}`">{{item.abglzb}}%</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex: ${100 - item.abglzb}`">{{100 - item.abglzb}}%</div>
-              </div>
-              <div class="progress" v-else>
-                <div class="left" :style="`flex: 50`">null</div>
-                <div class="line"></div>
-                <div class="right" :style="`flex: 50`">null</div>
-              </div>
-              <div class="tip">
-                <span>A路</span>
-                B路
-              </div>
-            </div> -->
-            <!-- 电流 -->
-            <!-- <div class="content" v-if="switchValue == 1">
-              <div class="road">A路</div>
-              <div class="valueList">
-                <div>Ia：{{item.Ia0 || '0.00'}}A</div>
-                <div>Ia：{{item.Ia1 || '0.00'}}A</div>
-                <div>Ia：{{item.Ia2 || '0.00'}}A</div>
-              </div>
-              <div class="road">B路</div>
-              <div class="valueList">
-                <div>Ia：{{item.Ib0 || '0.00'}}A</div>
-                <div>Ia：{{item.Ib1 || '0.00'}}A</div>
-                <div>Ia：{{item.Ib2 || '0.00'}}A</div>
-              </div>
-            </div>-->
-            <!-- 功率 -->
-            <!-- <div class="content" v-if="switchValue == 1">
-              <div class="road">A路</div>
-              <div class="valueList">
-                <div>Pa：{{item.Pa0 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pa1 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pa2 || '0.00'}}Kw</div>
-              </div>
-              <div class="road">B路</div>
-              <div class="valueList">
-                <div>Pa：{{item.Pb0 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pb1 || '0.00'}}Kw</div>
-                <div>Pa：{{item.Pb2 || '0.00'}}Kw</div>
-              </div>
-            </div>  -->
             <div class="room">{{item.location}}</div>
             <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
+          <el-table-column label="名称" min-width="90" align="center" prop="location" />
           <el-table-column label="总共" align="center">
             <el-table-column label="视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
             <el-table-column label="有功功率(kW)" min-width="90" align="center" prop="powActiveTotal" />
@@ -208,6 +157,7 @@ const getTableData = async(reset = false) => {
       tableData.value = res.list
       tableData.value.forEach(obj => {
         obj.rateA = obj?.rateA?.toFixed(0);
+        obj.rateB = obj?.rateB?.toFixed(0);
         obj.powApparentTotal = obj?.powApparentTotal?.toFixed(3);
         obj.powActiveTotal = obj?.powActiveTotal?.toFixed(3);
         obj.powReactiveTotal = obj?.powReactiveTotal?.toFixed(3);
@@ -388,7 +338,7 @@ onBeforeMount(() => {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 40px;
+      margin-top: 30px;
       .progress {
         width: 180px;
         display: flex;
@@ -399,6 +349,7 @@ onBeforeMount(() => {
         position: relative;
         display: flex;
         justify-content: center;
+        margin-top: 30px;
         .tip {
           width: 180px;
           position: absolute;

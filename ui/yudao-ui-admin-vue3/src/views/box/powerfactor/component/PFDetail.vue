@@ -1,78 +1,69 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <Echart :height="height" :width="width" :options="echartsOptions" />
 </template>
 
 <script lang="ts" setup>
-import 'echarts'
+import { defineProps, ref, computed, onUnmounted } from 'vue';
+import 'echarts';
+
 const prop = defineProps({
   list: {
-    type: Object,
+    type: Object as () => Record<string, any>,
     required: true
   },
   height: {
-    type: [Number,String],
-    default: 60
+    type: [Number, String],
+    default: 400
   },
   width: {
-    type: [Number,String],
-    default: 60
-  }
-})
-
-const powerFactorA = ref()
-const powerFactorB = ref()
-const powerFactorC = ref()
-const time = ref()
-const legendList = ref() ;
-
-// 设置饼图的选项
-const echartsOption = ref({
-  legend: { data: legendList},
-  tooltip: { 
-    trigger: 'axis',
-    formatter: function(params) {
-      var result = params[0].name + '<br>';
-      for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) ;
-        result += '<br>';
-      }
-      return result;
-    } 
-   },
-  xAxis: {type: 'category', boundaryGap: false, data : time},
-  yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-  series: [
-    {name: 'A相功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorA},
-    {name: 'B相功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorB},
-    {name: 'C相功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorC},
-  ]
-})
-
-watchEffect(() => {
-  // 直接访问即可，watchEffect会自动跟踪变化
-
-  powerFactorA.value = prop.list.powerFactorAvgValueA;
-  powerFactorB.value = prop.list.powerFactorAvgValueB;
-  powerFactorC.value = prop.list.powerFactorAvgValueC;
-  time.value = prop.list.time;
-  if(prop.list.powerFactorAvgValueA?.length > 0){
-
-    legendList.value =  ["A相功率因数","B相功率因数","C相功率因数"]
-  }else {
-
-    legendList.value = []
+    type: [Number, String],
+    default: '100%'
   }
 });
 
+const legendList = computed(() => {
+  const items = [];
+  if (prop.list['1'] !== undefined) {
+    items.push('输出位1功率因数');
+  }
+  if (prop.list['2'] !== undefined) {
+    items.push('输出位2功率因数');
+  }
+  if (prop.list['3'] !== undefined) {
+    items.push('输出位3功率因数');
+  }
+  return items; // 根据prop.list中的非null键返回相应的图例数组
+});
 
+const echartsOptions = computed(() => {
+  return {
+    legend: { data: legendList.value },
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        let result = params[0].name + '<br>';
+        for (let i = 0; i < params.length; i++) {
+          result += params[i].marker + params[i].seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + params[i].value.toFixed(2);
+          result += '<br>';
+        }
+        return result;
+      }
+    },
+    xAxis: { type: 'category', boundaryGap: false, data: prop.list.time },
+    yAxis: { type: 'value' },
+    toolbox: { feature: { saveAsImage: {}, dataView: {}, dataZoom: {}, restore: {} } },
+    series: [
+      { name: '输出位1功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: prop.list['1'] },
+      { name: '输出位2功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: prop.list['2'] },
+      { name: '输出位3功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: prop.list['3'] }
+    ]
+  };
+});
 
 onUnmounted(() => {
-  console.log('onUnmounted******')
-})
-
+  console.log('onUnmounted******');
+});
 </script>
 
 <style lang="scss" scoped>
-
 </style>

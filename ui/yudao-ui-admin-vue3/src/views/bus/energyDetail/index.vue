@@ -2,7 +2,10 @@
   <!-- <div id="main"></div> -->
   <div class="energy" style="background-color: #E7E7E7;">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})
+    <div class="header_app_text">
+      <span style="margin-right:10px;">机房：{{roomName}}</span>
+      <span style="margin-right:10px;">名称：{{busName}}</span>
+      <span style="margin-right:10px;">网络地址：{{ devKey }}</span>
     </div>
     <div class="header_app_text_other1">
           <el-col :span="10"> 
@@ -124,8 +127,11 @@ import { BusEnergyApi } from '@/api/bus/busenergy'
 import 'echarts/lib/component/dataZoom';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 
-const location = ref(history?.state?.location )
-const busName = ref(history?.state?.busName )
+const location = ref(history?.state?.local)
+const busName = ref(history?.state?.busName)
+const devKey = ref(history?.state?.devKey)
+const roomName = ref(history?.state?.roomName)
+
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
@@ -314,7 +320,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList?.map(item => item?.activePow.toFixed(3))
+        data: res.yesterdayList?.map(item => item?.activePow)
       },
       {
         name: '当日',
@@ -330,7 +336,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: '当日有功功率平均值线' }]
         },
-        data: res.todayList?.map(item => item?.activePow.toFixed(3))
+        data: res.todayList?.map(item => item?.activePow)
       }
     ]
   }

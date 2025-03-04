@@ -1,114 +1,129 @@
 <template>
+  <el-form
+    ref="formRef"
+    :model="formData"
+    :rules="formRules"
+    label-width="200px"
+    v-loading="formLoading"
+    label-position="left"
 
-    <el-form
-      ref="formRef"
-      :model="formData"
-      :rules="formRules"
-      label-width="200px"
-      v-loading="formLoading"
-    >
-      <el-row :gutter="24">
-        <el-col :span="12" >
-          <el-form-item label="计费方式" prop="billMode">      
+  >
+    <!-- 1. 计费方式 -->
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+      <b style="font-size: 20px;margin-bottom: 10px;">1. 计费方式</b>
+      <el-row :gutter="24" style="margin-top: 10px;">
+        <el-col :span="24">
+          <el-form-item label="计费方式" prop="billMode">
             <el-radio-group v-model="formData.billMode">
               <el-radio :label="1">固定计费</el-radio>
               <el-radio :label="2">分段计费</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="按天统计历史数据任务" prop="dayCron">
+        </el-col>
+      </el-row>
+    </div>
 
+    <!-- 2. 统计历史数据任务 -->
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+      <b style="font-size: 20px;margin-bottom: 10px;">2.  统计历史数据任务</b>
+      <el-row :gutter="24" style="margin-top: 10px;">
+        <el-col :span="24">
+          <el-form-item label="按天统计历史数据任务" prop="dayCron">
             每天的
             <el-form-item prop="dayHour">
               <el-input size="small" style="width: 70px" type="number" :min="1" :max="24" v-model="formData.dayHour" />
             </el-form-item>
             时
             <el-form-item prop="dayMin">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.dayMin" /> 
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.dayMin" />
             </el-form-item>
             分
-            <el-form-item  prop="daySec">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.daySec" /> 
+            <el-form-item prop="daySec">
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.daySec" />
             </el-form-item>
             秒执行一次
           </el-form-item>
           <el-form-item label="按小时统计历史数据任务" prop="hourCron">
-
             每时的
             <el-form-item prop="hourMin">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.hourMin" /> 
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.hourMin" />
             </el-form-item>
             分
             <el-form-item prop="hourSec">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.hourSec" /> 
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.hourSec" />
             </el-form-item>
             秒执行一次
           </el-form-item>
         </el-col>
-        <el-col :span="12" >
-          <el-form-item label="电量按天统计任务" prop="eqDayCron">
+      </el-row>
+    </div>
 
+    <!-- 3. 电量统计任务 -->
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+      <b style="font-size: 20px;margin-bottom: 10px;">3. 电量统计任务</b>
+      <el-row :gutter="24" style="margin-top: 10px;">
+        <el-col :span="24">
+          <el-form-item label="电量按天统计任务" prop="eqDayCron">
             每天的
             <el-form-item prop="eqDayHour">
               <el-input size="small" style="width: 70px" type="number" :min="1" :max="24" v-model="formData.eqDayHour" />
             </el-form-item>
             时
             <el-form-item prop="eqDayMin">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqDayMin" /> 
-            </el-form-item>            
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqDayMin" />
+            </el-form-item>
             分
             <el-form-item prop="eqDaySec">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqDaySec" /> 
-            </el-form-item>        
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqDaySec" />
+            </el-form-item>
             秒执行一次
           </el-form-item>
           <el-form-item label="电量按周执行任务" prop="eqWeekCron">
-
             每周星期
             <el-form-item prop="eqWeekDay">
               <el-input size="small" style="width: 70px" type="number" :min="1" :max="7" v-model="formData.eqWeekDay" />
-            </el-form-item>            
+            </el-form-item>
             的
             <el-form-item prop="eqWeekHour">
               <el-input size="small" style="width: 70px" type="number" :min="1" :max="24" v-model="formData.eqWeekHour" />
-            </el-form-item>            
+            </el-form-item>
             时
             <el-form-item prop="eqWeekMin">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqWeekMin" /> 
-            </el-form-item>            
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqWeekMin" />
+            </el-form-item>
             分
             <el-form-item prop="eqWeekSec">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqWeekSec" /> 
-            </el-form-item>          
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqWeekSec" />
+            </el-form-item>
             秒执行一次
           </el-form-item>
           <el-form-item label="按月统计电量任务" prop="eqMonthCron">
-
             每月的
             <el-form-item prop="eqMonthDay">
               <el-input size="small" style="width: 70px" type="number" :min="1" :max="31" v-model="formData.eqMonthDay" />
-            </el-form-item>            
+            </el-form-item>
             日
             <el-form-item prop="eqMonthHour">
               <el-input size="small" style="width: 70px" type="number" :min="1" :max="24" v-model="formData.eqMonthHour" />
-            </el-form-item>            
+            </el-form-item>
             时
             <el-form-item prop="eqMonthMin">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqMonthMin" /> 
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqMonthMin" />
             </el-form-item>
             分
             <el-form-item prop="eqMonthSec">
-              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqMonthSec" /> 
+              <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.eqMonthSec" />
             </el-form-item>
             秒执行一次
           </el-form-item>
-
         </el-col>
-    
       </el-row>
-      <el-row justify="end">
-        <el-button @click="submitForm" type="primary" :disabled="formLoading">保 存</el-button>
-      </el-row>
-    </el-form>
+    </div>
+
+    <el-row justify="end">
+      <el-button @click="submitForm" type="primary" :disabled="formLoading">保 存</el-button>
+    </el-row>
+  </el-form>
 </template>
 <script setup lang="ts">
 import { StatisConfigApi, StatisConfigVO } from '@/api/pdu/statisconfig'

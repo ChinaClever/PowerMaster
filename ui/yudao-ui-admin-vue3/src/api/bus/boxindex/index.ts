@@ -18,6 +18,10 @@ export const IndexApi = {
   getIndexPage: async (data: any) => {
     return await request.post({ url: `/box/index/page`, data })
   },
+  // 获得插接箱报表数据-基础数据
+  getReportBasicInformationResVO: async (data: any) => {
+    return await request.post({ url: `/box/index/report/basicInformation`, data })
+  },
 
   // 查询已删除的始端箱索引分页
   getDeletedIndexPage: async (data: any) => {
@@ -28,7 +32,10 @@ export const IndexApi = {
   getIndex: async (id: number) => {
     return await request.get({ url: `/box/index/get?id=` + id })
   },
-
+  //获得设备负载量状态统计
+  getLoadRateStatus: async () => {
+    return await request.get({ url: `/box/index/loadRateStatus`})
+  },
   // 新增始端箱索引
   createIndex: async (data: IndexVO) => {
     return await request.post({ url: `/box/index/create`, data })
@@ -62,12 +69,21 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/eq/page`, data })
   },
 
-  getEqMax: async (data: any) => {
-    return await request.post({ url: `/box/index/eq/maxEq`, data })
+  // 获取分段电能电费 
+  boxFindKeys: async (params: any) => {
+    return await request.get({ url: `/box/index/findKeys`, params})
+  },
+
+  getEqMax: async () => {
+    return await request.post({ url: `/box/index/eq/maxEq`})
   },
 
   getBalancePage: async (data: any) => {
     return await request.post({ url: `/box/index/balance`, data })
+  },
+//获得设备平衡统计
+  getBalanceStatistics: async () => {
+    return await request.get({ url: `/box/index/balance/statistics`})
   },
 
   getBoxBalanceDetail: async (data: any) => {
@@ -176,11 +192,14 @@ export const IndexApi = {
     return await request.downloadPost({ url: `/box/index/line/cur/excel` , data, ...axiosConfig })
   },
 
-  //获得始端箱报表平均电流电压详细信息
+  //获得始端箱报表相平均电流电压详细信息
   getAvgBoxHdaLineForm: async (data: any) => {
     return await request.post({ url: `/box/index/avg/boxHdaLine/form` ,  data})
   },
-
+    //获得始端箱报表回路平均电流电压详细信息
+  getAvgBoxHdaLoopForm: async (data: any) => {
+    return await request.post({ url: `/box/index/avg/boxHdaLoop/form` ,  data})
+  },
   //插接箱温度详情导出
   getBoxTemDetailExcel: async ( data: any, axiosConfig) => {
     return await request.downloadPost({ url: `/box/index/tem/detailExcel` , data, ...axiosConfig })
@@ -189,5 +208,22 @@ export const IndexApi = {
   //插接箱功率因素详情导出
   getBoxPFDetailExcel: async ( data: any, axiosConfig) => {
     return await request.downloadPost({ url: `/box/index/pf/detailExcel` , data, ...axiosConfig })
+  },
+  //获得告警记录分页
+  getRecordPage: async (data: any) => {
+    return await request.post({ url: `/system/alarm/record/page`, data})
+  },
+   //获得插接箱设备统计-去除连接器
+    getBoxIndexStatistics: async () => {
+      return await request.get({ url: `/box/index/statistics` })
+    },
+       //获得插接箱设备统计-所有
+       getBoxIndexStatisticsAll: async () => {
+        return await request.get({ url: `/box/index/statisticsAll` })
+      },
+
+  //插接箱报表的输出位的图表数据
+  getAvgBoxHdaOutletForm: async (data: any) => {
+    return await request.post({ url: `/box/index/avg/boxHdaOutlet/form`, data })
   },
 }

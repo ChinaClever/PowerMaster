@@ -23,7 +23,7 @@ public class AisleIndex implements Serializable {
 
     @Schema(description = "柜列id", example = "1")
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 机房id
@@ -76,7 +76,7 @@ public class AisleIndex implements Serializable {
     private String direction;
 
 
-//    private Double powerCapacity;
+    private Double powerCapacity;
 
     /**
      * 更新时间

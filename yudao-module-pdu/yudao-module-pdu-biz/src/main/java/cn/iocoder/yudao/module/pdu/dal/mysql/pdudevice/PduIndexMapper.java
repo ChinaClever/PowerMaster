@@ -7,7 +7,9 @@ import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.BalancedDistrib
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduDeviceCountResVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * PDU设备 Mapper
@@ -21,4 +23,8 @@ public interface PduIndexMapper extends BaseMapperX<PduIndex> {
     PduDeviceCountResVO getPDUDeviceCount();
 
     BalancedDistributionStatisticsVO getBalancedDistribution();
+
+    Page<PduIndex> selectQuery(@Param("page") Page<PduIndex> page, @Param("pduVo") PDUDevicePageReqVO pduVo);
+
+    Page<PduIndex> selectCurbanceQuery(@Param("page") Page<PduIndex> page, @Param("pduVo") PDUDevicePageReqVO pduVo);
 }

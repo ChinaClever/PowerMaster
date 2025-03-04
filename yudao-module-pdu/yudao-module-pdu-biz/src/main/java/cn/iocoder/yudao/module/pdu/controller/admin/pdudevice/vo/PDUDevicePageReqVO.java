@@ -58,6 +58,10 @@ public class PDUDevicePageReqVO extends PageParam {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime newTime;
 
+    private List<String> pduKeyList;
+
+    private String curbance;
+
     public String getDevKey(){
         return devKey;
     }

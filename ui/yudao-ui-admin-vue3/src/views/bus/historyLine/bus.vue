@@ -1,42 +1,12 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱电力分析" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱电力分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container"> -->
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        <!-- </div>  -->
-        <!-- <div class="nav_header">
-          <span v-if="nowAddress">{{nowAddress}}</span>
-          <span v-if="nowLocation">( {{nowLocation}} ) </span>
-          <br/>
-          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null">
-            <span>{{queryParams.timeRange[0]}}</span>
-            <span>至</span>
-            <span>{{queryParams.timeRange[1]}}</span>
-          </template>
-          <br/>
-        </div>
-        <div class="nav_content" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="有功功率最大值 | 发生时间">
-            <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
-            <span v-if="maxActivePowDataTimeTemp">{{ maxActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="有功功率最小值 | 发生时间">
-            <span>{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span><br/>
-            <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-        </div> -->
 
-
-        <div class="nav_header" style="font-size: 14px;">
+        <div class="nav_header" style="font-size: 14px; text-align:center;">
           <span v-if="nowAddress">{{nowAddress}}</span>
+          <!-- <br/> -->
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
       </div>
@@ -223,7 +193,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -234,6 +204,8 @@ import { formatDate} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 import { ElMessage } from 'element-plus'
 import download from '@/utils/download'
+import  CommonMenu1 from './component/CommonMenu1.vue'
+
 
 defineOptions({ name: 'PDUHistoryLine' })
 
@@ -471,7 +443,7 @@ const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-  if (queryParams.devkey == null){
+  if (nowAddress.value == null){
     ElMessage.error('请先选择设备！');
   }
   loading.value = true;
@@ -586,8 +558,8 @@ const initChart = () => {
         realtimeChart.setOption({
           title: { text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率(kW)(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素', '电压三相不平衡', '电流三相不平衡'],
-                selected: {  "总有功功率(kW)(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": false, "功率因素": false, 
+          legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素', '电压三相不平衡', '电流三相不平衡'],
+                selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": false, "功率因素": false, 
                                "电压三相不平衡": false, "电流三相不平衡": false }
               },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
@@ -595,7 +567,7 @@ const initChart = () => {
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: '总有功功率(kW)(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
+            {name: '总有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
             {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
             {name: '总无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
             {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
@@ -734,7 +706,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                         "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, "平均零线电流(A)": false, "最大零线电流(A)": false, "最小零线电流(A)": false,}
               },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '20px'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value}
               ],
@@ -825,7 +797,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均线电压(V)": false, "最大线电压(V)": false, "最小线电压(V)": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'20px'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -943,7 +915,6 @@ function totalRealtimeLegendListener(realtimeChart) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
-  debugger
   var tooltipContent = ''; 
   params.forEach(function(item) {
     switch( item.seriesName ){
@@ -1402,17 +1373,21 @@ const handleQuery = () => {
   needFlush.value++;
 }
 
+
+  const queryBusId =ref(history?.state?.busId);
+  const queryLocation = ref(history?.state?.location);
+  const queryDevKey = ref(history?.state?.dev_key);
+
 /** 初始化 **/
 onMounted( async () => { 
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryBusId = useRoute().query.busId as string  | undefined;
-  const queryLocation = useRoute().query.location as string;
-  queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
+  queryParams.busId = queryBusId;
   if (queryParams.busId != undefined){
+    
+      nowAddressTemp.value = queryLocation.value?queryLocation.value:'未绑定'
+      nowLocationTemp.value = queryDevKey.value
     await getList(); 
-    nowAddress.value = queryLocation
-    nowAddressTemp.value = queryLocation
     initChart();
   }
 })

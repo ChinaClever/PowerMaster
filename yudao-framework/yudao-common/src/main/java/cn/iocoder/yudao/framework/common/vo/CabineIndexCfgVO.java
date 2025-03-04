@@ -38,7 +38,9 @@ public class CabineIndexCfgVO {
      */
     private String cabinetName;
 
-
+    /**
+     *  机柜高度
+     */
     private Integer  cabinetHeight;
     /**
      * 电力容量
@@ -116,4 +118,8 @@ public class CabineIndexCfgVO {
      * 所属于公司
      */
     private String company;
+
+    private String roomName;
+
+    private int cabinetUseHeight;
 }

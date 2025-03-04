@@ -35,6 +35,8 @@ public class RackIndex implements Serializable {
      */
     private String rackName;
 
+    private String rackIp;
+
     /**
      * A路输出位
      */
@@ -70,6 +72,9 @@ public class RackIndex implements Serializable {
      * 是否删除 0未删除 1已删除
      */
     private Boolean isDelete;
+
+    //机架状态，0：关机 1：开机
+    private Integer runStatus;
     /**
      * 创建时间
      */

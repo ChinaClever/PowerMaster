@@ -1,7 +1,7 @@
 <template>
   <el-card class="card" shadow="never"> 
     <template #header>
-      <CardTitle title="电流不平衡" /><el-tag size="large">{{ location }}</el-tag>
+      <CardTitle title="电流不平衡" /><el-tag size="large">{{ roomName }}</el-tag>
     </template>
     <div class="ImbalanceA">
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
@@ -71,7 +71,7 @@ import { IndexApi } from '@/api/bus/boxindex'
 const boxId = history?.state?.boxId || -1
 const devKey = history?.state?.devKey || "0"
 const location =  history?.state?.location 
-
+const roomName =  history?.state?.roomName 
 const colorList = [{
   name: '小电流不平衡',
   color: '#aaa',
@@ -112,9 +112,11 @@ const balanceObj = reactive({
 
 const getBalanceDetail = async() => {
   const res = await IndexApi.getBoxBalanceDetail({devKey:devKey})
+  console.log('11111111',res)
 
   if (res.cur_value) {
     const cur_valueA = res.cur_value
+    console.log('cur_valueA',cur_valueA)
     // const max = Math.max(...cur_valueA) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -126,54 +128,37 @@ const getBalanceDetail = async() => {
     // balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
     ABarOption.value = {
       title: {
-        text: '电流柱形图',
+        text: '电流饼形图',
         left: 'center'
       },
       tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },formatter: function (params) {
-            // params是一个数组，包含了当前触发tooltip的多个系列的信息
-            let tooltipContent = '';
-            params.forEach(function (item) {
-                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
-                tooltipContent += item.name + ' : ' + item.value + ' A<br/>';
-            });
-            return tooltipContent;
-        },
+        trigger: 'item',
+        formatter: '{b} : {c}'
       },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: [
-        {
-          type: 'category',
-          data: ["A","B","C"],
-          axisTick: {
-            alignWithLabel: true
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: 'value',
-          name: '电流',
-          axisLabel: {
-            formatter: '{value} A'
-          }
-        }
-      ],
       series: [
         {
-
-          type: 'bar',
-          barWidth: '20%',
-          data: cur_valueA,
-        },
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+          ]
+        }
       ]
     }
   }
@@ -190,53 +175,35 @@ const getBalanceDetail = async() => {
     // balanceObj.imbalanceValueB =  +(((max - average) * 100 / average).toFixed(0))
     BBarOption.value = {
       title: {
-        text: '电压柱形图',
+        text: '电压饼形图',
         left: 'center'
       },
       tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },formatter: function (params) {
-            // params是一个数组，包含了当前触发tooltip的多个系列的信息
-            let tooltipContent = '';
-            params.forEach(function (item) {
-                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
-                tooltipContent += item.name + ' : ' + item.value + ' V<br/>';
-            });
-            return tooltipContent;
-        },
+        trigger: 'item'
       },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: [
-        {
-          type: 'category',
-          data: ["A","B","C"],
-          axisTick: {
-            alignWithLabel: true
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: 'value',
-          name: '电压',
-          axisLabel: {
-            formatter: '{value} V'
-          }
-        }
-      ],
       series: [
         {
-          type: 'bar',
-          barWidth: '20%',
-          data: vol_value,
-        },
+          type: 'pie',
+          radius: ['40%', '80%'],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          label: {
+            show: true,
+            position: 'inside',
+            formatter: (params) => `${params.value}V`,
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: vol_value[0], name: 'A相电压', itemStyle: { color: '#E5B849' } },
+            { value: vol_value[1], name: 'B相电压', itemStyle: { color: '#C8603A' } },
+            { value: vol_value[2], name: 'C相电压', itemStyle: { color: '#AD3762' } },
+          ]
+        }
       ]
     }
   }
@@ -273,6 +240,7 @@ const getBalanceTrend = async () => {
   const res = await IndexApi.getBoxBalanceTrend({
     boxId: boxId
   })
+  console.log('22222222',res)
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime)
     if(res[0].cur && res[0].cur.length == 1) {

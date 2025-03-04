@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗数据">
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
@@ -78,7 +78,7 @@
       </el-form> 
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" >
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -251,22 +251,50 @@ const getPageNumbers = (pageNumber) => {
 const rankChartContainer = ref<HTMLElement | null>(null);
 let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
-const initChart = () => {
+  const initChart = () => {
   if (rankChartContainer.value && instance) {
+     // 假设这是您的分页阈值
+     const labelThreshold = 30; // 您可以根据需要调整这个值
+
+    // 计算当前分页数量
+    const totalPages = getPageNumber(queryParams.pageNo);
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各始端箱耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
-      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
+      xAxis: {type: 'category', 
+      data: getPageNumbers(queryParams.pageNo),
+      axisLabel: {
+          interval: 0, // 根据实际情况调整
+          formatter: function (value, index) {
+            // 如果超过阈值，则只显示索引
+            return totalPages > labelThreshold ? '' : value;
+          },  // 如果需要，可以旋转标签
+        }},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  
+        type: 'bar', 
+        data: eqData.value, 
+        barWidth: 'auto', // 自动调整宽度，或指定一个合适的固定宽度
+        label: {
+                        show: totalPages <= labelThreshold,
+                        position: 'top'
+                    }},
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
+};
+
+// 返回当前页的序号数组
+const getPageNumber = (pageNumber) => {
+  const start = (pageNumber - 1) * queryParams.pageSize + 1;
+  const end = pageNumber * queryParams.pageSize;
+  const count = end - start + 1;
+  return count;
 };
 
 window.addEventListener('resize', function() {
@@ -309,13 +337,21 @@ const getList = async () => {
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
-    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    // 时间段清空1后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-
+    if(data.list == null){
+      //清空表格
+      eqData.value = []
+      list.value = []
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+    }
     eqData.value = data.list.map((item) => {
         const difference = item.end_ele - item.start_ele;
         return difference < 0 ? item.end_ele : formatEQ(difference, 1);
@@ -342,11 +378,15 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(convertDate(end.value))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     queryParams.devkeys = [devKey.value];
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    if(data == null){
+      ElMessage.error('暂无数据')
+    }
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
     realTotel.value = data.total
@@ -364,9 +404,9 @@ const getList1 = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
+  tooltipContent += '位置：'+(list.value[item.dataIndex].location ? list.value[item.dataIndex].location : '未绑定设备')+ '  '
   tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+item.seriesName + ': ' + item.value + 'kWh <br/>'                 
-                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + ' 结束电能：'+list.value[item.dataIndex].end_ele + 'kWh <br/>' 
+                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + ' 结束电能：'+formatEle(null, null,list.value[item.dataIndex].end_ele) + 'kWh <br/>' 
                     +item.marker + '开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) +'kWh <br/>'
   return tooltipContent;
 }
@@ -462,57 +502,71 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
-  navList.value = res
+  const res = await IndexApi.getBusMenu();
+  console.log('接口获取机房导航列表',res);
+  navList.value = res;
 }
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await EnergyConsumptionApi.getNavNewData({})
-  lastDayTotalData.value = res.day
-  lastWeekTotalData.value = res.week
-  lastMonthTotalData.value = res.month
+  const res = await EnergyConsumptionApi.getNavNewData({});
+  lastDayTotalData.value = res.day;
+  lastWeekTotalData.value = res.week;
+  lastMonthTotalData.value = res.month;
 }
 
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    queryParams.pageNo = 1
-    exportLoading.value = true
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '始端箱能耗趋势.xlsx')
+    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig);
+    await download.excel(data, '始端箱能耗趋势.xlsx');
   } catch (error) {
     // 处理异常
-    console.error('导出失败：', error)
+    console.error('导出失败：', error);
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
-const start = ref('')
-const end = ref('')
-const devKey =  ref('')
 /** 详情操作*/
+// const toDetails = (busId: number,location: string, devKey: string) => {
+//   push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location+'&devKey='+devKey);
+// }
+
+// 跳转详情页
 const toDetails = (busId: number,location: string, devKey: string) => {
-  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location+'&devKey='+devKey);
+
+  push({path: '/bus/nenghao/ecdistribution/bus', state: {busId,location,devKey}})
 }
+
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+
+const start = ref(history?.state?.start);
+const end = ref(history?.state?.end);
+const devKey =  ref(history?.state?.devKey);
 
 /** 初始化 **/
 onMounted(() => {
-  getNavList()
-  getNavNewData()
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  devKey.value = useRoute().query.devKey as string;
+  getNavList();
+  getNavNewData();
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', devKey);
+
   getList1();
   }else{
       getList();

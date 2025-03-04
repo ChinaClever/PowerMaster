@@ -183,4 +183,11 @@ public class CabinetIndexLoadResVO {
 
     @Schema(description = "总有功功率")
     private BigDecimal  activeTotal;
+
+    @Schema(description = "A无功功率")
+    private BigDecimal  powReactivea;
+    @Schema(description = "B无功功率")
+    private BigDecimal  powReactiveb;
+    @Schema(description = "总无功功率")
+    private BigDecimal  powReactiveTotal;
 }

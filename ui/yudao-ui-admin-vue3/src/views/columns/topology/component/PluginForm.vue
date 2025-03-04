@@ -13,21 +13,17 @@
           <el-collapse-item title="A路始端箱" name="1">
             <div class="collapseItem">
               <div class="flex">
-                <el-form-item label="母线编号：" prop="barIdA">
+                <el-form-item label="母线编号：" prop="barIdA" style="width:100%">
                   <el-input v-model="formData.barIdA" placeholder="请输入" />
                 </el-form-item>
-                <el-form-item label="ip：" prop="ipA">
+              </div>
+              <div class="flex">
+                <el-form-item label="ip：" prop="ipA" style="width:100%">
                   <el-input v-model="formData.ipA" placeholder="请输入" />
                 </el-form-item>
               </div>
               <div class="flex">
-                <el-form-item label="极联地址：" prop="casAddrA">
-                  <el-select v-model="formData.casAddrA" placeholder="请选择">
-                    <el-option label="0" :value="0" />
-                    <el-option label="1" :value="1" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="插接箱位置：" prop="directionA">
+                <el-form-item label="插接箱位置：" prop="directionA" style="width:100%">
                   <el-select v-model="formData.directionA" placeholder="请选择">
                     <el-option label="左侧" :value="0" />
                     <el-option label="右侧" :value="1" />
@@ -39,21 +35,17 @@
           <el-collapse-item title="B路始端箱" name="2">
             <div class="collapseItem">
               <div class="flex">
-                <el-form-item label="母线编号：" prop="barIdB">
+                <el-form-item label="母线编号：" prop="barIdB" style="width:100%">
                   <el-input v-model="formData.barIdB" placeholder="请输入" />
                 </el-form-item>
-                <el-form-item label="ip：" prop="ipB">
+              </div>
+              <div class="flex">
+                <el-form-item label="ip：" prop="ipB" style="width:100%">
                   <el-input v-model="formData.ipB" placeholder="请输入" />
                 </el-form-item>
               </div>
               <div class="flex">
-                <el-form-item label="极联地址：" prop="casAddrB">
-                  <el-select v-model="formData.casAddrB" placeholder="请选择">
-                    <el-option label="0" :value="0" />
-                    <el-option label="1" :value="1" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="插接箱位置：" prop="directionB">
+                <el-form-item label="插接箱位置：" prop="directionB" style="width:100%">
                   <el-select v-model="formData.directionB" placeholder="请选择">
                     <el-option label="左侧" :value="0" />
                     <el-option label="右侧" :value="1" />

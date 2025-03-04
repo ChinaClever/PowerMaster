@@ -14,6 +14,9 @@
       <el-form-item label="类型" prop="rackType">
         <el-input v-model="formData.rackType" placeholder="请输入" />
       </el-form-item>
+      <el-form-item label="IP" prop="rackType">
+        <el-input v-model="formData.ip" placeholder="请输入" />
+      </el-form-item>
       <el-form-item label="所属公司" prop="company">
         <el-input v-model="formData.company" placeholder="请输入" />
       </el-form-item>
@@ -53,6 +56,7 @@ const formType = ref('') // 表单的类型：create - 新增；update - 修改
 const formData = ref({
   rackName: '', // 名称
   rackType: '', // 类型
+  ip: '',
   company: '', // 公司
   uAddress: 0, // 位置
   uHeight: 0, // 容量高度
@@ -79,6 +83,7 @@ const open = async (type: string, data, Uindex, outletIdALength:number, outletId
   formData.value = {
     rackName: data.rackName || '',
     rackType: data.rackType || '',
+    ip: data.ip || '',
     company: data.company || '',
     uAddress: data.uAddress || Uindex || 1,
     uHeight: data.uHeight || 1,

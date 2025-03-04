@@ -253,16 +253,36 @@ let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
 const initChart = () => {
   if (rankChartContainer.value && instance) {
+     // 假设这是您的分页阈值
+     const labelThreshold = 30; // 您可以根据需要调整这个值
+
+    // 计算当前分页数量
+    const totalPages = getPageNumber(queryParams.pageNo);
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各插接箱耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
-      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
+      xAxis: {type: 'category', 
+      data: getPageNumbers(queryParams.pageNo),
+      axisLabel: {
+          interval: 0, // 根据实际情况调整
+          formatter: function (value, index) {
+            // 如果超过阈值，则只显示索引
+            return totalPages > labelThreshold ? '' : value;
+          },  // 如果需要，可以旋转标签
+        }},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  
+        type: 'bar', 
+        data: eqData.value, 
+        barWidth: 'auto', // 自动调整宽度，或指定一个合适的固定宽度
+        label: {
+                        show: totalPages <= labelThreshold,
+                        position: 'top'
+                    }},
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
@@ -276,6 +296,14 @@ window.addEventListener('resize', function() {
 watch(() => queryParams.granularity, () => {
   handleQuery();
 });
+
+// 返回当前页的序号数组
+const getPageNumber = (pageNumber) => {
+  const start = (pageNumber - 1) * queryParams.pageSize + 1;
+  const end = pageNumber * queryParams.pageSize;
+  const count = end - start + 1;
+  return count;
+};
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
@@ -313,12 +341,11 @@ const getList = async () => {
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getBoxEQDataPage(queryParams)
-    //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    eqData.value = data.list.map((item) => {
-        const difference = item.end_ele - item.start_ele;
-        return difference < 0 ? item.end_ele : formatEQ(difference, 1);
-    });
-    
+    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    // eqData.value = data.list.map((item) => {
+    //     const difference = item.end_ele - item.start_ele;
+    //     return difference < 0 ? item.end_ele : formatEQ(difference, 1);
+    // });
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -340,7 +367,8 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value) ))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     queryParams.devkeys = [devKey.value];
@@ -363,9 +391,9 @@ const getList1 = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '所在位置：'+list.value[item.dataIndex].location + '  '
+  tooltipContent += '所在位置：'+(list.value[item.dataIndex].location ? list.value[item.dataIndex].location : '未绑定设备')+ '  '
   tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+ item.seriesName + ': ' + item.value + 'kWh <br/>'                 
-                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+list.value[item.dataIndex].end_ele + 'kWh <br/>' 
+                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+ formatEle(null, null, list.value[item.dataIndex].end_ele) + 'kWh <br/>' 
                     +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) +' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh <br/>'
   return tooltipContent;
 }
@@ -495,25 +523,39 @@ const handleExport = async () => {
   }
 }
 
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 详情操作*/
+// const toDetails = (boxId: number, location: string,devkey: string) => {
+//   push('/bus/nenghao/ecdistribution/box?boxId='+boxId+'&location='+location+'&devKey='+devkey);
+// }
+
+// 跳转详情页
 const toDetails = (boxId: number, location: string,devkey: string) => {
-  push('/bus/nenghao/ecdistribution/box?boxId='+boxId+'&location='+location+'&devKey='+devkey);
+  const id = boxId
+  const devKey = devkey;
+  const locationName = location;
+  push({path: '/bus/nenghao/ecdistribution/box', state: {id,devKey,locationName}})
 }
 
-const start = ref('')
-const end = ref('')
-const devKey =  ref('')
+
+
+const start = ref(history?.state?.start);
+const end = ref(history?.state?.end);
+const devKey =  ref(history?.state?.devKey);
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  devKey.value = useRoute().query.devKey as string;
+
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
   if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', devKey);
   getList1();
   }else{
       getList();

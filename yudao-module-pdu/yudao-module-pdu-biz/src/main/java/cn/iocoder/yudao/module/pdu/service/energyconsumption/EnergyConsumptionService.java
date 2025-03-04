@@ -54,6 +54,8 @@ public interface EnergyConsumptionService {
 
     Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException;
 
+    Map<String, Object> getSumDataByCabinet(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException;
+
     Map<String, Object> getNewData() throws IOException;
 
     Map<String, Object> getOneDaySumData() throws IOException;

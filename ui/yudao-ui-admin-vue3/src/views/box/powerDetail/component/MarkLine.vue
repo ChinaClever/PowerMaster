@@ -18,59 +18,69 @@ const prop = defineProps({
     default: 60
   }
 })
-
+const factorA = prop.list.factorA;
+const factorB = prop.list.factorB;
+const factorTotal = prop.list.factorTotal;
+const days = prop.list.day;
+console.log('days.value',days)
+console.log('list22222',prop.list)
+let timeOnlyArray = days.map(dateTimeString => {
+  // 使用正则表达式匹配小时和分钟部分（不包括后面的冒号和秒）
+  let match = dateTimeString.match(/(\d{2}:\d{2})(?=:)/);
+  return match ? match[1] : null; // 如果匹配成功，返回小时和分钟部分，否则返回 null
+});
+ 
+console.log(timeOnlyArray);
 const series = ref()
 const time = ref()
 const legendList = ref()
-
+const model = ref()
+//const newSeriesObject = {...prop.list.series[0]};
+//newSeriesObject.name = '负载率曲线'
+//model.value = [newSeriesObject];
+model.value = prop.list.series
 // 设置饼图的选项
-const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
-  legend: { data: legendList,
-    type: 'scroll', // 设置为 'single' 或 'multiple'
-    orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
-    width:1000
-  },
+const echartsOption = reactive({
+  dataZoom: [{ type: "inside" }],
   tooltip: { trigger: 'axis' },
-  xAxis: {type: 'category', boundaryGap: false, data : time},
+  xAxis: {
+    type: 'category',
+    boundaryGap: false,
+    data: timeOnlyArray
+  },
   yAxis: {
     type: "value",
     min: 0,
     max: 100,
     name: "%",
     axisLine: {
-        show: !1,
-        lineStyle: {
-            color: "#000"
-        }
+      show: false,
+      lineStyle: {
+        color: "#000"
+      }
     },
     axisLabel: {
-        show: !0
-    },
-  },
-  toolbox: {feature: {saveAsImage: {}}},
-  series: series,
-})
-const markLine = ref({
-    type: "line",
-    markLine: {
-        data: [{
-            yAxis: 40,
-            lineStyle: {
-                type: "line",
-                color: "red",
-                width: 2
-            }
-        }, {
-            yAxis: 70,
-            lineStyle: {
-                type: "line",
-                color: "red",
-                width: 2
-            }
-        }]
+      show: true
     }
-})
+  },
+  series: [
+    {
+      name: 'Factor A',
+      type: 'line', // 或 'bar' 等其他类型，根据您的需求选择
+      data: factorA
+    },
+    {
+      name: 'Factor B',
+      type: 'line', // 同上
+      data: factorB
+    },
+    {
+      name: 'Factor Total',
+      type: 'line', // 同上
+      data: factorTotal
+    }
+  ]
+});
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
@@ -79,40 +89,6 @@ watchEffect(() => {
     legendList.value =  series.value?.map(item => item.name)
   }
 
-  series.value.forEach(item => {  
-    // 检查 item 是否已经有 markPoint，如果没有则添加  
-    if (!item.markPoint) {  
-      item.markPoint = {  
-        data: [  
-          {  
-            type: 'max',  
-            name: 'Max',
-            symbol : "circle",
-            symbolSize : 10,  
-            label: {  
-              show: true,  
-              position: 'top',  
-              formatter: '{b}: {c}'  
-            }
-          },  
-          {  
-            type: 'min',  
-            name: 'Min',
-            symbol : "circle",
-            symbolSize : 10,
-            label: {  
-              show: true,  
-
-              formatter: '{b}: {c}'  
-            }    
-            // 自定义样式和其他属性  
-          }  
-        ]  
-      };  
-    }  
-    // 如果 item 已经有 markPoint，但你想更新它（比如样式），可以在这里做  
-  });  
-  series.value?.push(markLine.value)
   time.value = prop.list.time;
 
 });

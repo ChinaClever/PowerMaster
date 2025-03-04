@@ -55,4 +55,11 @@ public class CabinetIndexVo extends PageParam {
 
     @Schema(description = "时间颗粒度")
     private String timeGranularity;
+
+    private Integer startNum;
+
+    private Integer endNum;
+
+    @Schema(description = "机柜环境 0-前门/1-后门")
+    private Integer switchValue;
 }

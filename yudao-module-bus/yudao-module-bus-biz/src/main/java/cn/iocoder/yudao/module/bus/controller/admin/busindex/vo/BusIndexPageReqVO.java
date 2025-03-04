@@ -86,4 +86,7 @@ public class BusIndexPageReqVO extends PageParam {
 
     @Schema(description = "负载量状态 0：空载 1：<30%  2: 30~60 3：60~90  4：>90%")
     private List<Integer> loadRateStatus;
+
+    @Schema(description = "三相不平衡")
+    private List<Integer> curUnbalanceStatus;
 }

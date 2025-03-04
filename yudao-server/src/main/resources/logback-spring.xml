@@ -15,6 +15,10 @@
         </encoder>
     </appender>
 
+    <!-- MyBatis 日志级别设置为 DEBUG -->
+    <logger name="com.baomidou.mybatisplus" level="DEBUG"/>
+    <logger name="java.sql" level="INFO"/>
+
     <!-- 文件 Appender -->
     <!-- 参考 Spring Boot 的 file-appender.xml 编写 -->
     <appender name="FILE"  class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -62,6 +66,7 @@
             <appender-ref ref="STDOUT"/>
             <appender-ref ref="GRPC"/> <!-- 本地环境下，如果不想接入 SkyWalking 日志服务，可以注释掉本行 -->
             <appender-ref ref="ASYNC"/>  <!-- 本地环境下，如果不想打印日志，可以注释掉本行 -->
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
     <!-- 其它环境 -->

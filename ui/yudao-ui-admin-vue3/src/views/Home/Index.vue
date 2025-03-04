@@ -1117,21 +1117,20 @@ onUnmounted(() => {
 
 @media screen and (min-width:2048px){
   .temperature-container{
-    height: 52vh;
+    height: 400px;
     overflow-y:auto;
   }
 
   .scrollable-container {
-    height: 36vh;
+    height: 390px;
     overflow-y:auto;
   }
  
   .scroll-item {
     display: inline-block;
-    height: 14vh;
-    width: 15vw;
-    margin-left: 1vh;
-    margin-bottom: -2vw;
+    height: 130px;
+    width: 320px;
+    margin-left: 10px;
   }
 
   .name-column {
@@ -1145,19 +1144,20 @@ onUnmounted(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .temperature-container{
-    height: 38vh;
+    height: 260px;
     overflow-y:auto;
   }
 
   .scrollable-container {
-    height: 28vh;
+    height: 260px;
     overflow-y:auto;
   }
  
   .scroll-item {
     display: inline-block;
-    height: 14vh;
-    width: 15vw;
+    height: 130px;
+    width: 290px;
+    margin-left: 10px;
   }
 
   .scrollable-container-one{
@@ -1188,9 +1188,9 @@ onUnmounted(() => {
  
   .scroll-item {
     display: inline-block;
-    height: 14vh;
-    width: 20vw;
-    margin-left: 2vh;
+    height: 130px;
+    width: 310px;
+    margin-left: 10px;
   }
 
   .scrollable-container-one{

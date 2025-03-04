@@ -37,7 +37,6 @@
             <span>{{ statusNumber.cur_max_value }}</span>
           </div>
         </div>
-        <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -64,7 +63,6 @@
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -75,7 +73,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item label="时间段" prop="createTime" label-width="100px">
+        <el-form-item label="时间段" prop="createTime" label-width="50px">
           <el-button 
             @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
@@ -93,10 +91,9 @@
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
-          </el-button>                            
-        </el-form-item>
-        <el-form-item>
-          <el-date-picker
+          </el-button>     
+          <el-date-picker  
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -106,6 +103,7 @@
             class="!w-160px"
           />
           <el-date-picker
+            style="padding-left: 10px;"
             v-if="queryParams.timeType == 2"
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
@@ -116,28 +114,28 @@
             :disabled-date="disabledDate"
             @change="handleDayPick"
             class="!w-200px"
-          />
-        <el-form-item style="margin-left: 10px;" v-show="showSearchBtn">
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-          <el-button
-            type="primary"
-            plain
-            @click="openForm('create')"
-            v-hasPermi="['pdu:PDU-device:create']"
-          >
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
-          </el-button>
-          <el-button
-            type="success"
-            plain
-            @click="handleExport"
-            :loading="exportLoading"
-            v-hasPermi="['pdu:PDU-device:export']"
-          >
-            <Icon icon="ep:download" class="mr-5px" /> 导出
-          </el-button>
-        </el-form-item>          
+          />                       
+        </el-form-item>
+
+        <el-form-item>
+          <el-form-item label="网络地址" prop="devKey">
+            <el-autocomplete
+              v-model="queryParams.devKey"
+              :fetch-suggestions="querySearch"
+              clearable
+              class="!w-200px"
+              placeholder="请输入网络地址"
+              @select="handleQuery"
+            />
+            <el-form-item style="margin-left: 10px">
+              <el-button @click="handleQuery"
+                ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button
+              >
+              <el-button @click="resetQuery"
+                ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button
+              >
+            </el-form-item>
+          </el-form-item>
         </el-form-item>
         <div style="float:right">
           <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
@@ -148,143 +146,152 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1 && visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
-        <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="218px" />
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
-        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l2MaxCur }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
-        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l3MaxCur }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
+      <div v-if="switchValue == 1" style="height:720px;margin-top:-10px;overflow-y: auto;">
+        <el-table v-show="visMode == 0" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+          <el-table-column label="编号" align="center" prop="tableId" width="80px" />
+          <!-- 数据库查询 -->
+          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+          <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l1MaxCur }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
+          <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l2MaxCur }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
+          <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l3MaxCur }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
 
-        <el-table-column label="操作" align="center" >
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="queryParams.lineType = 0;openDetail(scope.row)"
-            >
-            设备详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-        <el-table-column label="所在位置" align="center" prop="location" width="218px" />
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-        <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
-        <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l2MaxPow }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
-        <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l3MaxPow }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
-        <el-table-column label="操作" align="center" >
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="queryParams.lineType = 1;openDetail(scope.row)"
-
-            >
-            设备详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          <el-table-column label="操作" align="center" >
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="queryParams.lineType = 0;openDetail(scope.row)"
+                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+              >
+              设备详情
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                @click="handleDelete(scope.row.busId)"
+                v-if="scope.row.status == 5"
+                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-table v-show="visMode == 1" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+          <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+          <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l1MaxPow }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
+          <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l2MaxPow }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
+          <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l3MaxPow }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
+          <el-table-column label="操作" align="center" >
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="queryParams.lineType = 1;openDetail(scope.row)"
+                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+              >
+              设备详情
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                @click="handleDelete(scope.row.busId)"
+                v-if="scope.row.status == 5"
+                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
       <div  v-show="switchValue == 0 && visMode == 1 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px" class="info">
+            <div class="info" style="margin-left:10px;font-size: 15px;">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
+            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量功率</el-tag>
           </div>           
           <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
         </div>
+        </template>
       </div>
 
       <div  v-show="switchValue == 0 && visMode == 0 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">            
-            <div style="padding: 0 28px" class="info">              
+            <div class="info" style="margin-left:10px;font-size: 15px;">              
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
-          <div class="status"  >
+          <div class="status" style="margin-right:-20px;">
             <el-tag>需量电流</el-tag>
           </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
         </div>
+        </template>
       </div>
 
       <Pagination
@@ -299,30 +306,34 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
-        <div>
-          结果所在位置：（<el-tag>{{ location }}</el-tag>） 时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
-        </div>
-        <div style="margin-left:55vw; margin-top:-4vh;">
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ?  'primary' : ``"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type=" switchChartOrTable == 1 ?  'primary' : ``"
-          >
-            数据
-          </el-button>
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+      <el-dialog v-model="detailVis" width="70vw" height="58vh" >
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;margin-top:-50px;">
+          <div>
+            <span style="font-weight:bold;font-size:20px;margin-right:10px;">{{queryParams.lineType == 0 ? `电流详情`: `功率详情`}}</span>
+            <span style="margin-right:10px;">结果所在位置：{{ location }}</span>
+            <span>时间段: {{ queryParams.oldTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ queryParams.newTime }}</span>
+          </div>
+          <div style="display: flex; gap: 10px;margin-right:30px;"> <!-- 子div用于包含按钮，并设置按钮之间的间距 -->
+            <el-button
+              @click="switchChartOrTable = 0"
+              :type="switchChartOrTable == 0 ? 'primary' : ''"
+            >
+              图表
+            </el-button>
+            <el-button
+              @click="switchChartOrTable = 1"
+              :type="switchChartOrTable == 1 ? 'primary' : ''"
+            >
+              数据
+            </el-button>
+            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
         </div>
         <div style="margin-top:3vh;">
-          <RequirementLine v-show="switchChartOrTable == 0" width="68vw" height="58vh" :list="requirementLine"  />
-          <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+          <RequirementLine v-if="switchChartOrTable == 0" width="68vw" height="58vh" :list="requirementLine"  />
+          <el-table style="height:550px;ovrflow:hidden;overflow-y:auto;" v-if="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
             <el-table-column label="设备识别码" align="center" prop="devKey" />
             <el-table-column label="时间" align="center" prop="create_time" />
             <el-table-column label="相" align="center" prop="line" />
@@ -375,6 +386,29 @@ const statusNumber = reactive({
     create_time : null,
     cur_max_value : null
 })
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList()
+  var objectArray = data.map((str) => {
+    return { value: str }
+  })
+  return objectArray
+}
+const querySearch = (queryString: string, cb: any) => {
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+  }
+}
+
+
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -438,7 +472,6 @@ const statusList = reactive([
 ])
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
     handleQuery();
@@ -543,7 +576,6 @@ const handleMonthPick = () => {
 const getListAll = async () => {
   try {
         const allData = await IndexApi.getBusLineMax(queryParams)
-        console.log('测试'+allData)
     //设置左边数量
     statusNumber.location = allData.location;
     statusNumber.devKey = allData.devKey;
@@ -665,9 +697,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
-  queryParams.status = [];
+  queryParams.devKey = undefined;
   handleQuery()
 }
 
@@ -702,7 +732,6 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await IndexApi.getBusLineCurLineExcel(queryParams, axiosConfig)
-    console.log("data",data)
     await download.excel(data, '电流详细.xlsx')
   } catch (error) {
     // 处理异常
@@ -713,7 +742,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList();
   getNavList();
   getListAll();
@@ -990,6 +1020,215 @@ onMounted(() => {
   .arrayItem {
     width: 25%;
     height: 140px;
+    font-size: 15px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 60px;
+        height: 30px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+
+@media screen and (min-width:2048px){
+  .arrayContainer {
+  width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 60px;
+        height: 30px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .arrayContainer {
+  width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 60px;
+        height: 30px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+  .arrayContainer {
+  width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 33%;
+    height: 140px;
     font-size: 13px;
     box-sizing: border-box;
     background-color: #eef4fc;
@@ -1046,6 +1285,8 @@ onMounted(() => {
   }
 }
 
+}
+
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
@@ -1065,5 +1306,9 @@ onMounted(() => {
   color: #909399;
   height: 80px;
 
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

@@ -13,6 +13,9 @@ import lombok.Data;
 @Data
 public class BusEleChainDTO {
 
+    private String busName;
+
+    private String boxName;
 
     /**
      * 今日用能

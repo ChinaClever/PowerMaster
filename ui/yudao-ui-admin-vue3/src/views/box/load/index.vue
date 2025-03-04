@@ -46,14 +46,12 @@
         label-width="68px"                          
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
+          <!-- <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</button> -->
+           <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" style="height:25px;" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>          
         </el-form-item>
         <!-- <el-button
           type="primary"
@@ -146,7 +144,8 @@
       </el-form>      
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <div v-if="switchValue !== 2 && list.length > 0" style="height:710px;overflow-y:auto;">
+        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -154,13 +153,13 @@
         <el-table-column label="设备名称" align="center" prop="boxName" />
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
-            <el-tag type="info"  v-if="scope.row.status == 5">离线</el-tag>
-            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 5">空载</el-tag>
-            <el-tag type="success"  v-if="scope.row.color == 1&&scope.row.status != 5">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="scope.row.color == 2&&scope.row.status != 5">30%-60%</el-tag>
-            <el-tag type="warning" v-if="scope.row.color == 3&&scope.row.status != 5">60%-90%</el-tag>
-            <el-tag type="danger" v-if="scope.row.color == 4&&scope.row.status != 5">&gt;90%</el-tag>
-            <el-tag type="danger" v-if="scope.row.color != 0 && scope.row.color != 4 && scope.row.color != 3 && scope.row.color != 2 && scope.row.color != 1 && scope.row.status != 5">异常</el-tag>
+            <el-tag type="info"  v-if="scope.row.status == 0">离线</el-tag>
+            <el-tag type="info"  v-if="scope.row.loadRateStatus == 0&&scope.row.status != 0">{{statusList[4].name}}</el-tag>
+            <el-tag type="success" v-else-if="scope.row.loadRateStatus == 1&&scope.row.status != 0">{{(statusList[0].name)}}</el-tag>
+            <el-tag type="primary" v-else-if="scope.row.loadRateStatus == 2&&scope.row.status != 0">{{(statusList[1].name)}}</el-tag>
+            <el-tag type="warning" v-else-if="scope.row.loadRateStatus == 3&&scope.row.status != 0">{{(statusList[2].name)}}</el-tag>
+            <el-tag type="danger" v-else-if="scope.row.loadRateStatus == 4&&scope.row.status != 0">{{(statusList[3].name)}}</el-tag>
+            <!--<el-tag type="danger" v-if="scope.row.color != 0 && scope.row.color != 4 && scope.row.color != 3 && scope.row.color != 2 && scope.row.color != 1 && scope.row.status != 5">异常</el-tag>-->
           </template>
         </el-table-column>
         <el-table-column label="A相负载率(%)" align="center" prop="aloadRate" width="130px" >
@@ -192,6 +191,7 @@
               type="primary"
               @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -200,6 +200,7 @@
               type="danger"
               @click="handleDelete(scope.row.boxId)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -207,7 +208,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-else-if="switchValue == 4" v-loading="loading" :data="deletedList" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -231,51 +232,54 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
       <Pagination
-        v-if="showPagination == 1"
+        v-show="showPagination == 1 && switchValue === 4 && list.length > 0"
         :total="deletedTotal"
         :page-size-arr="pageSizeArr"
         v-model:page="queryDeletedPageParams.pageNo"
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />        
-      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-if="switchValue == 2  && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}&nbsp;{{item.boxName}}</div>
           <div class="content">
             
             <div class="info" style="padding: 0 18px;margin-right:30px">                  
-              <div  v-if="item.aloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{item.aloadRate?.toFixed(2)*100}}%</el-text></div>
-              <div  v-if="item.bloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{item.bloadRate?.toFixed(2)*100}}%</el-text></div>
-              <div  v-if="item.cloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{item.cloadRate?.toFixed(2)*100}}%</el-text></div>
+              <div  v-if="item.aloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{Math.round(item.aloadRate)}}%</el-text></div>
+              <div  v-if="item.bloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{Math.round(item.bloadRate)}}%</el-text></div>
+              <div  v-if="item.cloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{Math.round(item.cloadRate)}}%</el-text></div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 4px" v-show="item.status != 0"><Bar :width="100" :height="100" :max="{L1:item.aloadRate?.toFixed(2),L2:item.bloadRate?.toFixed(2),L3:item.cloadRate?.toFixed(2)}" /></div>
+            <div style="padding: 0 4px" v-show="item.status != 0"><Bar :width="100" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0 && item.status != 0">空载</el-tag>
+            <el-tag type="info"  v-if="item.loadRateStatus == 0 && item.status != 0">{{(statusList[4].name)}}</el-tag>
             <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
-            <el-tag type="success"  v-if="item.color == 1&& item.status != 0">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="item.color == 2&& item.status != 0">30%-60%</el-tag>
-            <el-tag type="warning" v-if="item.color == 3&& item.status != 0">60%-90%</el-tag>
-            <el-tag type="danger" v-if="item.color == 4&& item.status != 0">&gt;90%</el-tag>
-            <el-tag type="danger" v-if="item.color != 0 && item.color != 4 && item.color != 3 && item.color != 2 && item.color != 1 && item.status != 0">异常</el-tag>
+            <el-tag type="success" v-else-if="item.loadRateStatus == 1&& item.status != 0">{{(statusList[0].name).slice(3, 10)}}</el-tag>
+            <el-tag type="primary" v-else-if="item.loadRateStatus == 2&& item.status != 0">{{(statusList[1].name).slice(7, 11)}}</el-tag>
+            <el-tag type="warning" v-else-if="item.loadRateStatus == 3&& item.status != 0">{{(statusList[2].name).slice(7, 11)}}</el-tag>
+            <el-tag type="danger" v-else-if="item.loadRateStatus == 4&& item.status != 0">{{(statusList[3].name).slice(3, 10)}}</el-tag>
+            <!--<el-tag type="danger" v-if="item.color != 0 && item.color != 4 && item.color != 3 && item.color != 2 && item.color != 1 && item.status != 0">异常</el-tag>-->
           </div>
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
-        v-if="showPagination == 0"
+        v-show="showPagination == 0 && switchValue !== 4 && list.length > 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue == 2 && showPagination == 0">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && showPagination !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>
@@ -303,12 +307,17 @@ const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(2)
+
+const butColor = ref(0);
+const onclickColor = ref(-1);
+
 const statusNumber = reactive({
   lessThirty : 0,
   greaterThirty : 0,
   greaterSixty : 0,
   greaterNinety : 0
 })
+
 const statusList = reactive([
   {
     name: '负载量<30%',
@@ -352,7 +361,7 @@ const statusList = reactive([
   },
 ])
 
-const devKeyList = ref([])
+const devKeyList = ref([]);
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
   var objectArray = data.map((str) => {
@@ -361,13 +370,20 @@ const loadAll = async () => {
   return objectArray;
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -379,7 +395,7 @@ const createFilter = (queryString: string) => {
 }
 
 const handleClick = (row) => {
-  console.log("click",row)
+  console.log("click",row);
 }
 
 const handleCheck = async (row) => {
@@ -411,21 +427,21 @@ const handleCheck = async (row) => {
 }
 
 
-const serverRoomArr =  ref([])
+const serverRoomArr =  ref([]);
 
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
+const filterText = ref('');
+const treeRef = ref<InstanceType<typeof ElTree>>();
 
 
 watch(filterText, (val) => {
-  treeRef.value!.filter(val)
+  treeRef.value!.filter(val);
 })
 
 
-const message = useMessage() // 消息弹窗
-const { t } = useI18n() // 国际化
+const message = useMessage(); // 消息弹窗
+const { t } = useI18n(); // 国际化
 
-const loading = ref(false) // 列表的加载中
+const loading = ref(false); // 列表的加载中
 const list = ref([
   { 
     id:null,
@@ -462,8 +478,8 @@ const deletedList = ref([
     curUnbalance : null,
   }
 ]) as any// 列表的数据
-const total = ref(0) // 列表的总页数
-const deletedTotal = ref(0) // 已删除列表的总页数
+const total = ref(0); // 列表的总页数
+const deletedTotal = ref(0); // 已删除列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
@@ -486,103 +502,78 @@ const queryDeletedPageParams = reactive({
   cabinetIds : [],
   isDeleted: 1,
 })as any
-const queryFormRef = ref() // 搜索的表单
-const queryFormRef2 = ref()
-const exportLoading = ref(false) // 导出的加载中
+const queryFormRef = ref(); // 搜索的表单
+const queryFormRef2 = ref();
+const exportLoading = ref(false); // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const data = await IndexApi.getIndexPage(queryParams)
-    list.value = data.list
+    console.log('queryParams',queryParams);
+    const data = await IndexApi.getIndexPage(queryParams);
+     
+    list.value = data.list;
     var tableIndex = 0;
-    var lessThirty = 0;
-    var greaterThirty = 0;
-    var greaterSixty = 0;
-    var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
-      if(obj.color == 4){
-        greaterNinety++;
-      } else if (obj.color == 1) {
-        lessThirty++;
-      } else if (obj.color == 2) {
-        greaterThirty++;
-      } else if (obj.color == 3) {
-        greaterSixty++;
-      }
     });
-    statusNumber.greaterNinety = greaterNinety;
-    statusNumber.lessThirty = lessThirty;
-    statusNumber.greaterThirty = greaterThirty;
-    statusNumber.greaterSixty = greaterSixty;
+
     total.value = data.total
   } finally {
-    loading.value = false
+    loading.value = false;
+  }
+}
+
+const getLoadRateStatus = async () => {
+  try {
+    const res = await IndexApi.getLoadRateStatus()
+    const data = await IndexApi.getIndexPage(queryParams);
+    
+    list.value = data.list
+    var tableIndex = 0;
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+    });
+
+    console.log('statusNumber',res);
+    statusNumber.greaterNinety = res.greaterNinety;
+    statusNumber.lessThirty = res.lessThirty;
+    statusNumber.greaterThirty = res.greaterThirty;
+    statusNumber.greaterSixty = res.greaterSixty;
+
+    list.value = data.list;
+  } catch (error) {
+    
   }
 }
 
 const getDeletedList = async () => {
   try {
-    const data = await IndexApi.getDeletedIndexPage(queryDeletedPageParams)
-    deletedList.value = data.list
+    const data = await IndexApi.getDeletedIndexPage(queryDeletedPageParams);
+    deletedList.value = data.list;
     var tableIndex = 0;    
 
     deletedList.value.forEach((obj) => {
       obj.tableId = (queryDeletedPageParams.pageNo - 1) * queryDeletedPageParams.pageSize + ++tableIndex;
     });
 
-    deletedTotal.value = data.total
-  } catch (error) {
-    
-  }
-}
-
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getIndexPage(queryParams)
-    list.value = data.list
-    var tableIndex = 0;    
-    var lessThirty = 0;
-    var greaterThirty = 0;
-    var greaterSixty = 0;
-    var greaterNinety = 0;
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
-
-      if(obj.color == 4){
-        greaterNinety++;
-      } else if (obj.color == 1) {
-        lessThirty++;
-      } else if (obj.color == 2) {
-        greaterThirty++;
-      } else if (obj.color == 3) {
-        greaterSixty++;
-      }
-    });
-    statusNumber.greaterNinety = greaterNinety;
-    statusNumber.lessThirty = lessThirty;
-    statusNumber.greaterThirty = greaterThirty;
-    statusNumber.greaterSixty = greaterSixty;
-    total.value = data.total
+    deletedTotal.value = data.total;
   } catch (error) {
     
   }
 }
 
 const getNavList = async() => {
-  const res = await IndexApi.getBoxMenu()
-  serverRoomArr.value = res
+  const res = await IndexApi.getBoxMenu();
+  serverRoomArr.value = res;
   if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
+    const room = res[0];
+    const keys = [] as string[];
     room.children.forEach(child => {
       if(child.children.length > 0) {
         child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
+          keys.push(son.id + '-' + son.type);
         })
       }
     })
@@ -592,9 +583,10 @@ const getNavList = async() => {
 
 const toDetail = (row) =>{
   const devKey = row.devKey;
-  const boxId = row.boxId
+  const boxId = row.boxId;
   const location = row.location != null ? row.location : devKey;
-  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey, boxId ,location}})
+  const roomName =row.roomName;
+  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey, boxId ,location,roomName}});
 }
 
 
@@ -603,52 +595,70 @@ const toDetail = (row) =>{
 //   window.open(url, '_blank');
 // }
 
+//const handleSelectStatus = (index) => {
+//  statusList[index].selected = !statusList[index].selected
+//  const status =  statusList.filter(item => item.selected)
+//  const statusArr = status.map(item => item.value)
+//  if(statusArr.length != statusList.length){
+//    queryParams.color = statusArr;
+//    //queryParams.status = [5];
+//  }else{
+//    queryParams.color = null;
+//    //queryParams.status = [];
+//  }
+//  handleQuery();
+//}
+
 const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  if(statusArr.length != statusList.length){
-    queryParams.color = statusArr;
-    //queryParams.status = [5];
-  }else{
-    queryParams.color = null;
-    //queryParams.status = [];
-  }
+  console.log('index',index);
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.color = [index];
+  handleQuery();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.color = [0,1,2,3,4];
   handleQuery();
 }
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  queryParams.pageNo = 1
-  queryDeletedPageParams.pageNo = 1
-  getList()
-  getDeletedList()
+  queryParams.pageNo = 1;
+  queryDeletedPageParams.pageNo = 1;
+  getList();
+  getDeletedList();
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  queryFormRef2.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
-  handleQuery()
+  queryFormRef.value.resetFields();
+  queryFormRef2.value.resetFields();
+  butColor.value = 0;
+  //statusList.forEach((item) => item.selected = true)
+  queryParams.color = [];
+  onclickColor.value = -1;
+  handleQuery();
 }
 
 /** 添加/修改操作 */
 
 const openForm = (type: string) => {
-  curBalanceColorForm.value.open(type)
+  curBalanceColorForm.value.open(type);
 }
 
 /** 删除按钮操作 */
 const handleDelete = async (id: number) => {
   try {
     // 删除的二次确认
-    await message.delConfirm()
+    await message.delConfirm();
     // 发起删除
-    await IndexApi.deleteIndex(id)
-    message.success(t('common.delSuccess'))
+    await IndexApi.deleteIndex(id);
+    message.success(t('common.delSuccess'));
     // 刷新列表
-     await getList()
+     await getList();
   } catch {}
 }
 
@@ -656,12 +666,12 @@ const handleDelete = async (id: number) => {
 const handleRestore = async (id: number) => {
   try {
     // 删除的二次确认
-    await message.delConfirm()
+    await message.delConfirm();
     // 发起删除
-    await IndexApi.restoreIndex(id)
-    message.success(t('common.restoreSuccess'))
+    await IndexApi.restoreIndex(id);
+    message.success(t('common.restoreSuccess'));
     // 刷新列表
-     await getDeletedList()
+     await getDeletedList();
   } catch {}
 }
 
@@ -669,14 +679,14 @@ const handleRestore = async (id: number) => {
 const handleExport = async () => {
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    exportLoading.value = true
-    const data = await IndexApi.exportIndex(queryParams)
-    download.excel(data, 'PDU设备.xls')
+    exportLoading.value = true;
+    const data = await IndexApi.exportIndex(queryParams);
+    download.excel(data, 'PDU设备.xls');
   } catch {
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
@@ -695,31 +705,32 @@ const getColor = (loadRate: number) => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
   getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+  getLoadRateStatus();
+  flashListTimer.value = setInterval((getLoadRateStatus), 5000);
 })
 
 onBeforeUnmount(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
   }
 })
 
 onBeforeRouteLeave(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
     firstTimerCreate.value = false;
   }
 })
 
 onActivated(() => {
-  getList()
+  getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getLoadRateStatus), 5000);
   }
 })
 </script>
@@ -786,7 +797,7 @@ onActivated(() => {
 .btn_offline {
   // width: 55px;
   // height: 32px;
-  padding: 3px 8px;
+  padding: 8px 8px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
@@ -998,89 +1009,303 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
-  .arrayItem {
-    width: 25%;
-    height: 140px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 40px;
-    position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      .icon {
-        width: 60px;
-        height: 30px;
-        margin: 0 28px;
-        font-size: large;
-        text-align: center;
-      }
-      .warnColor {
-        transition: background-color 0.5s;
-        text-align: center;
-        border-radius: 5px; /* 可选样式 */  
-      }      
-    }
-    .devKey{
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
+    .arrayItem {
+      width: 20%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 60px;
+          height: 30px;
+          margin: 0 25px 39px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
-    .detail {
-      width: 40px;
-      height: 25px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      cursor: pointer;
+  }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 25%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      border-radius: 7px;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 60px;
+          height: 30px;
+          margin: 0 25px 39px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 33%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 60px;
+          height: 30px;
+          margin: 0 25px 39px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
   }
 }
 
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right: 0px;
 }
 </style>

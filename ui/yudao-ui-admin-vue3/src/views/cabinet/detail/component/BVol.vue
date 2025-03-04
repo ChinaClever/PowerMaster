@@ -23,7 +23,7 @@ const props = defineProps({
 });
 
 // 初始化ECharts配置
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   tooltip: {
     trigger: 'item'
   },
@@ -48,13 +48,13 @@ const echartsOption = reactive({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.volB[0] || 0, name: 'Ua', itemStyle: { color: '#E5B849' } },
-        { value: props.loadFactor.volB[1] || 0, name: 'Ub', itemStyle: { color: '#C8603A' } },
-        { value: props.loadFactor.volB[2] || 0, name: 'Uc', itemStyle: { color: '#AD3762' } },
+        { value: props.loadFactor.volB[0], name: 'Ua', itemStyle: { color: '#075F71' } },
+        { value: props.loadFactor.volB[1], name: 'Ub', itemStyle: { color: '#119CB5' } },
+        { value: props.loadFactor.volB[2], name: 'Uc', itemStyle: { color: '#45C0C9' } },
       ]
     }
   ]
-});
+}));
 
 onUnmounted(() => {
   console.log('组件已卸载******');

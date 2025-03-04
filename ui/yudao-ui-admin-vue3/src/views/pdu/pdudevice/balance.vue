@@ -100,7 +100,7 @@ const getBalanceDetail = async() => {
   const res = await PDUDeviceApi.balanceDetail({devKey:devKey})
   console.log('res', res)
   if (res.cur_value) {
-    const cur_valueA = res.cur_value
+    const cur_valueA = res.cur_value.map(value => parseFloat(value.toFixed(2)));
     // const max = Math.max(...cur_valueA) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -156,7 +156,7 @@ const getBalanceDetail = async() => {
     }
   }
   if (res.vol_value) {
-    const vol_value = res.vol_value
+    const vol_value = res.vol_value.map(value => parseFloat(value.toFixed(1)));
     // const max = Math.max(...vol_value) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -248,19 +248,19 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[0].curValue),
+          data: res.map(item => parseFloat(item.cur[0].curValue.toFixed(2))),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[1].curValue),
+          data: res.map(item => parseFloat(item.cur[1].curValue.toFixed(2))),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[2].curValue),
+          data: res.map(item => parseFloat(item.cur[2].curValue.toFixed(2))),
         },
       ]
     }
@@ -289,19 +289,19 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[0].volValue),
+          data: res.map(item => parseFloat(item.vol[0].volValue.toFixed(1))),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[1].volValue),
+          data: res.map(item => parseFloat(item.vol[1].volValue.toFixed(1))),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[2].volValue),
+          data: res.map(item => parseFloat(item.vol[2].volValue.toFixed(1))),
         },
       ]
     }

@@ -1,120 +1,331 @@
 <template>
+  <div style="padding-left:20px;height:30px;font-size: 15px;">
+    <span style="color:black;font-size:14px;">机房: {{roomName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">母线: {{busName || redisData?.busName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">插接箱: {{boxName}}&nbsp;&nbsp;</span>
+    <span style="color:black;font-size:14px;">网络地址: {{devKey}}</span>
+  </div>
+
+<div style="background-color: #E7E7E7;" class="centainer-height">
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
-        <el-tag size="large" >{{location}}</el-tag>
-        <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
+        <!-- <el-tag size="large">{{ location }}</el-tag> -->
+        <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
+            <span style="color:black;font-weight:bold;height:20px;width:100px;">负载率</span>
+            <div style="margin-left:-20px;">
+                <span style="color:black;font-size:14px;margin-right:10px;">最大负载率: {{redisData?.loadFactorValue.toFixed(0)}}%</span>
+                <span style="color:black;font-size:14px;">发生时间: {{redisData?.loadFactorTime}}</span>
+            </div>
+        </div>
+        <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
+            <span style="color:#ccc;font-size:14px;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
+        </div>
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
+            <span style="color:#ccc;font-size:14px;">发生时间：{{}}</span>
+        </div>
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
+            <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
+        </div>-->
+        <div style="height:100%;width:100%;margin-top:-10px;">
+            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :data="Math.round(redisData.loadFactor)" />
+        </div>
+        <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
+            <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
+            <div style="color: black;">负载率（%）</div>
+        </div>-->
         <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
       </div>
-      <div  class="right-part">
-        <div  class="center-top-part">
-          <div  class="div-part">
-            <div  class="div-part1">
-              <p  class="middletxt txt1">{{redisData?.fr}}<span >Hz</span></p>
-            </div>
-            <p >频率</p>
+      <div class="right-part">
+        <div class="center-top-part">
+          <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">总功率</div>
+          <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div class="center-top-right-part" style="top:25%;">
+          <div style="margin-top:-70px;margin-bottom:50px;margin-left:-150px;">
+            <span style="color:black;font-size:14px;">最大功率: {{redisData?.powActiveValue}}kW&nbsp;&nbsp;</span>
+            <span style="color:black;font-size:14px;">发生时间: {{redisData?.powActiveTime}}</span>
           </div>
-          <div  class="div-part">
-            <div  class="div-part2">
-              <p  class="middletxt txt2">{{redisData?.pf}}</p>
-            </div>
-            <p >功率因数</p>
+          <div class="label-container" >
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">额定功率:</span><span style="font-size:16px;">1000 KVA</span>
           </div>
-          <div  class="div-part">
-            <div  class="div-part3">
-              <p  class="middletxt txt3">{{redisData?.vub}}<span >%</span></p>
-            </div>
-            <p >三相电压不平衡度</p>
+          <div class="label-container" >
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">视在功率:</span><span style="font-size:16px;">{{redisData?.totalPowApparent.toFixed(3)}}kVA</span>
           </div>
-          <div  class="div-part">
-            <div  class="div-part4">
-              <p  class="middletxt txt4">{{redisData?.cub}}<span >%</span></p>
-            </div>
-            <p >三相电流不平衡度</p>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">有功功率:</span><span style="font-size:16px;">{{redisData?.totalPowActive.toFixed(3)}}kW</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.totalPowReactive.toFixed(3)}}kVar</span>
           </div>
         </div>
-        <div  class="center-bottom-part">
-          <div  class="top-part">
-            <span >负载</span>
-            <span >电流</span>
-            <span >电压</span>
-            <span >温度</span>
-            <span >总谐波含有率</span>
+      </div>
+      <div class="right-right-part" style="position: relative;">
+        <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;font-weight:bold;margin:10px;">温度</div>
+          <TemValue style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 25%;">
+          <div class="label-container">
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:50px;font-size:14px;">A温度:</span><span style="font-size:16px;">{{redisData?.temValue[0]}}℃</span>
           </div>
-          <div  class="block-part">
-            <div  class="content-part">
-              <p >额定容量<span  class="vale-part">{{redisData?.finstalledCapacity}}</span>kVA </p>
-              <p >视在功率<span  class="vale-part">{{redisData?.s}}</span>kVA</p>
-              <p >有功功率<span  class="vale-part">{{redisData?.p}}</span>kW</p>
-              <p >无功功率<span  class="vale-part">{{redisData?.q}}</span>kVar</p>
-              <p >最大需量<span  class="vale-part">{{redisData?.md}}</span>kVA </p>
-              <p >{{redisData?.updateTime}}</p>
-            </div>
-            <div  class="content-part">
-              <p  class="AColor">A相 <span  class="vale-part AColor">{{redisData?.ia}}</span>A </p>
-              <p  class="BColor">B相 <span  class="vale-part BColor">{{redisData?.ib}}</span>A </p>
-              <p  class="CColor">C相 <span  class="vale-part CColor">{{redisData?.ic}}</span>A </p>
-            </div>
-            <div  class="content-part">
-              <p  class="AColor">Uab <span  class="vale-part AColor">{{redisData?.uab}}</span>V</p>
-              <p  class="BColor">Ubc <span  class="vale-part BColor">{{redisData?.ubc}}</span>V</p>
-              <p  class="CColor">Uca <span  class="vale-part CColor">{{redisData?.uca}}</span>V</p>
-              <p  class="AColor">Ua <span  class="vale-part AColor">{{redisData?.ua}}</span>V </p>
-              <p  class="BColor">Ub <span  class="vale-part BColor">{{redisData?.ub}}</span>V </p>
-              <p  class="CColor">Uc <span  class="vale-part CColor">{{redisData?.uc}}</span>V </p>
-            </div>
-            <div  class="content-part">
-              <p  class="AColor">A相温度 <span  class="vale-part AColor">{{redisData?.tempA}}</span>℃</p>
-              <p  class="BColor">B相温度 <span  class="vale-part BColor">{{redisData?.tempB}}</span>℃</p>
-              <p  class="CColor">C相温度 <span  class="vale-part CColor">{{redisData?.tempC}}</span>℃</p>
-              <p  class="CColor">N相温度 <span  class="vale-part CColor">{{redisData?.tempN}}</span>℃</p>
-            </div><!---->
-            <div  class="content-part">
-              <p  class="AColor">A相电流 <span  class="vale-part AColor">{{redisData?.iaTHD}}</span>%</p>
-              <p  class="BColor">B相电流 <span  class="vale-part BColor">{{redisData?.ibTHD}}</span>%</p>
-              <p  class="CColor">C相电流 <span  class="vale-part CColor">{{redisData?.icTHD}}</span>%</p>
-            </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">B温度:</span><span style="font-size:16px;">{{redisData?.temValue[1]}}℃</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">C温度:</span><span style="font-size:16px;">{{redisData?.temValue[2]}}℃</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">N温度:</span><span style="font-size:16px;">{{redisData?.temValue[3]}}℃</span>
           </div>
         </div>
       </div>
     </div>
-    <div  class="bottom-part">
-      <div  class="bottomLineDiv">
-        <p >负载率曲线</p>
-        <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">相电压</div>
+          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 25%;">
+          <div class="label-container">
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.lineVolValue[0].toFixed(1)}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.lineVolValue[1].toFixed(1)}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.lineVolValue[2].toFixed(1)}}V</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">相电流</div>
+          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 25%;">
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.lineCurValue[0].toFixed(2)}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.lineCurValue[1].toFixed(2)}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.lineCurValue[2].toFixed(2)}}A</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率因数</div>
+          <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 15%;">
+          <div class="label-container">
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:85px;font-size:14px;">总功率因数:</span><span style="font-size:16px;">{{redisData?.totalPowerFactor.toFixed(2)}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:85px;font-size:14px;">A相功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:85px;font-size:14px;">B相功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:85px;font-size:14px;">C相功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">输出位1</div>
+          <OutputOne style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 25%;">
+          <div class="label-container">
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[0].toFixed(3)}}kW</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[0].toFixed(3)}}kVar</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0].toFixed(3)}}kVA</span>
+          </div>
+          <!-- <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
+          </div> -->
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">输出位2</div>
+          <OutputTwo style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 25%;">
+          <div class="label-container">
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[1].toFixed(3)}}kW</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[1].toFixed(3)}}kVar</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1].toFixed(3)}}kVA</span>
+          </div>
+          <!-- <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
+          </div> -->
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">输出位3</div>
+          <OutputThree style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 25%;">
+          <div class="label-container">
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[2].toFixed(3)}}kW</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[2].toFixed(3)}}kVar</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2].toFixed(3)}}kVA</span>
+          </div>
+          <!-- <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
+          </div> -->
+        </div>
+    </div>
+    <div style="width:98.5%;heigth:100%;">
+      <div style="margin:8px 0 0 0px;background-color:#fff;font-weight:bold;">
+        <span style="margin-left:10px;">回路数据</span>
       </div>
-      <div  class="bottomLineDiv">
-        <p >有功功率</p>
-        <PowActiveLine v-if="visContro.powActiveVis"  width="100%" height="100%" :list="powActiveList"/>
-      </div>
-      <div  class="bottomLineDiv">
-        <p >无功功率</p>
-        <PowReactiveLine v-if="visContro.powReactiveVis"  width="100%" height="100%" :list="powReactiveList"/>
-      </div>
+      <el-table :data="tableData" border style="width: 100%;">
+        <el-table-column align="center" prop="loopId" label="编号" width="100%" />
+        <el-table-column  label="断路器状态" prop="breakerStatus" align="center" width="200">
+          <template #default="scope">   
+            <el-tag v-if="scope.row.breakerStatus == '断开'" type="danger">断开</el-tag>
+            <el-tag v-else-if="scope.row.breakerStatus == '闭合'" type="success">闭合</el-tag>
+          </template>
+        </el-table-column>
+
+          <!--<el-table-column label="A相" align="center" prop="acur" width="150px">
+            <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.acur != null">
+                {{ scope.row.acur.toFixed(2) }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="B相" align="center" prop="bcur" width="150px">
+            <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.bcur != null">
+                {{ scope.row.bcur.toFixed(2) }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="C相" align="center" prop="ccur" width="150px">
+            <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.ccur != null">
+                {{ scope.row.ccur.toFixed(2) }}
+              </el-text>
+            </template>
+          </el-table-column>
+        </el-table-column>-->
+        <el-table-column align="center" prop="loopVolValue" label="电压(V)" width="200"/>
+        <el-table-column align="center" prop="loopCurValue" label="电流(A)" width="200" />
+        <el-table-column align="center" prop="loopPowValue" label="有功功率(kW)" width="200" />
+        <el-table-column align="center" prop="loopPowReactive" label="无功功率(kVar)" width="200" />
+        <el-table-column align="center" prop="loopPowApparent" label="视在功率(kVA)" width="200"/>
+        <el-table-column align="center" prop="loopPowerFactor" label="功率因数" width="200" />
+        <el-table-column align="center" prop="loopEleActive" label="电能(kWh)" />
+      </el-table>
     </div>
   </div>
+</div> 
 </template>
 
 <script setup lang="ts">
 
 import { ref } from 'vue'
 import Gauge from './component/Gauge.vue'
-import MarkLine from './component/MarkLine.vue'
-import PowReactiveLine from './component/PowReactiveLine.vue'
-import PowActiveLine from './component/PowActiveLine.vue'
+import RealTimePower from './component/RealTimePower.vue'
+import Environment from './component/Environment.vue'
+import AVol from './component/AVol.vue'
+import BVol from './component/BVol.vue'
+import ACur from './component/ACur.vue'
+import BCur from './component/BCur.vue'
+import EnvironmentCopy from './component/EnvironmentCopy.vue'
+import PowerFactor from './component/PowerFactor.vue'
+import OutputOne from './component/OutputOne.vue'
+import OutputTwo from './component/OutputTwo.vue'
+import OutputThree from './component/OutputThree.vue'
+import TemValue from './component/TemValue.vue'
 import { IndexApi } from '@/api/bus/boxindex'
+import { CabinetApi } from '@/api/cabinet/detail'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
 const redisData = ref() as any;
+const peakDemand = ref(0);
+const peakDemandTime = ref('');
+const resultData = ref() as any;
 const loadRateList = ref() as any;
-const powActiveList = ref() as any;
-const powReactiveList = ref() as any;
-const location = ref(history?.state?.location)
+const selectedOption = ref('current')
+const roomName = ref(history?.state?.roomName);
+const location = ref(history?.state?.location);
+const busName = ref(history?.state?.busName);
+const devKey = ref(history?.state?.devKey);
+const boxName = ref(history?.state?.boxName);
+const id = ref(history?.state?.id);
+const roomId = ref(history?.state?.roomId);
+const type = ref(history?.state.type);
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
   powActiveVis : false,
   powReactiveVis : false,
 })
+const tableData = ref()
 
 const getFullTimeByDate = (date) => {
   var year = date.getFullYear();//年
@@ -130,12 +341,14 @@ const getFullTimeByDate = (date) => {
       (min > 9 ? min : ("0" + min)) + ":" +
       (second > 9 ? second : ("0" + second));
 }
-
+const queryParamsSearch = reactive({
+  devKey : history?.state?.devKey as string | undefined,
+})
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   devKey: history?.state?.devKey,
-  boxId : history?.state?.boxId,
+  busId : history?.state?.busId,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -143,72 +356,77 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
-  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
-  newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
+  timeGranularity: 'hour',
 }) as any
+
 
 const getRedisData = async () => {
   const data =  await IndexApi.getBoxPowerRedisData(queryParams);
-  let loopItem = {} as any;
-  for (let key in data) {  
-    if (data.hasOwnProperty(key)) {  
-        // 排除null值，但保留updateTime  
-        if (data[key] !== null && key != 'updateTime') { 
-            loopItem[key] = data[key].toFixed(2); // 注意这将转换为字符串  
-        }else if (data[key] == null){
-            loopItem[key] = '/';
-        }
-    }  
-  }
-  loopItem['updateTime'] = data['updateTime'];
-  redisData.value = loopItem;
+  redisData.value = data;
+  tableData.value = redisData.value.boxLoopItemResVO;
+
+  tableData.value = tableData.value.map(item => {
+    let newItem = { ...item }; // 创建对象的浅拷贝
+    if (newItem.breakerStatus === 1) {
+      newItem.breakerStatus = '断开';
+    } else if (newItem.breakerStatus === 2) {
+      newItem.breakerStatus = '闭合';
+    }
+    return newItem;
+  });
+
   if(redisData.value.loadFactor != null){
     visContro.value.gaugeVis = true;
   }
 }
 
-const getLoadRateList = async () =>{
-    const data = await IndexApi.getBoxLoadRateLine(queryParams);
-    loadRateList.value = data;
-    if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
-        visContro.value.loadRateVis = true;
-    }else {
-        visContro.value.loadRateVis = false;
-    }
+//刷新数据
+const flashChartData = async () =>{
+    await getRedisData();
 }
 
-const getBusPowActiveList = async () =>{
-    const data = await IndexApi.getBoxPowActiveLine(queryParams);
-    powActiveList.value = data;
-    if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
-        visContro.value.powActiveVis = true;
-    }else {
-        visContro.value.powActiveVis = false;
-    }
+const handleQuery = async () => {
+  queryParams.devKey = queryParamsSearch.devKey;
+   await flashChartData();
 }
 
-const getBusPowReactiveList = async () =>{
-    const data = await IndexApi.getBoxPowReactiveLine(queryParams);
-    powReactiveList.value = data;
-    if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
-        visContro.value.powReactiveVis = true;
-    }else {
-        visContro.value.powReactiveVis = false;
-    }
+const changeTime = async (data) => {
+    queryParams.timeGranularity = data;   
+    handleQuery();
+}
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  //debugger
+  var data = await BusPowerLoadDetailApi.getBusdevKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
 }
    
 /** 初始化 **/
 onMounted(async () => {
-  // await getDetailData();
-  // await getLineChartData();
-  await getRedisData();
-  await getLoadRateList();
-  await getBusPowActiveList();
-  await getBusPowReactiveList();
-  // initChart1();
-  // initChart2();
-
-
+  devKeyList.value = await loadAll();
+  getRedisData();
 })
 
 
@@ -234,7 +452,7 @@ onMounted(async () => {
 
 .TransformerMonitor {
     height: calc(100vh - 84px);
-    padding: 0 5px
+    padding: 10px 10px;
 }
 
 .TransformerMonitor .topdiv {
@@ -257,16 +475,9 @@ body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body
 }
 
 .TransformerMonitor .center-part {
-    height: 50%;
+    height: 35%;
     width: 100%;
     margin-bottom: 5px
-}
-
-.TransformerMonitor .center-part .left-part {
-    display: inline-block;
-    width: 25%;
-    height: 100%;
-    margin-right: 5px
 }
 
 body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part {
@@ -298,18 +509,249 @@ body .TransformerMonitor .center-part .left-part {
     height: 100%
 }
 
-.TransformerMonitor .center-part .right-part {
-    display: inline-block;
-    width: calc(75% - 5px);
-    height: 100%;
-    vertical-align: top
+.bullet {
+  font-size: 34px; /* 根据需要调整大小 */
+  margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
 }
 
-.TransformerMonitor .center-part .center-top-part {
-    display: inline-block;
-    width: 100%;
-    height: calc(50% - 2.5px);
-    margin-bottom: 5px
+@media screen and (min-width:2048px) {
+    .centainer-height{
+        height:90vh
+    }
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.5%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.4%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+        top:80px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.4%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 65%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+    }
+
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+    }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px) {
+    .centainer-height{
+        height:150vh
+    }
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top:80px;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.2%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 65%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+    }
+
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+    }
+}
+
+@media screen and (max-width:1600px) {
+    .centainer-height{
+        height:93vh
+    }
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top:80px;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.2%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 80%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+
+    }
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+      margin-top: -10px;
+      margin-left: -20px;
+    }
+}
+ 
+.label-container span:nth-of-type(2) {
+  display: inline-block;
+  width: 120px;
+  vertical-align: top;
+}
+ 
+.label-container span:last-of-type {
+  display: inline-block;
+  margin-left: 10px;
 }
 
 body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part {
@@ -354,7 +796,7 @@ body .TransformerMonitor .center-part .center-top-part .div-part p,body .Transfo
 }
 
 body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p {
-    color: #1e9fe9  
+    color: rgb(131, 131, 133)  
 }
 
 .TransformerMonitor .center-part .center-top-part .div-part .div-part1,.TransformerMonitor .center-part .center-top-part .div-part .div-part2,.TransformerMonitor .center-part .center-top-part .div-part .div-part3,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 {
@@ -478,7 +920,7 @@ body .TransformerMonitor .center-part .center-bottom-part {
 
 .TransformerMonitor .center-part .center-bottom-part .top-part span {
     display: inline-block;
-    width: 17%;
+    width: 14%;
     line-height: 40px;
     font-size: 16px;
     padding-left: 20px;
@@ -491,7 +933,7 @@ body .TransformerMonitor .center-part .center-bottom-part {
 }
 
 .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-    width: 17%;
+    width: 14%;
     height: 100%;
     min-width: 155px;
     padding-left: 20px;
@@ -520,11 +962,6 @@ body .TransformerMonitor .center-part .center-bottom-part .block-part .content-p
     margin: 0 10px
 }
 
-.TransformerMonitor .bottom-part {
-    height: calc(50% - 60px);
-    width: 100%
-}
-
 body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part {
     color: #000;
     border: 1px solid #e2e2e2;
@@ -549,187 +986,52 @@ body .TransformerMonitor .bottom-part {
     background-color: #ffffff!important
 }
 
-.TransformerMonitor .bottom-part .bottomLineDiv {
-    display: inline-block;
-    width: 33.33%;
-    height: 100%;
-    vertical-align: top
-}
-
-.TransformerMonitor .bottom-part .bottomLineDiv p {
-    color: #65c5fc;
-    font-weight: 700;
-    padding-left: 8px;
-    border-left: 2px solid;
-    line-height: 36px;
-    margin: 0
-}
-
 .TransformerMonitor .bottom-part .bottomLineDiv #transformLine1,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine2,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine3 {
     width: 100%;
-    height: 100%
+    height: 100%;
 }
 
 .noData {
     color: #fff;
     text-align: center;
-    line-height: 200px
+    line-height: 200px;
 }
 
-@media screen and (max-width: 2160px) {
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size:30px
-    }
-
-    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,.TransformerMonitor .center-part .center-top-part .div-part p {
-        font-size: 22px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 60px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 60px;
-        font-size: 25px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 8px 0
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
-        width: 66px
-    }
-}
-
-@media screen and (max-width: 1920px) {
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size:28px
-    }
-
-    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-top-part .div-part p {
-        font-size: 16px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-        padding-top: 0
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        font-size: 15px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 40px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 40px;
-        font-size: 16px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
-        width: 48px
-    }
-}
-
-@media screen and (max-width: 1680px) {
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-        padding-top:5px
-    }
-
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size: 24px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 8px 0
-    }
-}
-
-@media screen and (max-width: 1600px) {
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-        padding-top:0
-    }
-
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size: 20px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 32px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 32px;
-        font-size: 14px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 5px 0;
-        font-size: 14px
-    }
-}
-
-@media screen and (max-width: 1366px) {
-    .TransformerMonitor .center-part .center-top-part .div-part p {
-        margin:10px 0 10px 0
-    }
-
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size: 20px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
-        width: 38px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 25px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 25px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 4px 0
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span,.TransformerMonitor .center-part .center-top-part .div-part p {
-        font-size: 14px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        font-size: 13px
-    }
-
-    .TransformerMonitor .bottom-part .bottomLineDiv p {
-        font-size: 14px
-    }
-}
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part {
-    background: #fff
+    background: #f5f7fa
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part span {
-    color: #000
+    color: #000;
+
 }
 
 body .TransformerMonitor .bottom-part .bottomLineDiv p,body .TransformerMonitor .bottom-part .bottomLineDiv p {
     border-left: 2px solid #fff;
-    background: #01ada8;
-    color: #fff
+    background: #f5f7fa;
+    color: #606266
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part,body .TransformerMonitor .center-part .center-bottom-part .top-part {
-    background: #01ada8
+    //background: #01ada8
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .TransformerMonitor .center-part .center-bottom-part .top-part span {
-    color: #fff
+    color: #606266
 }
 
+.header_app{
+  background-color: white;
+  display: flex;
+  height: 50px;
+  padding-left: 10px;
+  box-shadow: 20px;
+}
+.header_app_text{                     
+  background-color: white;
+  width: 100%;
+  align-content: center;
+  color:#606266;
+}                                          
 </style>

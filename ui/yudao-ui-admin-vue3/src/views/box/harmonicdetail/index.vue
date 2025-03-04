@@ -130,10 +130,10 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { IndexApi } from '@/api/bus/boxindex'
-import { ElTree } from 'element-plus'
-import HarmonicRealTime from './component/HarmonicRealTime.vue'
-import HarmonicLine from './component/HarmonicLine.vue'
+import { IndexApi } from '@/api/bus/boxindex';
+import { ElTree } from 'element-plus';
+import HarmonicRealTime from './component/HarmonicRealTime.vue';
+import HarmonicLine from './component/HarmonicLine.vue';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -254,6 +254,7 @@ const getDetail = async () => {
 
   if(!haveSearch.value){
     const data = await IndexApi.getHarmonicRedis(queryParams);
+    console.log('data2222',data);
     harmonicRealTime.value = data;
     if(harmonicRealTime.value.times != null){
       realTimeVis.value = true;
@@ -264,6 +265,7 @@ const getDetail = async () => {
   }
 
   const lineData = await IndexApi.getHarmonicLine(queryParams);
+  console.log('lineData',lineData);
   seriesAndTimeArr.value = lineData;
   if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
     const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParams.harmonicArr.includes(index));
@@ -617,11 +619,13 @@ onMounted( async () =>  {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }

@@ -74,6 +74,9 @@ public interface HistoryDataService {
 
     Map<String, Object> getEnvNavNewData() throws IOException;
 
+    Map<String, Object> getEnvNavNewDataByCabinet() throws IOException;
+
+
     List<Object> getEnExcelList(List<Object> list);
 
     List<Object> getNewHistoryDataDetails(List<Object> list);
@@ -87,4 +90,6 @@ public interface HistoryDataService {
     IPage<PduIndex> findPduIndexAll(int pageNo, int pageSize, String[] ipArray);
 
     List<PduIndex> findPduIndexAllToList(String[] ipArray);
+
+    PageResult<Object> getEnvDataPageByCabinet(EnvDataPageReqVo pageReqVO) throws IOException;
 }

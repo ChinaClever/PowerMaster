@@ -1,8 +1,104 @@
 <template>
   <ContentWrap>
     <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-      <el-tab-pane label="消息队列" name="first">
+      <el-tab-pane label="数据采集" name="second">
+        <DcConfigForm ref="dcFormRef" @success="getDCList" />
+      </el-tab-pane>
+      <el-tab-pane label="数据计算" name="fourth">
+        <StatisConfigForm ref="staticFormRef" @success="getStaticList" />
+      </el-tab-pane>
+      <el-tab-pane label="数据推送" name="first">
+         <!-- 3. 定时任务与推送相关 -->
+         <el-form
+    ref="formRef"
+    :model="formData"
+    :rules="formRules"
+    label-width="200px"
+    v-loading="formLoading"
+  >
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+      <b style="font-size: 20px;margin-bottom: 10px;">1. 推送相关</b>
+      <el-row :gutter="24" style="margin-top: 10px;">
+        <el-col :span="24">
           <el-row :gutter="24">
+            <el-col :span="12">
+          <el-form-item label="定时推送开关" prop="timingPush">
+            <el-radio-group v-model="formData.timingPush" >
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="定时推送任务配置" prop="timingPushCronValue">
+              每
+              <el-input prop="timingPushCronValue" :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.timingPushCronType == 3 ? 24 : 60" v-model="formData.timingPushCronValue" />
+              <el-select :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" v-model="formData.timingPushCronType" placeholder="时间" clearable style="width: 80px">
+                <el-option
+                    label="秒钟"
+                    :value="1"
+                />
+                <el-option
+                  label="分钟"
+                  :value="2"
+                />
+                <el-option
+                  label="小时"
+                  :value="3"
+                />
+              </el-select>
+              执行一次
+          </el-form-item>
+        </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="12">
+          <el-form-item label="变化推送开关" prop="changePush">
+            <el-radio-group v-model="formData.changePush" >
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          </el-col>
+          <el-col :span="12">
+          <el-form-item label="变化推送任务配置" prop="changePushCronValue">
+            每
+              <el-input prop="changePushCronValue" :disabled="formData.changePush == null || formData.changePush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.changePushCronType == 3 ? 24 : 60" v-model="formData.changePushCronValue" />
+              <el-select :disabled="formData.changePush == null || formData.changePush == 0" size="small" v-model="formData.changePushCronType" placeholder="时间" clearable style="width: 80px">
+                <el-option
+                    label="秒钟"
+                    :value="1"
+                />
+                <el-option
+                  label="分钟"
+                  :value="2"
+                />
+                <el-option
+                  label="小时"
+                  :value="3"
+                />
+              </el-select>
+              执行一次
+          </el-form-item>
+        </el-col>
+          </el-row>
+          <el-form-item label="配置推送的mq" prop="pushMqs">
+            <el-checkbox-group :disabled="formData.timingPush == null || formData.alarmPush == null ||formData.changePush == null ||(formData.timingPush === 0 && formData.alarmPush === 0 && formData.changePush === 0)" v-model="formData.pushMqs">
+              <el-checkbox label="1" value="1">kafka</el-checkbox>
+              <el-checkbox label="2" value="2">RocketMQ</el-checkbox>
+              <el-checkbox label="3" value="3">RabbitMQ</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row justify="end">
+      <el-button @click="submitForm" type="primary" :disabled="formLoading">保 存</el-button>
+    </el-row>
+    </div>
+  </el-form>
+        <div style=" padding: 10px; margin-bottom: 15px;">
+          <b style="font-size: 20px;margin-bottom: 10px;">2. MQ配置相关</b>
+          <el-row :gutter="24" style="margin-top: 20px;">
             <el-col :span="8">
               <ContentWrap>
                 <el-row justify="center">
@@ -101,11 +197,10 @@
               </ContentWrap>
             </el-col>
           </el-row>
+        </div>
+        
       </el-tab-pane>
-      <el-tab-pane label="数据采集" name="second">
-        <DcConfigForm ref="dcFormRef" @success="getDCList" />
-      </el-tab-pane>
-      <el-tab-pane label="电费计量方式" name="third">
+      <el-tab-pane label="电量计费" name="third">
         <ContentWrap>
           <!-- 搜索工作栏 -->
           <el-form
@@ -213,9 +308,7 @@
         <!-- 表单弹窗：添加/修改 -->
         <EqBillConfigForm ref="billFormRef" @success="getBillList" />
       </el-tab-pane>
-      <el-tab-pane label="计算服务" name="fourth">
-        <StatisConfigForm ref="staticFormRef" @success="getStaticList" />
-      </el-tab-pane>
+      
     </el-tabs>
   </ContentWrap>
 
@@ -236,10 +329,16 @@ import StatisConfigForm from './StatisConfigForm.vue'
 /** 消息队列系统配置 列表 */
 defineOptions({ name: 'MqConfig' })
 
+const message = useMessage() // 消息弹窗
 const switchValue = ref(0);
 const mqMessage = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
-
+const formRules = reactive({
+  timingPush: [{ required: true, message: '定时推送开关不能为空', trigger: 'blur' }],
+  changePush: [{ required: true, message: '变化推送开关不能为空', trigger: 'blur' }],
+  changeStore: [{ required: true, message: '变化存储开关 默认开1 关0不能为空', trigger: 'blur' }],
+})
+const formRef = ref() // 表单 Ref
 const mqQueryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -249,6 +348,17 @@ const mqQueryParams = reactive({
   topic: undefined,
   mq: undefined,
   createTime: [],
+})
+const formData = ref({
+  timingPushCron: undefined,
+  timingPush: undefined,
+  timingPushCronType : undefined,
+  changePushCron: undefined,
+  changePush : undefined,
+  timingPushCronValue : undefined,
+  changePushCronType : undefined,
+  changePushCronValue : undefined,
+  pushMqs: [] as any,
 })
 
 const kafkaFormLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
@@ -433,8 +543,12 @@ const getDCList = async () => {
   try {
     const data = await DcConfigApi.getDcConfigPage(dcQueryParams)
     dcList.value = data.list
+    console.log('data',dcList.value)
     dcListTotal.value = data.total
-  } finally {
+  }catch (error) {
+    ElMessage.error('11111')
+} 
+  finally {
   }
 }
 
@@ -524,15 +638,22 @@ const handleBillExport = async () => {
   }
 }
 
-/** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
   getMQList();
-  getDCList();
+  console.log('111111111111111111');
+  await getDCList();
+  console.log('data1', dcList.value);
+  if (dcList.value && dcList.value.length > 0 && dcList.value[0].id) {
+    openDCForm('update', dcList.value[0].id);
+    console.log('11111111111111111', dcList.value[0].id);
+  } else {
+    openDCForm('create');
+  }
   getBillList();
   getStaticList();
-})
+});
 
-const activeName = ref('first')
+const activeName = ref('second')
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   if(tab.props.label === "数据采集"){
@@ -543,13 +664,18 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
     }
     
   }
-  if(tab.props.label === "消息队列"){
+  if(tab.props.label === "数据推送"){
+    if(dcList.value && dcList.value.length > 0 && dcList.value[0].id){
+      open('update', dcList.value[0].id);
+    }else{
+      open('create');
+    }
     getMQList();
   }
-  if(tab.props.label === "电费计量方式"){
+  if(tab.props.label === "电量计费"){
     getBillList();
   }
-  if(tab.props.label === "计算服务"){
+  if(tab.props.label === "数据计算"){
     if(staticList.value && staticList.value?.length > 0 && staticList.value[0].id){
       openStaticForm('update', staticList.value[0].id);
     } else {
@@ -558,6 +684,131 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
     
   }
 
+}
+const dialogVisible = ref(false) // 弹窗的是否展示
+const dialogTitle = ref('') // 弹窗的标题
+const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+const formType = ref('') // 表单的类型：create - 新增；update - 修改
+const formId = ref() // 表单的id
+/** 打开弹窗 */
+const open = async (type: string, id?: number) => {
+  dialogVisible.value = true
+  dialogTitle.value = t('action.' + type)
+  formType.value = type
+  
+  resetForm()
+  // 修改时，设置数据
+  if (id) {
+    formLoading.value = true
+    formId.value = id;
+    try {
+      formData.value = await DcConfigApi.getDcConfig(id)
+      if(!formData.value?.pushMqs){
+        formData.value.pushMqs = [];
+      }else{
+        formData.value.pushMqs = formData.value.pushMqs?.split(",");
+      }
+      getTypeAndValue(formData.value.timingPushCron,formData.value,"timingPushCronType","timingPushCronValue");
+      getTypeAndValue(formData.value.changePushCron,formData.value,"changePushCronType","changePushCronValue");
+    } finally {
+      formLoading.value = false
+    }
+  }
+}
+defineExpose({ open }) // 提供 open 方法，用于打开弹窗
+
+function getTypeAndValue(cronExpression, obj, typeKey, valueKey) {
+  if (cronExpression) {
+    const lastZeroIndex = cronExpression.lastIndexOf("/");
+    if (lastZeroIndex === 1) {
+      obj[typeKey] = 1;
+    } else if (lastZeroIndex === 3) {
+      obj[typeKey] = 2;
+    } else if (lastZeroIndex === 5) {
+      obj[typeKey] = 3;
+    }
+    obj[valueKey] = cronExpression[lastZeroIndex + 1];
+    if(cronExpression[lastZeroIndex + 2] != ' '){
+      obj[valueKey] += cronExpression[lastZeroIndex + 2];
+    }
+  }
+}
+
+const setCronExpression = (type, value, obj, valueKey) => {
+  let cronExpression;
+  if (type === 1) {
+    cronExpression = `0/${value} * * * * ?`;
+  } else if (type === 2) {
+    cronExpression = `0 0/${value} * * * ?`;
+  } else if (type === 3) {
+    cronExpression = `0 0 0/${value} * * ?`;
+  }
+
+  if (cronExpression) {
+    Object.defineProperty(obj, valueKey, { value: cronExpression });
+
+  }
+}
+
+const submitForm = async () => {
+  // 校验表单
+  await formRef.value.validate()
+  // 提交请求
+  formLoading.value = true
+  try {
+    if(formData.value.timingPush == 1 && formData.value.timingPushCronType && formData.value.timingPushCronValue){
+      setCronExpression(formData.value.timingPushCronType,formData.value.timingPushCronValue,formData.value,"timingPushCron")
+    }
+    if(formData.value.changePush == 1 && formData.value.changePushCronType && formData.value.changePushCronValue){
+      setCronExpression(formData.value.changePushCronType,formData.value.changePushCronValue,formData.value,"changePushCron")
+    }
+    const data = formData.value as unknown as DcConfigVO
+    var temp = "";
+    formData.value.pushMqs?.forEach((element,index) => {
+      if(element){
+        if(index != formData.value.pushMqs?.length - 1){
+          temp = temp + element + ",";
+        } else {
+          temp = temp + element;
+        }
+      }
+    });
+    data.pushMqs = temp;
+    if (formType.value === 'create') {
+      await DcConfigApi.createDcConfig(data)
+      message.success(t('common.createSuccess'))
+    } else {
+      await DcConfigApi.updateDcConfig(data)
+      message.success(t('common.updateSuccess'))
+    }
+    dialogVisible.value = false
+    // 发送操作成功的事件
+    emit('success')
+    if(formId.value != null || formId.value != undefined){
+      open(formType.value,formId.value);
+    }
+    
+  } finally {
+    formLoading.value = false
+  }
+}
+
+/** 提交表单 */
+const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
+/** 重置表单 */
+const resetForm = () => {
+  formData.value = {
+    timingPushCron: undefined,
+  timingPush: undefined,
+  changePush: undefined,
+  timingPushCronType : undefined,
+  changePushCron: undefined,
+  timingPushCronValue : undefined,
+  changePushCronType : undefined,
+  changePushCronValue : undefined,
+  pushMqs: [] ,
+  }
+  formRef.value?.resetFields()
 }
 </script>
 

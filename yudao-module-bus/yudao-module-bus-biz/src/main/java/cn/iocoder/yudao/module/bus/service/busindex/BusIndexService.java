@@ -5,6 +5,9 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -89,7 +92,7 @@ public interface BusIndexService {
 
     List<BusEqTrendDTO> eqTrend(int id, String type);
 
-    BusEleChainDTO getEleChain(int id);
+    BusEleChainDTO getEleChain(int id) throws IOException;
 
     BusBalanceDeatilRes getBusBalanceDetail(String devKey);
 
@@ -121,7 +124,7 @@ public interface BusIndexService {
 
     BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException;
 
-    PageResult<BusIndexDTO> getMaxEq(BusIndexPageReqVO pageReqVO);
+    List<BusIndexMaxEqResVO> getMaxEq();
 
     PageResult<BusCurLinePageResVO> getBusLineCurLinePage(BusIndexPageReqVO pageReqVO) throws IOException;
 
@@ -137,5 +140,15 @@ public interface BusIndexService {
 
     LoadRateStatus getBusIndexLoadRateStatus();
 
+
+    ReportBasicInformationResVO getReportBasicInformationResVO(BusIndexPageReqVO pageReqVO);
+
+    List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) throws IOException;
+
+    BalanceStatisticsVO getBusBalanceStatistics();
+
+    PageResult<BusIndexDTO> getEqPage1(BusIndexPageReqVO pageReqVO);
+
+    List<String> findKeys(String key);
 
 }

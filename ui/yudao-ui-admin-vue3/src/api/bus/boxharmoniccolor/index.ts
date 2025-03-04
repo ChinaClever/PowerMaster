@@ -10,34 +10,34 @@ export interface BoxHarmonicColorVO {
 }
 
 // 插接箱谐波颜色 API
-export const BoxCurbalanceColorApi = {
+export const BoxHarmonicColorApi = {
   // 查询插接箱不平衡度颜色分页
-  getBoxCurbalanceColorPage: async (params: any) => {
-    return await request.get({ url: `/bus/box-curbalance-color/page`, params })
+  getBoxHarmonicColorPage: async (params: any) => {
+    return await request.get({ url: `/bus/box-harmonic-color/page`, params })
   },
 
   // 查询插接箱谐波颜色详情
-  getBoxCurbalanceColor: async () => {
-    return await request.get({ url: `/bus/box-curbalance-color/get`  })
+  getBoxHarmonicColor: async () => {
+    return await request.get({ url: `/bus/box-harmonic-color/get`  })
   },
 
   // 新增插接箱谐波度颜色
-  createBoxCurbalanceColor: async (data: BoxCurbalanceColorVO) => {
-    return await request.post({ url: `/bus/box-curbalance-color/create`, data })
+  createBoxHarmonicColor: async (data: BoxHarmonicColorVO) => {
+    return await request.post({ url: `/bus/box-harmonic-color/create`, data })
   },
 
   // 修改插接箱谐波度颜色
-  updateBoxCurbalanceColor: async (data: BoxCurbalanceColorVO) => {
-    return await request.put({ url: `/bus/box-curbalance-color/update`, data })
+  updateBoxHarmonicColor: async (data: BoxHarmonicColorVO) => {
+    return await request.put({ url: `/bus/box-harmonic-color/update`, data })
   },
 
   // 删除插接箱谐波颜色
-  deleteBoxCurbalanceColor: async (id: number) => {
-    return await request.delete({ url: `/bus/box-curbalance-color/delete?id=` + id })
+  deleteBoxHarmonicColor: async (id: number) => {
+    return await request.delete({ url: `/bus/box-harmonic-color/delete?id=` + id })
   },
 
   // 导出插接箱谐波颜色 Excel
-  exportBoxCurbalanceColor: async (params) => {
-    return await request.download({ url: `/bus/box-curbalance-color/export-excel`, params })
+  exportBoxHarmonicColor: async (params) => {
+    return await request.download({ url: `/bus/box-harmonic-color/export-excel`, params })
   },
 }

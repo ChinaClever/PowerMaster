@@ -1,13 +1,16 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexMaxEqResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
-import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
-import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EQPageRespVO;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -81,8 +84,7 @@ public class BusIndexController {
     @PostMapping("/page")
     @Operation(summary = "获得始端箱负荷分页")
     public CommonResult<PageResult<BusIndexRes>> getIndexPage(@RequestBody BusIndexPageReqVO pageReqVO) {
-        PageResult<BusIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
+        return success(indexService.getIndexPage(pageReqVO));
     }
 
     @PostMapping("/pageExcel")
@@ -221,14 +223,22 @@ public class BusIndexController {
     @Operation(summary = "始端箱用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<BusIndexDTO>> getEqPage(@RequestBody BusIndexPageReqVO pageReqVO) {
-        PageResult<BusIndexDTO> pageResult = indexService.getEqPage(pageReqVO);
+        PageResult<BusIndexDTO> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getBusDevKeyList()) || ObjectUtil.isNotEmpty(pageReqVO.getDevKey())){
+            pageResult =  indexService.getEqPage(pageReqVO);
+        }else {
+            pageResult = indexService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)){
+                pageResult =  indexService.getEqPage(pageReqVO);
+            }
+        }
         return success(pageResult);
     }
 
     @Operation(summary = "始端箱用能列表分页")
     @PostMapping("/eq/maxEq")
-    public CommonResult<PageResult<BusIndexDTO>> getMaxEq(@RequestBody BusIndexPageReqVO pageReqVO) {
-        PageResult<BusIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+    public CommonResult<List<BusIndexMaxEqResVO>> getMaxEq() {
+        List<BusIndexMaxEqResVO> pageResult = indexService.getMaxEq();
         return success(pageResult);
     }
 
@@ -265,7 +275,7 @@ public class BusIndexController {
      */
     @Operation(summary = "始端箱用能环比")
     @GetMapping("/eleChain")
-    public CommonResult<BusEleChainDTO> eleChain(@Param("id") int id) {
+    public CommonResult<BusEleChainDTO> eleChain(@Param("id") int id) throws IOException {
         BusEleChainDTO dto = indexService.getEleChain(id);
         return success(dto);
     }
@@ -346,7 +356,7 @@ public class BusIndexController {
     }
 
     @PostMapping("/report/pfline")
-    @Operation(summary = "获得始端箱报表数据")
+    @Operation(summary = "获得始端箱报表数据-功率因素")
     public CommonResult<Map> getBusPFLine(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
@@ -385,5 +395,30 @@ public class BusIndexController {
     @Operation(summary = "获得始端箱设备负载量状态统计")
     public CommonResult<LoadRateStatus> getBusIndexLoadRateStatus() {
         return success(indexService.getBusIndexLoadRateStatus());
+    }
+
+    @PostMapping("/report/basicInformation")
+    @Operation(summary = "获得始端箱报表数据-基础数据")
+    public CommonResult<ReportBasicInformationResVO> getReportBasicInformationResVO(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportBasicInformationResVO(pageReqVO));
+    }
+
+    @PostMapping("/report/basicInformationbybus")
+    @Operation(summary = "获得插接箱报表数据-基础数据")
+    public CommonResult<List<BoxReportcopyResVO>> getReportBasicInformationByBusResVO(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getReportBasicInformationByBusResVO(pageReqVO));
+    }
+
+    @GetMapping("balance/statistics")
+    @Operation(summary = "获得始端箱设备不平衡度统计")
+    public CommonResult<BalanceStatisticsVO> getBusBalanceStatistics() {
+        return success(indexService.getBusBalanceStatistics());
+    }
+
+
+    @GetMapping("/findKeys")
+    @Operation(summary = "模糊查询")
+    public CommonResult<List<String>> findKeys(@RequestParam(value = "key") String key) {
+        return success(indexService.findKeys(key));
     }
 }

@@ -6,21 +6,22 @@
         v-loading="formLoading"
         :model="machineFormData"
         :rules="machineFormRules"
-        label-width="120px"
+        label-width="140px"
         center
       >
       <el-collapse v-model="activeNames" @change="handleChange" accordion>
         <el-collapse-item title="机柜参数" name="1">
-          <div class="collapseItem">
-            <el-form-item label="机房：" prop="roomId">
+          <div class="collapse-container">
+            <div class="collapseItem">
+              <el-form-item label="机房：" prop="roomId">
               <el-select v-model="machineFormData.roomId" placeholder="请选择">
                 <el-option v-for="room in roomList" :key="room.id" :label="room.name" :value="room.id" />
               </el-select>
-            </el-form-item>
-            <el-form-item label="机柜名称：" prop="cabinetName">
+              </el-form-item>
+              <el-form-item label="机柜名称：" prop="cabinetName">
               <el-input v-model="machineFormData.cabinetName" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="机柜类型：" prop="type">
+              </el-form-item>
+              <el-form-item label="机柜类型：" prop="type">
               <el-select v-model="machineFormData.type" placeholder="请选择">
                 <el-option label="IT机柜" value="IT机柜" />
                 <el-option label="网络柜" value="网络柜" />
@@ -30,37 +31,40 @@
                 <el-option label="柱子" value="柱子" />
                 <el-option label="占位" value="占位" />
               </el-select>
-            </el-form-item>
-            <el-form-item label="机柜高度：" prop="cabinetHeight">
-              <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="电力容量：" prop="powCapacity ">
-              <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="所属公司：" prop="company">
-              <el-input v-model="machineFormData.company" placeholder="请输入" />
-            </el-form-item>
-            <div class="double-formitem">
-              <el-form-item label="日用能告警">
-                <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
               </el-form-item>
-              <el-form-item label="日用能限制">
-                <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              <el-form-item label="机柜高度(U)：" prop="cabinetHeight">
+              <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
               </el-form-item>
             </div>
-            <div class="double-formitem">
-              <el-form-item label="月用能告警">
-                <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+            <div class="collapseItem">
+              <el-form-item  label="电力容量(kVA)：" prop="powCapacity">
+                <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
               </el-form-item>
-              <el-form-item label="月用能限制">
-                <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              <el-form-item label="所属公司：" prop="company">
+                <el-input v-model="machineFormData.company" placeholder="请输入" />
               </el-form-item>
+              <div class="double-formitem">
+                <el-form-item label="月用能告警">
+                  <el-switch @click="showFlag = !showFlag" v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item v-if="showFlag" label="月用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                </el-form-item>
+              </div>
+              <div class="double-formitem">
+                <el-form-item label="日用能告警">
+                  <el-switch @click="showFlagCopy = !showFlagCopy" v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item v-if="showFlagCopy" label="日用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                </el-form-item>
+              </div>
             </div>
           </div>
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
           <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox">
-            <el-tab-pane label="PDU" :name="0">
+            <el-tab-pane label="PDU" :name=false>
               <div class="pduBus">
                 <el-form-item label="A路：">
                   <el-col :span="4" class="text-center">
@@ -92,17 +96,17 @@
                 </el-form-item>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="母线" :name="1">
+            <el-tab-pane label="母线" :name=true>
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item label="母线IP：">
                     <el-input v-model="machineFormData.busIpA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
                     <el-input v-model="machineFormData.barIdA" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱编号：">
+                  <el-form-item label="插接箱地址：">
                     <el-input v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
@@ -111,13 +115,13 @@
                 </div>
                 <div>
                   <div class="title">B路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item label="母线IP：">
                     <el-input v-model="machineFormData.busIpB" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
                     <el-input v-model="machineFormData.barIdB" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱编号：">
+                  <el-form-item label="插接箱地址：">
                     <el-input v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
@@ -129,14 +133,14 @@
           </el-tabs>
           
         </el-collapse-item>
-        <el-collapse-item v-if="machineFormData.pduBox == 0" title="机柜与传感器" name="4">
+        <el-collapse-item v-if="machineFormData.pduBox == false" title="机柜与传感器" name="4">
           <div class="sensorContainer">
             <div class="list">
               <template v-for="(item, index) in sensorListLeft" :key="index">
                 <div class="minInterval" v-if="index > 0"></div>
                 <!-- <div v-if="!item.sensorId" :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">{{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}</div> -->
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
                   <div :class="item.pathPdu ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
                     <div v-if="item.pathPdu" @click.stop="handleSensorDelete(0, index)" class="delete"><Icon icon="ep:close" />
@@ -153,7 +157,8 @@
               <template v-for="(item, index) in sensorListRight" :key="index">
                 <div class="minInterval" v-if="index > 0"></div>
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <!-- <el-table-column prop="id" label="ID" v-if="false"/> -->
                   <div :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 1, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
                     <div v-if="item.pathPdu" @click.stop="handleSensorDelete(1, index)" class="delete"><Icon icon="ep:close" /></div>
@@ -217,6 +222,7 @@
 import { FormRules } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import TopologyEdit from './TopologyEdit.vue'
+import { clear } from 'console'
 
 const {roomList} = defineProps({
   roomList: {
@@ -232,6 +238,8 @@ const isFullscreen = ref(false)
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const sensorVisible = ref(false) // 传感器弹窗的是否展示
 const sensorLoading = ref(false) // 传感器表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+const showFlag = ref(false);
+const showFlagCopy = ref(false);
 const sensorFormData = reactive({
   type: null,
   sensorId: null,
@@ -254,39 +262,45 @@ const sensorListLeft = reactive([
     sensorId: null,
     position: 1,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 3,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 4,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 2,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 2,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 3,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   }
 ])
 const sensorListRight = reactive([
@@ -295,39 +309,45 @@ const sensorListRight = reactive([
     sensorId: null,
     position: 1,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 3,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 4,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
-    position: 1,
+    position: 2,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 2,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 3,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
 ])
 const machineFormData = ref({
@@ -335,7 +355,7 @@ const machineFormData = ref({
   cabinetName: '',
   type: '',
   cabinetHeight: 42, //U
-  powCapacity: 8, // kAV
+  powCapacity: 8, // kVA
   company: '',
   pduIpA: '',
   casIdA: '',
@@ -400,6 +420,7 @@ const handleSensorEdit = (data, i, index) => {
   Object.assign(sensorFormData, data)
   sensorVisible.value = true
 }
+
 const handleSensorDelete = (i, index) => {
   console.log('handleSensorDelete',i, index)
   if (i == 0) {
@@ -407,15 +428,35 @@ const handleSensorDelete = (i, index) => {
       ...sensorListLeft[index],
       sensorId: null,
       pathPdu: null,
+      //id:null,
     })
   } else {
     Object.assign(sensorListRight[index], {
       ...sensorListLeft[index],
       sensorId: null,
       pathPdu: null,
+      //id:null,
     })
   }
 }
+
+const clearData = () =>{
+  for(let index = 0; index < sensorListLeft.length; index++){
+    Object.assign(sensorListLeft[index], {
+      ...sensorListLeft[index],
+      sensorId: null,
+      pathPdu: null,
+      id:null,
+    })
+    Object.assign(sensorListRight[index], {
+      ...sensorListRight[index],
+      sensorId: null,
+      pathPdu: null,
+      id:null,
+    })
+  }
+}
+
 const submitSensorForm = async(data) => {
   // 校验表单
   if (!sensorForm) return
@@ -428,8 +469,8 @@ const submitSensorForm = async(data) => {
   } else {
     Object.assign(sensorListRight[index], sensorFormData)
   }
-  sensorVisible.value = false
-  console.log('sensorListLeft', sensorListLeft, sensorListRight)
+  sensorVisible.value = false;
+  console.log('sensorListLeft', sensorListLeft, sensorListRight);
 }
 const handleChange = (val: string[]) => {
   console.log(val)
@@ -444,14 +485,16 @@ const sensorForm = ref() // 传感器表单 Ref
 
 /** 打开弹窗 */
 const open = async (type: string, data, roomList) => {
-  dialogVisible.value = true
-  dialogTitle.value = type == 'edit' ? '编辑': '添加'
-  formType.value = type
-  resetForm()
-  sensorListLeft.forEach(item => {
-    item.sensorId = null
-    item.pathPdu = ''
-  })
+  dialogVisible.value = true;
+  clearData();
+  dialogTitle.value = type == 'edit' ? '编辑': '添加';
+  formType.value = type;
+  resetForm();
+  
+  // sensorListLeft.forEach(item => {
+  //   item.sensorId = null
+  //   item.pathPdu = ''
+  // })
   console.log('data', data)
   if (data && data.sensorList && data.sensorList.length) {
     data.sensorList.forEach(item => {
@@ -461,6 +504,7 @@ const open = async (type: string, data, roomList) => {
           ...sensorListLeft[index],
           sensorId: item.sensorId,
           pathPdu: item.pathPdu,
+          id: item.id
         }
       } else if (item.channel == 2) {
         const index = sensorListRight.findIndex(sensor => item.position ? (item.position == sensor.position) : (sensor.type == item.sensorType))
@@ -468,10 +512,17 @@ const open = async (type: string, data, roomList) => {
           ...sensorListRight[index],
           sensorId: item.sensorId,
           pathPdu: item.pathPdu,
+          id: item.id
         }
       }
     })
   }
+  //for(let i = 0; i < sensorListLeft.length; i++){
+  //  sensorListLeft[i].pathPdu = '';
+  //  sensorListLeft[i].id = null;
+  //  sensorListRight[i].pathPdu = '';
+  //  sensorListRight[i].id = null;
+  //}
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
@@ -509,6 +560,8 @@ const open = async (type: string, data, roomList) => {
   // }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
+watch(() => machineFormData.value.powCapacity, (newValue) => {
+});
 
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
@@ -529,6 +582,7 @@ const submitForm = async () => {
       ...machineFormData.value,
     })
     console.log('res', res, machineFormData.value)
+    //console.log('sensorListLeft111', sensorListLeft, sensorListRight);
     // const data = machineFormData.value as unknown as UserApi.UserVO
     // if (formType.value === 'create') {
     //   await UserApi.createUser(data)
@@ -538,11 +592,11 @@ const submitForm = async () => {
     //   message.success(t('common.updateSuccess'))
     // }
     dialogVisible.value = false
-    resetForm()
+    resetForm();
     // 发送操作成功的事件
-    emit('success')
+    emit('success');
   } finally {
-    formLoading.value = false
+    formLoading.value = false;
   }
 }
 
@@ -635,8 +689,17 @@ const resetForm = () => {
     }
   }
 }
-.collapseItem {
+
+.collapse-container {
+  display: flex;
+  flex-direction: row;
   border: 1px solid #efefef;
+}
+
+.collapseItem {
+  display: block;
+  width: 50%;
+  //border: 1px solid #efefef;
   padding: 30px 50px 10px 0;
 }
 .pduBus {
@@ -661,9 +724,11 @@ const resetForm = () => {
     text-align: center;
   }
 }
+
 :deep(.el-collapse-item__content) {
   padding: 0 20px 20px;
 }
+
 .formContainer {
   padding: 20px;
 }

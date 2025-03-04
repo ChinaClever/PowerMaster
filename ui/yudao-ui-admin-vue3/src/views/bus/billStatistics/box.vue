@@ -58,7 +58,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD"
+          format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
           type="daterange"
           :shortcuts="shortcuts"
@@ -138,7 +138,7 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -163,6 +163,7 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setDate(start.getDate() - 7)
+      console.log('11111',selectTimeRange)
       return [start, end]
     },
   },
@@ -246,11 +247,11 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(selectTimeRange.value[0])
+     
+      const selectedEndTime = formatDate(selectTimeRange.value[1])
+     // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
   
@@ -379,9 +380,18 @@ const getNavNewData = async() => {
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
 }
-
+const format = (date) => {
+   return dayjs(date).format('YYYY-MM-DD')
+};
 /** 初始化 **/
 onMounted(() => {
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getNavList()
   getNavNewData()
   getList();

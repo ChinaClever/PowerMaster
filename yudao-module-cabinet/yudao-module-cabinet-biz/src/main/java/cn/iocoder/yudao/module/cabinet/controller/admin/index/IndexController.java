@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin.index;
 
+import org.apache.poi.hpsf.Decimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -113,12 +114,6 @@ public class IndexController {
         return success(indexService.getCabinetPFLine(Id,timeType,oldTime,newTime));
     }
 
-    @GetMapping("/env/page")
-    @Operation(summary = "获得机柜环境分页")
-    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid IndexPageReqVO pageReqVO) {
-        return success(indexService.getCabinetEnvPage(pageReqVO));
-    }
-
     @GetMapping("/env/ice")
     @Operation(summary = "获得机柜冷通道温度和湿度")
     public CommonResult<Map> getCabinetEnvIceTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
@@ -135,5 +130,17 @@ public class IndexController {
     @Operation(summary = "获得机柜id列表")
     public List<Integer> idList() {
         return indexService.idList();
+    }
+
+    @GetMapping("/getRackByCabinet")
+    @Operation(summary = "根据机柜id获取机架")
+    public CommonResult<List<CabinetRackRspVO>> getRackByCabinet(@RequestParam("id") Integer id){
+        return success(indexService.getRackByCabinet(id));
+    }
+
+    @GetMapping("/getEleByCabinet")
+    @Operation(summary = "根据机柜id获取耗电量")
+    public CommonResult<Map<String, Double>> getEleByCabinet(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        return success(indexService.getEleByCabinet(Id,timeType,oldTime,newTime));
     }
 }

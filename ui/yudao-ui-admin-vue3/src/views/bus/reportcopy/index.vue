@@ -3,38 +3,6 @@
     <template #NavInfo>
       <div >
         <br/>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>&lt;15%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>15%-30%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>&gt;30
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
-        <!-- <div class="line"></div> -->
-
       </div>
     </template>
     <template #ActionBar>
@@ -45,16 +13,6 @@
         :inline="true"
         label-width="120px"
       >      
-        <!-- <el-form-item label="网络地址" prop="devKey">
-          <el-input
-            v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
-            clearable
-            @keyup.enter="handleQuery"
-            class="!w-240px"
-          />
-        </el-form-item> -->
-
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -86,8 +44,6 @@
           >
             自定义
           </el-button>
-          
-          
         </el-form-item>
         <el-form-item>
           <el-date-picker
@@ -115,9 +71,9 @@
             type="daterange"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
+            :shortcuts="shortcuts"
             :disabled-date="disabledDate"
             @change="handleDayPick"
-            class="!w-200px"
           />
         </el-form-item>
         <el-form-item>
@@ -135,9 +91,7 @@
             <div class="page-conTitle">
               母线基本信息
             </div>
-            <el-row :gutter="24" >
-              <el-col :span="24 - serChartContainerWidth">
-                <div class="centered-div">
+            <div class="centered-div">
                   <el-table 
                     :data="PDUTableData" 
                     :header-cell-style="arraySpanMethod"
@@ -147,8 +101,8 @@
                       <el-table-column  prop="baseInfoValue" >
                         <template #default="scope">
                           <span v-if="scope.$index === 2">
-                            <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                            <el-tag  v-if="scope.row.baseInfoValue == 1">正常</el-tag>
+                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 2">告警</el-tag>
                             <el-popover
                                 placement="top-start"
                                 title="告警内容"
@@ -161,8 +115,7 @@
                                   <el-tag type="danger">告警</el-tag>
                                 </template>
                               </el-popover>
-                            <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                            <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                            <el-tag type="info" v-if="scope.row.baseInfoValue == 0">离线</el-tag>
                           </span>
                           <span v-else>{{ scope.row.baseInfoValue }}</span>
                         </template>
@@ -175,16 +128,76 @@
                     
                   </el-table>
                 </div>
+            <!-- <el-row :gutter="24" >
+              <el-col :span="24 - serChartContainerWidth">
+                
               </el-col>
               <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
                 
-                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+               
                 <div >
                  <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
                </div>
               </el-col>
-            </el-row>
+            </el-row> -->
           </div>
+          <div>
+    <div class="page-conTitle">
+      插接箱基本信息
+    </div>
+    <el-table :data="tableData" style="width: 100%" :border="true">
+      <el-table-column label="设备编号" align="center">
+        <template #default="scope">
+          {{ scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="boxName" label="设备名称" align="center"/>
+      <el-table-column prop="runStatus" label="状态" align="center">
+        <template #default="scope">
+          <el-tag
+            v-if="scope.row.runStatus == 1"
+            type="default"
+          >
+            正常
+          </el-tag>
+          <el-tag
+            v-if="scope.row.runStatus == 2"
+            type="warning"
+          >
+            告警
+          </el-tag>
+          <el-popover
+            placement="top-start"
+            title="告警内容"
+            :width="500"
+            trigger="hover"
+            :content="scope.row.pduAlarm"
+            v-if="scope.row.runStatus == 2"
+          >
+            <template #reference>
+              <el-tag type="danger">告警</el-tag>
+            </template>
+          </el-popover>
+          <el-tag
+            v-if="scope.row.runStatus == 0"
+            type="info"
+          >
+            离线
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="powApparent" label="总视在功率" align="center"/>
+      <el-table-column prop="powActiveOne" label="输出位1有功功率" align="center"/>
+      <el-table-column prop="powActiveTwo" label="输出位2有功功率" align="center"/>
+      <el-table-column prop="powActiveThree" label="输出位3有功功率" align="center"/>
+      <el-table-column label="操作" align="center">
+        <template #default="scope">
+          <el-button @click="generateDailyReport(scope.row.devKey)">日报</el-button>
+          <el-button @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
               电量分布
@@ -205,6 +218,7 @@
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVA， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
@@ -230,7 +244,7 @@
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
         </div>
-
+       
         <div class="pageBox"  v-if="visControll.temVis">
             <div class="page-conTitle">
               告警信息
@@ -291,7 +305,8 @@ import { AlarmApi } from '@/api/system/notify/alarm'
 //import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
-
+const parsedData = ref([]) as any
+const tableData = ref([]);
 const temp1 = ref([]) as any
 const curvolList = ref() as any
 const temList = ref() as any
@@ -371,6 +386,57 @@ const truncateArrays = (data: ServerData): ServerData => {
     powapparent: data.powapparent.slice(0, 12)
   };
 };
+
+
+// 时间段快捷选项
+const shortcuts = [
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 7)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近六个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+   {    
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
+      return [start, end]
+    },
+  },
+]
+
 
 //const lineidBeforeChartUnmount = () => {
 //  // 清空 curvolAData 中的数组
@@ -528,6 +594,8 @@ const disabledDate = (date) => {
   
 }
 
+
+
 const handleDayPick = () => {
   if(queryParams?.oldTime && switchValue.value == 2){
 
@@ -621,6 +689,8 @@ const createFilter = (queryString: string) => {
 
 const PDUTableData = ref([]) as any
 
+const PDUTableData1 = ref([]) as any
+
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -709,7 +779,11 @@ const powData = ref<PowData>({
   activePowMaxValue : 0,
   activePowMaxTime : "",
   activePowMinValue : 0,
-  activePowMinTime : ""
+  activePowMinTime : "",
+  reactivePowMaxValue : 0,
+  reactivePowMaxTime : "",
+  reactivePowMinValue : 0,
+  reactivePowMinTime : "",
 }) as any
 
 interface TemData {
@@ -756,7 +830,6 @@ const itemStyle = ref({
 });
 
 const getList = async () => {
-  //debugger
   loading.value = true
   eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
@@ -797,6 +870,8 @@ const getList = async () => {
     powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
     powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
     powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+    powData.value.reactivePowMaxValue = powData.value.reactivePowMaxValue?.toFixed(3);
+    powData.value.reactivePowMinValue = powData.value.reactivePowMinValue?.toFixed(3);
     visControll.powVis = true;
   }else{
     visControll.powVis = false;
@@ -875,32 +950,63 @@ const getList = async () => {
     serChartContainerWidth.value = 0;
   }
 
-  var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
-  Bus = JSON.parse(Bus)
+  // var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
+  // Bus = JSON.parse(Bus)
   var temp = [] as any;
-  var baseInfo = await IndexApi.getIndexPage(queryParams);
+  var baseInfo = await IndexApi.getReportBasicInformationResVO(queryParams);
 
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
+    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
     consumeName : "消耗电量",
     consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : queryParams.devKey,
+    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
     consumeName : "当前视在功率",
-    consumeValue : Bus?.bus_data?.bus_total_data != null ? Bus.bus_data.bus_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+    consumeValue : baseInfo?.powApparent !=null ? baseInfo?.powApparent.toFixed(3) + "kVA" : '/',
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : Bus?.status != null ? Bus.status : '/',
-    pduAlarm : Bus?.pdu_alarm,
+    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
     consumeName : "当前功率因素",
-    consumeValue : Bus?.bus_data?.bus_total_data != null ? Bus.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
+    consumeValue : baseInfo?.powerFactor !=null ? baseInfo?.powerFactor.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
   
+
+  // var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
+// Bus = JSON.parse(Bus);
+    // 从接口获取数据，假设得到的数据是一个数组，数组元素是用逗号分隔的字符串
+const baseInfoList = await IndexApi.getReportBasicInformationByBusResVO(queryParams);
+console.log('baseInfoList',baseInfoList)
+// 对数据进行处理，保留三位小数
+// 辅助函数：处理数值并保留三位小数
+function formatNumber(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0; // 或者返回其他默认值
+    }
+    return Number(value.toFixed(3));
+}
+
+const processedData = baseInfoList.map(item => ({
+    boxName: item.boxName,
+    devKey: item.devKey,
+    runStatus: item.runStatus,
+    powApparent: formatNumber(item.powApparent),
+    powActiveOne: formatNumber(item.powActiveOne),
+    powActiveTwo: formatNumber(item.powActiveTwo),
+    powActiveThree: formatNumber(item.powActiveThree)
+}));
+
+// 将处理后的数据存储在 tableData.value 中
+tableData.value = processedData;
+
+// 输出最终的 tableData.value
+console.log('tableData.value', tableData.value);
+
+
   visControll.visAllReport = true;
   //initChart();
   loading.value = false
@@ -910,11 +1016,10 @@ const getList = async () => {
   const temp1Data = await IndexApi.getRecordPage({
     pageNo: 1,
     pageSize: 10,
-    devKey: "172.16.101.2-1",
+    devKey: queryParams.devKey,
     devType: 6
   })
   //处理告警信息数据
-  // //debugger
   //处理时间信息
   
   console.log('表格的数据',temp1Data)
@@ -955,7 +1060,6 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-  //debugger
   if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
@@ -974,7 +1078,6 @@ const targetId = ref('')
 //const getTableData = async(reset = false) => {
 //  tableLoading.value = true
 //  try {
-//    // //debugger
 //    const res = await AlarmApi.getAlarmRecord({
 //      pageNo: 1,
 //      pageSize: 10,
@@ -999,7 +1102,36 @@ const targetId = ref('')
 //   queryFormRef.value.resetFields()
 //   handleQuery()
 // }
+const now1 = ref()
+const old1 = ref()
+const new1 = ref()
 
+const { push } = useRouter()
+const generateDailyReport = (devKey) => {
+  now1.value = new Date();
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = old1.value.split(" ")[0] + " " + "23:59:59";
+  
+      // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
+      console.log('生成日报报告', devKey);
+      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
+    };
+
+    const generateMonthlyReport = (devKey) => {
+      now1.value = new Date();
+  now1.value.setDate(1)
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = new Date(old1.value)
+  new1.value.setMonth(new1.value.getMonth() + 1);
+  new1.value.setDate(new1.value.getDate() - 1);
+  new1.value.setHours(23,59,59)
+  new1.value = getFullTimeByDate(new1.value);
+      // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
+      console.log('生成月报报告', devKey);
+      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+    };
 // 表格行选择处理
 const handleCurrentChange = (val) => {
   if (!val) return
@@ -1309,15 +1441,9 @@ onMounted( async () =>  {
   padding: 0;
 }
 
-:deep(.el-form) {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
 
-:deep(.el-form .el-form-item) {
-  margin-right: 0;
-}
+
+
 
 @media screen and (min-width:2048px) {
   .adaptiveStyle {

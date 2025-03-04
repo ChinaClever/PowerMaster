@@ -1,41 +1,8 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>  
-        <div class="nav_header">
-          <span v-if="nowAddress">{{nowAddress}}</span>
-          <span v-if="nowLocation">( {{nowLocation}} ) </span>
-          <br/>
-          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null">
-            <span>{{queryParams.timeRange[0]}}</span>
-            <span>至</span>
-            <span>{{queryParams.timeRange[1]}}</span>
-          </template>
-          <br/>
-        </div>
-        <div class="nav_content" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="有功功率最大值 | 发生时间">
-            <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
-            <span v-if="maxActivePowDataTimeTemp">{{ maxActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="有功功率最小值 | 发生时间">
-            <span>{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span><br/>
-            <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-        </div>
-      </div> -->
-
-
       <div class="nav_header" style="font-size: 14px;">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
@@ -111,10 +78,12 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+          
+        </el-form-item>
+
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;margin-right: 10px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
-        </el-form-item>
 
       </el-form>
     </template>
@@ -187,7 +156,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -199,6 +168,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg'
 import download from '@/utils/download'
+import  CommonMenu1 from './CommonMenu1.vue'
 import { size } from 'min-dash';
 import { number } from 'vue-types';
 import { Select } from '@element-plus/icons-vue/dist/types';
@@ -692,7 +662,10 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                 legend: { data: ['电压(V)', '电流(A)', '有功功率(kW)', '视在功率(kVA)', '功率因素'],
                           selected: {  "电压(V)": false, "电流(A)": true, "有功功率(kW)": false, "视在功率(kVA)": false, '功率因素': false }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-                toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+                toolbox: {
+                  feature: {  restore:{}, saveAsImage: {}},
+                  top:'50'
+                },
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
@@ -729,7 +702,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                                   '平均视在功率(kVA)': false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,'平均有功功率(kW)': false, "最大有功功率(kW)": false, "最小有功功率(kW)": false}
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'50'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -815,7 +788,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                                     "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false}
                       },
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'30'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value},
               ],
@@ -898,7 +871,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                         selected: { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false}
                       },
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'50'},
               xAxis: [{type: 'category', boundaryGap: false, data: createTimeData.value},],
               yAxis: { type: 'value'},
               series: [
@@ -1359,12 +1332,9 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -19,7 +20,8 @@ public class CabinetIndexDTO {
     @Schema(description = "机柜id", example = "1")
     private int id;
 
-
+    @Schema(description = "位置")
+    private String location;
     /**
      * 机房编号
      */
@@ -117,6 +119,8 @@ public class CabinetIndexDTO {
      */
     @Schema(description = "已用空间", example = "1")
     private int usedSpace;
+    @Schema(description = "已用空间占比")
+    private BigDecimal usedSpaceRate;
 
     /**
      * 设备总数

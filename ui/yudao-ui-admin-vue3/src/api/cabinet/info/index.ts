@@ -1,6 +1,16 @@
 import request from '@/config/axios'
 
 export const CabinetApi = {
+  // 获取机柜详情
+  getDetail: async (params: any) => {
+    return await request.get({ url: `/cabinet/detail`, params })
+  },
+
+  // 平衡详情电流趋势
+  getBalanceTrend: async (params: any) => {
+    return await request.get({ url: `/cabinet/curTrend`, params })
+  },
+
   // 查询机柜列表分页
   getCabinetInfo: async (data: any) => {
     return await request.post({ url: `/cabinet/page`, data })
@@ -18,6 +28,10 @@ export const CabinetApi = {
     return await request.post({ url: `/cabinet/runStatus` })
   },
 
+  getEqMax: async () => {
+    return await request.get({ url: `/cabinet/eq/max` })
+  },
+
   //获得已删除机柜分页
   getDeletedCabinetPage: async (data: any) => {
     return await request.post({ url: `/cabinet/deletedCabinetPage`, data })
@@ -28,11 +42,16 @@ export const CabinetApi = {
     return await request.get({ url: `/cabinet/restorerCabinet`,params})
   },
 
-
   // 获取机柜配置信息
   getCabinetInfoItem: async (params: any) => {
     return await request.get({ url: `/cabinet/detailV2`, params })
   },
+
+  // 获取机柜配置信息
+  getCabinetCapacityInfoItem: async (params: any) => {
+    return await request.get({ url: `/cabinet/capacity/detail`, params })
+  },
+
   // 获取机房菜单（全部）
   getRoomMenuAll: async (params: any) => {
     return await request.get({ url: `/room/menuAll`, params })
@@ -58,8 +77,8 @@ export const CabinetApi = {
     return await request.get({ url: `/cabinet/load/count`, params })
   },
   // 获取机房菜单
-  getRoomPDUList: async (params: any) => {
-    return await request.get({ url: `/room/pdu/menu`, params })
+  getRoomPDUList: async () => {
+    return await request.get({ url: `/room/pdu/menu`})
   },
   // 获取机柜详情
   getCabinetDetail: async (params: any) => {

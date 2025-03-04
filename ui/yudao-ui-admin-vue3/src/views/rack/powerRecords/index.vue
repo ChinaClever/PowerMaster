@@ -41,7 +41,7 @@
       <el-form-item label="时间段" prop="timeRange"> 
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
-        v-model="queryParams.timeRange"
+        v-model="selectTimeRange"
         type="datetimerange"
         :shortcuts="shortcuts"
         range-separator="-"
@@ -99,6 +99,8 @@ import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/rack/index'
+import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+
 
 defineOptions({ name: 'PowerRecords' })
 
@@ -118,6 +120,7 @@ const queryParams = reactive({
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
+const selectTimeRange = ref(undefined)
 
 // 时间段快捷选项
 const shortcuts = [
@@ -170,6 +173,15 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -236,13 +248,8 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await IndexApi.getRackAll({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await CabinetApi.getRackMenuAll({})
+  navList.value = res
 }
 
 // 获取导航的数据显示
@@ -280,10 +287,23 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getNavList()
   getNavOneDayData()
   getList();
 })
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 </script>
 
 <style scoped>

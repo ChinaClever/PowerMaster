@@ -20,15 +20,20 @@ const props = defineProps({
 
 console.log('loadFactor',props.loadFactor)
 
-
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   tooltip: {
     trigger: 'axis',
     axisPointer: {
       type: 'shadow'
     },
-     formatter: function (params) {
-      return `${params[0].seriesName}<br/>${params[0].name}: ${Math.abs(params[0].data)}KVA`;
+    formatter: function (params) {
+      if(params[0].name === '视在功率'){
+        return `${params[0].name}: ${Math.abs(params[0].value)}KVA`
+      }else if(params[0].name === '有功功率'){
+        return `${params[0].name}: ${Math.abs(params[0].value)}KW`
+      }else{  
+        return `${params[0].name}: ${Math.abs(params[0].value)}KVAR`
+      }
     }
   },
   grid: {
@@ -42,7 +47,7 @@ const echartsOption = reactive({
   },
   yAxis: {
     type: 'category',
-    data: ['现在功率', '有功功率', '无功功率']
+    data: ['无功功率', '有功功率', '视在功率']
   },
   series: [
     {
@@ -50,26 +55,29 @@ const echartsOption = reactive({
       type: 'bar',
       label: {
         show: true,
-        position: 'inside',
+        position: 'insideRight',
         formatter: (params) => {
-          const num = Math.abs(params.value)
-          return `${num}`+'KVA'
-        }, // 确保返回数值
+          const unitMap = ['KVAR', 'KW', 'KVA'];
+          return `${-(params.value)}${unitMap[params.dataIndex]}`;
+        },
         fontSize: 14,
         fontWeight: 'bold'
       },
-      data: [-(props.loadFactor.powApparentA), -(props.loadFactor.powActiveA), -(props.loadFactor.powReactiveA)]
+      data: [
+        {value:-(props.loadFactor.powReactiveA),itemStyle: { color: 'purple' }}, 
+        {value:-(props.loadFactor.powActiveA),itemStyle: { color: 'green' }}, 
+        {value:-(props.loadFactor.powApparentA),itemStyle: { color: 'blue' }}]
     }
   ]
-})
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')
 })
 
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data[0].value = newVal;
-});
+// watch(() => props.loadFactor, (newVal) => {
+//   echartsOption.series[0].data[0].value = newVal;
+// });
 
 </script>
 

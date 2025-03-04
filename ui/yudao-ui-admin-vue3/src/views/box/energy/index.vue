@@ -2,75 +2,19 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱用能">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header"> -->
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
-          <!-- <div class="name"></div>
-          <div></div>
-        </div> -->
-        <!-- <div class="line"></div>
-        <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">24</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>空载
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>故障
-            </div>
-            <div class="value"><span class="number">0</span>个</div>
-          </div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
         <div style="font-size: 14px;margin-top: 45px;margin-left:10px">
-          <div ><span>用能最多</span>
+          <div ><span>用能最大IP</span>
           </div>
           <div>
-            <span class="label">昨日用能：</span>
+            <span class="label">昨日：</span>
             <span class="value">{{ boxName1 }}</span>
           </div>
           <div >
-            <span class="label">上周用能：</span>
+            <span class="label">上周：</span>
             <span class="value">{{ boxName2 }}</span>
           </div>
           <div >
-            <span class="label">上月用能：</span>
+            <span class="label">上月：</span>
             <span class="value">{{ boxName3 }}</span>
           </div>
           </div>
@@ -99,71 +43,93 @@
           </el-button>                            
         </el-form-item>
         <div>
-          <el-form-item label="公司名称" prop="username" style="margin-left:80px">
-            <el-input
-              v-model="queryParams.company"
-              placeholder="请输入公司名称"
-              clearable
-              class="!w-160px"
-              height="35"
-            />
-          <el-form-item style="margin-left: 10px">
-            <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
-          </el-form-item>            
+        <el-form-item label="网络地址" prop="devKey" style="margin-left:80px">
+          <el-autocomplete
+            v-model="queryParamsDevKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-160px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
+          />
+        <el-form-item style="margin-left: 5px;margin-right: 6px">
+          <el-button @click="handleQuery" style="width:70px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+        </el-form-item>          
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="
+            pageSizeArr = [24, 36, 48, 96];
+            handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button 
+            @click="
+              pageSizeArr = [15, 25, 30, 50, 100];
+              queryParams.pageSize = 15;
+              handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
+        <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-              <div class="info">
+              <div class="info" style="margin-left:-10px;">
                 <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" style="margin-left:20%;"/>
             </div>
             <div class="room">{{item.location}}</div>
-            <div class="name">{{item.boxName}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location,item.boxName)" >详情</button>
+            <!-- <div class="name">{{item.boxName}}</div> -->
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.roomName,item.boxName, item)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true">
+        <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
-          <el-table-column label="位置" min-width="110" align="center" prop="local" />
+          <el-table-column label="位置" min-width="150" align="center" prop="local" />
           <el-table-column label="设备名称" align="center" prop="boxName" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
+          <el-table-column label="昨日用能(kW·h)" min-width="80" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.yesterdayEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" >
+          <el-table-column label="上周用能(kW·h)" min-width="80" align="center" prop="lastWeekEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.lastWeekEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="上月用能(kW·h)" min-width="80" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
                 {{ scope.row.lastMonthEq }}
               </el-text>
             </template>
           </el-table-column>
+          <el-table-column label="操作" min-width="110" align="center" >
+            <template #default="scope" >
+            <el-button
+              link
+              type="primary"
+              @click="toDetail(scope.row.roomId, scope.row.id,scope.row.roomName,scope.row.boxName, scope.row)"
+              v-if=" scope.row.status != null && scope.row.status != 0"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+            >
+            设备详情
+            </el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
+          :page-size-arr="pageSizeArr"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
@@ -188,10 +154,11 @@ const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-
+const queryParamsDevKey = ref(undefined)
 const boxName1 = ref('无数据')
 const boxName2 = ref('无数据')
 const boxName3 = ref('无数据')
+const pageSizeArr = ref([24, 36, 48, 96])
 
 const queryParams = reactive({
   company: undefined,
@@ -223,7 +190,6 @@ const changeTimeGranularity = (value) => {
 }
 // 获取表格数据
 const getTableData = async(reset = false) => {
-  console.log('getTableData', queryParams)
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
@@ -242,13 +208,17 @@ const getTableData = async(reset = false) => {
       tableData.value = res.list.map(item => {
         return {
           id: item.id,
-          location: item.location ? item.location : item.devKey,
+          devKey:item.devKey,
+          roomName: item.roomName,
+          location: item.location,
+          // location: item.location || (item.devKey && item.boxName ? item.devKey +'-'+ item.boxName : null),
+          // location: item.location ||  item.devKey  +'-'+ item.boxName,
           local : item.location,
+          busName: item.busName,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
           status : item.runStatus,
-          devKey:item.devKey,
           boxName : item.boxName,
         }
       })
@@ -258,27 +228,67 @@ const getTableData = async(reset = false) => {
     tableLoading.value = false
   }
 }
+/** 搜索按钮操作 */
+const handleQuery = () => {
+  if(queryParamsDevKey.value !=null && queryParamsDevKey.value != ''){
+    queryParams.boxDevKeyList = [queryParamsDevKey.value]
+  }else{
+    queryParams.boxDevKeyList = undefined as string[] | undefined
+  }
+  getTableData(true)
+}
+const resetQuery = () => {
+  queryParams.boxDevKeyList = undefined as string[] | undefined
+  getTableData(true)
+}
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+
+
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  cb(results)
+  }
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
+
 
 const getMaxData = async(reset = false) => {
   try {
-    const res = await IndexApi.getEqMax({
-      pageNo: queryParamsAll.pageNo,
-      pageSize: queryParamsAll.pageSize,
-      cabinetIds: isFirst.value ? null : cabinetIds.value,
-      company: queryParamsAll.company,
-      busDevKeyList : queryParamsAll.busDevKeyList,
-      isDeleted : queryParams.isDeleted
-    })
-    if (res.list) {
+    const res = await IndexApi.getEqMax()
+    if (res) {
         //借用id值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
-        const dataList = res.list
+        const dataList = res
         dataList.forEach(item => {
           if(item.id == 0){
-            boxName1.value = item.boxName
+            boxName1.value = item.devKey
           }else if (item.id == 1){
-            boxName2.value = item.boxName
+            boxName2.value = item.devKey
           }else if (item.id == 2){
-            boxName3.value = item.boxName
+            boxName3.value = item.devKey
           }
         })
     }
@@ -293,7 +303,7 @@ const handleSwitchModal = (value) => {
   if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
-    queryParams.pageSize = 10
+    queryParams.pageSize = 15
   }
   getTableData(true)
 }
@@ -308,7 +318,7 @@ const handleCheck = (row) => {
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 6) {
+    if (item.type == 7) {
       ids.push(item.unique)
       haveCabinet = true;
     }
@@ -323,9 +333,15 @@ const handleCheck = (row) => {
 
 
 // 跳转详情
-const toDetail = (roomId, id,location,boxName) => {
-  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,location,boxName}})
+const toDetail = (roomId, id,room,boxName, item) => {
+  const devKey = item.devKey;
+  const busName = item.busName;
+  const roomName = room ? room : '未绑定';
+  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
 }
+onMounted(async () => {
+  devKeyList.value = await loadAll();
+})
 
 onBeforeMount(() => {
   getNavList()
@@ -446,12 +462,17 @@ onBeforeMount(() => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
-.matrixContainer {
-  height: calc(100vh - 320px);
-  overflow: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
+
+@media screen and (min-width:2048px){
+  .matrixContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
   .item {
     width: 25%;
     min-width: 275px;
@@ -510,10 +531,155 @@ onBeforeMount(() => {
   
   }
 }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .matrixContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .item {
+    width: 25%;
+    min-width: 275px;
+    height: 130px;
+    font-size: 12px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 36px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .info {
+        line-height: 1.7;
+        font-size: 13px;
+      }
+    }
+    .room {
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      font-size: 13px;
+    }
+    .name {
+      height: 20px;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 5px;
+      top: 4px;
+    }
+
+    .detail {
+      width: 35px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 5px;
+      bottom: 4px;
+    }
+  
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+.matrixContainer {
+   width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .item {
+    width: 33%;
+    min-width: 275px;
+    height: 130px;
+    font-size: 12px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 36px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .info {
+        line-height: 1.7;
+        font-size: 13px;
+      }
+    }
+    .room {
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      font-size: 13px;
+    }
+    .name {
+      height: 20px;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 5px;
+      top: 4px;
+    }
+
+    .detail {
+      width: 35px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 5px;
+      bottom: 4px;
+    }
+  
+  }
+}
+}
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

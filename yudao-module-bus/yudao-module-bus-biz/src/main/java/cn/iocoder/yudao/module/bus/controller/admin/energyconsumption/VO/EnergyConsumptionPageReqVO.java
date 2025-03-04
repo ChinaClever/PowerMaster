@@ -9,6 +9,15 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class EnergyConsumptionPageReqVO extends PageParam {
+
+    private Integer lineId;
+
+    private Integer loopId;
+
+    private Integer outletId;
+
+    private String type;
+
     private Integer busId;
 
     private Integer boxId;

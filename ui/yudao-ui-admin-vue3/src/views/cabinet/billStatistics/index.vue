@@ -59,9 +59,9 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD"
+          format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
-          type="daterange"
+          type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
           start-placeholder="开始时间"
@@ -242,10 +242,10 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(selectTimeRange.value[0])
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(selectTimeRange.value[1])
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
   
@@ -374,12 +374,22 @@ const getNavNewData = async() => {
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
 }
-
+const format = (date) => {
+   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+};
 /** 初始化 **/
 onMounted(() => {
+  getList();
   getNavList()
   getNavNewData()
-  getList();
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
+  
 });
 
 </script>

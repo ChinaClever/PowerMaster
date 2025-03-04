@@ -1,44 +1,18 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱能耗排名" :showCheckbox="false">
     <template #NavInfo>
       
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>  -->
-      <!-- <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div> -->
-      <!-- <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div> -->
-
       <div class="nav_header">       
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress?'暂未绑定设备':nowAddress}}</span>
+          <span v-if="devKey">({{devKey}})</span>
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
+        <div class="description-item">
+        <span class="label">网络地址 :</span>
+        <span >{{ devKye }} </span>
+      </div>
       <div class="description-item">
         <span class="label">总耗电量 :</span>
         <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -146,7 +120,7 @@
         </el-tab-pane>
       </el-tabs>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 
 </template>
 
@@ -159,12 +133,14 @@ import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
+import  CommonMenu1 from './component/CommonMenu1.vue'
 defineOptions({ name: 'ECDistribution' })
 
 const exportLoading = ref(false)
 const message = useMessage() // 消息弹窗
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
+const devKey = ref('') // 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const activeName = ref('dayTabPane')
 const activeName1 = ref('lineChart')
@@ -174,7 +150,7 @@ const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
 const loading = ref(false) 
 const loading2 = ref(false)
-
+const devKye = ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -332,6 +308,11 @@ loading.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
+    if (data.list == null){
+      ElMessage.warning('暂无数据！')
+      //清空数据
+      data.list = [];
+    }
     if (data != null && data.total != 0){
       loading2.value = true
       totalEqData.value = 0;
@@ -356,6 +337,12 @@ loading.value = true
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
+      maxEqDataTemp.value = 0;
+      minEqDataTemp.value = 0;
+      totalEqData.value = 0;
+      maxEqDataTimeTemp.value='';
+      minEqDataTimeTemp.value='';
+      
       loading2.value = false
       ElMessage({
         message: '暂无数据',
@@ -417,9 +404,14 @@ const handleExport1 = async () => {
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {
+      if(Number(value).toFixed(decimalPlaces) == '-Infinity') {
+        return '∞';
+      } else if (Number(value).toFixed(decimalPlaces) == 'Infinity') {
+        return '-∞';
+      }
         return Number(value).toFixed(decimalPlaces);
     } else {
-        return null; // 或者其他默认值
+        return 0; // 或者其他默认值
     }
 }
 
@@ -518,20 +510,27 @@ const handleQuery = async() => {
   // initRankChart();
 }
 
+
+const queryLocation = ref(history?.state?.location);// 导航栏的位置信息
+const queryDevkey = ref(history?.state?.devKey); // 导航栏的位置信息
+const queryBusId = ref(history?.state?.busId);
+
 /** 初始化 **/ 
 onMounted(async () => {
   getNavList()
   // 获取路由参数中的 bus_id
   
-  const queryBusId = useRoute().query.busId as string | undefined;
-  const queryLocation = useRoute().query.location as string;
-  const queryDevkey = useRoute().query.devKey as string | undefined;
-  queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
-  queryParams.devkey =queryDevkey? queryDevkey : undefined;
+  // const queryBusId = useRoute().query.busId as string | undefined;
+  // const queryLocation = useRoute().query.location as string;
+  // const queryDevkey = useRoute().query.devKey as string;
+  queryParams.busId = queryBusId.value as number | undefined;
+  queryParams.devkey =queryDevkey.value as string | undefined;
+  devKye.value = queryDevkey? queryDevkey : undefined
   if (queryParams.busId != undefined){
-    await getLineChartData();
     nowAddress.value = queryLocation;
+    devKey.value = queryDevkey;
     nowAddressTemp.value = queryLocation;
+    await getLineChartData();
     initLineChart();
   }
 })

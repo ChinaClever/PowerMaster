@@ -28,7 +28,7 @@ public class EnvRealtimePageRespVO {
     private String location;
 
     @ExcelProperty("监测点")
-    private Integer a;
+    private Integer position;
 
     @ExcelProperty("传感器")
     private Integer sensor_id;

@@ -9,6 +9,10 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.BoxNameVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -63,9 +67,9 @@ public interface BoxIndexService {
 
     PageResult<BoxRedisDataRes> getBoxRedisPage(BoxIndexPageReqVO pageReqVO);
 
-    PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO);
+    PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) throws IOException;
 
-    PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO);
+    List<BoxIndexMaxEqResVO> getMaxEq();
 
     PageResult<BoxBalanceDataRes> getBoxBalancePage(BoxIndexPageReqVO pageReqVO);
 
@@ -97,11 +101,11 @@ public interface BoxIndexService {
 
     BusHarmonicRedisRes getHarmonicRedis(BoxIndexPageReqVO pageReqVO);
 
-    BusHarmonicLineRes getHarmonicLine(BoxIndexPageReqVO pageReqVO);
+    BoxHarmonicLineResVO getHarmonicLine(BoxIndexPageReqVO pageReqVO);
 
     Integer getBoxIdByDevKey(String devKey);
 
-    PowerRedisDataRes getBoxPowerRedisData(String devKey);
+    BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) throws IOException;
 
     BusLineResBase getBoxLoadRateLine(BoxIndexPageReqVO pageReqVO);
 
@@ -132,4 +136,24 @@ public interface BoxIndexService {
     LineBoxMaxResVO getBoxLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
+
+    BalanceStatisticsVO getBoxBalanceStatistics();
+
+    ReportBasicInformationResVO getReportBasicInformationResVO(BoxIndexPageReqVO pageReqVO);
+
+    LoadRateStatus getBoxIndexLoadRateStatus();
+
+    PageResult<BoxIndexDTO> getEqPage1(BoxIndexPageReqVO pageReqVO);
+
+    Map getAvgBoxHdaLoopForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    BusIndexStatisticsResVO getBoxIndexStatisticsAll();
+
+    List<String> findKeys(String key);
+
+    Map getBoxPFDetailNow(BoxIndexPageReqVO pageReqVO);
+
+    Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    Map<String, BoxNameVO> getRoomByKeys(List<String> keys);
 }

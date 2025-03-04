@@ -20,5 +20,15 @@ export const CabinetApi = {
 
   getCabinetdistributionDetails: async (params: any) => {
     return await request.get({ url: `/cabinet/distributionDetails`, params })
-  }
+  },
+
+  //获取电力负荷详情
+  getCabinetDetailData: async (data: any) => {
+    return await request.post({ url: `/cabinet/loadPage/detail`, data })
+  },
+
+  //获取电力负荷详情折线图
+  getCabinetLineChartDetailData: async (data: any) => {
+    return await request.post({ url: `/cabinet/loadPage/chart-detail`, data })
+  },
 }

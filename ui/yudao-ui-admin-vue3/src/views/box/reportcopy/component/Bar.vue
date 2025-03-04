@@ -49,6 +49,7 @@ watchEffect(() => {
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
+
   time.value = prop.list.time;
 });
 

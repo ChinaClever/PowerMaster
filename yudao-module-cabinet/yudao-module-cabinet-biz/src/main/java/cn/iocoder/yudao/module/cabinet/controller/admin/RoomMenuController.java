@@ -3,7 +3,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
+import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.service.RoomMenuService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -79,24 +79,22 @@ public class RoomMenuController {
     /**
      * 机房菜单
      *
-     * @param id 机房id
      */
     @Operation(summary = "机房-pdu菜单")
     @GetMapping("/room/pdu/menu")
-    public CommonResult<List<RoomPduMenuDTO>> getRoomPduMenu(@RequestParam(value = "id") Integer id) {
-        List<RoomPduMenuDTO> dto = roomService.roomPduMenuList(id);
+    public CommonResult<List<RoomPduMenuDTO>> getRoomPduMenu() {
+        List<RoomPduMenuDTO> dto = roomService.roomPduMenuList();
         return success(dto);
     }
 
     /**
      * 机房菜单
      *
-     * @param id 机房id
      */
     @Operation(summary = "机房-机架菜单")
     @GetMapping("/room/rack/menu")
-    public CommonResult<List<RoomMenuDTO>> getRoomRackMenu(@RequestParam(value = "id") Integer id) {
-        List<RoomMenuDTO> dto = roomService.roomRackMenuList(id);
+    public CommonResult<List<RoomMenuDTO>> getRoomRackMenu() {
+        List<RoomMenuDTO> dto = roomService.roomRackMenuList();
         return success(dto);
     }
 

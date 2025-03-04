@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
@@ -7,7 +8,10 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
+import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
+import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.IndexPageReqVO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
@@ -16,9 +20,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
@@ -71,9 +78,8 @@ public class CabinetController {
 
     @Operation(summary = "机柜配电状态统计")
     @PostMapping("/cabinet/runStatus")
-    public CommonResult<PageResult<JSONObject>> getCabinetRunStatus() {
-        PageResult<JSONObject> runStatusResult = cabinetService.getCabinetRunStatus();
-        return success(runStatusResult);
+    public CommonResult<CabinetRunStatusResVO> getCabinetRunStatus() {
+        return success(cabinetService.getCabinetRunStatus());
     }
 
     @Operation(summary = "获得已删除机柜分页")
@@ -82,7 +88,6 @@ public class CabinetController {
         PageResult<JSONObject> pageResult = cabinetService.getDeletedCabinetPage(pageReqVO);
         return success(pageResult);
     }
-
 
     @Operation(summary = "恢复设备")
     @GetMapping("/cabinet/restorerCabinet")
@@ -101,8 +106,8 @@ public class CabinetController {
      */
     @Operation(summary = "机柜功率详情")
     @GetMapping("/cabinet/detail")
-    public CommonResult<JSONObject> getCabinetDetail(@Param("id") int id) {
-        JSONObject dto = cabinetService.getCabinetDetail(id);
+    public CommonResult<Map> getCabinetDetail(@Param("id") int id) {
+        Map dto = cabinetService.getCabinetDetail(id);
         return success(dto);
     }
 
@@ -128,8 +133,22 @@ public class CabinetController {
     @PostMapping("/cabinet/eq/page")
     @Operation(summary = "获得机柜用能分页")
     public CommonResult<PageResult<CabinetEnergyStatisticsResVO>> getEnergyStatisticsPage(@RequestBody CabinetIndexVo pageReqVO) throws IOException {
-        PageResult<CabinetEnergyStatisticsResVO> pageResult = cabinetService.getEnergyStatisticsPage(pageReqVO);
+        PageResult<CabinetEnergyStatisticsResVO> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getCabinetIds()) || ObjectUtil.isNotEmpty(pageReqVO.getCompany())){
+            pageResult =  cabinetService.getEnergyStatisticsPage(pageReqVO);
+        }else {
+            pageResult = cabinetService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)){
+                pageResult =  cabinetService.getEnergyStatisticsPage(pageReqVO);
+            }
+        }
         return success(pageResult);
+    }
+
+    @GetMapping("/cabinet/eq/max")
+    @Operation(summary = "获得机柜用能最大")
+    public CommonResult<List<CabinetEnergyMaxResVO>> getEnergyMax(){
+        return success(cabinetService.getEnergyMax());
     }
 
     /**
@@ -152,8 +171,9 @@ public class CabinetController {
      */
     @Operation(summary = "机柜删除")
     @GetMapping("/cabinet/delete")
-    public CommonResult<Integer> deleteCabinet(@Param("id") int id) throws Exception {
-        int cabinetId = cabinetService.delCabinet(id);
+    public CommonResult<Integer> deleteCabinet(@RequestParam("id") int id,
+                                               @RequestParam(value = "type" , required = false) @Parameter(description = "删除类型：1-解绑pdu  2-解绑bus(母线) 3-解绑机架  4-删除机柜") Integer type) throws Exception {
+        int cabinetId = cabinetService.delCabinet(id,type);
         if (cabinetId == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
         }
@@ -185,6 +205,19 @@ public class CabinetController {
         return success(pageResult);
     }
 
+    @Operation(summary = "单个机柜数据详情")
+    @GetMapping("/cabinet/capacity/detail")
+    public CommonResult<CabinetDTO> getCabinetCapacityDetail(@Param("id") int id) {
+        return success(cabinetService.getCabinetCapacityDetail(id));
+    }
+
+
+    @Operation(summary = "机柜容量列表统计")
+    @GetMapping("/cabinet/capacity/statistics")
+    public CommonResult<CabinetCapacityStatisticsResVO> getCapacitystatistics() {
+        return CommonResult.success(cabinetService.getCapacitystatistics());
+    }
+
     @Operation(summary = "机柜环境详情")
     @PostMapping("/cabinet/env")
     public CommonResult<PageResult<CabinetIndexEnvResVO>> getCabinetEnv(@RequestBody CabinetIndexVo pageReqVO){
@@ -196,8 +229,8 @@ public class CabinetController {
      */
     @Operation(summary = "机柜负载状态统计")
     @GetMapping("/cabinet/load/count")
-    public CommonResult<Map<Integer, Integer>> loadStatusCount() {
-        Map<Integer, Integer> result = cabinetService.loadStatusCount();
+    public CommonResult<Map<String, Integer>> loadStatusCount() {
+        Map<String, Integer> result = cabinetService.loadStatusCount();
         return success(result);
     }
 
@@ -205,5 +238,25 @@ public class CabinetController {
     @PostMapping("/cabinet/balance/page")
     public CommonResult<PageResult<CabinetIndexBalanceResVO>> getCabinetIndexBalancePage(@RequestBody CabinetIndexVo pageReqVO) {
         return success(cabinetService.getCabinetIndexBalancePage(pageReqVO));
+    }
+
+    @PostMapping("/cabinet/loadPage/detail")
+    @Operation(summary = "查询电力负荷详情")
+    public CommonResult<CabinetPowerLoadDetailRespVO> getBusDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
+        CabinetPowerLoadDetailRespVO detailRespVO = cabinetService.getDetailData(reqVO);
+        return success(detailRespVO);
+    }
+
+    @PostMapping("/cabinet/loadPage/chart-detail")
+    @Operation(summary = "查询电力负荷详情 折线图数据")
+    public CommonResult<Map<String, List<CabinetLoadPageChartResVO>>> getBusLineChartDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
+        Map<String, List<CabinetLoadPageChartResVO>> resultMap = cabinetService.getLineChartDetailData(reqVO);
+        return success(resultMap);
+    }
+
+    @PostMapping("/cabinet/env/page")
+    @Operation(summary = "获得机柜环境分页")
+    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@RequestBody @Valid CabinetIndexVo pageReqVO) {
+        return success(cabinetService.getCabinetEnvPage(pageReqVO));
     }
 }

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service.temcolor;
 
+import java.math.BigDecimal;
 import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.cabinet.controller.admin.temcolor.vo.*;
@@ -53,4 +54,6 @@ public interface TemColorService {
     PageResult<TemColorDO> getTemColorPage(TemColorPageReqVO pageReqVO);
 
     List<TemColorDO> getTemColorAll();
+
+    String findColor(BigDecimal iceTopTem);
 }

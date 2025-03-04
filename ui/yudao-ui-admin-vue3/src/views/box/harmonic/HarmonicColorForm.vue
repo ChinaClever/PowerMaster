@@ -29,7 +29,7 @@
   </Dialog>
 </template>
 <script setup lang="ts">
-import { BoxCurbalanceColorApi, BoxHarmonicColorVO } from '@/api/bus/boxharmoniccolor'
+import { BoxHarmonicColorApi, BoxHarmonicColorVO } from '@/api/bus/boxharmoniccolor'
 
 /** PDU不平衡度颜色 表单 */
 defineOptions({ name: 'HarmonicColorForm' })
@@ -86,7 +86,7 @@ const open = async (type: string) => {
 
   formLoading.value = true
   try {
-    var data = await BoxCurbalanceColorApi.getBoxCurbalanceColor()
+    var data = await BoxHarmonicColorApi.getBoxHarmonicColor()
     console.log(data)
     if(data != null){
       formData.value = data;
@@ -110,10 +110,10 @@ const submitForm = async () => {
   try {
     const data = formData.value as unknown as BoxHarmonicColorVO
     if (formType.value === 'create') {
-      await BoxCurbalanceColorApi.createBoxCurbalanceColor(data)
+      await BoxHarmonicColorApi.createBoxHarmonicColor(data)
       message.success(t('common.createSuccess'))
     } else {
-      await BoxCurbalanceColorApi.updateBoxCurbalanceColor(data)
+      await BoxHarmonicColorApi.updateBoxHarmonicColor(data)
       message.success(t('common.updateSuccess'))
     }
     dialogVisible.value = false

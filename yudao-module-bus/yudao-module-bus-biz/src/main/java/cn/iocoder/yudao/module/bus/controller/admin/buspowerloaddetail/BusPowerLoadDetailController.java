@@ -43,7 +43,7 @@ public class BusPowerLoadDetailController {
     @Operation(summary = "查询电力负荷详情")
     public CommonResult<BusPowerLoadDetailRespVO> getBusDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
         BusPowerLoadDetailRespVO detailRespVO = busPowerLoadDetailService.getDetailData(reqVO);
-        return success(BeanUtils.toBean(detailRespVO, BusPowerLoadDetailRespVO.class));
+        return success(detailRespVO);
     }
 
     @PostMapping("/chart-detail")
@@ -57,7 +57,7 @@ public class BusPowerLoadDetailController {
     @Operation(summary = "查询电力负荷详情")
     public CommonResult<BusPowerLoadDetailRespVO> getBoxDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
         BusPowerLoadDetailRespVO detailRespVO = busPowerLoadDetailService.getBoxDetailData(reqVO);
-        return success(BeanUtils.toBean(detailRespVO, BusPowerLoadDetailRespVO.class));
+        return success(detailRespVO);
     }
 
     @PostMapping("/box/chart-detail")

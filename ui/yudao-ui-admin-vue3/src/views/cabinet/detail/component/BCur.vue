@@ -1,5 +1,5 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <Echart :height="height" :width="width" :options="chartOptions" />
 </template>
 
 <script lang="ts" setup>
@@ -22,7 +22,7 @@ console.log('loadFactor',props.loadFactor)
 
 // 设置饼图的选项
 // 设置饼图的选项
-const echartsOption = reactive({
+const chartOptions = computed(() => ({
   tooltip: {
     trigger: 'item',
     formatter: '{b} : {c}'
@@ -30,8 +30,8 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
-      radius: [20, 80],
-      center: ['50%', '40%'],
+      radius: ['30%', '70%'],
+      center: ['50%', '50%'],
       roseType: 'radius',
       itemStyle: {
         borderRadius: 5
@@ -46,13 +46,13 @@ const echartsOption = reactive({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.curB[0], name: 'Ia', itemStyle: { color: '#075F71' } },
-        { value: props.loadFactor.curB[1], name: 'Ib', itemStyle: { color: '#119CB5' } },
-        { value: props.loadFactor.curB[2], name: 'Ic', itemStyle: { color: '#45C0C9' } },
+        { value: props.loadFactor.curB[0], name: 'Ia', itemStyle: { color: '#E5B849' } },
+        { value: props.loadFactor.curB[1], name: 'Ib', itemStyle: { color: '#C8603A' } },
+        { value: props.loadFactor.curB[2], name: 'Ic', itemStyle: { color: '#AD3762' } },
       ]
     }
   ]
-});
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')

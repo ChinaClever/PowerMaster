@@ -1,12 +1,38 @@
 <template>
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱谐波">
     <template #NavInfo>
-      <!-- <div> -->
+      <div>
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
-        <!-- <div class="line"></div>
-        <div class="status">
+        <div class="status" style="margin-top:20px">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>告警
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <!--<div class="tag error"></div>-->总共
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.total }}</span>个</div>
+          </div>
+        </div>
+        <div class="line"></div>
+        <!-- <div class="status">
           <div class="box">
             <div class="top">
               <div class="tag"></div>{{ statusList[0].name }}
@@ -25,9 +51,9 @@
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterTwenty}}</span>个</div>
           </div>
-        </div>
-        <div class="line"></div>
-      </div> -->
+        </div> -->
+        <!-- <div class="line"></div> -->
+      </div>
       
     </template>
     <template #ActionBar>
@@ -39,24 +65,24 @@
         label-width="68px"                          
       >
       <el-form-item v-if="switchValue == 0 ">
-          <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
-        </el-form-item>
-        <el-button
+        <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+          全部
+        </button>
+        <template v-for="(status, index) in statusList" :key="index">
+          <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+        </template>
+        <!-- <el-button
           type="primary"
           plain
           @click="openForm('create')"
           v-if="switchValue == 0 "
+          style="height:35px;"
         >
           <Icon icon="ep:plus" class="mr-5px" /> 谐波颜色范围
-        </el-button>
-
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
+        </el-button> -->
         </el-form-item>
+
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -95,7 +121,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <div v-if="switchValue !== 0 && list.length > 0">
+        <el-table v-if="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -131,6 +158,7 @@
               type="primary"
               @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -139,28 +167,31 @@
               type="danger"
               @click="handleDelete(scope.row.boxId)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
+      </div>
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-else-if="switchValue == 0 && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey +'-' +item.boxName }}</div>
           <div class="content">
+            <div class="info" >                  
+              <div v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
+              <div v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
+              <div v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
+            </div>
             <div class="icon">
               <div v-if="item.acurThd != null">
                 <br/>
                 电流谐波
               </div> 
-            </div>
-            <div class="info" >                  
-              <div  v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
-              <div  v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
-              <div  v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
-            </div>          
+            </div>   
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <!-- <div class="status" v-if="valueMode == 0">
@@ -169,12 +200,85 @@
             <el-tag v-else >正常</el-tag>
           </div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >{{statusList[0].name}}</el-tag>
+            <el-tag v-else-if="item.status === 1" type="success" >{{statusList[1].name}}</el-tag>
+            <el-tag v-else-if="item.status === 2" type="danger" >{{statusList[2].name}}</el-tag>
           </div>          
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
+          <button class="detail" @click="showDialog(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
+        </template>
       </div>
+
+      <el-dialog v-model="dialogVisible" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <el-form
+        class="-mb-15px"
+        :model="queryParamsCopy"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="120px"
+      >      
+        <!-- <el-form-item label="网络地址" prop="devKey">
+          <el-input
+            v-model="queryParams.devKey"
+            placeholder="请输入网络地址"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-240px"
+          />
+        </el-form-item> -->
+        <el-form-item>       
+          <!--<el-tag size="large">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{boxName}})</el-tag>-->
+          <span>机房：{{ roomName }}&nbsp;&nbsp;</span>
+          <span>母线：{{ busName }}&nbsp;&nbsp;</span>
+          <span>插接箱：{{boxName}}&nbsp;&nbsp;</span>
+          <span>网络地址：{{ devkey }}</span>
+          <!--<el-select
+            v-model="queryParamsCopy.harmonicType"
+            placeholder="请选择"
+            style="width: 240px"
+          >
+            <el-option label="A相电流谐波" :value = 3 />
+            <el-option label="B相电流谐波" :value = 4 />
+            <el-option label="C相电流谐波" :value = 5 />
+          </el-select>-->
+          
+        </el-form-item>
+
+        <el-form-item>
+          <el-button 
+            @click="subtractOneDay();handleDayPick()" 
+          >
+            &lt;
+          </el-button>
+          <el-date-picker
+            v-model="queryParamsCopy.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-160px"
+          />
+          <el-button 
+            @click="addtractOneDay();handleDayPick()" 
+          >
+            &gt;
+          </el-button>
+          <el-button @click="handleQueryCopy"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <div class="custom-content-container">
+            <HarmonicLine v-if="abcLineShow === true" width="70vw" height="58vh" :list="abcLineData"/>
+          </div>
+        </div>
+      </el-dialog>
 
       <Pagination
         :total="total"
@@ -183,8 +287,8 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && switchValue !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>
@@ -196,15 +300,27 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { IndexApi } from '@/api/bus/boxindex'
-import { ElTree } from 'element-plus'
-import HarmonicColorForm from './HarmonicColorForm.vue'
+import download from '@/utils/download';
+import { IndexApi } from '@/api/bus/boxindex';
+import { ElTree } from 'element-plus';
+import HarmonicColorForm from './HarmonicColorForm.vue';
+import { BoxHarmonicColorApi } from '@/api/bus/boxharmoniccolor';
+import HarmonicRealTime from './component/HarmonicRealTime.vue';
+import HarmonicLine from './component/HarmonicLine.vue';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
+
+const location = ref() as any;
+const devkey = ref() as any;
+const busName = ref() as any;
+const boxName = ref() as any;
+const roomName = ref() as any;
+const butColor = ref(0);
+const onclickColor = ref(-1);
+const dialogVisible = ref(false);
 
 const harmonicColorForm = ref()
 const flashListTimer = ref();
@@ -213,31 +329,79 @@ const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const valueMode = ref(0)
 
+const allData = ref();
+
 const statusNumber = reactive({
-  lessFifteen : 0,
-  greaterFifteen : 0,
-  greaterTwenty : 0
-})
+  normal : 0,
+  alarm : 0,
+  offline : 0,
+  total : 0
+});
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
+}
+
+const queryParamsAll = reactive({
+  pageNo: 1,
+  pageSize: -1,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds : [],
+})as any;
+
+const allList = ref([
+  {
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null,
+    acur : null,
+    bcur : null,
+    ccur : null,
+    curUnbalance : null,
+  }
+]) as any;// 列表的数据
 
 const statusList = reactive([
   {
-    name: '<5%',
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
     selected: true,
     value: 1,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal'
   },
   {
-    name: '5%-20%',
+    name: '告警',
     selected: true,
     value: 2,
-    cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
-  },
-  {
-    name: '>20%',
-    selected: true,
-    value: 3,
     cssClass: 'btn_error',
     activeClass: 'btn_error error'
   },
@@ -252,13 +416,20 @@ const loadAll = async () => {
   return objectArray;
 }
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
+const querySearch = async (queryString: string, cb: any) => {
+  if(queryString.length>7){
+    var results = await IndexApi.boxFindKeys({key:queryString});
+    let arr: any[] = [];
+    results.map(item => {
+      arr.push({value:item})
+    });
+    cb(arr)
+  }else{
+      const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
-  // call callback function to return suggestions
   cb(results)
+  }
 }
 
 const createFilter = (queryString: string) => {
@@ -269,8 +440,14 @@ const createFilter = (queryString: string) => {
   }
 }
 
-const handleClick = (row) => {
-  console.log("click",row)
+const handleClick = async (row) => {
+  if(row.type != null  && row.type == 7){
+    queryParams.devKey = row.unique
+    const data = await IndexApi.getBoxIdByDevKey({devKey : queryParams.devKey});
+    queryParams.boxId = data;
+    haveSearch.value = false;
+    handleQueryCopy();
+  }
 }
 
 const handleCheck = async (row) => {
@@ -339,6 +516,20 @@ const queryParams = reactive({
   status:[],
   cabinetIds : [],
 })as any
+
+const queryParamsCopy = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  harmonicType : 3,
+  harmonicArr:[1],
+  devKey : undefined,
+  boxId: undefined,
+  outputNumber : 10,
+  createTime: undefined,
+  timeArr:[],
+  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
+  newTime : undefined,
+}) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
@@ -350,19 +541,15 @@ const getList = async () => {
     list.value = data.list
 
     //获取颜色范围
-    // var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
-    // if(range != null){
-    //   statusList[0].name = '<' + range.rangeOne + '%';
-    //   statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-    //   statusList[2].name = '>' + range.rangeFour + '%';
-    // }
+    //var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    //if(range != null){
+    //  statusList[0].name = '<' + range.rangeOne + '%';
+    //  statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+    //  statusList[2].name = '>' + range.rangeFour + '%';
+    //}
 
     var tableIndex = 0;
 
-    //获取颜色范围
-    // var lessFifteen = 0;
-    // var greaterFifteen = 0;
-    // var greaterTwenty = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -373,21 +560,7 @@ const getList = async () => {
       obj.bcurThd = obj.bcurThd?.toFixed(2);
       obj.ccurThd = obj.ccurThd?.toFixed(2);
 
-      //获取颜色范围
-      // if(obj.color == 1){
-      //   lessFifteen++;
-      // } else if (obj.color == 2) {
-      //   greaterFifteen++;
-      // } else if (obj.color == 3) {
-      //   greaterTwenty++;
-      // }     
-
     });
-
-    //获取颜色范围
-    // statusNumber.lessFifteen = lessFifteen;
-    // statusNumber.greaterFifteen = greaterFifteen;
-    // statusNumber.greaterTwenty = greaterTwenty;
 
     total.value = data.total
   } finally {
@@ -395,53 +568,15 @@ const getList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
+const getListAll = async () => {
   try {
-    const data = await IndexApi.getBoxHarmonicPage(queryParams)
-    list.value = data.list
-    //获取颜色范围
-    // var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
-    // if(range != null){
-    //   statusList[0].name = '<' + range.rangeOne + '%';
-    //   statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-    //   statusList[2].name = '>' + range.rangeFour + '%';
-    // }
+    const allData = await IndexApi.getBoxIndexStatistics();
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.total = allData.total;
+      } finally {
 
-    var tableIndex = 0;    
-
-    //获取颜色范围
-    // var lessFifteen = 0;
-    // var greaterFifteen = 0;
-    // var greaterTwenty = 0;
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acurThd == null){
-        return;
-      } 
-      obj.acurThd = obj.acurThd?.toFixed(2);
-      obj.bcurThd = obj.bcurThd?.toFixed(2);
-      obj.ccurThd = obj.ccurThd?.toFixed(2);
-
-      //获取颜色范围
-      // if(obj.color == 1){
-      //   lessFifteen++;
-      // } else if (obj.color == 2) {
-      //   greaterFifteen++;
-      // } else if (obj.color == 3) {
-      //   greaterTwenty++;
-      // }   
-
-    });
-
-    //获取颜色范围
-    // statusNumber.lessFifteen = lessFifteen;
-    // statusNumber.greaterFifteen = greaterFifteen;
-    // statusNumber.greaterTwenty = greaterTwenty;
-
-    total.value = data.total
-  } catch (error) {
-    
   }
 }
 
@@ -462,6 +597,117 @@ const getNavList = async() => {
 
 }
 
+const haveSearch = ref(false);
+const harmonicRealTime = ref();
+const realTimeVis = ref(false);
+const seriesAndTimeArr = ref() as any;
+const lineVis = ref(false);
+const harmonicLine = ref([]) as any;
+
+
+const disabledDate = (date) => {
+  // 获取今天的日期
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+
+  // 如果date在今天之后，则禁用
+  if(switchValue.value == 0){
+    return date > today;
+  }else {
+    return date >= today;
+  }
+  
+}
+
+const abcLineData = ref({});
+const abcLineShow = ref(false);
+
+const getDetail = async () => {
+
+  //if(!haveSearch.value){
+  //  const data = await IndexApi.getHarmonicRedis(queryParamsCopy);
+  //  harmonicRealTime.value = data;
+  //  if(harmonicRealTime.value.times != null){
+  //    realTimeVis.value = true;
+  //  }else{
+  //    realTimeVis.value = false;
+  //  }
+  //  haveSearch.value = true;
+  //}
+
+  const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
+  abcLineData.value = lineData;
+  abcLineShow.value = true;
+  //seriesAndTimeArr.value = lineData;
+  //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
+  //  const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
+  //  harmonicLine.value.series = filteredSeries;
+  //  harmonicLine.value.time = seriesAndTimeArr.value.time;
+  //  lineVis.value = true;
+  //} else {
+  //  lineVis.value = false;
+  //}
+}
+
+const handleQueryCopy = async () => {
+  if(queryParamsCopy.oldTime){
+
+    await getDetail();
+  }
+}
+
+const handleDayPick = async () => {
+
+  if(queryParamsCopy?.oldTime ){
+    await getDetail();
+  } 
+}
+
+
+const subtractOneDay = () => {
+  var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() - 1); // 减去一天
+
+  queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const addtractOneDay = () => {
+  var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() + 1); // 减去一天
+
+  queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+watch(() => [queryParamsCopy.harmonicArr], () => {
+  if(seriesAndTimeArr.value.series != null && seriesAndTimeArr.value.series?.length > 0){
+    const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
+    harmonicLine.value.series = filteredSeries;
+    harmonicLine.value.time = seriesAndTimeArr.value.time;
+  }
+});
+
+watch(() => [queryParamsCopy.harmonicType], () => {
+  haveSearch.value = false;
+  handleQueryCopy();
+});
+
+const showDialog = async (item) => {
+  queryParamsCopy.devKey = item.devKey;
+  queryParamsCopy.boxId = item.boxId;
+  location.value = item.location ? item.location : '未绑定';
+  roomName.value = item.roomName  ? item.roomName : '未绑定';
+  devkey.value = item.devKey;
+  busName.value = item.busName;
+  boxName.value = item.boxName;
+  dialogVisible.value = true;
+  await handleQueryCopy();
+}
+
 const toDetail = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId
@@ -470,26 +716,19 @@ const toDetail = (row) =>{
   push({path: '/bus/boxmonitor/boxharmonicdetail', state: { devKey, boxId ,location ,name}})
 }
 
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
-
 const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  if(statusArr.length != statusList.length){
-    queryParams.color = statusArr;
-    //queryParams.status = [5];
-  }else{
-    queryParams.color = null;
-    //queryParams.status = [];
-  }
-  
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
   handleQuery();
 }
 
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [0,1,2];
+  handleQuery();
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -500,7 +739,10 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
+  //statusList.forEach((item) => item.selected = true)
+  butColor.value = 0;
+  queryParams.color = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 
@@ -541,31 +783,32 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
   getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+  getListAll();
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
   }
 })
 
 onBeforeRouteLeave(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
     firstTimerCreate.value = false;
   }
 })
 
 onActivated(() => {
-  getList()
+  getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>
@@ -899,21 +1142,292 @@ onActivated(() => {
   }
 }
 
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 78vh;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+  .arrayContainer {
+    width:100%;
+    height: 600px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 33%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
-  height: 80px;
+  height: 50px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-60px;
+}
+
+:deep(.el-dialog) {
+  width: 80%;
+  margin-top: 70px;
 }
 </style>

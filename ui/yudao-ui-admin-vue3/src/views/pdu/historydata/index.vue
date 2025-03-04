@@ -3,28 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>
-        <div class="nav_header">
-          <br/>
-          <span v-if="queryParams.granularity == 'realtime' ">全部PDU最近一分钟新增记录</span>
-          <span v-if="queryParams.granularity == 'hour' ">全部PDU最近一小时新增记录</span>
-          <span v-if="queryParams.granularity == 'day' ">全部PDU最近一天新增记录</span>
-        </div>
-        <div class="nav_content" >
-          <el-descriptions title="" direction="vertical" :column="1" border >
-            <el-descriptions-item label="总数据"><span >{{ navTotalData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="相数据"><span >{{ navLineData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="回路数据" ><span >{{ navLoopData }} 条</span></el-descriptions-item>
-            <el-descriptions-item label="输出位数据" ><span >{{ navOutletData }} 条</span></el-descriptions-item>
-          </el-descriptions>
-        </div>
-      </div> -->
+
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">总数据 :</span>
@@ -99,8 +78,8 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm"
-          v-model="queryParams.timeRange"
+          format="YYYY-MM-DD HH:mm"
+          v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -115,10 +94,11 @@
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+
+        </el-form-item>
+        <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="float: right;margin-right: 10px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item>
         <!-- </div> -->
       </el-form>
     </template>
@@ -126,9 +106,9 @@
     <template #Content>
       <el-table v-loading="loading" 
                 :data="list" 
-                :stripe="true" 
+                
                 :show-overflow-tooltip="true" 
-                :border="true"
+                
                 >
           <!-- 添加行号列 -->
         <el-table-column  label="序号" 
@@ -178,6 +158,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { CabinetApi } from '@/api/cabinet/info'
+import { formatDate, endOfDay, convertDate, addTime,formatDate1} from '@/utils/formatTime'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** pdu历史数据 列表 */
@@ -194,6 +175,7 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const cascadeAddr = ref(0) // 数字类型的级联地址
+const selectTimeRange = ref(undefined)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -709,6 +691,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+     
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+     // selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -755,6 +745,14 @@ function formatLoopId(_row: any, _column: any, cellValue: number): string {
 
 // 格式化日期
 function formatTime(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
+
+// 格式化日期
+function formatTime1( cellValue: number): string {
   if (!cellValue) {
     return ''
   }
@@ -841,12 +839,9 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
@@ -907,12 +902,23 @@ const getNavNewData = async() => {
   navLoopData.value = res.loop
   navOutletData.value = res.outlet
 }
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 初始化 **/
 onMounted( () => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      selectTimeRange.value = [
+      formatDate1(startOfMonth),
+      formatDate1(now)
+];
   getList();
 });
 
@@ -977,7 +983,7 @@ onMounted( () => {
   }
 
     ::v-deep .el-table .el-table__header th {
-      background-color: #F5F7FA;
+      background-color: #f7f7f7;
       color: #909399;
   }
 </style>

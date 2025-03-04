@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex.vo;
 
+import cn.hutool.core.date.DateTime;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
@@ -7,6 +8,7 @@ import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
 import com.alibaba.excel.annotation.write.style.HeadStyle;
 import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -67,4 +69,20 @@ public class BusCurLinePageResVO {
     @JsonProperty("pow_active_max_value")
     @Schema(description = "最大有功功率")
     private BigDecimal powActiveMaxValue;
+
+    /**
+     * 最大有功功率时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @ExcelProperty("最大有功功率时间")
+    @JsonProperty("pow_active_max_time")
+    private DateTime powActiveMaxTime;
+
+    /**
+     * 最大电流时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @ExcelProperty("最大电流时间")
+    @JsonProperty("cur_max_time")
+    private DateTime curMaxTime;
 }

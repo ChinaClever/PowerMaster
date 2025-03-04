@@ -104,7 +104,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
-                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
+                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
@@ -125,7 +125,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
-                      <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
+                      <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
@@ -329,7 +329,7 @@ const sensorListRight = reactive([
   {
     type: 1,
     sensorId: null,
-    position: 1,
+    position: 2,
     pathPdu: '',
     channel: 2
   },
@@ -349,6 +349,8 @@ const sensorListRight = reactive([
 ])
 const machineFormData = ref({
   roomId: '',
+  aisleId: '',
+  index: '',
   cabinetName: '',
   type: '',
   cabinetHeight: 42, //U
@@ -494,6 +496,8 @@ const open = async (type: string, data, machineColInfo) => {
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
+    aisleId: '',
+    index: '',
     type: '',
     cabinetHeight: 42,
     powCapacity: 8,
@@ -518,6 +522,9 @@ const open = async (type: string, data, machineColInfo) => {
     eleLimitMonth: 1000, // 月用能限制
   }
   machineFormData.value.roomId = machineColInfo.roomId
+  machineFormData.value.aisleId = machineColInfo.aisleId
+  machineFormData.value.index = machineColInfo.index
+  console.log("machineFormData",machineFormData)
   console.log('machineColInfo', machineColInfo)
   if (machineColInfo.barA) {
     isBusBind.value = true
@@ -530,6 +537,8 @@ const open = async (type: string, data, machineColInfo) => {
       barIdB: machineColInfo.barIdB,
       busIpB: machineColInfo.busIpB,
     }
+    machineFormData.value.pduBox = machineFormData.value.pduBox ? 1 : 0
+    console.log(machineFormData)
   }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -542,7 +551,8 @@ const submitForm = async () => {
     if (!machineForm) return
     const valid = await machineForm.value.validate()
     if (!valid) return
-    if(machineFormData.value.pduIpA != "" && machineFormData.value.pduIpB != ""){
+    if(machineFormData.value.pduIpA != "" && machineFormData.value.pduIpB != "" && machineFormData.value.pduIpA != null && machineFormData.value.pduIpB != null){
+        console.log("machineFormData.value",machineFormData.value)
         if(machineFormData.value.pduIpA == machineFormData.value.pduIpB && machineFormData.value.casIdA == machineFormData.value.casIdB){
            message.error("PDU-IP地址相同情况下, 级联地址不能相同。");
            return;
@@ -554,11 +564,11 @@ const submitForm = async () => {
     const sensorListFilter = sensorList.filter(item => item.sensorId)
     console.log('sensorListFilter', sensorListFilter)
     machineFormData.value.sensorList = sensorListFilter
-    console.log('roomName', machineFormData.value)
-    // const res = await CabinetApi.saveCabinetInfo({
-    //   ...machineFormData.value,
-    // })
-    console.log('res', {...machineFormData.value}, machineFormData.value)
+    console.log('roomName', {...machineFormData.value})
+    const res = await CabinetApi.saveCabinetInfo({
+      ...machineFormData.value,
+    })
+    console.log('res', res , {...machineFormData.value}, machineFormData.value)
     dialogVisible.value = false
     // 发送操作成功的事件
     emit('success', {...machineFormData.value, addrA:null, addrB: null})

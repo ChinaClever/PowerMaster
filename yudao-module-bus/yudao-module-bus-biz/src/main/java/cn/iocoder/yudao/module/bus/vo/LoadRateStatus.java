@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.bus.controller.admin.busindex.vo;
+package cn.iocoder.yudao.module.bus.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -14,14 +14,15 @@ public class LoadRateStatus {
     private Integer LoadRateZero;
 
     @Schema(description = "<30%")
-    private Integer LoadRateOne;
+    private Integer lessThirty;
 
     @Schema(description = "30~60")
-    private Integer LoadRateTwo;
+    private Integer greaterThirty;
 
     @Schema(description = "60~90")
-    private Integer LoadRateThree;
+    private Integer greaterSixty;
 
     @Schema(description = ">90%")
-    private Integer LoadRateFour;
+    private Integer greaterNinety;
+
 }

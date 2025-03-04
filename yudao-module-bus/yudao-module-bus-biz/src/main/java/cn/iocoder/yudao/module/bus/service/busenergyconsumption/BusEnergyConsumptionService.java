@@ -65,7 +65,7 @@ public interface BusEnergyConsumptionService {
      *
      * @return 始端箱实时数据最近一天各新增的数据条数
      */
-    Map<String, Object> getOneDaySumData() throws IOException;
+    Map<String, Object> getOneDaySumData(String timeRangeType,LocalDateTime oldTime,LocalDateTime newTime) throws IOException;
 
     /**
      * 获取始端箱分段电能电费
@@ -122,7 +122,7 @@ public interface BusEnergyConsumptionService {
      *
      * @return 插接箱实时数据最近一天各新增的数据条数
      */
-    Map<String, Object> getBoxOneDaySumData() throws IOException;
+    Map<String, Object> getBoxOneDaySumData(String timeRangeType,LocalDateTime oldTime,LocalDateTime newTime) throws IOException;
 
     /**
      * 获取插接箱分段电能电费

@@ -25,14 +25,18 @@
         ri.u_height,
         ri.update_time
         FROM rack_index ri
-        left join cabinet_index ci on ci.id = ri.cabinet_id
+        LEFT JOIN cabinet_index ci ON ci.id = ri.cabinet_id
         <where>
-            ri.is_delete = 0 and ri.id in
-            <foreach item="ipArray" collection="devkeys" separator="," open="(" close=")" index="">
-                #{item}
-            </foreach>
+            ri.is_delete = 0
+            <!-- 判断 devkeys 是否为空 -->
+            <if test="ipArray != null and ipArray.length > 0">
+                AND ri.id IN
+                <foreach item="item" collection="ipArray" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
-        order by ri.create_time desc
+        ORDER BY ri.create_time DESC
     </select>
     <select id="getRackStatistics" resultType="cn.iocoder.yudao.framework.common.vo.RackStatisticsResVO">
         SELECT

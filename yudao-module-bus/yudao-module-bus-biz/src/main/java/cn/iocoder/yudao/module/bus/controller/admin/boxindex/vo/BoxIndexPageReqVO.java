@@ -47,6 +47,8 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "运行状态 0：正常 1：预警 2：告警 3: 升级 4：故障 5：离线", example = "2")
     private List<Integer> runStatus;
 
+    private List<Integer> curUnbalanceStatus;
+
     @Schema(description = "节点IP")
     private String nodeIp;
 
@@ -84,7 +86,7 @@ public class BoxIndexPageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
-    @Schema(description = "时间颗粒度")
+    @Schema(description = "时间颗粒度 插接箱配电（day/hour/today/threeDay）")
     private String timeGranularity;
 
 }

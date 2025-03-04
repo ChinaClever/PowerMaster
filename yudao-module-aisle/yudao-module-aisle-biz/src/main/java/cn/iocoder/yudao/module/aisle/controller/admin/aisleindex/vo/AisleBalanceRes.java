@@ -37,6 +37,9 @@ public class AisleBalanceRes extends AisleIndexRespVO{
     @Schema(description = "A路占比")
     private Double rateA;
 
+    @Schema(description = "B路占比")
+    private Double rateB;
+
     @Schema(description = "数据更新时间")
     private String dataUpdateTime;
 }

@@ -15,6 +15,13 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "机房名称")
     private String roomName;
 
+    @Schema(description = "数据来源 0：PDU 1：母线", example = "1")
+    private Boolean pduBox;
+
+    private String keyA;
+
+    private String keyB;
+
     @Schema(description = "a电流")
     private List<BigDecimal> curA;
 
@@ -60,6 +67,12 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "功率因素")
     private BigDecimal powerFactor;
 
+    @Schema(description = "功率因素")
+    private BigDecimal powerFactorA;
+
+    @Schema(description = "功率因素")
+    private BigDecimal powerFactorB;
+
     @Schema(description = "A不平衡比例", example = "1.00")
     private BigDecimal aPow;
 
@@ -73,13 +86,28 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "负载率曲线 - 时间")
     private List<String> day;
 
-    @Schema(description = "负载率曲线 - a")
-    private List<BigDecimal> factorA;
-
-    @Schema(description = "负载率曲线 - b")
-    private List<BigDecimal> factorB;
+//    @Schema(description = "负载率曲线 - a")
+//    private List<BigDecimal> factorA;
+//
+//    @Schema(description = "负载率曲线 - b")
+//    private List<BigDecimal> factorB;
 
     @Schema(description = "负载率曲线 - 总")
     private List<BigDecimal> factorTotal;
+
+    @Schema(description = "额定容量")
+    private BigDecimal powCapacity;
+
+    @Schema(description = "最大负载率")
+    private BigDecimal  loadFactorBig;
+
+    @Schema(description = "最大负载率发生时间")
+    private String  loadFactorTime;
+
+    @Schema(description = "最大有功功率")
+    private BigDecimal powActiveBig;
+
+    @Schema(description = "最大有功功率发生时间")
+    private String powActiveTime;
 
 }

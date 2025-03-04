@@ -11,12 +11,11 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetEnvSensorMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
-import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
@@ -25,7 +24,11 @@ import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hpsf.Decimal;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -58,6 +61,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
 
@@ -100,6 +104,9 @@ public class IndexServiceImpl implements IndexService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Resource
+    private RackIndexDoMapper rackIndexDoMapper;
 
     @Override
     public Integer createIndex(IndexSaveReqVO createReqVO) {
@@ -246,6 +253,10 @@ public class IndexServiceImpl implements IndexService {
         result.put("activePowMaxTime",  null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime",  null);
+        result.put("reactivePowMaxValue",null);
+        result.put("reactivePowMaxTime",  null);
+        result.put("reactivePowMinValue", null);
+        result.put("reactivePowMinTime",  null);
 
         result.put("AapparentPowMaxValue",  null);
         result.put("AapparentPowMaxTime",   null);
@@ -255,6 +266,10 @@ public class IndexServiceImpl implements IndexService {
         result.put("AactivePowMaxTime",     null);
         result.put("AactivePowMinValue",    null);
         result.put("AactivePowMinTime",     null);
+        result.put("AreactivePowMaxValue",null);
+        result.put("AreactivePowMaxTime",  null);
+        result.put("AreactivePowMinValue",null);
+        result.put("AreactivePowMinTime",  null);
 
         result.put("BapparentPowMaxValue",  null);
         result.put("BapparentPowMaxTime",   null);
@@ -264,6 +279,10 @@ public class IndexServiceImpl implements IndexService {
         result.put("BactivePowMaxTime",     null);
         result.put("BactivePowMinValue",    null);
         result.put("BactivePowMinTime",     null);
+        result.put("BreactivePowMaxValue",null);
+        result.put("BreactivePowMaxTime",  null);
+        result.put("BreactivePowMinValue",null);
+        result.put("BreactivePowMinTime",  null);
         try {
             if(Id != null) {
                 String index = null;
@@ -289,51 +308,66 @@ public class IndexServiceImpl implements IndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
+                totalLineRes.getSeries().add(totalReactivePow);
 
 
                 LineSeries apparentPowA = new LineSeries();
                 apparentPowA.setName("A平均视在功率");
                 LineSeries activePowA = new LineSeries();
                 activePowA.setName("A平均有功功率");
+                LineSeries reactivePowA = new LineSeries();
+                reactivePowA.setName("A平均无功功率");
                 aLineRes.getSeries().add(apparentPowA);
                 aLineRes.getSeries().add(activePowA);
+                aLineRes.getSeries().add(reactivePowA);
 
 
                 LineSeries apparentPowB = new LineSeries();
                 apparentPowB.setName("B平均视在功率");
                 LineSeries activePowB = new LineSeries();
                 activePowB.setName("B平均有功功率");
+                LineSeries reactivePowB = new LineSeries();
+                reactivePowB.setName("B平均无功功率");
                 bLineRes.getSeries().add(apparentPowB);
                 bLineRes.getSeries().add(activePowB);
+                bLineRes.getSeries().add(reactivePowB);
 
                 if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                     cabinetPowHourDoList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().split(" ")[1]);
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().split(" ")[1]);
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().split(" ")[1]);
                     });
                 }else{
                     cabinetPowHourDoList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().split(" ")[0]);
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().split(" ")[0]);
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().split(" ")[0]);
                     });
                 }
@@ -348,6 +382,10 @@ public class IndexServiceImpl implements IndexService {
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "active_total_min_value");
                 CabinetPowHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, CabinetPowHourDo.class);
 
+                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_total_max_value");
+                CabinetPowHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, CabinetPowHourDo.class);
+                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_total_min_value");
+                CabinetPowHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, CabinetPowHourDo.class);
 
                 String apparentAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "apparent_a_max_value");
                 CabinetPowHourDo maxApparentA = JsonUtils.parseObject(apparentAMaxValue, CabinetPowHourDo.class);
@@ -359,6 +397,12 @@ public class IndexServiceImpl implements IndexService {
                 String activeAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "active_a_min_value");
                 CabinetPowHourDo minActiveA = JsonUtils.parseObject(activeAMinValue, CabinetPowHourDo.class);
 
+                String reactiveAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_a_max_value");
+                CabinetPowHourDo maxReactiveA = JsonUtils.parseObject(reactiveAMaxValue, CabinetPowHourDo.class);
+                String reactiveAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_a_min_value");
+                CabinetPowHourDo minReactiveA = JsonUtils.parseObject(reactiveAMinValue, CabinetPowHourDo.class);
+
+
                 String apparentBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "apparent_b_max_value");
                 CabinetPowHourDo maxApparentB = JsonUtils.parseObject(apparentBMaxValue, CabinetPowHourDo.class);
                 String apparentBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "apparent_b_min_value");
@@ -368,6 +412,12 @@ public class IndexServiceImpl implements IndexService {
                 CabinetPowHourDo maxActiveB = JsonUtils.parseObject(activeBMaxValue, CabinetPowHourDo.class);
                 String activeBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "active_b_min_value");
                 CabinetPowHourDo minActiveB = JsonUtils.parseObject(activeBMinValue, CabinetPowHourDo.class);
+
+                String reactiveBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_b_max_value");
+                CabinetPowHourDo maxReactiveB = JsonUtils.parseObject(reactiveBMaxValue, CabinetPowHourDo.class);
+                String reactiveBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "reactive_b_min_value");
+                CabinetPowHourDo minReactiveB = JsonUtils.parseObject(reactiveBMinValue, CabinetPowHourDo.class);
+
 
                 result.put("totalLineRes",totalLineRes);
                 result.put("aLineRes",aLineRes);
@@ -381,6 +431,10 @@ public class IndexServiceImpl implements IndexService {
                 result.put("activePowMaxTime",totalMaxActive.getActiveTotalMaxTime());
                 result.put("activePowMinValue",totalMinActive.getActiveTotalMinValue());
                 result.put("activePowMinTime",totalMinActive.getActiveTotalMinTime());
+                result.put("reactivePowMaxValue",totalMaxReactive.getReactiveTotalMaxValue());
+                result.put("reactivePowMaxTime",totalMaxReactive.getReactiveTotalMaxTime());
+                result.put("reactivePowMinValue",totalMinReactive.getReactiveTotalMinValue());
+                result.put("reactivePowMinTime",totalMinReactive.getReactiveTotalMinTime());
 
                 result.put("AapparentPowMaxValue",maxApparentA.getApparentAMaxValue());
                 result.put("AapparentPowMaxTime",maxApparentA.getApparentAMaxTime());
@@ -390,6 +444,11 @@ public class IndexServiceImpl implements IndexService {
                 result.put("AactivePowMaxTime",maxActiveA.getActiveAMaxTime());
                 result.put("AactivePowMinValue",minActiveA.getActiveAMinValue());
                 result.put("AactivePowMinTime",minActiveA.getActiveAMinTime());
+                result.put("AreactivePowMaxValue",maxReactiveA.getReactiveAMaxValue());
+                result.put("AreactivePowMaxTime",maxReactiveA.getReactiveAMaxTime());
+                result.put("AreactivePowMinValue",minReactiveA.getReactiveAMinValue());
+                result.put("AreactivePowMinTime",minReactiveA.getReactiveAMinTime());
+
 
                 result.put("BapparentPowMaxValue",  maxApparentB.getApparentBMaxValue());
                 result.put("BapparentPowMaxTime",   maxApparentB.getApparentBMaxTime());
@@ -399,189 +458,16 @@ public class IndexServiceImpl implements IndexService {
                 result.put("BactivePowMaxTime",     maxActiveB.getActiveBMaxTime());
                 result.put("BactivePowMinValue",    minActiveB.getActiveBMinValue());
                 result.put("BactivePowMinTime",     minActiveB.getActiveBMinTime());
+                result.put("BreactivePowMaxValue", maxReactiveB.getReactiveBMaxValue());
+                result.put("BreactivePowMaxTime", maxReactiveB.getReactiveBMaxTime());
+                result.put("BreactivePowMinValue", minReactiveB.getReactiveBMinValue());
+                result.put("BreactivePowMinTime", minReactiveB.getReactiveBMinTime());
 
             }
         }catch (Exception e){
             log.error("获取数据失败",e);
         }
         return result;
-    }
-
-    @Override
-    public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO) {
-
-        PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
-                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()).eq(IndexDO::getPduBox,0));
-        List<IndexDO> list = indexDOPageResult.getList();
-        System.out.println(list);
-        List<CabinetEnvAndHumRes> result = new ArrayList<>();
-        if (CollectionUtil.isEmpty(list)){
-            return new PageResult<>(result, 0L);
-        }
-        List<TemColorDO> temColorList = temColorService.getTemColorAll();
-
-        List<Integer> ids = list.stream().map(IndexDO::getId).collect(Collectors.toList());
-
-        List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(list.stream().map(IndexDO::getRoomId).collect(Collectors.toList()));
-        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
-        Map<Integer, String>  aisleMap = aisleIndexMapper.selectBatchIds(list.stream()
-//                .filter(dto -> dto.getAisleId() != 0)
-                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
-
-        List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().in(CabinetPdu::getCabinetId, ids));
-
-        List<String> pduA = cabinetPdus.stream()
-                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduKeyA()))
-                .map(pdu -> pdu.getPduKeyA() )//+ '-' + pdu.getCasIdA()
-                .collect(Collectors.toList());
-
-        List<String> pduB = cabinetPdus.stream()
-                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduKeyB()))
-                .map(pdu -> pdu.getPduKeyB() )//+ '-' + pdu.getCasIdB()
-                .collect(Collectors.toList());
-
-        Map<String, Integer> pduMap = null;
-        if (!CollectionUtil.isEmpty(pduA) || !CollectionUtil.isEmpty(pduB) ){
-            pduMap = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
-                    .inIfPresent(PduIndex::getPduKey, pduA)
-                    .or(!CollectionUtil.isEmpty(pduA) && !CollectionUtil.isEmpty(pduB))
-                    .in(!CollectionUtil.isEmpty(pduB),PduIndex::getPduKey, pduB)).stream().collect(Collectors.toMap(PduIndex::getPduKey, PduIndex::getId));
-        }
-
-        Map<Integer, CabinetPdu> cabinetPduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
-        List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
-                .in(CabinetEnvSensor::getCabinetId, ids)
-                .eq(CabinetEnvSensor::getSensorType, 1));
-        Map<Integer, List<CabinetEnvSensor>> cabinetEnvMap = cabinetEnvSensors.stream().collect(Collectors.groupingBy(cabinetEnvSensor -> cabinetEnvSensor.getCabinetId()));
-
-        for (IndexDO indexDO : list) {
-            CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
-            result.add(res);
-            String localtion = null;
-            if(indexDO.getAisleId() != 0){
-                localtion = roomMap.get(indexDO.getRoomId()) + "-" + aisleMap.get(indexDO.getAisleId()) + "-" + indexDO.getCabinetName();
-            }else {
-                localtion = roomMap.get(indexDO.getRoomId()) + "-"  + indexDO.getCabinetName() ;
-            }
-            res.setLocation(localtion);
-            res.setId(indexDO.getId());
-            if(pduMap == null){
-                break;
-            }
-            CabinetPdu cabinetPdu = cabinetPduMap.get(indexDO.getId());
-            if (cabinetPdu == null){
-                continue;
-            }
-            List<CabinetEnvSensor> envList = cabinetEnvMap.get(indexDO.getId());
-            if(envList == null || envList.size() == 0){
-                continue;
-            }
-            for (CabinetEnvSensor cabinetEnvSensor : envList) {
-                String devKey = null;
-                if(cabinetEnvSensor.getPathPdu() == "A"){
-                    devKey = cabinetPdu.getPduKeyA();// + '-' + cabinetPdu.getCasIdA();
-                }else{
-                    devKey = cabinetPdu.getPduKeyB();// + '-' + cabinetPdu.getCasIdB();
-                }
-
-                Integer pduId = pduMap.get(devKey);
-                if (pduId == null){
-                    continue;
-                }
-                MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
-
-                SearchRequest pduEnvRealtimeRequest = new SearchRequest("pdu_env_realtime");
-                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-
-                searchSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery("pdu_id", pduId))
-                        .must(QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId())));
-                searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
-                searchSourceBuilder.size(1); // 设置返回的最大结果数
-                pduEnvRealtimeRequest.source(searchSourceBuilder);
-                multiSearchRequest.add(pduEnvRealtimeRequest);
-
-                try {
-                    // 执行多索引搜索请求
-                    MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
-
-                    SearchResponse response = multiSearchResponse.getResponses()[0].getResponse();
-                    if (response != null) {
-                        SearchHits hits = response.getHits();
-                        if (hits.getTotalHits().value > 0) {
-                            SearchHit hit = hits.getAt(0);
-                            PduEnvRealtimeDo pduEnvRealtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), PduEnvRealtimeDo.class);
-                            if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 1) {
-                                Double tem = new Double(pduEnvRealtimeDo.getTem());
-                                Double hum = new Double(pduEnvRealtimeDo.getHum());
-                                for (TemColorDO temColorDO : temColorList) {
-                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
-                                        res.setIceTopTemColor(temColorDO.getColor());
-                                    }
-                                }
-                                res.setIceTopTem(tem);
-                                res.setIceTopHum(hum);
-                            } else if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 2) {
-                                Double tem = new Double(pduEnvRealtimeDo.getTem());
-                                Double hum = new Double(pduEnvRealtimeDo.getHum());
-                                for (TemColorDO temColorDO : temColorList) {
-                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
-                                        res.setIceMidTemColor(temColorDO.getColor());
-                                    }
-                                }
-                                res.setIceMidTem(tem);
-                                res.setIceMidHum(hum);
-                            } else if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 3) {
-                                Double tem = new Double(pduEnvRealtimeDo.getTem());
-                                Double hum = new Double(pduEnvRealtimeDo.getHum());
-                                for (TemColorDO temColorDO : temColorList) {
-                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
-                                        res.setIceBomTemColor(temColorDO.getColor());
-                                    }
-                                }
-                                res.setIceBomTem(tem);
-                                res.setIceBomHum(hum);
-                            } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 1) {
-                                Double tem = new Double(pduEnvRealtimeDo.getTem());
-                                Double hum = new Double(pduEnvRealtimeDo.getHum());
-                                for (TemColorDO temColorDO : temColorList) {
-                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
-                                        res.setHotTopTemColor(temColorDO.getColor());
-                                    }
-                                }
-                                res.setHotTopTem(tem);
-                                res.setHotTopHum(hum);
-                            } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 2) {
-                                Double tem = new Double(pduEnvRealtimeDo.getTem());
-                                Double hum = new Double(pduEnvRealtimeDo.getHum());
-                                for (TemColorDO temColorDO : temColorList) {
-                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
-                                        res.setHotMidTemColor(temColorDO.getColor());
-                                    }
-                                }
-                                res.setHotMidTem(tem);
-                                res.setHotMidHum(hum);
-                            } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 3) {
-                                Double tem = new Double(pduEnvRealtimeDo.getTem());
-                                Double hum = new Double(pduEnvRealtimeDo.getHum());
-                                for (TemColorDO temColorDO : temColorList) {
-                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
-                                        res.setHotBomTemColor(temColorDO.getColor());
-                                    }
-                                }
-                                res.setHotBomTem(tem);
-                                res.setHotBomHum(hum);
-                            }
-                        }
-                    }
-                }catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-
-        return new PageResult<CabinetEnvAndHumRes>(result,indexDOPageResult.getTotal());
     }
 
     @Override
@@ -597,6 +483,12 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinValue",null);
         result.put("temMinTime",null);
         result.put("temMinSensorId",null);
+        result.put("humMaxValue",null);
+        result.put("humMaxTime",null);
+        result.put("humMaxSensorId",null);
+        result.put("humMinValue",null);
+        result.put("humMinTime",null);
+        result.put("humMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
             if (cabinetPdu == null){
@@ -630,7 +522,7 @@ public class IndexServiceImpl implements IndexService {
             List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, id)
                     .eq(CabinetEnvSensor::getChannel, 1)
-                    .eq(CabinetEnvSensor::getSensorType, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
                     .orderByAsc(CabinetEnvSensor::getPosition));
             List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
@@ -687,6 +579,10 @@ public class IndexServiceImpl implements IndexService {
             PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
             String temMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "tem_min_value");
             PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+            String humMaxValue = getPDUMaxData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_max_value");
+            PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+            String humMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_min_value");
+            PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
             if(temMax != null){
                 result.put("temMaxValue",temMax.getTemMaxValue());
                 result.put("temMaxTime",temMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -696,6 +592,16 @@ public class IndexServiceImpl implements IndexService {
                 result.put("temMinValue", temMin.getTemMinValue());
                 result.put("temMinTime",temMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("temMinSensorId",temMin.getSensorId());
+            }
+            if (humMax != null){
+                result.put("humMaxValue", humMax.getHumMaxValue());
+                result.put("humMaxTime",humMax.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMaxSensorId",humMax.getSensorId());
+            }
+            if (humMin != null){
+                result.put("humMinValue", humMin.getHumMinValue());
+                result.put("humMinTime",humMin.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMinSensorId",humMin.getSensorId());
             }
             return result;
         } catch (Exception e){
@@ -719,6 +625,12 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinValue",null);
         result.put("temMinTime",null);
         result.put("temMinSensorId",null);
+        result.put("humMaxValue",null);
+        result.put("humMaxTime",null);
+        result.put("humMaxSensorId",null);
+        result.put("humMinValue",null);
+        result.put("humMinTime",null);
+        result.put("humMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
             if (cabinetPdu == null){
@@ -752,7 +664,7 @@ public class IndexServiceImpl implements IndexService {
             List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, id)
                     .eq(CabinetEnvSensor::getChannel, 2)
-                    .eq(CabinetEnvSensor::getSensorType, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
                     .orderByAsc(CabinetEnvSensor::getPosition));
             List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
@@ -809,6 +721,10 @@ public class IndexServiceImpl implements IndexService {
             PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
             String temMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "tem_min_value");
             PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+            String humMaxValue = getPDUMaxData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_max_value");
+            PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+            String humMinValue = getPDUMinData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex, "hum_min_value");
+            PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
             if(temMax != null){
                 result.put("temMaxValue",temMax.getTemMaxValue());
                 result.put("temMaxTime",temMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -819,7 +735,16 @@ public class IndexServiceImpl implements IndexService {
                 result.put("temMinTime",temMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("temMinSensorId",temMin.getSensorId());
             }
-
+            if(humMax != null){
+                result.put("humMaxValue",humMax.getHumMaxValue());
+                result.put("humMaxTime",humMax.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMaxSensorId",humMax.getSensorId());
+            }
+            if(humMin != null){
+                result.put("humMinValue", humMin.getHumMinValue());
+                result.put("humMinTime",humMin.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("humMinSensorId",humMin.getSensorId());
+            }
             return result;
         } catch (Exception e){
             log.error("获取数据失败",e);
@@ -894,6 +819,156 @@ public class IndexServiceImpl implements IndexService {
     public List<Integer> idList() {
         return cabIndexMapper.selectList().stream().limit(10).collect(Collectors.toList())
                 .stream().map(IndexDO::getId).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CabinetRackRspVO> getRackByCabinet(Integer id) {
+        List<CabinetRackRspVO> vos = new ArrayList<>();
+        // 查询 CabinetPdu
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id));
+        if (cabinetPdu == null) {
+            return vos;
+        }
+        // 查询 RackIndex 列表
+        List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>().eq(RackIndex::getCabinetId, id));
+        if (CollectionUtils.isEmpty(rackIndexList)) {
+            return vos;
+        }
+        for (RackIndex rackIndex : rackIndexList) {
+            List<Integer> outletIdA = rackIndex.getOutletIdA();
+            List<Integer> outletIdB = rackIndex.getOutletIdB();
+            String pduKeyA = cabinetPdu.getPduKeyA();
+            String pduKeyB = cabinetPdu.getPduKeyB();
+            // 获取 A 相 pdu 数据
+            Object redisValueA = redisTemplate.opsForValue().get(REDIS_KEY_PDU + pduKeyA);
+            JSONObject pduDataA = null;
+            if (redisValueA != null) {
+                JSONObject jsonObjectA = (JSONObject) redisValueA;
+                pduDataA = JSONObject.parseObject(jsonObjectA.getString("pdu_data"));
+            }
+            // 获取 B 相 pdu 数据
+            Object redisValueB = redisTemplate.opsForValue().get(REDIS_KEY_PDU + pduKeyB);
+            JSONObject pduDataB = null;
+            if (redisValueB != null) {
+                JSONObject jsonObjectB = (JSONObject) redisValueB;
+                pduDataB = JSONObject.parseObject(jsonObjectB.getString("pdu_data"));
+            }
+            // 计算 A 相功率
+            double powActive = 0;
+            if (pduDataA != null) {
+                JSONObject pduTotalDataA = JSONObject.parseObject(pduDataA.getString("pdu_total_data"));
+                if (pduTotalDataA != null) {
+                    powActive = pduTotalDataA.getDoubleValue("pow_active");
+                }
+            }
+            // 计算 B 相功率
+            double powActiveB = 0;
+            if (pduDataB != null) {
+                JSONObject pduTotalDataB = JSONObject.parseObject(pduDataB.getString("pdu_total_data"));
+                if (pduTotalDataB != null) {
+                    powActiveB = pduTotalDataB.getDoubleValue("pow_active");
+                }
+            }
+            // 计算总功率
+            double totalPowActive = powActive + powActiveB;
+            // 获取 cur_value 数组
+            JSONArray curValueArray = new JSONArray();
+            if (pduDataA != null) {
+                JSONObject outputItemList = pduDataA.getJSONObject("output_item_list");
+                if (outputItemList != null) {
+                    curValueArray = outputItemList.getJSONArray("cur_value");
+                }
+            }
+            // 计算 A 相电流总和
+            double sumA = 0;
+            for (Integer index : outletIdA) {
+                if (index >= 0 && index < curValueArray.size()) {
+                    sumA += curValueArray.getDoubleValue(index);
+                }
+            }
+            // 计算 B 相电流总和
+            double sumB = 0;
+            for (Integer index : outletIdB) {
+                if (index >= 0 && index < curValueArray.size()) {
+                    sumB += curValueArray.getDoubleValue(index);
+                }
+            }
+            // 创建 CabinetRackRspVO 对象并添加到结果列表
+            CabinetRackRspVO vo = CabinetRackRspVO.builder()
+                    .id(rackIndex.getId())
+                    .name(rackIndex.getRackName())
+                    .totalPower(totalPowActive)
+                    .aCurrent(sumA)
+                    .bCurrent(sumB)
+                    .build();
+            vos.add(vo);
+        }
+        return vos;
+    }
+
+    @Override
+    public Map<String, Double> getEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) throws IOException {
+        Map<String, Double> result = new HashMap<>();
+        String index = "cabinet_ele_total_realtime";
+        List<Integer> list = Arrays.asList(Integer.valueOf(id));
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        // 获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(oldTime).lte(newTime))
+                .must(QueryBuilders.termsQuery("cabinet_id", list))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1);
+
+        // 执行查询
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        Double eleTotal = null;
+        // 处理查询结果
+        if (searchResponse.getHits().getHits().length > 0) {
+            SearchHit hit = searchResponse.getHits().getHits()[0];
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            // 提取需要的字段
+             eleTotal = (Double) sourceAsMap.get("ele_total");
+        }
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest1 = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件
+        SearchSourceBuilder builder1 = new SearchSourceBuilder();
+
+        // 获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(oldTime).lte(newTime))
+                .must(QueryBuilders.termsQuery("cabinet_id", list))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.DESC);
+        // 设置搜索条件
+        searchRequest1.source(builder1);
+        builder1.size(1);
+
+        // 执行查询
+        SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+        Double eleTotal1 = null;
+        // 处理查询结果
+        if (searchResponse1.getHits().getHits().length > 0) {
+            SearchHit hit = searchResponse1.getHits().getHits()[0];
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+
+            // 提取需要的字段
+             eleTotal1 = (Double) sourceAsMap.get("ele_total");
+        }
+        Double ele = null;
+        if (eleTotal != null && eleTotal1 != null) {
+            ele = eleTotal - eleTotal1;
+        }
+        result.put("ele", ele);
+        return result;
     }
 
     /**

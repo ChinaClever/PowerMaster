@@ -28,7 +28,10 @@ public class BoxIndexRes  extends BoxResBase{
     @Schema(description = "运行状态")
     private Integer status;
 
+    private Integer loadRateStatus;
+
     @Schema(description = "数据更新时间")
     private String dataUpdateTime;
+
 
 }

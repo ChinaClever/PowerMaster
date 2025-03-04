@@ -40,6 +40,8 @@ const echartsOption = ref({
           result += params[i].value.toFixed(3) +  ' kVA'; 
         } else if (params[i].seriesName.includes("有功功率")) {
           result += params[i].value.toFixed(3) + ' kW';
+        } else if (params[i].seriesName.includes("无功功率")) {
+          result += params[i].value.toFixed(3) + ' kVar';
         }
         result += '<br>';
       }
@@ -60,7 +62,11 @@ watchEffect(() => {
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
-
+  series.value.forEach(item => {  
+    // 检查 item 是否已经有 markPoint，如果没有则添加  
+                 item.symbol = "circle",
+                 item.symbolSize = 4
+  });  
   time.value = prop.list.time;
 });
 

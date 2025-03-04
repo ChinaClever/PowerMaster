@@ -5,7 +5,6 @@ import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.OutLetsPageRespVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.*;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -48,9 +47,9 @@ public class HistoryDataController {
         return success(resultList);
     }
 
-    @GetMapping("/page")
+    @PostMapping("/page")
     @Operation(summary = "获得pdu历史数据分页")
-    public CommonResult<PageResult<Object>> getHistoryDataPage(HistoryDataPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getHistoryDataPage(@RequestBody HistoryDataPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = historyDataService.getHistoryDataPage(pageReqVO);
         return success(pageResult);
     }
@@ -62,11 +61,11 @@ public class HistoryDataController {
         return success(pageResult);
     }
     //导出pdu历史数据详情
-    @GetMapping("/details-export-excel")
+    @PostMapping("/details-export-excel")
     @Operation(summary = "导出pdu历史数据详情 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportDetailsDataExcel(HistoryDataDetailsReqVO pageReqVO,
+    public void exportDetailsDataExcel(@RequestBody HistoryDataDetailsReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = historyDataService.getHistoryDataDetails(pageReqVO).getList();
@@ -135,10 +134,17 @@ public class HistoryDataController {
 
 
     }
-    @GetMapping("/env-page")
+    @PostMapping("/env-page")
     @Operation(summary = "获得pdu环境数据分页")
-    public CommonResult<PageResult<Object>> getEnvDataPage(EnvDataPageReqVo pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getEnvDataPage(@RequestBody EnvDataPageReqVo pageReqVO) throws IOException {
         PageResult<Object> pageResult = historyDataService.getEnvDataPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    @PostMapping("/env-pageByCabinet")
+    @Operation(summary = "获得pdu环境数据分页1")
+    public CommonResult<PageResult<Object>> getEnvDataPageByCabinet(@RequestBody EnvDataPageReqVo pageReqVO) throws IOException {
+        PageResult<Object> pageResult = historyDataService.getEnvDataPageByCabinet(pageReqVO);
         return success(pageResult);
     }
 
@@ -160,6 +166,13 @@ public class HistoryDataController {
     @Operation(summary = "查询pdu环境数据导航的新增多少条记录数据")
     public CommonResult<Map<String, Object>> getEnvNavNewData() throws IOException {
         Map<String, Object> map = historyDataService.getEnvNavNewData();
+        return success(map);
+    }
+
+    @GetMapping("/env-new-dataByCabinet")
+    @Operation(summary = "查询pdu环境数据导航的新增多少条记录数据1")
+    public CommonResult<Map<String, Object>> getEnvNavNewDataByCabinet() throws IOException {
+        Map<String, Object> map = historyDataService.getEnvNavNewDataByCabinet();
         return success(map);
     }
 
@@ -227,6 +240,26 @@ public class HistoryDataController {
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = historyDataService.getEnvDataPage(pageReqVO).getList();
+        //对list进行处理
+        historyDataService.getEnExcelList(list);
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "pdu环境历史数据.xlsx", "数据", EnvRealtimePageRespVO.class,
+                    BeanUtils.toBean(list, EnvRealtimePageRespVO.class));
+        } else {
+            ExcelUtils.write(response, "pdu环境历史数据.xlsx", "数据", EnvHourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, EnvHourAndDayPageRespVO.class));
+        }
+    }
+
+    @PostMapping("/env-export-excelByCabinet")
+    @Operation(summary = "导出pdu环境历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportEnvHistoryDataExcelByCabinet(@RequestBody EnvDataPageReqVo pageReqVO,
+                                          HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = historyDataService.getEnvDataPageByCabinet(pageReqVO).getList();
         //对list进行处理
         historyDataService.getEnExcelList(list);
         // 导出 Excel

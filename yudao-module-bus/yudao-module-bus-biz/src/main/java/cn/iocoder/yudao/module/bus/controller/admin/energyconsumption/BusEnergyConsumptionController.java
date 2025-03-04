@@ -10,12 +10,14 @@ import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.bus.service.busenergyconsumption.BusEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,18 +33,18 @@ public class BusEnergyConsumptionController {
     @Resource
     private BusEnergyConsumptionService busEnergyConsumptionService;
 
-    @GetMapping("/bus/page")
-    @Operation(summary = "获得始端箱电量数据分页")
-    public CommonResult<PageResult<Object>> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    @PostMapping("/bus/page")
+    @Operation(summary = "获得始端箱能耗数据分页")
+    public CommonResult<PageResult<Object>> getEQDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/bus/export-excel")
+    @PostMapping("/bus/export-excel")
     @Operation(summary = "导出始端箱能耗趋势数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportEQDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getEQDataPage(pageReqVO).getList();
@@ -57,18 +59,18 @@ public class BusEnergyConsumptionController {
 
 
 
-    @GetMapping("/bus/bill-page")
+    @PostMapping("/bus/bill-page")
     @Operation(summary = "获得始端箱电费数据分页")
-    public CommonResult<PageResult<Object>> getBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBillDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBillDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/bus/bill-export-excel")
+    @PostMapping("/bus/bill-export-excel")
     @Operation(summary = "导出始端箱电费统计数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBillDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportBillDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getBillDataPage(pageReqVO).getList();
@@ -95,11 +97,11 @@ public class BusEnergyConsumptionController {
         return success(pageResult);
     }
 
-    @GetMapping("/bus/details-export-excel")
+    @PostMapping("/bus/details-export-excel")
     @Operation(summary = "导出始端箱能耗排名历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBuxDetailsDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportBuxDetailsDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getEQDataDetails(pageReqVO).getList();
@@ -118,18 +120,18 @@ public class BusEnergyConsumptionController {
         }
     }
 
-    @GetMapping("/bus/realtime-page")
+    @PostMapping("/bus/realtime-page")
     @Operation(summary = "获得始端箱实时电量数据分页")
-    public CommonResult<PageResult<Object>> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getRealtimeEQDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/bus/realtime-export-excel")
+    @PostMapping("/bus/realtime-export-excel")
     @Operation(summary = "导出始端箱电能记录数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportRealtimeEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportRealtimeEQDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
@@ -158,32 +160,31 @@ public class BusEnergyConsumptionController {
 
     @GetMapping("/bus/one-day")
     @Operation(summary = "获得始端箱能耗最近一天插入的数据量")
-    public CommonResult<Map<String, Object>> getOneDaySumData() throws IOException {
-        Map<String, Object> map = busEnergyConsumptionService.getOneDaySumData();
+    public CommonResult<Map<String, Object>> getOneDaySumData(String timeRangeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        Map<String, Object> map = busEnergyConsumptionService.getOneDaySumData(timeRangeType,oldTime,newTime);
         return success(map);
     }
 
-    @GetMapping("/bus/bill-details")
+    @PostMapping("/bus/bill-details")
     @Operation(summary = "获取始端箱分段电能电费")
-    public CommonResult<PageResult<Object>> getBusSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBusSubBillDetails(@RequestBody EnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBusSubBillDetails(reqVO);
         return success(pageResult);
     }
 
 
     // 插接箱
-    @GetMapping("/box/page")
-    @Operation(summary = "获得插接箱电量数据分页")
-    public CommonResult<PageResult<Object>> getBoxEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    @PostMapping("/box/page")
+    @Operation(summary = "获得插接箱能耗数据分页")
+    public CommonResult<PageResult<Object>> getBoxEQDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBoxEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/box/export-excel")
+    @PostMapping("/box/export-excel")
     @Operation(summary = "导出插接箱能耗趋势数据 Excel")
-//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBoxEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportBoxEQDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getBoxEQDataPage(pageReqVO).getList();
@@ -194,9 +195,9 @@ public class BusEnergyConsumptionController {
     }
 
 
-    @GetMapping("/box/bill-page")
+    @PostMapping("/box/bill-page")
     @Operation(summary = "获得插接箱电费数据分页")
-    public CommonResult<PageResult<Object>> getBoxBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBoxBillDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBoxBillDataPage(pageReqVO);
         return success(pageResult);
     }
@@ -258,18 +259,18 @@ public class BusEnergyConsumptionController {
 
 
 
-    @GetMapping("/box/realtime-page")
+    @PostMapping("/box/realtime-page")
     @Operation(summary = "获得插接箱实时电量数据分页")
-    public CommonResult<PageResult<Object>> getBoxRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBoxRealtimeEQDataPage(@RequestBody EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBoxRealtimeEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/box/realtime-export-excel")
+    @PostMapping("/box/realtime-export-excel")
     @Operation(summary = "导出插接箱电能记录数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBoxRealtimeEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportBoxRealtimeEQDataExcel(@RequestBody EnergyConsumptionPageReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getBoxRealtimeEQDataPage(pageReqVO).getList();
@@ -295,16 +296,16 @@ public class BusEnergyConsumptionController {
         return success(map);
     }
 
-    @GetMapping("/box/one-day")
+    @GetMapping("/box/one-day/")
     @Operation(summary = "获得插接箱能耗最近一天插入的数据量")
-    public CommonResult<Map<String, Object>> getBoxOneDaySumData() throws IOException {
-        Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData();
+    public CommonResult<Map<String, Object>> getBoxOneDaySumData(String timeRangeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData(timeRangeType,oldTime,newTime);
         return success(map);
     }
 
-    @GetMapping("/box/bill-details")
+    @PostMapping("/box/bill-details")
     @Operation(summary = "获取插接箱分段电能电费")
-    public CommonResult<PageResult<Object>> getBoxSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBoxSubBillDetails(@RequestBody EnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBoxSubBillDetails(reqVO);
         return success(pageResult);
     }

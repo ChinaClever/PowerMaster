@@ -71,12 +71,12 @@
         <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <div class="power">功率：{{item.powActive}}kW</div>
+              <div class="power">功率：{{item.powActive || 0}}kW</div>
               <div class="info">
                 <div>名称：{{item.rackName}}</div>
                 <div>型号：{{item.rackType}}</div>
-                <div>A路电流：{{item.cura}}A</div>
-                <div>B路电流：{{item.curb}}A</div>
+                <div>A路电流：{{item.cura || 0}}A</div>
+                <div>B路电流：{{item.curb || 0}}A</div>
               </div>
             </div>
             <div class="room">{{item.local}}</div>
@@ -84,15 +84,20 @@
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
-          <el-table-column label="编号" min-width="110" align="center" prop="bh" />
+          <!-- <el-table-column label="编号" min-width="110" align="center" prop="bh" /> -->
+          <el-table-column label="编号" align="center" prop="tableId" width="80px" >
+          <template #default="{ $index }">
+            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+          </template>  
+          </el-table-column>
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="设备名" min-width="110" align="center" prop="sbm" />
-          <el-table-column label="设备型号" min-width="110" align="center" prop="sbxh" />
-          <el-table-column label="A路电流" min-width="110" align="center" prop="adl" />
-          <el-table-column label="B路电流" min-width="110" align="center" prop="bdl" />
-          <el-table-column label="有功功率" min-width="110" align="center" prop="yggl" />
-          <el-table-column label="无功功率" min-width="110" align="center" prop="wggl" />
-          <el-table-column label="功率因素" min-width="110" align="center" prop="glys" />
+          <el-table-column label="设备名" min-width="110" align="center" prop="rackName" />
+          <el-table-column label="设备型号" min-width="110" align="center" prop="rackType" />
+          <el-table-column label="A路电流" min-width="110" align="center" prop="cura" />
+          <el-table-column label="B路电流" min-width="110" align="center" prop="curb" />
+          <el-table-column label="有功功率" min-width="110" align="center" prop="powActive" />
+          <el-table-column label="无功功率" min-width="110" align="center" prop="powReactive" />
+          <el-table-column label="功率因素" min-width="110" align="center" prop="powerFactor" />
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
@@ -132,7 +137,7 @@ const statistics = reactive({
 })
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await CabinetApi.getRackMenuAll({})
   navList.value = res
 }
 const getStatistics = async() => {
@@ -155,7 +160,7 @@ const getTableData = async(reset = false) => {
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
       company: queryParams.company,
-      cabinetIds: isFirst.value ? null : cabinetIds.value,
+      rackIds: isFirst.value ? null : cabinetIds.value,
       // rackIds: [1, 2, 3, 4, 5],
       // roomId: null,
     })
@@ -204,11 +209,11 @@ const toFramDeviceDetail = (key) => {
 }
 
 const handleCheck = (row) => {
-  console.log('handleCheck!', row)
+  // console.log('handleCheck!', row)
   isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
-    if (item.type == 3) {
+    if (item.type == 5) {
       ids.push(item.id)
     }
   })

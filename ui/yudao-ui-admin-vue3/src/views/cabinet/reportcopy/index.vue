@@ -1,6 +1,6 @@
 <template>
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机柜报表">
-    <template #NavInfo>
+    <template #NavInfo >
       <div >
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
@@ -45,7 +45,8 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="120px"
+        style="float: left;"
+
       >
         <!-- <el-form-item label="网络地址" prop="devKey">
           <el-input
@@ -56,27 +57,15 @@
             class="!w-240px"
           />
         </el-form-item> -->
-
-        <el-form-item label="机柜Id" prop="ipAddr" >
-          <el-autocomplete
-            v-model="queryParams.Id"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-140px"
-            placeholder="请输入id"
-            @select="handleQuery"
-          />
-        </el-form-item>
-
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
-            @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
+            @click="queryParams.timeType = 0;dateTimeName='twentyfourHour';now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
+            @click="queryParams.timeType = 1;dateTimeName='seventytwoHour';now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
@@ -123,6 +112,7 @@
         </el-form-item>
         <el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleExport"  ><Icon icon="ep:search" class="mr-5px" :loading="true" /> 导出</el-button>
         </el-form-item>
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
@@ -130,6 +120,7 @@
       </el-form>
     </template>
     <template #Content>
+      <div id="pdfRef">
       <div v-show="visControll.visAllReport" class="page" >
         <div class="page-con">
           <div class="pageBox" >
@@ -191,13 +182,39 @@
                         </template>
                       </el-table-column>
                     </el-table-column>
-                    
                   </el-table>
                 </div>
               </el-col>
-              <!-- <el-col :span="serChartContainerWidth">
-                <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
-              </el-col> -->
+            </el-row>
+          </div>
+
+          <div class="pageBox" >
+            <div class="page-conTitle">
+              机架基本信息
+            </div>
+            <br/>
+            <el-row :gutter="24" >
+              <el-col :span="24 - serChartContainerWidth">
+                <div class="centered-div">
+                  <el-table 
+                    :data="rack" 
+                    :header-cell-style="arraySpanMethod"
+                    >
+                    <el-table-column  align="center" label="序号" type="index" prop="id" width="100px"/>
+                    <el-table-column  align="center" label="名称" prop="name"  />
+                    <el-table-column  align="center" label="总功率(kW)" prop="totalPower" />
+                    <el-table-column  align="center" label="A路电流(A)" prop="acurrent" />
+                    <el-table-column  align="center" label="B路电流(A)" prop="bcurrent" />
+                    <el-table-column label="操作" align="center">
+                    <template #default="scope">
+                    <el-button v-if="switchValue==0" @click="generateDailyReport(scope.row.id)">详情</el-button>
+                    <el-button v-if="switchValue==1" @click="generateMonthlyReport(scope.row.id)">详情</el-button>
+                    
+                    </template>
+      </el-table-column>
+                  </el-table>
+                </div>
+              </el-col>
             </el-row>
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
@@ -207,6 +224,30 @@
             <p class="paragraph" v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
             <p class="paragraph" v-if="visControll.isSameDay && eqData.firstEq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
+          </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              A路相电流历史曲线趋势图
+            </div>
+            <ACurLine class="adaptiveStyle" :list="AcurVolData" v-if="dataLoaded"/>
+          </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              A路相电压历史曲线趋势图
+            </div>
+            <AVolLine class="adaptiveStyle" :list="AcurVolData" v-if="dataLoaded"/>
+          </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              B路相电流历史曲线趋势图
+            </div>
+            <BBCurLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
+          </div>
+          <div class="pageBox" v-if="isPDU">
+            <div class="page-conTitle">
+              B路相电压历史曲线趋势图
+            </div>
+            <BVolLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -220,6 +261,7 @@
             </div>
             <p class="paragraph">本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVA， 发生时间{{powData.reactivePowMaxTime}}。最小有功功率{{powData.reactivePowMinValue}}kVA， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.ApowVis">
@@ -228,6 +270,7 @@
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AreactivePowMaxValue}}kVA， 发生时间{{powData.AreactivePowMaxTime}}。最小有功功率{{powData.AreactivePowMinValue}}kVA， 发生时间{{powData.AreactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="aLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.BpowVis">
@@ -236,7 +279,14 @@
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BreactivePowMaxValue}}kVA， 发生时间{{powData.BreactivePowMaxTime}}。最小有功功率{{powData.BreactivePowMinValue}}kVA， 发生时间{{powData.BreactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="bLineList"/>
+          </div>
+          <div class="pageBox" v-if="visControll.BpowVis">
+            <div class="page-conTitle" >
+              机架耗电电量排名（先写死，后续根据需要修改）
+            </div>
+            <HorizontalBar :width="computedWidth" height="58vh" />
           </div>
           <!-- <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
@@ -246,7 +296,7 @@
           </div> -->
           <div class="pageBox" v-if="visControll.iceTemVis">
             <div class="page-conTitle">
-              前门温度曲线
+             冷通道温度曲线
             </div>
             <p class="paragraph" v-show="iceTemList.temMaxValue">本周期内，最高温度{{iceTemList.temMaxValue}}°C， 最高温度发生时间{{iceTemList.temMaxTime}}，由温度传感器{{iceTemList.temMaxSensorId}}采集得到</p>
             <p class="paragraph" v-show="iceTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{iceTemList.temMinValue}}°C， 最高温度发生时间{{iceTemList.temMinTime}}，由温度传感器{{iceTemList.temMinSensorId}}采集得到</p>
@@ -254,15 +304,31 @@
           </div>
           <div class="pageBox" v-if="visControll.hotTemVis">
             <div class="page-conTitle">
-              后门温度曲线
+              热通道温度曲线
             </div>
             <p class="paragraph" v-show="hotTemList.temMaxValue">本周期内，最高温度{{hotTemList.temMaxValue}}°C， 最高温度发生时间{{hotTemList.temMaxTime}}，由温度传感器{{hotTemList.temMaxSensorId}}采集得到</p>
             <p class="paragraph" v-show="hotTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{hotTemList.temMinValue}}°C， 最高温度发生时间{{hotTemList.temMinTime}}，由温度传感器{{hotTemList.temMinSensorId}}采集得到</p>
             <EnvTemLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
           </div>
         </div>
-        
+        <div class="pageBox" v-if="visControll.iceTemVis">
+            <div class="page-conTitle">
+             冷通道湿度曲线
+            </div>
+            <p class="paragraph" v-show="iceTemList.humMaxValue">本周期内，最高湿度{{iceTemList.humMaxValue}}%RH， 最高湿度发生时间{{iceTemList.humMaxTime}}，由湿度传感器{{iceTemList.humMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="iceTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{iceTemList.humMinValue}}%RH， 最高湿度发生时间{{iceTemList.humMinTime}}，由湿度传感器{{iceTemList.humMinSensorId}}采集得到</p>
+            <EnvHumLine class="Container" width="70vw" height="58vh" :list="iceTemList" />
+          </div>
+          <div class="pageBox" v-if="visControll.hotTemVis">
+            <div class="page-conTitle">
+              热通道湿度曲线
+            </div>
+            <p class="paragraph" v-show="hotTemList.humMaxValue">本周期内，最高湿度{{hotTemList.humMaxValue}}%RH， 最高湿度发生时间{{hotTemList.humMaxTime}}，由湿度传感器{{hotTemList.humMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="hotTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{hotTemList.humMinValue}}%RH， 最高湿度发生时间{{hotTemList.humMinTime}}，由湿度传感器{{hotTemList.humMinSensorId}}采集得到</p>
+            <EnvHumLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
+        </div>
       </div>
+    </div>
     </template>
   </CommonMenu>
 
@@ -280,9 +346,29 @@ import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
+import EnvHumLine from './component/EnvHumLine.vue'
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import ACurLine from './component/AcurLine.vue'
+import AVolLine from './component/AvolLine.vue'
+import BBCurLine from './component/BcurLine.vue'
+import BVolLine from './component/BvolLine.vue'
+import HorizontalBar from './component/HorizontalBar.vue'
+// 引入方法
+import { htmlPdf } from "@/utils/htmlToPDF.js"  
+	// 导出成PDF
+	const handleExport = (name) => {
+	  var fileName= '机柜报表'
+	  const fileList = document.getElementsByClassName('pdfRef')   // 很重要
+	  htmlPdf(fileName, document.querySelector('#pdfRef'), fileList)
+	}
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
+
+const AcurVolData = ref();
+const BcurVolData = ref();
+const dataLoaded = ref(false);
 
 const pfLineList = ref() as any;
 const iceTemList = ref([]) as any;
@@ -294,6 +380,18 @@ const bLineList = ref() as any;
 const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
+const ele = ref();
+const factor = ref();
+let lineidChartA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainerA = ref<HTMLElement | null>(null);
+let lineidChartOneA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainerOneA = ref<HTMLElement | null>(null);
+let lineidChartB = null as echarts.ECharts | null;
+const lineidChartContainerB = ref<HTMLElement | null>(null);
+let lineidChartOneB = null as echarts.ECharts | null;
+const lineidChartContainerOneB = ref<HTMLElement | null>(null);
+const dateTimeName = ref('seventytwoHour')
+
 
 const visControll = reactive({
   visAllReport : false,
@@ -306,6 +404,7 @@ const visControll = reactive({
   ApowVis :false,
   BpowVis : false,
   pfVis: false,
+  flag: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -375,6 +474,17 @@ const handleDayPick = () => {
   
 }
 
+const { push } = useRouter()
+
+const generateDailyReport = (id) => {
+      push('/u/rackreport?id='+id+'&Type='+0);
+    };
+
+    const generateMonthlyReport = (id) => {
+      push('/u/rackreport?id='+id+'&Type='+1);
+    };
+
+
 const handleMonthPick = () => {
 
   if(queryParams.oldTime){
@@ -441,21 +551,23 @@ const serverRoomArr =  ref([]) as any
 
 //折叠功能
 
-
 const getNavList = async() => {
+  
   const res = await CabinetApi.getRoomMenuAll({})
   serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
-  }
+  // const res = await CabinetApi.getRoomMenuAll({})
+  // serverRoomArr.value = res
+  // if (res && res.length > 0) {
+  //   const room = res[0]
+  //   const keys = [] as string[]
+  //   room.children.forEach(child => {
+  //     if(child.children.length > 0) {
+  //       child.children.forEach(son => {
+  //         keys.push(son.id + '-' + son.type)
+  //       })
+  //     }
+  //   })
+  // }
 }
 
 const handleClick = (row) => {
@@ -582,13 +694,14 @@ const itemStyle = ref({
 }); 
 const getList = async () => {
   loading.value = true
-  
+  await handleEleQuery();
   await handleConsumeQuery();
   await handlePowQuery();
   await handleIceQuery();
   await handleHotQuery();
   await handleDetailQuery();
   await handlePFLineQuery();
+  
 
   visControll.visAllReport = true;
   loading.value = false
@@ -598,12 +711,95 @@ const getList = async () => {
 const handlePFLineQuery = async () => {
   const data = await IndexApi.getCabinetPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
+  //保留俩位小数
+  
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     visControll.pfVis = true;
   }else {
     visControll.pfVis = false;
   }
+}
+
+const handleEleQuery = async () => {
+  const data = await IndexApi.getEleByCabinet(queryParams);
+  ele.value = data.ele;
+  console.log('elekasjklasncklasnckasnk',ele.value);
+}
+
+const AlChartData = ref({
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[] //电流
+});
+const AllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+const AlllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+
+const BlChartData = ref({
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[] //电流
+});
+const BllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+const BlllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+
+const AlineidDateTimes = ref([] as string[])
+
+  const BlineidDateTimes = ref([] as string[])
+
+  const filterTimesFromDate = (dateTimeStrings, targetDate) => {
+  const targetDateObj = new Date(targetDate);
+  const targetDateString = targetDateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  return dateTimeStrings.filter(dateTimeString => {
+    const [datePart, _] = dateTimeString.split(' ');
+    return datePart >= targetDateString;
+  });
+};
+
+// 获取当前日期（或者您可以指定任意日期）
+const currentDate = new Date().toISOString().split('T')[0];
+
+const isPDU = ref(true);
+
+const PDUHdaLineHisdata = async () => {
+  try {
+    const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime });
+
+    AcurVolData.value = result.A;
+    BcurVolData.value = result.B;
+    console.log('BBBBBBBBBBBBBBBBBBBBBBBB', BcurVolData.value);
+    console.log('BBBBBBBBBBBBBBBBBBBBBBBB', BcurVolData.value);
+
+    dataLoaded.value = true;
+  }catch (error) {
+    isPDU.value = false;
+  }
+};
+const rack = ref([] as any);
+//获取机架信息
+const getRackByCabinet = async () => {
+  const result = await IndexApi.getRackByCabinet({id : queryParams.Id});
+  
+  // 保留俩位小数
+  for (let i = 0; i < result.length; i++) {
+    result[i].acurrent = result[i].acurrent?.toFixed(2);
+    result[i].bcurrent = result[i].bcurrent?.toFixed(2);
+    result[i].totalPower = result[i].totalPower?.toFixed(3);
+  }
+  rack.value = result;
+  console.log("机架信息",result);
+  console.log("机架信息",rack.value);
 }
 
 const handleIceQuery = async () => {
@@ -626,6 +822,20 @@ const handleIceQuery = async () => {
     }
   }
 }
+
+const windowWidth = ref(window.innerWidth);
+
+
+// 计算属性，根据窗口宽度返回不同的width值
+const computedWidth = computed(() => {
+  if (windowWidth.value >= 2400) {
+    return '90vw';
+  } else if (windowWidth.value >= 1600) {
+    return '70vw';
+  } else {
+    return '80vw';
+  }
+});
 
 const handleHotQuery = async () => {
   if(queryParams.Id != null){
@@ -707,7 +917,8 @@ const handleConsumeQuery = async () => {
 const handleDetailQuery = async () => {
   var temp = [] as any;
   
-  var CabinetInfo = await CabinetApi.getCabinetDetail({id : queryParams.Id});
+  var CabinetInfo1 = await CabinetApi.getCabinetDetail({id : queryParams.Id});
+  var CabinetInfo = CabinetInfo1.redisData;
   var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
   var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
   var percentageValue = 50 as any;
@@ -728,7 +939,7 @@ const handleDetailQuery = async () => {
   
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
+    baseInfoValue : CabinetInfo1?.name,
     consumeName : "当前总视在功率",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
     percentageName: "当前AB路占比",
@@ -745,6 +956,12 @@ const handleDetailQuery = async () => {
     baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
     consumeName : "当前总无功功率",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
+  })
+  temp.push({
+    baseInfoName : "耗电量",
+    baseInfoValue : (ele.value || 0).toFixed(3) + "kW",
+    consumeName : "当前功率因素",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '/'
   })
   CabinetTableData.value = temp;
 }
@@ -769,6 +986,9 @@ const handleQuery = async () => {
   if(queryParams.Id){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
+      await PDUHdaLineHisdata();
+      // await lineidFlashChartData();
+      await getRackByCabinet();
       queryParams.devKey = null;
     }
   }
@@ -815,12 +1035,14 @@ const handleQuery = async () => {
 //   }
 // }
 
+
 /** 初始化 **/
 onMounted( async () =>  {
   // getList();
   // initChart();
   getNavList();
   idList.value = await loadAll();
+  
 })
 </script>
 <style scoped lang="scss">
@@ -1076,8 +1298,8 @@ onMounted( async () =>  {
 }
 
 :deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
+    background: #f6f6f6 !important;
+    color: black;
 }
 :deep(.master-left .el-card__body) {
   padding: 0;
@@ -1087,7 +1309,28 @@ onMounted( async () =>  {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-:deep(.el-form .el-form-item) {
-  margin-right: 0;
+// :deep(.el-form .el-form-item) {
+//   margin-right: 0;
+// }
+
+@media screen and (min-width:2048px) {
+  .adaptiveStyle {
+    width: 75vw;
+    height: 42vh;
+  }
+}
+
+@media screen and  (max-width:2048px) and (min-width:1600px) {
+  .adaptiveStyle {
+    width: 70vw;
+    height: 42vh;
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .adaptiveStyle {
+    width: 85vw;
+    height: 42vh;
+  }
 }
 </style>

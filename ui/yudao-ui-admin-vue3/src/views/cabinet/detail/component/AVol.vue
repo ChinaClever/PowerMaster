@@ -22,6 +22,8 @@ const props = defineProps({
   }
 });
 
+console.log('loadFactor',props)
+
 // 使用 computed 属性来创建 ECharts 配置
 const chartOptions = computed(() => ({
   tooltip: {
@@ -45,9 +47,9 @@ const chartOptions = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.volA[0], name: 'Ua', itemStyle: { color: '#E5B849' } },
-        { value: props.loadFactor.volA[1], name: 'Ub', itemStyle: { color: '#C8603A' } },
-        { value: props.loadFactor.volA[2], name: 'Uc', itemStyle: { color: '#AD3762' } },
+        { value: props.loadFactor.volA[0], name: 'Ua', itemStyle: { color: '#075F71' } },
+        { value: props.loadFactor.volA[1], name: 'Ub', itemStyle: { color: '#119CB5' } },
+        { value: props.loadFactor.volA[2], name: 'Uc', itemStyle: { color: '#45C0C9' } },
       ]
     }
   ]

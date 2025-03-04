@@ -13,7 +13,7 @@
   <!-- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/> -->
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp;{{busName}}-{{boxName}}</div>
+    <div class="header_app_text">机房：{{ roomName?roomName:'未绑定' }}&nbsp;&nbsp;母线：{{busName}}&nbsp;&nbsp;名称：{{boxName}}&nbsp;&nbsp;网络地址：{{devKey}}</div>
     <div class="header_app_text_other1">
           <el-col :span="10">
             <el-form
@@ -151,7 +151,9 @@ const input = ref('')
 
 const busName = ref()
 const boxName = ref()
+const devKey = ref(history?.state?.devKey)
 const location = ref(history?.state?.location)
+const roomName = ref(history?.state?.roomName)
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
 const timeRadio = ref('近一小时')
@@ -162,6 +164,7 @@ const isLoadRateDisabled = ref(false)
 const switchChartContainer = ref(0)
 const hasData = ref(true)
  let intervalId: number | null = null; // 定时器
+
 const queryParams = reactive({
   id: history?.state?.boxId as number | undefined,
   devKey : history?.state?.devKey as string | undefined,
@@ -192,7 +195,6 @@ const loadAll = async () => {
   var objectArray = data.map((str) => {
     return { value: str };
   });
-  console.log(objectArray)
   return objectArray;
 }
 
@@ -342,7 +344,7 @@ const initChart = () => {
             } else if (value <= 75) {
                 return 'rgb(56,201,73)'; 
             } else {
-                return 'rgb(230,93,93)'; 
+                return 'rgb(230,93,93)';
             }
         } 
 };
@@ -352,45 +354,43 @@ let myChart1 = null as echarts.ECharts | null;
 const initChart1 = () => {
   if (chartContainer1.value && instance) {
     myChart1 = echarts.init(chartContainer1.value);
-    myChart1.setOption(
-      {
-        title: {
-          text: '',
-          subtext: '',
-          left: 'center'
-        },
-        tooltip: {
-          trigger: 'item',
-          formatter: '{a} <br/>{b} : {c}%'
-        },
-        legend: {
-          orient: 'horizontal',
-          bottom: '25',
-          selectedMode: false
-        },
-        series: [
-          {
-            name: '',
-            type: 'pie',
-            radius: '50%',
-            label: {
-              formatter: '{b}: {d}%',
-            },
-            data: [
-              { value: powReactivepPercentage.value, name: '无功功率', },
-              { value: powActivepPercentage.value, name: '有功功率' },
-            ],
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)'
-              }
+    myChart1?.setOption({
+      title: {
+        text: '',
+        subtext: '',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b} : {d}%'  // 修改这里使用 {d}%
+      },
+      legend: {
+        orient: 'horizontal',
+        bottom: '25',
+        selectedMode: false
+      },
+      series: [
+        {
+          name: '',
+          type: 'pie',
+          radius: '50%',
+          label: {
+            formatter: '{b}: {d}%',  // 这里已经是正确的
+          },
+          data: [
+            { value: powReactivepPercentage.value, name: '无功功率' },
+            { value: powActivepPercentage.value, name: '有功功率' }
+          ],
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
             }
           }
-        ]
-      }
-    );
+        }
+      ]
+    });
     instance.appContext.config.globalProperties.myChart1 = myChart1;
 
   }
@@ -570,7 +570,7 @@ const getDetailData =async () => {
       powReactive.value = formatNumber(data.powReactive, 3);
       peakDemand.value = formatNumber(data.peakDemand, 3);
       powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
-      powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
+      powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2);
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
       //loadPercentage.value = 7 测试数据
       if (loadPercentage.value <= 40){
@@ -604,6 +604,10 @@ const getBoxIdAndLocation =async () => {
  } finally {
  }
 }
+
+watch(() => loadPercentage.value ,async()=>{
+  await initChart()
+})
 
 // 监听切换类型
 watch( ()=>typeRadio.value, async(value)=>{
@@ -767,7 +771,6 @@ watch( ()=>timeRadio.value, async(value)=>{
   await getLineChartData();
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log(L1Data.value)
     myChart2?.setOption({
     title: { text: ''},
     tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -837,7 +840,6 @@ watch( ()=>timeRadio.value, async(value)=>{
   }
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log(L1Data.value)
     myChart3?.setOption({
     title: { text: ''},
     tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -1035,45 +1037,43 @@ const flashChartData = async () =>{
       ],
     }
   );
-  myChart1?.setOption(
-    {
-      title: {
-        text: '',
-        subtext: '',
-        left: 'center'
-      },
-      tooltip: {
-        trigger: 'item',
-        formatter: '{a} <br/>{b} : {c}%'
-      },
-      legend: {
-        orient: 'horizontal',
-        bottom: '25',
-        selectedMode: false
-      },
-      series: [
-        {
-          name: '',
-          type: 'pie',
-          radius: '50%',
-          label: {
-            formatter: '{b}: {d}%',
-          },
-          data: [
-            { value: powReactivepPercentage.value, name: '无功功率', },
-            { value: powActivepPercentage.value, name: '有功功率' },
-          ],
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
-          },
-        }          
-      ]
-    }
-  );
+  myChart1?.setOption({
+    title: {
+      text: '',
+      subtext: '',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b} : {d}%'  // 修改这里使用 {d}%
+    },
+    legend: {
+      orient: 'horizontal',
+      bottom: '25',
+      selectedMode: false
+    },
+    series: [
+      {
+        name: '',
+        type: 'pie',
+        radius: '50%',
+        label: {
+          formatter: '{b}: {d}%',  // 这里已经是正确的
+        },
+        data: [
+          { value: powReactivepPercentage.value, name: '无功功率' },
+          { value: powActivepPercentage.value, name: '有功功率' }
+        ],
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }
+    ]
+  });
   myChart2?.setOption({
       tooltip: { trigger: 'axis' ,formatter: function(params) {
                                   var result = params[0].name + '<br>';
@@ -1434,7 +1434,6 @@ const handleQuery = async () => {
     queryParams.devKey = queryParamsSearch.devKey;
     await getBoxIdAndLocation();
     await flashChartData();
-    console.log(queryParams.devKey)
 }
 
 /** 初始化 **/

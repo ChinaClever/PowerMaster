@@ -3,13 +3,13 @@ import request from '@/config/axios'
 export const EnergyConsumptionApi = {
 
   // 查询始端箱电量数据分页
-  getEQDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/eq-data/bus/page`, params })
+  getEQDataPage: async (data: any) => {
+    return await request.post({ url: `/bus/eq-data/bus/page`, data })
   },
 
    // 查询始端箱电量费数据分页
-   getBillDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/eq-data/bus/bill-page`, params })
+   getBillDataPage: async (data: any) => {
+    return await request.post({ url: `/bus/eq-data/bus/bill-page`, data })
   },
 
   // 查询始端箱电量数据详情
@@ -18,8 +18,8 @@ export const EnergyConsumptionApi = {
   },
 
   // 查询始端箱实时电量数据分页
-  getRealtimeEQDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/eq-data/bus/realtime-page`, params })
+  getRealtimeEQDataPage: async (data: any) => {
+    return await request.post({ url: `/bus/eq-data/bus/realtime-page`, data })
   },
 
   // 查询始端箱能耗导航的新增多少条记录数据
@@ -28,26 +28,26 @@ export const EnergyConsumptionApi = {
   },
 
   // 查询始端箱电能记录导航的一天数据显示
-  getNavOneDayData: async (params: any) => {
+  getNavOneDayData: async (params) => {
     return await request.get({ url: `/bus/eq-data/bus/one-day`, params })
   },
 
   // 导出始端箱能耗趋势历史数据 Excel
-  exportEQPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/eq-data/bus/export-excel`, params, ...axiosConfig })
+  exportEQPageData: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/eq-data/bus/export-excel`, data, ...axiosConfig })
   },
     // 导出插接箱能耗排名历史数据 Excel
     exportBusDetailsPageData: async (params, axiosConfig) => {
       return await request.download({ url: `/bus/eq-data/bus/details-export-excel`, params, ...axiosConfig })
     },
   // 导出始端箱电费统计历史数据 Excel
-  exportBillPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/eq-data/bus/bill-export-excel`, params, ...axiosConfig })
+  exportBillPageData: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/eq-data/bus/bill-export-excel`, data, ...axiosConfig })
   },
 
   // 导出始端箱电能记录历史数据 Excel
-  exportRealtimeEQPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/eq-data/bus/realtime-export-excel`, params, ...axiosConfig })
+  exportRealtimeEQPageData: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/eq-data/bus/realtime-export-excel`, data, ...axiosConfig })
   },
 
   // 获取分段电能电费
@@ -60,13 +60,13 @@ export const EnergyConsumptionApi = {
 
   //插接箱API
   // 查询插接箱电量数据分页
-  getBoxEQDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/eq-data/box/page`, params })
+  getBoxEQDataPage: async (data: any) => {
+    return await request.post({ url: `/bus/eq-data/box/page`, data })
   },
 
   // 查询插接箱电量费数据分页
-  getBoxBillDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/eq-data/box/bill-page`, params })
+  getBoxBillDataPage: async (data: any) => {
+    return await request.post({ url: `/bus/eq-data/box/bill-page`, data })
   },
 
   // 查询插接箱电量数据详情
@@ -75,8 +75,8 @@ export const EnergyConsumptionApi = {
   },
 
   // 查询插接箱实时电量数据分页
-  getBoxRealtimeEQDataPage: async (params: any) => {
-    return await request.get({ url: `/bus/eq-data/box/realtime-page`, params })
+  getBoxRealtimeEQDataPage: async (data: any) => {
+    return await request.post({ url: `/bus/eq-data/box/realtime-page`, data })
   },
 
   // 查询插接箱能耗导航的新增多少条记录数据
@@ -85,13 +85,13 @@ export const EnergyConsumptionApi = {
   },
 
   // 查询插接箱电能记录导航的一天数据显示
-  getBoxNavOneDayData: async (params: any) => {
-    return await request.get({ url: `/bus/eq-data/box/one-day`, params })
+  getBoxNavOneDayData: async (params) => {
+    return await request.get({ url: `/bus/eq-data/box/one-day/` , params})
   },
 
   // 导出插接箱能耗趋势历史数据 Excel
-  exportBoxEQPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/eq-data/box/export-excel`, params, ...axiosConfig })
+  exportBoxEQPageData: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/eq-data/box/export-excel`, data, ...axiosConfig })
   },
     // 导出插接箱能耗排名历史数据 Excel
     exportBoxDetailsPageData: async (params, axiosConfig) => {
@@ -99,13 +99,13 @@ export const EnergyConsumptionApi = {
     },
 
   // 导出插接箱电费统计历史数据 Excel
-  exportBoxBillPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/eq-data/box/bill-export-excel`, params, ...axiosConfig })
+  exportBoxBillPageData: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/eq-data/box/bill-export-excel`, data, ...axiosConfig })
   },
 
   // 导出插接箱电能记录历史数据 Excel
-  exportBoxRealtimeEQPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/eq-data/box/realtime-export-excel`, params, ...axiosConfig })
+  exportBoxRealtimeEQPageData: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/eq-data/box/realtime-export-excel`, data, ...axiosConfig })
   },
   
   // 获取分段电能电费

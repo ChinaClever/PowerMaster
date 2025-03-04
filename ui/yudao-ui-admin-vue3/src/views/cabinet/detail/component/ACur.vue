@@ -1,10 +1,11 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <Echart :height="height" :width="width" :options="chartOptions" />
 </template>
 
 <script lang="ts" setup>
-import 'echarts'
-import { reactive, watch, defineProps, onUnmounted } from 'vue';
+import { defineProps, computed, reactive, onUnmounted } from 'vue';
+import 'echarts';
+
 const props = defineProps({
   loadFactor: {
     type: Number,
@@ -17,12 +18,12 @@ const props = defineProps({
     type: [Number,String],
   }
 })
-console.log('loadFactor',props.loadFactor)
+console.log('loadFactor',props)
 
 
 // 设置饼图的选项
 // 设置饼图的选项
-const echartsOption = reactive({
+const chartOptions = computed(() => ({
   tooltip: {
     trigger: 'item',
     formatter: '{b} : {c}'
@@ -30,8 +31,8 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
-      radius: [20, 80],
-      center: ['50%', '40%'],
+      radius: ['30%', '70%'],
+      center: ['50%', '50%'],
       roseType: 'radius',
       itemStyle: {
         borderRadius: 5
@@ -46,17 +47,21 @@ const echartsOption = reactive({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.curA[0], name: 'Ia', itemStyle: { color: '#075F71' } },
-        { value: props.loadFactor.curA[1], name: 'Ib', itemStyle: { color: '#119CB5' } },
-        { value: props.loadFactor.curA[2], name: 'Ic', itemStyle: { color: '#45C0C9' } },
+        { value: props.loadFactor.curA[0], name: 'Ia', itemStyle: { color: '#E5B849' } },
+        { value: props.loadFactor.curA[1], name: 'Ib', itemStyle: { color: '#C8603A' } },
+        { value: props.loadFactor.curA[2], name: 'Ic', itemStyle: { color: '#AD3762' } },
       ]
     }
   ]
-});
-
+}));
 onUnmounted(() => {
-  console.log('onUnmounted******')
-})
+  console.log('组件已卸载******');
+});
+// onMounted(() => {
+//   window.addEventListener('resize', () => {
+//     chartOptions.resize();
+//   });
+// });
 </script>
 
 <style lang="scss" scoped>

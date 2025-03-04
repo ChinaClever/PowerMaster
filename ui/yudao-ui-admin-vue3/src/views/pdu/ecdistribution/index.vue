@@ -1,42 +1,11 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗趋势" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="PDU能耗趋势" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>   
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div>
-      <div class="nav_content">
-        <el-descriptions title="全部PDU新增耗电量记录" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-      </div> -->
+
         <div class="nav_header">      
-          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress=='null'?'':nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
         </div>
         <br/> 
@@ -119,13 +88,16 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+
+        </el-form-item>
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;margin-right: 10px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
-        </el-form-item>
       </el-form>
-      
+    </template>
       <!-- 列表 -->
+      <template #Content>
+        <div v-loading="loading">
       <el-tabs v-model="activeName1">
         <el-tab-pane v-if="loading2" label="图表" name="lineChart">
           <div  v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
@@ -166,13 +138,14 @@
           </div>
         </el-tab-pane>
       </el-tabs>
+    </div>
     </template>
-    <template #Content>
+    <!-- <template #Content>
       <div  v-if="loading3" style="overflow: visible;">
         <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 90vh;"></div>
       </div>
-    </template>
-  </CommonMenu>
+    </template> -->
+  </CommonMenu1>
 
 </template>
 
@@ -188,9 +161,11 @@ import PDUImage from '@/assets/imgs/PDU.jpg';
 import { pa } from 'element-plus/es/locale';
 import download from '@/utils/download'
 defineOptions({ name: 'ECDistribution' })
+import  CommonMenu1 from './CommonMenu1.vue'
+import { now } from 'lodash-es';
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const nowAddress = ref('')// 导航栏的位置信息
+const nowAddress = ref()// 导航栏的位置信息
 const nowLocation = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
@@ -202,7 +177,7 @@ const instance = getCurrentInstance();
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
 const loading3 =ref(false)
-const selectTimeRange = ref(defaultDayTimeRange(14)) as any
+const selectTimeRange = ref()
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -431,7 +406,6 @@ loading1.value = true
 
     const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
     // console.log(data.length)
-    
     if (data != null && data.total != 0){
       if(data.length==0){
         loading3.value=false
@@ -439,7 +413,6 @@ loading1.value = true
       else{
         loading3.value=true
       }
-      
       outletIdData.value = data.map((item) => {
         if (item.outlet_id < 10) {
           return '输出位 0' + item.outlet_id;
@@ -453,8 +426,6 @@ loading1.value = true
         message: '暂无数据',
         type: 'warning',
       });
-
-      
     }
  } finally {
    loading1.value = false
@@ -707,37 +678,41 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
 /** 搜索按钮操作 */
 const handleQuery = async() => {
   await getLineChartData();
-  await getRankChartData();
+  // await getRankChartData();
   initLineChart();
   initRankChart();
 }
 
-
+const start = ref('')
+const end = ref('')
 
 
 /** 初始化 **/
 onMounted(async () => {
   getNavList()
   getTypeMaxValue();
+  start.value = useRoute().query.start as string;
+  end.value = useRoute().query.end as string;
+  const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
+       selectTimeRange.value = [selectedStartTime, selectedEndTime];
   // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string | undefined;
   const queryAddress = useRoute().query.address as string;
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  console.log('11111撒大声地',queryParams.pduId)
   if (queryParams.pduId != undefined){
     await getLineChartData();
-    await getRankChartData();
+    // await getRankChartData();
     nowAddress.value = queryAddress;
     nowAddressTemp.value = queryAddress;
     initLineChart();

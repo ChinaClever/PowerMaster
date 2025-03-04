@@ -60,7 +60,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.id,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
           </template>
         </el-table-column>
         
@@ -274,8 +274,9 @@ const getList = async () => {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -424,12 +425,24 @@ const toDetails = (id: number, createTimeMin : string,createTimeMax : string) =>
   push('/cabinet/nenghao/powerAnalysis?start='+createTimeMin+
   '&end='+createTimeMax+'&id='+ id);
 }
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  // getList();
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
+   getList();
 });
 
 </script>

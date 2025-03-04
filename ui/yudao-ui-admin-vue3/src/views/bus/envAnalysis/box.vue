@@ -1,12 +1,14 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="插接箱温度分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="插接箱温度分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
+        <div  style="font-size: 14px; text-align:center;">
           <span v-if="nowAddress">{{nowAddress}}</span>
+             <br/>
           <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
-          <br/>
-
+        </div>
+        <br/>
     <div class="descriptions-container" v-if="loading2" style="font-size: 14px;">
           <div  class="description-item" v-if="queryParams.granularity != 'day'" >
             <span class="label">{{maxTemDataTempName}} :</span>
@@ -94,7 +96,7 @@
       <div v-loading="loading">
         <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
-            <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
+            <div ref="chartContainer" id="chartContainer" style="width: 75vw; height: 65vh;"></div>
           </el-tab-pane>
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
@@ -159,7 +161,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 <script setup lang="ts">
 import { IndexApi } from '@/api/bus/busindex'
@@ -173,14 +175,16 @@ import download from '@/utils/download'
 import { ElMessage } from 'element-plus'
 import { max } from 'lodash-es';
 import { error } from 'console';
+import CommonMenu1 from './component/CommonMenu1.vue';
+
 defineOptions({ name: 'BoxEnvLine' })
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const nowAddress = ref('') as any// 导航栏的位置信息
-const nowIpAddr = ref('')// 导航栏的位置信息
+const nowAddress = ref() as any// 导航栏的位置信息
+const nowIpAddr = ref()// 导航栏的位置信息
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
@@ -363,7 +367,7 @@ const isHaveData = ref(false);
 const getList = async () => {
   loading.value = true;
   try {
-    if (queryParams.devkey == undefined){
+    if (nowIpAddr == undefined){
       message.warning('请先选择设备！')
       return
     }
@@ -543,7 +547,8 @@ const getList = async () => {
         type: 'warning',
       });
     }
-  } finally {
+  } 
+  finally {
     loading.value = false;
     a.value=0;
     b.value=0;
@@ -729,8 +734,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
                                   "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
                                   "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,   }
             },
-            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
+            toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value}
             ],
@@ -1050,6 +1055,7 @@ const handleClick = async (row) => {
     queryParams.devkey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
+      nowIpAddr.value = row.unique
     });
     let data: any[] = [];
     tableData.value = data;
@@ -1081,22 +1087,20 @@ const handleQuery = () => {
     needFlush.value++;
 }
 
+
+  const queryDevKey = ref(history?.state?.devKey);
+  const queryboxId = ref(history?.state?.boxId);
+  const queryLocation = ref(history?.state?.location);
 /** 初始化 **/
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  let queryBoxId = useRoute().query.boxId as string | undefined;
-  let queryDevKey = useRoute().query.devKey as string;
-  let queryLocation = useRoute().query.location as string;
-  queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
-  if (queryParams.boxId != undefined){
+  queryParams.devkey = queryDevKey;
+  if (queryParams.devkey != undefined){
+    
+    nowAddress.value = queryLocation.value?queryLocation.value:'未绑定';
+    nowIpAddr.value = queryDevKey.value
     await getList();
-    if (queryLocation == null) {
-      nowAddress.value = '';
-    } else {
-      nowAddress.value = queryLocation;
-    }
-    nowIpAddr.value = queryDevKey
     initChart();
   }
 })

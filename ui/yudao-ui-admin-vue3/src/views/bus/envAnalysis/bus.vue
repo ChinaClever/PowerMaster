@@ -1,80 +1,14 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container"> -->
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        <!-- </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
-        <br/>
-        <template v-if="queryParams.granularity == 'realtime'">
-          <span>{{queryParams.timeRange[0]}}</span>
-          <span>至</span>
-          <span>{{queryParams.timeRange[1]}}</span>
-        </template>
-        <br/>
-      </div>
-      <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="A路最高温度(℃) | 发生时间">
-            <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="A路最低温度(℃) | 发生时间">
-            <span>{{ formatNumber(minTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="minTemDataTimeTemp">{{ minTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div> -->
-     
-          <!-- <div  class="description-item" v-if="queryParams.granularity != 'day'" >
-            <span class="label">B路最高温度(℃) :</span>
-            <span >{{ maxTemDataTempB}} (℃)</span>
-          </div>
-          <div v-if="maxTemDataTimeTempB &&queryParams.granularity != 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(maxTemDataTimeTempB) }}</span>
-          </div>
-
-          <div class="description-item" v-if="queryParams.granularity != 'day'">
-              <span class="label">B路最低温度(℃) :</span>
-              <span >{{minTemDataTempB}}(℃) </span>
-          </div>
-          <div v-if="minTemDataTimeTempB &&queryParams.granularity != 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(minTemDataTimeTempB) }}</span>
-          </div>
-          <div  class="description-item" v-if="queryParams.granularity != 'day'" >
-            <span class="label">C路最高温度(℃) :</span>
-            <span >{{ maxTemDataTempC}} (℃)</span>
-          </div>
-          <div v-if="maxTemDataTimeTempC &&queryParams.granularity != 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(maxTemDataTimeTempC) }}</span>
-          </div>
-
-          <div class="description-item" v-if="queryParams.granularity != 'day'">
-              <span class="label">C路最低温度(℃) :</span>
-              <span >{{minTemDataTempC}}(℃) </span>
-          </div>
-          <div v-if="minTemDataTimeTempC &&queryParams.granularity != 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(minTemDataTimeTempC) }}</span>
-          </div> -->
-          <span v-if="nowAddress">{{nowAddress}}</span>
-          <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
+        <div  style="font-size: 14px; text-align:center;">
+          <span v-if="nowAddress" style="font-size: 14px; text-align:center;">{{nowAddress}}</span>
           <br/>
-
-          <!-- <div class="nav_header" style="font-size: 14px;"  v-if="loading2">
-
-      </div> -->
+          <span v-if="nowIpAddr" style="font-size: 14px; text-align:center;">( {{nowIpAddr}} )</span>
+          
+        </div><br/>
     <div class="descriptions-container" v-if="loading2" style="font-size: 14px;">
           <div  class="description-item" v-if="queryParams.granularity != 'day'" >
             <span class="label">{{maxTemDataTempName}} :</span>
@@ -214,7 +148,7 @@
       <div v-loading="loading">
         <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
-            <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
+            <div ref="chartContainer" id="chartContainer" style="width: 75vw; height: 65vh;"></div>
           </el-tab-pane>
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
@@ -278,27 +212,28 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 <script setup lang="ts">
-import { IndexApi } from '@/api/bus/busindex'
+import { IndexApi } from '@/api/bus/busindex';
 import * as echarts from 'echarts';
-import { onMounted } from 'vue'
-import { EnvDataApi } from '@/api/bus/envData'
-import { formatDate } from '@/utils/formatTime'
-import dayjs from 'dayjs'
+import { onMounted } from 'vue';
+import { EnvDataApi } from '@/api/bus/envData';
+import { formatDate } from '@/utils/formatTime';
+import dayjs from 'dayjs';
 import download from '@/utils/download'
 
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 import { ElMessage } from 'element-plus'
 import { constant } from 'lodash-es';
+import { styleType } from 'element-plus/es/components/table-v2/src/common';
 defineOptions({ name: 'BusEnvLine' })
-
+import CommonMenu1 from './component/CommonMenu1.vue';
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const nowAddress = ref('') as any// 导航栏的位置信息
-const nowIpAddr = ref('')// 导航栏的位置信息
+const nowAddress = ref() as any// 导航栏的位置信息
+const nowIpAddr = ref()// 导航栏的位置信息
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
@@ -480,7 +415,7 @@ const b2=ref(0)
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-      if (queryParams.devkey == undefined){
+      if (nowIpAddr == undefined){
       message.warning('请先选择设备！')
       return
     }
@@ -809,8 +744,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
                                   "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
                                   "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,  }
             },
-            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
+            toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value}
             ],
@@ -1111,6 +1046,7 @@ const handleClick = async (row) => {
     queryParams.devkey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
+      nowIpAddr.value = row.unique
     });
     let data: any[] = [];
     
@@ -1134,8 +1070,9 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
-  navList.value = res
+  const res = await IndexApi.getBusMenu();
+  navList.value = res;
+  console.log('navList.value',navList.value);
 }
 
 /** 搜索按钮操作 */
@@ -1144,22 +1081,22 @@ const handleQuery = () => {
     needFlush.value++;
 }
 
+
+  const queryDevKey = ref(history?.state?.devKey);
+  const querybusId = ref(history?.state?.busId);
+  const queryLocation = ref(history?.state?.location);
+
 /** 初始化 **/
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  let queryBusId = useRoute().query.busId as string | undefined;
-  let queryDevKey = useRoute().query.devKey as string;
-  let queryLocation = useRoute().query.location as string;
-  queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
-  if (queryParams.busId != undefined){
+
+  queryParams.devkey = queryDevKey;
+  if (queryParams.devkey != undefined){
+
+    nowAddress.value = queryLocation.value?queryLocation.value:'未绑定'
+    nowIpAddr.value = queryDevKey.value
     await getList();
-    if (queryLocation == null) {
-      nowAddress.value = '';
-    } else {
-      nowAddress.value = queryLocation;
-    }
-    nowIpAddr.value = queryDevKey
     initChart();
   }
 })

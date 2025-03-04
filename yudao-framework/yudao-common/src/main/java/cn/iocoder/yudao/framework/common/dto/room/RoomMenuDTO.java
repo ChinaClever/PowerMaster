@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.cabinet.dto;
+package cn.iocoder.yudao.framework.common.dto.room;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

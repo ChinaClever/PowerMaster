@@ -1,11 +1,9 @@
 package cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor;
 
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 /**
  * 母线不平衡度颜色 DO
@@ -20,7 +18,7 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BusCurbalanceColorDO  {
+public class BusCurbalanceColorDO {
 
     /**
      * 自增id

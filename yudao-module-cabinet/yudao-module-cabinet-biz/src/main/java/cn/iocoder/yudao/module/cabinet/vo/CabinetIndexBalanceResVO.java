@@ -155,21 +155,58 @@ public class CabinetIndexBalanceResVO implements Serializable {
     @Schema(description = "B比例", example = "1.00")
     private BigDecimal bPow;
 
+
     @Schema(description = "A相电流", example = "1.00")
-    private BigDecimal aCurValue;
+    private BigDecimal acurValueOne;
+    @Schema(description = "A相电流", example = "1.00")
+    private BigDecimal acurValueTwe;
+    @Schema(description = "A相电流", example = "1.00")
+    private BigDecimal acurValueThree;
+
 
     @Schema(description = "B相电流", example = "1.00")
-    private BigDecimal bCurValue;
+    private BigDecimal bcurValueOne;
+
+    @Schema(description = "B相电流", example = "1.00")
+    private BigDecimal bcurValueTwe;
+
+    @Schema(description = "B相电流", example = "1.00")
+    private BigDecimal bcurValueThree;
 
     @Schema(description = "A相电压", example = "1.00")
-    private BigDecimal aVolValue;
+    private BigDecimal avolValueOne;
+    @Schema(description = "A相电压", example = "1.00")
+    private BigDecimal avolValueTwe;
+    @Schema(description = "A相电压", example = "1.00")
+    private BigDecimal avolValueThree;
 
     @Schema(description = "B相电压", example = "1.00")
-    private BigDecimal bVolValue;
+    private BigDecimal bvolValueOne;
+    @Schema(description = "B相电压", example = "1.00")
+    private BigDecimal bvolValueTwe;
+    @Schema(description = "B相电压", example = "1.00")
+    private BigDecimal bvolValueThree;
 
     @Schema(description = "A有功功率", example = "1.00")
-    private BigDecimal aPowValue;
+    private BigDecimal apowValueOne;
+    @Schema(description = "A有功功率", example = "1.00")
+    private BigDecimal apowValueTwe;
+    @Schema(description = "A有功功率", example = "1.00")
+    private BigDecimal apowValueThree;
 
     @Schema(description = "B有功功率", example = "1.00")
-    private BigDecimal bPowValue;
+    private BigDecimal bpowValueOne;
+    @Schema(description = "B有功功率", example = "1.00")
+    private BigDecimal bpowValueTwe;
+    @Schema(description = "B有功功率", example = "1.00")
+    private BigDecimal bpowValueThree;
+
+    @Schema(description = "视在功率A", example = "1.00")
+    private BigDecimal powApparentA;
+
+    @Schema(description = "视在功率B", example = "1.00")
+    private BigDecimal powApparentB;
+
+    @Schema(description = "视在功率总", example = "1.00")
+    private BigDecimal powApparentTotal;
 }

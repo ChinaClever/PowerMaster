@@ -18,11 +18,25 @@ export const IndexApi = {
   getIndexPage: async (data: any) => {
     return await request.post({ url: `/bus/index/page`, data })
   },
+  // 获得始端箱报表数据-基础数据
+  getReportBasicInformationResVO: async (data: any) => {
+    return await request.post({ url: `/bus/index/report/basicInformation`, data })
+  },
+
+ // 获得插接箱报表数据-基础数据
+ getReportBasicInformationByBusResVO: async (data: any) => {
+  return await request.post({ url: `/bus/index/report/basicInformationbybus`, data })
+},
 
   // 查询已删除的始端箱索引分页
   getDeletedIndexPage: async (data: any) => {
     return await request.post({ url: `/bus/index/getDeletedPage`, data })
   },  
+  //获得设备负载量状态统计
+  getLoadRateStatus: async () => {
+    return await request.get({ url: `/bus/index/loadRateStatus`})
+  },
+  
 
   // 查询始端箱索引详情
   getIndex: async (id: number) => {
@@ -62,14 +76,17 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/eq/page`, data })
   },
 
-  getEqMax: async (data: any) => {
-    return await request.post({ url: `/bus/index/eq/maxEq`, data })
+  getEqMax: async () => {
+    return await request.post({ url: `/bus/index/eq/maxEq` })
   },
 
   getBalancePage: async (data: any) => {
     return await request.post({ url: `/bus/index/balance`, data })
   },
-
+//获得设备平衡统计
+getBalanceStatistics: async () => {
+  return await request.get({ url: `/bus/index/balance/statistics`})
+},
   getBusBalanceDetail: async (data: any) => {
     return await request.post({ url: `/bus/index/balance/detail` ,  data})
   },
@@ -112,6 +129,10 @@ export const IndexApi = {
 
   devKeyList: async () => {
     return await request.download({ url: `/bus/index/devKeyList` })
+  },
+
+  findKeys: async (params: any) => {
+    return await request.get({ url: `/bus/index/findKeys`,params})
   },
 
   getBusLinePage: async (data: any) => {
@@ -203,7 +224,7 @@ export const IndexApi = {
     return await request.downloadPost({ url: `/bus/index/pf/detailExcel` , data, ...axiosConfig })
   },
 
-  //获得记录分页
+  //获得告警记录分页
   getRecordPage: async (data: any) => {
     return await request.post({ url: `/system/alarm/record/page`, data})
   },

@@ -17,13 +17,26 @@
         </div> -->
 
         <div class="descriptions-container" style="font-size: 14px;">
+          <div >
+            <span>始端箱新增电能记录</span>
+          </div>
           <div class="description-item">
-            <span class="label">总电能 :</span>
+            <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
-          <div ><span>始端箱新增电能记录</span>
-           <div class="line" style="margin-top: 10px;"></div>
+          <div class="description-item" >
+            <span class="label">相电能 :</span>
+            <span class="value">{{ navLineData }}条</span>
           </div>
+          <div v-if="navLoopData" class="description-item">
+            <span class="label">回路电能 :</span>
+            <span class="value">{{ navLoopData }}条</span>
+          </div>
+          <div v-if="navOutletData" class="description-item">
+            <span class="label">输出位电能 :</span>
+            <span class="value">{{ navOutletData }}条</span>
+          </div>
+          <div class="line" style="margin-top: 10px;"></div>
         </div>
         
       </div>
@@ -36,10 +49,23 @@
         :inline="true"
         label-width="auto"
       >
+
+      <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="typeDefaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-140px"
+        />
+      </el-form-item>
+
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
-        value-format="YYYY-MM-DD HH:mm:ss"
-        v-model="queryParams.timeRange"
+        format="YYYY-MM-DD HH:mm:ss"
+        v-model="selectTimeRange"
         type="datetimerange"
         :shortcuts="shortcuts"
         range-separator="-"
@@ -92,29 +118,108 @@
 </template>
 
 <script setup lang="ts">
-import dayjs from 'dayjs'
-import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
-import { IndexApi } from '@/api/bus/busindex'
+import dayjs from 'dayjs';
+import download from '@/utils/download';
+import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption';
+import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime';
+import { IndexApi } from '@/api/bus/busindex';
+import { HistoryDataApi } from '@/api/bus/historydata';
+import { time } from 'echarts';
+import { get } from 'http';
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
-const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
-const loading = ref(true)
-const message = useMessage() // 消息弹窗
+const navList = ref([]) as any; // 左侧导航栏树结构列表
+const navTotalData = ref(0);
+const navLineData = ref(0);
+const navLoopData = ref(0);
+const navOutletData = ref(0);
+const loading = ref(true);
+const message = useMessage(); // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
-const total = ref(0)
-const realTotel = ref(0) // 数据的真实总条数
+const total = ref(0);
+const timeRangeType = ref('day');
+const realTotel = ref(0); // 数据的真实总条数
+const selectTimeRange = ref<Date[] | undefined>(undefined);
+
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   timeRange: undefined as any,
   devkeys: [],
+  lineId: undefined,
+  loopId: undefined,
+  outletId: undefined,
+  type: 'total',
+  ipArray: [],
 })
-const pageSizeArr = ref([15,30,50,100])
-const queryFormRef = ref()
-const exportLoading = ref(false)
+const pageSizeArr = ref([15,30,50,100]);
+const queryFormRef = ref();
+const exportLoading = ref(false);
+
+const typeDefaultSelected = ref(['total']);
+const typeSelection = ref([]) as any;
+const typeCascaderChange = (selected) => {
+  queryParams.type = selected[0];
+  switch(selected[0]){
+    case 'line':
+      tableColumns.value = [
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true,},
+        { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true},
+        { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+      ]
+      queryParams.lineId = selected[1];
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+    case 'total':
+      tableColumns.value = [
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true,},
+        { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+      ]
+      queryParams.lineId = undefined;
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+  }
+  // 自动搜索
+  handleQuery();
+}
+
+// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
+const getTypeMaxValue = async () => {
+    const data = await HistoryDataApi.getTypeMaxValue();
+    const lineIdMaxValue = data.line_id_max_value;
+    const typeSelectionValue  = [
+    {
+      value: "total",
+      label: '总'
+    },
+    {
+      value: "line",
+      label: '相',
+      children: (() => {
+        const lines: { value: any; label: string; }[] = [];
+        lines.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= lineIdMaxValue; i++) {
+          lines.push({ value: `${i}`, label: `L${i}` });
+        }
+        return lines;
+      })(),
+    },
+  ]
+  typeSelection.value = typeSelectionValue;
+}
+
+// 格式化相id
+function formatLineId(_row: any, _column: any, cellValue: number): string {
+   return 'L'+cellValue;
+}
+
 // const carouselItems = ref([
 //       { imgUrl: PDUImage},
 //       { imgUrl: PDUImage},
@@ -123,30 +228,25 @@ const exportLoading = ref(false)
 //     ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
-  {
-    text: '最近一天',
+    {
+      text: '最近一天',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24)
+      start.setDate(start.getDate() - 1)
       return [start, end]
     },
-  },
-  {
-    text: '最近一周',
-    value: () => {
-      const end = new Date()
-      const start = new Date()
-      start.setDate(start.getDate() - 7)
-      return [start, end]
     },
-  },
-  {
+    {
     text: '最近一个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 1)
+      timeRangeType.value = 'month';
+      console.log('2222222222',start)
+            console.log('33333333333333',end)
+            console.log('444444',selectTimeRange)
       return [start, end]
     },
   },
@@ -156,6 +256,7 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      timeRangeType.value = 'sixMonths';
       return [start, end]
     },
   },
@@ -165,10 +266,15 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setFullYear(start.getFullYear() - 1)
+      timeRangeType.value = 'year';
       return [start, end]
     },
   },
-]
+];
+
+// watch(() => timeRangeType.value, () => {
+//   getNavOneDayData(timeRangeType)
+// });
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
@@ -179,18 +285,36 @@ const tableColumns = ref([
 
 /** 初始化数据 */
 const getList = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
+    if(selectTimeRange.value == null){
+      alert('请输入时间范围');
+    return;
+    }
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(selectTimeRange.value[0]);
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const selectedEndTime = formatDate(selectTimeRange.value[1]);
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    if(selectTimeRange.value == null){
+      queryParams.timeRange = undefined;
+    }
+    console.log('11111111111111111',selectTimeRange);
+    console.log('queryParams',queryParams.timeRange);
+    const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams);
+    console.log('data',data);
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
-      total.value = 10000
+      total.value = 10000;
     }else{
-      total.value = data.total
+      total.value = data.total;
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -221,7 +345,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 
@@ -274,23 +398,47 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
-  navTotalData.value = res.total
-}
+const getNavOneDayData = async (timeRangeTypee) => {
+  const timeRangeType = timeRangeTypee.value;
+  const oldTime = queryParams.timeRange[0];
+  const newTime = queryParams.timeRange[1];
+  var parms = {timeRangeType,oldTime,newTime}
+    const res = await EnergyConsumptionApi.getNavOneDayData(parms);
+    navTotalData.value = res.total;
+    navLineData.value =res.line;
+};
+
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
   getList()
+  getNavOneDayData(timeRangeType)
+  
 }
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData()
+  
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+  selectTimeRange.value = [
+    format(startOfMonth),
+    format(now)
+  ];
+  getTypeMaxValue();
   getList();
+  getNavOneDayData(timeRangeType)
 })
+
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 </script>
 
 <style scoped>

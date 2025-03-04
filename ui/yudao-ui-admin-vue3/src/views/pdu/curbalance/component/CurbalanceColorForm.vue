@@ -8,17 +8,17 @@
       v-loading="formLoading"
     >
       <el-form-item prop="rangeOne" >
-        <div style="background-color: #3bbb00; margin-right:20px">绿色的范围</div>
+        <div style="background-color: #3bbb00; margin-right:20px;width:100px;text-align:center;border-radius:5px;">绿色的范围</div>
         小于<el-input style="width: 11.3%;" type="number" v-model="formData.rangeOne" placeholder="请输入第一个小于的范围" />%
       </el-form-item>
       <el-form-item  prop="rangeTwo" >
-        <div style="background-color: #ffc402;margin-right:20px;">黄色的范围</div>
+        <div style="background-color: #ffc402;margin-right:20px;width:100px;text-align:center;border-radius:5px;">黄色的范围</div>
         <el-input style="width: 11.3%;" type="number" v-model="formData.rangeTwo" placeholder="请输入第二个范围的最小值" />%-
         <el-input style="width: 11.3%;" type="number" v-model="formData.rangeThree" placeholder="请输入第二个范围的最大值" />%
       </el-form-item>
 
       <el-form-item  prop="rangeFour" >
-        <div style="background-color: #fa3333;margin-right:20px;">红色的范围</div>
+        <div style="background-color: #fa3333;margin-right:20px;width:100px;text-align:center;border-radius:5px;">红色的范围</div>
         大于<el-input style="width: 11.3%;" type="number" v-model="formData.rangeFour" placeholder="请输入第三个大于的范围" />%
       </el-form-item>
     </el-form>
@@ -30,7 +30,7 @@
 </template>
 <script setup lang="ts">
 import { CurbalanceColorApi, CurbalanceColorVO } from '@/api/pdu/curbalancecolor'
-
+import { inject } from 'vue';
 /** PDU不平衡度颜色 表单 */
 defineOptions({ name: 'CurbalanceColorForm' })
 
@@ -48,7 +48,6 @@ const formData = ref({
   rangeThree: undefined,
   rangeFour: undefined,
 })
-
 const validateRangeOrder = (rule, value, callback) => {
   // 检查范围是否为空
   if (!formData.value.rangeOne || !formData.value.rangeTwo || !formData.value.rangeThree || !formData.value.rangeFour) {
@@ -58,7 +57,7 @@ const validateRangeOrder = (rule, value, callback) => {
     const rangeNames = ['第一空', '第二空', '第三空', '第四空'];
     // 检查范围顺序
     for (let i = 0; i < ranges.length - 1; i++) {
-      if (ranges[i] >= ranges[i + 1]) {
+      if (ranges[i] > ranges[i + 1]) {
         return callback(new Error(`${rangeNames[i]} 必须小于 ${rangeNames[i + 1]}`));
       }
     }
@@ -105,7 +104,7 @@ const open = async (type: string) => {
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
 /** 提交表单 */
-const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
+const emit = defineEmits(['success', 'custom-event']); // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
   await formRef.value.validate()

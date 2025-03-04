@@ -24,6 +24,7 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
+      padAngle: 6,
       data: [
         { name: 'L1', value: max.L1 },
         { name: 'L2', value: max.L2 },
@@ -33,7 +34,7 @@ const echartsOption = reactive({
         show: false // 设置为false，不显示饼图上的名称
       },
       radius: ['40%', '65%'],
-      emphasis:{disabled:false,scale:false,scaleSize:0,},
+      emphasis:{disabled:false,scale:true,scaleSize:5,},
       tooltip: {
         trigger: 'item',
       }

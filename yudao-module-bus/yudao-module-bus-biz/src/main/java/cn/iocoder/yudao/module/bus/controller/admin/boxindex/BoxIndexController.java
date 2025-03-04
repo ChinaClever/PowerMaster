@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.boxindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -10,10 +11,14 @@ import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,8 +29,11 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.NOT_DETAIL;
 
 @Tag(name = "管理后台 - 插接箱索引")
 @RestController
@@ -130,7 +138,7 @@ public class BoxIndexController {
     }
 
     @PostMapping("/boxtempage")
-    @Operation(summary = "获得插接箱索引分页")
+    @Operation(summary = "获得插接箱温度索引分页")
     public CommonResult<PageResult<BoxTemRes>> getBoxTemPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxTemRes> pageResult = indexService.getBoxTemPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxTemRes.class));
@@ -159,15 +167,22 @@ public class BoxIndexController {
     @Operation(summary = "插接箱功率因数详情")
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBoxPFDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        return success(indexService.getBoxPFDetail(pageReqVO));
+        Map boxPFDetail = indexService.getBoxPFDetail(pageReqVO);
+        if (CollectionUtils.isEmpty(boxPFDetail)){
+            boxPFDetail = indexService.getBoxPFDetailNow(pageReqVO);
+        }
+        if (CollectionUtils.isEmpty(boxPFDetail)){
+            throw exception(NOT_DETAIL);
+        }
+        return success(boxPFDetail);
     }
 
     @Operation(summary = "插接箱功率因数详情-导出")
     @PostMapping("/pf/detailExcel")
     public void getBoxPFDetailExcel(@RequestBody BoxIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
         Map boxPFDetail = indexService.getBoxPFDetail(pageReqVO);
-        List<BusPFTableRes> tableList = (List<BusPFTableRes>) boxPFDetail.get("table");
-        ExcelUtils.write(response, "插接箱功率因数详情.xlsx", "数据", BusPFTableRes.class,tableList);
+        List<BoxPFDetail> tableList = (List<BoxPFDetail>) boxPFDetail.get("table");
+        ExcelUtils.write(response, "插接箱功率因数详情.xlsx", "数据", BoxPFDetail.class,tableList);
     }
 
     @PostMapping("/boxharmonicpage")
@@ -186,8 +201,8 @@ public class BoxIndexController {
 
     @Operation(summary = "插接箱谐波监测ES数据图表")
     @PostMapping("/harmonic/line")
-    public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
+    public CommonResult<BoxHarmonicLineResVO> getHarmonicLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BoxHarmonicLineResVO pageResult = indexService.getHarmonicLine(pageReqVO);
         return success(pageResult);
     }
 
@@ -196,17 +211,25 @@ public class BoxIndexController {
      *
      * @param pageReqVO
      */
-    @Operation(summary = "机柜用能列表分页")
+    @Operation(summary = "插接箱用能列表分页")
     @PostMapping("/eq/page")
-    public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        PageResult<BoxIndexDTO> pageResult = indexService.getEqPage(pageReqVO);
+    public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        PageResult<BoxIndexDTO> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getBoxDevKeyList()) || ObjectUtil.isNotEmpty(pageReqVO.getDevKey())){
+            pageResult =  indexService.getEqPage(pageReqVO);
+        }else {
+            pageResult = indexService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)){
+                pageResult =  indexService.getEqPage(pageReqVO);
+            }
+        }
         return success(pageResult);
     }
 
-    @Operation(summary = "插接箱用能列表分页")
+    @Operation(summary = "插接箱用能列表最多")
     @PostMapping("/eq/maxEq")
-    public CommonResult<PageResult<BoxIndexDTO>> getMaxEq(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        PageResult<BoxIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+    public CommonResult<List<BoxIndexMaxEqResVO>> getMaxEq() {
+        List<BoxIndexMaxEqResVO> pageResult = indexService.getMaxEq();
         return success(pageResult);
     }
     /**
@@ -283,8 +306,8 @@ public class BoxIndexController {
 
     @Operation(summary = "插接箱通过devKey获取redis数据")
     @PostMapping("/power/detail")
-    public CommonResult<PowerRedisDataRes> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        PowerRedisDataRes result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey());
+    public CommonResult<BoxPowerDetailRedisResVO> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        BoxPowerDetailRedisResVO result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey(), pageReqVO.getTimeGranularity());
         return success(result);
     }
 
@@ -310,10 +333,16 @@ public class BoxIndexController {
     }
 
     @PostMapping("/report/ele")
-    @Operation(summary = "获得插接箱报表数据")
+    @Operation(summary = "获得插接箱报表电能数据")
     public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
+    @PostMapping("/report/basicInformation")
+    @Operation(summary = "获得插接箱报表数据-基础数据")
+    public CommonResult<ReportBasicInformationResVO> getReportBasicInformationResVO(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportBasicInformationResVO(pageReqVO));
+    }
+
 
     @PostMapping("/report/pfline")
     @Operation(summary = "获得插接箱报表数据")
@@ -340,27 +369,47 @@ public class BoxIndexController {
     }
 
     @PostMapping("/avg/boxHdaLine/form")
-    @Operation(summary = "获得插接箱报表平均电流电压详细信息")
+    @Operation(summary = "获得插接箱报表相平均电流电压详细信息")
     public CommonResult<Map> getAvgBoxHdaLineForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBoxHdaLineForm(pageReqVO));
     }
+    @PostMapping("/avg/boxHdaLoop/form")
+    @Operation(summary = "获得插接箱报表回路平均电流电压详细信息")
+    public CommonResult<Map> getAvgBoxHdaLoopForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBoxHdaLoopForm(pageReqVO));
+    }
+
+    @PostMapping("/avg/boxHdaOutlet/form")
+    @Operation(summary = "获得插接箱报表输出位详细信息")
+    public CommonResult<Map> getAvgBoxHdaOutletForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBoxHdaOutletForm(pageReqVO));
+    }
 
     @GetMapping("/statistics")
-    @Operation(summary = "获得设备统计")
+    @Operation(summary = "获得插接箱设备运行状态统计-不带连接器")
     public CommonResult<BusIndexStatisticsResVO> getBoxIndexStatistics() {
         return success(indexService.getBoxIndexStatistics());
     }
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出插接箱索引 Excel")
-//    @PreAuthorize("@ss.hasPermission('box:index:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportIndexExcel(@Valid BoxIndexPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<BoxIndexDO> list = indexService.getIndexPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "插接箱索引.xls", "数据", BoxIndexRespVO.class,
-//                        BeanUtils.toBean(list, BoxIndexRespVO.class));
-//    }
+    @GetMapping("/statisticsAll")
+    @Operation(summary = "获得插接箱设备运行状态统计-所有")
+    public CommonResult<BusIndexStatisticsResVO> getBoxIndexStatisticsAll() {
+        return success(indexService.getBoxIndexStatisticsAll());
+    }
 
+    @GetMapping("balance/statistics")
+    @Operation(summary = "获得插接箱设备不平衡度统计")
+    public CommonResult<BalanceStatisticsVO> getBoxBalanceStatistics() {
+        return success(indexService.getBoxBalanceStatistics());
+    }
+    @GetMapping("/loadRateStatus")
+    @Operation(summary = "获得始端箱设备负载量状态统计")
+    public CommonResult<LoadRateStatus> getBoxIndexLoadRateStatus() {
+        return success(indexService.getBoxIndexLoadRateStatus());
+    }
+
+    @GetMapping("/findKeys")
+    @Operation(summary = "模糊查询")
+    public CommonResult<List<String>> findKeys(@RequestParam(value = "key") String key) {
+        return success(indexService.findKeys(key));
+    }
 }

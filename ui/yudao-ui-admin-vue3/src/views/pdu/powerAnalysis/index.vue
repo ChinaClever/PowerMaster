@@ -84,14 +84,15 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+           
+         </el-form-item>
+         <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="float: right;margin-right: 10px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
-         </el-form-item>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" >
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -111,7 +112,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.pdu_id,row.address,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
           </template>
         </el-table-column>
         
@@ -156,7 +157,7 @@
         layout = "sizes, prev, pager, next, jumper"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
-        @pagination="getList"/>
+        @pagination="getList1"/>
       <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
       <br/><br/><br/><br/>
       <ContentWrap>
@@ -255,7 +256,7 @@ const typeCascaderChange = (selected) => {
     if (!exists) {
       // 在列表行索引1(位置后面)插入输出位行 
       const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
-      tableColumns.value.splice(1, 0, newRow);
+      tableColumns.value.splice(2, 1, newRow);
     }
   }else{
     // 选择总，移除索引为 1 的位置上的行数据
@@ -263,6 +264,14 @@ const typeCascaderChange = (selected) => {
   }
   handleQuery();
 }
+
+// 返回当前页的序号数组
+const getPageNumber = (pageNumber) => {
+  const start = (pageNumber - 1) * queryParams.pageSize + 1;
+  const end = pageNumber * queryParams.pageSize;
+  const count = end - start + 1;
+  return count;
+};
 
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
@@ -281,16 +290,36 @@ let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
 const initChart = () => {
   if (rankChartContainer.value && instance) {
+
+    // 假设这是您的分页阈值
+    const labelThreshold = 30; // 您可以根据需要调整这个值
+
+    // 计算当前分页数量
+    const totalPages = getPageNumber(queryParams.pageNo);
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各PDU耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
-      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
+      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo),
+      axisLabel: {
+          interval: 0, // 根据实际情况调整
+          formatter: function (value, index) {
+            // 如果超过阈值，则只显示索引
+            return totalPages > labelThreshold ? '' : value;
+          },  // 如果需要，可以旋转标签
+        }
+      },
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  
+        type: 'bar', 
+        data: eqData.value.map(num => formatEQ(num,1)), 
+        label: { 
+          show: totalPages <= labelThreshold, position: 'top' 
+        },
+      },
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
@@ -306,7 +335,7 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '150%'},
+  { label: '所在位置', align: 'center', prop: 'address' , istrue:true},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
   { label: '开始电能', align: 'center', istrue: true, children: [
@@ -323,7 +352,7 @@ const tableColumns = ref([
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
-/** 查询列表 */
+// /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
@@ -339,36 +368,44 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
+     queryParams.ipArray = [ip.value];
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     eqData.value = data.list.map((item) => {
        const difference = item.end_ele - item.start_ele;
        return difference < 0 ? item.end_ele : formatEQ(difference, 1);
-    });
-
-    list.value = data.list
-    realTotel.value = data.total
-    if (data.total > 10000){
-      total.value = 10000
-    }else{
-      total.value = data.total
-    }
     
-  } finally {
-    initChart();
-    loading.value = false
+    });
+  }finally{
+
   }
 }
 
-const getList1 = async () => {
+//     list.value = data.list
+//     realTotel.value = data.total
+//     if (data.total > 10000){
+//       total.value = 10000
+//     }else{
+//       total.value = data.total
+//     }
+    
+//   } finally {
+//     initChart();
+//     loading.value = false
+//   }
+// }
+
+const getLists = async () => {
   loading.value = true
+  //&& start.value != ""
   try {
-    if ( start.value != undefined){
+    if (start.value != "" && start.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -376,7 +413,6 @@ const getList1 = async () => {
       queryParams.timeRange = undefined
     }
     queryParams.ipArray = [ip.value];
-    	console.log('详情页2', queryParams.ipArray);
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
@@ -474,7 +510,7 @@ const disabledDate = (date) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
  queryParams.pageNo = 1
- getList()
+ getLists()
 }
 
 
@@ -529,13 +565,19 @@ const handleCheck = async (node) => {
 }
 
 // 接口获取导航列表
+// const getNavList = async() => {
+//   const res = await CabinetApi.getRoomList({})
+//   let arr = [] as any
+//   for (let i=0; i<res.length;i++){
+//   var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+//   arr = arr.concat(temp);
+//   }
+//   navList.value = arr
+// }
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
   let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
-  }
   navList.value = arr
 }
 
@@ -548,8 +590,8 @@ const getNavNewData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, address: string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address);
+const toDetails = (pduId: number, address: string,createTimeMin : string,createTimeMax : string) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+'&start='+createTimeMin+'&end='+createTimeMax);
 }
 
 /** 导出按钮操作 */
@@ -582,25 +624,25 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
-  getList();
-
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;
   ip.value = useRoute().query.ip as string;
-  if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', ip);
-  getList1();
-  }
+  getLists();
+  
+  // if (start.value != null){
+  // 	console.log('详情页', start);
+	// console.log('详情页1', ip);
+  // getLists();
+  // }
 });
 
 /** 清空按钮操作 */
 const clearQuery = () => {
-end.value= '';
-start.value='';
-ip.value='';
-queryParams.timeRange = undefined;
-queryParams.ipArray = undefined;
+  end.value= '';
+  start.value='';
+  ip.value='';
+  queryParams.timeRange = undefined;
+  queryParams.ipArray = undefined;
 }
 
 </script>
@@ -658,5 +700,8 @@ queryParams.ipArray = undefined;
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-
+  ::v-deep .el-table th,
+   ::v-deep .el-table td{
+    border-right: none;
+   }
 </style>

@@ -3,22 +3,6 @@
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
-          <!-- <div class="carousel-container">
-            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-              </el-carousel-item>
-            </el-carousel>
-          </div>
-          <div class="nav_content">
-            <el-descriptions title="全部传感器新增环境记录" direction="vertical" :column="1" width="60px" border >
-              <el-descriptions-item label="最近一小时"><span >{{ lastHourTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一周" ><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions>
-          </div>
-        </div> -->
-
           <div class="descriptions-container" style="font-size: 14px;">
             <div class="description-item">
                 <span class="label">最近一小时 :</span>
@@ -48,7 +32,7 @@
         :inline="true"
         label-width="auto"
       >
-        <el-form-item label="监测点" prop="detect">
+        <el-form-item label="传感器ID" prop="detect">
           <el-select
             v-model="detect"
             class="!w-130px"
@@ -89,8 +73,8 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm"
-          v-model="queryParams.timeRange"
+          format="YYYY-MM-DD HH:mm:ss"
+          v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -104,15 +88,19 @@
         <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+
+        </el-form-item> 
+          <div style="float:right;">
+          
+        <el-button type="success" plain @click="handleExport" :loading="exportLoading" >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item> 
+        </div>
         <!-- </div> -->
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" >
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -166,12 +154,15 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/pdu/envData'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+
 import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'PDUEnvHistoryData' })
+const selectTimeRange = ref()
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const lastHourTotalData = ref(0)
@@ -204,7 +195,7 @@ const carouselItems = ref([
 // 时间段快捷选项
 const shortcuts = [
     {
-    text: '最近一小时',
+      text: '最近一小时',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -253,17 +244,15 @@ const shortcuts = [
 // 传感器选项
 const sensorOptions = ref([
   { value: 'all', label: '全部'},
-  { value: "11", label: '前上'},
-  { value: "12", label: '前中'},
-  { value: "13", label: '前下'},
-  { value: "21", label: '后上'},
-  { value: "22", label: '后中'},
-  { value: "23", label: '后下'}
+  { value: "1", label: '传感器1'},
+  { value: "2", label: '传感器2'},
+  { value: "3", label: '传感器3'},
+  { value: "4", label: '传感器4'},
 ])
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref([["tem"], ["hum"]])
+const defaultOptionsCol = ref([["tem"], ["hum"],["sensor_id"]])
 const optionsCol = ref([
   { value: "tem", label: '温度'},
   { value: "hum", label: '湿度'},
@@ -382,7 +371,7 @@ const tableColumns = ref([
   { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
-  { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
+  { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:true, width: '120px'},
   { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
   { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData1},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
@@ -392,6 +381,14 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(selectTimeRange.value[0])
+     
+      const selectedEndTime = formatDate(selectTimeRange.value[1])
+     // selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
     const data = await EnvDataApi.getEnvDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -466,8 +463,10 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  navList.value = res
+  let arr = [] as any
+  var temp = await CabinetApi.getRoomPDUList()
+  arr = arr.concat(temp);
+  navList.value = arr
 }
 
 // 禁选未来的日期
@@ -480,21 +479,22 @@ const disabledDate = (date) => {
 const handleQuery = () => {
     queryParams.pageNo = 1
     if (detect.value != 'all'){
-      if (queryParams.cabinetIds?.length != 1){
-        ElMessage.error('仅选定一个机柜时可以筛选监测点！')
-        detect.value = 'all'
-        queryParams.channel = undefined
-        queryParams.position = undefined
-          return
-      }
+      // if (queryParams.cabinetIds?.length != 1){
+      //   ElMessage.error('仅选定一个机柜时可以筛选监测点！')
+      //   detect.value = 'all'
+      //   queryParams.channel = undefined
+      //   queryParams.position = undefined
+      //     return
+      // }
 
       queryParams.channel = Number(detect.value.split('')[0])
-      queryParams.position = Number(detect.value.split('')[1])
+      queryParams.position = Number(detect.value.split('')[0])
     }else{
       queryParams.channel = undefined
       queryParams.position = undefined
     }
-    getList()
+    getNavNewData();
+    getList();
 }
 
 /** 详情操作*/
@@ -531,9 +531,21 @@ const getNavNewData = async() => {
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
 }
-
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 /** 初始化 **/
 onMounted( () => {
+  const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getNavList()
   getNavNewData()
   getList()
@@ -592,7 +604,7 @@ onMounted( () => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
   ::v-deep .el-table .el-table__header th {
-    background-color: #F5F7FA;
+    background-color: #f7f7f7;
     color: #909399;
 }
 </style>

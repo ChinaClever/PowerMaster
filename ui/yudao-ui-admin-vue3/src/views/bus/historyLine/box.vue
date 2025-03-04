@@ -1,11 +1,12 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="插接箱电力分析" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="插接箱电力分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
       
-        <div class="nav_header" style="font-size: 14px;">
+        <div class="nav_header" style="font-size: 14px; text-align:center;">
           <span v-if="nowAddress">{{nowAddress}}</span>
+           <!-- <br/> -->
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
       </div>
@@ -180,7 +181,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -191,6 +192,8 @@ import { formatDate} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 import download from '@/utils/download'
 import { ElMessage } from 'element-plus'
+import  CommonMenu1 from './component/CommonMenu1.vue'
+
 
 defineOptions({ name: 'PDUHistoryLine' })
 
@@ -198,10 +201,10 @@ const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const message = useMessage() // 消息弹窗
-const nowAddress = ref('')// 导航栏的位置信息
-const nowLocation = ref('')// 导航栏的位置信息
-const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowAddress = ref()// 导航栏的位置信息
+const nowLocation = ref()// 导航栏的位置信息
+const nowAddressTemp = ref()// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowLocationTemp = ref()// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 列表数据
 const headerData = ref<any[]>([]);
@@ -423,7 +426,7 @@ const loading2=ref(false);
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-  if (queryParams.devkey == null){
+  if (nowAddress.value == null){
     ElMessage.error('请先选择设备！');
   }
   loading.value = true;
@@ -527,7 +530,7 @@ const initChart = () => {
                 selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, }
               },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+          toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
@@ -627,7 +630,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                     selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": true, "功率因素": false, }
                   },
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
@@ -663,7 +666,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value}
               ],
@@ -710,7 +713,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                             , "电压(V)": false, "电流(A)": true, "负载率": false, "电流谐波含量": false
                            }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-                toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+                toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
@@ -751,7 +754,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量": false, "最大电流谐波含量": false, "最小电流谐波含量": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -806,7 +809,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                 legend: { data:  ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)'],
                           selected: {  "有功功率(kW)": false, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false, "电压(V)": false, "电流(A)": true }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-                toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+                toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
@@ -845,7 +848,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                  "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -897,7 +900,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                     selected: {  "有功功率(kW)": true, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false, }
                   },
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
@@ -933,7 +936,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '30px'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value}
               ],
@@ -1641,19 +1644,22 @@ const handleExport1 = async () => {
     exportLoading.value = false
   }
 }
+
+  const queryBoxId =ref(history?.state?.boxId);
+  const queryLocation = ref(history?.state?.location);
+  const queryDevKey = ref(history?.state?.dev_key);
 /** 初始化 **/
 onMounted( async () => { 
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryBoxId = useRoute().query.boxId as string  | undefined;
-  const queryLocation = useRoute().query.location as string;
-  queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
+  queryParams.boxId = queryBoxId;
   getTypeMaxValue();
-
   if (queryParams.boxId != undefined){
+    
+    nowAddressTemp.value = queryLocation.value?queryLocation.value:'未绑定'
+    nowAddress.value = nowAddressTemp.value
+    nowLocationTemp.value = queryDevKey.value
     await getList(); 
-    nowAddress.value = queryLocation
-    nowAddressTemp.value = queryLocation
     initChart();
   }
 })

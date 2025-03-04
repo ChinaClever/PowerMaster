@@ -127,7 +127,9 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
+  cabinetName: history?.state?.cabinetName || ' ',
   cabinetId: history?.state?.id || 1,
+  roomName: history?.state?.roomName || ' ',
   cabinetroomId: history?.state?.roomId || 1
 })
 const EleChain = reactive({
@@ -154,10 +156,11 @@ watch(() => queryParams.cabinetroomId, (val) => {
 })
 
 watch(() => queryParams.cabinetId,(val) => {
-  console.log('wwwwwwwwwww', val)
+  if (val !=null) {
   getActivePowTrend()
   getMachineEleChain()
   getMachineEleTrend('DAY')
+  }
 })
 
 // 接口获取机房导航列表
@@ -166,23 +169,24 @@ const getNavList = async() => {
   if (res.length > 0) {
     roomList.value = res
     machineList.value = handleNavList(queryParams.cabinetroomId)
-    console.log('接口获取机房导航列表', res)
   }
 }
 const handleNavList = (cabinetroomId) => {
   const data = roomList.value as any
   const roomIndex = data.findIndex(item => item.id == cabinetroomId)
   let list = [] as any
-  if (data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 2) {
+  if (data[roomIndex].children.length > 0) {
     data[roomIndex].children.forEach(child => {
-      if (child.children.length > 0)  {
+      if (child.type == 2)  {
+        if(child.children.length > 0){
         child.children.forEach(grandChild => {
           list.push(grandChild)
         })
+        }
+      } else if(child.type == 3) {
+        list.push(child)
       }
     })
-  } else if(data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 3) {
-    list = data[roomIndex].children.map(item => item)
   }
   return list
 }
@@ -191,7 +195,6 @@ const handleNavList = (cabinetroomId) => {
 const getActivePowTrend = async() => {
   const res = await CabinetEnergyApi.getActivePowTrend({id:queryParams.cabinetId})
   Object.assign(ActivePowTrend, res)
-  console.log('获取机柜有功功率趋势------', res.yesterdayList.map(item => item.dateTime.split(' ')[1]))
   echartsOptionPowTrend.value = {
     grid: {
       left: '3%',
@@ -275,13 +278,11 @@ const getActivePowTrend = async() => {
       }
     ]
   }
-  console.log('获取机柜有功功率趋势', res)
 }
 // 获取机柜用能环比
 const getMachineEleChain = async() => {
   const res = await CabinetEnergyApi.getEleChain({id:queryParams.cabinetId})
   Object.assign(EleChain, res)
-  console.log('获取机柜用能环比', EleChain)
 }
 // 获取机柜能耗趋势
 const getMachineEleTrend = async(type) => {
@@ -295,7 +296,6 @@ const getMachineEleTrend = async(type) => {
           type: 'shadow'
         },
         formatter: function(params) {
-          console.log('params', params)
           return `${params[0].seriesName}：${params[0].value}kW·h` + '<br>' + `${params[1].seriesName}：${params[1].value}kW·h`; // 使用 <b> 标签使数值加粗显示
         }
       },
@@ -356,7 +356,6 @@ const getMachineEleTrend = async(type) => {
         }
       ]
     }
-    console.log('获取机柜能耗趋势', res)
   } finally {
     EleTrendLoading.value = false
     radioBtn.value = type

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -26,4 +27,5 @@ public interface TemColorMapper extends BaseMapperX<TemColorDO> {
                 .orderByAsc(TemColorDO::getId));
     }
 
+    String findColor(BigDecimal tem);
 }

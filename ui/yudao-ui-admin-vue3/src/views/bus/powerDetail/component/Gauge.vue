@@ -20,6 +20,7 @@ const props = defineProps({
   }
 })
 
+const loadFactorRound = Math.round(props.loadFactor);
 
 // 设置饼图的选项
 const echartsOption = reactive({
@@ -33,7 +34,7 @@ const echartsOption = reactive({
       min: 0,
       max: 100,
       splitNumber: 5,
-      radius: "68%",
+      radius: "95%",
       pointer: {
           itemStyle: {
               color: "auto"
@@ -74,7 +75,7 @@ const echartsOption = reactive({
           offsetCenter: [0, "50%"]
       },
       data: [{
-          value: props.loadFactor,
+          value: loadFactorRound,
           name:  "负载率(%)"
       }]
   }]

@@ -20,7 +20,7 @@ public class BusIndex implements Serializable {
      * bus_id  唯一标识
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 设备识别码
@@ -40,6 +40,16 @@ public class BusIndex implements Serializable {
      * 节点IP
      */
     private String  busName;
+
+    /**
+     * 0：空载 1：<30%  2: 30~60 3：60~90  4：>90%
+     */
+    private Integer loadRateStatus;
+
+    /**
+     * 三相电不平衡状态
+     */
+    private Integer curUnbalanceStatus;
 
     /**
      * 运行状态 0：离线 1：正常  2：告警

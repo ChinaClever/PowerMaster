@@ -1,8 +1,10 @@
 package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -100,7 +102,17 @@ public class AisleIndexController {
     @Operation(summary = "通道列用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<AisleEQRes>> getEqPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
-        PageResult<AisleEQRes> pageResult = indexService.getEqPage(pageReqVO);
+//        PageResult<AisleEQRes> pageResult = indexService.getEqPage(pageReqVO);
+
+        PageResult<AisleEQRes> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getAisleIds()) || ObjectUtil.isNotEmpty(pageReqVO.getName())){
+            pageResult =  indexService.getEqPage(pageReqVO);
+        }else {
+            pageResult = indexService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)){
+                pageResult =  indexService.getEqPage(pageReqVO);
+            }
+        }
         return success(pageResult);
     }
 

@@ -2,8 +2,13 @@ package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
+import cn.iocoder.yudao.framework.common.vo.AisleBoxResVO;
+import cn.iocoder.yudao.framework.common.vo.AisleBoxVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author luowei
@@ -13,4 +18,7 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AisleBoxMapper extends BaseMapper<AisleBox> {
+    List<AisleBoxResVO> selectAisleByBoxKey(@Param("keys") List<String> keys);
+
+    List<AisleBoxVO> selectMenuAisleByBoxId(@Param("aisleBarIds") List<Integer> aisleBarIds);
 }

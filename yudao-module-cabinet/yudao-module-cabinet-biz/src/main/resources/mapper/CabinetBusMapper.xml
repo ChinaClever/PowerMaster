@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper">
+    <select id="findRoomIdA" resultType="java.util.Map">
+        SELECT
+        concat(ci.room_id,"-",ci.id) as cabinetKey,
+        bi.bus_key as busKey,
+        bi.bus_name as busName
+        FROM cabinet_box cb
+        left join cabinet_index ci on cb.cabinet_id = ci.id
+        left join bus_index bi on cb.box_key_a = bi.bus_key
+        <where>
+            bi.bus_key in
+            <foreach collection="busKey" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    <select id="findRoomIdB" resultType="java.util.Map">
+        SELECT
+        concat(ci.room_id,"-",ci.id) as cabinetKey,
+        bi.bus_key as busKey,
+        bi.bus_name as busName
+        FROM cabinet_box cb
+        left join cabinet_index ci on cb.cabinet_id = ci.id
+        left join bus_index bi on cb.box_key_b = bi.bus_key
+        <where>
+            bi.bus_key in
+            <foreach collection="busKey" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    <select id="selectCabinetByBoxKey" resultType="cn.iocoder.yudao.framework.common.vo.CabinetBoxResVO">
+        SELECT
+        cb.id,
+        cb.cabinet_id,
+        cb.box_key_a,
+        cb.outlet_id_a,
+        cb.box_key_b,
+        cb.outlet_id_b,
+        ci.room_id,
+        ci.cabinet_name,
+        ri.room_name
+        FROM cabinet_box cb
+        left join cabinet_index ci on cb.cabinet_id = ci.id
+        left join room_index ri on ci.room_id = ri.id
+        <where>
+            cb.box_key_a in
+            <foreach collection="keys" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            or cb.box_key_b  in
+            <foreach collection="keys" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

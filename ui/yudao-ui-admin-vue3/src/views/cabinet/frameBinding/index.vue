@@ -377,7 +377,7 @@ const getData = async() => {
 const getPortList=  async() => {
   const cabinetInfoValue = cabinetInfo.value
   if (cabinetInfoValue.pduIpA) {
-    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpA})
+    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpA});
     if (res.pdu_data && res.pdu_data.output_item_list) {
       const current = res.pdu_data.output_item_list.cur_value.reverse()
       const state = res.pdu_data.output_item_list.relay_state.reverse()
@@ -440,6 +440,7 @@ const openBindingFrom = (type) => {
   console.log('openBindingFrom', frameListCopy, index,frameListCopy.length)
   const data = frameListCopy[index].length > 0 ? frameListCopy[index][0] : {}
   binding.value.open(type, data, operateMenu.value.Uindex, cabinetInfo.value.outletA, cabinetInfo.value.outletB)
+  // binding.value.open(type, data, operateMenu.value.Uindex, cabinetInfo.value.outletA, cabinetInfo.value.outletB, stopData.value)
 }
 
 // 处理表单添加/编辑成功

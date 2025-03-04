@@ -56,11 +56,15 @@ watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   series.value = prop.list.series;
-  console.log("series.value",  series.value)
+  console.log("平均功率曲线series.value",  series.value)
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
-
+  series.value.forEach(item => {  
+    // 检查 item 是否已经有 markPoint，如果没有则添加  
+                 item.symbol = "circle",
+                 item.symbolSize = 4
+  });  
   time.value = prop.list.time;
 });
 

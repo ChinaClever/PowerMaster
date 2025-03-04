@@ -76,6 +76,12 @@ public class AisleSaveVo {
     private Integer aisleLength;
 
     /**
+     * 长度
+     */
+    @Schema(description = "长度", example = "0")
+    private Integer length;
+
+    /**
      * 类型
      */
     @Schema(description = "类型", example = "0")
@@ -90,8 +96,8 @@ public class AisleSaveVo {
      */
     private AisleBarDTO barB;
 
-    @Schema(description = "机柜列表", example = "[]")
-    private List<CabinetVo>  cabinetList;
+//    @Schema(description = "机柜列表", example = "[]")
+//    private List<CabinetVo>  cabinetList;
 
 
     /**

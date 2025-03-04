@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+
+
+    <select id="selectAisleByBoxKey" resultType="cn.iocoder.yudao.framework.common.vo.AisleBoxResVO">
+        select ai.id,
+        ab.aisle_id,
+        ab.box_key,
+        ab.bus_key,
+        ab.aisle_bar_id,
+        ab.box_type,
+        ab.box_index,
+        ab.outlet_num,
+        ab.create_time,
+        ab.update_time,
+        r.room_name,
+        r.id as room_id
+        from aisle_box ab left join aisle_index ai on ab.aisle_id = ai.id
+        left join room_index r on ai.room_id = r.id
+        <where>
+            <if test="keys != null and keys.size() > 0">
+                and ab.box_key in
+                <foreach item="item" index="index" collection="keys"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="selectMenuAisleByBoxId" resultType="cn.iocoder.yudao.framework.common.vo.AisleBoxVO">
+        select
+        ab.id,
+        ab.aisle_id,
+        ab.box_key,
+        ab.bus_key,
+        ab.aisle_bar_id,
+        ab.box_type,
+        ab.box_index,
+        ab.outlet_num,
+        ab.create_time,
+        ab.update_time,
+        bi.box_name
+        from aisle_box ab
+        left join box_index bi on ab.box_key = bi.box_key
+        <where>
+            ab.aisle_bar_id in
+            <foreach item="item" index="index" collection="aisleBarIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>
