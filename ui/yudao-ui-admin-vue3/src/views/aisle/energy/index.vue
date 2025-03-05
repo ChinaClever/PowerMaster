@@ -66,7 +66,21 @@
         :inline="true"
         label-width="68px"
       >
-        <div>
+      <el-form-item label="用能排序"  label-width="100px" style="margin-left: -30px;">
+          <el-button @click="changeTimeGranularity('yesterday')"
+          >
+            昨日
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastWeek')"
+          >
+            上周
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastMonth')"
+          >
+            上月
+          </el-button>
+        </el-form-item>
+        <div style="margin-left: 50px;">
           <el-form-item label="公司名称" prop="username">
             <el-input
               v-model="queryParams.company"
@@ -78,6 +92,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetSearch" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -91,18 +106,18 @@
         <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
               <div class="info">
                 <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.location}}</div>
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
+        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true" :stripe="true" :header-cell-style="headerCellStyle">
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
           <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
@@ -124,6 +139,18 @@
               <el-text line-clamp="2" >
                 {{ scope.row.lastMonthEq }} kW·h
               </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="详情" min-width="110" align="center" prop="lastMonthEq" >
+            <template #default="scope" >
+              <el-button
+                link
+                type="primary"
+                @click="toDetail(scope.row.roomId, scope.row.id,scope.row.location)"
+                style="background-color:#409EFF;color:#fff;border:none;width:65px;height:30px;"
+              >
+              详情
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -157,6 +184,8 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
+  timeGranularity:null,
+  cabinetIds: []
 }) as any
 
 // 接口获取机房导航列表
@@ -189,7 +218,8 @@ const getTableData = async(reset = false) => {
       aisleIds : queryParams.aisleIds,
       runStatus: [],
       pduBox: 0,
-      company: queryParams.company
+      company: queryParams.company,
+      timeGranularity:queryParams.timeGranularity,
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
@@ -204,6 +234,7 @@ const getTableData = async(reset = false) => {
         }
       })
       queryParams.pageTotal = res.total
+      isFirst.value = false
     }
   } finally {
     tableLoading.value = false
@@ -255,6 +286,26 @@ onBeforeMount(() => {
   getNavList()
   getTableData()
 })
+
+//排序
+function changeTimeGranularity(timeGranularity){
+  if(queryParams.timeGranularity == timeGranularity) return;
+  queryParams.timeGranularity=timeGranularity;
+  getTableData(true);
+}
+
+function resetSearch(){
+  queryParams.timeGranularity=null;
+  queryParams.company=null;
+  getTableData(true);
+}
+
+//表头样式
+function headerCellStyle() {
+    return {
+      backgroundColor: '#ecf7f7', // 表头背景颜色
+    };
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -387,14 +438,18 @@ onBeforeMount(() => {
     position: relative;
     .content {
       padding-left: 20px;
-      display: flex;
+      // display: flex;
+      position: relative;
       align-items: center;
       .count_img {
-        margin: 0 35px 0 13px;
+        position: absolute;
+        right: 90px;
+        // margin: 0 35px 0 0px;
       }
       .info {
         line-height: 1.7;
         font-size: 13px;
+        display: inline-block;
       }
     }
     .room {
@@ -404,8 +459,8 @@ onBeforeMount(() => {
       font-size: 13px;
     }
     .detail {
-      width: 35px;
-      height: 20px;
+      width: 40px;
+      height: 25px;
       cursor: pointer;
       font-size: 12px;
       padding: 0;
@@ -416,7 +471,7 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      top: 4px;
+      bottom: 4px;
     }
   }
 }

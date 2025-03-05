@@ -8,6 +8,7 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +46,8 @@ public class CabinetController {
     @Autowired
     CabinetService cabinetService;
 
+    @Value("${cabinet-refresh-url}")
+    public String adder;
 
     /**
      * 机柜主页面
@@ -160,6 +164,7 @@ public class CabinetController {
     @PostMapping("/cabinet/save")
     public CommonResult saveCabinet(@RequestBody CabinetVo vo) throws Exception {
         CommonResult message = cabinetService.saveCabinet(vo);
+        HttpUtil.get(adder);
         return message;
     }
 
