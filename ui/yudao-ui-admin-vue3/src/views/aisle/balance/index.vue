@@ -46,10 +46,10 @@
         label-width="68px"
       >
         <div>
-          <el-form-item label="公司名称" prop="username">
+          <el-form-item label="柜列名称" prop="username">
             <el-input
-              v-model="queryParams.company"
-              placeholder="请输入公司名称"
+              v-model="queryParams.name"
+              placeholder="请输入柜列名称"
               clearable
               class="!w-160px"
               height="35"
@@ -57,6 +57,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -133,7 +134,7 @@ const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([]) as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const queryParams = reactive({
-  company: undefined,
+  name: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
@@ -145,6 +146,10 @@ const getNavList = async() => {
   navList.value = res
 }
 
+const resetQuery = () => {
+ queryParams.name = undefined;
+  getTableData(true)
+}
 // 接口获取机柜列表
 const getTableData = async(reset = false) => {
   tableLoading.value = true
