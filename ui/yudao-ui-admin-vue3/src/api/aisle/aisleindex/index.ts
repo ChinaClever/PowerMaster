@@ -98,4 +98,8 @@ export const IndexApi = {
   idList: async () => {
     return await request.download({ url: `/aisle/index/idList`})
   },
+
+  getAislePFDetailExcel: async (data) => {
+    return await request.downloadPost({ url: `/aisle/index/pf/detail/excel`, data })
+  },
 }

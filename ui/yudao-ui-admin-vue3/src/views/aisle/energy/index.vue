@@ -117,7 +117,7 @@
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
+        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true" :stripe="true" :header-cell-style="headerCellStyle">
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
           <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
@@ -299,6 +299,13 @@ function resetSearch(){
   queryParams.company=null;
   getTableData(true);
 }
+
+//表头样式
+function headerCellStyle() {
+    return {
+      backgroundColor: '#ecf7f7', // 表头背景颜色
+    };
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -431,14 +438,18 @@ function resetSearch(){
     position: relative;
     .content {
       padding-left: 20px;
-      display: flex;
+      // display: flex;
+      position: relative;
       align-items: center;
       .count_img {
-        margin: 0 35px 0 13px;
+        position: absolute;
+        right: 90px;
+        // margin: 0 35px 0 0px;
       }
       .info {
         line-height: 1.7;
         font-size: 13px;
+        display: inline-block;
       }
     }
     .room {
