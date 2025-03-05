@@ -104,8 +104,8 @@
     <el-row  v-show="hasData">
       <el-col :span="19">
       <el-radio-group v-model="typeRadio">
-        <el-radio-button label="电流" value="电流" @click="switchChartContainer = 0;"/>
-        <el-radio-button label="电压" value="电压" @click="switchChartContainer = 2;"/>
+        <el-radio-button v-if="pduBox == false" label="电流" value="电流" @click="switchChartContainer = 0;"/>
+        <el-radio-button v-if="pduBox == false" label="电压" value="电压" @click="switchChartContainer = 2;"/>
         <!--<el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled" @click="switchChartContainer = 1;"/>-->
         <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer = 3;"/>
         <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer = 4;"/>
@@ -124,10 +124,10 @@
     </el-col>
     </el-row>
   <br/>
-  <div v-if="switchChartContainer === 0">
+  <div v-if="switchChartContainer === 0 && pduBox == false">
     <CurChart v-if="visContro.curVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
-  <div v-else-if="switchChartContainer === 2">
+  <div v-else-if="switchChartContainer === 2 && pduBox == false">
     <VolChart v-if="visContro.volVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 3">
@@ -169,7 +169,7 @@ import { CabinetApi } from '@/api/cabinet/detail';
 const visContro = ref({
   curVis:false,
   volVis:false,
-  loadRate:false,
+  loadRate:true,
   activeVis:false,
   reactiveVis:false,
   currentVis:false,
@@ -182,14 +182,16 @@ const input = ref('');
 const hasData = ref(true);
 const roomName = ref(history?.state?.roomName);
 const cabinetName = ref(history?.state?.cabinetName);
+const pduBox = ref(history?.state?.pduBox);
+
 const instance = getCurrentInstance();
-const typeRadio = ref('电流');
+const typeRadio = ref('负载率');
 const timeRadio = ref('近一小时');
 const isHourDisabled = ref(false);
 const isDayAndMonthDisabled = ref(false);
 const isPowActiveDisabled = ref(true);
 const isLoadRateDisabled = ref(false);
-const switchChartContainer = ref(0);
+const switchChartContainer = ref(7);
 let intervalId: number | null = null; // 定时器
 const queryParams = reactive({
   id: history?.state?.cabinet as number | undefined,
@@ -220,7 +222,7 @@ const loadPercentage = ref();
 const xAxisLabel = ref('');
 
 const devKeyList = ref([]);
-const switchType = ref(1);
+const switchType = ref(0);
 
 const loadAll = async () => {
   //debugger

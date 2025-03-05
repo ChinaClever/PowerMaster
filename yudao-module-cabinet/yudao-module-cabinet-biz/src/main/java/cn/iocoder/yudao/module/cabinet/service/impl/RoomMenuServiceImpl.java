@@ -176,22 +176,29 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     @Override
     public List<RoomMenuDTO> roomMenuListAll() {
         try {
-
+            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
             //获取机柜列表
             List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                     .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
                     .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
+            if (CollectionUtils.isEmpty(cabinetIndexList)){
+                return menuDTOS;
+            }
 
+            List<Integer> aisleIds = cabinetIndexList.stream().map(CabinetIndex::getAisleId).distinct().collect(Collectors.toList());
+            List<Integer> roomIds = cabinetIndexList.stream().map(CabinetIndex::getRoomId).distinct().collect(Collectors.toList());
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                    .in(AisleIndex::getId, aisleIds)
                     .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
             //获取机房
             List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .in(RoomIndex::getId, roomIds)
                     .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
 
-            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
+
 
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
@@ -753,17 +760,18 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     @Override
     public List<RoomMenuDTO> roomAisleMenuList() {
         try {
-
+            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
                     .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
-
+            if (CollectionUtils.isEmpty(aisleIndexList)){
+                return menuDTOS;
+            }
+            List<Integer> roomIds = aisleIndexList.stream().map(AisleIndex::getRoomId).distinct().collect(Collectors.toList());
             //获取机房
             List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .in(RoomIndex::getId,roomIds)
                     .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
-
-
-            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
 
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {

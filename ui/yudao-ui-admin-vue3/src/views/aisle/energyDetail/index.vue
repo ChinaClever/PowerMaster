@@ -3,7 +3,7 @@
   <div class="energy">
     <div class="top">
       <ContentWrap>
-        <el-tag size="large">{{ location }}</el-tag>
+        <el-tag size="large">机房：{{ location.split("-")[0] }}<span v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{ location.split("-")[1] }}</el-tag>
       </ContentWrap>
     </div>
     <div class="content">

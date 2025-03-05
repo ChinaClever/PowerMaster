@@ -85,4 +85,5 @@ public interface AisleIndexService {
     List<Integer> idList();
 
     PageResult<AisleEQRes> getEqPage1(AisleIndexPageReqVO pageReqVO);
+
 }

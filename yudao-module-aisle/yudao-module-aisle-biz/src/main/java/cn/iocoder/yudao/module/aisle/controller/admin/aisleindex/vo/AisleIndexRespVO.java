@@ -31,7 +31,7 @@ public class AisleIndexRespVO {
 
     @Schema(description = "数据来源")
     @ExcelProperty("数据来源")
-    private Integer pduBar;
+    private Boolean pduBar;
 
     @Schema(description = "是否删除", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("是否删除")
