@@ -44,7 +44,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item >
+        <el-form-item style="position: relative;">
           <el-checkbox-group  v-model="queryParams.status">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
@@ -137,6 +137,12 @@
         </el-table-column>
       </el-table>    
 
+      <div class="statusColor" v-show="switchValue == 0 ">
+        <div style="background-color: rgb(255, 110, 118)">功率因数&lt;0.25</div> 
+        <div style="background-color: rgb(253, 221, 96)">0.25&#8804;功率因数&#8804;0.50</div>
+        <div style="background-color: rgb(88, 217, 249)">0.50&#8804;功率因数&#8804;0.75</div> 
+        <div style="background-color: rgb(124, 255, 178)">0.75&#8804;功率因数</div>
+      </div>
       <div v-show="switchValue == 0  && valueMode == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -149,8 +155,8 @@
               <div  v-if="item.pfA != null">A路:{{item.pfA}}</div>
               <div  v-if="item.pfB != null">B路:{{item.pfB}}</div>
             </div>           -->
-            <div v-if=" item.pfTotal != null">
-              <Bar :width="130" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
+            <div class="zu" v-if=" item.pfTotal != null">
+              <Bar :width="80" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -972,5 +978,19 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.zu{
+  position: absolute;
+  right: 30%;
+  bottom: 0;
+}
+.statusColor{
+  div{
+    display: inline-block;
+    font-size: small;
+    margin-right: 10px;
+    width: 130px;
+    text-align: center;
+  }
 }
 </style>

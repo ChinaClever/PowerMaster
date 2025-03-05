@@ -71,19 +71,24 @@
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
-              <div style="margin-right:10px;margin-left: 5px;margin-top: 30px;">
-                <div>总视在功率：{{item.powApparentTotal ? item.powApparentTotal : '0.000'}}kVA</div>
-                <div>A路视在功率：{{item.powApparentA ? item.powApparentA: '0.000'}}kVA</div>
-                <div>B路视在功率：{{item.powApparentB ? item.powApparentA: '0.000'}}kVA</div>
-              </div>
               <div class="progress" v-if="item.rateA">
                 <div class="left" :style="`flex: ${item.rateA}`">{{item.rateA}}%</div>
                 <div class="line"></div>
                 <div class="right" :style="`flex: ${item.rateB}`">{{ item.rateB}}%</div>
                 <div class="tip">
-                  <span>A路</span>
-                  <span>B路</span>
+                  <span>
+                    <div>{{item.powApparentA ? item.powApparentA: '0.000'}}kVA</div>
+                    <div>A路视在功率</div>
+                  </span>
+                  <span>
+                    <div>{{item.powApparentB ? item.powApparentA: '0.000'}}kVA</div>
+                    <div>B路视在功率</div>
+                  </span>
                 </div>
+              </div>
+              <div style="margin-right:10px;margin-left: 25px;margin-top: 30px; text-align: center;">
+                {{item.powApparentTotal ? item.powApparentTotal : '0.000'}}kVA
+                <div>总视在功率</div>
               </div>
             </div>
             <div class="room">{{item.location}}</div>
@@ -350,10 +355,11 @@ onBeforeMount(() => {
         display: flex;
         justify-content: center;
         margin-top: 30px;
+        
         .tip {
           width: 180px;
           position: absolute;
-          top: -12px;
+          top: -22px;
           left: 0;
           display: flex;
           justify-content: space-between;
@@ -361,17 +367,23 @@ onBeforeMount(() => {
           font-size: 12px;
         }
         .line {
+          position: relative;
+          bottom: -10px;
           width: 3px;
           height: 25px;
           background-color: #000;
         }
         .left {
+          position: relative;
+          bottom: -10px;
           text-align: center;
           box-sizing: border-box;
           background-color: #3b8bf5;
           // border-right: 1px solid #000;
         }
         .right {
+          position: relative;
+          bottom: -10px;
           text-align: center;
           background-color:  #f86f13;
         }

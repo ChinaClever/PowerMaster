@@ -218,12 +218,31 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.maxPowTotal,L2:item.maxPowA,L3:item.maxPowB}" /></div>
-            <div class="info">
+            <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.maxPowTotal,L2:item.maxPowA,L3:item.maxPowB}" /></div> -->
+            <!-- <div class="info">
               <div >总共：{{item.maxPowTotal}}kW</div>
               <div >A路 ：{{item.maxPowA}}kW</div>
-              <div >B路 ：{{item.maxPowB }}kW</div>
+              <div >B路 ：{{item.maxPowB }}kW</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            <!-- </div> -->
+              <!-- 左边两行说明 -->
+            <div class="left-rows">
+              <div class="row-label">A路</div>
+              <div class="row-label">B路</div>
+            </div>
+
+            <!-- 上面两列说明 -->
+            <div class="top-columns">
+              <span class="column-label">视在功率</span>
+              <span class="column-label">有功功率</span>
+            </div>
+
+            <!-- 四宫格 -->
+            <div class="four-grid">
+              <div>1</div>
+              <div style="right: 45%;">2</div>
+              <div style="top: 37px">3</div>
+              <div style="right: 45%;top:37px">4</div>
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
@@ -731,18 +750,7 @@ onMounted(() => {
       box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
       border-radius: 3px;
       border: 1px solid #eee;
-      .info {
-        height: 46px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        justify-content: space-between;
-        font-size: 13px;
-        .value {
-          font-size: 15px;
-          font-weight: bold;
-        }
-      }
+
     }
   }
   .status {
@@ -862,16 +870,6 @@ onMounted(() => {
     border: 5px solid #fff;
     padding-top: 40px;
     position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      .icon {
-        width: 60px;
-        height: 30px;
-        margin: 0 28px;
-        text-align: center;
-      }
-    }
     .devKey{
       position: absolute;
       left: 8px;
@@ -922,5 +920,39 @@ onMounted(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.content{
+  position: absolute;
+  left: 60px;
+  right: 60px;
+  bottom: 20px;
+  top: 30px;
+  .left-rows{
+    position: absolute;
+    top: 5px;
+    height: 80%;
+    div{
+      margin-top: 20px;
+    }
+  }
+  .top-columns{
+    position: absolute;
+    left: 40px;
+    span{
+      margin-right: 40px;
+    }
+  }
+  .four-grid{
+    position: absolute;
+    left: 50px;
+    top: 25px;
+    right: 0;
+    bottom: -10px;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    div{
+      position: absolute;
+    }
+  }
 }
 </style>
