@@ -586,8 +586,7 @@ const getNavList = async() => {
 }
 
 const toDetail = (row) =>{
-  console.log('row',row);
-  const roomName = row.rooName;
+  const roomName = row.roomName;
   const devKey = row.devKey;
   const busId = row.busId
   const location = row.location != null ? row.location : devKey;

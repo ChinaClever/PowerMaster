@@ -112,7 +112,7 @@
             plain
             @click="openForm('create')"
           >
-            <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色
+            <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色123
           </el-button>
         </el-form-item>
         <el-form-item prop="company">

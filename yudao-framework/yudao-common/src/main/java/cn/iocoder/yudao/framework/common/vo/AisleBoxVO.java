@@ -1,6 +1,7 @@
-package cn.iocoder.yudao.framework.common.entity.mysql.aisle;
+package cn.iocoder.yudao.framework.common.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -15,13 +16,10 @@ import java.time.LocalDateTime;
  */
 @Schema(description = "管理后台 - 柜列与插接箱绑定关系 Response VO")
 @Data
-@TableName(value = "aisle_box")
-public class AisleBox implements Serializable {
+public class AisleBoxVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "主键id", example = "1")
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -61,17 +59,7 @@ public class AisleBox implements Serializable {
     private Integer outletNum;
 
     /**
-     * 创建时间
+     * 插接箱名称
      */
-    @Schema(description = "创建时间")
-//    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    @Schema(description = "更新时间")
-//    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-
+    private String boxName;
 }

@@ -21,8 +21,8 @@ export const EnergyConsumptionApi = {
   },
 
   // 查询实时电量数据分页
-  getRealtimeEQDataPage: async (params: any) => {
-    return await request.get({ url: `/aisle/eq-data/realtime-page`, params })
+  getRealtimeEQDataPage: async (data: any) => {
+    return await request.post({ url: `/aisle/eq-data/realtime-page`, data })
   },
 
   // 查询机柜能耗导航的新增多少条记录数据
@@ -50,8 +50,9 @@ export const EnergyConsumptionApi = {
   },
 
   // 导出机柜电能记录历史数据 Excel
-  exportRealtimeEQPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/aisle/eq-data/realtime-export-excel`, params, ...axiosConfig })
+  exportRealtimeEQPageData: async (data, axiosConfig) => {
+    // return await request.download({ url: `/aisle/eq-data/realtime-export-excel`, params, ...axiosConfig })
+    return await request.downloadPost({ url: `/aisle/eq-data/realtime-export-excel`, data, ...axiosConfig })
   },
 
   // 获取分段电能电费

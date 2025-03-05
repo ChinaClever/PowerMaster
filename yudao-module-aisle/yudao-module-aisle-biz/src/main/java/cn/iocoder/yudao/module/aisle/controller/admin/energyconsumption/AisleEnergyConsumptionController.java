@@ -95,20 +95,26 @@ public class AisleEnergyConsumptionController {
         ExcelUtils.write(response, "柜列能耗趋势数据.xlsx", "数据", DetailsExportPageRespVO.class,
                 BeanUtils.toBean(list, DetailsExportPageRespVO.class));
     }
-    @GetMapping("/realtime-page")
+    @PostMapping("/realtime-page")
     @Operation(summary = "获得柜列实时电量数据分页")
-    public CommonResult<PageResult<Object>> getRealtimeEQDataPage(AisleEnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getRealtimeEQDataPage(@RequestBody AisleEnergyConsumptionPageReqVO pageReqVO) throws IOException {
+        if(pageReqVO.getAisleIds().length==0){
+            pageReqVO.setAisleIds(null);
+        }
         PageResult<Object> pageResult = aisleEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/realtime-export-excel")
+    @PostMapping("/realtime-export-excel")
     @Operation(summary = "导出柜列电能记录数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportRealtimeEQDataExcel(AisleEnergyConsumptionPageReqVO pageReqVO,
+    public void exportRealtimeEQDataExcel(@RequestBody AisleEnergyConsumptionPageReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
+        if(pageReqVO.getAisleIds().length==0){
+            pageReqVO.setAisleIds(null);
+        }
         List<Object> list = aisleEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
         aisleEnergyConsumptionService.getRealtimeExcelList(list);
         // 导出 Excel

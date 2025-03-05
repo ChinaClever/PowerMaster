@@ -83,4 +83,7 @@ public interface AisleIndexService {
     Map getAislePFDetail(AisleIndexPageReqVO pageReqVO);
 
     List<Integer> idList();
+
+    PageResult<AisleEQRes> getEqPage1(AisleIndexPageReqVO pageReqVO);
+
 }

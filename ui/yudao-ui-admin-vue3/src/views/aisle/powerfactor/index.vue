@@ -142,13 +142,16 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" v-if=" item.pfTotal != null ">
-              功率因素                
+              <div>{{item.pfTotal}}</div>
+              总功率因素                
             </div>
-            <div class="info" >                  
-              <div  v-if="item.pfTotal != null">总 :{{item.pfTotal}}</div>
+            <!-- <div class="info" >                  
               <div  v-if="item.pfA != null">A路:{{item.pfA}}</div>
               <div  v-if="item.pfB != null">B路:{{item.pfB}}</div>
-            </div>          
+            </div>           -->
+            <div v-if=" item.pfTotal != null">
+              <Bar :width="130" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
@@ -173,7 +176,7 @@
 
       <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
         <el-row>
-          <el-tag>{{ location }}</el-tag>
+          <el-tag>机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</el-tag>
           <div >
             日期:
             <el-date-picker
@@ -210,7 +213,11 @@
           >
             数据
           </el-button>
-
+          <el-button 
+          @click="exportExcel()"
+          v-show="switchChartOrTable == 1">
+            导出
+          </el-button>
         </el-row>
         <br/>
         <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
@@ -237,6 +244,7 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
+import Bar from "./Bar.vue"
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -554,6 +562,24 @@ const handleExport = async () => {
   } finally {
     exportLoading.value = false
   }
+}
+
+//导出excel
+async function exportExcel(){
+  try{
+    await message.exportConfirm()
+    exportLoading.value = true
+    const data=await IndexApi.getAislePFDetailExcel({
+      ...detailQueryParams
+    })
+    download.excel(data, '功率因素详情.xls');
+  }
+  catch(error){
+    console.error('导出失败：', error);
+  }
+  finally{
+    exportLoading.value = false
+  } 
 }
 
 const getFullTimeByDate = (date) => {
@@ -886,10 +912,13 @@ onActivated(() => {
         margin: 0 35px 0 13px;
       }
       .icon {
+        div{
+          font-size: large;
+        }
         width: 74px;
         height: 30px;
         margin: 0 28px;
-        font-size: large;
+        font-size: small;
         text-align: center;
       }
     }

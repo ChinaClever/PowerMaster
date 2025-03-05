@@ -16,7 +16,7 @@ import java.util.List;
  * @date 2024/6/21 15:49
  */
 @Data
-public class AisleDetailDTO {
+public class AisleDetailOldDTO {
 
     //柜列
     /**
@@ -97,7 +97,7 @@ public class AisleDetailDTO {
      * 机柜数据
      */
     @Schema(description = "机柜数据")
-    private List<CabinetAisleVO> cabinetList;
+    private List<CabinetDTO> cabinetList;
 
     /**
      * 柜列数据包

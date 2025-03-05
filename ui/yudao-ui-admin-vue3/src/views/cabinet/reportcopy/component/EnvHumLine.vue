@@ -61,6 +61,7 @@ watchEffect(() => {
 
 
 onUnmounted(() => {
+  console.log('123123123123',prop.list.humResult.series)
   console.log('onUnmounted******')
 })
 

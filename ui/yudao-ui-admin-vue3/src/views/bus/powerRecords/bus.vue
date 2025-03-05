@@ -24,7 +24,7 @@
             <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
-          <div class="description-item">
+          <div class="description-item" >
             <span class="label">相电能 :</span>
             <span class="value">{{ navLineData }}条</span>
           </div>
@@ -412,14 +412,15 @@ const getNavOneDayData = async (timeRangeTypee) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
-  getNavOneDayData(timeRangeType)
   getList()
+  getNavOneDayData(timeRangeType)
+  
 }
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData(timeRangeType)
+  
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
@@ -429,6 +430,7 @@ onMounted(() => {
   ];
   getTypeMaxValue();
   getList();
+  getNavOneDayData(timeRangeType)
 })
 
 const format = (date) => {

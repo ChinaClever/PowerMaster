@@ -10,7 +10,7 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载
+              <div class="tag empty"></div>空载123
             </div>
             <div class="value"><span class="number">{{statusNumber.LoadRateZero}}</span>个</div>
           </div>
@@ -417,7 +417,8 @@ const toMachineDetail = (row) => {
   const cabinet = row.id;
   const cabinetName = row.cabinetName;
   const roomName = row.roomName;
-  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet }})
+  const pduBox = row.pduBox;
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet, pduBox}})
 }
 
 onBeforeMount(() => {

@@ -4,10 +4,11 @@
       <br/>    <br/> 
       <div class="nav_data">
         <div  style="font-size: 14px; text-align:center;">
-          <span v-if="nowAddress" style="font-size: 14px; text-align:center;">{{nowAddress.value}}</span>
+          <span v-if="nowAddress" style="font-size: 14px; text-align:center;">{{nowAddress}}</span>
           <br/>
-          <span v-if="nowIpAddr" style="font-size: 14px; text-align:center;">( {{nowIpAddr.value}} )</span>
-        </div>
+          <span v-if="nowIpAddr" style="font-size: 14px; text-align:center;">( {{nowIpAddr}} )</span>
+          
+        </div><br/>
     <div class="descriptions-container" v-if="loading2" style="font-size: 14px;">
           <div  class="description-item" v-if="queryParams.granularity != 'day'" >
             <span class="label">{{maxTemDataTempName}} :</span>
@@ -231,8 +232,8 @@ import CommonMenu1 from './component/CommonMenu1.vue';
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const nowAddress = ref('') as any// 导航栏的位置信息
-const nowIpAddr = ref('')// 导航栏的位置信息
+const nowAddress = ref() as any// 导航栏的位置信息
+const nowIpAddr = ref()// 导航栏的位置信息
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
@@ -1045,6 +1046,7 @@ const handleClick = async (row) => {
     queryParams.devkey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
+      nowIpAddr.value = row.unique
     });
     let data: any[] = [];
     
@@ -1091,12 +1093,9 @@ onMounted( async () => {
 
   queryParams.devkey = queryDevKey;
   if (queryParams.devkey != undefined){
-    if (queryLocation) {
-      nowAddress.value = '';
-    } else {
-      nowAddress.value = queryLocation;
-    }
-    nowIpAddr.value = queryDevKey
+
+    nowAddress.value = queryLocation.value?queryLocation.value:'未绑定'
+    nowIpAddr.value = queryDevKey.value
     await getList();
     initChart();
   }

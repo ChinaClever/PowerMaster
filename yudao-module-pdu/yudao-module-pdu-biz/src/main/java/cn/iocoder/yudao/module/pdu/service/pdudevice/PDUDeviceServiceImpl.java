@@ -185,6 +185,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
 
 
+
             if(curArr.size() > 1){
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setBcur(new BigDecimal(curArr.get(1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
@@ -252,7 +253,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Override
     public PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO) {
         try {
-
             List<PDULineRes> result = new ArrayList<>();
             if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
                 List<String> devKeyList = new ArrayList<>();
