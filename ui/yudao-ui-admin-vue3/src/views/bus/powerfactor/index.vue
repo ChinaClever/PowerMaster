@@ -269,6 +269,7 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
@@ -351,6 +352,19 @@ const createFilter = (queryString: string) => {
       devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
     )
   }
+}
+
+const getBusIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);
+    if (data != null){
+      openPFDetail(data)
+    }else{
+      location.value = null
+      busName.value = null
+    }
+ } finally {
+ }
 }
 
 const openPFDetail = async (row) =>{
@@ -469,7 +483,7 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: undefined,
+  devKey : history?.state?.devKey as string | undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -716,6 +730,7 @@ const getFullTimeByDate = (date) => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  getBusIdAndLocation()
   getList();
   getNavList();
   getListNoLoading();

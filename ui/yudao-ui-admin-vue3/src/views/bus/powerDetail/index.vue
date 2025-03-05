@@ -372,6 +372,7 @@ onMounted(async () => {
   // await getDetailData();
   // await getLineChartData();
   devKeyList.value = await loadAll();
+  await getBusIdAndLocation()
   await getRedisData();
   await getPeakDemand();
   await getLoadRateList();

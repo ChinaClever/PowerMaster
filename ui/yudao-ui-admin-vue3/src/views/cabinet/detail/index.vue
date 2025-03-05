@@ -86,13 +86,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0] || 'N/A'}}V</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA?.[0] || 'N/A'}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1] || 'N/A'}}V</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA?.[1] || 'N/A'}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2] || 'N/A'}}V</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA?.[2] || 'N/A'}}V</span>
           </div>
         </div>
     </div>
@@ -109,13 +109,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curA[0]}}A</span>
+            <span class="bullet" style="color:#E5B849">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curA?.[0]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curA[1]}}A</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curA?.[1]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curA[2]}}A</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curA?.[2]}}A</span>
           </div>
         </div>
     </div>
@@ -164,13 +164,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB?.[0]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB?.[1]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB?.[2]}}V</span>
           </div>
         </div>
     </div>
@@ -187,13 +187,13 @@
             height: 100%;
             top: 25%;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curB[0]}}A</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curB?.[0]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curB[1]}}A</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curB?.[1]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curB[2]}}A</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curB?.[2]}}A</span>
           </div>
         </div>
     </div>

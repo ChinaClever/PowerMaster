@@ -438,6 +438,7 @@ const handleQuery = async () => {
 
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  getBusIdAndLocation()
 })
 
 onBeforeMount(() => {

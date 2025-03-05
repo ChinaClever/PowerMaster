@@ -829,6 +829,7 @@ const toDeatil = (row) =>{
   const busId = row.busId;
   const location = row.location != null ? row.location : row.devKey
   const busName = row.busName;
+  console.log("row",row)
   push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
 
 }

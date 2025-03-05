@@ -857,7 +857,7 @@ function formatNumber(value,index) {
   if (typeof value === 'number') {
     return value.toFixed(index); 
   } else {
-    console.error('尝试对非数字值使用 toFixed 方法', value);
+    console.log('尝试对非数字值使用 toFixed 方法', value);
     return '0.000'; 
   }
 }

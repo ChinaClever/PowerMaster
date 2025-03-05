@@ -17,7 +17,7 @@
         <span class="line"></span>
         <el-form-item label="" prop="jg">
           柜列：<el-select :size="isFromHome ? 'small' : ''" v-model="queryParams.cabinetColumnId" placeholder="请选择" class="!w-200px">
-            <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
+            <el-option v-for="item in machineList" :key="item.id" :label="item.aisleName" :value="item.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -557,11 +557,11 @@ const initConnect = () => {
   })
   // 监听连接断开
   instance.bind('beforeDetach', function(connection) {
-    console.log('监听连接断开', connection, connection.sourceId, connection.source,)
+    console.log('监听连接断开', connection, connection.sourceId, connection.source,connection.target)
     if (connection.suspendedElement) { // 用户手动断开连接
-      const targetId = connection.target.id.includes('cab') ? connection.target.id : connection.source.id
-      const cabRoad = targetId.split('-')[1]
-      const index = targetId.split('-')[2]
+      const targetId = connection.target.id
+      const cabRoad = connection.target.id.includes('cab') ? targetId.split('-')[1] : targetId.split(/[-_]/)[2]
+      const index = connection.target.id.includes('cab') ? targetId.split('-')[2] : targetId.split(/[-_]/)[1]
       cabinetList.value[index][`boxOutletId${cabRoad}`] = ''
       cabinetList.value[index][`boxIndex${cabRoad}`] = ''
       cabinetList.value[index][`addr${cabRoad}`] = null
@@ -763,13 +763,45 @@ const handlePluginRightClick = (e, type) => {
 }
 const handleInitialDblick = (e, road) => {
   console.log('machineColInfo', machineColInfo)
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
+  if(chosenBtn.value == 0) {
+    push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 1) {
+    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 2) {
+    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 3) {
+    push({path: '/bus/busmonitor/buspowerfactor', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 4) {
+
+  } else if(chosenBtn.value == 7) {
+    push({path: '/bus/busmonitor/busbalancedetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 8) {
+    push({path: '/bus/busmonitor/bustem', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 10) {
+    push({path: '/bus/busmonitor/busenergydetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  }
 }
 const handlePluginDblick = (e, road) => {
   const targetId = e.target.id || e.target.parentNode.id
   const index = targetId.split('-')[1]
   console.log('targetId', targetId, machineColInfo, index)
-  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  if(chosenBtn.value == 0) {
+    push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 1) {
+    push({path: '/bus/boxmonitor/boxpowerDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 2) {
+    push({path: '/bus/boxmonitor/boxpowerDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 3) {
+    push({path: '/bus/boxmonitor/boxpowerfactor', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 4) {
+
+  } else if(chosenBtn.value == 7) {
+    push({path: '/bus/boxmonitor/boxbalancedetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 8) {
+    push({path: '/bus/boxmonitor/boxtem', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 10) {
+    push({path: '/bus/boxmonitor/boxenergydetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  }
 }
 // 处理插接箱/连接器菜单点击事件
 const handleBoxOperate = async(type, road) => {
@@ -802,7 +834,25 @@ const handleJump = (data) => {
     message.error(`该机柜暂未保存绑定，无法跳转`)
     return
   }
-  push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: target.roomName,cabinetName: target.cabinetName}})
+  if(chosenBtn.value == 0) {
+    push({path: '/cabinet/cab/cabinetPowerLoadDetail', state: {cabinet: target.id,roomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName}})
+  } else if(chosenBtn.value == 1) {
+    push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
+  } else if(chosenBtn.value == 2) {
+    push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
+  } else if(chosenBtn.value == 3) {
+    push({path: '/bus/boxmonitor/boxpowerfactor', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 4) {
+
+  } else if(chosenBtn.value == 7) {
+     push({path: '/cabinet/cab/balance', state: {cabinetIds: target.id,isFirst: false}})
+  } else if(chosenBtn.value == 8) {
+    push({path: '/cabinet/cab/cabinetenvdetail', state: { id: target.id }})
+  } else if(chosenBtn.value == 9) {
+    push({path: '/cabinet/cab/screen', state: { id: target.id,roomId: target.roomId }})
+  } else if(chosenBtn.value == 10) {
+    push({path: '/cabinet/cab/energyDetail', state: { cabinetId: target.id,cabinetroomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName }})
+  }
 }
 // 处理菜单点击事件
 const handleOperate = (type) => {
@@ -839,16 +889,7 @@ const handleOperate = (type) => {
     }).then(async () => {
       const cabItem = cabinetList.value[index]
       if(cabItem.cabinetBoxes) {
-        if (cabItem.boxIndexA && cabItem.boxOutletIdA) {
-          const connections = instance?.getConnections() as any
-          const targetConnect = connections?.find(item => item.source.id == ('cab-A-' + index))
-          instance?.deleteConnection(targetConnect)
-        }
-        if (cabItem.boxIndexB && cabItem.boxOutletIdB) {
-          const connections = instance?.getConnections() as any
-          const targetConnect = connections?.find(item => item.source.id == ('cab-B-' + index))
-          instance?.deleteConnection(targetConnect)
-        }
+        console.log("aaaaaa---cabItem",cabItem)
         await CabinetApi.deleteCabinetInfo({
           id: cabItem.id,
           type: 2
@@ -870,6 +911,7 @@ const handleOperate = (type) => {
           type: 4
         })
       }
+      getMachineColInfo()
     })
   }
   console.log('handleOperate', machineColInfo)
@@ -886,7 +928,6 @@ const handleCancel = () => {
     cancelButtonText: '取 消',
     type: 'warning'
   }).then(async () => {
-    instance?.deleteEveryConnection()
     editEnable.value = false
     getMachineColInfo()
   })
@@ -976,6 +1017,7 @@ const handleFormCabinet = (data) => {
   if (machineColInfo.barA && machineColInfo.pduBar) nextTick(() => {
     addCabinetAnchor(operateMenu.value.curIndex, data)
   })
+  getMachineColInfo()
 }
 // 插接箱弹窗确认后处理
 const handleFormBox = (data) => {
@@ -1825,6 +1867,15 @@ const saveMachineBus = async() => {
     length: cabinetList.value.length,
     cabinetList: filterCabinet,
   })
+  if(filterCabinet.length && filterCabinet[0].busIpA) {
+    filterCabinet.forEach(async (cab, index) => {
+      const resCab = await CabinetApi.saveCabinetInfo({
+        ...cab,
+        pduBox: true
+      })
+      console.log("resCab",{...cab},resCab)
+    })
+  }
   const res = await MachineColumnApi.saveAisleDetail({
     ...machineColInfo,
     length: cabinetList.value.length,
