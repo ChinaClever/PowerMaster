@@ -158,6 +158,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                         AisleBar::getBusKey,
                         Collectors.toMap(AisleBar::getAisleId, AisleBar::getPath)
                 ));
+
         List<AisleIndexRes> res = new ArrayList<>();
         List redisList = getMutiBusRedis(devKey);
         for (AisleIndexDO aisleIndexDO : list) {
@@ -241,50 +242,65 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     public PageResult<AislePowerRes> getPowerPage(AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
-        List<AislePowerRes> res = new ArrayList<>();
+        List<AislePowerRes> result = new ArrayList<>();
+
+
+        List<Integer> aisleIds = list.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
+        Map<Integer, Map<String, String>> devKey = getDevKey(aisleIds);
+        List<Integer> roomIds = list.stream().map(AisleIndexDO::getRoomId).collect(Collectors.toList());
+        Map<Integer, String> voMap = getPositionByIds(roomIds);
+
         List redisList = getMutiRedis(list);
+        Map<Integer,Object> redisMap = (Map<Integer, Object>) redisList.stream().filter(i -> Objects.nonNull(i)).collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getInteger("aisle_key"), Function.identity()));
+
         for (AisleIndexDO aisleIndexDO : list) {
-            AislePowerRes aislePowerRes = new AislePowerRes();
-            aislePowerRes.setId(aisleIndexDO.getId());
-            aislePowerRes.setName(aisleIndexDO.getAisleName());
-            aislePowerRes.setRoomId(aisleIndexDO.getRoomId());
-            res.add(aislePowerRes);
-        }
-        Map<Integer, AislePowerRes> resMap = res.stream().collect(Collectors.toMap(AislePowerRes::getId, Function.identity()));
-        getPosition(res);
-        getDevKey(res);
-        for (Object o : redisList) {
-            if (Objects.isNull(o)) {
+            AislePowerRes res = new AislePowerRes();
+            result.add(res);
+            Map<String, String> aisleBarMap = devKey.get(aisleIndexDO.getId());
+            if (Objects.nonNull(aisleBarMap)){
+                res.setDevKeyA(aisleBarMap.get("A"));
+                res.setDevKeyB(aisleBarMap.get("B"));
+            }
+            res.setId(aisleIndexDO.getId());
+            res.setName(aisleIndexDO.getAisleName());
+            res.setRoomId(aisleIndexDO.getRoomId());
+            res.setPduBar(aisleIndexDO.getPduBar());
+            String roomName = voMap.get(aisleIndexDO.getRoomId());
+            if (StringUtils.isNotEmpty(roomName)) {
+                res.setRoomName(roomName);
+                res.setLocation(roomName + SPLIT_KEY + aisleIndexDO.getAisleName());
+            }
+
+            Object obj = redisMap.get(aisleIndexDO.getId());
+            if (Objects.isNull(obj)){
                 continue;
             }
-            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            Integer aisleKey = jsonObject.getInteger("aisle_key");
-            AislePowerRes aislePowerRes = resMap.get(aisleKey);
-            aislePowerRes.setStatus(jsonObject.getInteger("status"));
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+//            Integer aisleKey = jsonObject.getInteger("aisle_key");
+            res.setStatus(jsonObject.getInteger("status"));
             JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
             JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
             JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
             if (totalData != null) {
-                aislePowerRes.setEleActiveTotal(totalData.getDouble("ele_active"));
-                aislePowerRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
-                aislePowerRes.setPowActiveTotal(totalData.getDouble("pow_active"));
-                aislePowerRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
+                res.setEleActiveTotal(totalData.getDouble("ele_active"));
+                res.setPowApparentTotal(totalData.getDouble("pow_apparent"));
+                res.setPowActiveTotal(totalData.getDouble("pow_active"));
+                res.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
             }
             if (pathA != null) {
-                aislePowerRes.setEleActiveA(pathA.getDouble("ele_active"));
-                aislePowerRes.setPowApparentA(pathA.getDouble("pow_apparent"));
-                aislePowerRes.setPowActiveA(pathA.getDouble("pow_active"));
-                aislePowerRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
+                res.setEleActiveA(pathA.getDouble("ele_active"));
+                res.setPowApparentA(pathA.getDouble("pow_apparent"));
+                res.setPowActiveA(pathA.getDouble("pow_active"));
+                res.setPowReactiveA(pathA.getDouble("pow_reactive"));
             }
             if (pathB != null) {
-                aislePowerRes.setEleActiveB(pathB.getDouble("ele_active"));
-                aislePowerRes.setPowApparentB(pathB.getDouble("pow_apparent"));
-                aislePowerRes.setPowActiveB(pathB.getDouble("pow_active"));
-                aislePowerRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
+                res.setEleActiveB(pathB.getDouble("ele_active"));
+                res.setPowApparentB(pathB.getDouble("pow_apparent"));
+                res.setPowActiveB(pathB.getDouble("pow_active"));
+                res.setPowReactiveB(pathB.getDouble("pow_reactive"));
             }
-
         }
-        return new PageResult<>(res, aisleIndexDOPageResult.getTotal());
+        return new PageResult<>(result, aisleIndexDOPageResult.getTotal());
     }
 
     @Override
@@ -2023,24 +2039,25 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         return resultMap;
     }
 
-    private void getDevKey(List<? extends AisleIndexRespVO> res) {
-        if (CollectionUtils.isAnyEmpty(res)) {
-            return;
+    private Map<Integer, Map<String, String>> getDevKey(List<Integer> aisleIds) {
+        Map<Integer, Map<String, String>> map = new HashMap<>();
+        if (CollectionUtils.isAnyEmpty(aisleIds)) {
+            return map;
         }
-        List<Integer> aisleIds = res.stream().map(AisleIndexRespVO::getId).collect(Collectors.toList());
         List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapperX<AisleBar>().inIfPresent(AisleBar::getAisleId, aisleIds));
-        Map<Integer, Map<String, String>> aisleBarMap = aisleBars.stream()
+        map = aisleBars.stream()
                 .collect(Collectors.groupingBy(
                         AisleBar::getAisleId,
                         Collectors.toMap(AisleBar::getPath, AisleBar::getBusKey)
                 ));
-        res.forEach(aisleIndexRespVO -> {
-            if (aisleBarMap.get(aisleIndexRespVO.getId()) == null) {
-                return;
-            }
-            aisleIndexRespVO.setDevKeyA(aisleBarMap.get(aisleIndexRespVO.getId()).get("A"));
-            aisleIndexRespVO.setDevKeyB(aisleBarMap.get(aisleIndexRespVO.getId()).get("B"));
-        });
+        return map;
+//        res.forEach(aisleIndexRespVO -> {
+//            if (aisleBarMap.get(aisleIndexRespVO.getId()) == null) {
+//                return;
+//            }
+//            aisleIndexRespVO.setDevKeyA(aisleBarMap.get(aisleIndexRespVO.getId()).get("A"));
+//            aisleIndexRespVO.setDevKeyB(aisleBarMap.get(aisleIndexRespVO.getId()).get("B"));
+//        });
     }
 
     private Map getESTotalAndIds(String index, String startTime, String endTime, Integer pageSize, Integer pageNo) throws IOException {
