@@ -563,10 +563,9 @@ public class CabinetServiceImpl implements CabinetService {
 
             return CommonResult.success(vo.getId());
         } finally {
-
             //刷新机柜计算服务缓存
-            log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
+            //log.info("刷新计算服务缓存 --- " + adder);
+            //HttpUtil.get(adder);
         }
     }
 
@@ -1946,8 +1945,8 @@ private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
 private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
     CabinetPdu cabinetPdu = new CabinetPdu();
     cabinetPdu.setCabinetId(vo.getId());
-    cabinetPdu.setPduKeyA(vo.getPduIpA() + "-" + vo.getCasIdB());
-    cabinetPdu.setPduKeyB(vo.getPduIpB() + "-" + vo.getCasIdA());
+    cabinetPdu.setPduKeyA(vo.getPduIpA() + "-" + vo.getCasIdA());
+    cabinetPdu.setPduKeyB(vo.getPduIpB() + "-" + vo.getCasIdB());
     cabinetPdu.setId(pdu.getId());
     return cabinetPdu;
 }
