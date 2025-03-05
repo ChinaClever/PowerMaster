@@ -7,12 +7,7 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
@@ -413,7 +408,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             //获取需要处理的数据
             searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
                     .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
-                    ));
+            ));
             searchSourceBuilder.fetchSource(new String[]{"aisle_id"}, null);
             SearchRequest searchRequest = new SearchRequest();
             searchRequest.indices(indices);
@@ -432,7 +427,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 Map<Integer, AisleIndexDO> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(AisleIndexDO::getId, x -> x));
 
 
-                 startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                 List<String> yesterdayList = getData(startTime, endTime, ids, "aisle_eq_total_day");
                 Map<Integer, Double> yesterdayMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)) {
@@ -469,7 +464,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 list.forEach(iter -> {
                     AisleEQRes dto = new AisleEQRes();
                     AisleIndexDO aisleIndexDO = boxIndexMap.get(iter.getAisleId());
-                    if (Objects.nonNull(aisleIndexDO)){
+                    if (Objects.nonNull(aisleIndexDO)) {
                         dto.setName(aisleIndexDO.getAisleName());
                         dto.setId(aisleIndexDO.getId());
                     }
@@ -600,7 +595,6 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         return aisleIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
                 .stream().map(AisleIndexDO::getId).collect(Collectors.toList());
     }
-
 
 
     @Override
@@ -888,12 +882,12 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
             if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
                 aisleBalanceRes.setRateA((aisleBalanceRes.getPowApparentA() / aisleBalanceRes.getPowApparentTotal()) * 100);
-            }else {
+            } else {
                 aisleBalanceRes.setRateA(0.0);
             }
             if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
                 aisleBalanceRes.setRateB((aisleBalanceRes.getPowApparentB() / aisleBalanceRes.getPowApparentTotal()) * 100);
-            }else {
+            } else {
                 aisleBalanceRes.setRateB(0.0);
             }
         }

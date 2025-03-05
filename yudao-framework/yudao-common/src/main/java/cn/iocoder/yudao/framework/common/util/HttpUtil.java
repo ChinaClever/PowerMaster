@@ -27,66 +27,42 @@ public class HttpUtil {
     /**
      * get请求
      *
-     * @param addr
+     * @param httpsAddr
      */
-    public static void get(String addr) {
-        BufferedReader in = null;
+    public static void get(String httpsAddr) {
         try {
-            //创建信任管理器，忽略证书认证
-            TrustManager[] trustAllCerts = new TrustManager[]{
+            // 使用HttpsURLConnection而不是HttpURLConnection，并指定HTTPS URL
+            URL url = new URL(httpsAddr); // 确保addr是HTTPS URL
+            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+
+            // 不要全局设置SSL/TLS和主机名验证器，而是为每个请求单独配置（这里仍然使用了不安全的配置作为示例）
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{
                     new X509TrustManager() {
                         @Override
-                        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-                        }
+                        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
 
                         @Override
-                        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-                        }
+                        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
 
                         @Override
                         public X509Certificate[] getAcceptedIssuers() {
                             return new X509Certificate[0];
                         }
                     }
-            };
+            }, new SecureRandom());
+            conn.setSSLSocketFactory(sslContext.getSocketFactory());
+            conn.setHostnameVerifier((hostname, session) -> true); // 不安全的主机名验证
 
-            // 获取默认的 SSL 上下文实例
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-
-            // 初始化 SSL 上下文，并指定信任管理器
-            sslContext.init(null, trustAllCerts, new SecureRandom());
-
-            // 获取 SSL socket 工厂
-            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
-            // 设置默认的 SSL socket 工厂
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
-            // 创建主机名验证器，用于禁用主机名验证
-            HostnameVerifier hostnameVerifier = (hostname, session) -> true;
-
-            // 设置默认的主机名验证器
-            HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
-
-            // 创建 URL 对象并进行连接
-            URL url = new URL("http://" + addr);
-            log.info("url : " + url);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                    log.info("url:" +url.getPath() );
             conn.setRequestMethod("GET");
-            //Get请求不需要DoOutPut
-            conn.setDoOutput(false);
-            conn.setDoInput(true);
             conn.setConnectTimeout(30000);
             conn.setReadTimeout(60000);
-            conn.connect();
-            log.info("code : " + conn.getResponseCode());
 
+            int responseCode = conn.getResponseCode();
+            log.info("响应" + responseCode);
         } catch (Exception e) {
-            log.error("异常：", e);
+            log.error("错误信息" + httpsAddr, e);
         }
-
     }
 
     /**
