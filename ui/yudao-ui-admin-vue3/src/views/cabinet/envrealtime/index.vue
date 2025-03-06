@@ -593,9 +593,11 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
+  queryFormRef.value.resetFields()
     butColor.value = 0;
     colorIndex.value =0;
-  allSelected.value = !allSelected.value;
+  // allSelected.value = !allSelected.value;
+  allSelected.value = true;
   selectedIndex.value = null;
   onclickColor.value = -1;
   queryParams.startNum = null;
