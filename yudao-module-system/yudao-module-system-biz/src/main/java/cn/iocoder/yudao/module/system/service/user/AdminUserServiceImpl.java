@@ -5,7 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -28,7 +28,6 @@ import cn.iocoder.yudao.module.system.service.permission.PermissionService;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -396,7 +395,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             try {
                 validateUserForCreateOrUpdate(null, null, importUser.getMobile(), importUser.getEmail(),
                         importUser.getDeptId(), null);
-            } catch (ServiceException ex) {
+            } catch (BusinessException ex) {
                 respVO.getFailureUsernames().put(importUser.getUsername(), ex.getMessage());
                 return;
             }

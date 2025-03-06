@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.rack.controller.admin;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
-import cn.iocoder.yudao.framework.common.exception.ServerException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
@@ -92,7 +92,7 @@ public class RackIndexController {
         try {
             List<RackIndex> list = rackIndexService.batchSave(vo);
             return success(list);
-        }catch (ServerException e){
+        }catch (BusinessException e){
             return error(e.getCode(),e.getMessage());
         }
     }

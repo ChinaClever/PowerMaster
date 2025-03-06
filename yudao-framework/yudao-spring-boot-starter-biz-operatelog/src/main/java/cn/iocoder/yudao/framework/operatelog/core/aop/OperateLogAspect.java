@@ -246,10 +246,10 @@ public class OperateLogAspect {
             operateLogObj.setResultCode(SUCCESS.getCode());
         }
         // （异常）处理 resultCode 和 resultMsg 字段
-        if (exception != null) {
-            operateLogObj.setResultCode(INTERNAL_SERVER_ERROR.getCode());
-            operateLogObj.setResultMsg(ExceptionUtil.getRootCauseMessage(exception));
-        }
+//        if (exception != null) {
+//            operateLogObj.setResultCode(INTERNAL_SERVER_ERROR.getCode());
+//            operateLogObj.setResultMsg(ExceptionUtil.getRootCauseMessage(exception));
+//        }
     }
 
     private static boolean isLogEnable(ProceedingJoinPoint joinPoint,

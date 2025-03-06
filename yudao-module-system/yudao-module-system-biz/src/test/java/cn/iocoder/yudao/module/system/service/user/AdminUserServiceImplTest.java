@@ -2,7 +2,7 @@ package cn.iocoder.yudao.module.system.service.user;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.iocoder.yudao.framework.common.enums.CommonStatusEnum;
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.collection.ArrayUtils;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
@@ -421,7 +421,7 @@ public class AdminUserServiceImplTest extends BaseDbUnitTest {
         UserImportExcelVO importUser = randomPojo(UserImportExcelVO.class, o -> {
         });
         // mock 方法，模拟失败
-        doThrow(new ServiceException(DEPT_NOT_FOUND)).when(deptService).validateDeptList(any());
+        doThrow(new BusinessException(DEPT_NOT_FOUND)).when(deptService).validateDeptList(any());
 
         // 调用
         UserImportRespVO respVO = userService.importUserList(newArrayList(importUser), true);

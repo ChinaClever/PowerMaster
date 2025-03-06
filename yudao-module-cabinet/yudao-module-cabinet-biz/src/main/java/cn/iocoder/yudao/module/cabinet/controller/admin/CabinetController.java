@@ -11,6 +11,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.IndexPageReqVO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -263,5 +265,20 @@ public class CabinetController {
     @Operation(summary = "获得机柜环境分页")
     public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@RequestBody @Valid CabinetIndexVo pageReqVO) {
         return success(cabinetService.getCabinetEnvPage(pageReqVO));
+    }
+
+    @Operation(summary = "机柜功率因素详情")
+    @PostMapping("/pf/detail")
+    public CommonResult<Map> getCabinetPFDetail(@RequestBody CabinetIndexVo pageReqVO) {
+        Map map = cabinetService.getCabinetPFDetail(pageReqVO);
+        return success(map);
+    }
+
+    @Operation(summary = "机柜功率因素详情-导出")
+    @PostMapping("/pf/detailExcel")
+    public void getBusPFDetailExcel(@RequestBody CabinetIndexVo pageReqVO, HttpServletResponse response) throws IOException {
+        Map map = cabinetService.getCabinetPFDetail(pageReqVO);
+        List<CabinetPFDetailVO> tableList = (List<CabinetPFDetailVO>) map.get("table");
+        ExcelUtils.write(response, "机柜功率因素详情.xlsx", "数据", CabinetPFDetailVO.class,tableList);
     }
 }
