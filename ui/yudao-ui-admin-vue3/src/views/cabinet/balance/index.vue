@@ -187,7 +187,8 @@ const cabinetId = ref();
 const { push } = useRouter(); // 路由跳转
 const router = useRouter(); // 路由跳转
 const tableLoading = ref(false); // 
-const isFirst = ref(history?.state?.isFirst as boolean | true); // 是否第一次调用getTableData函数
+const isFirst = ref(history?.state?.isFirst ? history?.state?.isFirst : true); // 是否第一次调用getTableData函数
+console.log(isFirst)
 const navList = ref([]); // 左侧导航栏树结构列表
 const tableData = ref([]);
 const tableCopyData = ref([]);
