@@ -3920,13 +3920,17 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
                 if (StringUtils.isNotEmpty(vo.getRoomName())){
                     joiner.add(vo.getRoomName());
+
+                    if (StringUtils.isNotEmpty(vo.getBusName())){
+                        joiner.add(vo.getBusName());
+                    }
+//                    if (StringUtils.isNotEmpty(vo.getBoxName())){
+//                        joiner.add(vo.getBoxName());
+//                    }
+                }else {
+                    joiner.add(iter);
                 }
-                if (StringUtils.isNotEmpty(vo.getBusName())){
-                    joiner.add(vo.getBusName());
-                }
-                if (StringUtils.isNotEmpty(vo.getBoxName())){
-                    joiner.add(vo.getBoxName());
-                }
+
                 vo.setLocaltion(joiner.toString());
                 map.put(iter, vo);
             }

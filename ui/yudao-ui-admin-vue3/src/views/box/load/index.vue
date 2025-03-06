@@ -50,7 +50,7 @@
            <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
-            <button v-else-if="butColor === 1" style="height:25px;" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
         <!-- <el-button
@@ -628,8 +628,10 @@ const toggleAllStatus = () => {
 const handleQuery = () => {
   queryParams.pageNo = 1;
   queryDeletedPageParams.pageNo = 1;
-  getList();
+  if(switchValue.value ==4){
   getDeletedList();
+  }else{  
+    getList();}
 }
 
 /** 重置按钮操作 */
@@ -1267,7 +1269,7 @@ onActivated(() => {
 .btnallNotSelected{
   margin-right: 10px;
   width: 58px;
-  height: 25px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;
