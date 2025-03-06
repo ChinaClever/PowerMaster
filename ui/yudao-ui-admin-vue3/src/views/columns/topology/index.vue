@@ -984,7 +984,7 @@ const handleBarOperate = async(type) => {
   if (type == 'edit') {
     handleConfig()
   }else{
-    barChangeType.value = 'delete-' + machineColInfo.barA.id + '-' + machineColInfo.barB.id
+    barChangeType.value = 'delete'
     machineColInfo.barA = null
     machineColInfo.barB = null
     cabinetList.value.forEach(item => {
@@ -1022,8 +1022,22 @@ const handleBoxOperate = async(type, road) => {
        message.error('柜列插接箱/连接器单个删除失败!')
     }
     operateMenuBox.value.show = false;
+    cabinetList.value.forEach(async item => {
+      if(item[`boxIndex${road}`] == index) {
+        item[`busIp${road}`] = null
+        item[`barId${road}`] = null
+        item[`boxIndex${road}`] = null
+        item[`boxOutletId${road}`] = null
+        item.cabinetBoxes = null
+        const resItem = await CabinetApi.saveCabinetInfo({
+          ...item,
+          pduBox: true
+        })
+        console.log("resCab",{...item},resItem)
+      }
+    })
     message.success('柜列插接箱/连接器单个删除成功!');
-    getMachineColInfo();
+    setTimeout(() => { getMachineColInfo() } ,1000)
   }
 }
 // 跳转机柜
@@ -1065,6 +1079,13 @@ const handleOperate = (type) => {
   operateMenu.value.show = false
   const index = operateMenu.value.curIndex
   if (type == 'add' || type == 'edit') {
+    if(barChangeType.value == 'edit') {
+      ElMessage({
+        message: '请先保存母线',
+        type: 'warning',
+      })
+      return
+    }
     let info = {
       roomId: machineColInfo.roomId,
       aisleId: machineColInfo.id,
@@ -1135,7 +1156,9 @@ const handleCancel = () => {
     cancelButtonText: '取 消',
     type: 'warning'
   }).then(async () => {
+    instance?.deleteEveryConnection()
     editEnable.value = false
+    barChangeType.value = ''
     getMachineColInfo()
   })
 }
@@ -2119,6 +2142,7 @@ const saveMachineBus = async() => {
   }
   message.success('保存成功！')
   editEnable.value = false
+  barChangeType.value = ''
   setTimeout(() => { getMachineColInfo() } ,1000)
   console.log('saveMachineBus', res)
 }
@@ -2226,6 +2250,7 @@ watch(() => queryParams.cabinetColumnId,(val) => {
   console.log('wwwwwwwwwww', val, machineList.value)
   emit('idChange', val)
   editEnable.value = false
+  barChangeType.value = ''
   toCreatConnect(true)
   instance?.deleteEveryConnection()
   getMachineColInfo()

@@ -537,9 +537,9 @@ const open = async (type: string, data, machineColInfo) => {
       barIdB: machineColInfo.barIdB,
       busIpB: machineColInfo.busIpB,
     }
-    machineFormData.value.pduBox = machineFormData.value.pduBox ? 1 : 0
     console.log(machineFormData)
   }
+  machineFormData.value.pduBox = machineFormData.value.pduBox ? 1 : 0
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
