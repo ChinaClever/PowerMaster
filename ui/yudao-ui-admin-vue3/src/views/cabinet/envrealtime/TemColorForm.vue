@@ -7,16 +7,19 @@
       label-width="50px"
       v-loading="formLoading"
     >
-      <el-button @click="addTemColor">添加温度范围颜色</el-button>
-      <el-button @click="deleteTemColor" v-if="formData.colorArr.length > 0">删除最后一个</el-button>
-      <div><br/></div>
+      <!-- <el-button @click="addTemColor">添加温度范围颜色</el-button>
+      <el-button @click="deleteTemColor" v-if="formData.colorArr.length > 0">删除最后一个</el-button> -->
+      <!-- <div><br/></div> -->
       <div style="display:blcock;width:100%;margin-left:-30px;">
         <div v-for="item in formData.colorArr" :key="item.id" style="width:100%;">        
         <el-form-item>
           <span style="width:80px;">冷通道温度</span>
-          <el-input style="width: 30%;" type="number" v-model="item.min"  />°C~
-          <el-input style="width: 30%;" type="number" v-model="item.max"  />°C
-          颜色<el-color-picker v-model="item.color" /><span>&nbsp;&nbsp;&nbsp;热通道温度{{item.min + 15 }}°C~{{ item.max + 15 }}°C</span> 
+          <el-input style="width: 15%;" type="number" v-model="item.min"  />°C~
+          <el-input style="width: 15%;" type="number" v-model="item.max"  />°C
+          颜色<el-color-picker v-model="item.color" /><span><span v-for="i in Array(10)" :key="i">&nbsp;</span>热通道温度</span> 
+          <el-input style="width: 15%;" type="number" v-model="item.hotMin"  />°C~
+          <el-input style="width: 15%;" type="number" v-model="item.hotMax"  />°C
+          颜色<el-color-picker v-model="item.hotColor" />
         </el-form-item>
       </div>
       </div>
@@ -57,6 +60,9 @@ const formData = ref({
         min: undefined,
         max: undefined,
         color: undefined,
+        hotMin: undefined,
+        hotMax: undefined,
+        hotColor: undefined,
       },
     ]
 })

@@ -73,7 +73,7 @@
           </button>
            
           <template v-for="(status, index) in statusList" :key="index">
-              <button v-if="switchValue == 1"
+              <button
                 class="btn_normal normal"
                 @click.prevent="handleSelectStatus(index)"
                 :style="{
@@ -83,11 +83,11 @@
                   borderStyle: 'solid',
                   color:isSelected(index) ? '#000' : 'white'
                 }"
-                style="width: 90px;"
+                style="width: 100px;"
               >
-              {{ status.startNum+15 }}°C ~ {{ status.endNum+15 }}°C
+              {{ status.startNum}}°C ~ {{ status.endNum}}°C
               </button>
-              <button v-else
+              <!-- <button v-else
                    class="btn_normal normal"
                 @click.prevent="handleSelectStatus(index)"
                 :style="{
@@ -100,7 +100,7 @@
                 style="width: 90px;"
               >
               {{ status.name }}
-              </button>
+              </button> -->
 
               <!--       name: `${item.min}°C ~ ${item.max}°C`,
       startNum: item.min,
@@ -374,16 +374,31 @@ const getCabinetColorAll = async () => {
   const res = await IndexApi.getCabinetColorAll()
   console.log('res', res)
   if (res != null) {
-  statusList.value = res.map(item => ({
-      name: `${item.min}°C ~ ${item.max}°C`,
-      startNum: item.min,
-      endNum: item.max,
-      selected: true, // 根据实际情况设置默认选中状态
-      cssClass: 'btn_normal',// 根据实际情况设置样式类
-      activeClass: 'btn_normal normal',// 根据实际情况设置样式类
-      value: 0,
-      color: item.color
-    }));
+  statusList.value = res.map(item =>{
+    if(switchValue.value == 0){
+      return {
+        name: `${item.min}°C ~ ${item.max}°C`,
+        startNum: item.min,
+        endNum: item.max,
+        selected: true, // 根据实际情况设置默认选中状态
+        cssClass: 'btn_normal',// 根据实际情况设置样式类
+        activeClass: 'btn_normal normal',// 根据实际情况设置样式类
+        value: 0,
+        color: item.color
+      }; 
+    }else{
+      return {
+        name: `${item.hotMin}°C ~ ${item.hotMax}°C`,
+        startNum: item.hotMin,
+        endNum: item.hotMax,
+        selected: true, // 根据实际情况设置默认选中状态
+        cssClass: 'btn_normal',// 根据实际情况设置样式类
+        activeClass: 'btn_normal normal',// 根据实际情况设置样式类
+        value: 0,
+        color: item.hotColor
+      }; 
+    }
+  });
   }
 }
 
