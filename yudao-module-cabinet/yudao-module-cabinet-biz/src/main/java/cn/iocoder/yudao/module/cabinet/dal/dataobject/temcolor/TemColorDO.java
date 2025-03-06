@@ -1,11 +1,15 @@
 package cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * 机柜温度颜色 DO
@@ -48,5 +52,15 @@ public class TemColorDO{
      */
 //    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    @Schema(description = "热温度范围最小值", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Integer hotMin;
+
+    @Schema(description = "热温度范围最大值", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Integer hotMax;
+
+    @Schema(description = "热温度范围对应的颜色", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String hotColor;
+
 
 }
