@@ -92,7 +92,7 @@
               </div>
             </div>
             <div class="room">{{item.location}}</div>
-            <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item)">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
@@ -114,6 +114,70 @@
             <el-table-column label="无功功率(kVar)" min-width="90" align="center" prop="powReactiveB" />
           </el-table-column>
         </el-table>
+        <el-dialog v-model="showDetailDialog" @close="handleClose" >
+          <!-- 自定义的头部内容（可选） -->
+          <template #header>
+            <CardTitle title="AB占比情况" />
+            <div class="powerContainer" v-if="balanceObj.pow_active_percent > 0">
+              <div class="power">
+                <div class="label">有功功率：</div>
+                <div class="progressContainer">
+                  <div class="progress">
+                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                    <div class="line"></div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="power">
+                <div class="label">视在功率：</div>
+                <div class="progressContainer">
+                  <div class="progress">
+                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                    <div class="line"></div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <!-- 自定义的主要内容 -->
+          <div class="custom-content">
+            <CardTitle title="A路电流不平衡" />
+            <div class="custom-content-container" v-if="apow !== null">
+              <el-card class="cardChilc" shadow="hover">
+                <curUnblance :max="balanceObj.imbalanceValueA" />
+              </el-card>
+              <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="ABarOption" :height="300" />
+                </div>
+              </el-card>
+              <el-card  class="cardChilc" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="ALineOption" :height="300"/>
+                </div>
+              </el-card>
+            </div>
+
+            <CardTitle title="B路电流不平衡" />
+            <div class="custom-content-container" v-if="bpow !== null">
+              <el-card class="cardChilc" shadow="hover">
+                <volUnblance :max="balanceObj.imbalanceValueB"/>
+              </el-card>
+              <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="BBarOption" :height="300"/>
+                </div>
+              </el-card>
+              <el-card  class="cardChilc" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="BLineOption" :height="300"/>
+                </div>
+              </el-card>
+            </div>
+          </div>
+        </el-dialog>
         <Pagination
           :total="queryParams.pageTotal"
           v-model:page="queryParams.pageNo"
@@ -130,6 +194,8 @@
 
 <script lang="ts" setup>
 import { IndexApi } from '@/api/aisle/aisleindex'
+import curUnblance from './component/curUnblance.vue';
+import volUnblance from './component/volUnblance.vue';
 
 const { push } = useRouter() // 路由跳转
 const router = useRouter() // 路由跳转
@@ -137,13 +203,76 @@ const tableLoading = ref(false) //
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([]) as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
+const showDetailDialog = ref(false)
+const apow = ref(null)
+const bpow = ref(null)
+const ABarOption = ref<EChartsOption>({});
+const BBarOption = ref<EChartsOption>({});
+
+const ALineOption = ref<EChartsOption>({
+  title: {
+    text: 'A路电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis:{},
+  series: []
+})
+
+const BLineOption = ref<EChartsOption>({
+  title: {
+    text: 'B路电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis:{},
+  series: []
+})
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
 }) as any
-
+const balanceObj = reactive({
+  pow_apparent_percent: 0,
+  pow_active_percent: 0,
+  cur_valueA: [],
+  cur_valueB: [],
+  imbalanceValueA: 0,
+  imbalanceValueB: 0,
+  colorIndex: 0,
+})
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getAisleMenu()
@@ -183,9 +312,88 @@ const getTableData = async(reset = false) => {
 }
 
 // 详情跳转
-const toDetail = (id) => {
-  console.log('详情跳转', id, router, router.getRoutes())
-  push({path: '/cabinet/cab/balanceDetail', state: { id }})
+const toDetail = (item) => {
+  showDetailDialog.value = true;
+  balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
+  balanceObj.pow_active_percent=item.powActiveA/item.powActiveTotal*100;
+  balanceObj.imbalanceValueA=50;
+  balanceObj.imbalanceValueB=50;
+  apow.value = 5;
+  bpow.value = 15;
+  const cur_valueA=[0.25,0.35,0.50]
+  ABarOption.value = {
+      title: {
+        text: 'A路电流饼形图',
+        left: 'left'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b} : {c}'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+          ]
+        }
+      ]
+    }
+    const cur_valueB = [0.1,0.2,0.7]
+    BBarOption.value = {
+      title: {
+        text: 'B路电流饼形图',
+        left: 'left'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b} : {c}'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: cur_valueB[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueB[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueB[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+          ]
+        }
+      ]
+    }
+  // console.log('详情跳转', id, router, router.getRoutes())
+  // push({path: '/cabinet/cab/balanceDetail', state: { id }})
 }
 
 // 处理切换 表格/阵列 模式
@@ -224,6 +432,25 @@ const handleCheck = async (row) => {
   getTableData(true)
 }
 
+// 处理对话框关闭
+const handleClose = () => {
+  showDetailDialog.value = false;
+  balanceObj.pow_apparent_percent= 0;
+  balanceObj.pow_active_percent= 0;
+  balanceObj.cur_valueA= [];
+  balanceObj.cur_valueB= [];
+  balanceObj.imbalanceValueA= 0;
+  balanceObj.imbalanceValueB= 0;
+  balanceObj.colorIndex= 0;
+}
+
+//打开对话框
+// const showDialog=(id)=>{
+  // alert("hello");
+  // showDetailDialog.value = true;
+  // apow.value = item.apow;
+  // bpow.value = item.bpow;
+// }
 onBeforeMount(() => {
   getNavList()
   getTableData()
@@ -426,5 +653,82 @@ onBeforeMount(() => {
       top: 8px;
     }
   }
+}
+
+.powerContainer {
+  display: flex;
+  .power {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // padding-left: 50px;
+    margin: 20px 0;
+    .label {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .progressContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 30px;
+      .progress {
+        width: 400px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #eee;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        .line {
+          width: 3px;
+          height: 36px;
+          background-color: #000;
+        }
+        .left {
+          text-align: center;
+          box-sizing: border-box;
+          background-color: #3b8bf5;
+          // border-right: 1px solid #000;
+        }
+        .right {
+          text-align: center;
+          background-color:  #f86f13;
+        }
+      }
+    }
+  }
+}
+
+
+.cardChilc {
+  flex: 1;
+  height: 100%;
+}
+
+.IechartBar {
+  width: 100%;
+  height: 100%;
+}
+
+
+.custom-content{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.custom-content-container{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+:deep(.el-dialog) {
+  width: 80%;
+  margin-top: 50px;
+  background-color: #f1f1f1;
 }
 </style>
