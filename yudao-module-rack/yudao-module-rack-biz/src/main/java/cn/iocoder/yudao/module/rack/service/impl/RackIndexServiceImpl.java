@@ -9,7 +9,7 @@ import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DelFlagEnums;
-import cn.iocoder.yudao.framework.common.exception.ServerException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
@@ -57,7 +57,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -212,7 +211,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                             .eq(RackIndex::getRackName, rackIndex.getRackName())
                             .eq(RackIndex::getCabinetId, vo.getCabinetId()));
                     if (Objects.nonNull(index)) {
-                        throw new ServerException(NAME_REPEAT.getCode(), NAME_REPEAT.getMsg());
+                        throw new BusinessException(NAME_REPEAT.getCode(), NAME_REPEAT.getMsg());
                     }
 
                     rackIndex.setCabinetId(vo.getCabinetId());
@@ -228,7 +227,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                             .eq(RackIndex::getCabinetId, vo.getCabinetId())
                             .ne(RackIndex::getId, rackIndex.getId()));
                     if (Objects.nonNull(index)) {
-                        throw new ServerException(NAME_REPEAT.getCode(), NAME_REPEAT.getMsg());
+                        throw new BusinessException(NAME_REPEAT.getCode(), NAME_REPEAT.getMsg());
                     }
                     rackIndex.setCabinetId(vo.getCabinetId());
 //                    rackIndex.setRoomId(vo.getRoomId());

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin.temcolor.vo;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
@@ -23,5 +24,17 @@ public class TemColorSaveReqVO {
     @Schema(description = "温度范围对应的颜色", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "温度范围对应的颜色不能为空")
     private String color;
+
+    @Schema(description = "热温度范围最小值", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "热温度范围最小值不能为空")
+    private Integer hotMin;
+
+    @Schema(description = "热温度范围最大值", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "热温度范围最大值不能为空")
+    private Integer hotMax;
+
+    @Schema(description = "热温度范围对应的颜色", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "热温度范围对应的颜色不能为空")
+    private String hotColor;
 
 }

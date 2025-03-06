@@ -5,6 +5,9 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.dto.cabinet.*;
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
@@ -1183,7 +1186,32 @@ public CabinetDTO getCabinetCapacityDetail(int id) {
     return dto;
 }
 
-@Override
+    @Override
+    public Map getCabinetPFDetail(CabinetIndexVo pageReqVO) {
+        Map map = new HashMap();
+        LocalDateTime localDateTime = pageReqVO.getStartTime().withHour(23).withMinute(59).withSecond(59);
+        String startTime = LocalDateTimeUtil.format(pageReqVO.getStartTime(),"yyyy-MM-dd HH:mm:ss");
+        String endTime = LocalDateTimeUtil.format(localDateTime,"yyyy-MM-dd HH:mm:ss");
+        List<String> lineHour = getData(startTime, endTime, pageReqVO.getCabinetIds(), "cabinet_hda_pow_hour");
+        List<CabinetPFDetailVO> strList = lineHour.stream()
+                .map(str -> JsonUtils.parseObject(str, CabinetPFDetailVO.class))
+                .collect(Collectors.toList());
+
+        CabinetPFDetailResVO vo = new CabinetPFDetailResVO();
+        List<Float> factora = strList.stream().map(CabinetPFDetailVO::getFactorAAvgValue).collect(Collectors.toList());
+        List<Float> factorb = strList.stream().map(CabinetPFDetailVO::getFactorBAvgValue).collect(Collectors.toList());
+        List<Float> factorTotal = strList.stream().map(CabinetPFDetailVO::getFactorTotalAvgValue).collect(Collectors.toList());
+        List<String> time = strList.stream().map(CabinetPFDetailVO::getCreateTime).collect(Collectors.toList());
+        vo.setTime(time);
+        vo.setPowerFactorAvgValueA(factora);
+        vo.setPowerFactorAvgValueB(factorb);
+        vo.setPowerFactorAvgValueTotal(factorTotal);
+        map.put("chart", vo);
+        map.put("table", strList);
+        return map;
+    }
+
+    @Override
 public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
     Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
     Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);

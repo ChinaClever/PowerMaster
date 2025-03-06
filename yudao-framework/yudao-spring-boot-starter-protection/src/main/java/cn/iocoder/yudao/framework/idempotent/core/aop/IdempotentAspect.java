@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.framework.idempotent.core.aop;
 
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.idempotent.core.annotation.Idempotent;
 import cn.iocoder.yudao.framework.idempotent.core.keyresolver.IdempotentKeyResolver;
@@ -49,7 +49,7 @@ public class IdempotentAspect {
         // 锁定失败，抛出异常
         if (!success) {
             log.info("[beforePointCut][方法({}) 参数({}) 存在重复请求]", joinPoint.getSignature().toString(), joinPoint.getArgs());
-            throw new ServiceException(GlobalErrorCodeConstants.REPEATED_REQUESTS.getCode(), idempotent.message());
+            throw new BusinessException(GlobalErrorCodeConstants.REPEATED_REQUESTS.getCode(), idempotent.message());
         }
     }
 

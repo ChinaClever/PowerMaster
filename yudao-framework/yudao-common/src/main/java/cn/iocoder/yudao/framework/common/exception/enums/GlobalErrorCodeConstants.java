@@ -42,4 +42,6 @@ public interface GlobalErrorCodeConstants {
 
     ErrorCode NOT_BOX = new ErrorCode(1000, "该插接箱不存在");
 
+    ErrorCode NOT_ALL = new ErrorCode(1001, "%");
+
 }
