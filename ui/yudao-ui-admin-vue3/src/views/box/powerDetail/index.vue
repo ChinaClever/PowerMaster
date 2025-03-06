@@ -362,6 +362,7 @@ const queryParams = reactive({
 
 const getRedisData = async () => {
   const data =  await IndexApi.getBoxPowerRedisData(queryParams);
+  boxName.value = data.boxName
   redisData.value = data;
   tableData.value = redisData.value.boxLoopItemResVO;
 

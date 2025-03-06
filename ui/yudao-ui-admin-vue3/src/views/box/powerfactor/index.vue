@@ -363,6 +363,7 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import PFDetail from './component/PFDetail.vue'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
@@ -448,6 +449,19 @@ const createFilter = (queryString: string) => {
       devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
     )
   }
+}
+
+const getBoxIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBoxIdAndLocation(queryParams);
+    if (data != null){
+      openPFDetail(data)
+    }else{
+      location.value = null
+      boxName.value = null
+    }
+ } finally {
+ }
 }
 
 const openPFDetail = async (row) =>{
@@ -623,7 +637,7 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: undefined,
+  devKey : history?.state?.devKey as string | undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -827,6 +841,7 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  getBoxIdAndLocation();
   getList();
   getListAll();
   getNavList();

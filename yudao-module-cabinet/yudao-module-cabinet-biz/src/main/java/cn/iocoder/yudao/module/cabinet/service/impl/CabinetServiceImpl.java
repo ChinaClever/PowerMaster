@@ -563,13 +563,12 @@ public class CabinetServiceImpl implements CabinetService {
 
             return CommonResult.success(vo.getId());
         } finally {
-
             //刷新机柜计算服务缓存
             log.info("刷新计算服务缓存 --- " + adder);
 //            HttpUtil.get(adder);
-            ThreadPoolConfig.getTHreadPool().execute(() -> {
-                HttpUtil.get(adder);
-            });
+            //ThreadPoolConfig.getTHreadPool().execute(() -> {
+                //HttpUtil.get(adder);
+            //});
         }
     }
 

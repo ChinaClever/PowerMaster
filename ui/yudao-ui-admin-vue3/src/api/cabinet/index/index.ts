@@ -50,6 +50,15 @@ export const IndexApi = {
     return await request.get({ url: `/cabinet/index/getRackByCabinet`, params })
   },
 
+  getCabinetPFDetail: async (data: any) => {
+    return await request.post({ url: `/pf/detail`, data })
+  },
+
+  //始端相功率因素详情导出
+  getCabinetPFDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/pf/detailExcel` , data, ...axiosConfig })
+  },
+
   getConsumeData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/ele`,params})
   },

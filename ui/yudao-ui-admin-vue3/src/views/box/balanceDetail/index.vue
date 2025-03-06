@@ -1,7 +1,7 @@
 <template>
   <el-card class="card" shadow="never"> 
     <template #header>
-      <CardTitle title="电流不平衡" /><el-tag size="large">{{ roomName }}</el-tag>
+      <CardTitle title="电流不平衡" /><el-tag size="large">{{ location }}</el-tag>
     </template>
     <div class="ImbalanceA">
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
@@ -66,12 +66,13 @@
 <script lang="ts" setup>
 import { EChartsOption } from 'echarts'
 import { IndexApi } from '@/api/bus/boxindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
 
-const boxId = history?.state?.boxId || -1
-const devKey = history?.state?.devKey || "0"
-const location =  history?.state?.location 
-const roomName =  history?.state?.roomName 
+const boxId = ref(history?.state?.boxId || -1)
+const devKey = ref(history?.state?.devKey || "0")
+const location = ref(history?.state?.location)
+const busName = ref(history?.state?.busName)
 const colorList = [{
   name: '小电流不平衡',
   color: '#aaa',
@@ -110,8 +111,22 @@ const balanceObj = reactive({
   colorIndex: 0,
 })
 
+const getBoxIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBoxIdAndLocation({devKey:devKey.value});
+    if (data != null){
+      location.value = data.location
+      boxId.value = data.boxId
+      busName.value = data.busName
+    }else{
+      location.value = null
+    }
+ } finally {
+ }
+}
+
 const getBalanceDetail = async() => {
-  const res = await IndexApi.getBoxBalanceDetail({devKey:devKey})
+  const res = await IndexApi.getBoxBalanceDetail({devKey:devKey.value})
   console.log('11111111',res)
 
   if (res.cur_value) {
@@ -238,7 +253,7 @@ const getBalanceDetail = async() => {
 // 获取pdu电流趋势
 const getBalanceTrend = async () => {
   const res = await IndexApi.getBoxBalanceTrend({
-    boxId: boxId
+    boxId: boxId.value
   })
   console.log('22222222',res)
   if (res.length > 0) {
@@ -405,7 +420,8 @@ const BLineOption = ref<EChartsOption>({
   series: []
 })
 
-onBeforeMount(()=> {
+onBeforeMount(async ()=> {
+  await getBoxIdAndLocation()
   getBalanceDetail()
   // getBalanceDegree()
   getBalanceTrend()

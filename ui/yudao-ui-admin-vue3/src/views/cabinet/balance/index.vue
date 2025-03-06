@@ -187,12 +187,14 @@ const cabinetId = ref();
 const { push } = useRouter(); // 路由跳转
 const router = useRouter(); // 路由跳转
 const tableLoading = ref(false); // 
-const isFirst = ref(true); // 是否第一次调用getTableData函数
+const isFirst = ref(history?.state?.isFirst ? history?.state?.isFirst : true); // 是否第一次调用getTableData函数
+console.log(isFirst)
 const navList = ref([]); // 左侧导航栏树结构列表
 const tableData = ref([]);
 const tableCopyData = ref([]);
 const switchValue = ref(0); // 表格(1) 矩阵(0)切换
-const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
+const cabinetIds = ref<number[]>([history?.state?.cabinetIds]); // 左侧导航菜单所选id数组
+console.log(isFirst,history?.state?.isFirst)
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
@@ -368,11 +370,13 @@ const getTableData = async(reset = false) => {
           roomName: item.roomName +'-' +item.cabinetName
         };
       });
-            // console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {
     tableLoading.value = false
+    if(history?.state?.cabinetIds) {
+      showDialog(tableData.value[0])
+    }
   }
 }
 

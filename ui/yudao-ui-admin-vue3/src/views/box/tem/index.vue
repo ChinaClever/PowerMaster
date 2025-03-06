@@ -269,6 +269,7 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 
@@ -397,6 +398,18 @@ const handleCheck = async (row) => {
   getList();
 }
 
+const getBoxIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBoxIdAndLocation(queryParams);
+    if (data != null){
+      openTemDetail(data)
+    }else{
+      location.value = null
+    }
+ } finally {
+ }
+}
+
 const openTemDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
@@ -502,7 +515,7 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: undefined,
+  devKey : history?.state?.devKey as string | undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -698,6 +711,7 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  getBoxIdAndLocation()
   getList();
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);

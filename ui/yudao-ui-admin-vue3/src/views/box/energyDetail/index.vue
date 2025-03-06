@@ -102,6 +102,7 @@
 import { EChartsOption } from 'echarts'
 import { IndexApi } from '@/api/bus/boxindex'
 import { BoxEnergyApi } from '@/api/bus/boxenergy'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import 'echarts/lib/component/dataZoom';
 
 const roomName = ref(history?.state?.roomName);
@@ -120,7 +121,8 @@ const EleTrendOption = {
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
   busId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1
+  cabinetroomId: history?.state?.roomId || 1,
+  devKey : history?.state?.devKey as string | undefined
 })
 const EleChain = reactive({
   todayEq: '',
@@ -134,6 +136,19 @@ const EleChain = reactive({
   monthRate: '',
 })
 const ActivePowTrend = reactive({})
+
+const getBoxIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBoxIdAndLocation(queryParams);
+    if (data != null){
+      queryParams.busId = data.boxId
+      busName.value = data.busName
+    }else{
+      busName.value = null
+    }
+ } finally {
+ }
+}
 
 watch(() => queryParams.cabinetroomId, (val) => {
   machineList.value = handleNavList(val)
@@ -353,8 +368,9 @@ const getMachineEleTrend = async(type) => {
   
 }
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   // getNavList()
+  await getBoxIdAndLocation()
   getActivePowTrend()
   getMachineEleChain()
   getMachineEleTrend('DAY')

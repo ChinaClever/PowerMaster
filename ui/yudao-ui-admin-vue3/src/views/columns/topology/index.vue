@@ -17,7 +17,7 @@
         <span class="line"></span>
         <el-form-item label="" prop="jg">
           柜列：<el-select :size="isFromHome ? 'small' : ''" v-model="queryParams.cabinetColumnId" placeholder="请选择" class="!w-200px">
-            <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
+            <el-option v-for="item in machineList" :key="item.id" :label="item.aisleName" :value="item.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -42,7 +42,7 @@
       <div style="margin-top:-25px"></div>
       <div style="height:20px;"></div>
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
-        <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
+        <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus"  @click.right="handleBarRightClick($event)">
           <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}" @dblclick="handleInitialDblick($event, 'A')">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
             <!-- <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" /> -->
@@ -52,6 +52,10 @@
           </div>
           <div class="maskPoint1"></div>
           <div class="maskPoint2"></div>
+          <div class="menu" v-if="operateMenuBox.show && editEnable && operateMenuBox.type == 'bar'" :style="{left: `${operateMenuBox.left}`, top: `${operateMenuBox.top}`}">
+            <div class="menu_item" @click="handleBarOperate('edit')">编辑</div>
+            <div class="menu_item" @click="handleBarOperate('delete')">删除</div>
+          </div>
         </div>
         <div class="main">
           <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="busListContainer" @click.right="handlePluginRightClick($event, 'A')">
@@ -250,6 +254,51 @@
   <PluginForm ref="columnForm" @success="handleFormPlugin" />
   <CabForm ref="cabinetForm" @success="handleFormCabinet" />
   <BoxForm ref="columnBoxForm" @success="handleFormBox" />
+
+  <el-dialog v-model="detailVis" style="width: 80%;height: 80%;margin-top: 100px;">
+    <div class="custom-row" style="display: flex; align-items: center;">
+      <!-- 位置标签 -->
+      <div class="location-tag el-col">
+        <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+        <span>所在位置：{{ machineColInfo.roomName?machineColInfo.roomName:'未绑定' }}</span>
+        <span> 机柜名称：{{ queryParamsPF.cabinetName?queryParamsPF.cabinetName:'未绑定' }}</span>
+      </div>
+
+      <!-- 日期选择器 -->
+      <div class="date-picker-col el-col">
+        <el-date-picker
+          v-model="queryParamsPF.startTime"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          type="datetime"
+          :picker-options="pickerOptions"
+          placeholder="选择日期时间"
+        />
+        <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
+        <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+      </div>
+
+      <!-- 图表/数据切换按钮组 -->
+      <div class="chart-data-buttons el-col" style="margin-right: 50px;">
+        <div class="button-group">
+          <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+          <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
+          <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+            <i class="el-icon-download"></i> 导出
+          </el-button>
+        </div>
+      </div>
+    </div>
+    <br/>
+    <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
+    <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+      <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
+      <el-table-column label="时间" align="center" prop="create_time" />
+      <el-table-column label="总功率因素" align="center" prop="factor_total_avg_value" />
+      <el-table-column label="A路功率因素" align="center" prop="factor_a_avg_value" />
+      <el-table-column label="B路功率因素" align="center" prop="factor_b_avg_value" />
+    </el-table>
+    </div>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -258,7 +307,9 @@ import { MachineColumnApi } from '@/api/cabinet/column'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/cabinet/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import download from '@/utils/download'
 import PluginForm from './component/PluginForm.vue'
+import PFDetail from './component/PFDetail.vue'
 import CabForm from './component/CabForm.vue'
 import InitialBox from './component/InitialBox.vue'
 import PluginBox from './component/PluginBox.vue'
@@ -270,6 +321,8 @@ let instance: BrowserJsPlumbInstance | null = null
 const roomList = ref<any>([]) // 机房列表
 const machineList = ref<any>([]) // 机柜列列表
 const tempList:any = ref([])
+const detailVis = ref(false)
+const switchChartOrTable = ref(0)
 const queryParams = reactive({
   cabinetColumnId: history?.state?.id,
   cabinetroomId: history?.state?.roomId,
@@ -471,6 +524,7 @@ const chosenBtn = ref(0)
 const scaleValue = ref(1)
 const ContainerHeight = ref(100)
 const editEnable = ref(false)
+const barChangeType = ref()
 const columnForm = ref()
 const columnBoxForm = ref()
 const cabinetForm = ref()
@@ -557,11 +611,11 @@ const initConnect = () => {
   })
   // 监听连接断开
   instance.bind('beforeDetach', function(connection) {
-    console.log('监听连接断开', connection, connection.sourceId, connection.source,)
+    console.log('监听连接断开', connection, connection.sourceId, connection.source,connection.target)
     if (connection.suspendedElement) { // 用户手动断开连接
-      const targetId = connection.target.id.includes('cab') ? connection.target.id : connection.source.id
-      const cabRoad = targetId.split('-')[1]
-      const index = targetId.split('-')[2]
+      const targetId = connection.target.id
+      const cabRoad = connection.target.id.includes('cab') ? targetId.split('-')[1] : targetId.split(/[-_]/)[2]
+      const index = connection.target.id.includes('cab') ? targetId.split('-')[2] : targetId.split(/[-_]/)[1]
       cabinetList.value[index][`boxOutletId${cabRoad}`] = ''
       cabinetList.value[index][`boxIndex${cabRoad}`] = ''
       cabinetList.value[index][`addr${cabRoad}`] = null
@@ -721,6 +775,108 @@ const updateCabinetConnect = () => {
     updatePluginAnchor()
   })
 }
+
+const queryParamsPF = reactive({
+  pageNo: 1,
+  pageSize: 24,
+  cabinetIds : [],
+})as any
+const pfESList = ref({}) as any
+const pfTableList = ref([]) as any
+const exportLoading = ref(false) // 导出的加载中
+
+const openPFDetail = async (row) =>{
+  queryParamsPF.cabinetName = row.cabinetName
+  queryParamsPF.cabinetIds = [row.id];
+  queryParamsPF.startTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
+  console.log('row',row);
+  await getDetail();
+  detailVis.value = true;
+}
+
+/** 查询列表 */
+const getDetail = async () => {
+  const data = await IndexApi.getCabinetPFDetail(queryParamsPF);
+  console.log('数据',data);
+  pfESList.value = data?.chart;
+  pfESList.value?.powerFactorAvgValueTotal?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+  pfESList.value?.powerFactorAvgValueA?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+  pfESList.value?.powerFactorAvgValueB?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+
+  pfTableList.value = data?.table;
+  pfTableList.value?.forEach((obj) => {
+    obj.factor_total_avg_value = obj?.factor_total_avg_value?.toFixed(2);
+    obj.factor_a_avg_value = obj?.factor_a_avg_value?.toFixed(2);
+    obj.factor_b_avg_value = obj?.factor_b_avg_value?.toFixed(2);
+  });
+}
+
+const subtractOneDay = () => {
+  var date = new Date(queryParamsPF.startTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() - 1); // 减去一天
+
+  queryParamsPF.startTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const addtractOneDay = () => {
+  var date = new Date(queryParamsPF.startTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() + 1); // 减去一天
+
+  queryParamsPF.startTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const handleDayPick = async () => {
+
+  if(queryParamsPF?.startTime ){
+    await getDetail();
+    
+  } 
+}
+
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm();
+    // 发起导出
+    queryParamsPF.pageNo = 1;
+    exportLoading.value = true;
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getCabinetPFDetailExcel(queryParamsPF, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '功率因数详细.xlsx');
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error);
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
+}
+
 // 处理机柜右击事件
 const handleCabRightClick = (e) => {
   console.log('处理右击事件', e.target.className)
@@ -741,12 +897,30 @@ const handleCabRightClick = (e) => {
   }
   console.log('operateMenu',e.target.className, operateMenu.value, cabinetList.value[currentIndex])
 }
-// 处理插接箱/母线右击事件
+// 处理始端箱右击事件
+const handleBarRightClick = (e) => {
+  e.preventDefault()
+  if (!editEnable.value) return
+  const targetId = e.target.id || e.target.parentNode.id
+  console.log('处理始端箱右击事件', e.target.className, e.target.parentNode, targetId, e.currentTarget)
+  const container = e.currentTarget
+  const rect = container.getBoundingClientRect()
+  const offsetX = e.clientX - Math.ceil(rect.left) + 1
+  const offsetY = e.clientY - Math.ceil(rect.top) + 1
+  operateMenuBox.value = {
+    left: offsetX + 'px',
+    top: offsetY + 'px',
+    show: true,
+    curIndex: 0,
+    type: 'bar'
+  }
+}
+// 处理插接箱右击事件
 const handlePluginRightClick = (e, type) => {
   e.preventDefault()
   if (!editEnable.value) return
   const targetId = e.target.id || e.target.parentNode.id
-  console.log('处理插接箱母线右击事件',type, e.target.className, e.target.parentNode, targetId, e.currentTarget)
+  console.log('处理插接箱右击事件',type, e.target.className, e.target.parentNode, targetId, e.currentTarget)
   if (!targetId || !targetId.includes('box')) return
   const container = e.currentTarget
   const currentIndex = targetId.split('-')[1]
@@ -763,13 +937,76 @@ const handlePluginRightClick = (e, type) => {
 }
 const handleInitialDblick = (e, road) => {
   console.log('machineColInfo', machineColInfo)
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
+  if(chosenBtn.value == 0) {
+    push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 1) {
+    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 2) {
+    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 3) {
+    push({path: '/bus/busmonitor/buspowerfactor', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 4) {
+    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 7) {
+    push({path: '/bus/busmonitor/busbalancedetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 8) {
+    push({path: '/bus/busmonitor/bustem', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 10) {
+    push({path: '/bus/busmonitor/busenergydetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+  }
 }
 const handlePluginDblick = (e, road) => {
   const targetId = e.target.id || e.target.parentNode.id
   const index = targetId.split('-')[1]
   console.log('targetId', targetId, machineColInfo, index)
-  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  if(chosenBtn.value == 0) {
+    push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 1) {
+    push({path: '/bus/boxmonitor/boxpowerDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 2) {
+    push({path: '/bus/boxmonitor/boxpowerDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 3) {
+    push({path: '/bus/boxmonitor/boxpowerfactor', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 4) {
+    push({path: '/bus/boxmonitor/boxpowerDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 7) {
+    push({path: '/bus/boxmonitor/boxbalancedetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 8) {
+    push({path: '/bus/boxmonitor/boxtem', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  } else if(chosenBtn.value == 10) {
+    push({path: '/bus/boxmonitor/boxenergydetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].boxKey, roomName: machineColInfo.roomName}})
+  }
+}
+// 处理始端箱菜单点击事件
+const handleBarOperate = async(type) => {
+  const index = operateMenuBox.value.curIndex
+  console.log('handleBarOperate', type, index, machineColInfo)
+  if (type == 'edit') {
+    handleConfig()
+  }else{
+    barChangeType.value = 'delete-' + machineColInfo.barA.id + '-' + machineColInfo.barB.id
+    machineColInfo.barA = null
+    machineColInfo.barB = null
+    cabinetList.value.forEach(item => {
+      item.busIpA = null
+      item.busIpB = null
+      item.barIdA = null
+      item.barIdB = null
+      item.boxIndexA = null
+      item.boxIndexB = null
+      item.boxOutletIdA = null
+      item.boxOutletIdB = null
+      item.cabinetBoxes = null
+    })
+    console.log("machineColInfo.cabinetList",machineColInfo.cabinetList)
+    instance?.deleteEveryConnection()
+    // if(res != "1"){
+    //    message.error('柜列母线删除失败!')
+    // }
+    operateMenuBox.value.show = false;
+    // message.success('柜列母线删除成功!');
+    // getMachineColInfo();
+  }
 }
 // 处理插接箱/连接器菜单点击事件
 const handleBoxOperate = async(type, road) => {
@@ -782,10 +1019,10 @@ const handleBoxOperate = async(type, road) => {
     const data = machineColInfo[`bar${road}`].boxList[index]
     const res = await MachineColumnApi.getDeleteAisleSingleBox({id: data.id})
     if(res != "1"){
-       message.error('柜列始端箱单个删除失败!')
+       message.error('柜列插接箱/连接器单个删除失败!')
     }
     operateMenuBox.value.show = false;
-    message.success('柜列始端箱单个删除成功!');
+    message.success('柜列插接箱/连接器单个删除成功!');
     getMachineColInfo();
   }
 }
@@ -802,7 +1039,26 @@ const handleJump = (data) => {
     message.error(`该机柜暂未保存绑定，无法跳转`)
     return
   }
-  push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: target.roomName,cabinetName: target.cabinetName}})
+  if(chosenBtn.value == 0) {
+    push({path: '/cabinet/cab/cabinetPowerLoadDetail', state: {cabinet: target.id,roomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName}})
+  } else if(chosenBtn.value == 1) {
+    push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
+  } else if(chosenBtn.value == 2) {
+    push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
+  } else if(chosenBtn.value == 3) {
+    //弹窗
+    openPFDetail(target)
+  } else if(chosenBtn.value == 4) {
+    push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
+  } else if(chosenBtn.value == 7) {
+     push({path: '/cabinet/cab/balance', state: {cabinetIds: target.id,isFirst: false}})
+  } else if(chosenBtn.value == 8) {
+    push({path: '/cabinet/cab/cabinetenvdetail', state: { id: target.id }})
+  } else if(chosenBtn.value == 9) {
+    push({path: '/cabinet/cab/screen', state: { id: target.id,roomId: target.roomId }})
+  } else if(chosenBtn.value == 10) {
+    push({path: '/cabinet/cab/energyDetail', state: { cabinetId: target.id,cabinetroomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName }})
+  }
 }
 // 处理菜单点击事件
 const handleOperate = (type) => {
@@ -830,6 +1086,7 @@ const handleOperate = (type) => {
       }
     }
     const data = type == 'add' ? null : cabinetList.value[index]
+    console.log("data",data)
     cabinetForm.value.open(type, data, info)
   } else if (type == 'delete') {
     ElMessageBox.confirm('确认删除吗？', '提示', {
@@ -839,16 +1096,7 @@ const handleOperate = (type) => {
     }).then(async () => {
       const cabItem = cabinetList.value[index]
       if(cabItem.cabinetBoxes) {
-        if (cabItem.boxIndexA && cabItem.boxOutletIdA) {
-          const connections = instance?.getConnections() as any
-          const targetConnect = connections?.find(item => item.source.id == ('cab-A-' + index))
-          instance?.deleteConnection(targetConnect)
-        }
-        if (cabItem.boxIndexB && cabItem.boxOutletIdB) {
-          const connections = instance?.getConnections() as any
-          const targetConnect = connections?.find(item => item.source.id == ('cab-B-' + index))
-          instance?.deleteConnection(targetConnect)
-        }
+        console.log("aaaaaa---cabItem",cabItem)
         await CabinetApi.deleteCabinetInfo({
           id: cabItem.id,
           type: 2
@@ -870,6 +1118,7 @@ const handleOperate = (type) => {
           type: 4
         })
       }
+      getMachineColInfo()
     })
   }
   console.log('handleOperate', machineColInfo)
@@ -886,7 +1135,6 @@ const handleCancel = () => {
     cancelButtonText: '取 消',
     type: 'warning'
   }).then(async () => {
-    instance?.deleteEveryConnection()
     editEnable.value = false
     getMachineColInfo()
   })
@@ -922,6 +1170,7 @@ const handleSubmit = () => {
 // 插接箱弹窗确认后的处理
 const handleFormPlugin = (data) => {
   console.log('handleFormSave', data)
+  barChangeType.value = 'edit'
   let arrA = [] as any
   let arrB = [] as any
   const machineColInfoLength = (machineColInfo.barA && machineColInfo.barA.boxList) ? machineColInfo.barA.boxList.length : 0
@@ -976,6 +1225,7 @@ const handleFormCabinet = (data) => {
   if (machineColInfo.barA && machineColInfo.pduBar) nextTick(() => {
     addCabinetAnchor(operateMenu.value.curIndex, data)
   })
+  getMachineColInfo()
 }
 // 插接箱弹窗确认后处理
 const handleFormBox = (data) => {
@@ -1392,58 +1642,86 @@ const handleDataDetail = (res) => {
               }
             ]
           },
-          echartsOptionApparent: { // 功率
-            tooltip: {
-              trigger: 'axis',
-              axisPointer: {
-                type: 'shadow'
-              }
-            },
+          echartsOptionApparent: { //功率
             xAxis: {
-              type: 'category',
-              data: ['有功功率','无功功率'],
-              axisTick: {
+                type: 'category',
+                data: ['功率'],
+                axisTick: {
+                  show: false
+                },
+                axisLine: {
+                  show: false
+                },
+                axisLabel: {
+                    show: false // 隐藏 ECharts 自带的标签
+                }
+            },
+            yAxis: {
+                type: 'value',
                 show: false
-              },
-              axisLabel: {
-                  show: false // 隐藏 ECharts 自带的标签
-              }
             },
             grid: {
-              left: '-22',
+              left: '-30',
               right: '0',
               bottom: '4.9%',
               top: '8%',
               containLabel: true
             },
-            yAxis: {
-              type: 'value',
-              show: false,
-            },
             series: [
-              {
-                name: '功率',
-                data: [cab.powActive.toFixed(3),cab.powReactive.toFixed(3)],
-                type: 'bar',
-                barWidth: '100%',
-                emphasis: {
-                  focus: 'series'
+                {
+                    name: 'Large Green Bar',
+                    type: 'pictorialBar',
+                    data: [cab.powApparent.toFixed(3)], // 大柱形图的数据
+                    symbol: 'rect', // 使用矩形作为柱形图
+                    symbolSize: ['130%', '100%'], // 大柱形图的宽度和高度
+                    itemStyle: {
+                        color: 'blue'
+                    },
+                    z: 1, // 确保大柱形图在底层
+                    label: {
+                        show: true, // 显示数值
+                        position: 'top', // 数值显示在柱形图顶部
+                        fontSize: 12 // 数值字体大小
+                    }
                 },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
+                {
+                    name: 'Small Red Bar',
+                    type: 'pictorialBar',
+                    data: [cab.powActive.toFixed(3)], // 左侧小柱形图的数据
+                    symbol: 'rect', // 使用矩形作为柱形图
+                    symbolSize: ['65%', '100%'], // 小柱形图的宽度和高度
+                    symbolOffset: ['-50%', 0], // 向左偏移 30%
+                    itemStyle: {
+                        color: 'green'
+                    },
+                    z: 2, // 确保小柱形图在上层
+                    label: {
+                        show: true, // 显示数值
+                        offset: [-22, 0],
+                        position: 'inside', // 数值显示在柱形图内部
+                        color: 'white', // 数值颜色
+                        fontSize: 10 // 数值字体大小
+                    }
                 },
-                itemStyle: {
-                  color: function (params) {
-                      if (params.dataIndex === 0) {
-                          return 'green'
-                      } else if (params.dataIndex === 1) {
-                          return 'purple'
-                      }
-                      return '#95d475';
-                  }
+                {
+                    name: 'Small Blue Bar',
+                    type: 'pictorialBar',
+                    data: [cab.powReactive.toFixed(3)], // 右侧小柱形图的数据
+                    symbol: 'rect', // 使用矩形作为柱形图
+                    symbolSize: ['65%', '100%'], // 小柱形图的宽度和高度
+                    symbolOffset: ['50%', 0], // 向右偏移 30%
+                    itemStyle: {
+                        color: 'purple'
+                    },
+                    z: 2, // 确保小柱形图在上层
+                    label: {
+                        show: true, // 显示数值
+                        offset: [22, 0],
+                        position: 'inside', // 数值显示在柱形图内部
+                        color: 'white', // 数值颜色
+                        fontSize: 10 // 数值字体大小
+                    }
                 }
-              }
             ]
           },
           echartsOptionBalance: {
@@ -1830,6 +2108,15 @@ const saveMachineBus = async() => {
     length: cabinetList.value.length,
     cabinetList: filterCabinet
   })
+  if(filterCabinet.length && (filterCabinet[0].busIpA || barChangeType.value == 'edit' || barChangeType.value == 'delete')) {
+    filterCabinet.forEach(async (cab, index) => {
+      const resCab = await CabinetApi.saveCabinetInfo({
+        ...cab,
+        pduBox: true
+      })
+      console.log("resCab",{...cab},resCab)
+    })
+  }
   message.success('保存成功！')
   editEnable.value = false
   setTimeout(() => { getMachineColInfo() } ,1000)
@@ -2037,6 +2324,17 @@ onBeforeUnmount(() => {
     display: flex;
     justify-content: center;
   }
+}
+.custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  margin-top:-50px;
+}
+.button-group {
+  display: flex;
+  gap: 10px;
 }
 .Container {
   display: flex;
