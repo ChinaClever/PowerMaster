@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.framework.common.exception.util;
 
 import cn.iocoder.yudao.framework.common.exception.ErrorCode;
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * {@link ServiceException} 工具类
+ * {@link BusinessException} 工具类
  *
  * 目的在于，格式化异常信息提示。
  * 考虑到 String.format 在参数不正确时会报错，因此使用 {} 作为占位符，并使用 {@link #doFormat(int, String, Object...)} 方法来格式化
@@ -45,12 +45,12 @@ public class ServiceExceptionUtil {
 
     // ========== 和 ServiceException 的集成 ==========
 
-    public static ServiceException exception(ErrorCode errorCode) {
+    public static BusinessException exception(ErrorCode errorCode) {
         String messagePattern = MESSAGES.getOrDefault(errorCode.getCode(), errorCode.getMsg());
         return exception0(errorCode.getCode(), messagePattern);
     }
 
-    public static ServiceException exception(ErrorCode errorCode, Object... params) {
+    public static BusinessException exception(ErrorCode errorCode, Object... params) {
         String messagePattern = MESSAGES.getOrDefault(errorCode.getCode(), errorCode.getMsg());
         return exception0(errorCode.getCode(), messagePattern, params);
     }
@@ -61,7 +61,7 @@ public class ServiceExceptionUtil {
      * @param code 编号
      * @return 异常
      */
-    public static ServiceException exception(Integer code) {
+    public static BusinessException exception(Integer code) {
         return exception0(code, MESSAGES.get(code));
     }
 
@@ -72,16 +72,16 @@ public class ServiceExceptionUtil {
      * @param params 消息提示的占位符对应的参数
      * @return 异常
      */
-    public static ServiceException exception(Integer code, Object... params) {
+    public static BusinessException exception(Integer code, Object... params) {
         return exception0(code, MESSAGES.get(code), params);
     }
 
-    public static ServiceException exception0(Integer code, String messagePattern, Object... params) {
+    public static BusinessException exception0(Integer code, String messagePattern, Object... params) {
         String message = doFormat(code, messagePattern, params);
-        return new ServiceException(code, message);
+        return new BusinessException(code, message);
     }
 
-    public static ServiceException invalidParamException(String messagePattern, Object... params) {
+    public static BusinessException invalidParamException(String messagePattern, Object... params) {
         return exception0(GlobalErrorCodeConstants.BAD_REQUEST.getCode(), messagePattern, params);
     }
 

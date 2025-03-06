@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.module.system.service.social;
 
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.system.api.social.dto.SocialUserBindReqDTO;
 import cn.iocoder.yudao.module.system.api.social.dto.SocialUserRespDTO;
@@ -58,7 +58,7 @@ public interface SocialUserService {
     /**
      * 获得社交用户
      *
-     * 在认证信息不正确的情况下，也会抛出 {@link ServiceException} 业务异常
+     * 在认证信息不正确的情况下，也会抛出 {@link BusinessException} 业务异常
      *
      * @param userType 用户类型
      * @param socialType 社交平台的类型
