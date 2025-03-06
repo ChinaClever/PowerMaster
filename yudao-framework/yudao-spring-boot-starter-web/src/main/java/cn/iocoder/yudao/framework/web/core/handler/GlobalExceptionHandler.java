@@ -5,7 +5,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.apilog.core.service.ApiErrorLog;
 import cn.iocoder.yudao.framework.apilog.core.service.ApiErrorLogFrameworkService;
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.monitor.TracerUtils;
@@ -83,8 +83,8 @@ public class GlobalExceptionHandler {
         if (ex instanceof HttpRequestMethodNotSupportedException) {
             return httpRequestMethodNotSupportedExceptionHandler((HttpRequestMethodNotSupportedException) ex);
         }
-        if (ex instanceof ServiceException) {
-            return serviceExceptionHandler((ServiceException) ex);
+        if (ex instanceof BusinessException) {
+            return serviceExceptionHandler((BusinessException) ex);
         }
         if (ex instanceof AccessDeniedException) {
             return accessDeniedExceptionHandler(request, (AccessDeniedException) ex);
@@ -205,8 +205,8 @@ public class GlobalExceptionHandler {
      *
      * 例如说，商品库存不足，用户手机号已存在。
      */
-    @ExceptionHandler(value = ServiceException.class)
-    public CommonResult<?> serviceExceptionHandler(ServiceException ex) {
+    @ExceptionHandler(value = BusinessException.class)
+    public CommonResult<?> serviceExceptionHandler(BusinessException ex) {
         log.info("[serviceExceptionHandler]", ex);
         return CommonResult.error(ex.getCode(), ex.getMessage());
     }

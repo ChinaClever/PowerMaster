@@ -7,9 +7,7 @@ import cn.iocoder.yudao.framework.common.dto.aisle.AisleBoxDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetAisleVO;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetEnvSensorDTO;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
@@ -23,11 +21,11 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
-import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
-import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
+import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
@@ -75,7 +73,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
-import static com.github.yulichang.method.SqlMethod.collect;
 
 /**
  * @author luowei
@@ -164,21 +161,21 @@ public class AisleServiceImpl implements AisleService {
                     && "x".equals(aisleSaveVo.getDirection())) {
                 //横向
                 if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength() > roomIndex.getXLength() + 1) {
-                    throw new RuntimeException("柜列长度超出");
+                    BusinessAssert.error(7003,"柜列长度超出");
                 }
             }
             if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                     && "y".equals(aisleSaveVo.getDirection())) {
                 //纵向
                 if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getAisleLength() > roomIndex.getYLength() + 1) {
-                    throw new RuntimeException("柜列长度超出");
+                    BusinessAssert.error(7003,"柜列长度超出");
                 }
             }
         }
         //新增
-        if (Objects.nonNull(aisleSaveVo.getBarA()) && Objects.nonNull(aisleSaveVo.getBarB())){
+        if (Objects.nonNull(aisleSaveVo.getBarA()) && Objects.nonNull(aisleSaveVo.getBarB())) {
             index.setPduBar(true);
-        }else {
+        } else {
             index.setPduBar(false);
         }
         if (Objects.nonNull(aisleSaveVo.getId())) {
@@ -396,53 +393,55 @@ public class AisleServiceImpl implements AisleService {
         return index.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void aisleBusSave(AisleBusSaveVo busSaveVo) {
 
-        try {
-            Integer aisleId = busSaveVo.getAisleId();
+        Integer aisleId = busSaveVo.getAisleId();
 
-            if (!CollectionUtils.isEmpty(busSaveVo.getBarVos())) {
-                //绑定始端箱
-                List<AisleBarDTO> barVos = busSaveVo.getBarVos();
-                //先删除
-                aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                        .eq(AisleBar::getAisleId, aisleId));
-                aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                        .eq(AisleBox::getAisleId, aisleId));
-                List<String> collect = barVos.stream().map(i-> i.getDevIp()+SPLIT_KEY+i.getBarId()).distinct().collect(Collectors.toList());
-                if (collect.size() < 2) {
-                    throw new RuntimeException("A路与B路始端箱IP不能相同");
-                }
-                barVos.forEach(barVo -> {
-                    AisleBar bar = BeanUtils.toBean(barVo, AisleBar.class);
-                    bar.setAisleId(aisleId);
-                    bar.setBusKey(barVo.getDevIp()+SPLIT_KEY+barVo.getBarId());
-                    bar.setBoxNum(barVo.getBoxList().size());
-                    aisleBarMapper.insert(bar);
-
-                    List<AisleBoxDTO> boxList = barVo.getBoxList();
-                    if (!CollectionUtils.isEmpty(boxList)) {
-                        boxList.forEach(boxDTO -> {
-                            AisleBox box = BeanUtils.toBean(boxDTO, AisleBox.class);
-                            box.setAisleId(aisleId);
-                            box.setAisleBarId(bar.getId());
-//                            box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + boxDTO.getCasAddr());
-                            box.setBoxKey(bar.getBusKey() + SPLIT_KEY + boxDTO.getCasAddr());
-                            box.setBusKey(bar.getBusKey());
-                            box.setBoxType(boxDTO.getType());
-                            aisleBoxMapper.insert(box);
-                        });
-                    }
-                });
-
+        if (!CollectionUtils.isEmpty(busSaveVo.getBarVos())) {
+            //绑定始端箱
+            List<AisleBarDTO> barVos = busSaveVo.getBarVos();
+            //先删除
+            aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
+                    .eq(AisleBar::getAisleId, aisleId));
+            aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+                    .eq(AisleBox::getAisleId, aisleId));
+            List<String> collect = barVos.stream().map(i -> i.getDevIp() + SPLIT_KEY + i.getBarId()).distinct().collect(Collectors.toList());
+            if (collect.size() < 2) {
+                BusinessAssert.error(7003,"A路与B路始端箱IP不能相同");
             }
-        } finally {
-            //刷新柜列计算服务缓存
-            log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
-        }
+            barVos.forEach(barVo -> {
+                Long count = aisleBarMapper.selectCount(new LambdaQueryWrapper<AisleBar>()
+                        .eq(AisleBar::getBusKey, barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()));
+                if (count > 0) {
+                    BusinessAssert.error(7003,barVo.getDevIp() + SPLIT_KEY + barVo.getBarId() + "始端箱已添加");
+                }
+                AisleBar bar = BeanUtils.toBean(barVo, AisleBar.class);
+                bar.setAisleId(aisleId);
+                bar.setBusKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId());
+                bar.setBoxNum(barVo.getBoxList().size());
+                aisleBarMapper.insert(bar);
 
+                List<AisleBoxDTO> boxList = barVo.getBoxList();
+                if (!CollectionUtils.isEmpty(boxList)) {
+                    boxList.forEach(boxDTO -> {
+                        AisleBox box = BeanUtils.toBean(boxDTO, AisleBox.class);
+                        box.setAisleId(aisleId);
+                        box.setAisleBarId(bar.getId());
+//                            box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + boxDTO.getCasAddr());
+                        box.setBoxKey(bar.getBusKey() + SPLIT_KEY + boxDTO.getCasAddr());
+                        box.setBusKey(bar.getBusKey());
+                        box.setBoxType(boxDTO.getType());
+                        aisleBoxMapper.insert(box);
+                    });
+                }
+            });
+
+        }
+        //刷新柜列计算服务缓存
+        log.info("刷新计算服务缓存 --- " + adder);
+        HttpUtil.get(adder);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -684,8 +683,8 @@ public class AisleServiceImpl implements AisleService {
                         AisleBoxDTO boxDTO = BeanUtils.toBean(box, AisleBoxDTO.class);
                         boxDTO.setBoxName(boxDTO.getBoxName());
                         String[] split1 = box.getBoxKey().split("-");
-                        
-                        boxDTO.setCasAddr(Integer.parseInt(split1[split1.length-1]));
+
+                        boxDTO.setCasAddr(Integer.parseInt(split1[split1.length - 1]));
                         Object boxObject = ops.get(REDIS_KEY_BOX + box.getBoxKey());
                         if (Objects.nonNull(boxObject)) {
                             JSONObject data = JSON.parseObject(JSON.toJSONString(boxObject));
@@ -762,7 +761,7 @@ public class AisleServiceImpl implements AisleService {
         }
         //机柜
         List<CabineIndexCfgVO> cabinetIndexList = cabinetIndexMapper.selectCabineIndexCfgByAisleId(aisleId);
-        if (CollectionUtils.isEmpty(cabinetIndexList)){
+        if (CollectionUtils.isEmpty(cabinetIndexList)) {
             return detailDTO;
         }
         Map<Boolean, List<CabineIndexCfgVO>> map = cabinetIndexList.stream().collect(Collectors.groupingBy(CabineIndexCfgVO::getPduBox));
@@ -770,13 +769,13 @@ public class AisleServiceImpl implements AisleService {
         List<CabineIndexCfgVO> voList = map.get(false);
         Map<Integer, CabinetPdu> pduMap = new HashMap<>();
         Map<Integer, CabinetBox> boxMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(voList)){
+        if (!CollectionUtils.isEmpty(voList)) {
             List<Integer> cabinetIds = voList.stream().map(CabineIndexCfgVO::getId).collect(Collectors.toList());
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, cabinetIds));
-            pduMap =  cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId,Function.identity()));
+            pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
         }
         List<CabineIndexCfgVO> voList1 = map.get(true);
-        if (!CollectionUtils.isEmpty(voList1)){
+        if (!CollectionUtils.isEmpty(voList1)) {
             List<Integer> cabinetIds = voList1.stream().map(CabineIndexCfgVO::getId).collect(Collectors.toList());
             List<CabinetBox> cabinetBoxs = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>().in(CabinetBox::getCabinetId, cabinetIds));
             boxMap = cabinetBoxs.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
@@ -813,7 +812,7 @@ public class AisleServiceImpl implements AisleService {
 //                cabinetDTO.setRackIndices(rackIndices1);
                 cabinetDTO.setUsedSpace(cabinetIndex.getCabinetUseHeight());
                 cabinetDTO.setFreeSpace(cabinetIndex.getCabinetHeight() - cabinetIndex.getCabinetUseHeight());
-                if (cabinetIndex.getPduBox()){
+                if (cabinetIndex.getPduBox()) {
                     CabinetBox cabinetBoxes = boxMap.get(cabinetIndex.getId());
                     cabinetDTO.setCabinetBoxes(cabinetBoxes);
                     if (Objects.nonNull(cabinetBoxes)) {
@@ -826,13 +825,15 @@ public class AisleServiceImpl implements AisleService {
                         }
                         if (!StringUtils.isBlank(cabinetBoxes.getBoxKeyB())) {
                             String[] keyb = cabinetBoxes.getBoxKeyB().split(SPLIT_KEY);
-                            cabinetDTO.setBusIpB(keyb[0]);
-                            cabinetDTO.setBarIdB(Integer.valueOf(keyb[1]));
-                            cabinetDTO.setBoxIndexB(Integer.valueOf(keyb[2]));
-                            cabinetDTO.setBoxOutletIdB(cabinetBoxes.getOutletIdB());
+                            if (keyb.length==3) {
+                                cabinetDTO.setBusIpB(keyb[0]);
+                                cabinetDTO.setBarIdB(Integer.valueOf(keyb[1]));
+                                cabinetDTO.setBoxIndexB(Integer.valueOf(keyb[2]));
+                                cabinetDTO.setBoxOutletIdB(cabinetBoxes.getOutletIdB());
+                            }
                         }
                     }
-                }else {
+                } else {
                     CabinetPdu cabinetPdus = pduMap.get(cabinetIndex.getId());
                     cabinetDTO.setCabinetPdus(cabinetPdus);
                     if (Objects.nonNull(cabinetPdus)) {
