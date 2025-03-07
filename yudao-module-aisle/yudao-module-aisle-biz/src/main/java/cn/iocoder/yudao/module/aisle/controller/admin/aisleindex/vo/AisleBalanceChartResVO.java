@@ -21,13 +21,13 @@ public class AisleBalanceChartResVO extends AisleIndexRespVO{
     private Double powActiveBRate;
 
     @Schema(description = "a电流")
-    private List<Double> curLista;
+    private Double curUnbalancea;
 
     @Schema(description = "a电压")
     private List<Double> volLista;
 
     @Schema(description = "b电流")
-    private List<Double> curListb;
+    private Double curUnbalanceb;
 
     @Schema(description = "b电压")
     private List<Double> volListb;

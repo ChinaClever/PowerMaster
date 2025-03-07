@@ -252,7 +252,14 @@ const balanceObj = reactive({
 const getBalanceDetail = async(item) => {
   const data = await CabinetApi.getDetail({id:item});
   const res = data.redisData;
-  // console.log('data1111', data);
+
+
+      // balanceObj.colorIndex = itemA.color - 1
+      // balanceObj.colorIndex = itemB.color - 1
+    
+    balanceObj.imbalanceValueA = data.curUnbalancea
+    balanceObj.imbalanceValueB = data.curUnbalanceb
+    console.log('dfas',balanceObj)
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
@@ -336,9 +343,9 @@ const getBalanceDetail = async(item) => {
     }
   }
 
-  balanceObj.imbalanceValueA = res.curUnbalance;
-  balanceObj.imbalanceValueB = res.volUnbalance;
-  balanceObj.colorIndex = res.color - 1;
+  // balanceObj.imbalanceValueA = res.curUnbalance;
+  // balanceObj.imbalanceValueB = res.volUnbalance;
+  // balanceObj.colorIndex = res.color - 1;
 }
 
 // 接口获取机房导航列表
@@ -586,17 +593,6 @@ const handleClose = () => {
   balanceObj.imbalanceValueB= 0;
   balanceObj.colorIndex= 0;
 
-//   const balanceObj = reactive({
-//   pow_apparent_percent: 0,
-//   pow_active_percent: 0,
-//   cur_valueA: [],
-//   cur_valueB: [],
-//   imbalanceValueA: 0,
-//   imbalanceValueB: 0,
-//   colorIndex: 0,
-// })
-  // const list = zoomOut(formData.value)
-  // emit('update:modelValue', list)
 }
 
 const showDialog = async (item) => {
@@ -609,7 +605,7 @@ const showDialog = async (item) => {
   apow.value = item.apow;
   bpow.value = item.bpow;
   await getBalanceDetail(item.id);
-  await getBalanceDegree();
+  // await getBalanceDegree();
   await getBalanceTrend();
 
 }

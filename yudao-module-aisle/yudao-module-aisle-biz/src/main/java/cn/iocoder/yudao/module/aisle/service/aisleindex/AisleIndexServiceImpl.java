@@ -58,6 +58,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -540,16 +541,24 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (Objects.nonNull(pathA)) {
                 powApparentA=pathA.getDouble("pow_apparent");
                 powActiveA=pathA.getDouble("pow_active");
-                vo.setCurLista(pathA.getList("cur_value",Double.class));
+                List<Double> curList = pathA.getList("cur_value", Double.class);
                 vo.setVolLista(pathA.getList("vol_value",Double.class));
+
+                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
             }
 
             JSONObject pathB = aislePower.getJSONObject("path_b");
             if (Objects.nonNull(pathB)) {
                 powApparentB=pathB.getDouble("pow_apparent");
                 powActiveB=pathB.getDouble("pow_active");
-                vo.setCurListb(pathB.getList("cur_value",Double.class));
+                List<Double> curList = pathB.getList("cur_value", Double.class);
                 vo.setVolListb(pathB.getList("vol_value",Double.class));
+
+                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
             }
 
             vo.setRateA(BigDemicalUtil.safeDivideNum(3,powApparentA,powApparentTotal).multiply(new BigDecimal(100)).doubleValue());

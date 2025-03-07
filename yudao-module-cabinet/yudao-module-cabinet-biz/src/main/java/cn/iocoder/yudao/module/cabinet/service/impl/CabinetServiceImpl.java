@@ -29,6 +29,7 @@ import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.framework.common.vo.RackIndexResVO;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
@@ -226,6 +227,27 @@ public class CabinetServiceImpl implements CabinetService {
             String key = REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + id;
             result.put("redisData", JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key))));
             result.put("name", name);
+
+            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id));
+            if (!CollectionUtils.isEmpty(cabinetPduList)){
+                CabinetPdu cabinetPdu = cabinetPduList.get(0);
+                Object obj = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyA());
+                if (Objects.nonNull(obj)) {
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                    JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
+                    Double curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
+                    result.put("curUnbalancea", new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                }
+
+                Object objb = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyB());
+                if (Objects.nonNull(objb)) {
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(objb));
+                    JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
+                    Double curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
+                    result.put("curUnbalanceb", new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                }
+
+            }
             return result;
         } catch (Exception e) {
             log.error("获取基础数据失败: ", e);
