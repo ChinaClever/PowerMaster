@@ -402,8 +402,11 @@ const handleCheck = async (row) => {
   if(row.length == 0){
     queryParams.boxDevKeyList = null;
     queryDeletedPageParams.boxDevKeyList = null;
-    getList();
-    getDeletedList();
+    if(switchValue.value ==4){
+         getDeletedList();
+    }else{
+         getList();
+    }
     return;
   }
   const ids = [] as any
@@ -422,8 +425,15 @@ const handleCheck = async (row) => {
     queryDeletedPageParams.boxDevKeyList = ids
   }
 
-  getList();
-  getDeletedList();
+  // if(switchValue.value ==4){
+  //        getDeletedList();
+  //   }else{
+  //        getList();
+  //   }
+
+    getDeletedList();
+    getList();
+
 }
 
 
