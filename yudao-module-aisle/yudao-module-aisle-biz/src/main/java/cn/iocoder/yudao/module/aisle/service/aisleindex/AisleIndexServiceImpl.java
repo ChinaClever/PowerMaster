@@ -629,9 +629,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
             }
 
-            Map<Integer, MaxValueAndCreateTime> powTotalMap;
-            Map<Integer, MaxValueAndCreateTime> powAMap;
-            Map<Integer, MaxValueAndCreateTime> powBMap;
+
             String index = null;
             if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 index = "aisle_hda_pow_hour";
@@ -648,9 +646,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             }
             List<Integer> ids = (List<Integer>) esTotalAndIds.get("ids");
 
-            powTotalMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_total_max_value", "active_total_max_time");
-            powAMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_a_max_value", "active_a_max_time");
-            powBMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_b_max_value", "active_b_max_time");
+
+
+                    //视在功率
+            Map<Integer, MaxValueAndCreateTime> apparentAMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "apparent_a_max_value", "apparent_a_max_time");
+            Map<Integer, MaxValueAndCreateTime> apparentBMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "apparent_b_max_value", "apparent_b_max_time");
+            //有功功率
+            Map<Integer, MaxValueAndCreateTime> powAMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_a_max_value", "active_a_max_time");
+            Map<Integer, MaxValueAndCreateTime> powBMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_b_max_value", "active_b_max_time");
 
             List<AisleLineMaxRes> result = new ArrayList<>();
             List<AisleIndexDO> aisleIndexDOList = aisleIndexCopyMapper.selectList(new LambdaQueryWrapperX<AisleIndexDO>()
@@ -658,9 +661,6 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     .inIfPresent(AisleIndexDO::getId, ids));
             for (AisleIndexDO aisleIndexDO : aisleIndexDOList) {
                 Integer id = aisleIndexDO.getId().intValue();
-                if (powTotalMap.get(id) == null) {
-                    continue;
-                }
 
                 AisleLineMaxRes aisleLineMaxRes = new AisleLineMaxRes();
 
@@ -668,18 +668,28 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 aisleLineMaxRes.setName(aisleIndexDO.getAisleName());
                 aisleLineMaxRes.setRoomId(aisleIndexDO.getRoomId());
 
-                MaxValueAndCreateTime powTotal = powTotalMap.get(id);
-                aisleLineMaxRes.setMaxPowTotal(powTotal.getMaxValue().floatValue());
-                aisleLineMaxRes.setMaxPowTotalTime(powTotal.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 MaxValueAndCreateTime powA = powAMap.get(id);
                 if (powA != null) {
                     aisleLineMaxRes.setMaxPowA(powA.getMaxValue().floatValue());
                     aisleLineMaxRes.setMaxPowATime(powA.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
+
                 MaxValueAndCreateTime powB = powBMap.get(id);
                 if (powB != null) {
                     aisleLineMaxRes.setMaxPowB(powB.getMaxValue().floatValue());
                     aisleLineMaxRes.setMaxPowBTime(powB.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+
+                MaxValueAndCreateTime apparentA = apparentAMap.get(id);
+                if (powA != null) {
+                    aisleLineMaxRes.setMaxApparentA(apparentA.getMaxValue().floatValue());
+                    aisleLineMaxRes.setMaxApparentATime(apparentA.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+
+                MaxValueAndCreateTime apparentB = apparentBMap.get(id);
+                if (powB != null) {
+                    aisleLineMaxRes.setMaxApparentB(apparentB.getMaxValue().floatValue());
+                    aisleLineMaxRes.setMaxApparentBTime(apparentB.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
 
                 result.add(aisleLineMaxRes);
