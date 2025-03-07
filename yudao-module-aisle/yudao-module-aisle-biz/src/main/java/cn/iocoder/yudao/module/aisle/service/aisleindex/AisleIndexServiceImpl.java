@@ -15,12 +15,14 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.aisle.constant.AisleConstants;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.module.aisle.dal.mysql.aisleindex.AisleIndexCopyMapper;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -55,6 +57,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -78,6 +81,7 @@ import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.REDIS_KEY_BU
 import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.*;
 import static cn.iocoder.yudao.module.aisle.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
+import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.PDU_HDA_LINE_HOUR;
 
 /**
  * 通道列 Service 实现类
@@ -512,6 +516,53 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
+    public AisleBalanceChartResVO getAisleBalanceChart(Integer id) {
+        Object o = redisTemplate.opsForValue().get(REDIS_KEY_AISLE + id);
+        AisleBalanceChartResVO vo = new AisleBalanceChartResVO();
+        if (Objects.nonNull(o)) {
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+            JSONObject aislePower = jsonObject.getJSONObject("aisle_power");
+
+            Double powApparentA = 0.0;
+            Double powApparentB = 0.0;
+            Double powApparentTotal = 0.0;
+
+            Double powActiveA = 0.0;
+            Double powActiveB = 0.0;
+            Double powActiveTotal = 0.0;
+            JSONObject totalData = aislePower.getJSONObject("total_data");
+            if (Objects.nonNull(totalData)) {
+                powApparentTotal=totalData.getDouble("pow_apparent");
+                powActiveTotal=totalData.getDouble("pow_active");
+            }
+
+            JSONObject pathA = aislePower.getJSONObject("path_a");
+            if (Objects.nonNull(pathA)) {
+                powApparentA=pathA.getDouble("pow_apparent");
+                powActiveA=pathA.getDouble("pow_active");
+                vo.setCurLista(pathA.getList("cur_value",Double.class));
+                vo.setVolLista(pathA.getList("vol_value",Double.class));
+            }
+
+            JSONObject pathB = aislePower.getJSONObject("path_b");
+            if (Objects.nonNull(pathB)) {
+                powApparentB=pathB.getDouble("pow_apparent");
+                powActiveB=pathB.getDouble("pow_active");
+                vo.setCurListb(pathB.getList("cur_value",Double.class));
+                vo.setVolListb(pathB.getList("vol_value",Double.class));
+            }
+
+            vo.setRateA(BigDemicalUtil.safeDivideNum(3,powApparentA,powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setPowActiveARate(BigDemicalUtil.safeDivideNum(3,powActiveA,powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
+
+            vo.setRateB(BigDemicalUtil.safeDivideNum(3,powApparentB,powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setPowActiveBRate(BigDemicalUtil.safeDivideNum(3,powActiveB,powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
+
+        }
+        return vo;
+    }
+
+    @Override
     public PageResult<AislePfRes> getAislePFPage(AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
@@ -840,18 +891,29 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             List<String> data = getData(startTime, endTime, ids, index);
 
             result.getSeries().add(new RequirementLineSeries().setName("总共最大功率"));
-            result.getSeries().add(new RequirementLineSeries().setName("A路最大功率"));
-            result.getSeries().add(new RequirementLineSeries().setName("B路最大功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("A路最大有功功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("B路最大有功功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("A路最大视在功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("B路最大视在功率"));
             List<AislePowHourDo> aislePowHourList = data.stream().map(str -> JsonUtils.parseObject(str, AislePowHourDo.class)).collect(Collectors.toList());
 
             aislePowHourList.forEach(hour -> {
                 result.getTime().add(hour.getActiveTotalMaxTime().toString("yyyy-MM-dd HH"));
+
                 result.getSeries().get(0).getData().add(hour.getActiveTotalMaxValue());
                 ((RequirementLineSeries) result.getSeries().get(0)).getMaxTime().add(hour.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
                 result.getSeries().get(1).getData().add(hour.getActiveAMaxValue());
                 ((RequirementLineSeries) result.getSeries().get(1)).getMaxTime().add(hour.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
                 result.getSeries().get(2).getData().add(hour.getActiveBMaxValue());
                 ((RequirementLineSeries) result.getSeries().get(2)).getMaxTime().add(hour.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                result.getSeries().get(3).getData().add(hour.getApparentAMaxValue());
+                ((RequirementLineSeries) result.getSeries().get(3)).getMaxTime().add(hour.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                result.getSeries().get(4).getData().add(hour.getApparentBMaxValue());
+                ((RequirementLineSeries) result.getSeries().get(4)).getMaxTime().add(hour.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
             });
 
             return result;

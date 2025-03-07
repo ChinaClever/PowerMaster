@@ -90,6 +90,7 @@ public class AisleIndexController {
         return success(indexService.getAisleLineMaxPage(pageReqVO));
     }
 
+
     @Operation(summary = "柜列需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<AisleLineResBase> getAisleLineCurLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
@@ -198,6 +199,12 @@ public class AisleIndexController {
     public CommonResult<PageResult<AisleBalanceRes>> getAisleBalancePage(@RequestBody AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleBalanceRes> pageResult = indexService.getAisleBalancePage(pageReqVO);
         return success(pageResult);
+    }
+
+    @PostMapping("/balance/chart")
+    @Operation(summary = "获得通道列平衡详情")
+    public CommonResult<AisleBalanceChartResVO> getAisleBalanceChart(@RequestParam("id") Integer id) {
+        return success(indexService.getAisleBalanceChart(id));
     }
 
     @PostMapping("/report/ele")
