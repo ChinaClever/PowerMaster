@@ -883,9 +883,9 @@ onMounted(async () => {
     //initChart2()
     //initChart3()
     // 设置每五秒执行一次 getDetailData 方法
-    //intervalId = window.setInterval(() => {
-    //  getDetailData();
-    //}, 5000);
+    intervalId = window.setInterval(() => {
+     getDetailData();
+    }, 5000);
   } catch (error) {
     console.error('onMounted 钩子中的异步操作失败:', error);
   }

@@ -86,4 +86,5 @@ public interface AisleIndexService {
 
     PageResult<AisleEQRes> getEqPage1(AisleIndexPageReqVO pageReqVO);
 
+    AisleBalanceChartResVO getAisleBalanceChart(Integer id);
 }
