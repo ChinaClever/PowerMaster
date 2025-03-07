@@ -1,32 +1,30 @@
 package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.security.access.prepost.PreAuthorize;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Operation;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.*;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
-
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
+import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.module.aisle.service.aisleindex.AisleIndexService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 通道列")
 @RestController
@@ -109,12 +107,12 @@ public class AisleIndexController {
 //        PageResult<AisleEQRes> pageResult = indexService.getEqPage(pageReqVO);
 
         PageResult<AisleEQRes> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getAisleIds()) || ObjectUtil.isNotEmpty(pageReqVO.getName())){
-            pageResult =  indexService.getEqPage(pageReqVO);
-        }else {
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getAisleIds()) || ObjectUtil.isNotEmpty(pageReqVO.getName())) {
+            pageResult = indexService.getEqPage(pageReqVO);
+        } else {
             pageResult = indexService.getEqPage1(pageReqVO);
-            if (ObjectUtil.isEmpty(pageResult)){
-                pageResult =  indexService.getEqPage(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)) {
+                pageResult = indexService.getEqPage(pageReqVO);
             }
         }
         return success(pageResult);
@@ -175,8 +173,8 @@ public class AisleIndexController {
     @PostMapping("/pf/detail/excel")
     public void getAislePFDetailExcel(@RequestBody AisleIndexPageReqVO pageReqVO, HttpServletResponse response) throws IOException {
         Map aislePFDetail = indexService.getAislePFDetail(pageReqVO);
-        List<AislePFTableRes> res =(List<AislePFTableRes>) aislePFDetail.get("table");
-        if (ObjectUtil.isEmpty(res)){
+        List<AislePFTableRes> res = (List<AislePFTableRes>) aislePFDetail.get("table");
+        if (ObjectUtil.isEmpty(res)) {
             return;
         }
         if (ObjectUtil.isNotEmpty(pageReqVO.getLocation())) {
@@ -210,19 +208,19 @@ public class AisleIndexController {
     @PostMapping("/report/ele")
     @Operation(summary = "获得通道列报表数据")
     public CommonResult<Map> getReportConsumeDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportConsumeDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getReportConsumeDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pow")
     @Operation(summary = "获得通道列报表数据")
-    public CommonResult<Map> getReportPowDataById(@RequestBody AisleIndexPageReqVO pageReqVO)  {
-        return success(indexService.getReportPowDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    public CommonResult<Map> getReportPowDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pfline")
     @Operation(summary = "获得通道列报表数据")
-    public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO)  {
-        return success(indexService.getAislePFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getAislePFLine(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @GetMapping("/idList")

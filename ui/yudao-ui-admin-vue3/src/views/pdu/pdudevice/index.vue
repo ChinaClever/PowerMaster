@@ -683,7 +683,6 @@ const handleQuery = () => {
       getList();
       getListAll();
     }
-
 }
 
 /** 重置按钮操作 */

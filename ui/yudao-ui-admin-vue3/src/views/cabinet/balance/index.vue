@@ -188,13 +188,11 @@ const { push } = useRouter(); // 路由跳转
 const router = useRouter(); // 路由跳转
 const tableLoading = ref(false); // 
 const isFirst = ref(history?.state?.isFirst ? history?.state?.isFirst : true); // 是否第一次调用getTableData函数
-console.log(isFirst)
 const navList = ref([]); // 左侧导航栏树结构列表
 const tableData = ref([]);
 const tableCopyData = ref([]);
 const switchValue = ref(0); // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([history?.state?.cabinetIds]); // 左侧导航菜单所选id数组
-console.log(isFirst,history?.state?.isFirst)
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
@@ -252,14 +250,8 @@ const balanceObj = reactive({
 const getBalanceDetail = async(item) => {
   const data = await CabinetApi.getDetail({id:item});
   const res = data.redisData;
-
-
-      // balanceObj.colorIndex = itemA.color - 1
-      // balanceObj.colorIndex = itemB.color - 1
-    
     balanceObj.imbalanceValueA = data.curUnbalancea
     balanceObj.imbalanceValueB = data.curUnbalanceb
-    console.log('dfas',balanceObj)
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
@@ -342,10 +334,6 @@ const getBalanceDetail = async(item) => {
       ]
     }
   }
-
-  // balanceObj.imbalanceValueA = res.curUnbalance;
-  // balanceObj.imbalanceValueB = res.volUnbalance;
-  // balanceObj.colorIndex = res.color - 1;
 }
 
 // 接口获取机房导航列表
@@ -506,7 +494,6 @@ const getBalanceTrend = async () => {
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
-  console.log(cellValue);
   if (cellValue === null) {
     return '';
   }

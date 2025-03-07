@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class AisleBalanceChartResVO extends AisleIndexRespVO{
+public class AisleBalanceChartResVO extends AisleIndexRespVO {
 
     @Schema(description = "A路的视在功率占比")
     private Double rateA;
@@ -21,17 +21,20 @@ public class AisleBalanceChartResVO extends AisleIndexRespVO{
     private Double powActiveBRate;
 
     @Schema(description = "a电流")
-    private Double curUnbalancea;
+    private List<Double> curLista;
 
     @Schema(description = "a电压")
     private List<Double> volLista;
 
     @Schema(description = "b电流")
-    private Double curUnbalanceb;
+    private List<Double> curListb;
 
     @Schema(description = "b电压")
     private List<Double> volListb;
 
-
+    @Schema(description = "a电流比例")
+    private Double curUnbalancea;
+    @Schema(description = "b电流比例")
+    private Double curUnbalanceb;
 
 }

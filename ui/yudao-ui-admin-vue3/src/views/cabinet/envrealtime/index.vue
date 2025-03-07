@@ -316,7 +316,6 @@ const statusList:any = ref([]);
 
 const getCabinetColorAll = async () => {
   const res = await IndexApi.getCabinetColorAll()
-  console.log('res', res)
   if (res != null) {
   statusList.value = res.map(item =>{
     if(switchValue.value == 0){
@@ -348,7 +347,6 @@ const getCabinetColorAll = async () => {
 
 
 const handleClick = (row) => {
-  console.log("click",row)
 }
 
 const handleCheck = async (row) => {
@@ -500,8 +498,6 @@ const getNavList = async() => {
 // }
 
 const handleSelectStatus = (index) => {
-  // console.log('index',index);
-  // console.log('statusList',statusList.value[index].startNum);
   butColor.value = 1;
   if(allSelected.value) {
      allSelected.value = false;

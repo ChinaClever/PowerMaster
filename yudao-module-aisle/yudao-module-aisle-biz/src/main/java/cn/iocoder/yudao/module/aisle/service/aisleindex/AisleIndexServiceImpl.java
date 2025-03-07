@@ -542,6 +542,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 powApparentA=pathA.getDouble("pow_apparent");
                 powActiveA=pathA.getDouble("pow_active");
                 List<Double> curList = pathA.getList("cur_value", Double.class);
+                vo.setCurLista(curList);
                 vo.setVolLista(pathA.getList("vol_value",Double.class));
 
                 Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
@@ -554,6 +555,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 powApparentB=pathB.getDouble("pow_apparent");
                 powActiveB=pathB.getDouble("pow_active");
                 List<Double> curList = pathB.getList("cur_value", Double.class);
+                vo.setCurListb(curList);
                 vo.setVolListb(pathB.getList("vol_value",Double.class));
 
                 Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();

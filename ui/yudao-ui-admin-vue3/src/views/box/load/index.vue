@@ -520,7 +520,6 @@ const exportLoading = ref(false); // 导出的加载中
 const getList = async () => {
   loading.value = true;
   try {
-    console.log('queryParams',queryParams);
     const data = await IndexApi.getIndexPage(queryParams);
      
     list.value = data.list;
@@ -545,8 +544,6 @@ const getLoadRateStatus = async () => {
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
     });
-
-    console.log('statusNumber',res);
     statusNumber.greaterNinety = res.greaterNinety;
     statusNumber.lessThirty = res.lessThirty;
     statusNumber.greaterThirty = res.greaterThirty;
@@ -620,7 +617,6 @@ const toDetail = (row) =>{
 //}
 
 const handleSelectStatus = (index) => {
-  console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.color = [index];
