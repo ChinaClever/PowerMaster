@@ -434,33 +434,26 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
-
-  if(row.length == 0){
-    queryParams.pduKeyList = null;
-    getDeletedList();
-    getList();
-    return;
-  }
   const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    console.log('row',item)
     if (item.type == 4) {
       pduKeys.push(item.unique)
       haveCabinet = true;
     }
   })
-  if(!haveCabinet ){
-
-    queryParams.pduKeyList = [-1]
-    queryDeletedPageParams.pduKeyList = [-1]
-  }else{
+  if(haveCabinet){
     queryParams.pduKeyList = pduKeys
     queryDeletedPageParams.pduKeyList = pduKeys
+  }else{
+    queryParams.pduKeyList = null;
+    queryDeletedPageParams.pduKeyList = null;
   }
-  getList();
-  getDeletedList();
-  console.log('呜呜呜呜',queryParams.pduKeyList)
+ if(switchValue.value ==2){
+         getDeletedList();
+    }else{
+         getList();
+    }
 }
 
 
@@ -571,7 +564,6 @@ const getList = async () => {
       obj.pow = obj.pow.toFixed(3);
       obj.ele = obj.ele.toFixed(1);
       obj.pf = obj.pf.toFixed(2);
-      
     });
 
     total.value = data.total;
@@ -685,8 +677,13 @@ const toggleAllStatus = () => {
 const handleQuery = () => {
   queryParams.pageNo = 1;
   queryDeletedPageParams.pageNo = 1;
-  getList();
-  getListAll();
+   if(switchValue.value ==2){
+      getDeletedList();
+    }else{
+      getList();
+      getListAll();
+    }
+
 }
 
 /** 重置按钮操作 */
@@ -762,7 +759,7 @@ onMounted(async () => {
   //         getList()
   //      }, 0);
   // }, 10000);
-  flashListTimer.value = setInterval((getList), 10000);
+  // flashListTimer.value = setInterval((getList), 10000);
 })
 
 onBeforeUnmount(()=>{
@@ -783,12 +780,12 @@ onBeforeRouteLeave(()=>{
 onActivated(() => {
   getList();
   getNavList();
-  if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval(() => {
-        getListAll();
-  }, 10000);
+  // if(!firstTimerCreate.value){
+  //   flashListTimer.value = setInterval(() => {
+  //       getListAll();
+  // }, 10000);
     // flashListTimer.value = setInterval((getListAll), 5000);
-  }
+  // }
 })
 </script>
 
