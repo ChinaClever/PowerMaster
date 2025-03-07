@@ -137,7 +137,7 @@
           </div>
         </el-dialog>
 
-        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" >
+        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" class="matrixContainer">
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="所在位置" min-width="90" align="center" prop="roomName" />
           <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" :formatter="formatEle"/>
@@ -738,7 +738,8 @@ onBeforeMount(() => {
   }
 }
 .matrixContainer {
-  height: calc(100vh - 320px);
+  height: 720px;
+  // calc(100vh - 320px);
   overflow: auto;
   display: flex;
   flex-wrap: wrap;
@@ -746,7 +747,7 @@ onBeforeMount(() => {
   .item {
     width: 25%;
     min-width: 290px;
-    height: 120px;
+    height: 130px;
     font-size: 12px;
     box-sizing: border-box;
     background-color: #eef4fc;
