@@ -23,7 +23,7 @@ const powerFactorTotal = ref()
 const powerFactorA = ref()
 const powerFactorB = ref()
 const time = ref()
-const legendList = ref() ;
+const legendList = ref();
 
 // 设置饼图的选项
 const echartsOption = ref({

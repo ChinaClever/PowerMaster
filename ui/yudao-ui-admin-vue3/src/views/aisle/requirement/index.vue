@@ -166,7 +166,7 @@
         </el-table-column>
       </el-table> -->
 
-      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
+      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :header-cell-style="headerCellStyle">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="总共最大功率" align="center" prop="maxPowTotal" width="100px" >
@@ -225,26 +225,11 @@
               <div >B路 ：{{item.maxPowB }}kW</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             <!-- </div> -->
-              <!-- 左边两行说明 -->
-            <div class="left-rows">
-              <div class="row-label">A路</div>
-              <div class="row-label">B路</div>
-            </div>
-
-            <!-- 上面两列说明 -->
-            <div class="top-columns">
-              <span class="column-label">视在功率</span>
-              <span class="column-label">有功功率</span>
-            </div>
-
-            <!-- 四宫格 -->
-            <div class="four-grid">
-              <div>1</div>
-              <div style="right: 45%;">2</div>
-              <div style="top: 37px">3</div>
-              <div style="right: 45%;top:37px">4</div>
-            </div>
+            <div class="lien"><span class="left"></span><span class="middle">视在功率</span> <span class="right">有功功率</span></div><br/>
+            <div class="lien"><span class="left">A路</span><span class="middle">{{ item.maxApparentA  }}kVA</span> <span class="right">{{ item.maxPowA  }}kW</span></div><br/>
+            <div class="lien"><span class="left">B路</span><span class="middle">{{ item.maxApparentB }}kVA</span> <span class="right">{{ item.maxPowB }}kW</span></div>
           </div>
+          <!-- </div> -->
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
           <div class="status"  >
             <el-tag>需量功率</el-tag>
@@ -597,6 +582,11 @@ const handleExport = async () => {
   }
 }
 
+function headerCellStyle() {
+    return {
+      backgroundColor: '#eee', // 表头背景颜色
+    };
+  }
 /** 初始化 **/
 onMounted(() => {
   getList()
@@ -922,36 +912,27 @@ onMounted(() => {
   margin-right: 0;
 }
 .content{
+  top:30px;
+  display: inline-block;
   position: absolute;
-  left: 60px;
-  right: 60px;
-  bottom: 20px;
-  top: 30px;
-  .left-rows{
-    position: absolute;
-    top: 5px;
-    height: 80%;
-    div{
-      margin-top: 20px;
-    }
-  }
-  .top-columns{
-    position: absolute;
-    left: 40px;
+  left: 5%;
+  div{
+    margin-top: 10px;
+    display: inline-block;
     span{
-      margin-right: 40px;
+      text-align: center;
     }
-  }
-  .four-grid{
-    position: absolute;
-    left: 50px;
-    top: 25px;
-    right: 0;
-    bottom: -10px;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    div{
-      position: absolute;
+    .left{
+      display: inline-block;
+      width: 25px;
+    }
+    .middle{
+      display: inline-block;
+      width: 120px;
+    }
+    .right{
+      display: inline-block;
+      width: 120px;
     }
   }
 }

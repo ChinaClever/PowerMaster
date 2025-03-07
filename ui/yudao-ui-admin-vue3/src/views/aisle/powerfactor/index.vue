@@ -88,7 +88,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" >
+      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :header-cell-style="headerCellStyle" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -602,6 +602,12 @@ const getFullTimeByDate = (date) => {
       (min > 9 ? min : ("0" + min)) + ":" +
       (second > 9 ? second : ("0" + second));
 }
+
+function headerCellStyle() {
+    return {
+      backgroundColor: '#eee', // 表头背景颜色
+    };
+  }
 
 /** 初始化 **/
 onMounted(async () => {

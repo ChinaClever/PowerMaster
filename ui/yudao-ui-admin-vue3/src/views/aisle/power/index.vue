@@ -90,7 +90,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"   >
+      <el-table v-show="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  :header-cell-style="headerCellStyle" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -145,7 +145,7 @@
         </el-table-column>
       </el-table>    
 
-      <el-table v-show="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilA" >
+      <el-table v-show="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilA" :header-cell-style="headerCellStyle">
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -200,7 +200,7 @@
         </el-table-column>
       </el-table> 
 
-      <el-table v-show="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilB" >
+      <el-table v-show="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilB" :header-cell-style="headerCellStyle">
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -672,6 +672,12 @@ const handleExport = async () => {
     exportLoading.value = false
   }
 }
+
+function headerCellStyle() {
+    return {
+      backgroundColor: '#eee', // 表头背景颜色
+    };
+  }
 
 /** 初始化 **/
 onMounted(async () => {

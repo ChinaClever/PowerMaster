@@ -102,4 +102,8 @@ export const IndexApi = {
   getAislePFDetailExcel: async (data) => {
     return await request.downloadPost({ url: `/aisle/index/pf/detail/excel`, data })
   },
+
+  getBalanceDetail: async (data) => {
+    return await request.post({ url: `/aisle/index/balance/chart?id=${data}`, })
+  }
 }
