@@ -1264,23 +1264,35 @@ public PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIn
 
             List<BigDecimal> curValue = aPath.getList("cur_value", BigDecimal.class);
             if (!CollectionUtils.isEmpty(curValue)) {
-                cabinetKey.setAcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
-                cabinetKey.setAcurValueTwe(BigDemicalUtil.setScale(curValue.get(1), 2));
-                cabinetKey.setAcurValueThree(BigDemicalUtil.setScale(curValue.get(2), 2));
+                if (curValue.size()==3) {
+                    cabinetKey.setAcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
+                    cabinetKey.setAcurValueTwe(BigDemicalUtil.setScale(curValue.get(1), 2));
+                    cabinetKey.setAcurValueThree(BigDemicalUtil.setScale(curValue.get(2), 2));
+                }else {
+                    cabinetKey.setAcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
+                }
             }
 
             List<BigDecimal> volValue = aPath.getList("vol_value", BigDecimal.class);
             if (!CollectionUtils.isEmpty(volValue)) {
-                cabinetKey.setAvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
-                cabinetKey.setAvolValueTwe(BigDemicalUtil.setScale(volValue.get(1), 1));
-                cabinetKey.setAvolValueThree(BigDemicalUtil.setScale(volValue.get(2), 1));
+                if (volValue.size()==3) {
+                    cabinetKey.setAvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
+                    cabinetKey.setAvolValueTwe(BigDemicalUtil.setScale(volValue.get(1), 1));
+                    cabinetKey.setAvolValueThree(BigDemicalUtil.setScale(volValue.get(2), 1));
+                }else {
+                    cabinetKey.setAvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
+                }
             }
 
             List<BigDecimal> powValue = aPath.getList("pow_value", BigDecimal.class);
             if (!CollectionUtils.isEmpty(powValue)) {
-                cabinetKey.setApowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
-                cabinetKey.setApowValueTwe(BigDemicalUtil.setScale(powValue.get(1), 3));
-                cabinetKey.setApowValueThree(BigDemicalUtil.setScale(powValue.get(2), 3));
+                if (powValue.size()==3) {
+                    cabinetKey.setApowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
+                    cabinetKey.setApowValueTwe(BigDemicalUtil.setScale(powValue.get(1), 3));
+                    cabinetKey.setApowValueThree(BigDemicalUtil.setScale(powValue.get(2), 3));
+                }else {
+                    cabinetKey.setApowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
+                }
             }
         }
         if (Objects.nonNull(bPath)) {
@@ -1290,21 +1302,33 @@ public PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIn
             cabinetKey.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, totalPow), 100));
             List<BigDecimal> curValue = bPath.getList("cur_value", BigDecimal.class);
             if (!CollectionUtils.isEmpty(curValue)) {
-                cabinetKey.setBcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
-                cabinetKey.setBcurValueTwe(BigDemicalUtil.setScale(curValue.get(1), 2));
-                cabinetKey.setBcurValueThree(BigDemicalUtil.setScale(curValue.get(2), 2));
+                if (curValue.size()==3) {
+                    cabinetKey.setBcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
+                    cabinetKey.setBcurValueTwe(BigDemicalUtil.setScale(curValue.get(1), 2));
+                    cabinetKey.setBcurValueThree(BigDemicalUtil.setScale(curValue.get(2), 2));
+                }else {
+                    cabinetKey.setBcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
+                }
             }
             List<BigDecimal> volValue = bPath.getList("vol_value", BigDecimal.class);
             if (!CollectionUtils.isEmpty(volValue)) {
-                cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
-                cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(1), 1));
-                cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(2), 1));
+                if (volValue.size()==3) {
+                    cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
+                    cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(1), 1));
+                    cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(2), 1));
+                }else {
+                    cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
+                }
             }
             List<BigDecimal> powValue = bPath.getList("pow_value", BigDecimal.class);
             if (!CollectionUtils.isEmpty(powValue)) {
-                cabinetKey.setBpowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
-                cabinetKey.setBpowValueTwe(BigDemicalUtil.setScale(powValue.get(1), 3));
-                cabinetKey.setBpowValueThree(BigDemicalUtil.setScale(powValue.get(2), 3));
+                if (powValue.size()==3) {
+                    cabinetKey.setBpowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
+                    cabinetKey.setBpowValueTwe(BigDemicalUtil.setScale(powValue.get(1), 3));
+                    cabinetKey.setBpowValueThree(BigDemicalUtil.setScale(powValue.get(2), 3));
+                }else {
+                    cabinetKey.setBpowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
+                }
             }
         }
     }
