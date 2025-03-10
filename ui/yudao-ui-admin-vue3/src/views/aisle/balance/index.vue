@@ -68,7 +68,7 @@
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
+        <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
@@ -96,7 +96,7 @@
             <button class="detail" @click.prevent="toDetail(item)">详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
+        <el-table v-show="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="名称" min-width="90" align="center" prop="location" />
           <el-table-column label="总共" align="center">
@@ -115,7 +115,7 @@
             <el-table-column label="无功功率(kVar)" min-width="90" align="center" prop="powReactiveB" />
           </el-table-column>
         </el-table>
-        <el-dialog v-model="showDetailDialog" @close="handleClose" >
+        <el-dialog v-loading="detailLoading" v-model="showDetailDialog" @close="handleClose" >
           <!-- 自定义的头部内容（可选） -->
           <template #header>
             <CardTitle title="AB占比情况" />
@@ -195,8 +195,8 @@
 
 <script lang="ts" setup>
 import { IndexApi } from '@/api/aisle/aisleindex'
-import curUnblance from './component/curUnblance.vue';
-import volUnblance from './component/volUnblance.vue';
+const curUnblance = defineAsyncComponent(() => import('./component/curUnblance.vue'))
+const volUnblance = defineAsyncComponent(() => import('./component/volUnblance.vue'))
 import { tourEmits } from 'element-plus';
 import { table } from 'console';
 import { set } from 'nprogress';
@@ -210,6 +210,7 @@ const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const showDetailDialog = ref(false)
 const apow = ref(null)
 const bpow = ref(null)
+const detailLoading = ref(false)
 const ABarOption = ref<EChartsOption>({});
 const BBarOption = ref<EChartsOption>({});
 
@@ -321,6 +322,8 @@ const getTableData = async(reset = false) => {
 
 // 详情跳转
 const toDetail = async (item) => {
+  detailLoading.value = true
+  showDetailDialog.value = true;
   apow.value=balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
   bpow.value=1-apow.value;
   balanceObj.pow_active_percent=item.powActiveA/item.powActiveTotal*100;
@@ -404,7 +407,7 @@ const toDetail = async (item) => {
   }
   balanceObj.imbalanceValueA=response.curUnbalancea;
   balanceObj.imbalanceValueB=response.curUnbalanceb;
-  showDetailDialog.value = true;
+  detailLoading.value = false;
   // console.log('详情跳转', id, router, router.getRoutes())
   // push({path: '/cabinet/cab/balanceDetail', state: { id }})
 }
