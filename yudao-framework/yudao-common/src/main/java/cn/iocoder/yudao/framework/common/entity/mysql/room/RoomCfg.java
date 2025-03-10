@@ -35,8 +35,8 @@ public class RoomCfg implements Serializable {
     /**
      * 是否删除
      */
-//    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-//    private int isDelete;
+    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
+    private int isDelete;
 
     /**
      * 日用能告警开关
