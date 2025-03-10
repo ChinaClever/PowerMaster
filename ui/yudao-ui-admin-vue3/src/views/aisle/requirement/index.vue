@@ -4,7 +4,6 @@
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
-  
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -269,7 +268,9 @@
       </template>
 
       <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
-        <el-tag>{{ location }}</el-tag> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
+        <div class="tagInDialog">
+          <el-tag >机房：{{ location.split("-")[0] }}<span v-for="i in Array(5)" :key="i">&nbsp;</span>柜列：{{ location.split("-")[1] }}</el-tag> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
+        </div>
         <div>
           <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />
         </div>
@@ -853,7 +854,7 @@ onMounted(() => {
   flex-wrap: wrap;
   .arrayItem {
     width: 25%;
-    height: 140px;
+    height: 160px;
     font-size: 13px;
     box-sizing: border-box;
     background-color: #eef4fc;
@@ -912,7 +913,7 @@ onMounted(() => {
   margin-right: 0;
 }
 .content{
-  top:30px;
+  top:40px;
   display: inline-block;
   position: absolute;
   left: 5%;
@@ -935,5 +936,10 @@ onMounted(() => {
       width: 120px;
     }
   }
+}
+.tagInDialog{
+  position: absolute;
+  left: 30%;
+  top: 22px;
 }
 </style>

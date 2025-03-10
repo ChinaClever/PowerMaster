@@ -6,6 +6,12 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import * as echarts from 'echarts';
 
+const chartColor = computed(() => {
+  if (percentageValue.value < 15) return '#3bbb00'; // 绿色 <15%
+  if (percentageValue.value <= 30) return '#ffc402'; // 黄色 15%-30%
+  return '#fa3333'; // 红色 >30%
+});
+
 const props = defineProps({
   max: {
     type: Number,
@@ -34,7 +40,7 @@ const restPercentageValue = computed(() => 100 - percentageValue.value);
 const option = computed(() => ({
   title: {
     text: props.name,
-    left: 'left'
+    left: "left"
   },
   tooltip: {
     trigger: 'item',
@@ -66,7 +72,7 @@ const option = computed(() => ({
           value: percentageValue.value,
           name: 'Percentage',
           itemStyle: {
-            color: props.customColor || '#FF0000'
+            color: props.customColor || chartColor.value
           }
         },
         {
