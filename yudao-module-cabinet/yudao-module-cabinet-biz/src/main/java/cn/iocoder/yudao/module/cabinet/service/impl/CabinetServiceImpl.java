@@ -1231,30 +1231,30 @@ public class CabinetServiceImpl implements CabinetService {
     }
 
     @Override
-    public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
-        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
-        Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
-        if (!CollectionUtils.isEmpty(voPage.getRecords())) {
-            List<CabineIndexCfgVO> records = voPage.getRecords();
-            List<CabinetIndexEnvResVO> bean = BeanUtils.toBean(records, CabinetIndexEnvResVO.class);
-            Map<String, CabinetIndexEnvResVO> map = bean.stream().collect(Collectors.toMap(vo -> REDIS_KEY_CABINET + vo.getRoomId() + "-" + vo.getId(), i -> i));
-            Set<String> ids = map.keySet();
-            List list = redisTemplate.opsForValue().multiGet(ids);
-            for (Object obj : list) {
-                if (Objects.isNull(obj)) {
-                    continue;
-                }
-                JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
-                String cabinetKey = jsonObject.getString("cabinet_key");
-                CabinetIndexEnvResVO vo = map.get(REDIS_KEY_CABINET + cabinetKey);
-                vo.setHumValue(jsonObject.getJSONObject("cabinet_env").getString("hum_value"));
-                vo.setTemValue(jsonObject.getJSONObject("cabinet_env").getString("tem_value"));
-                vo.setRoomName(jsonObject.getString("room_name"));
+public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
+    Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+    Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
+    if (!CollectionUtils.isEmpty(voPage.getRecords())) {
+        List<CabineIndexCfgVO> records = voPage.getRecords();
+        List<CabinetIndexEnvResVO> bean = BeanUtils.toBean(records, CabinetIndexEnvResVO.class);
+        Map<String, CabinetIndexEnvResVO> map = bean.stream().collect(Collectors.toMap(vo -> REDIS_KEY_CABINET + vo.getRoomId() + "-" + vo.getId(), i -> i));
+        Set<String> ids = map.keySet();
+        List list = redisTemplate.opsForValue().multiGet(ids);
+        for (Object obj : list) {
+            if (Objects.isNull(obj)) {
+                continue;
             }
-            return new PageResult<>(bean, voPage.getTotal());
+            JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
+            String cabinetKey = jsonObject.getString("cabinet_key");
+            CabinetIndexEnvResVO vo = map.get(REDIS_KEY_CABINET + cabinetKey);
+            vo.setHumValue(jsonObject.getJSONObject("cabinet_env").getString("hum_value"));
+            vo.setTemValue(jsonObject.getJSONObject("cabinet_env").getString("tem_value"));
+            vo.setRoomName(jsonObject.getString("room_name"));
         }
-        return null;
+        return new PageResult<>(bean, voPage.getTotal());
     }
+    return null;
+}
 
     @Override
     public PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIndexVo pageReqVO) {
@@ -1281,118 +1281,142 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetKey.setPowApparentA(aPow);
                 cabinetKey.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, totalPow), 100));
 
-                List<BigDecimal> curValue = aPath.getList("cur_value", BigDecimal.class);
-                if (!CollectionUtils.isEmpty(curValue)) {
+            List<BigDecimal> curValue = aPath.getList("cur_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(curValue)) {
+                if (curValue.size()==3) {
                     cabinetKey.setAcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
                     cabinetKey.setAcurValueTwe(BigDemicalUtil.setScale(curValue.get(1), 2));
                     cabinetKey.setAcurValueThree(BigDemicalUtil.setScale(curValue.get(2), 2));
+                }else {
+                    cabinetKey.setAcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
                 }
+            }
 
-                List<BigDecimal> volValue = aPath.getList("vol_value", BigDecimal.class);
-                if (!CollectionUtils.isEmpty(volValue)) {
+            List<BigDecimal> volValue = aPath.getList("vol_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(volValue)) {
+                if (volValue.size()==3) {
                     cabinetKey.setAvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
                     cabinetKey.setAvolValueTwe(BigDemicalUtil.setScale(volValue.get(1), 1));
                     cabinetKey.setAvolValueThree(BigDemicalUtil.setScale(volValue.get(2), 1));
+                }else {
+                    cabinetKey.setAvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
                 }
+            }
 
-                List<BigDecimal> powValue = aPath.getList("pow_value", BigDecimal.class);
-                if (!CollectionUtils.isEmpty(powValue)) {
+            List<BigDecimal> powValue = aPath.getList("pow_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(powValue)) {
+                if (powValue.size()==3) {
                     cabinetKey.setApowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
                     cabinetKey.setApowValueTwe(BigDemicalUtil.setScale(powValue.get(1), 3));
                     cabinetKey.setApowValueThree(BigDemicalUtil.setScale(powValue.get(2), 3));
+                }else {
+                    cabinetKey.setApowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
                 }
             }
-            if (Objects.nonNull(bPath)) {
-                //b的视在功率
-                BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
-                cabinetKey.setPowApparentB(bPow);
-                cabinetKey.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, totalPow), 100));
-                List<BigDecimal> curValue = bPath.getList("cur_value", BigDecimal.class);
-                if (!CollectionUtils.isEmpty(curValue)) {
+        }
+        if (Objects.nonNull(bPath)) {
+            //b的视在功率
+            BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
+            cabinetKey.setPowApparentB(bPow);
+            cabinetKey.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, totalPow), 100));
+            List<BigDecimal> curValue = bPath.getList("cur_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(curValue)) {
+                if (curValue.size()==3) {
                     cabinetKey.setBcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
                     cabinetKey.setBcurValueTwe(BigDemicalUtil.setScale(curValue.get(1), 2));
                     cabinetKey.setBcurValueThree(BigDemicalUtil.setScale(curValue.get(2), 2));
+                }else {
+                    cabinetKey.setBcurValueOne(BigDemicalUtil.setScale(curValue.get(0), 2));
                 }
-                List<BigDecimal> volValue = bPath.getList("vol_value", BigDecimal.class);
-                if (!CollectionUtils.isEmpty(volValue)) {
+            }
+            List<BigDecimal> volValue = bPath.getList("vol_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(volValue)) {
+                if (volValue.size()==3) {
                     cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
                     cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(1), 1));
                     cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(2), 1));
+                }else {
+                    cabinetKey.setBvolValueOne(BigDemicalUtil.setScale(volValue.get(0), 1));
                 }
-                List<BigDecimal> powValue = bPath.getList("pow_value", BigDecimal.class);
-                if (!CollectionUtils.isEmpty(powValue)) {
+            }
+            List<BigDecimal> powValue = bPath.getList("pow_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(powValue)) {
+                if (powValue.size()==3) {
                     cabinetKey.setBpowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
                     cabinetKey.setBpowValueTwe(BigDemicalUtil.setScale(powValue.get(1), 3));
                     cabinetKey.setBpowValueThree(BigDemicalUtil.setScale(powValue.get(2), 3));
+                }else {
+                    cabinetKey.setBpowValueOne(BigDemicalUtil.setScale(powValue.get(0), 3));
                 }
             }
         }
-        return new PageResult<>(records, voPage.getTotal());
     }
+    return new PageResult<>(records, voPage.getTotal());
+}
 
-    @Override
-    public CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int roomId, String type) throws IOException {
+@Override
+public CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int roomId, String type) throws IOException {
 
-        CabinetDistributionDetailsResVO vo = new CabinetDistributionDetailsResVO();
-        CabinetIndex cabinetIndex = cabinetIndexMapper.selectById(id);
-        vo.setPduBox(cabinetIndex.getPduBox());
-        if (cabinetIndex.getPduBox()) {
-            CabinetBox cabinetBox = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>().eq(CabinetBox::getCabinetId, id));
-            if (Objects.nonNull(cabinetBox)) {
-                vo.setKeyA(cabinetBox.getBoxKeyA());
-                vo.setKeyB(cabinetBox.getBoxKeyB());
-            }
-        } else {
-            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, id));
-            if (Objects.nonNull(cabinetPdu)) {
-                vo.setKeyA(cabinetPdu.getPduKeyA());
-                vo.setKeyB(cabinetPdu.getPduKeyB());
-            }
+    CabinetDistributionDetailsResVO vo = new CabinetDistributionDetailsResVO();
+    CabinetIndex cabinetIndex = cabinetIndexMapper.selectById(id);
+    vo.setPduBox(cabinetIndex.getPduBox());
+    if (cabinetIndex.getPduBox()) {
+        CabinetBox cabinetBox = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>().eq(CabinetBox::getCabinetId, id));
+        if (Objects.nonNull(cabinetBox)) {
+            vo.setKeyA(cabinetBox.getBoxKeyA());
+            vo.setKeyB(cabinetBox.getBoxKeyB());
         }
-        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_CABINET + roomId + "-" + id);
-        if (Objects.isNull(obj)) {
-            return vo;
+    } else {
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, id));
+        if (Objects.nonNull(cabinetPdu)) {
+            vo.setKeyA(cabinetPdu.getPduKeyA());
+            vo.setKeyB(cabinetPdu.getPduKeyB());
         }
-        JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
-        JSONObject apath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
-        JSONObject bpath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
-        JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
+    }
+    Object obj = redisTemplate.opsForValue().get(REDIS_KEY_CABINET + roomId + "-" + id);
+    if (Objects.isNull(obj)) {
+        return vo;
+    }
+    JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
+    JSONObject apath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
+    JSONObject bpath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
+    JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
 
-        vo.setLoadFactor(jsonObject.getBigDecimal("load_factor").setScale(0, RoundingMode.HALF_DOWN));
-        vo.setCabinetName(jsonObject.getString("cabinet_name"));
-        vo.setRoomName(jsonObject.getString("room_name"));
-        vo.setDateTime(LocalDateTimeUtil.parse(jsonObject.getString("date_time"), "yyyy-MM-dd HH:mm:ss"));
-        if (Objects.nonNull(total)) {
-            vo.setPowActiveTotal(total.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
-            vo.setPowApparentTotal(total.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
-            vo.setPowReactiveTotal(total.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
-            vo.setPowerFactor(total.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
-        }
-        if (Objects.nonNull(apath)) {
-            vo.setCurA(apath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setVolA(apath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
-            vo.setPowApparentA(apath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
-            vo.setPowReactiveA(apath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
-            vo.setPowerFactorA(apath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
-            vo.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentA(), vo.getPowApparentTotal()), 100));
-        }
-        if (Objects.nonNull(bpath)) {
-            vo.setCurB(bpath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setVolB(bpath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
-            vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
-            vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
-            vo.setPowerFactorB(bpath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
-            vo.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentB(), vo.getPowApparentTotal()), 100));
+    vo.setLoadFactor(jsonObject.getBigDecimal("load_factor").setScale(0, RoundingMode.HALF_DOWN));
+    vo.setCabinetName(jsonObject.getString("cabinet_name"));
+    vo.setRoomName(jsonObject.getString("room_name"));
+    vo.setDateTime(LocalDateTimeUtil.parse(jsonObject.getString("date_time"), "yyyy-MM-dd HH:mm:ss"));
+    if (Objects.nonNull(total)) {
+        vo.setPowActiveTotal(total.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+        vo.setPowApparentTotal(total.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
+        vo.setPowReactiveTotal(total.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+        vo.setPowerFactor(total.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
+    }
+    if (Objects.nonNull(apath)) {
+        vo.setCurA(apath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+        vo.setVolA(apath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+        vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+        vo.setPowApparentA(apath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
+        vo.setPowReactiveA(apath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+        vo.setPowerFactorA(apath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
+        vo.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentA(), vo.getPowApparentTotal()), 100));
+    }
+    if (Objects.nonNull(bpath)) {
+        vo.setCurB(bpath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+        vo.setVolB(bpath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+        vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+        vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
+        vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+        vo.setPowerFactorB(bpath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
+        vo.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentB(), vo.getPowApparentTotal()), 100));
 
-            Map map = getCabinetDistributionFactor(id, roomId, type);
-            vo.setDay((List<String>) map.get("day"));
-            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
-            if (Objects.nonNull(map.get("load_rate"))) {
-                vo.setLoadFactorBig(BigDemicalUtil.setScale(new BigDecimal(String.valueOf(map.get("load_rate"))), 2));
-                vo.setLoadFactorTime((String) map.get("create_time"));
-            }
+        Map map = getCabinetDistributionFactor(id, roomId, type);
+        vo.setDay((List<String>) map.get("day"));
+        vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
+        if (Objects.nonNull(map.get("load_rate"))) {
+            vo.setLoadFactorBig(BigDemicalUtil.setScale(new BigDecimal(String.valueOf(map.get("load_rate"))), 2));
+            vo.setLoadFactorTime((String) map.get("create_time"));
+        }
 //            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
 //            vo.setFactorA((List<BigDecimal>) map.get("factorA"));
 //            vo.setFactorB((List<BigDecimal>) map.get("factorB"));
