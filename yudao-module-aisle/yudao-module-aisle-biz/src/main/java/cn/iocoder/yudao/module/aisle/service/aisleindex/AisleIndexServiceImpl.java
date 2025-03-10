@@ -15,12 +15,14 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.aisle.constant.AisleConstants;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.module.aisle.dal.mysql.aisleindex.AisleIndexCopyMapper;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -55,6 +57,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -78,6 +82,7 @@ import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.REDIS_KEY_BU
 import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.*;
 import static cn.iocoder.yudao.module.aisle.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
+import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.PDU_HDA_LINE_HOUR;
 
 /**
  * 通道列 Service 实现类
@@ -512,6 +517,63 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
+    public AisleBalanceChartResVO getAisleBalanceChart(Integer id) {
+        Object o = redisTemplate.opsForValue().get(REDIS_KEY_AISLE + id);
+        AisleBalanceChartResVO vo = new AisleBalanceChartResVO();
+        if (Objects.nonNull(o)) {
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+            JSONObject aislePower = jsonObject.getJSONObject("aisle_power");
+
+            Double powApparentA = 0.0;
+            Double powApparentB = 0.0;
+            Double powApparentTotal = 0.0;
+
+            Double powActiveA = 0.0;
+            Double powActiveB = 0.0;
+            Double powActiveTotal = 0.0;
+            JSONObject totalData = aislePower.getJSONObject("total_data");
+            if (Objects.nonNull(totalData)) {
+                powApparentTotal=totalData.getDouble("pow_apparent");
+                powActiveTotal=totalData.getDouble("pow_active");
+            }
+
+            JSONObject pathA = aislePower.getJSONObject("path_a");
+            if (Objects.nonNull(pathA)) {
+                powApparentA=pathA.getDouble("pow_apparent");
+                powActiveA=pathA.getDouble("pow_active");
+                List<Double> curList = pathA.getList("cur_value", Double.class);
+                vo.setCurLista(curList);
+                vo.setVolLista(pathA.getList("vol_value",Double.class));
+
+                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            JSONObject pathB = aislePower.getJSONObject("path_b");
+            if (Objects.nonNull(pathB)) {
+                powApparentB=pathB.getDouble("pow_apparent");
+                powActiveB=pathB.getDouble("pow_active");
+                List<Double> curList = pathB.getList("cur_value", Double.class);
+                vo.setCurListb(curList);
+                vo.setVolListb(pathB.getList("vol_value",Double.class));
+
+                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            vo.setRateA(BigDemicalUtil.safeDivideNum(3,powApparentA,powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setPowActiveARate(BigDemicalUtil.safeDivideNum(3,powActiveA,powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
+
+            vo.setRateB(BigDemicalUtil.safeDivideNum(3,powApparentB,powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setPowActiveBRate(BigDemicalUtil.safeDivideNum(3,powActiveB,powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
+
+        }
+        return vo;
+    }
+
+    @Override
     public PageResult<AislePfRes> getAislePFPage(AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
@@ -629,9 +691,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
             }
 
-            Map<Integer, MaxValueAndCreateTime> powTotalMap;
-            Map<Integer, MaxValueAndCreateTime> powAMap;
-            Map<Integer, MaxValueAndCreateTime> powBMap;
+
             String index = null;
             if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 index = "aisle_hda_pow_hour";
@@ -648,9 +708,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             }
             List<Integer> ids = (List<Integer>) esTotalAndIds.get("ids");
 
-            powTotalMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_total_max_value", "active_total_max_time");
-            powAMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_a_max_value", "active_a_max_time");
-            powBMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_b_max_value", "active_b_max_time");
+
+
+                    //视在功率
+            Map<Integer, MaxValueAndCreateTime> apparentAMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "apparent_a_max_value", "apparent_a_max_time");
+            Map<Integer, MaxValueAndCreateTime> apparentBMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "apparent_b_max_value", "apparent_b_max_time");
+            //有功功率
+            Map<Integer, MaxValueAndCreateTime> powAMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_a_max_value", "active_a_max_time");
+            Map<Integer, MaxValueAndCreateTime> powBMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "active_b_max_value", "active_b_max_time");
 
             List<AisleLineMaxRes> result = new ArrayList<>();
             List<AisleIndexDO> aisleIndexDOList = aisleIndexCopyMapper.selectList(new LambdaQueryWrapperX<AisleIndexDO>()
@@ -658,9 +723,6 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     .inIfPresent(AisleIndexDO::getId, ids));
             for (AisleIndexDO aisleIndexDO : aisleIndexDOList) {
                 Integer id = aisleIndexDO.getId().intValue();
-                if (powTotalMap.get(id) == null) {
-                    continue;
-                }
 
                 AisleLineMaxRes aisleLineMaxRes = new AisleLineMaxRes();
 
@@ -668,18 +730,28 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 aisleLineMaxRes.setName(aisleIndexDO.getAisleName());
                 aisleLineMaxRes.setRoomId(aisleIndexDO.getRoomId());
 
-                MaxValueAndCreateTime powTotal = powTotalMap.get(id);
-                aisleLineMaxRes.setMaxPowTotal(powTotal.getMaxValue().floatValue());
-                aisleLineMaxRes.setMaxPowTotalTime(powTotal.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 MaxValueAndCreateTime powA = powAMap.get(id);
                 if (powA != null) {
                     aisleLineMaxRes.setMaxPowA(powA.getMaxValue().floatValue());
                     aisleLineMaxRes.setMaxPowATime(powA.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
+
                 MaxValueAndCreateTime powB = powBMap.get(id);
                 if (powB != null) {
                     aisleLineMaxRes.setMaxPowB(powB.getMaxValue().floatValue());
                     aisleLineMaxRes.setMaxPowBTime(powB.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+
+                MaxValueAndCreateTime apparentA = apparentAMap.get(id);
+                if (powA != null) {
+                    aisleLineMaxRes.setMaxApparentA(apparentA.getMaxValue().floatValue());
+                    aisleLineMaxRes.setMaxApparentATime(apparentA.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+
+                MaxValueAndCreateTime apparentB = apparentBMap.get(id);
+                if (powB != null) {
+                    aisleLineMaxRes.setMaxApparentB(apparentB.getMaxValue().floatValue());
+                    aisleLineMaxRes.setMaxApparentBTime(apparentB.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
 
                 result.add(aisleLineMaxRes);
@@ -830,18 +902,29 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             List<String> data = getData(startTime, endTime, ids, index);
 
             result.getSeries().add(new RequirementLineSeries().setName("总共最大功率"));
-            result.getSeries().add(new RequirementLineSeries().setName("A路最大功率"));
-            result.getSeries().add(new RequirementLineSeries().setName("B路最大功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("A路最大有功功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("B路最大有功功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("A路最大视在功率"));
+            result.getSeries().add(new RequirementLineSeries().setName("B路最大视在功率"));
             List<AislePowHourDo> aislePowHourList = data.stream().map(str -> JsonUtils.parseObject(str, AislePowHourDo.class)).collect(Collectors.toList());
 
             aislePowHourList.forEach(hour -> {
                 result.getTime().add(hour.getActiveTotalMaxTime().toString("yyyy-MM-dd HH"));
+
                 result.getSeries().get(0).getData().add(hour.getActiveTotalMaxValue());
                 ((RequirementLineSeries) result.getSeries().get(0)).getMaxTime().add(hour.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
                 result.getSeries().get(1).getData().add(hour.getActiveAMaxValue());
                 ((RequirementLineSeries) result.getSeries().get(1)).getMaxTime().add(hour.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
                 result.getSeries().get(2).getData().add(hour.getActiveBMaxValue());
                 ((RequirementLineSeries) result.getSeries().get(2)).getMaxTime().add(hour.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                result.getSeries().get(3).getData().add(hour.getApparentAMaxValue());
+                ((RequirementLineSeries) result.getSeries().get(3)).getMaxTime().add(hour.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                result.getSeries().get(4).getData().add(hour.getApparentBMaxValue());
+                ((RequirementLineSeries) result.getSeries().get(4)).getMaxTime().add(hour.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
             });
 
             return result;

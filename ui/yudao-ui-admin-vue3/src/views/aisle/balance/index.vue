@@ -68,14 +68,14 @@
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
+        <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
               <div class="progress" v-if="item.rateA">
-                <div class="left" :style="`flex: ${item.rateA}`">{{item.rateA}}%</div>
+                <div class="left" :style="`flex: ${item.rateA==0&&item.rateB==0?50:(item.rateA>60?60:(item.rateA<40?40:item.rateA))}`">{{item.rateA}}%</div>
                 <div class="line"></div>
-                <div class="right" :style="`flex: ${item.rateB}`">{{ item.rateB}}%</div>
+                <div class="right" :style="`flex: ${item.rateA==0&&item.rateB==0?50:(item.rateB>60?60:(item.rateB<40?40:item.rateB))}`">{{ item.rateB}}%</div>
                 <div class="tip">
                   <span>
                     <div>{{item.powApparentA ? item.powApparentA: '0.000'}}kVA</div>
@@ -96,7 +96,7 @@
             <button class="detail" @click.prevent="toDetail(item)">详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
+        <el-table v-show="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="名称" min-width="90" align="center" prop="location" />
           <el-table-column label="总共" align="center">
@@ -115,7 +115,7 @@
             <el-table-column label="无功功率(kVar)" min-width="90" align="center" prop="powReactiveB" />
           </el-table-column>
         </el-table>
-        <el-dialog v-model="showDetailDialog" @close="handleClose" >
+        <el-dialog v-loading="detailLoading" v-model="showDetailDialog" @close="handleClose" >
           <!-- 自定义的头部内容（可选） -->
           <template #header>
             <CardTitle title="AB占比情况" />
@@ -195,8 +195,11 @@
 
 <script lang="ts" setup>
 import { IndexApi } from '@/api/aisle/aisleindex'
-import curUnblance from './component/curUnblance.vue';
-import volUnblance from './component/volUnblance.vue';
+const curUnblance = defineAsyncComponent(() => import('./component/curUnblance.vue'))
+const volUnblance = defineAsyncComponent(() => import('./component/volUnblance.vue'))
+import { tourEmits } from 'element-plus';
+import { table } from 'console';
+import { set } from 'nprogress';
 
 const { push } = useRouter() // 路由跳转
 const router = useRouter() // 路由跳转
@@ -207,6 +210,7 @@ const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const showDetailDialog = ref(false)
 const apow = ref(null)
 const bpow = ref(null)
+const detailLoading = ref(false)
 const ABarOption = ref<EChartsOption>({});
 const BBarOption = ref<EChartsOption>({});
 
@@ -317,16 +321,17 @@ const getTableData = async(reset = false) => {
 }
 
 // 详情跳转
-const toDetail = (item) => {
+const toDetail = async (item) => {
+  detailLoading.value = true
   showDetailDialog.value = true;
-  balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
+  apow.value=balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
+  bpow.value=1-apow.value;
   balanceObj.pow_active_percent=item.powActiveA/item.powActiveTotal*100;
-  balanceObj.imbalanceValueA=50;
-  balanceObj.imbalanceValueB=50;
-  apow.value = 5;
-  bpow.value = 15;
-  const cur_valueA=[0.25,0.35,0.50]
-  ABarOption.value = {
+  let response=await IndexApi.getBalanceDetail(item.id)
+  console.log(response)
+  const cur_valueA=response.curLista
+  if(cur_valueA!=null){
+    ABarOption.value = {
       title: {
         text: 'A路电流饼形图',
         left: 'left'
@@ -354,14 +359,16 @@ const toDetail = (item) => {
             fontWeight: 'bold'
           },
           data: [
-            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
-            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
-            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+            { value: cur_valueA[0]?.toFixed(2), name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueA[1]?.toFixed(2), name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueA[2]?.toFixed(2), name: 'C相电流', itemStyle: { color: '#45C0C9' } },
           ]
         }
       ]
     }
-    const cur_valueB = [0.1,0.2,0.7]
+  }
+  const cur_valueB = response.curListb
+  if(cur_valueB!=null){
     BBarOption.value = {
       title: {
         text: 'B路电流饼形图',
@@ -390,13 +397,17 @@ const toDetail = (item) => {
             fontWeight: 'bold'
           },
           data: [
-            { value: cur_valueB[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
-            { value: cur_valueB[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
-            { value: cur_valueB[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+            { value: cur_valueB[0]?.toFixed(2), name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueB[1]?.toFixed(2), name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueB[2]?.toFixed(2), name: 'C相电流', itemStyle: { color: '#45C0C9' } },
           ]
         }
       ]
     }
+  }
+  balanceObj.imbalanceValueA=response.curUnbalancea;
+  balanceObj.imbalanceValueB=response.curUnbalanceb;
+  detailLoading.value = false;
   // console.log('详情跳转', id, router, router.getRoutes())
   // push({path: '/cabinet/cab/balanceDetail', state: { id }})
 }
@@ -456,7 +467,7 @@ const handleClose = () => {
   // apow.value = item.apow;
   // bpow.value = item.bpow;
 // }
-onBeforeMount(() => {
+onBeforeMount( () => {
   getNavList()
   getTableData()
 })

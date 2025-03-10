@@ -171,7 +171,7 @@ public class CabConstants {
     /**
      * pdu相历史数据表（按小时算
      */
-    public static final String PDU_HDA_LINE_HOUR = "pdu_hda_line_hour" ;
+    public static final String PDU_HDA_LINE_HOUR = "pdu_hda_line_hour";
 
     /**
      * 数据包
@@ -220,8 +220,6 @@ public class CabConstants {
      * 母线id
      */
     public static final String BAR_ID = "bar_id";
-
-
 
 
 }
