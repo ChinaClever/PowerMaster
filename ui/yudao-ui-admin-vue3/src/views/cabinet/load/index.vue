@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜负载">
+  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜负荷">
     <template #NavInfo>
       <div class="navInfo">
         <!-- <div class="header">

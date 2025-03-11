@@ -68,30 +68,35 @@
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
+        <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
             <div class="progressContainer">
-              <div style="margin-right:10px;margin-left: 5px;margin-top: 30px;">
-                <div>总视在功率：{{item.powApparentTotal ? item.powApparentTotal : '0.000'}}kVA</div>
-                <div>A路视在功率：{{item.powApparentA ? item.powApparentA: '0.000'}}kVA</div>
-                <div>B路视在功率：{{item.powApparentB ? item.powApparentA: '0.000'}}kVA</div>
-              </div>
               <div class="progress" v-if="item.rateA">
-                <div class="left" :style="`flex: ${item.rateA}`">{{item.rateA}}%</div>
+                <div class="left" :style="`flex: ${item.rateA==0&&item.rateB==0?50:(item.rateA>60?60:(item.rateA<40?40:item.rateA))}`">{{item.rateA}}%</div>
                 <div class="line"></div>
-                <div class="right" :style="`flex: ${item.rateB}`">{{ item.rateB}}%</div>
+                <div class="right" :style="`flex: ${item.rateA==0&&item.rateB==0?50:(item.rateB>60?60:(item.rateB<40?40:item.rateB))}`">{{ item.rateB}}%</div>
                 <div class="tip">
-                  <span>A路</span>
-                  <span>B路</span>
+                  <span>
+                    <div>{{item.powApparentA ? item.powApparentA: '0.000'}}kVA</div>
+                    <div>A路视在功率</div>
+                  </span>
+                  <span>
+                    <div>{{item.powApparentB ? item.powApparentB: '0.000'}}kVA</div>
+                    <div>B路视在功率</div>
+                  </span>
                 </div>
+              </div>
+              <div style="margin-right:10px;margin-left: 25px;margin-top: 30px; text-align: center;display: inline-block; width: 70px;">
+                {{item.powApparentTotal ? item.powApparentTotal : '0.000'}}kVA
+                <div>总视在功率</div>
               </div>
             </div>
             <div class="room">{{item.location}}</div>
-            <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item)">详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
+        <el-table v-show="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="名称" min-width="90" align="center" prop="location" />
           <el-table-column label="总共" align="center">
@@ -110,6 +115,121 @@
             <el-table-column label="无功功率(kVar)" min-width="90" align="center" prop="powReactiveB" />
           </el-table-column>
         </el-table>
+        <el-dialog v-loading="detailLoading" v-model="showDetailDialog" @close="handleClose" >
+          <!-- 自定义的头部内容（可选） -->
+          <template #header>
+            <CardTitle title="AB占比情况" />
+            <div class="powerContainer" v-if="balanceObj.pow_active_percent > 0">
+              <div class="power">
+                <div class="label">有功功率：</div>
+                <div class="progressContainer">
+                  <div class="progress">
+                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                    <div class="line"></div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                  </div>
+                  <div class="tipInDialog">
+                      <span class="leftTip">
+                        <div>{{balanceObj.a_active_power ? balanceObj.a_active_power: '0.000'}}kVA</div>
+                        <div>A路有功功率</div>
+                      </span>
+                      <span class="rightTip">
+                        <div>{{balanceObj.b_active_power ? balanceObj.b_active_power: '0.000'}}kVA</div>
+                        <div>B路有功功率</div>
+                      </span>
+                  </div>
+                </div>
+              </div>
+              <div class="power">
+                <div class="label">视在功率：</div>
+                <div class="progressContainer">
+                  <div class="progress">
+                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                    <div class="line"></div>
+                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                  </div>
+                  <div class="tipInDialog">
+                      <span class="leftTip">
+                        <div>{{balanceObj.a_apparent_power ? balanceObj.a_apparent_power: '0.000'}}kVA</div>
+                        <div>A路视在功率</div>
+                      </span>
+                      <span class="rightTip">
+                        <div>{{balanceObj.b_apparent_power ? balanceObj.b_apparent_power: '0.000'}}kVA</div>
+                        <div>B路视在功率</div>
+                      </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <!-- 自定义的主要内容 -->
+          <div class="custom-content">
+            <div class="custom-content-container" v-if="apow !== null">
+              <el-card class="cardChilc" shadow="hover">
+                <curUnblance :max="balanceObj.imbalanceValueA" name="A路电流不平衡"/>
+              </el-card>
+              <el-card class="cardChilc" style="margin: 0 10px; position: relative;" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="ABarOption" :height="300" />
+                </div>
+                <div v-show="ABarOption!=null&&ABarOption?.series!=null" style="display: inline-block;
+                    position: absolute;
+                    width: 150px;
+                    height: 100px;
+                    top: 35%;
+                    right: 0;">
+                  <div>
+                    <span class="bullet" style="color:#E5B849;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ia：</span><span style="font-size:16px;position: absolute;right: 0;">{{ABarOption.series[0].data[0].value}}A</span>
+                  </div>
+                  <div style="margin-top:30px;">
+                    <span class="bullet" style="color:#C8603A;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ib：</span><span style="font-size:16px;position: absolute;right: 0;">{{ABarOption.series[0].data[1].value}}A</span>
+                  </div>
+                  <div style="margin-top:60px;">
+                    <span class="bullet" style="color:#AD3762;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ic：</span><span style="font-size:16px;position: absolute;right: 0;">{{ABarOption.series[0].data[2].value}}A</span>
+                  </div>
+                </div>
+              </el-card>
+              <el-card  class="cardChilc" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="ALineOption" :height="300"/>
+                </div>
+              </el-card>
+            </div>
+
+            <br/>
+            <div class="custom-content-container" v-if="bpow !== null">
+              <el-card class="cardChilc" shadow="hover">
+                <volUnblance :max="balanceObj.imbalanceValueB" name="B路电流不平衡"/>
+              </el-card>
+              <el-card class="cardChilc" style="margin: 0 10px;position: relative;" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="BBarOption" :height="300"/>
+                </div>
+                <div v-show="BBarOption!=null&&BBarOption?.series!=null" style="display: inline-block;
+                    position: absolute;
+                    width: 150px;
+                    height: 100px;
+                    top: 35%;
+                    right: 0;">
+                  <div>
+                    <span class="bullet" style="color:#E5B849;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ia：</span><span style="font-size:16px;position: absolute;right: 0;">{{BBarOption.series[0].data[0].value}}A</span>
+                  </div>
+                  <div style="margin-top:30px;">
+                    <span class="bullet" style="color:#C8603A;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ib：</span><span style="font-size:16px;position: absolute;right: 0;">{{BBarOption.series[0].data[1].value}}A</span>
+                  </div>
+                  <div style="margin-top:60px;">
+                    <span class="bullet" style="color:#AD3762;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ic：</span><span style="font-size:16px;position: absolute;right: 0;">{{BBarOption.series[0].data[2].value}}A</span>
+                  </div>
+                </div>
+              </el-card>
+              <el-card  class="cardChilc" shadow="hover">
+                <div class="IechartBar">
+                  <Echart :options="BLineOption" :height="300"/>
+                </div>
+              </el-card>
+            </div>
+          </div>
+        </el-dialog>
         <Pagination
           :total="queryParams.pageTotal"
           v-model:page="queryParams.pageNo"
@@ -126,6 +246,11 @@
 
 <script lang="ts" setup>
 import { IndexApi } from '@/api/aisle/aisleindex'
+const curUnblance = defineAsyncComponent(() => import('./component/curUnblance.vue'))
+const volUnblance = defineAsyncComponent(() => import('./component/volUnblance.vue'))
+import { tourEmits } from 'element-plus';
+import { table } from 'console';
+import { set } from 'nprogress';
 
 const { push } = useRouter() // 路由跳转
 const router = useRouter() // 路由跳转
@@ -133,13 +258,149 @@ const tableLoading = ref(false) //
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([]) as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
+const showDetailDialog = ref(false)
+const apow = ref(null)
+const bpow = ref(null)
+const detailLoading = ref(false)
+const ABarOption = ref<EChartsOption>({
+      title: {
+        text: 'A路电流饼形图',
+        left: 'left'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b} : {c}'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: 0, name: 'A相电流', itemStyle: { color: '#E5B849' } },
+            { value: 0, name: 'B相电流', itemStyle: { color: '#C8603A' } },
+            { value: 0, name: 'C相电流', itemStyle: { color: '#AD3762' } },
+          ]
+        }
+      ]
+    });
+const BBarOption = ref<EChartsOption>({
+      title: {
+        text: 'B路电流饼形图',
+        left: 'left'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b} : {c}'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: 0, name: 'A相电流', itemStyle: { color: '#E5B849' } },
+            { value: 0, name: 'B相电流', itemStyle: { color: '#C8603A' } },
+            { value: 0, name: 'C相电流', itemStyle: { color: '#AD3762' } },
+          ]
+        }
+      ]
+    });
+
+const ALineOption = ref<EChartsOption>({
+  title: {
+    text: 'A路电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis:{},
+  series: []
+})
+
+const BLineOption = ref<EChartsOption>({
+  title: {
+    text: 'B路电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis:{},
+  series: []
+})
 const queryParams = reactive({
   name: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
 }) as any
-
+const balanceObj = reactive({
+  a_apparent_power: 0,
+  b_apparent_power: 0,
+  a_active_power: 0,
+  b_active_power: 0,
+  pow_apparent_percent: 0,
+  pow_active_percent: 0,
+  cur_valueA: [],
+  cur_valueB: [],
+  imbalanceValueA: 0,
+  imbalanceValueB: 0,
+  colorIndex: 0,
+})
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getAisleMenu()
@@ -183,9 +444,35 @@ const getTableData = async(reset = false) => {
 }
 
 // 详情跳转
-const toDetail = (id) => {
-  console.log('详情跳转', id, router, router.getRoutes())
-  push({path: '/cabinet/cab/balanceDetail', state: { id }})
+const toDetail = async (item) => {
+  detailLoading.value = true
+  showDetailDialog.value = true;
+  apow.value=balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
+  bpow.value=1-apow.value;
+  balanceObj.a_apparent_power=item.powApparentA;
+  balanceObj.b_apparent_power=item.powApparentB;
+  balanceObj.a_active_power=item.powActiveA;
+  balanceObj.b_active_power=item.powActiveB;
+  balanceObj.pow_active_percent=item.powActiveA/item.powActiveTotal*100;
+  let response=await IndexApi.getBalanceDetail(item.id)
+  // console.log(response)
+  const cur_valueA=response.curLista
+  if(cur_valueA!=null){
+    ABarOption.value.series[0].data[0].value=cur_valueA[0].toFixed(2);
+    ABarOption.value.series[0].data[1].value=cur_valueA[1].toFixed(2);
+    ABarOption.value.series[0].data[2].value=cur_valueA[2].toFixed(2);
+  }
+  const cur_valueB = response.curListb
+  if(cur_valueB!=null){
+    BBarOption.value.series[0].data[0].value=cur_valueB[0].toFixed(2);
+    BBarOption.value.series[0].data[1].value=cur_valueB[1].toFixed(2);
+    BBarOption.value.series[0].data[2].value=cur_valueB[2].toFixed(2);
+  }
+  balanceObj.imbalanceValueA=response.curUnbalancea;
+  balanceObj.imbalanceValueB=response.curUnbalanceb;
+  detailLoading.value = false;
+  // console.log('详情跳转', id, router, router.getRoutes())
+  // push({path: '/cabinet/cab/balanceDetail', state: { id }})
 }
 
 // 处理切换 表格/阵列 模式
@@ -224,7 +511,32 @@ const handleCheck = async (row) => {
   getTableData(true)
 }
 
-onBeforeMount(() => {
+// 处理对话框关闭
+const handleClose = () => {
+  showDetailDialog.value = false;
+  balanceObj.pow_apparent_percent= 0;
+  balanceObj.pow_active_percent= 0;
+  balanceObj.cur_valueA= [];
+  balanceObj.cur_valueB= [];
+  balanceObj.imbalanceValueA= 0;
+  balanceObj.imbalanceValueB= 0;
+  balanceObj.colorIndex= 0;
+  ABarOption.value.series[0].data[0].value=0;
+  ABarOption.value.series[0].data[1].value=0;
+  ABarOption.value.series[0].data[2].value=0;
+  BBarOption.value.series[0].data[0].value=0;
+  BBarOption.value.series[0].data[1].value=0;
+  BBarOption.value.series[0].data[2].value=0;
+}
+
+//打开对话框
+// const showDialog=(id)=>{
+  // alert("hello");
+  // showDetailDialog.value = true;
+  // apow.value = item.apow;
+  // bpow.value = item.bpow;
+// }
+onBeforeMount( () => {
   getNavList()
   getTableData()
 })
@@ -339,12 +651,14 @@ onBeforeMount(() => {
     position: relative;
     .progressContainer {
       position: relative;
+      left: 0px;
       height: 50px;
       display: flex;
       justify-content: center;
       align-items: center;
       margin-top: 30px;
       .progress {
+        position: relative;
         width: 180px;
         display: flex;
         align-items: center;
@@ -355,10 +669,11 @@ onBeforeMount(() => {
         display: flex;
         justify-content: center;
         margin-top: 30px;
+        
         .tip {
           width: 180px;
           position: absolute;
-          top: -12px;
+          top: -22px;
           left: 0;
           display: flex;
           justify-content: space-between;
@@ -366,17 +681,23 @@ onBeforeMount(() => {
           font-size: 12px;
         }
         .line {
+          position: relative;
+          bottom: -10px;
           width: 3px;
           height: 25px;
           background-color: #000;
         }
         .left {
+          position: relative;
+          bottom: -10px;
           text-align: center;
           box-sizing: border-box;
           background-color: #3b8bf5;
           // border-right: 1px solid #000;
         }
         .right {
+          position: relative;
+          bottom: -10px;
           text-align: center;
           background-color:  #f86f13;
         }
@@ -418,6 +739,102 @@ onBeforeMount(() => {
       right: 10px;
       top: 8px;
     }
+  }
+}
+
+.powerContainer {
+  display: flex;
+  .power {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // padding-left: 50px;
+    margin: 20px 0;
+    .label {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .progressContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 30px;
+      .progress {
+        width: 400px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #eee;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        .line {
+          width: 3px;
+          height: 36px;
+          background-color: #000;
+        }
+        .left {
+          text-align: center;
+          box-sizing: border-box;
+          background-color: #3b8bf5;
+          // border-right: 1px solid #000;
+        }
+        .right {
+          text-align: center;
+          background-color:  #f86f13;
+        }
+      }
+    }
+  }
+}
+
+
+.cardChilc {
+  flex: 1;
+  height: 100%;
+}
+
+.IechartBar {
+  width: 100%;
+  height: 100%;
+}
+
+
+.custom-content{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.custom-content-container{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+:deep(.el-dialog) {
+  width: 80%;
+  margin-top: 50px;
+  background-color: #f1f1f1;
+}
+.tipInDialog{
+  position: absolute;
+  display: inline-block;
+  width: 400px;
+  height: 30px;
+  top: 30px;
+  .leftTip{
+    // width: 150px;
+    position: absolute;
+    left: 0px;
+    font-size: small;
+  }
+  .rightTip{
+    // width: 150px;
+    position: absolute;
+    right: 0px;
+    font-size: small;
   }
 }
 </style>

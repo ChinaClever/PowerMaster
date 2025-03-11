@@ -139,9 +139,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 return new PageResult<PDUDeviceDO>(result, 0L);
             }
         }
-        if (pageReqVO.getCurbance()==null) {
+        if (pageReqVO.getCurbance() == null) {
             pduIndexPageResult = pDUDeviceMapper.selectQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
-        }else {
+        } else {
             pduIndexPageResult = pDUDeviceMapper.selectCurbanceQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
         }
         List<PduIndex> pduIndices = pduIndexPageResult.getRecords();
@@ -185,16 +185,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
 
 
-
-            if(curArr.size() > 1){
+            if (curArr.size() > 1) {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setBcur(new BigDecimal(curArr.get(1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setCcur(new BigDecimal(curArr.get(2)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }else{
+            } else {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
 
-            pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() );
+            pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 
             pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
@@ -209,34 +208,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     public PageResult<PDUDeviceDO> getDeletedPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
-        if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
-            List<String> devKeyList = new ArrayList<>();
-            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
-            if (cabinetPduList != null && cabinetPduList.size() > 0) {
-                for (CabinetPdu cabinetPdu : cabinetPduList) {
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
-                        devKeyList.add(cabinetPdu.getPduKeyA());
-                    }
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())) {
-                        devKeyList.add(cabinetPdu.getPduKeyB());
-                    }
-                }
-            } else {
-                return new PageResult<PDUDeviceDO>(result, 0L);
-            }
-            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
-                    .inIfPresent(PduIndex::getPduKey, devKeyList)
-                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                    .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
-        } else {
-            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
-                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                    .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
-        }
+
+        pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
+                .inIfPresent(PduIndex::getPduKey, pageReqVO.getPduKeyList())
+                .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
+                .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
+                .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
+
         for (PduIndex pduIndex : pduIndices) {
             PDUDeviceDO pduDeviceDO = new PDUDeviceDO();
             pduDeviceDO.setStatus(pduIndex.getRunStatus());
@@ -261,7 +241,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (cabinetPduList != null && !cabinetPduList.isEmpty()) {
                     for (CabinetPdu cabinetPdu : cabinetPduList) {
                         if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
-                            devKeyList.add(cabinetPdu.getPduKeyA() );
+                            devKeyList.add(cabinetPdu.getPduKeyA());
                         }
                         if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())) {
                             devKeyList.add(cabinetPdu.getPduKeyB());
@@ -305,10 +285,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     pduLineRes.setStatus(pduIndex.getRunStatus());
                     pduLineRes.setPduId(pduIndex.getId());
                     pduLineRes.setDevKey(pduIndex.getPduKey());
-                }else {
+                } else {
                     pduLineRes.setPduId(pduId);
                 }
-                if (Objects.nonNull(curMap.get(pduId))){
+                if (Objects.nonNull(curMap.get(pduId))) {
                     MaxValueAndCreateTime curl1 = curMap.get(pduId).get(1);
                     pduLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
                     pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
@@ -555,13 +535,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     public static List<Double> calculateReactivePower(List<Double> apparentList, List<Double> activeList) {
-        if (apparentList.size()!= activeList.size()) {
+        if (apparentList.size() != activeList.size()) {
             throw new IllegalArgumentException("apparentList和activeList的长度必须相同");
         }
         return IntStream.range(0, apparentList.size())
                 .mapToDouble(i -> {
                     double reactivePower = Math.sqrt(Math.pow(apparentList.get(i), 2) - Math.pow(activeList.get(i), 2));
-                    return reactivePower < 0? 0 : reactivePower;
+                    return reactivePower < 0 ? 0 : reactivePower;
                 })
                 .boxed()
                 .collect(Collectors.toList());
@@ -679,7 +659,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     public Map getPduHdaLineHisdataKeyByCabinet(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime) {
         HashMap resultAB = new HashMap<>();
         CabinetIndex cabinetIndex = cabinetIndexMapper.selectOne(new LambdaQueryWrapperX<CabinetIndex>().eq(CabinetIndex::getId, cabinetId));
-        if (cabinetIndex.getPduBox().equals(true)){
+        if (cabinetIndex.getPduBox().equals(true)) {
             throw exception(NOT_PDU);
         }
         CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, cabinetId));
@@ -785,7 +765,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("lll", dayList3);
             }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
-            resultAB.put("A",result);
+            resultAB.put("A", result);
 
         } else {
             return resultAB;
@@ -890,7 +870,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 resultB.put("lll", dayList3);
             }
             resultB.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
-            resultAB.put("B",resultB);
+            resultAB.put("B", resultB);
 
         } else {
             return resultAB;
@@ -973,7 +953,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         queryWrapper.eq("pdu_key", key);
         PduIndex pduIndex = pDUDeviceMapper.selectOne(queryWrapper);
         PduBalanceDeatilRes result = new PduBalanceDeatilRes();
-        if (pduIndex.getRunStatus() == 5){
+        if (pduIndex.getRunStatus() == 5) {
             result = null;
             return result;
         }
@@ -987,8 +967,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
         JSONObject lineItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list");
-        List<Double> curList  = lineItemList.getJSONArray("cur_value").toList(Double.class);
-        List<Double> volList  = lineItemList.getJSONArray("vol_value").toList(Double.class);
+        List<Double> curList = lineItemList.getJSONArray("cur_value").toList(Double.class);
+        List<Double> volList = lineItemList.getJSONArray("vol_value").toList(Double.class);
 
         Double curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
         Double volUnbalance = pduTgData.getDoubleValue("vol_unbalance");
@@ -1002,7 +982,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         double maxVal = sortAlarmArr.get(0);
 //        List<Double> temp = curValue.toList(Double.class);
 //        curList.sort(Collections.reverseOrder());
-        double a = Collections.max(curList) -Collections.min(curList);// curList.get(0) - curList.get(2);
+        double a = Collections.max(curList) - Collections.min(curList);// curList.get(0) - curList.get(2);
         int color = 0;
         if (PDUCurbalanceColorDO == null) {
             if (a >= maxVal * 0.2) {
@@ -1403,10 +1383,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         result.put("activePowMaxTime", null);
         result.put("activePowMinValue", null);
         result.put("activePowMinTime", null);
-        result.put("reactivePowMaxValue",null);
-        result.put("reactivePowMaxTime",null);
-        result.put("reactivePowMinValue",null);
-        result.put("reactivePowMinTime",null);
+        result.put("reactivePowMaxValue", null);
+        result.put("reactivePowMaxTime", null);
+        result.put("reactivePowMinValue", null);
+        result.put("reactivePowMinTime", null);
         try {
             PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
 
@@ -2094,7 +2074,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     private void setLocation(List<PduIndex> pduIndices, List<? extends PDUDeviceDO> result) {
-        if (CollectionUtils.isEmpty(result)||CollectionUtils.isEmpty(pduIndices)) {
+        if (CollectionUtils.isEmpty(result) || CollectionUtils.isEmpty(pduIndices)) {
             return;
         }
 //        Set<String> ipAddrSet = new HashSet<>();

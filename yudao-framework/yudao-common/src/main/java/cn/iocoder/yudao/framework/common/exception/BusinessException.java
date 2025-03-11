@@ -3,13 +3,15 @@ package cn.iocoder.yudao.framework.common.exception;
 import cn.iocoder.yudao.framework.common.exception.enums.ServiceErrorCodeRange;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
  * 业务逻辑异常 Exception
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public final class ServiceException extends RuntimeException {
+@Getter
+public final class BusinessException extends RuntimeException {
 
     /**
      * 业务错误码
@@ -25,15 +27,19 @@ public final class ServiceException extends RuntimeException {
     /**
      * 空构造方法，避免反序列化问题
      */
-    public ServiceException() {
+    public BusinessException() {
     }
 
-    public ServiceException(ErrorCode errorCode) {
+    public BusinessException(ErrorCode errorCode) {
         this.code = errorCode.getCode();
         this.message = errorCode.getMsg();
     }
 
-    public ServiceException(Integer code, String message) {
+    public BusinessException(String message) {
+        this.message = message;
+    }
+
+    public BusinessException(Integer code, String message) {
         this.code = code;
         this.message = message;
     }
@@ -42,7 +48,7 @@ public final class ServiceException extends RuntimeException {
         return code;
     }
 
-    public ServiceException setCode(Integer code) {
+    public BusinessException setCode(Integer code) {
         this.code = code;
         return this;
     }
@@ -52,7 +58,7 @@ public final class ServiceException extends RuntimeException {
         return message;
     }
 
-    public ServiceException setMessage(String message) {
+    public BusinessException setMessage(String message) {
         this.message = message;
         return this;
     }

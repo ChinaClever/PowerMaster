@@ -4,7 +4,6 @@
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
-  
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -166,7 +165,7 @@
         </el-table-column>
       </el-table> -->
 
-      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
+      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :header-cell-style="headerCellStyle">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="总共最大功率" align="center" prop="maxPowTotal" width="100px" >
@@ -218,14 +217,18 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.maxPowTotal,L2:item.maxPowA,L3:item.maxPowB}" /></div>
-            <div class="info">
+            <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.maxPowTotal,L2:item.maxPowA,L3:item.maxPowB}" /></div> -->
+            <!-- <div class="info">
               <div >总共：{{item.maxPowTotal}}kW</div>
               <div >A路 ：{{item.maxPowA}}kW</div>
-              <div >B路 ：{{item.maxPowB }}kW</div>
+              <div >B路 ：{{item.maxPowB }}kW</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            </div>
+            <!-- </div> -->
+            <div class="lien"><span class="left"></span><span class="middle">视在功率</span> <span class="right">有功功率</span></div><br/>
+            <div class="lien"><span class="left">A路</span><span class="middle">{{ item.maxApparentA  }}kVA</span> <span class="right">{{ item.maxPowA  }}kW</span></div><br/>
+            <div class="lien"><span class="left">B路</span><span class="middle">{{ item.maxApparentB }}kVA</span> <span class="right">{{ item.maxPowB }}kW</span></div>
           </div>
+          <!-- </div> -->
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
           <div class="status"  >
             <el-tag>需量功率</el-tag>
@@ -265,7 +268,9 @@
       </template>
 
       <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
-        <el-tag>{{ location }}</el-tag> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
+        <div class="tagInDialog">
+          <el-tag >机房：{{ location.split("-")[0] }}<span v-for="i in Array(5)" :key="i">&nbsp;</span>柜列：{{ location.split("-")[1] }}</el-tag> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
+        </div>
         <div>
           <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />
         </div>
@@ -578,6 +583,11 @@ const handleExport = async () => {
   }
 }
 
+function headerCellStyle() {
+    return {
+      backgroundColor: '#eee', // 表头背景颜色
+    };
+  }
 /** 初始化 **/
 onMounted(() => {
   getList()
@@ -731,18 +741,7 @@ onMounted(() => {
       box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
       border-radius: 3px;
       border: 1px solid #eee;
-      .info {
-        height: 46px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        justify-content: space-between;
-        font-size: 13px;
-        .value {
-          font-size: 15px;
-          font-weight: bold;
-        }
-      }
+
     }
   }
   .status {
@@ -855,23 +854,13 @@ onMounted(() => {
   flex-wrap: wrap;
   .arrayItem {
     width: 25%;
-    height: 140px;
+    height: 160px;
     font-size: 13px;
     box-sizing: border-box;
     background-color: #eef4fc;
     border: 5px solid #fff;
     padding-top: 40px;
     position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      .icon {
-        width: 60px;
-        height: 30px;
-        margin: 0 28px;
-        text-align: center;
-      }
-    }
     .devKey{
       position: absolute;
       left: 8px;
@@ -922,5 +911,35 @@ onMounted(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.content{
+  top:40px;
+  display: inline-block;
+  position: absolute;
+  left: 5%;
+  div{
+    margin-top: 10px;
+    display: inline-block;
+    span{
+      text-align: center;
+    }
+    .left{
+      display: inline-block;
+      width: 25px;
+    }
+    .middle{
+      display: inline-block;
+      width: 120px;
+    }
+    .right{
+      display: inline-block;
+      width: 120px;
+    }
+  }
+}
+.tagInDialog{
+  position: absolute;
+  left: 30%;
+  top: 22px;
 }
 </style>

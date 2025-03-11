@@ -17,7 +17,7 @@ const props = defineProps({
   },
   width: {
     type: Number,
-    default: 60
+    default: 40
   }
 });
 
@@ -54,19 +54,22 @@ const echartsOption = reactive({
       label: {
         show: true, // 可以显示每个柱子的数值
         position: 'top' // 显示位置
-      }
+      },
+      barWidth: 25,
     }
   ]
 });
 
 // 根据值动态获取颜色
 const getColor = (value) => {
-  if (value < 60) {
-    return 'green'; // 低于60时为绿色
-  } else if (value < 90) {
-    return '#ffc402'; // 60到90之间为黄色
+  if (value < 0.25) {
+    return 'rgb(255, 110, 118)'; // 低于60时为绿色
+  } else if (value < 0.50) {
+    return 'rgb(253, 221, 96)'; // 60到90之间为黄色
+  } else if(value < 0.75) {
+    return 'rgb(88, 217, 249)'; // 高于90时为红色
   } else {
-    return '#fa3333'; // 高于90时为红色
+    return "rgb(124, 255, 178)"
   }
 };
 

@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.framework.common.pojo;
 
 import cn.iocoder.yudao.framework.common.exception.ErrorCode;
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -85,18 +85,18 @@ public class CommonResult<T> implements Serializable {
     // ========= 和 Exception 异常体系集成 =========
 
     /**
-     * 判断是否有异常。如果有，则抛出 {@link ServiceException} 异常
+     * 判断是否有异常。如果有，则抛出 {@link BusinessException} 异常
      */
-    public void checkError() throws ServiceException {
+    public void checkError() throws BusinessException {
         if (isSuccess()) {
             return;
         }
         // 业务异常
-        throw new ServiceException(code, msg);
+        throw new BusinessException(code, msg);
     }
 
     /**
-     * 判断是否有异常。如果有，则抛出 {@link ServiceException} 异常
+     * 判断是否有异常。如果有，则抛出 {@link BusinessException} 异常
      * 如果没有，则返回 {@link #data} 数据
      */
     @JsonIgnore // 避免 jackson 序列化
@@ -105,8 +105,8 @@ public class CommonResult<T> implements Serializable {
         return data;
     }
 
-    public static <T> CommonResult<T> error(ServiceException serviceException) {
-        return error(serviceException.getCode(), serviceException.getMessage());
+    public static <T> CommonResult<T> error(BusinessException businessException) {
+        return error(businessException.getCode(), businessException.getMessage());
     }
 
 }

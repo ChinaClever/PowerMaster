@@ -45,6 +45,14 @@
         label-width="68px"                          
       >
         <el-form-item >
+          <div class="statusColor" v-show="switchValue == 0 ">
+            <div style="background-color: rgb(255, 110, 118)">功率因数&lt;0.25</div> 
+            <div style="background-color: rgb(253, 221, 96)">0.25&#8804;功率因数&#8804;0.50</div>
+            <div style="background-color: rgb(88, 217, 249)">0.50&#8804;功率因数&#8804;0.75</div> 
+            <div style="background-color: rgb(124, 255, 178)">0.75&#8804;功率因数</div>
+          </div>
+        </el-form-item>
+        <el-form-item style="position: relative;">
           <el-checkbox-group  v-model="queryParams.status">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
@@ -88,7 +96,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" >
+      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :header-cell-style="headerCellStyle" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -136,7 +144,6 @@
           </template>
         </el-table-column>
       </el-table>    
-
       <div v-show="switchValue == 0  && valueMode == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -149,8 +156,8 @@
               <div  v-if="item.pfA != null">A路:{{item.pfA}}</div>
               <div  v-if="item.pfB != null">B路:{{item.pfB}}</div>
             </div>           -->
-            <div v-if=" item.pfTotal != null">
-              <Bar :width="130" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
+            <div class="zu" v-if=" item.pfTotal != null">
+              <Bar :width="80" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -175,7 +182,7 @@
       </template>
 
       <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
-        <el-row>
+        <el-row style="position: absolute;top: 20px; left: 20%;">
           <el-tag>机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</el-tag>
           <div >
             日期:
@@ -597,6 +604,12 @@ const getFullTimeByDate = (date) => {
       (second > 9 ? second : ("0" + second));
 }
 
+function headerCellStyle() {
+    return {
+      backgroundColor: '#eee', // 表头背景颜色
+    };
+  }
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
@@ -972,5 +985,20 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.zu{
+  position: absolute;
+  right: 30%;
+  bottom: 0;
+}
+.statusColor{
+  div{
+    display: inline-block;
+    font-size: small;
+    margin-right: 10px;
+    width: 130px;
+    text-align: center;
+    border-radius: 7px;
+  }
 }
 </style>

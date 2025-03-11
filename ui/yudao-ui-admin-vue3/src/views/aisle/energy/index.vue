@@ -157,7 +157,7 @@
         <Pagination
           :total="queryParams.pageTotal"
           v-model:page="queryParams.pageNo"
-          v-model:limit="queryParams.pageSize"
+          :page-size-arr="pageSizeArr"
           @pagination="getTableData(false)"
         />
         <template v-if="tableData.length == 0 && switchValue == 0">
@@ -179,6 +179,7 @@ const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const  pageSizeArr=ref([15,30,50,100]);
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
@@ -245,11 +246,6 @@ const getTableData = async(reset = false) => {
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
   switchValue.value = value
-  if (value == 0) { // 阵列
-    queryParams.pageSize = 24
-  } else {
-    queryParams.pageSize = 10
-  }
   getTableData(true)
 }
 
@@ -303,7 +299,7 @@ function resetSearch(){
 //表头样式
 function headerCellStyle() {
     return {
-      backgroundColor: '#ecf7f7', // 表头背景颜色
+      backgroundColor: '#eee', // 表头背景颜色
     };
   }
 </script>
