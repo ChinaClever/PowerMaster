@@ -1,5 +1,5 @@
 <template>
-<div style="height:calc(100vh - 120px);">
+<!-- <div style="height:calc(100vh - 120px);"> -->
   <el-card shadow="never">
     <div class="toolbar">
       <div style="display: flex;align-items:center">
@@ -29,106 +29,106 @@
       </div>
     </div>
   </el-card>
-  <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="`cursor: ${dragCursor};height:calc(100vh - 200px);`">
-    <el-card shadow="never" style="100%">
-    <div class="dragContainer" 
-      ref="tableContainer"
-      v-loading="loading" 
-      style="overflow-x:auto;"
-      @click.right="handleRightClick"
-      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px;` : 'height:calc(100vh - 230px);'">
-      <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
-      <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
-        <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
-        <template v-for="(formItem, index) in formParam" :key="index">
-          <el-table-column :label="formItem" min-width="60" align="center" :resizable="false">
-            <template #default="scope">
-              <draggable
-                :id="`${scope.$index}-${index}`"
-                class="dragTd"
-                :list="scope.row[formItem]"
-                :itemKey="item => item.id"
-                tag="div"
-                :group="scope.row[formItem].length > 0 ? groupMachineFill : groupMachineBlank"
-                animation="100"
-                @start="onStart"
-                @end.prevent="onEnd"
-              >
-                <template #item="{ element }">
-                  <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)" >
-                    <template v-if="element.name">
-                      <el-tooltip effect="light">
-                        <template #content>
-                          名称：{{element.cabinetName}} <br/>
-                          负载率：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                          昨日用能：{{element.yesterdayEq || 0}}kW·h<br/>
-                          总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                          总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                          总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                          总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
-                          A路供电占比：{{element.outletA}} <br/>
-                          B路供电占比：{{element.outletB}} <br/>
-                          最高温度：{{element.tem}}°C<br/>
-                          已用空间：{{element.usedSpace}}U<br/>
-                          未用空间：{{element.freeSpace}}U<br/>
-                        </template>
-                        <div v-if="chosenBtn == 0">{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%</div>
-                        <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW</div>
-                        <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.000'}}</div>
-                        <div v-if="chosenBtn == 3">{{element.tem}}°C</div>
-                        <div v-if="chosenBtn == 4">{{element.cabinetHeight}}U</div>
-                      </el-tooltip>
-                    </template>
-                  </div>
-                  <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
-                    <template v-if="element.cabinetList.length > 0">
-                      <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: statusInfo[item.runStatus].color}" v-for="(item, i) in element.cabinetList" :key="i">
-                        <template v-if="item.id > 0">
+  <el-card shadow="never">
+    <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="`cursor: ${dragCursor};`">
+        <div class="dragContainer" 
+          ref="tableContainer"
+          v-loading="loading" 
+          style="overflow-x:auto;"
+          @click.right="handleRightClick"
+          :style="isFromHome ? `transform-origin: 0 0;height: 50vh;` : 'height:calc(100vh - 230px);'">
+          <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
+          <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
+            <el-table-column fixed type="index" width="60" align="center" :resizable="false" />
+            <template v-for="(formItem, index) in formParam" :key="index">
+              <el-table-column :label="formItem" min-width="60" align="center" :resizable="false">
+                <template #default="scope">
+                  <draggable
+                    :id="`${scope.$index}-${index}`"
+                    class="dragTd"
+                    :list="scope.row[formItem]"
+                    :itemKey="item => item.id"
+                    tag="div"
+                    :group="scope.row[formItem].length > 0 ? groupMachineFill : groupMachineBlank"
+                    animation="100"
+                    @start="onStart"
+                    @end.prevent="onEnd"
+                  >
+                    <template #item="{ element }">
+                      <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)" >
+                        <template v-if="element.name">
                           <el-tooltip effect="light">
                             <template #content>
-                              名称：{{item.cabinetName}} <br/>
-                              负载率：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                              昨日用能：{{item.yesterdayEq || 0}}kW·h<br/>
-                              总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                              总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                              总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                              总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
-                              A路供电占比：{{item.outletA}} <br/>
-                              B路供电占比：{{item.outletB}} <br/>
-                              最高温度：{{item.tem}}°C<br/>
-                              已用空间：{{item.usedSpace}}U<br/>
-                              未用空间：{{item.freeSpace}}U<br/>
+                              名称：{{element.cabinetName}} <br/>
+                              负载率：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                              昨日用能：{{element.yesterdayEq || 0}}kW·h<br/>
+                              总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                              总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                              总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                              总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                              A路供电占比：{{element.outletA}} <br/>
+                              B路供电占比：{{element.outletB}} <br/>
+                              最高温度：{{element.tem}}°C<br/>
+                              已用空间：{{element.usedSpace}}U<br/>
+                              未用空间：{{element.freeSpace}}U<br/>
                             </template>
-                            <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%</div>
-                            <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
-                            <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.000'}}</div>
-                            <div v-if="chosenBtn == 3">{{item.tem}}°C</div>
-                            <div v-if="chosenBtn == 4">{{item.cabinetHeight}}U</div>
+                            <div v-if="chosenBtn == 0">{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%</div>
+                            <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW</div>
+                            <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.000'}}</div>
+                            <div v-if="chosenBtn == 3">{{element.tem}}°C</div>
+                            <div v-if="chosenBtn == 4">{{element.cabinetHeight}}U</div>
                           </el-tooltip>
                         </template>
                       </div>
+                      <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
+                        <template v-if="element.cabinetList.length > 0">
+                          <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: statusInfo[item.runStatus].color}" v-for="(item, i) in element.cabinetList" :key="i">
+                            <template v-if="item.id > 0">
+                              <el-tooltip effect="light">
+                                <template #content>
+                                  名称：{{item.cabinetName}} <br/>
+                                  负载率：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                  昨日用能：{{item.yesterdayEq || 0}}kW·h<br/>
+                                  总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                  总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                  总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                  总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                  A路供电占比：{{item.outletA}} <br/>
+                                  B路供电占比：{{item.outletB}} <br/>
+                                  最高温度：{{item.tem}}°C<br/>
+                                  已用空间：{{item.usedSpace}}U<br/>
+                                  未用空间：{{item.freeSpace}}U<br/>
+                                </template>
+                                <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%</div>
+                                <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
+                                <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.000'}}</div>
+                                <div v-if="chosenBtn == 3">{{item.tem}}°C</div>
+                                <div v-if="chosenBtn == 4">{{item.cabinetHeight}}U</div>
+                              </el-tooltip>
+                            </template>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div class="dragSon" v-for="item in element.amount" :key="item">{{item}}</div>
+                        </template>
+                      </div>
                     </template>
-                    <template v-else>
-                      <div class="dragSon" v-for="item in element.amount" :key="item">{{item}}</div>
-                    </template>
-                  </div>
+                  </draggable>
                 </template>
-              </draggable>
+              </el-table-column>
             </template>
-          </el-table-column>
-        </template>
-      </el-table>
-    <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
-      <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-        <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div>
-        <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addMachine">新增</div>
-        <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
-        <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
-        <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div>
-      </div>
+          </el-table>
+        <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
+          <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
+            <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div>
+            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addMachine">新增</div>
+            <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
+            <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
+            <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div>
+          </div>
+        </div>
     </div>
   </el-card>
-  </div>
   <layoutForm ref="machineForm" @success="handleChange" />
   <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
     <el-form>
@@ -215,7 +215,7 @@
       />
       <div style="height:30px"></div>
   </el-dialog>
-</div>
+<!-- </div> -->
 </template>
 
 <script lang="ts" setup>
@@ -640,7 +640,7 @@ const arraySpanMethod = ({
   columnIndex,
 }) => {
   if (columnIndex > 0) {
-    const num = isFromHome ? 0 : 1
+    const num = 1
     const td = row[getTableColCharCode(columnIndex - num)]
     const tdData = td[0]
     if (tdData && tdData.type && tdData.type == 1) { // 如果是柜列
@@ -793,7 +793,7 @@ const handleJump = (data) => {
     return
   }
   if (target.type == 1) {
-    push({path: '/aisle/topology', state: { id: target.id, roomId: roomId.value }})
+    push({path: '/aisle/columnHome', state: { id: target.id, roomId: roomId.value }})
   } else {
     push({path: '/cabinet/cab/detail', state: {id: target.id}})
   }
@@ -1005,6 +1005,13 @@ const formParam = computed(() => {
 })
 
 getRoomList()
+
+watch(() => containerInfo, (val) => {
+  if (val) {
+    roomId.value = containerInfo?.roomId
+  }
+},{immediate: true})
+
 onMounted(() => {
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement

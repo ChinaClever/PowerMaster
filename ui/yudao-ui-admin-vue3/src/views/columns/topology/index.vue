@@ -37,8 +37,8 @@
       </div>
     </div>
   </ContentWrap>
-  <ContentWrap :class="isFromHome? 'topologyMain' : ''">
-    <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;transform: scale(${scaleValue}, ${scaleValue});height: ${isFromHome ? (ContainerHeight * scaleValue + 'px') : 'auto'}`">
+  <ContentWrap>
+    <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;`">
       <div style="margin-top:-25px"></div>
       <div style="height:20px;"></div>
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
@@ -215,6 +215,10 @@
                       </template>
                     </template>
                     <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
+                  </div>
+                  <div style="width: 100%;display: flex;justify-content: center;">
+                    <div class="ti_xing">
+                    </div>
                   </div>
                   <div class="status">{{cabinet.cabinetName || ''}}</div>
                 </div>
@@ -2566,6 +2570,14 @@ onBeforeUnmount(() => {
         color: #000;
         text-align: center;
         margin-top: 10px;
+      }
+      .ti_xing {
+        width:60%;
+        border-bottom: 8px solid black;
+        box-sizing: border-box;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        height: 0;
       }
     }
   }

@@ -491,7 +491,6 @@ onMounted(() => {
   width: 100%;
   // height: calc(100vh - 120px);
   min-height: 550px;
-  height: calc(115vh - 120px);
   box-sizing: border-box;
   // background-color: #999;
   display: flex;

@@ -78,7 +78,7 @@
       </el-card>
     </div>
     <div class="center" id="center">
-      <!--<CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />-->
+      <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
       <ContentWrap class="CabEchart">
         <Echart :options="echartOptionsPower" height="30vh" width="100%" />
         <div class="btns">
@@ -164,7 +164,7 @@
 </template>
 
 <script lang="ts" setup>
-//import CabTopology from "../topology/index.vue"
+import CabTopology from "../topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
 
@@ -178,6 +178,7 @@ const roomId = ref<number>(0)
 const radioBtn = ref('pow')
 const containerInfo = reactive({
   width: 1000,
+  roomId: history?.state?.roomId
 }) // 机房拓扑容器信息
 const deviceInfo = reactive({}) // 设备信息
 const energyInfo = reactive({}) // 用能信息
@@ -566,14 +567,14 @@ onMounted(() => {
   width: 100%;
   // height: calc(100vh - 120px);
   min-height: 550px;
-  max-height: calc(100vh - 120px);
+  // max-height: calc(100vh - 120px);
   box-sizing: border-box;
   // background-color: #999;
   display: flex;
   .center {
     flex: 1;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: auto;
     margin: 0 15px;
     padding-bottom: 15px;
     position: relative;
