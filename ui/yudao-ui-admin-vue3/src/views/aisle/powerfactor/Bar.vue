@@ -55,7 +55,7 @@ const echartsOption = reactive({
         show: true, // 可以显示每个柱子的数值
         position: 'top' // 显示位置
       },
-      barWidth: 25,
+      barWidth: 20,
     }
   ]
 });

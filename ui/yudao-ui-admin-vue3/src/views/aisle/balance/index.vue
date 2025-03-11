@@ -97,7 +97,11 @@
           </div>
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;" :data="tableData" >
-          <el-table-column type="index" width="60" label="序号" align="center" />
+          <el-table-column width="75" label="序号" align="center">
+            <template #default="scope">
+              {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
+            </template>  
+          </el-table-column>
           <el-table-column label="名称" min-width="90" align="center" prop="location" />
           <el-table-column label="总共" align="center">
             <el-table-column label="视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
@@ -230,11 +234,19 @@
             </div>
           </div>
         </el-dialog>
-        <Pagination
+        <!-- <Pagination
           :total="queryParams.pageTotal"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
+        /> -->
+        <Pagination
+          :total="queryParams.pageTotal"
+          :page-size="queryParams.pageSize"
+          :page-sizes="[15, 30, 50, 100]"
+          :current-page="queryParams.pageNo"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
         />
         <template v-if="tableData.length == 0 && switchValue == 0">
           <el-empty description="暂无数据" :image-size="300" />
@@ -385,7 +397,7 @@ const BLineOption = ref<EChartsOption>({
 const queryParams = reactive({
   name: undefined,
   pageNo: 1,
-  pageSize: 24,
+  pageSize: 15,
   pageTotal: 0,
 }) as any
 const balanceObj = reactive({
@@ -479,11 +491,6 @@ const toDetail = async (item) => {
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
   switchValue.value = value
-  if (value == 0) { // 阵列
-    queryParams.pageSize = 24
-  } else {
-    queryParams.pageSize = 10
-  }
   getTableData(true)
 }
 
@@ -540,6 +547,15 @@ onBeforeMount( () => {
   getNavList()
   getTableData()
 })
+
+function handleSizeChange(val) {
+  queryParams.pageSize = val
+  getTableData(true)
+}
+function handleCurrentChange(val) {
+  queryParams.pageNo = val
+  getTableData(false)
+}
 </script>
 
 <style lang="scss" scoped>

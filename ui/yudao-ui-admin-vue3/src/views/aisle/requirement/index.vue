@@ -109,7 +109,7 @@
         <div style="float:right">
           <!-- <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button> -->
           <!-- <el-button @click="visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button> -->
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
@@ -165,8 +165,12 @@
         </el-table-column>
       </el-table> -->
 
-      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :header-cell-style="headerCellStyle">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :header-cell-style="headerCellStyle" :border="true">
+        <el-table-column width="100" label="序号" align="center">
+            <template #default="scope">
+              {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
+            </template>  
+          </el-table-column>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="总共最大功率" align="center" prop="maxPowTotal" width="100px" >
           <template #default="scope" >
@@ -255,13 +259,21 @@
         </div>
       </div> -->
 
-      <Pagination
+      <!-- <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
-      />
+      /> -->
+      <Pagination
+          :total="total"
+          :page-size="queryParams.pageSize"
+          :page-sizes="[15, 30, 50, 100]"
+          :current-page="queryParams.pageNo"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
 
       <template v-if="list.length == 0 && switchValue != 2">
         <el-empty description="暂无数据" :image-size="300" />
@@ -466,7 +478,7 @@ const list = ref([
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
-  pageSize: 24,
+  pageSize: 15,
   devKey: undefined,
   createTime: [],
   cascadeNum: undefined,
@@ -595,6 +607,15 @@ onMounted(() => {
 
 })
 
+function handleSizeChange(val) {
+  queryParams.pageSize = val
+  queryParams.pageNo = 1
+  getList()
+}
+function handleCurrentChange(val) {
+  queryParams.pageNo = val
+  getList()
+}
 
 </script>
 

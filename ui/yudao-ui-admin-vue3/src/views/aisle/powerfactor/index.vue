@@ -90,31 +90,35 @@
         </el-form-item>
         <div style="float:right">
 
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];if(switchValue==3){queryParams.pageSize=15;queryParams.pageNo=1;switchValue = 0;getList();}" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];if(switchValue==0){queryParams.pageSize=15;queryParams.pageNo=1;switchValue = 3;getList();}" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :header-cell-style="headerCellStyle" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :header-cell-style="headerCellStyle" :border="true">
+        <el-table-column width="100" label="序号" align="center">
+            <template #default="scope">
+              {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
+            </template>  
+          </el-table-column>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="总功率因素" align="center" prop="pfTotal" width="130px" >
+        <el-table-column label="总功率因素" align="center" prop="pfTotal" width="160px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.apfA != null">
               {{ scope.row.apfA }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="A路功率因素" align="center" prop="pfA" width="130px" >
+        <el-table-column label="A路功率因素" align="center" prop="pfA" width="160px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bpfA != null">
               {{ scope.row.bpfA }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="B路功率因素" align="center" prop="pfB" width="130px" >
+        <el-table-column label="B路功率因素" align="center" prop="pfB" width="160px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cpfA != null">
               {{ scope.row.cpfA }}
@@ -123,7 +127,7 @@
         </el-table-column>
         
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="150">
           <template #default="scope">
             <el-button
               link
@@ -150,14 +154,14 @@
           <div class="content">
             <div class="icon" v-if=" item.pfTotal != null ">
               <div>{{item.pfTotal}}</div>
-              总功率因素                
+              总功率因素           
             </div>
             <!-- <div class="info" >                  
               <div  v-if="item.pfA != null">A路:{{item.pfA}}</div>
               <div  v-if="item.pfB != null">B路:{{item.pfB}}</div>
             </div>           -->
             <div class="zu" v-if=" item.pfTotal != null">
-              <Bar :width="80" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
+              <Bar :width="70" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -170,21 +174,30 @@
         </div>
       </div>
 
-      <Pagination
+      <!-- <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
-      />
+      /> -->
+      <Pagination
+          :total="total"
+          :page-size="queryParams.pageSize"
+          :page-sizes="[15, 30, 50, 100]"
+          :current-page="queryParams.pageNo"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+
       <template v-if="list.length == 0 && switchValue != 3">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
       <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
         <el-row style="position: absolute;top: 20px; left: 20%;">
-          <el-tag>机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</el-tag>
-          <div >
+          <el-tag style="vertical-align:middle;">机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</el-tag>
+          <div style="vertical-align:middle;">
             日期:
             <el-date-picker
               v-model="detailQueryParams.oldTime"
@@ -409,7 +422,7 @@ const list = ref([
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
-  pageSize: 24,
+  pageSize: 15,
   devKey: undefined,
   createTime: [],
   cascadeNum: undefined,
@@ -640,6 +653,16 @@ onActivated(() => {
     flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
+
+function handleSizeChange(val) {
+  queryParams.pageSize = val
+  queryParams.pageNo = 1
+  getList()
+}
+function handleCurrentChange(val) {
+  queryParams.pageNo = val
+  getList()
+}
 </script>
 
 <style scoped lang="scss">
@@ -989,7 +1012,7 @@ onActivated(() => {
 .zu{
   position: absolute;
   right: 30%;
-  bottom: 0;
+  bottom: -5px;
 }
 .statusColor{
   div{
