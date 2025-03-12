@@ -739,6 +739,7 @@ public class CabinetServiceImpl implements CabinetService {
             indexDTOPage.getRecords().forEach(dto -> {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("id", dto.getId());
+                jsonObject.put("roomname", dto.getRoomName());
                 jsonObject.put("name", dto.getName());
                 jsonObject.put("pduBox", dto.getPduBox());
                 jsonObject.put("runStatus", dto.getRunStatus());
