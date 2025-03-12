@@ -258,14 +258,20 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
     @Override
     public List<RoomPduMenuDTO> roomPduMenuList() {
-
         try {
+            List<CabinetPduResVO> cabinetIndexList = cabinetIndexMapper.selectListAndPdu();
+            List<Integer> roomIds = cabinetIndexList.stream().map(CabinetPduResVO::getRoomId).distinct().collect(Collectors.toList());
+
+            List<Integer> aisleIds = cabinetIndexList.stream().map(CabinetPduResVO::getAisleId).collect(Collectors.toList());
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
-                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .in(AisleIndex::getId, aisleIds));
 
             List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
-                    .eq(RoomIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+                    .eq(RoomIndex::getIsDelete,DelEnums.NO_DEL.getStatus()).in(RoomIndex::getId,roomIds));
+
+
 
             List<RoomPduMenuDTO> menuDTOS = new ArrayList<>();
 
@@ -301,7 +307,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                 });
 
             }
-            List<CabinetPduResVO> cabinetIndexList = cabinetIndexMapper.selectListAndPdu();
+
 
             if (!CollectionUtils.isEmpty(cabinetIndexList)) {
 
