@@ -118,7 +118,11 @@
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true" :stripe="true" :header-cell-style="headerCellStyle">
-          <el-table-column type="index" width="100" label="序号" align="center" />
+          <el-table-column width="75" label="序号" align="center">
+            <template #default="scope">
+              {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
+            </template>  
+          </el-table-column>
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
           <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
             <template #default="scope" >
@@ -141,7 +145,7 @@
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="详情" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="详情" width="120" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-button
                 link
@@ -156,9 +160,11 @@
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
-          v-model:page="queryParams.pageNo"
-          :page-size-arr="pageSizeArr"
-          @pagination="getTableData(false)"
+          :page-size="queryParams.pageSize"
+          :page-sizes="[15, 30, 50, 100]"
+          :current-page="queryParams.pageNo"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
         />
         <template v-if="tableData.length == 0 && switchValue == 0">
           <el-empty description="暂无数据" :image-size="300" />
@@ -179,11 +185,10 @@ const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-const  pageSizeArr=ref([15,30,50,100]);
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
-  pageSize: 24,
+  pageSize: 15,
   pageTotal: 0,
   timeGranularity:null,
   cabinetIds: []
@@ -245,6 +250,9 @@ const getTableData = async(reset = false) => {
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
+  queryParams.pageNo = 1
+  queryParams.pageSize = 15
+  queryParams.timeGranularity=null;
   switchValue.value = value
   getTableData(true)
 }
@@ -302,6 +310,14 @@ function headerCellStyle() {
       backgroundColor: '#eee', // 表头背景颜色
     };
   }
+function handleSizeChange(val) {
+  queryParams.pageSize = val
+  getTableData(true)
+}
+function handleCurrentChange(val) {
+  queryParams.pageNo = val
+  getTableData(false)
+}
 </script>
 
 <style lang="scss" scoped>
