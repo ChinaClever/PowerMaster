@@ -172,7 +172,7 @@
    <el-table v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
          <el-table-column label="位置" min-width="110" align="center">
             <template #default="scope">
-               <div>{{scope.row.name}}</div>
+               <div>{{scope.row.roomname}} - {{scope.row.name}}</div>
             </template>
         </el-table-column>
         <el-table-column label="状态" min-width="110" align="center">
@@ -600,6 +600,10 @@ const toMachineDetail = (key) => {
   const type = 'hour';
   const location = key.roomName;
   const cabinetName = key.cabinetName;
+  if(key.status == 0){
+     message.error('未绑定设备无法查看详情!')
+     return;
+  }
   push({path: '/cabinet/cab/detail', state: {location , cabinetName ,id ,roomId , type}})
 }
 
