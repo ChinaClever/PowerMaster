@@ -1178,6 +1178,13 @@ const toggleAllStatus = () => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
+
+    if (queryParams.devKey != null){
+        butColor.value = 0;
+        onclickColor.value = -1;
+        queryParams.color = [0,1,2,3,4];
+    }
+
   queryParams.pageNo = 1
   getList();
   getNavAList();

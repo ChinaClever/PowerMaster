@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.pdu.service.pdudevice;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
@@ -22,6 +23,7 @@ import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.string.StrUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.BarSeries;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetChartResBase;
@@ -77,12 +79,12 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.NOT_PDU;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 
@@ -549,7 +551,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public Map getPduHdaLineHisdataKey(String devKey, String type) {
-        HashMap result = new HashMap<>();
+        Map result = new HashMap<>();
+        String key = StrUtils.redisKeyByLoginId(null, "/pdu/PDU-device/pduHdaLineHisdata", devKey+SPLIT_KEY+type);
+        Object obj = redisTemplate.opsForValue().get(key);
+        if (ObjectUtil.isNotEmpty(obj)) {
+            JSONObject jsonObject = JSONObject.parseObject(obj.toString());
+            result = JSON.toJavaObject(jsonObject, Map.class);
+            return result;
+        }
+
         PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
         if (pduIndex != null) {
             Integer id = pduIndex.getId();
@@ -650,6 +660,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
 
+            redisTemplate.opsForValue().set(key, JSONObject.toJSONString(result), 5, TimeUnit.MINUTES);
             return result;
         } else {
             return result;
@@ -2162,7 +2173,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     }
                 }
             }
-            pduIndex.setLocation(localtion);
+            if (StringUtils.isEmpty(localtion)){
+                pduIndex.setLocation(pduIndex.getDevKey());
+            }else {
+                pduIndex.setLocation(localtion);
+            }
         });
     }
 

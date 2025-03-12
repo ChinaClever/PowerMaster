@@ -675,13 +675,27 @@ const toggleAllStatus = () => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
+
+    if (queryDeletedPageParams.devKey != null){
+    butColor.value = 0;
+    onclickColor.value = -1;
+    queryParams.status = [];
+    }
+
+    if (queryParams.devKey != null){
+    butColor.value = 0;
+    onclickColor.value = -1;
+    queryParams.status = [];
+    }
+    
+
   queryParams.pageNo = 1;
   queryDeletedPageParams.pageNo = 1;
    if(switchValue.value ==2){
       getDeletedList();
     }else{
       getList();
-      getListAll();
+      // getListAll();
     }
 }
 
@@ -752,12 +766,12 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList();
   getNavList();
-  getListAll();
-  // flashListTimer.value = setInterval(() => {
-  //        setTimeout(() => {
-  //         getList()
-  //      }, 0);
-  // }, 10000);
+  // getListAll();
+  flashListTimer.value = setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
   // flashListTimer.value = setInterval((getList), 10000);
 })
 

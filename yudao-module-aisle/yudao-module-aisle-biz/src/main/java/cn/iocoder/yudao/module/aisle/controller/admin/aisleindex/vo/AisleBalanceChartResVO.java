@@ -37,4 +37,7 @@ public class AisleBalanceChartResVO extends AisleIndexRespVO {
     @Schema(description = "b电流比例")
     private Double curUnbalanceb;
 
+
+    private List<AisleBalanceChartVolCurVO> list;
+
 }
