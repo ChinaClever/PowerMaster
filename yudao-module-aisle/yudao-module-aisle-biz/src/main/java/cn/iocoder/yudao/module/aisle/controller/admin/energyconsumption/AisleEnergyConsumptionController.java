@@ -54,9 +54,9 @@ public class AisleEnergyConsumptionController {
 
 
 
-    @GetMapping("/bill-page")
+    @PostMapping("/bill-page")
     @Operation(summary = "获得柜列电费数据分页")
-    public CommonResult<PageResult<Object>> getBillDataPage(AisleEnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public CommonResult<PageResult<Object>> getBillDataPage(@RequestBody AisleEnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = aisleEnergyConsumptionService.getBillDataPage(pageReqVO);
         return success(pageResult);
     }
