@@ -1410,20 +1410,17 @@ public CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int
         vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
         vo.setPowerFactorB(bpath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
         vo.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentB(), vo.getPowApparentTotal()), 100));
-
-        Map map = getCabinetDistributionFactor(id, roomId, type);
-        vo.setDay((List<String>) map.get("day"));
-        vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
-        if (Objects.nonNull(map.get("load_rate"))) {
-            vo.setLoadFactorBig(BigDemicalUtil.setScale(new BigDecimal(String.valueOf(map.get("load_rate"))), 2));
-            vo.setLoadFactorTime((String) map.get("create_time"));
-        }
+    }
+    Map map = getCabinetDistributionFactor(id, roomId, type);
+    vo.setDay((List<String>) map.get("day"));
+    vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
+    if (Objects.nonNull(map.get("load_rate"))) {
+        vo.setLoadFactorBig(BigDemicalUtil.setScale(new BigDecimal(String.valueOf(map.get("load_rate"))), 2));
+        vo.setLoadFactorTime((String) map.get("create_time"));
+    }
 //            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
 //            vo.setFactorA((List<BigDecimal>) map.get("factorA"));
 //            vo.setFactorB((List<BigDecimal>) map.get("factorB"));
-        }
-
-
         return vo;
     }
 

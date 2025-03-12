@@ -47,9 +47,9 @@ const chartOptions = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.curA[0], name: 'Ia', itemStyle: { color: '#E5B849' } },
-        { value: props.loadFactor.curA[1], name: 'Ib', itemStyle: { color: '#C8603A' } },
-        { value: props.loadFactor.curA[2], name: 'Ic', itemStyle: { color: '#AD3762' } },
+        { value: props.loadFactor.curA == null ? -1 : props.loadFactor.curA[0], name: 'Ia', itemStyle: { color: '#E5B849' } },
+        { value: props.loadFactor.curA == null ? -1 : props.loadFactor.curA[1], name: 'Ib', itemStyle: { color: '#C8603A' } },
+        { value: props.loadFactor.curA == null ? -1 : props.loadFactor.curA[2], name: 'Ic', itemStyle: { color: '#AD3762' } },
       ]
     }
   ]
