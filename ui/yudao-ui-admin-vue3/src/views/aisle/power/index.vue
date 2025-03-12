@@ -81,9 +81,9 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />统计</el-button>            
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />A路</el-button>            
-          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />B路</el-button>                             
+          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
+          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
+          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />功率</el-button>                             
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
@@ -255,38 +255,63 @@
         </el-table-column>
       </el-table> 
 
-      <div v-show="switchValue == 0 && valueMode == 0 && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0 && list.length > 0"  class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.eleActiveTotal != null" >
-                统计
-              </div>    
+            <div class="info" >
+              <div>
+                <el-text>
+                  总视在功率：{{item.powApparentTotal ? item.powApparentTotal : Number(0).toFixed(3)}}kVA
+                </el-text>
+              </div>
+              <div>
+                <el-text >
+                  总有功功率：{{item.powActiveTotal ? item.powActiveTotal : Number(0).toFixed(3)}}kW
+                </el-text>
+              </div>
+              <div>
+                <el-text>
+                  总无功功率：{{item.powReactiveTotal ? item.powReactiveTotal : Number(0).toFixed(3)}}kVar
+                </el-text>
+              </div>
             </div>
-            <div class="info" >                  
-              <div  v-if="item.eleActiveTotal != null">
-                <el-text v-if="item.eleActiveTotal != null" >
-                  有功电能：{{item.eleActiveTotal}}kWh
-                </el-text>
-              </div>
-              <div  v-if="item.powApparentTotal != null">
-                <el-text v-if="item.powApparentTotal != null" >
-                  视在功率：{{item.powApparentTotal}}kVA
-                </el-text>
-              </div>
-              <div  v-if="item.powActiveTotal != null">
-                <el-text v-if="item.powActiveTotal != null" >
-                  有功功率：{{item.powActiveTotal}}kW
-                </el-text>
-              </div>
-              <div  v-if="item.powReactiveTotal != null">
-                <el-text v-if="item.powReactiveTotal != null" >
-                  无功功率：{{item.powReactiveTotal}}kVar
-                </el-text>
-              </div>
+            <div style="display: flex;flex-direction: column;">
+              <div style="text-align: center;font-size: 24px;">{{item.powerFactor ? item.powerFactor : 0}}</div> <!-- TODO 换成总功率因数 -->
+              <div style="text-align: center;font-size: 10px;">总功率因数</div>
             </div>
           </div>
+          <div style="display:flex;justify-content: space-around;padding: 5px 0;">
+            <div>A路</div>
+            <div>B路</div>
+          </div>
+          <div style="display:flex;height:10vh;justify-content: center;align-item:center;margin-bottom: -3vh">
+            <Environment v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="{first: item.curAList ? item.curAList[2].toFixed(0) : 0,second: item.curAList ? item.curAList[1].toFixed(0) : 0,third: item.curAList ? item.curAList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电流 -->
+            <Environment v-else-if="valueMode == 1" class="chart" width="100%" height="100%" :load-factor="{first: item.volAList ? item.volAList[2].toFixed(0) : 0,second: item.volAList ? item.volAList[1].toFixed(0) : 0,third: item.volAList ? item.volAList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电压 -->
+            <Environment v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveA,second: item.powActiveA,third: item.powApparentA,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA']}" style="margin-right:-15px;"/>
+
+            <EnvironmentCopy v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="{first: item.curBList ? item.curBList[2].toFixed(0) : 0,second: item.curBList ? item.curBList[1].toFixed(0) : 0,third: item.curBList ? item.curBList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A']}"/> <!-- TODO 换成B路电流 -->
+            <EnvironmentCopy v-else-if="valueMode == 1" class="chart" width="100%" height="100%" :load-factor="{first: item.volBList ? item.volBList[2].toFixed(0) : 0,second: item.volBList ? item.volBList[1].toFixed(0) : 0,third: item.volBList ? item.volBList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V']}"/> <!-- TODO 换成B路电压 -->
+            <EnvironmentCopy v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveB,second: item.powActiveB,third: item.powApparentB,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA']}"/>
+          </div>
+          <div style="display:flex;justify-content: flex-end;height: 100%">
+            <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          </div>
+          <!-- <div v-if="item.eleActiveTotal != null" style="display: inline-block;
+            width: 50%;
+            height: 50%;
+            margin-right:-15px;"
+          >
+            <Environment v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="item"/>
+            <EnvironmentCopy v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="item"/>
+          </div>
+          <div v-if="item.eleActiveTotal != null" style="display: inline-block;
+              width: 50%;
+              height: 50%;">
+            <EnvironmentCopy v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="item"/>
+            <EnvironmentCopy v-else-if="valueMode == 1" class="chart" width="100%" height="100%" :load-factor="item"/>
+            <EnvironmentCopy v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="item"/>
+          </div> -->
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <!-- <div class="status" >
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
@@ -296,94 +321,6 @@
             <el-tag v-else-if="item.eleActiveTotal == null && item.status != 5" type="info">无数据</el-tag>
             <el-tag v-else type="info">离线</el-tag>            
           </div>
-          <!-- <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button> -->
-        </div>
-      </div>
-
-      <div v-show="switchValue == 0 && valueMode == 1 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
-            <div class="icon" >
-              <div v-if="item.eleActiveA != null" >
-                A路
-              </div>    
-            </div>
-            <div class="info" >                  
-              <div  v-if="item.eleActiveA != null">
-                <el-text v-if="item.eleActiveA != null" >
-                  有功电能：{{item.eleActiveA}}kWh
-                </el-text>
-              </div>
-              <div  v-if="item.powApparentA != null">
-                <el-text v-if="item.powApparentA != null" >
-                  视在功率：{{item.powApparentA}}kVA
-                </el-text>
-              </div>
-              <div  v-if="item.powActiveA != null">
-                <el-text v-if="item.powActiveA != null" >
-                  有功功率：{{item.powActiveA}}kW
-                </el-text>
-              </div>
-              <div  v-if="item.powReactiveA != null">
-                <el-text v-if="item.powReactiveA != null" >
-                  无功功率：{{item.powReactiveA}}kVar
-                </el-text>
-              </div>
-            </div>
-          </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <!-- <div class="status" >
-            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
-          </div> -->
-          <div class="status" >
-            <el-tag v-if="item.eleActiveA != null" >在线</el-tag>
-            <el-tag v-else-if="item.eleActiveA == null && item.status != 5" type="info">无数据</el-tag>
-            <el-tag v-else type="info">离线</el-tag>            
-          </div>
-          <button class="detail" @click="toDeatilA(item)" v-if="item.devKeyA != null && item.eleActiveA != null" >详情</button>
-        </div>
-      </div>
-
-      <div v-show="switchValue == 0 && valueMode == 2 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
-            <div class="icon" >
-              <div v-if="item.eleActiveB != null" >
-                B路
-              </div>    
-            </div>
-            <div class="info" >                  
-              <div  v-if="item.eleActiveB != null">
-                <el-text v-if="item.eleActiveB != null" >
-                  有功电能：{{item.eleActiveB}}kWh
-                </el-text>
-              </div>
-              <div  v-if="item.powApparentB != null">
-                <el-text v-if="item.powApparentB != null" >
-                  视在功率：{{item.powApparentB}}kVA
-                </el-text>
-              </div>
-              <div  v-if="item.powActiveB != null">
-                <el-text v-if="item.powActiveB != null" >
-                  有功功率：{{item.powActiveB}}kW
-                </el-text>
-              </div>
-              <div  v-if="item.powReactiveB != null">
-                <el-text v-if="item.powReactiveB != null" >
-                  无功功率：{{item.powReactiveB}}kVar
-                </el-text>
-              </div>
-            </div>
-          </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status" >
-            <el-tag v-if="item.eleActiveB != null" >在线</el-tag>
-            <el-tag v-else-if="item.eleActiveB == null && item.status != 5" type="info">无数据</el-tag>
-            <el-tag v-else type="info">离线</el-tag>            
-          </div>
-          <button class="detail" @click="toDeatilB(item)" v-if="item.devKeyB != null && item.eleActiveB != null " >详情</button>
         </div>
       </div>
 
@@ -412,6 +349,8 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import { IndexApi as BusIndexApi } from '@/api/bus/busindex'
+import Environment from './component/Environment.vue'
+import EnvironmentCopy from './component/EnvironmentCopy.vue'
 
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
@@ -544,14 +483,14 @@ const getList = async () => {
       obj.powReactiveTotal = obj.powReactiveTotal?.toFixed(3);
       
       obj.eleActiveA = obj.eleActiveA?.toFixed(1);
-      obj.powApparentA = obj.powApparentA?.toFixed(3);
-      obj.powActiveA = obj.powActiveA?.toFixed(3);
-      obj.powReactiveA = obj.powReactiveA?.toFixed(3);
+      obj.powApparentA = obj.powApparentA?.toFixed(0);
+      obj.powActiveA = obj.powActiveA?.toFixed(0);
+      obj.powReactiveA = obj.powReactiveA?.toFixed(0);
 
       obj.eleActiveB = obj.eleActiveB?.toFixed(1);
-      obj.powApparentB = obj.powApparentB?.toFixed(3);
-      obj.powActiveB = obj.powActiveB?.toFixed(3);
-      obj.powReactiveB = obj.powReactiveB?.toFixed(3);
+      obj.powApparentB = obj.powApparentB?.toFixed(0);
+      obj.powActiveB = obj.powActiveB?.toFixed(0);
+      obj.powReactiveB = obj.powReactiveB?.toFixed(0);
     });
 
     total.value = data.total
@@ -575,14 +514,14 @@ const getListNoLoading = async () => {
       obj.powReactiveTotal = obj.powReactiveTotal?.toFixed(3);
       
       obj.eleActiveA = obj.eleActiveA?.toFixed(1);
-      obj.powApparentA = obj.powApparentA?.toFixed(3);
-      obj.powActiveA = obj.powActiveA?.toFixed(3);
-      obj.powReactiveA = obj.powReactiveA?.toFixed(3);
+      obj.powApparentA = obj.powApparentA?.toFixed(0);
+      obj.powActiveA = obj.powActiveA?.toFixed(0);
+      obj.powReactiveA = obj.powReactiveA?.toFixed(0);
 
       obj.eleActiveB = obj.eleActiveB?.toFixed(1);
-      obj.powApparentB = obj.powApparentB?.toFixed(3);
-      obj.powActiveB = obj.powActiveB?.toFixed(3);
-      obj.powReactiveB = obj.powReactiveB?.toFixed(3);
+      obj.powApparentB = obj.powApparentB?.toFixed(0);
+      obj.powActiveB = obj.powActiveB?.toFixed(0);
+      obj.powReactiveB = obj.powReactiveB?.toFixed(0);
     });
 
     total.value = data.total
@@ -605,6 +544,10 @@ const getNavList = async() => {
       }
     })
   }
+}
+
+const toDeatil = async(item) =>{
+  push({path: '/aisle/columnHome', state: { id: item.id, roomId: item.roomId }})
 }
 
 const toDeatilA = async(row) =>{
@@ -978,7 +921,6 @@ onActivated(() => {
   flex-wrap: wrap;
   .arrayItem {
     width: 25%;
-    height: 140px;
     font-size: 13px;
     box-sizing: border-box;
     background-color: #eef4fc;
@@ -987,11 +929,11 @@ onActivated(() => {
     position: relative;
     .content {
       display: flex;
+      justify-content: space-around;
       align-items: center;
       .icon {
         width: 74px;
         height: 30px;
-        margin: 0 28px;
         font-size: large;
         text-align: center;
       }
@@ -1028,10 +970,10 @@ onActivated(() => {
       align-items: center;
       justify-content: center;
       background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
+      margin-right: 8px;
+      margin-bottom: 8px;
       cursor: pointer;
+      z-index: 10
     }
   }
 }

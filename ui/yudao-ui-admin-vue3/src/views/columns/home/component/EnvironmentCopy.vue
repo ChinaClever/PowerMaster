@@ -29,28 +29,47 @@ const echartsOption = computed(() => ({
       type: 'shadow'
     },
     formatter: function (params) {
-      if(params[0].name === '视在功率'){
-        return `${params[0].name}: ${Math.abs(params[0].value)}KVAR`
-      }else if(params[0].name === '有功功率'){
-        return `${params[0].name}: ${Math.abs(params[0].value)}KW`
+      if(params[0].name === props.loadFactor.label[0]){
+        return `${params[0].name}: ${Math.abs(params[0].value)}${props.loadFactor.unit[0]}`
+      }else if(params[0].name === props.loadFactor.label[1]){
+        return `${params[0].name}: ${Math.abs(params[0].value)}${props.loadFactor.unit[1]}`
       }else{  
-        return `${params[0].name}: ${Math.abs(params[0].value)}KVA`
+        return `${params[0].name}: ${Math.abs(params[0].value)}${props.loadFactor.unit[2]}`
       }
     }
   },
   grid: {
     left: '1%',
-    right:'1%',
-    bottom: '-7%',
+    bottom: '90%',
     containLabel: true
   },
   xAxis: {
     type: 'value',
-    boundaryGap: [0, 0.01]
+    boundaryGap: [0, 0.01],
+    axisLabel: {
+        show: false // 隐藏 ECharts 自带的标签
+    },
+    axisTick: {
+        show: false // 隐藏 Y 轴的刻度线
+    },
+    axisLine: {
+        show: false // 隐藏 Y 轴的轴线
+    }
   },
   yAxis: {
     type: 'category',
-    data: ['无功功率', '有功功率', '视在功率']
+    data: props.loadFactor.label,
+    axisLabel: {
+        padding: [0, 0, 0, 0],
+        fontSize: 12, // 统一字体大小
+        fontFamily: 'Arial' // 统一字体家族
+    },
+    axisTick: {
+        show: false // 隐藏 Y 轴的刻度线
+    },
+    axisLine: {
+        show: false // 隐藏 Y 轴的轴线
+    }
   },
   series: [
     {
@@ -60,19 +79,19 @@ const echartsOption = computed(() => ({
         show: true,
         position: 'insideLeft',
         formatter: (params) => {
-          const unitMap = ['KVAR', 'KW', 'KVA'];
+          const unitMap = props.loadFactor.unit;
           return `${params.value}${unitMap[params.dataIndex]}`;
         },
         color: '#fff', // 字体颜色为白色
         textBorderColor: 'auto', // 轮廓颜色自动跟随柱形图颜色
         textBorderWidth: 2, // 轮廓宽度
-        fontSize: 14,
+        fontSize: 10,
         fontWeight: 'bold'
       },
       data: [
-        {value:props.loadFactor.powReactiveB,itemStyle: { color: '#800080'}},
-        {value:props.loadFactor.powActiveB,itemStyle: { color: '#91cc75' }},
-        {value:props.loadFactor.powApparentB,itemStyle: { color: '#5470c6' }}]
+        {value:props.loadFactor.first ? props.loadFactor.first : 0,itemStyle: { color: '#800080'}},
+        {value:props.loadFactor.second ? props.loadFactor.second : 0,itemStyle: { color: '#91cc75' }},
+        {value:props.loadFactor.third ? props.loadFactor.third : 0,itemStyle: { color: '#5470c6' }}]
     }
   ]
 }));

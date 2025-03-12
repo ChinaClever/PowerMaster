@@ -1,8 +1,9 @@
 <template>
   <!-- <div style="height:100%;min-height: calc(100vh - 120px);display: flex; flex-direction: column;"> -->
     <ContentWrap>
-    <div class="btn-main">
+    <div class="btn-main" :style="{justifyContent: isFromHome ? 'flex-end' : 'space-between'}">
       <el-form
+        v-if="!isFromHome"
         class="-mb-15px topForm"
         :model="queryParams"
         ref="queryFormRef"
@@ -23,7 +24,7 @@
       </el-form>
       <div>
         <template v-for="item in btns" :key="item.value">
-          <el-button @click="switchBtn(item.value)" :size="isFromHome ? 'small' : ''" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+          <el-button @click="switchBtn(item.value)" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
         </template>
       </div>
       <div style="display:flex;">
@@ -2102,7 +2103,7 @@ const getCabinetColorAll = async () => {
 const getMachineColInfo = async() => {
   const result = await MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
 
-  emit('sendList', result.roomId);
+  emit('sendList', result);
     //push({path: '/aisle/index', state: { roomDownVal: result.roomId}});
     Object.assign(machineColInfo, result);
     handleCabinetList(result); 
@@ -2309,7 +2310,6 @@ onBeforeUnmount(() => {
 }
 .btn-main {
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 .tip {
@@ -2572,11 +2572,10 @@ onBeforeUnmount(() => {
         margin-top: 10px;
       }
       .ti_xing {
-        width:60%;
-        border-bottom: 8px solid black;
+        width:100%;
+        border-bottom: 3px solid black;
+        margin: 0 7px;
         box-sizing: border-box;
-        border-left: 15px solid transparent;
-        border-right: 15px solid transparent;
         height: 0;
       }
     }

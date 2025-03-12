@@ -58,13 +58,13 @@
             <span class="bullet" style="color:#000;">•</span><span style="width:80px;font-size:14px;">额定容量:</span><span style="font-size:16px;">0KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:blue;">•</span><span style="width:80px;font-size:14px;">总视在功率:</span><span style="font-size:16px;">{{resultData?.powApparentTotal}}KVA</span>
+            <span class="bullet" style="color:#5470c6;">•</span><span style="width:80px;font-size:14px;">总视在功率:</span><span style="font-size:16px;">{{resultData?.powApparentTotal}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:green;">•</span><span style="width:80px;font-size:14px;">总有功功率:</span><span style="font-size:16px;">{{resultData?.powActiveTotal}}KW</span>
+            <span class="bullet" style="color:#91cc75;">•</span><span style="width:80px;font-size:14px;">总有功功率:</span><span style="font-size:16px;">{{resultData?.powActiveTotal}}KW</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:purple;">•</span><span style="width:80px;font-size:14px;">总无功功率:</span><span style="font-size:16px;">{{resultData?.powReactiveTotal}}KVAR</span>
+            <span class="bullet" style="color:#800080;">•</span><span style="width:80px;font-size:14px;">总无功功率:</span><span style="font-size:16px;">{{resultData?.powReactiveTotal}}KVAR</span>
           </div>
         </div>
       </div>
