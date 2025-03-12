@@ -281,7 +281,7 @@
 
       <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
         <div class="tagInDialog">
-          <el-tag >机房：{{ location.split("-")[0] }}<span v-for="i in Array(5)" :key="i">&nbsp;</span>柜列：{{ location.split("-")[1] }}</el-tag> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
+          <span style="position: relative;left: -150px;">机房：{{ location.split("-")[0] }}<span v-for="i in Array(5)" :key="i">&nbsp;</span>柜列：{{ location.split("-")[1] }}</span> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
         </div>
         <div>
           <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />

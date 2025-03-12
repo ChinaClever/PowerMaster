@@ -195,8 +195,8 @@
       </template>
 
       <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
-        <el-row style="position: absolute;top: 20px; left: 20%;">
-          <el-tag style="vertical-align:middle;">机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</el-tag>
+        <el-row style="position: absolute;top: 20px; left: 20%; vertical-align: middle;">
+          <span style="vertical-align:middle; position: relative;top: 5px; right: 50px;">机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</span>
           <div style="vertical-align:middle;">
             日期:
             <el-date-picker
