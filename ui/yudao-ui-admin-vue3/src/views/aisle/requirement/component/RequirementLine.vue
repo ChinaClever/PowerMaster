@@ -30,7 +30,8 @@ const echartsOption = ref({
   legend: { data: legendList,
     type: 'scroll', // 设置为 'single' 或 'multiple'
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
-    width:1000
+    width:1000,
+    selected:{"A路最大有功功率":false,"B路最大有功功率":false,"A路最大视在功率":false,"B路最大视在功率":false}
   },
   tooltip: { 
     trigger: 'axis',
@@ -38,9 +39,9 @@ const echartsOption = ref({
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
         result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
-        if (params[i].seriesName.includes("电流")) {
-          result += params[i].value.toFixed(2) +  ' A'; 
-        } else if (params[i].seriesName.includes("功率")) {
+        if (params[i].seriesName.includes("视在功率")) {
+          result += params[i].value.toFixed(3) +  ' KVA'; 
+        } else if (params[i].seriesName.includes("有功功率")) {
           result += params[i].value.toFixed(3) + ' kW';
         }
         result += " &nbsp&nbsp&nbsp&nbsp发生时间:&nbsp" +  series.value[i].maxTime[params[0].dataIndex];

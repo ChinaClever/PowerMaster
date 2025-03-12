@@ -71,7 +71,7 @@
         <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
-            <div class="progressContainer">
+            <div class="progressContainer" v-show="item.powApparentTotal!=null">
               <div class="progress" v-if="item.rateA">
                 <div class="left" :style="`flex: ${item.rateA==0&&item.rateB==0?50:(item.rateA>60?60:(item.rateA<40?40:item.rateA))}`">{{item.rateA}}%</div>
                 <div class="line"></div>
@@ -93,12 +93,17 @@
               </div>
             </div>
             <div class="room">{{item.location}}</div>
-            <button class="detail" @click.prevent="toDetail(item)">详情</button>
+            <button v-show="item.powApparentTotal!=null" class="detail" @click.prevent="toDetail(item)">详情</button>
+            <div class="noData" v-show="item.powApparentTotal==null">无数据</div>
           </div>
         </div>
-        <el-table v-show="switchValue == 1" style="width: 100%;" :data="tableData" >
-          <el-table-column type="index" width="60" label="序号" align="center" />
-          <el-table-column label="名称" min-width="90" align="center" prop="location" />
+        <el-table v-show="switchValue == 1" style="width: 100%;" :data="tableData" :header-cell-style="headerCellStyle" stripe >
+          <el-table-column width="75" label="序号" align="center">
+            <template #default="scope">
+              {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
+            </template>  
+          </el-table-column>
+          <el-table-column label="名称" min-width="120" align="center" prop="location" />
           <el-table-column label="总共" align="center">
             <el-table-column label="视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
             <el-table-column label="有功功率(kW)" min-width="90" align="center" prop="powActiveTotal" />
@@ -129,13 +134,13 @@
                     <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
                   </div>
                   <div class="tipInDialog">
-                      <span class="leftTip">
-                        <div>{{balanceObj.a_active_power ? balanceObj.a_active_power: '0.000'}}kVA</div>
-                        <div>A路有功功率</div>
+                      <span class="leftTip" :style="`flex: ${balanceObj.pow_active_percent}`">
+                        <div style="white-space: nowrap;">{{balanceObj.a_active_power ? balanceObj.a_active_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">A路有功功率</div>
                       </span>
-                      <span class="rightTip">
-                        <div>{{balanceObj.b_active_power ? balanceObj.b_active_power: '0.000'}}kVA</div>
-                        <div>B路有功功率</div>
+                      <span class="rightTip" :style="`flex: ${100 - balanceObj.pow_active_percent}`">
+                        <div style="white-space: nowrap;">{{balanceObj.b_active_power ? balanceObj.b_active_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">B路有功功率</div>
                       </span>
                   </div>
                 </div>
@@ -149,13 +154,13 @@
                     <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
                   </div>
                   <div class="tipInDialog">
-                      <span class="leftTip">
-                        <div>{{balanceObj.a_apparent_power ? balanceObj.a_apparent_power: '0.000'}}kVA</div>
-                        <div>A路视在功率</div>
+                      <span class="leftTip" :style="`flex: ${balanceObj.pow_apparent_percent}`">
+                        <div style="white-space: nowrap;">{{balanceObj.a_apparent_power ? balanceObj.a_apparent_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">A路视在功率</div>
                       </span>
-                      <span class="rightTip">
-                        <div>{{balanceObj.b_apparent_power ? balanceObj.b_apparent_power: '0.000'}}kVA</div>
-                        <div>B路视在功率</div>
+                      <span class="rightTip" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">
+                        <div style="white-space: nowrap;">{{balanceObj.b_apparent_power ? balanceObj.b_apparent_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">B路视在功率</div>
                       </span>
                   </div>
                 </div>
@@ -166,10 +171,10 @@
           <div class="custom-content">
             <div class="custom-content-container" v-if="apow !== null">
               <el-card class="cardChilc" shadow="hover">
-                <curUnblance :max="balanceObj.imbalanceValueA" name="A路电流不平衡"/>
+                <curUnblance :max="balanceObj.imbalanceValueA==null?0:balanceObj.imbalanceValueA.toFixed(0)" name="A路电流不平衡"/>
               </el-card>
-              <el-card class="cardChilc" style="margin: 0 10px; position: relative;" shadow="hover">
-                <div class="IechartBar">
+              <el-card class="cardChilc" style="margin: 0 15px; position: relative;" shadow="hover">
+                <div class="IechartBar" style="position: relative; left: -10px;">
                   <Echart :options="ABarOption" :height="300" />
                 </div>
                 <div v-show="ABarOption!=null&&ABarOption?.series!=null" style="display: inline-block;
@@ -179,13 +184,13 @@
                     top: 35%;
                     right: 0;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ia：</span><span style="font-size:16px;position: absolute;right: 0;">{{ABarOption.series[0].data[0].value}}A</span>
+                    <span class="bullet" style="color:#E5B849;position: absolute;right: 115px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 65px;white-space: nowrap;overflow: visible;">Ia：<span style="font-size:16px;">{{ABarOption.series[0].data[0].value}}A</span></span>
                   </div>
                   <div style="margin-top:30px;">
-                    <span class="bullet" style="color:#C8603A;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ib：</span><span style="font-size:16px;position: absolute;right: 0;">{{ABarOption.series[0].data[1].value}}A</span>
+                    <span class="bullet" style="color:#C8603A;position: absolute;right: 115px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 65px;white-space: nowrap;overflow: visible;">Ib：<span style="font-size:16px;">{{ABarOption.series[0].data[1].value}}A</span></span>
                   </div>
                   <div style="margin-top:60px;">
-                    <span class="bullet" style="color:#AD3762;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ic：</span><span style="font-size:16px;position: absolute;right: 0;">{{ABarOption.series[0].data[2].value}}A</span>
+                    <span class="bullet" style="color:#AD3762;position: absolute;right: 115px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 65px;white-space: nowrap;overflow: visible;">Ic：<span style="font-size:16px">{{ABarOption.series[0].data[2].value}}A</span></span>
                   </div>
                 </div>
               </el-card>
@@ -199,9 +204,9 @@
             <br/>
             <div class="custom-content-container" v-if="bpow !== null">
               <el-card class="cardChilc" shadow="hover">
-                <volUnblance :max="balanceObj.imbalanceValueB" name="B路电流不平衡"/>
+                <volUnblance :max="balanceObj.imbalanceValueB==null?0:balanceObj.imbalanceValueB.toFixed(0)" name="B路电流不平衡"/>
               </el-card>
-              <el-card class="cardChilc" style="margin: 0 10px;position: relative;" shadow="hover">
+              <el-card class="cardChilc" style="margin: 0 15px;position: relative;" shadow="hover">
                 <div class="IechartBar">
                   <Echart :options="BBarOption" :height="300"/>
                 </div>
@@ -212,13 +217,13 @@
                     top: 35%;
                     right: 0;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ia：</span><span style="font-size:16px;position: absolute;right: 0;">{{BBarOption.series[0].data[0].value}}A</span>
+                    <span class="bullet" style="color:#E5B849;position: absolute;right: 115px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 65px;white-space: nowrap;overflow: visible;">Ia：<span style="font-size:16px;">{{BBarOption.series[0].data[0].value}}A</span></span>
                   </div>
                   <div style="margin-top:30px;">
-                    <span class="bullet" style="color:#C8603A;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ib：</span><span style="font-size:16px;position: absolute;right: 0;">{{BBarOption.series[0].data[1].value}}A</span>
+                    <span class="bullet" style="color:#C8603A;position: absolute;right: 115px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 65px;white-space: nowrap;overflow: visible;">Ib：<span style="font-size:16px">{{BBarOption.series[0].data[1].value}}A</span></span>
                   </div>
                   <div style="margin-top:60px;">
-                    <span class="bullet" style="color:#AD3762;position: absolute;right: 105px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 50px;">Ic：</span><span style="font-size:16px;position: absolute;right: 0;">{{BBarOption.series[0].data[2].value}}A</span>
+                    <span class="bullet" style="color:#AD3762;position: absolute;right: 115px;">•</span><span style="width:50px;font-size:14px;position: absolute; right: 65px;white-space: nowrap;overflow: visible;">Ic：<span style="font-size:16px;">{{BBarOption.series[0].data[2].value}}A</span></span>
                   </div>
                 </div>
               </el-card>
@@ -230,11 +235,19 @@
             </div>
           </div>
         </el-dialog>
-        <Pagination
+        <!-- <Pagination
           :total="queryParams.pageTotal"
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
+        /> -->
+        <Pagination
+          :total="queryParams.pageTotal"
+          :page-size="queryParams.pageSize"
+          :page-sizes="[15, 30, 50, 100]"
+          :current-page="queryParams.pageNo"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
         />
         <template v-if="tableData.length == 0 && switchValue == 0">
           <el-empty description="暂无数据" :image-size="300" />
@@ -290,9 +303,9 @@ const ABarOption = ref<EChartsOption>({
             fontWeight: 'bold'
           },
           data: [
-            { value: 0, name: 'A相电流', itemStyle: { color: '#E5B849' } },
-            { value: 0, name: 'B相电流', itemStyle: { color: '#C8603A' } },
-            { value: 0, name: 'C相电流', itemStyle: { color: '#AD3762' } },
+            { value: null, name: 'A相电流', itemStyle: { color: '#E5B849' } },
+            { value: null, name: 'B相电流', itemStyle: { color: '#C8603A' } },
+            { value: null, name: 'C相电流', itemStyle: { color: '#AD3762' } },
           ]
         }
       ]
@@ -325,14 +338,13 @@ const BBarOption = ref<EChartsOption>({
             fontWeight: 'bold'
           },
           data: [
-            { value: 0, name: 'A相电流', itemStyle: { color: '#E5B849' } },
-            { value: 0, name: 'B相电流', itemStyle: { color: '#C8603A' } },
-            { value: 0, name: 'C相电流', itemStyle: { color: '#AD3762' } },
+            { value: null, name: 'A相电流', itemStyle: { color: '#E5B849' } },
+            { value: null, name: 'B相电流', itemStyle: { color: '#C8603A' } },
+            { value: null, name: 'C相电流', itemStyle: { color: '#AD3762' } },
           ]
         }
       ]
     });
-
 const ALineOption = ref<EChartsOption>({
   title: {
     text: 'A路电流趋势',
@@ -357,7 +369,6 @@ const ALineOption = ref<EChartsOption>({
   xAxis:{},
   series: []
 })
-
 const BLineOption = ref<EChartsOption>({
   title: {
     text: 'B路电流趋势',
@@ -385,7 +396,7 @@ const BLineOption = ref<EChartsOption>({
 const queryParams = reactive({
   name: undefined,
   pageNo: 1,
-  pageSize: 24,
+  pageSize: 15,
   pageTotal: 0,
 }) as any
 const balanceObj = reactive({
@@ -417,9 +428,7 @@ const getTableData = async(reset = false) => {
   if (reset) queryParams.pageNo = 1
   try {
     const res = await IndexApi.getAisleBalancePage(queryParams)
-
     if (res.list) {
-
       tableData.value = res.list
       tableData.value.forEach(obj => {
         obj.rateA = obj?.rateA?.toFixed(0);
@@ -434,8 +443,6 @@ const getTableData = async(reset = false) => {
         obj.powActiveB = obj?.powActiveB?.toFixed(3);
         obj.powReactiveB = obj?.powReactiveB?.toFixed(3);
       });
-      
-
       queryParams.pageTotal = res.total
     }
   } finally {
@@ -461,12 +468,20 @@ const toDetail = async (item) => {
     ABarOption.value.series[0].data[0].value=cur_valueA[0].toFixed(2);
     ABarOption.value.series[0].data[1].value=cur_valueA[1].toFixed(2);
     ABarOption.value.series[0].data[2].value=cur_valueA[2].toFixed(2);
+  }else{
+    ABarOption.value.series[0].data[0].value=0;
+    ABarOption.value.series[0].data[1].value=0;
+    ABarOption.value.series[0].data[2].value=0;
   }
   const cur_valueB = response.curListb
   if(cur_valueB!=null){
     BBarOption.value.series[0].data[0].value=cur_valueB[0].toFixed(2);
     BBarOption.value.series[0].data[1].value=cur_valueB[1].toFixed(2);
     BBarOption.value.series[0].data[2].value=cur_valueB[2].toFixed(2);
+  }else{
+    BBarOption.value.series[0].data[0].value=0;
+    BBarOption.value.series[0].data[1].value=0;
+    BBarOption.value.series[0].data[2].value=0;
   }
   balanceObj.imbalanceValueA=response.curUnbalancea;
   balanceObj.imbalanceValueB=response.curUnbalanceb;
@@ -479,11 +494,6 @@ const toDetail = async (item) => {
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
   switchValue.value = value
-  if (value == 0) { // 阵列
-    queryParams.pageSize = 24
-  } else {
-    queryParams.pageSize = 10
-  }
   getTableData(true)
 }
 
@@ -540,6 +550,21 @@ onBeforeMount( () => {
   getNavList()
   getTableData()
 })
+
+function handleSizeChange(val) {
+  queryParams.pageSize = val
+  getTableData(true)
+}
+function handleCurrentChange(val) {
+  queryParams.pageNo = val
+  getTableData(false)
+}
+
+function headerCellStyle() {
+    return {
+      backgroundColor: '#eee', // 表头背景颜色
+    };
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -820,21 +845,27 @@ onBeforeMount( () => {
 }
 .tipInDialog{
   position: absolute;
-  display: inline-block;
+  display: flex;
   width: 400px;
   height: 30px;
   top: 30px;
   .leftTip{
+    display: inline-block;
     // width: 150px;
-    position: absolute;
-    left: 0px;
+    text-align: center;
     font-size: small;
   }
   .rightTip{
+    display: inline-block;
     // width: 150px;
-    position: absolute;
-    right: 0px;
+    text-align: center;
     font-size: small;
   }
+}
+.noData{
+  position: absolute;
+  display: inline-block;
+  right: 10px;
+  top: 8px;
 }
 </style>

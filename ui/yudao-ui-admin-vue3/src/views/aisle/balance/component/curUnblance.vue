@@ -40,7 +40,7 @@ const restPercentageValue = computed(() => 100 - percentageValue.value);
 const option = computed(() => ({
   title: {
     text: props.name,
-    left: "left"
+    left: 0
   },
   tooltip: {
     trigger: 'item',
