@@ -49,13 +49,14 @@
               <el-checkbox  label="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        <el-form-item label="柜列名称" prop="devKey">
-          <el-input
-            v-model="queryParams.name"
-            placeholder="请输入柜列名称"
+        <el-form-item label="网络地址" prop="devKey">
+          <el-autocomplete
+            v-model="queryParams.devKey"
+            :fetch-suggestions="querySearch"
             clearable
-            class="!w-160px"
-            height="35"
+            class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
           />
         </el-form-item>
         <el-form-item>
@@ -83,226 +84,176 @@
           <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
           <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
           <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />功率</el-button>                             
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
-    <template #Content>    
-      <div v-if="switchValue == 3" style="height:710px;overflow-y:auto;">
-        <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
-          <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-          <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
-          <el-table-column label="A路Ia" align="center" prop="AIa" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.curAList?.[0] != null">
-                {{ scope.row.curAList[0].toFixed(2) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="A路Ib" align="center" prop="AIb" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.curAList?.[1] != null">
-                {{ scope.row.curAList[1].toFixed(2) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="A路Ic" align="center" prop="AIc" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.curAList?.[2] != null">
-                {{ scope.row.curAList[2].toFixed(2) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路Ia" align="center" prop="BIa" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.curBList?.[0] != null">
-                {{ scope.row.curBList[0].toFixed(2) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路Ib" align="center" prop="BIb" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.curBList?.[1] != null">
-                {{ scope.row.curBList[1].toFixed(2) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路Ic" align="center" prop="BIc" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.curBList?.[2] != null">
-                {{ scope.row.curBList[2].toFixed(2) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center">
-            <template #default="scope">
-              <el-button
-                link
-                type="primary"
-                @click="toDetail(scope.row)"
-                v-if="scope.row.status != null && scope.row.status != 5"
-                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
-              >
-              设备详情
-              </el-button>
-              <el-button
-                link
-                type="danger"
-                @click="handleDelete(scope.row.boxId)"
-                v-if="scope.row.status == 5"
-                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+    <template #Content>
+      <el-table v-show="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  :header-cell-style="headerCellStyle" >
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column  label="有功电能" align="center" prop="eleActiveTotal" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.eleActiveTotal" >
+              {{ scope.row.eleActiveTotal }}kWh
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="视在功率" align="center" prop="powApparentTotal" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparentTotal" >
+              {{ scope.row.powApparentTotal }}kVA
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="有功功率" align="center" prop="powActiveTotal" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powActiveTotal" >
+              {{ scope.row.powActiveTotal }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="无功功率" align="center" prop="powReactiveTotal" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactiveTotal">
+              {{ scope.row.powReactiveTotal }}kVar
+            </el-text>
+          </template>
+        </el-table-column>
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <!-- <el-button
+              link
+              type="primary"
+              @click="toDeatil(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
+            >
+            设备详情
+            </el-button> -->
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>    
 
-        <el-table v-if="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
-          <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-          <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
-          <el-table-column label="A路Ua" align="center" prop="AUa" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.volAList?.[0] != null">
-                {{ scope.row.volAList[0].toFixed(1) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="A路Ub" align="center" prop="AUb" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.volAList?.[1] != null">
-                {{ scope.row.volAList[1].toFixed(1) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="A路Uc" align="center" prop="AUc" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.volAList?.[2] != null">
-                {{ scope.row.volAList[2].toFixed(1) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路Ua" align="center" prop="BUa" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.volBList?.[0] != null">
-                {{ scope.row.volBList[0].toFixed(1) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路Ub" align="center" prop="BUb" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.volBList?.[1] != null">
-                {{ scope.row.volBList[1].toFixed(1) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路Uc" align="center" prop="BUc" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.volBList?.[2] != null">
-                {{ scope.row.volBList[2].toFixed(1) }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center">
-            <template #default="scope">
-              <el-button
-                link
-                type="primary"
-                @click="toDetail(scope.row)"
-                v-if="scope.row.status != null && scope.row.status != 5"
-                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
-              >
-              设备详情
-              </el-button>
-              <el-button
-                link
-                type="danger"
-                @click="handleDelete(scope.row.boxId)"
-                v-if="scope.row.status == 5"
-                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table v-show="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilA" :header-cell-style="headerCellStyle">
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column  label="有功电能" align="center" prop="eleActiveA" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.eleActiveA" >
+              {{ scope.row.eleActiveA }}kWh
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="视在功率" align="center" prop="powApparentA" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparentA" >
+              {{ scope.row.powApparentA }}kVA
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="有功功率" align="center" prop="powActiveA" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powActiveA" >
+              {{ scope.row.powActiveA }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="无功功率" align="center" prop="powReactiveA" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactiveA">
+              {{ scope.row.powReactiveA }}kVar
+            </el-text>
+          </template>
+        </el-table-column>
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toDeatilA(scope.row)"
+              v-if="scope.row.devKeyA != null && scope.row.eleActiveA != null"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table> 
 
-        <el-table v-if="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
-          <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-          <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
-          <el-table-column label="A路视在功率" align="center" prop="powApparentA" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparentA != null">
-                {{ scope.row.powApparentA }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="A路有功功率" align="center" prop="powActiveA" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powActiveA != null">
-                {{ scope.row.powActiveA }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="A路无功功率" align="center" prop="powReactiveA" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powReactiveA != null">
-                {{ scope.row.powReactiveA }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路视在功率" align="center" prop="powApparentB" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparentB != null">
-                {{ scope.row.powApparentB }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路有功功率" align="center" prop="powActiveB" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powActiveB != null">
-                {{ scope.row.powActiveB }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B路无功功率" align="center" prop="powReactiveB" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powReactiveB != null">
-                {{ scope.row.powReactiveB }}
-              </el-text>
-            </template>
-          </el-table-column>
-          <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center">
-            <template #default="scope">
-              <el-button
-                link
-                type="primary"
-                @click="toDetail(scope.row)"
-                v-if="scope.row.status != null && scope.row.status != 5"
-                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
-              >
-              设备详情
-              </el-button>
-              <el-button
-                link
-                type="danger"
-                @click="handleDelete(scope.row.boxId)"
-                v-if="scope.row.status == 5"
-                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+      <el-table v-show="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilB" :header-cell-style="headerCellStyle">
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column  label="有功电能" align="center" prop="eleActiveB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.eleActiveB" >
+              {{ scope.row.eleActiveB }}kWh
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="视在功率" align="center" prop="powApparentB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparentB" >
+              {{ scope.row.powApparentB }}kVA
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="有功功率" align="center" prop="powActiveB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powActiveB" >
+              {{ scope.row.powActiveB }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="无功功率" align="center" prop="powReactiveB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactiveB">
+              {{ scope.row.powReactiveB }}kVar
+            </el-text>
+          </template>
+        </el-table-column>
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toDeatilB(scope.row)"
+              v-if="scope.row.devKeyB != null && scope.row.eleActiveB != null"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table> 
 
       <div v-show="switchValue == 0 && list.length > 0"  class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
@@ -335,16 +286,16 @@
             <div>B路</div>
           </div>
           <div style="display:flex;height:10vh;justify-content: center;align-item:center;margin-bottom: -3vh">
-            <Environment v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="{first: item.curAList?.[2] ? item.curAList[2].toFixed(0) : 0,second: item.curAList?.[1] ? item.curAList[1].toFixed(0) : 0,third: item.curAList?.[0] ? item.curAList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A'],color: ['#AD3762','#C8603A','#E5B849']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电流 -->
-            <Environment v-else-if="valueMode == 1" class="chart" width="100%" height="100%" :load-factor="{first: item.volALis?.[2] ? item.volAList[2].toFixed(0) : 0,second: item.volAList?.[1] ? item.volAList[1].toFixed(0) : 0,third: item.volAList?.[0] ? item.volAList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V'],color: ['#45C0C9','#119CB5','#075F71']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电压 -->
-            <Environment v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveA,second: item.powActiveA,third: item.powApparentA,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA'],color: ['#800080','#91cc75','#5470c6']}" style="margin-right:-15px;"/>
+            <Environment v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="{first: item.curAList ? item.curAList[2].toFixed(0) : 0,second: item.curAList ? item.curAList[1].toFixed(0) : 0,third: item.curAList ? item.curAList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电流 -->
+            <Environment v-else-if="valueMode == 1" class="chart" width="100%" height="100%" :load-factor="{first: item.volAList ? item.volAList[2].toFixed(0) : 0,second: item.volAList ? item.volAList[1].toFixed(0) : 0,third: item.volAList ? item.volAList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电压 -->
+            <Environment v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveA,second: item.powActiveA,third: item.powApparentA,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA']}" style="margin-right:-15px;"/>
 
-            <EnvironmentCopy v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="{first: item.curBList?.[2] ? item.curBList[2].toFixed(0) : 0,second: item.curBList?.[1] ? item.curBList[1].toFixed(0) : 0,third: item.curBList?.[0] ? item.curBList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A'],color: ['#AD3762','#C8603A','#E5B849']}"/> <!-- TODO 换成B路电流 -->
-            <EnvironmentCopy v-else-if="valueMode == 1" class="chart" width="100%" height="100%" :load-factor="{first: item.volBList?.[2] ? item.volBList[2].toFixed(0) : 0,second: item.volBList?.[1] ? item.volBList[1].toFixed(0) : 0,third: item.volBList ? item.volBList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V'],color: ['#45C0C9','#119CB5','#075F71']}"/> <!-- TODO 换成B路电压 -->
-            <EnvironmentCopy v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveB,second: item.powActiveB,third: item.powApparentB,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA'],color: ['#800080','#91cc75','#5470c6']}"/>
+            <EnvironmentCopy v-if="valueMode == 0" class="chart" width="100%" height="100%" :load-factor="{first: item.curBList ? item.curBList[2].toFixed(0) : 0,second: item.curBList ? item.curBList[1].toFixed(0) : 0,third: item.curBList ? item.curBList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A']}"/> <!-- TODO 换成B路电流 -->
+            <EnvironmentCopy v-else-if="valueMode == 1" class="chart" width="100%" height="100%" :load-factor="{first: item.volBList ? item.volBList[2].toFixed(0) : 0,second: item.volBList ? item.volBList[1].toFixed(0) : 0,third: item.volBList ? item.volBList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V']}"/> <!-- TODO 换成B路电压 -->
+            <EnvironmentCopy v-else-if="valueMode == 2" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveB,second: item.powActiveB,third: item.powApparentB,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA']}"/>
           </div>
           <div style="display:flex;justify-content: flex-end;height: 100%">
-            <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
+            <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
           </div>
           <!-- <div v-if="item.eleActiveTotal != null" style="display: inline-block;
             width: 50%;
@@ -366,8 +317,8 @@
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
           </div> -->
           <div class="status" >
-            <el-tag v-if="item.eleActiveTotal != null && item.eleActiveTotal != 0" >在线</el-tag>
-            <el-tag v-else-if="(item.eleActiveTotal == null || item.eleActiveTotal == 0) && item.status != 5" type="info">无数据</el-tag>
+            <el-tag v-if="item.eleActiveTotal != null" >在线</el-tag>
+            <el-tag v-else-if="item.eleActiveTotal == null && item.status != 5" type="info">无数据</el-tag>
             <el-tag v-else type="info">离线</el-tag>            
           </div>
         </div>
@@ -414,6 +365,32 @@ const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const valueMode = ref(0)
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -479,12 +456,11 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   devKey: undefined,
-  name: undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
   status:undefined,
-  aisleIds : [],
+  cabinetIds : [],
 })as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
@@ -570,18 +546,18 @@ const getNavList = async() => {
   }
 }
 
-const toDetail = async(item) =>{
+const toDeatil = async(item) =>{
   push({path: '/aisle/columnHome', state: { id: item.id, roomId: item.roomId }})
 }
 
-const toDetailA = async(row) =>{
+const toDeatilA = async(row) =>{
   const devKey = row.devKeyA;
   const busId = await BusIndexApi.getBusIdByDevKey({devKey : devKey})
   const location = row.location != null ? row.location + '-A路' : devKey + '-A路';
   push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location }})
 }
 
-const toDetailB = async(row) =>{
+const toDeatilB = async(row) =>{
   const devKey = row.devKeyB;
   const busId = await BusIndexApi.getBusIdByDevKey({devKey : devKey})
   const location = row.location != null ? row.location + '-B路' : devKey + '-B路';
@@ -602,7 +578,7 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryParams.name = undefined;
+  queryFormRef.value.resetFields()
   handleQuery()
 }
 
@@ -648,6 +624,7 @@ function headerCellStyle() {
 
 /** 初始化 **/
 onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
@@ -905,6 +882,7 @@ onActivated(() => {
   .line {
     height: 1px;
     margin-top: 28px;
+    margin-bottom: 20px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
@@ -939,14 +917,8 @@ onActivated(() => {
 }
 
 .arrayContainer {
-  width:100%;
-  height: 720px;
-  overflow: hidden;
-  overflow-y: auto;
   display: flex;
   flex-wrap: wrap;
-  align-content: flex-start;
-  margin-top: -10px;
   .arrayItem {
     width: 25%;
     font-size: 13px;

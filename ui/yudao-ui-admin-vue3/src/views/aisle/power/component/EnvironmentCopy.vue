@@ -89,9 +89,9 @@ const echartsOption = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        {value:props.loadFactor.first ? props.loadFactor.first : 0,itemStyle: { color: props.loadFactor.color[0]}},
-        {value:props.loadFactor.second ? props.loadFactor.second : 0,itemStyle: { color: props.loadFactor.color[1] }},
-        {value:props.loadFactor.third ? props.loadFactor.third : 0,itemStyle: { color: props.loadFactor.color[2] }}]
+        {value:props.loadFactor.first ? props.loadFactor.first : 0,itemStyle: { color: '#800080'}},
+        {value:props.loadFactor.second ? props.loadFactor.second : 0,itemStyle: { color: '#91cc75' }},
+        {value:props.loadFactor.third ? props.loadFactor.third : 0,itemStyle: { color: '#5470c6' }}]
     }
   ]
 }));

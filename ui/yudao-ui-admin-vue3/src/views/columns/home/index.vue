@@ -22,14 +22,13 @@
       <ContentWrap>
         <div class="progress">
           <!--<el-progress type="dashboard" :percentage="powerInfo.powApparent && powerInfo.powApparent.toFixed()">-->
-          <el-progress type="dashboard" :percentage="mainInfo.powActiveTotal/mainInfo.powApparentTotal*100">
-              <span class="percentage-value">{{ mainInfo.powApparentTotal}}</span>
+          <el-progress type="dashboard" :percentage="80">
+            <template #default="{ percentage }">
+              <span class="percentage-value">{{ percentage }}</span>
               <span class="percentage-label">总视在功率</span>
               <span class="percentage-unit">kVA</span>
+            </template>
           </el-progress>
-          <div class="powActiveTotal-text">
-           <span>{{ mainInfo.powActiveTotal}}kW</span>
-          </div>
         </div>
         <div style="display:flex;justify-content: space-around;padding: 5px 0;">
           <div>A路</div>
@@ -131,13 +130,13 @@
         </template>
       </Topology>
       <ContentWrap class="CabEchart">
-        <div style="background-color: #ffffff;border-radius: 5px;">
+        <div style="margin:10px;background-color: #ffffff;padding: 10px;border-radius: 5px">
           <el-row>
             <el-col :span="18">
               <el-radio-group v-model="typeRadio">
                 <el-radio-button label="电流" value="电流" @click="switchChartContainer =0"/>
                 <el-radio-button label="电压" value="电压" @click="switchChartContainer =0"/>
-                <el-radio-button label="有功电能" value="有功电能" :disabled="isPowActiveDisabled" @click="switchChartContainer =1"/>
+                <el-radio-button label="有功电能" value="有功电能" :disabled="true" @click="switchChartContainer =1"/>
                 <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer =0"/>
                 <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer =0"/>
                 <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =0"/>
@@ -154,8 +153,8 @@
             </el-col>
           </el-row>
           <br/>
-          <div ref="chartContainer2" id="chartContainer2" style="width: 70vw;height: 340px;" v-show="switchChartContainer == 0"></div>
-          <div ref="chartContainer3" id="chartContainer3" style="width: 70vw;height: 340px;" v-show="switchChartContainer == 1"></div>
+          <div ref="chartContainer2" id="chartContainer2" style="height: 340px;" v-show="switchChartContainer == 0"></div>
+          <div ref="chartContainer3" id="chartContainer3" style="height: 340px;" v-show="switchChartContainer == 1"></div>
         </div>
       </ContentWrap>
     </div>
@@ -425,9 +424,9 @@ const initChart3 = () => {
             }
           }
         },
-        grid: {
-          left: '6%',   // 设置左侧边距
-          right: '6%',  // 设置右侧边距
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
           top: '10%',    // 设置上侧边距
           bottom: '10%', // 设置下侧边距
         },
@@ -445,9 +444,6 @@ const isHaveData = ref(true)
 // 获取折线图数据
 const getLineChartData =async () => {
  try {
-    allLineData.value = null
-    allEqData.value = null
-    
     const data = await BusPowerLoadDetailApi.getLineChartData(lineChartQueryParams);
     console.log('获取折线图数据',data)
     console.log('lineChartQueryParams',lineChartQueryParams)
@@ -471,7 +467,6 @@ const getLineChartData =async () => {
     }
 
     const data2 = await BusPowerLoadDetailApi.getBusEqChartData(lineChartQueryParams);
-    console.log("aaaaaaaaaasdad")
     if (data2 != null){
       // 查到数据
       allEqData.value = data2
@@ -639,7 +634,6 @@ const initData = () => {
         break;
       case '有功电能':
         if(allEqData.value != null){
-        console.log("aaaaaaa",allEqData.value)
         eqValue.value = allEqData.value.L1.map((item) => item.eq_value.toFixed(3));
         }
         break;
@@ -687,6 +681,7 @@ const initData = () => {
         break;    
       }
   }
+  console.log("initData",eqValue.value)
 }
 
 // 监听切换类型
@@ -695,8 +690,8 @@ watch( ()=>typeRadio.value, async(value)=>{
   //L2Data.value = [];
   //L3Data.value = [];
   await initData();
-  if ( value == '有功电能'){
-     // 选有功电能不能选近一小时
+  if ( value == '有效电能'){
+     // 选有效电能不能选近一小时
      isHourDisabled.value = true
   }else{
     isHourDisabled.value = false
@@ -725,7 +720,7 @@ watch( ()=>typeRadio.value, async(value)=>{
                                       result += ' kVA'; 
                                     }else if (typeRadio.value === '负载率') {
                                       result += '%';
-                                    }else if (typeRadio.value === '有功电能') {
+                                    }else if (typeRadio.value === '有效电能') {
                                       result += ' kWh';
                                     }
                                     result += '<br>';
@@ -749,7 +744,7 @@ watch( ()=>typeRadio.value, async(value)=>{
                 return value + ' kVA'; 
               } else if (typeRadio.value === '负载率') {
                 return value + '%';
-              } else if (typeRadio.value === '有功电能') {
+              } else if (typeRadio.value === '有效电能') {
                 return value + ' kWh';
               } else {
                 return value; // 如果没有匹配，返回原值
@@ -787,7 +782,7 @@ watch( ()=>typeRadio.value, async(value)=>{
                                       result += ' kVA'; 
                                     }else if (typeRadio.value === '负载率') {
                                       result += '%';
-                                    }else if (typeRadio.value === '有功电能') {
+                                    }else if (typeRadio.value === '有效电能') {
                                       result += ' kWh';
                                     }
                                     result += '<br>';
@@ -811,7 +806,7 @@ watch( ()=>typeRadio.value, async(value)=>{
               return value + ' kVA'; 
             } else if (typeRadio.value === '负载率') {
               return value + '%';
-            } else if (typeRadio.value === '有功电能') {
+            } else if (typeRadio.value === '有效电能') {
               return value + ' kWh';
             } else {
               return value; // 如果没有匹配，返回原值
@@ -820,8 +815,8 @@ watch( ()=>typeRadio.value, async(value)=>{
         }
       },            
               grid: {
-          left: '6%',   // 设置左侧边距
-          right: '6%',  // 设置右侧边距
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
           top: '10%',    // 设置上侧边距
           bottom: '10%', // 设置下侧边距
         },
@@ -979,8 +974,8 @@ watch( ()=>timeRadio.value, async(value)=>{
           }
         },
                 grid: {
-          left: '6%',   // 设置左侧边距
-          right: '6%',  // 设置右侧边距
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
           top: '10%',    // 设置上侧边距
           bottom: '10%', // 设置下侧边距
         },
@@ -991,9 +986,24 @@ watch( ()=>timeRadio.value, async(value)=>{
   }
 
 });
+
+const queryParams = reactive({
+  pageNo: 1,
+  pageSize: 24,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:undefined,
+  cabinaisleIdsetIds : [],
+})as any
 const getMainData = async() => {
-  Object.assign(mainInfo, roomDownVal.value)
-  console.log(mainInfo)
+  // //debugger
+  queryParams.aisleIds = [containerInfo.cabinetColumnId]
+  const data = await IndexApi.getAisleRedisPage(queryParams)
+  Object.assign(mainInfo, data.list[0])
+  console.log('res1111111', data)
+  if (!data) return
 
   mainInfo.powActiveA = mainInfo.powActiveA.toFixed(0)
   mainInfo.powActiveB = mainInfo.powActiveB.toFixed(0)
@@ -1001,8 +1011,6 @@ const getMainData = async() => {
   mainInfo.powReactiveB = mainInfo.powReactiveB.toFixed(0)
   mainInfo.powApparentA = mainInfo.powApparentA.toFixed(0)
   mainInfo.powApparentB = mainInfo.powApparentB.toFixed(0)
-  mainInfo.powApparentTotal = mainInfo.powApparentTotal.toFixed(0)
-  mainInfo.powActiveTotal = mainInfo.powActiveTotal.toFixed(0)
 
   mainInfo.curAList.forEach((item,index) => {
     mainInfo.curAList[index] = mainInfo.curAList[index].toFixed(2)
@@ -1010,9 +1018,6 @@ const getMainData = async() => {
     mainInfo.volAList[index] = mainInfo.volAList[index].toFixed(1)
     mainInfo.volBList[index] = mainInfo.volBList[index].toFixed(1)
   })
-
-  console.log(mainInfo)
-
 
   Object.assign(echartsOptionC, {
     title: {
@@ -1189,21 +1194,14 @@ const getMainData = async() => {
 }
 
 const getMainEq = async() => {
-  console.log(containerInfo)
-  const res =  await IndexApi.getAisleEleChain({id: containerInfo.cabinetColumnId})
-  const res2 =  await MachineColumnApi.getMainEq({id: containerInfo.cabinetColumnId})
+  const res =  await MachineColumnApi.getMainEq({id: containerInfo.cabinetColumnId})
   console.log('getMainEq res', res)
   Object.assign(EqInfo, res)
 }
 
-const sendRoomIdValList = async (result) =>{
+const sendRoomIdValList = (result) =>{
    roomDownVal.value = result;
-   containerInfo.cabinetColumnId = roomDownVal.value.id
-   getMainData()
-   getMainEq()
-   await getLineChartData()
-   initChart2()
-   initChart3()
+   
 }
 
 
@@ -1216,8 +1214,13 @@ const handlePduBar = (type) => {
   pduBar.value = type
 }
 // 处理柜列id/机柜id切换事件
-const handleIdChange = (id) => {
+const handleIdChange = async (id) => {
   containerInfo.cabinetColumnId = id
+  getMainData()
+  getMainEq()
+  await getLineChartData()
+  initChart2()
+  initChart3()
 }
 // 处理柜列实时统计图表
 const handleCabEchart = (result, scale) => {
@@ -1283,11 +1286,6 @@ const handleCabEchart = (result, scale) => {
 onMounted(() => {
   const centerEle = document.getElementById('center')
   containerInfo.width = centerEle?.offsetWidth as number
-  // getMainData()
-  // getMainEq()
-  // await getLineChartData()
-  // initChart2()
-  // initChart3()
   console.log('centerEle', containerInfo.width, centerEle?.offsetWidth, centerEle?.offsetHeight)
 })
 
@@ -1341,7 +1339,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   .percentage-value {
     display: block;
     margin-top: 10px;
@@ -1357,35 +1354,23 @@ onMounted(() => {
     font-size: 10px;
   }
 }
-.powActiveTotal-text {
+
+:deep(.progress .el-progress__text::after ){
+  content: '60kW'; /* 要显示的文本 */
   position: absolute;
   top: 0; /* 放置在原元素的 */
-  right: 0;
+  left: 100%;
   color: #000;
   padding: 5px;
   border-radius: 3px;
   white-space: nowrap;
-  opacity: 0;
+  transform: translateX(5px); /* 稍微向右边移动一点以避免与进度条重叠 */
+  opacity: 0; /* 默认隐藏 */
   transition: opacity 0.3s; /* 添加过渡效果 */
   pointer-events: none; /* 确保提示框不会干扰鼠标事件 */
 }
-
-// :deep(.progress .el-progress__text::after ){
-//   content: '60kW'; /* 要显示的文本 */
-//   position: absolute;
-//   top: 0; /* 放置在原元素的 */
-//   left: 100%;
-//   color: #000;
-//   padding: 5px;
-//   border-radius: 3px;
-//   white-space: nowrap;
-//   transform: translateX(5px); /* 稍微向右边移动一点以避免与进度条重叠 */
-//   opacity: 0; /* 默认隐藏 */
-//   transition: opacity 0.3s; /* 添加过渡效果 */
-//   pointer-events: none; /* 确保提示框不会干扰鼠标事件 */
-// }
  
-:deep(.progress:hover .powActiveTotal-text) {
+:deep(.progress:hover .el-progress__text::after) {
   opacity: 1; /* 鼠标悬停时显示 */
 }
 

@@ -83,10 +83,6 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/balancepage`,data})
   },
 
-  getAisleEleChain: async (params: any) => {
-    return await request.get({ url: `/aisle/index/eleChain`, params })
-  },
-
   getConsumeData: async (data) => {
     return await request.post({ url: `/aisle/index/report/ele`,data})
   },
