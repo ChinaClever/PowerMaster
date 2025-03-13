@@ -604,6 +604,7 @@ const toMachineDetail = (key) => {
      message.error('未绑定设备无法查看详情!')
      return;
   }
+  
   push({path: '/cabinet/cab/detail', state: {location , cabinetName ,id ,roomId , type}})
 }
 

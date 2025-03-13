@@ -88,7 +88,6 @@ public class AisleIndexController {
         return success(indexService.getAisleLineMaxPage(pageReqVO));
     }
 
-
     @Operation(summary = "柜列需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<AisleLineResBase> getAisleLineCurLine(@RequestBody AisleIndexPageReqVO pageReqVO) {

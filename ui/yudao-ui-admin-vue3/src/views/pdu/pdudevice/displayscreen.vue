@@ -315,8 +315,8 @@
             <el-table-column label="回路" align="center" prop="circuit" />
             <el-table-column label="断路器状态" align="center" prop="breaker" v-if="controlVis.circleTableCol.breaker"> 
               <template #default="scope" >
-                <el-tag type="" v-if="scope.row.breaker == 1">开启</el-tag>
-                <el-tag type="danger" v-if="scope.row.breaker == 0">关闭</el-tag>
+                <el-tag type="" v-if="scope.row.breaker == 1">闭合</el-tag>
+                <el-tag type="danger" v-if="scope.row.breaker == 0">断开</el-tag>
               </template>
             </el-table-column>                        
             <el-table-column label="当前电流(A)" align="center" prop="cur_value" v-if="controlVis.circleTableCol.cur_value" >
@@ -365,8 +365,8 @@
             <el-table-column label="名称" align="center" prop="name" />
             <el-table-column label="开关状态" align="center" prop="relay_state" v-if="controlVis.outPutTableCol.relay_state">
               <template #default="scope">
-                <el-tag type="" v-if="scope.row.relay_state == 1">开启</el-tag>
-                <el-tag type="danger" v-if="scope.row.relay_state == 0" >关闭</el-tag>
+                <el-tag type="" v-if="scope.row.relay_state == 1">闭合</el-tag>
+                <el-tag type="danger" v-if="scope.row.relay_state == 0" >断开</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="输出电流(A)" align="center" prop="cur_value"  v-if="controlVis.outPutTableCol.cur_value">
@@ -554,6 +554,7 @@ const A = ref({
   powColor : null,
   cur_value : null,
   curColor : null,
+  sphereColor : null,
   curPercemtage: null,
   pf : null
 }) as any
@@ -564,6 +565,7 @@ const B = ref({
   powColor : null,
   cur_value : null,
   curColor : null,
+  sphereColor : null,
   curPercemtage: null,
   pf : null
 }) as any
@@ -574,6 +576,7 @@ const C = ref({
   powColor : null,
   cur_value : null,
   curColor : null,
+  sphereColor : null,
   curPercemtage: null,
   pf : null
 }) as any
@@ -847,7 +850,7 @@ const initChart = async () => {
       series: [
         { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false } , emphasis:{disabled:false,scale:false,scaleSize:0,},
           data: [
-            {value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' } },
+            {value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: A.value.sphereColor } },
             {value : aCurMax, itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
           ],
         },
@@ -867,7 +870,7 @@ const initChart = async () => {
       series: [
         { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
           data: [
-            {value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : B.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : B.value.curColor },itemStyle: { color: B.value.sphereColor }  },
             {value : bCurMax,itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
           ],
         },
@@ -887,7 +890,7 @@ const initChart = async () => {
       series: [
         { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
           data: [
-            {value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: C.value.sphereColor }  },
             {value : cCurMax , itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
           ],
         },
@@ -1658,10 +1661,13 @@ const getTestData = async()=>{
     let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
     if(curalarm == 1 || curalarm == 8 ){
       A.value.curColor = "red";
+      A.value.sphereColor ='red';
     } else if(curalarm == 2 || curalarm == 4 ){
       A.value.curColor = "yellow";
+      A.value.sphereColor ='yellow';
     } else{
       A.value.curColor = "";
+      A.value.sphereColor ='#0AD0EE';
     }
   }
 
@@ -1698,10 +1704,13 @@ const getTestData = async()=>{
       let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
       if(curalarm == 1 || curalarm == 8 ){
         B.value.curColor = "red";
+        B.value.sphereColor ='#red';
       } else if(curalarm == 2 || curalarm == 4 ){
         B.value.curColor = "yellow";
+        B.value.sphereColor ='#yellow';
       } else{
         B.value.curColor = "";
+        B.value.sphereColor ='#0AD0EE';
       }      
     }
 
@@ -1739,10 +1748,13 @@ const getTestData = async()=>{
       let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
       if(curalarm == 1 || curalarm == 8 ){
         C.value.curColor = "red";
+        C.value.sphereColor ='#red';
       } else if(curalarm == 2 || curalarm == 4 ){
         C.value.curColor = "yellow";
+        C.value.sphereColor ='#yellow';
       } else{
         C.value.curColor = "";
+        C.value.sphereColor ='#0AD0EE';
       }
     }
 
@@ -2306,6 +2318,33 @@ const lineidBeforeChartUnmountV = () => {
 lineidChartV?.dispose() // 销毁图表实例
 }
 
+function processChartData(data, chartData) {
+  if (data == null) return;
+
+  try {
+    const volValues = data.map(item => {
+      if (typeof item.vol_value === 'number' && !isNaN(item.vol_value)) {
+        return item.vol_value.toFixed(1);
+      }
+      throw new Error('Invalid vol_value');
+    });
+
+    const curValues = data.map(item => {
+      if (typeof item.cur_value === 'number' && !isNaN(item.cur_value)) {
+        return item.cur_value.toFixed(2);
+      }
+      throw new Error('Invalid cur_value');
+    });
+
+    // 批量操作以减少响应式更新次数
+    chartData.value.volValueList.push(...volValues);
+    chartData.value.curValueList.push(...curValues);
+  } catch (error) {
+    console.error('Error processing chart data:', error);
+  }
+}
+
+
 //获取最近一个小时的PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async (type) => {
   const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: 'oneHour'})
@@ -2317,20 +2356,27 @@ const PDUHdaLineHisdata = async (type) => {
   const llData = result.ll
   const lllData = result.lll
 
-  lData.forEach(item => {
-    lChartData.value.volValueList.push(item.vol_value.toFixed(1))
-    lChartData.value.curValueList.push(item.cur_value.toFixed(2))
-  })
-
-  llData.forEach(item => {
-    llChartData.value.volValueList.push(item.vol_value.toFixed(1))
-    llChartData.value.curValueList.push(item.cur_value.toFixed(2))
-  })
-
-  lllData.forEach(item => {
-    lllChartData.value.volValueList.push(item.vol_value.toFixed(1))
-    lllChartData.value.curValueList.push(item.cur_value.toFixed(2))
-  })
+processChartData(lData, lChartData);
+processChartData(llData, llChartData);
+processChartData(lllData, lllChartData);
+//   if (lData != null){
+//   lData.forEach(item => {
+//     lChartData.value.volValueList.push(item.vol_value.toFixed(1))
+//     lChartData.value.curValueList.push(item.cur_value.toFixed(2))
+//   })
+// }
+//   if (llData != null){
+//   llData.forEach(item => {
+//     llChartData.value.volValueList.push(item.vol_value.toFixed(1))
+//     llChartData.value.curValueList.push(item.cur_value.toFixed(2))
+//   })
+// }
+//   if (lllData != null){
+//   lllData.forEach(item => {
+//     lllChartData.value.volValueList.push(item.vol_value.toFixed(1))
+//     lllChartData.value.curValueList.push(item.cur_value.toFixed(2))
+//   })
+//   }
   if(type === 'oneHour'){
     lineidDateTimes.value = result.dateTimes
   }else if(type === 'twentyfourHour'){
@@ -2353,20 +2399,23 @@ const PDUHdaLineHisdataV = async (type) => {
   const llDatall = result.ll
   const lllDatalll = result.lll
 
-  lDatal.forEach(item => {
-    lChartDataV.value.volValueList.push(item.vol_value.toFixed(1))
-    lChartDataV.value.curValueList.push(item.cur_value.toFixed(2))
-  })
+processChartData(lDatal, lChartDataV);
+processChartData(llDatall, llChartDataV);
+processChartData(lllDatalll, lllChartDataV);
+  // lDatal.forEach(item => {
+  //   lChartDataV.value.volValueList.push(item.vol_value.toFixed(1))
+  //   lChartDataV.value.curValueList.push(item.cur_value.toFixed(2))
+  // })
 
-  llDatall.forEach(item => {
-    llChartDataV.value.volValueList.push(item.vol_value.toFixed(1))
-    llChartDataV.value.curValueList.push(item.cur_value.toFixed(2))
-  })
+  // llDatall.forEach(item => {
+  //   llChartDataV.value.volValueList.push(item.vol_value.toFixed(1))
+  //   llChartDataV.value.curValueList.push(item.cur_value.toFixed(2))
+  // })
 
-  lllDatalll.forEach(item => {
-    lllChartDataV.value.volValueList.push(item.vol_value.toFixed(1))
-    lllChartDataV.value.curValueList.push(item.cur_value.toFixed(2))
-  })
+  // lllDatalll.forEach(item => {
+  //   lllChartDataV.value.volValueList.push(item.vol_value.toFixed(1))
+  //   lllChartDataV.value.curValueList.push(item.cur_value.toFixed(2))
+  // })
   if(type === 'oneHour'){
     lineidDateTimesV.value = result.dateTimes
   }else if(type === 'twentyfourHour'){

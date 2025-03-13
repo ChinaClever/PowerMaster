@@ -131,9 +131,17 @@
         where is_disabled = 0 and is_deleted = 0
     </select>
     <select id="selectListAndPdu" resultType="cn.iocoder.yudao.framework.common.vo.CabinetPduResVO">
-        select * from cabinet_index ci left join cabinet_pdu cp on ci.id = cp.cabinet_id
+        select
+        cp.id,
+        cp.cabinet_id as cabinetId,
+        cp.pdu_key_a as pduKeyA,
+        cp.pdu_key_b as pduKeyB,
+        ci.cabinet_name as cabinetName,
+        ci.room_id as roomId,
+        ci.aisle_id as aisleId
+        from cabinet_index ci left join cabinet_pdu cp on ci.id = cp.cabinet_id
         <where>
-            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0
+            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0 and (cp.pdu_key_a is not null or cp.pdu_key_b is not null)
         </where>
     </select>
     <select id="selectCabinetBox" resultType="cn.iocoder.yudao.framework.common.vo.CabinetIndexBoxResVO">
@@ -242,5 +250,27 @@
         cabinet_index ci
         LEFT JOIN cabinet_cfg cfg on cfg.cabinet_id = ci.id
         WHERE ci.aisle_id = #{aisleId} and ci.is_deleted = 0 and ci.is_disabled = 0
+    </select>
+    <select id="selectCabinetPduList" resultType="cn.iocoder.yudao.framework.common.vo.CabinetPduResVO">
+        select
+        cp.id,
+        cp.cabinet_id as cabinetId,
+        cp.pdu_key_a as pduKeyA,
+        cp.pdu_key_b as pduKeyB,
+        ci.cabinet_name as cabinetName,
+        ci.room_id as roomId,
+        ci.aisle_id as aisleId
+        from cabinet_index ci left join cabinet_pdu cp on ci.id = cp.cabinet_id
+        <where>
+            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0
+            and (cp.pdu_key_a in
+            <foreach item="item" collection="pduKey" separator="," open="(" close=")" index="">
+                #{item}
+            </foreach>
+            or cp.pdu_key_b in
+            <foreach item="item" collection="pduKey" separator="," open="(" close=")" index="">
+                #{item}
+            </foreach>)
+        </where>
     </select>
 </mapper>

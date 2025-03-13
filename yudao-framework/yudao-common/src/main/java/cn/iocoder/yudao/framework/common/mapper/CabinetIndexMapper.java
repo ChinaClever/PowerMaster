@@ -47,4 +47,6 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     Page<CabinetCfg> selectCabinetEnvPage(Page page, CabinetIndexVo pageReqVO);
 
     List<CabineIndexCfgVO> selectCabineIndexCfgByAisleId(Integer aisleId);
+
+    List<CabinetPduResVO> selectCabinetPduList(@Param("pduKey") List<String> pduKey);
 }
