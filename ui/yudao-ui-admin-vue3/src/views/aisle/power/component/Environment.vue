@@ -42,7 +42,7 @@ const echartsOption = computed(() => ({
   xAxis: {
     type: 'value',
     boundaryGap: [0, 0.01],
-    max: !props.loadFactor.first && !props.loadFactor.second && !props.loadFactor.third ? -1 : 0,
+    max: (!props.loadFactor.first && !props.loadFactor.second && !props.loadFactor.third) || (props.loadFactor.first == "0" && props.loadFactor.second == "0" && props.loadFactor.third == "0") ? -1 : 0,
     axisLabel: {
         show: false // 隐藏 ECharts 自带的标签
     },
@@ -85,9 +85,9 @@ const echartsOption = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        {value:-(props.loadFactor.first ? props.loadFactor.first : 0),itemStyle: { color: '#800080' }}, 
-        {value:-(props.loadFactor.second ? props.loadFactor.second : 0),itemStyle: { color: '#91cc75' }}, 
-        {value:-(props.loadFactor.third ? props.loadFactor.third : 0),itemStyle: { color: '#5470c6' }}]
+        {value:-(props.loadFactor.first ? props.loadFactor.first : 0),itemStyle: { color: props.loadFactor.color[0] }}, 
+        {value:-(props.loadFactor.second ? props.loadFactor.second : 0),itemStyle: { color: props.loadFactor.color[1] }}, 
+        {value:-(props.loadFactor.third ? props.loadFactor.third : 0),itemStyle: { color: props.loadFactor.color[2] }}]
     }
   ]
 }));
