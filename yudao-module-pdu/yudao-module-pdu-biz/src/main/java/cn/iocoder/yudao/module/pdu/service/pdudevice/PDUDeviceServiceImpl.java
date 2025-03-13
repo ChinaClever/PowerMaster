@@ -24,6 +24,7 @@ import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.string.StrUtils;
+import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.BarSeries;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetChartResBase;
@@ -2088,51 +2089,32 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (CollectionUtils.isEmpty(result) || CollectionUtils.isEmpty(pduIndices)) {
             return;
         }
-//        Set<String> ipAddrSet = new HashSet<>();
-//        Set<Integer> cascadeAddrSet = new HashSet<>();
-        List<String> pduKey = pduIndices.stream().map(PduIndex::getPduKey).collect(Collectors.toList());
 
-        // 批量查询 CabinetPdu 表
-        List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
-                .in(CabinetPdu::getPduKeyA, pduKey)
-                .or().in(CabinetPdu::getPduKeyB, pduKey));
+        List<String> pduKey = pduIndices.stream().map(PduIndex::getPduKey).collect(Collectors.toList());
+       List<CabinetPduResVO> cabinetPdus = cabinetIndexMapper.selectCabinetPduList(pduKey);
 
         // 将查询结果按 ipAddr 和 cascadeAddr 分组
-        Map<String, List<CabinetPdu>> cabinetPduAMap = cabinetPdus.stream()
-                .filter(cabinetPdu -> pduKey.contains(cabinetPdu.getPduKeyA()))
+        Map<String, List<CabinetPduResVO>> cabinetPduAMap = cabinetPdus.stream()
+                .filter(vo -> pduKey.contains(vo.getPduKeyA()))
                 .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduKeyA()));
 
 
-        Map<String, List<CabinetPdu>> cabinetPduBMap = cabinetPdus.stream()
-                .filter(cabinetPdu -> pduKey.contains(cabinetPdu.getPduKeyB()))
+        Map<String, List<CabinetPduResVO>> cabinetPduBMap = cabinetPdus.stream()
+                .filter(vo -> pduKey.contains(vo.getPduKeyB()))
                 .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduKeyB()));
 
-        List<Integer> cabinetIds = cabinetPdus.stream()
-                .map(CabinetPdu::getCabinetId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        if (cabinetIds.isEmpty()) {
-            // 如果列表为空，添加一个默认值（这里用 0，但请确保 0 不是数据库中的有效 ID）
-            cabinetIds.add(0);
-        }
-        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
-//        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetPdus.stream().map(CabinetPdu::getCabinetId).collect(Collectors.toList()));
-
-        List<Integer> roomIds = cabinetIndices.stream()
-                .map(CabinetIndex::getRoomId)
+        List<Integer> roomIds = cabinetPdus.stream()
+                .map(CabinetPduResVO::getRoomId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         if (roomIds.isEmpty()) {
             roomIds.add(0);
         }
-
-        Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(roomIds);
 
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
-        List<Integer> cabIds = cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList());
+        List<Integer> cabIds = cabinetPdus.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetPduResVO::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectBatchIds(cabIds);
@@ -2147,12 +2129,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         result.forEach(pduIndex -> {
             String localtion = null;
-            List<CabinetPdu> cabinetPduAList = cabinetPduAMap.get(pduIndex.getDevKey());
-            List<CabinetPdu> cabinetPduBList = cabinetPduBMap.get(pduIndex.getDevKey());
+            List<CabinetPduResVO> cabinetPduAList = cabinetPduAMap.get(pduIndex.getDevKey());
+            List<CabinetPduResVO> cabinetPduBList = cabinetPduBMap.get(pduIndex.getDevKey());
 
             if (cabinetPduAList != null && !cabinetPduAList.isEmpty()) {
-                CabinetPdu cabinetPduA = cabinetPduAList.get(0); // 假设结果唯一
-                CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduA.getCabinetId());
+                CabinetPduResVO cabinetIndex = cabinetPduAList.get(0); // 假设结果唯一
                 if (Objects.nonNull(cabinetIndex)) {
                     if (cabinetIndex.getAisleId() != 0) {
                         localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getCabinetName() + "-" + "A路";
@@ -2163,8 +2144,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
 
             if (cabinetPduBList != null && !cabinetPduBList.isEmpty()) {
-                CabinetPdu cabinetPduB = cabinetPduBList.get(0); // 假设结果唯一
-                CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduB.getCabinetId());
+                CabinetPduResVO cabinetIndex = cabinetPduBList.get(0); // 假设结果唯一
                 if (Objects.nonNull(cabinetIndex)) {
                     if (cabinetIndex.getAisleId() != 0) {
                         localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getCabinetName() + "-" + "B路";

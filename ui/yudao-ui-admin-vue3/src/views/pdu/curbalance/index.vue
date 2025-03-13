@@ -1179,7 +1179,7 @@ const toggleAllStatus = () => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
 
-    if (queryParams.devKey != null){
+    if (queryParams.devKey !== ''  &&  queryParams.devKey !== undefined ){
         butColor.value = 0;
         onclickColor.value = -1;
         queryParams.color = [0,1,2,3,4];

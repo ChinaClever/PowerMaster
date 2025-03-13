@@ -240,6 +240,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const { push } = useRouter(); // 路由跳转
+const message = useMessage(); // 消息弹窗
 const peakDemand = ref(0);
 //const peakDemandTime = ref('');
 const resultData = ref() as any;
@@ -267,13 +268,20 @@ const keyAlocation = ref();
 const keyBlocation = ref();
 
 const goPDU = (devKey,location,busName,path) => {
-
+  if(devKey == -0){
+    message.error('未绑定A路设备!')
+    return;    
+  }
   var name= location+'-'+busName+'-'+path;
-  console.log('跳转', devKey )
+  console.log('跳转', devKey );
   push({path: '/pdu/pdudisplayscreen', query: { devKey, location: name }});
 }
 
 const goBus = (devKey,location,busName,path) => {
+  if(devKey == -0){
+    message.error('未绑定B路设备!')
+    return;    
+  }
   push({path: '/bus/busmonitor/buspowerdetail', state: { devKey ,location,busName,roomName:path}})
 }
 
