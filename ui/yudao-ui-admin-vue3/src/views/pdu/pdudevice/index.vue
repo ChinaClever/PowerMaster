@@ -164,23 +164,30 @@
             <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="总视在功率(kVA)" align="center" prop="apparentPow" width="150px" >
+        <el-table-column label="视在功率(kVA)" align="center" prop="apparentPow" width="150px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
               {{ scope.row.apparentPow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="总有功功率(kW)" align="center" prop="pow" width="130px">
+        <el-table-column label="有功功率(kW)" align="center" prop="pow" width="130px">
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.pow != null" >
               {{ scope.row.pow }}
             </el-text>
           </template>
         </el-table-column>
+        <el-table-column label="无功功率(kVar)" align="center" prop="reactivePow" width="130px">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if=" scope.row.reactivePow != null" >
+              {{ scope.row.reactivePow }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
         <!-- 数据库查询 -->
-        <el-table-column label="总电能(kWh)" align="center" prop="ele" >
+        <el-table-column label="电能(kWh)" align="center" prop="ele" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.ele != null" >
               {{ scope.row.ele }}
@@ -561,6 +568,7 @@ const getList = async () => {
       obj.dataUpdateTime = splitArray[1];
       
       obj.apparentPow = obj.apparentPow.toFixed(3);
+      obj.reactivePow = obj.reactivePow.toFixed(3);
       obj.pow = obj.pow.toFixed(3);
       obj.ele = obj.ele.toFixed(1);
       obj.pf = obj.pf.toFixed(2);
