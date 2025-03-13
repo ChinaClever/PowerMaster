@@ -1747,8 +1747,6 @@ public class BusIndexServiceImpl implements BusIndexService {
         } catch (Exception e) {
             log.error("获取数据失败：", e);
         }
-
-
         return new PageResult<>(new ArrayList<>(), 0L);
     }
 

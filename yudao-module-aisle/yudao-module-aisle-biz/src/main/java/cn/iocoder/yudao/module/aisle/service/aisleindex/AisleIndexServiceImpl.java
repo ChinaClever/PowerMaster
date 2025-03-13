@@ -629,7 +629,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
                 } else {
-                    index = "aisle_hda_line_realtime";
+                    index = "aisle_hda_line_hour";
                     heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneDayAgo.format(formatter);
@@ -643,7 +643,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
                 } else {
-                    index = "aisle_hda_line_realtime";
+                    index = "aisle_hda_line_hour";
                     heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = threeDaysAgo.format(formatter);
@@ -657,7 +657,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
                 } else {
-                    index = "aisle_hda_line_realtime";
+                    index = "aisle_hda_line_day";
                     heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneMonthAgo.format(formatter);
