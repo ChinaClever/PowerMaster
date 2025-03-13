@@ -44,8 +44,8 @@
         label-width="68px"                          
       >
         <el-form-item label="时间段" prop="createTime" label-width="100px">
-          <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery()" 
+          <el-button id="latest24h"
+            @click="queryParams.timeType = 0;queryParams.oldTime = dayjs(new Date()).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');queryParams.newTime = dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss');queryParams.timeArr = null;handleQuery()" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
@@ -301,7 +301,7 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 import Pie from './component/Pie.vue'
 import RequirementLine from './component/RequirementLine.vue'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { ElTree } from 'element-plus'
+import { dayjs, ElTree } from 'element-plus'
 
 
 /** PDU设备 列表 */
@@ -486,8 +486,8 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
-  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
-  newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
+  oldTime : dayjs(new Date()).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss'),
+  newTime : dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'),
 }) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
@@ -553,13 +553,9 @@ const handleQuery = () => {
   }
   getList()
 }
-
 /** 重置按钮操作 */
-const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
-  queryParams.status = [];
-  handleQuery()
+function resetQuery() {
+  document.getElementById("latest24h")?.click();
 }
 
 /** 添加/修改操作 */
