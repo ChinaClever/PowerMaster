@@ -675,14 +675,13 @@ const toggleAllStatus = () => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-
-    if (queryDeletedPageParams.devKey != null){
+    if (queryDeletedPageParams.devKey !=='' && queryDeletedPageParams.devKey !== undefined){
     butColor.value = 0;
     onclickColor.value = -1;
     queryParams.status = [];
     }
 
-    if (queryParams.devKey != null){
+    if (queryParams.devKey  !=='' &&  queryParams.devKey !== undefined ){
     butColor.value = 0;
     onclickColor.value = -1;
     queryParams.status = [];
