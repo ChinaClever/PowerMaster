@@ -132,7 +132,8 @@ const loading = ref(false)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const today=new Date();
+const selectTimeRange = ref([dayjs(new Date(today.getFullYear(), today.getMonth(), 1)).format("YYYY-MM-DD"),dayjs(new Date(today.getFullYear(), today.getMonth(), today.getDate())).format("YYYY-MM-DD")])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -265,7 +266,7 @@ const getList = async () => {
   loading.value = true
   try {
     if(selectTimeRange.value == null){
-      alert('请输入时间范围');
+      ElMessage.error('请输入时间范围')
     return;
     }
     if ( selectTimeRange.value != undefined){
@@ -400,6 +401,10 @@ const getNavNewData = async() => {
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
+    if(selectTimeRange.value == null){
+      ElMessage.error('请输入时间范围')
+      return;
+    }
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
@@ -408,6 +413,11 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
+    // 格式化时间范围 加上23:59:59的时分秒 
+    const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
+    // 结束时间的天数多加一天 ，  一天的毫秒数
+    const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+    queryParams.timeRange = [selectedStartTime, selectedEndTime];
     const data = await EnergyConsumptionApi.getAisleEleTotalRealtimeExcel(queryParams, axiosConfig)
     await download.excel(data, '柜列实时能耗.xlsx')
   } catch (error) {
@@ -431,6 +441,7 @@ onMounted(() => {
   // getList();
 });
 
+handleQuery();
 </script>
 
 <style scoped>
