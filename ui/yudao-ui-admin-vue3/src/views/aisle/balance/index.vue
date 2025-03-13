@@ -486,10 +486,10 @@ const toDetail = async (item) => {
   }
   balanceObj.imbalanceValueA=response.curUnbalancea;
   balanceObj.imbalanceValueB=response.curUnbalanceb;
-  let timeList=response.list.map(item =>item.createTime)
-  ALineOption.value.series[0].data= response.list.map(item =>item.curAAvgValue.toFixed(2))
+  let timeList=response.list!=null? response.list.map(item =>item.createTime):[];
+  ALineOption.value.series[0].data= response.list!=null? response.list.map(item =>item.curAAvgValue.toFixed(2)):[];
   ALineOption.value.xAxis.data=timeList;
-  BLineOption.value.series[0].data= response.list.map(item =>item.curBAvgValue.toFixed(2))
+  BLineOption.value.series[0].data= response.list!=null? response.list.map(item =>item.curBAvgValue.toFixed(2)):[];
   BLineOption.value.xAxis.data=timeList;
   detailLoading.value = false;
   // console.log('详情跳转', id, router, router.getRoutes())
@@ -543,6 +543,10 @@ const handleClose = () => {
   BBarOption.value.series[0].data[0].value=0;
   BBarOption.value.series[0].data[1].value=0;
   BBarOption.value.series[0].data[2].value=0;
+  ALineOption.value.series[0].data= [];
+  ALineOption.value.xAxis.data=[];
+  BLineOption.value.series[0].data= [];
+  BLineOption.value.xAxis.data=[];
 }
 
 //打开对话框
