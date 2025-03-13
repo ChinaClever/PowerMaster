@@ -160,4 +160,5 @@ public class AisleController {
         AisleEqDataDTO dto = aisleService.getMainEq(id);
         return success(dto);
     }
+
 }

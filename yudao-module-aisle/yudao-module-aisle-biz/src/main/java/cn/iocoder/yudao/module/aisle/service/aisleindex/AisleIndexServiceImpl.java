@@ -20,11 +20,10 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.aisle.constant.AisleConstants;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.module.aisle.dal.mysql.aisleindex.AisleIndexCopyMapper;
-import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
+import cn.iocoder.yudao.module.aisle.dto.AislePowerLoadDetailReqDTO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -58,10 +57,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import javax.print.DocFlavor;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -85,7 +82,6 @@ import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.REDIS_KEY_BU
 import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.aisle.constant.AisleConstants.*;
 import static cn.iocoder.yudao.module.aisle.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
-import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.PDU_HDA_LINE_HOUR;
 
 /**
  * 通道列 Service 实现类
@@ -259,13 +255,13 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         Map<Integer, String> voMap = getPositionByIds(roomIds);
 
         List redisList = getMutiRedis(list);
-        Map<Integer,Object> redisMap = (Map<Integer, Object>) redisList.stream().filter(i -> Objects.nonNull(i)).collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getInteger("aisle_key"), Function.identity()));
+        Map<Integer, Object> redisMap = (Map<Integer, Object>) redisList.stream().filter(i -> Objects.nonNull(i)).collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getInteger("aisle_key"), Function.identity()));
 
         for (AisleIndexDO aisleIndexDO : list) {
             AislePowerRes res = new AislePowerRes();
             result.add(res);
             Map<String, String> aisleBarMap = devKey.get(aisleIndexDO.getId());
-            if (Objects.nonNull(aisleBarMap)){
+            if (Objects.nonNull(aisleBarMap)) {
                 res.setDevKeyA(aisleBarMap.get("A"));
                 res.setDevKeyB(aisleBarMap.get("B"));
             }
@@ -277,10 +273,12 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (StringUtils.isNotEmpty(roomName)) {
                 res.setRoomName(roomName);
                 res.setLocation(roomName + SPLIT_KEY + aisleIndexDO.getAisleName());
+            }else {
+                res.setLocation(aisleIndexDO.getAisleName());
             }
 
             Object obj = redisMap.get(aisleIndexDO.getId());
-            if (Objects.isNull(obj)){
+            if (Objects.isNull(obj)) {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
@@ -297,9 +295,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 res.setPowerFactor(totalData.getDouble("power_factor"));
             }
             if (pathA != null) {
-                res.setCurAList(pathA.getList("cur_value",Double.class));
-                res.setVolAList(pathA.getList("vol_value",Double.class));
-                res.setPowValueAList(pathA.getList("pow_value",Double.class));
+                res.setCurAList(pathA.getList("cur_value", Double.class));
+                res.setVolAList(pathA.getList("vol_value", Double.class));
+                res.setPowValueAList(pathA.getList("pow_value", Double.class));
                 res.setEleActiveA(pathA.getDouble("ele_active"));
                 res.setPowApparentA(pathA.getDouble("pow_apparent"));
                 res.setPowActiveA(pathA.getDouble("pow_active"));
@@ -307,9 +305,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 res.setPowerFactorA(pathA.getDouble("power_factor"));
             }
             if (pathB != null) {
-                res.setCurBList(pathB.getList("cur_value",Double.class));
-                res.setVolBList(pathB.getList("vol_value",Double.class));
-                res.setPowValueBList(pathB.getList("pow_value",Double.class));
+                res.setCurBList(pathB.getList("cur_value", Double.class));
+                res.setVolBList(pathB.getList("vol_value", Double.class));
+                res.setPowValueBList(pathB.getList("pow_value", Double.class));
                 res.setEleActiveB(pathB.getDouble("ele_active"));
                 res.setPowApparentB(pathB.getDouble("pow_apparent"));
                 res.setPowActiveB(pathB.getDouble("pow_active"));
@@ -388,6 +386,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (StringUtils.isNotEmpty(roomName)) {
                 dto.setRoomName(roomName);
                 dto.setLocation(roomName + SPLIT_KEY + dto.getName());
+            }else {
+                dto.setLocation(dto.getName());
             }
         });
         if (StringUtils.isNotEmpty(pageReqVO.getTimeGranularity())) {
@@ -492,7 +492,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     });
                 }
                 List<AisleEQRes> result = new ArrayList<>();
-                List<Integer> roomIds = boxIndices.stream().map(AisleIndexDO::getRoomId).collect(Collectors.toList());
+                List<Integer> roomIds = boxIndices.stream().map(AisleIndexDO::getRoomId).distinct().collect(Collectors.toList());
                 Map<Integer, String> voMap = getPositionByIds(roomIds);
                 list.forEach(iter -> {
                     AisleEQRes dto = new AisleEQRes();
@@ -500,6 +500,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     if (Objects.nonNull(aisleIndexDO)) {
                         dto.setName(aisleIndexDO.getAisleName());
                         dto.setId(aisleIndexDO.getId());
+                        dto.setRoomId(aisleIndexDO.getRoomId());
                     }
 
                     if (Objects.nonNull(yesterdayMap.get(dto.getId()))) {
@@ -515,6 +516,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     if (StringUtils.isNotEmpty(roomName)) {
                         dto.setRoomName(roomName);
                         dto.setLocation(roomName + SPLIT_KEY + dto.getName());
+                    }else {
+                        dto.setLocation(dto.getName());
                     }
                     result.add(dto);
                 });
@@ -545,51 +548,159 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             Double powActiveTotal = 0.0;
             JSONObject totalData = aislePower.getJSONObject("total_data");
             if (Objects.nonNull(totalData)) {
-                powApparentTotal=totalData.getDouble("pow_apparent");
-                powActiveTotal=totalData.getDouble("pow_active");
+                powApparentTotal = totalData.getDouble("pow_apparent");
+                powActiveTotal = totalData.getDouble("pow_active");
             }
 
             JSONObject pathA = aislePower.getJSONObject("path_a");
             if (Objects.nonNull(pathA)) {
-                powApparentA=pathA.getDouble("pow_apparent");
-                powActiveA=pathA.getDouble("pow_active");
+                powApparentA = pathA.getDouble("pow_apparent");
+                powActiveA = pathA.getDouble("pow_active");
                 List<Double> curList = pathA.getList("cur_value", Double.class);
                 vo.setCurLista(curList);
-                vo.setVolLista(pathA.getList("vol_value",Double.class));
+                vo.setVolLista(pathA.getList("vol_value", Double.class));
 
                 Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
                 Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-                vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+                vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
 
             JSONObject pathB = aislePower.getJSONObject("path_b");
             if (Objects.nonNull(pathB)) {
-                powApparentB=pathB.getDouble("pow_apparent");
-                powActiveB=pathB.getDouble("pow_active");
+                powApparentB = pathB.getDouble("pow_apparent");
+                powActiveB = pathB.getDouble("pow_active");
                 List<Double> curList = pathB.getList("cur_value", Double.class);
                 vo.setCurListb(curList);
-                vo.setVolListb(pathB.getList("vol_value",Double.class));
+                vo.setVolListb(pathB.getList("vol_value", Double.class));
 
                 Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
                 Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-                vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+                vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
 
-            vo.setRateA(BigDemicalUtil.safeDivideNum(3,powApparentA,powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
-            vo.setPowActiveARate(BigDemicalUtil.safeDivideNum(3,powActiveA,powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setRateA(BigDemicalUtil.safeDivideNum(3, powApparentA, powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setPowActiveARate(BigDemicalUtil.safeDivideNum(3, powActiveA, powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
 
-            vo.setRateB(BigDemicalUtil.safeDivideNum(3,powApparentB,powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
-            vo.setPowActiveBRate(BigDemicalUtil.safeDivideNum(3,powActiveB,powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setRateB(BigDemicalUtil.safeDivideNum(3, powApparentB, powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
+            vo.setPowActiveBRate(BigDemicalUtil.safeDivideNum(3, powActiveB, powActiveTotal).multiply(new BigDecimal(100)).doubleValue());
 
             List<AisleHdaLineHour> aisleHdaLineHour = getData(LocalDateTimeUtil.format(LocalDateTime.now().minusDays(1), "yyyy-MM-dd HH:mm:ss"),
                     LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss"),
                     id, "aisle_hda_line_hour", AisleHdaLineHour.class);
-            if (!CollectionUtils.isAnyEmpty(aisleHdaLineHour)){
-            List<AisleBalanceChartVolCurVO> bean = BeanUtils.toBean(aisleHdaLineHour, AisleBalanceChartVolCurVO.class);
-            vo.setList(bean);
+            if (!CollectionUtils.isAnyEmpty(aisleHdaLineHour)) {
+                List<AisleBalanceChartVolCurVO> bean = BeanUtils.toBean(aisleHdaLineHour, AisleBalanceChartVolCurVO.class);
+                vo.setList(bean);
             }
         }
         return vo;
+    }
+
+    @Override
+    public Map getLineChartDetailData(AislePowerLoadDetailReqDTO reqVO) {
+        if (reqVO.getId() == null) {
+            return null;
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+
+        String index = null;
+        String[] heads = new String[]{};
+        String startTime = null;
+        String endTime = null;
+        switch (reqVO.getGranularity()) {
+            case "realtime":
+                LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+                if (reqVO.getFlag()) {
+                    heads = new String[]{"aisle_id", "apparent_total", "apparent_a", "apparent_b",
+                            "active_total", "active_a", "active_b", "reactive_total", "reactive_a", "reactive_b", "factor_total", "factor_a", "factor_b", "create_time"};
+                    index = "aisle_hda_pow_realtime";
+                } else {
+                    index = "aisle_hda_line_realtime";
+                    heads = new String[]{"aisle_id","lind_id", "vol_a", "vol_b", "cur_a", "cur_b", "create_time"};
+                }
+                startTime = oneHourAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+            case "hour":
+                LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+                if (reqVO.getFlag()) {
+                    index = "aisle_hda_pow_hour";
+                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "aisle_id"};
+                } else {
+                    index = "aisle_hda_line_realtime";
+                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                }
+                startTime = oneDayAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+            case "SeventyHours":
+                LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+                if (reqVO.getFlag()) {
+                    index = "aisle_hda_pow_hour";
+                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "aisle_id"};
+                } else {
+                    index = "aisle_hda_line_realtime";
+                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                }
+                startTime = threeDaysAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+            default:
+                LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+                if (reqVO.getFlag()) {
+                    index = "aisle_hda_pow_day";
+                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "aisle_id"};
+                } else {
+                    index = "aisle_hda_line_realtime";
+                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                }
+                startTime = oneMonthAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+        }
+        List<String> data = getData(startTime, endTime, reqVO.getId(), index, heads);
+
+        List<Map> list = new ArrayList<>();
+
+        List<Object> resultLine1 = new ArrayList<>();
+        List<Object> resultLine2 = new ArrayList<>();
+        List<Object> resultLine3 = new ArrayList<>();
+
+        data.forEach(str -> {
+            Map map = JsonUtils.parseObject(str, Map.class);
+            if (reqVO.getFlag()) {
+                list.add(map);
+            }else {
+                Integer lindId = (Integer) map.get("lind_id");
+                switch (lindId) {
+                    case 1:
+                        resultLine1.add(map);
+                        break;
+                    case 2:
+                        resultLine2.add(map);
+                        break;
+                    case 3:
+                        resultLine3.add(map);
+                        break;
+                    default:
+                }
+            }
+        });
+        Map map = new HashMap();
+        if (reqVO.getFlag()) {
+            map.put("data", list);
+        }else {
+            map.put("L1", resultLine1);
+            map.put("L2", resultLine2);
+            map.put("L3", resultLine3);
+        }
+        return map;
     }
 
     @Override
@@ -728,8 +839,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             List<Integer> ids = (List<Integer>) esTotalAndIds.get("ids");
 
 
-
-                    //视在功率
+            //视在功率
             Map<Integer, MaxValueAndCreateTime> apparentAMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "apparent_a_max_value", "apparent_a_max_time");
             Map<Integer, MaxValueAndCreateTime> apparentBMap = getAisleLinePowMaxData(startTime, endTime, ids, index, "apparent_b_max_value", "apparent_b_max_time");
             //有功功率
@@ -918,10 +1028,10 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 index = AISLE_HDA_POW_DAY;
             }
             List<Integer> ids = Arrays.asList(pageReqVO.getId());
-            String[] heads = new String[]{"create_time","aisle_id","active_total_max_value","active_total_max_time",
-                    "active_a_max_value","active_a_max_time","active_b_max_value","active_b_max_time","apparent_a_max_value","apparent_a_max_time",
-                    "apparent_b_max_value","apparent_b_max_time","apparent_total_max_value","apparent_total_max_time"};
-            List<String> data = getDataFetch(startTime, endTime, ids, index,heads);
+            String[] heads = new String[]{"create_time", "aisle_id", "active_total_max_value", "active_total_max_time",
+                    "active_a_max_value", "active_a_max_time", "active_b_max_value", "active_b_max_time", "apparent_a_max_value", "apparent_a_max_time",
+                    "apparent_b_max_value", "apparent_b_max_time", "apparent_total_max_value", "apparent_total_max_time"};
+            List<String> data = getData(startTime, endTime, ids, index, heads);
 
             result.getSeries().add(new RequirementLineSeries().setName("总最大有功功率"));
             result.getSeries().add(new RequirementLineSeries().setName("A路最大有功功率"));
@@ -1706,7 +1816,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         endTime = DateUtil.formatDateTime(DateTime.now());
 
         double todayEq = getDayEq(startTime, endTime, id);
-        chainDTO.setTodayEq(todayEq);
+        chainDTO.setTodayEq(new BigDecimal(todayEq).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
         //昨日
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR_OF_DAY, -24);
@@ -1719,8 +1829,11 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         list.forEach(str -> {
             AisleEqTotalDayDo dayDo = JsonUtils.parseObject(str, AisleEqTotalDayDo.class);
             String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, dayDo.getEqValue());
-
+            if (Objects.equals(dayDo.getEqValue(), 0.0)) {
+                eqMap.put(dateTime, dayDo.getEndEle());
+            } else {
+                eqMap.put(dateTime, dayDo.getEqValue());
+            }
         });
         //前日
         String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
@@ -1730,11 +1843,12 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
         double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
 
-        chainDTO.setYesterdayEq(lastEq);
-
         NumberFormat percentInstance = NumberFormat.getPercentInstance();
         // 设置保留几位小数，这里设置的是保留两位小数
         percentInstance.setMinimumFractionDigits(2);
+
+        chainDTO.setYesterdayEq(new BigDecimal(lastEq).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
+
         //环比
         String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
         chainDTO.setDayRate(dayRate);
@@ -1756,7 +1870,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         endTime = DateUtil.formatDateTime(DateTime.now());
 
         double thisWeekEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisWeekEq(thisWeekEq);
+        chainDTO.setThisWeekEq(new BigDecimal(thisWeekEq).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
         //上周
         LocalDate today = LocalDate.now();
         //上周第一天
@@ -1774,8 +1888,12 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         list.forEach(str -> {
             AisleEqTotalWeekDo weekDo = JsonUtils.parseObject(str, AisleEqTotalWeekDo.class);
             String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, weekDo.getEqValue());
-
+//            eqMap.put(dateTime, weekDo.getEqValue());
+            if (Objects.equals(weekDo.getEqValue(), 0.0)) {
+                eqMap.put(dateTime, weekDo.getEndEle());
+            } else {
+                eqMap.put(dateTime, weekDo.getEqValue());
+            }
         });
         //上上周
         String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
@@ -1784,8 +1902,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         //上周
         String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
         double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
-
-        chainDTO.setLastWeekEq(lastEq);
+        chainDTO.setLastWeekEq(new BigDecimal(lastEq).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
 
         NumberFormat percentInstance = NumberFormat.getPercentInstance();
         // 设置保留几位小数，这里设置的是保留两位小数
@@ -1810,7 +1927,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         endTime = DateUtil.formatDateTime(DateTime.now());
 
         double thisMonthEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisMonthEq(thisMonthEq);
+
+        chainDTO.setThisMonthEq(new BigDecimal(thisMonthEq).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
         //上月
         //上月第一天
         Calendar lastMonthFirstDateCal = Calendar.getInstance();
@@ -1827,8 +1945,12 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         list.forEach(str -> {
             AisleEqTotalMonthDo monthDo = JsonUtils.parseObject(str, AisleEqTotalMonthDo.class);
             String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, monthDo.getEqValue());
-
+//            eqMap.put(dateTime, monthDo.getEqValue());
+            if (Objects.equals(monthDo.getEqValue(), 0.0)) {
+                eqMap.put(dateTime, monthDo.getEndEle());
+            } else {
+                eqMap.put(dateTime, monthDo.getEqValue());
+            }
         });
         //上上月
         String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
@@ -1836,7 +1958,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         //上月
         String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
         double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
-        chainDTO.setLastMonthEq(lastMonthEq);
+        chainDTO.setLastMonthEq(new BigDecimal(lastMonthEq).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
 
         NumberFormat percentInstance = NumberFormat.getPercentInstance();
         // 设置保留几位小数，这里设置的是保留两位小数
@@ -1896,7 +2018,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
                     .must(QueryBuilders.termsQuery("aisle_id", ids))));
-//        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(2000);
@@ -1926,17 +2048,57 @@ public class AisleIndexServiceImpl implements AisleIndexService {
      * @param ids       机柜id列表
      * @param index     索引表
      */
-    private List<String> getDataFetch(String startTime, String endTime, List<Integer> ids, String index,String[] heads) {
+    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index, String[] heads) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
-            builder.fetchSource(heads,null);
+            builder.fetchSource(heads, null);
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
                     .must(QueryBuilders.termsQuery("aisle_id", ids))));
-//        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(2000);
+
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("柜列查询es数据失败" + e);
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param id        机柜id列表
+     * @param index     索引表
+     */
+    private List<String> getData(String startTime, String endTime, Integer id, String index, String[] heads) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.fetchSource(heads, null);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termQuery("aisle_id", id))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(2000);
@@ -1968,7 +2130,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
      * @return
      * @throws IOException
      */
-    private List<String> getData(String startTime, String endTime, AislePowVo powVo, String index){
+    private List<String> getData(String startTime, String endTime, AislePowVo powVo, String index) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -1994,7 +2156,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 }
             }
             return list;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("柜列查询es数据失败" + e);
         }
         return null;
@@ -2009,7 +2171,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
      * @return
      * @throws IOException
      */
-    private List<String> getData(String startTime, String endTime, int id, String index){
+    private List<String> getData(String startTime, String endTime, int id, String index) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -2035,13 +2197,13 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 }
             }
             return list;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("获取es数据失败" + e);
         }
         return null;
     }
 
-    private List getData(String startTime, String endTime, int id, String index,Class classz){
+    private List getData(String startTime, String endTime, int id, String index, Class classz) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -2064,13 +2226,13 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
                     Object obj = JsonUtils.parseObject(str, classz);
-                    if (Objects.nonNull(obj)){
+                    if (Objects.nonNull(obj)) {
                         list.add(obj);
                     }
                 }
             }
             return list;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("获取es数据失败" + e);
         }
         return null;
@@ -2145,7 +2307,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
             //获取需要处理的数据
-            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + AisleConstants.KEYWORD)
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD)
                             .gte(startTime)
                             .lt(endTime))
                     .must(QueryBuilders.termQuery(AISLE_ID, id))));
@@ -2154,7 +2316,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             // 设置聚合查询
             String top = "top";
             AggregationBuilder topAgg = AggregationBuilders.topHits(top)
-                    .size(1).sort(CREATE_TIME + AisleConstants.KEYWORD, sortOrder);
+                    .size(1).sort(CREATE_TIME + KEYWORD, sortOrder);
 
             builder.aggregation(topAgg);
 

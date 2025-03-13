@@ -68,6 +68,8 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -531,6 +533,7 @@ public class AisleServiceImpl implements AisleService {
         AisleDetailDTO detailDTO = new AisleDetailDTO();
         AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
         ValueOperations ops = redisTemplate.opsForValue();
+        DecimalFormat df = new DecimalFormat("#.00");
         if (Objects.nonNull(aisleIndex)) {
             detailDTO.setAisleName(aisleIndex.getAisleName());
             detailDTO.setId(aisleId);
@@ -545,6 +548,32 @@ public class AisleServiceImpl implements AisleService {
             if (Objects.nonNull(roomIndex)) {
                 detailDTO.setRoomName(roomIndex.getRoomName());
                 detailDTO.setRoomId(roomId);
+            }
+            Object obj = ops.get(REDIS_KEY_AISLE + aisleId);
+            if (Objects.nonNull(obj)) {
+                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
+                JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
+                JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
+                if (totalData != null) {
+                    detailDTO.setPowActiveTotal(BigDecimal.valueOf(totalData.getDouble("pow_active")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    detailDTO.setPowReactiveTotal(BigDecimal.valueOf(totalData.getDouble("pow_reactive")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    detailDTO.setPowApparentTotal(BigDecimal.valueOf(totalData.getDouble("pow_apparent")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
+                if (pathA != null) {
+                    detailDTO.setCurAList(pathA.getList("cur_value",Double.class));
+                    detailDTO.setVolAList(pathA.getList("vol_value",Double.class));
+                    detailDTO.setPowApparentA(BigDecimal.valueOf(pathA.getDouble("pow_apparent")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    detailDTO.setPowActiveA(BigDecimal.valueOf(pathA.getDouble("pow_active")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    detailDTO.setPowReactiveA(BigDecimal.valueOf(pathA.getDouble("pow_reactive")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
+                if (pathB != null) {
+                    detailDTO.setCurBList(pathB.getList("cur_value",Double.class));
+                    detailDTO.setVolBList(pathB.getList("vol_value",Double.class));
+                    detailDTO.setPowApparentB(BigDecimal.valueOf(pathB.getDouble("pow_apparent")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    detailDTO.setPowActiveB(BigDecimal.valueOf(pathB.getDouble("pow_active")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    detailDTO.setPowReactiveB(BigDecimal.valueOf(pathB.getDouble("pow_reactive")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
             }
         }
 
@@ -1518,8 +1547,12 @@ public class AisleServiceImpl implements AisleService {
         list.forEach(str -> {
             AisleEqTotalDayDo dayDo = JsonUtils.parseObject(str, AisleEqTotalDayDo.class);
             String dateTime = DateUtil.formatDate(dayDo.getCreateTime());
-            eqMap.put(dateTime, dayDo.getEqValue());
-
+//            eqMap.put(dateTime, dayDo.getEqValue());
+            if (Objects.equals(dayDo.getEqValue(),0.0)){
+                eqMap.put(dateTime, dayDo.getEndEle());
+            }else {
+                eqMap.put(dateTime, dayDo.getEqValue());
+            }
         });
 
         //昨天
@@ -1553,8 +1586,12 @@ public class AisleServiceImpl implements AisleService {
         list.forEach(str -> {
             AisleEqTotalWeekDo weekDo = JsonUtils.parseObject(str, AisleEqTotalWeekDo.class);
             String dateTime = DateUtil.formatDate(weekDo.getCreateTime());
-            eqMap.put(dateTime, weekDo.getEqValue());
-
+//            eqMap.put(dateTime, weekDo.getEqValue());
+            if (Objects.equals(weekDo.getEqValue(),0.0)){
+                eqMap.put(dateTime, weekDo.getEndEle());
+            }else {
+                eqMap.put(dateTime, weekDo.getEqValue());
+            }
         });
         //上周
         String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
@@ -1587,8 +1624,12 @@ public class AisleServiceImpl implements AisleService {
         list.forEach(str -> {
             AisleEqTotalMonthDo monthDo = JsonUtils.parseObject(str, AisleEqTotalMonthDo.class);
             String dateTime = DateUtil.formatDate(monthDo.getCreateTime());
-            eqMap.put(dateTime, monthDo.getEqValue());
-
+//            eqMap.put(dateTime, monthDo.getEqValue());
+            if (Objects.equals(monthDo.getEqValue(),0.0)){
+                eqMap.put(dateTime, monthDo.getEndEle());
+            }else {
+                eqMap.put(dateTime, monthDo.getEqValue());
+            }
         });
 
         //上月

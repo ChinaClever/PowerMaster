@@ -4,6 +4,7 @@ import javax.validation.*;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.aisle.dto.AislePowerLoadDetailReqDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,4 +88,6 @@ public interface AisleIndexService {
     PageResult<AisleEQRes> getEqPage1(AisleIndexPageReqVO pageReqVO);
 
     AisleBalanceChartResVO getAisleBalanceChart(Integer id);
+
+    Map getLineChartDetailData(AislePowerLoadDetailReqDTO reqVO);
 }

@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
+import cn.iocoder.yudao.module.aisle.dto.AislePowerLoadDetailReqDTO;
 import cn.iocoder.yudao.module.aisle.service.aisleindex.AisleIndexService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -220,6 +221,13 @@ public class AisleIndexController {
     @Operation(summary = "获得通道列报表数据")
     public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
         return success(indexService.getAislePFLine(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/chartDetail")
+    @Operation(summary = "折线图数据")
+    public CommonResult<Map> getBusLineChartDetailData(@RequestBody @Valid AislePowerLoadDetailReqDTO reqVO) throws IOException {
+
+        return success(indexService.getLineChartDetailData(reqVO));
     }
 
     @GetMapping("/idList")
