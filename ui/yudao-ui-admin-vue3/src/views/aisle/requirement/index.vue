@@ -286,7 +286,6 @@
         <div>
           <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />
         </div>
-
       </el-dialog>
     </template>
   </CommonMenu>
@@ -537,6 +536,8 @@ const openDetail = async (row) =>{
   const lineData = await IndexApi.getAisleLineCurLine(queryParams);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
+  requirementLine.value.series.splice(1,0,requirementLine.value.series.pop());
+  console.log('requirementLine',requirementLine.value);
   location.value = row?.location 
   startTime.value = lineData.time[0];
   endTime.value = lineData.time[lineData.time.length - 1];
