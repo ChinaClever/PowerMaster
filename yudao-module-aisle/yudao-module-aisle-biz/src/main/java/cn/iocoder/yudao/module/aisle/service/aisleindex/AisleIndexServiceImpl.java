@@ -556,26 +556,28 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (Objects.nonNull(pathA)) {
                 powApparentA = pathA.getDouble("pow_apparent");
                 powActiveA = pathA.getDouble("pow_active");
-                List<Double> curList = pathA.getList("cur_value", Double.class);
-                vo.setCurLista(curList);
                 vo.setVolLista(pathA.getList("vol_value", Double.class));
-
-                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
-                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-                vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                List<Double> curList = pathA.getList("cur_value", Double.class);
+                if (!CollectionUtils.isAnyEmpty(curList)) {
+                    vo.setCurLista(curList);
+                    Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                    Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                    vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
             }
 
             JSONObject pathB = aislePower.getJSONObject("path_b");
             if (Objects.nonNull(pathB)) {
                 powApparentB = pathB.getDouble("pow_apparent");
                 powActiveB = pathB.getDouble("pow_active");
-                List<Double> curList = pathB.getList("cur_value", Double.class);
-                vo.setCurListb(curList);
                 vo.setVolListb(pathB.getList("vol_value", Double.class));
-
-                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
-                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-                vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                List<Double> curList = pathB.getList("cur_value", Double.class);
+                if (!CollectionUtils.isAnyEmpty(curList)) {
+                    vo.setCurListb(curList);
+                    Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                    Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                    vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
             }
 
             vo.setRateA(BigDemicalUtil.safeDivideNum(3, powApparentA, powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
@@ -616,7 +618,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     index = "aisle_hda_pow_realtime";
                 } else {
                     index = "aisle_hda_line_realtime";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a", "vol_b", "cur_a", "cur_b", "create_time"};
+                    heads = new String[]{"aisle_id","line_id", "vol_a", "vol_b", "cur_a", "cur_b", "create_time"};
                 }
                 startTime = oneHourAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -630,7 +632,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "create_time", "aisle_id"};
                 } else {
                     index = "aisle_hda_line_hour";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneDayAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -644,7 +646,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "create_time", "aisle_id"};
                 } else {
                     index = "aisle_hda_line_hour";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = threeDaysAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -658,7 +660,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "create_time", "aisle_id"};
                 } else {
                     index = "aisle_hda_line_day";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneMonthAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -677,7 +679,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (reqVO.getFlag()) {
                 list.add(map);
             }else {
-                Integer lindId = (Integer) map.get("lind_id");
+                Integer lindId = (Integer) map.get("line_id");
                 switch (lindId) {
                     case 1:
                         resultLine1.add(map);
@@ -1121,7 +1123,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             } else {
                 aisleBalanceRes.setRateA(0.0);
             }
-            if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
+            if (aisleBalanceRes.getPowApparentB() != null && aisleBalanceRes.getPowApparentB() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
                 aisleBalanceRes.setRateB((aisleBalanceRes.getPowApparentB() / aisleBalanceRes.getPowApparentTotal()) * 100);
             } else {
                 aisleBalanceRes.setRateB(0.0);
