@@ -138,4 +138,5 @@ public interface CabinetService {
     CabinetDTO getCabinetCapacityDetail(int id);
 
     Map getCabinetPFDetail(CabinetIndexVo pageReqVO);
+
 }

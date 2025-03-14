@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AisleHdaLineHour;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
@@ -61,11 +62,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -556,26 +555,28 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (Objects.nonNull(pathA)) {
                 powApparentA = pathA.getDouble("pow_apparent");
                 powActiveA = pathA.getDouble("pow_active");
-                List<Double> curList = pathA.getList("cur_value", Double.class);
-                vo.setCurLista(curList);
                 vo.setVolLista(pathA.getList("vol_value", Double.class));
-
-                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
-                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-                vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                List<Double> curList = pathA.getList("cur_value", Double.class);
+                if (!CollectionUtils.isAnyEmpty(curList)) {
+                    vo.setCurLista(curList);
+                    Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                    Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                    vo.setCurUnbalancea(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
             }
 
             JSONObject pathB = aislePower.getJSONObject("path_b");
             if (Objects.nonNull(pathB)) {
                 powApparentB = pathB.getDouble("pow_apparent");
                 powActiveB = pathB.getDouble("pow_active");
-                List<Double> curList = pathB.getList("cur_value", Double.class);
-                vo.setCurListb(curList);
                 vo.setVolListb(pathB.getList("vol_value", Double.class));
-
-                Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
-                Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-                vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                List<Double> curList = pathB.getList("cur_value", Double.class);
+                if (!CollectionUtils.isAnyEmpty(curList)) {
+                    vo.setCurListb(curList);
+                    Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+                    Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+                    vo.setCurUnbalanceb(BigDecimal.valueOf(curUnbalance).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                }
             }
 
             vo.setRateA(BigDemicalUtil.safeDivideNum(3, powApparentA, powApparentTotal).multiply(new BigDecimal(100)).doubleValue());
@@ -616,7 +617,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     index = "aisle_hda_pow_realtime";
                 } else {
                     index = "aisle_hda_line_realtime";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a", "vol_b", "cur_a", "cur_b", "create_time"};
+                    heads = new String[]{"aisle_id","line_id", "vol_a", "vol_b", "cur_a", "cur_b", "create_time"};
                 }
                 startTime = oneHourAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -629,8 +630,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
                 } else {
-                    index = "aisle_hda_line_realtime";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    index = "aisle_hda_line_hour";
+                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneDayAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -643,8 +644,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
                 } else {
-                    index = "aisle_hda_line_realtime";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    index = "aisle_hda_line_hour";
+                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = threeDaysAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -657,8 +658,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
                 } else {
-                    index = "aisle_hda_line_realtime";
-                    heads = new String[]{"aisle_id","lind_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    index = "aisle_hda_line_day";
+                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneMonthAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -677,7 +678,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (reqVO.getFlag()) {
                 list.add(map);
             }else {
-                Integer lindId = (Integer) map.get("lind_id");
+                Integer lindId = (Integer) map.get("line_id");
                 switch (lindId) {
                     case 1:
                         resultLine1.add(map);
@@ -701,6 +702,70 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             map.put("L3", resultLine3);
         }
         return map;
+    }
+
+    @Override
+    public List<AisleMaxEqResVO> getMaxEq() {
+        List<AisleMaxEqResVO> result = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        // 昨天的起始时间（00:00:00）
+        LocalDateTime start = yesterday.atTime(LocalTime.MIN);
+        LocalDateTime end = yesterday.atTime(LocalTime.MAX);
+
+        extractedMaxEq("aisle_eq_total_day",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,0);
+        // 获取上周的开始时间（周一）
+         start = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+         end = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+
+        extractedMaxEq("aisle_eq_total_week",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,1);
+
+         start = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+         end = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+
+        extractedMaxEq("aisle_eq_total_month",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,2);
+        return result;
+    }
+
+    private void extractedMaxEq(String indexEs, String startTime, String endTime, List<AisleMaxEqResVO> result, Integer type) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(indexEs);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                    .gte(startTime).lte(endTime))));
+            builder.sort("eq_value", SortOrder.DESC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(1);
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            SearchHit[] hits = searchResponse.getHits().getHits();
+            if (hits.length > 0) {
+                // 获取最大值和时间字段
+                Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
+                AisleMaxEqResVO aisleMaxEqResVO = new AisleMaxEqResVO();
+                aisleMaxEqResVO.setMaxEq((Double) sourceAsMap.get("eq_value"));
+                aisleMaxEqResVO.setId((Integer) sourceAsMap.get("aisle_id"));
+                AisleIndexDO aisleIndexDO = aisleIndexCopyMapper.selectById(aisleMaxEqResVO.getId());
+                RoomIndex roomIndex = roomIndexMapper.selectById(aisleIndexDO.getRoomId());
+                aisleMaxEqResVO.setRoomId(aisleIndexDO.getRoomId());
+                aisleMaxEqResVO.setAisleName(aisleIndexDO.getAisleName());
+                aisleMaxEqResVO.setRoomName(roomIndex.getRoomName());
+                aisleMaxEqResVO.setType(type);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+                result.add(aisleMaxEqResVO);
+            }
+        } catch (Exception e) {
+            log.error("插接箱用能最大查询异常：" + e);
+        }
     }
 
     @Override
@@ -1121,7 +1186,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             } else {
                 aisleBalanceRes.setRateA(0.0);
             }
-            if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
+            if (aisleBalanceRes.getPowApparentB() != null && aisleBalanceRes.getPowApparentB() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
                 aisleBalanceRes.setRateB((aisleBalanceRes.getPowApparentB() / aisleBalanceRes.getPowApparentTotal()) * 100);
             } else {
                 aisleBalanceRes.setRateB(0.0);

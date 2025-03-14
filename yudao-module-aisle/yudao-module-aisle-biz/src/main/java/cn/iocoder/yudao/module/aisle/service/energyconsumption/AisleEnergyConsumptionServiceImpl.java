@@ -13,6 +13,7 @@ import cn.iocoder.yudao.module.aisle.service.historydata.AisleHistoryDataService
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -69,7 +70,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] aisleIds = pageReqVO.getAisleIds();
-        if (aisleIds != null) {
+        if (ObjectUtils.isNotEmpty(aisleIds)) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("aisle_id", aisleIds));
         }
         // 搜索请求对象
@@ -123,7 +124,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] aisleIds = pageReqVO.getAisleIds();
-        if (aisleIds != null) {
+        if (ObjectUtils.isNotEmpty(aisleIds)) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("aisle_id", aisleIds));
         }
         // 搜索请求对象
@@ -218,7 +219,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] aisleIds = pageReqVO.getAisleIds();
-        if (aisleIds != null) {
+        if (ObjectUtils.isNotEmpty(aisleIds)) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("aisle_id", aisleIds));
         }
         searchRequest.indices("aisle_ele_total_realtime");
@@ -448,6 +449,8 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
             String location = null;
             if (roomIndex != null) {
                 location =  roomIndex.getRoomName() + "-"  + record.getAisleName() ;
+            }else {
+                location =  record.getAisleName() ;
             }
             AisleEleTotalRealtimeResVO resVO = new AisleEleTotalRealtimeResVO();
             resVO.setId(record.getId()).setLocation(location);

@@ -90,4 +90,7 @@ public interface AisleIndexService {
     AisleBalanceChartResVO getAisleBalanceChart(Integer id);
 
     Map getLineChartDetailData(AislePowerLoadDetailReqDTO reqVO);
+
+    List<AisleMaxEqResVO> getMaxEq();
+
 }

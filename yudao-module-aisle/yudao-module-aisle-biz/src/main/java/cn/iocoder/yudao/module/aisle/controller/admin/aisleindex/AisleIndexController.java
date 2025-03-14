@@ -235,6 +235,14 @@ public class AisleIndexController {
     public List<Integer> idList() {
         return indexService.idList();
     }
+
+    @Operation(summary = "柜列用能最多")
+    @PostMapping("/eq/maxEq")
+    public CommonResult<List<AisleMaxEqResVO>> getMaxEq() {
+        List<AisleMaxEqResVO> pageResult = indexService.getMaxEq();
+        return success(pageResult);
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出通道列 Excel")
 //    @PreAuthorize("@ss.hasPermission('aisle:index:export')")
