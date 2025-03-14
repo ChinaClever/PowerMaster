@@ -65,8 +65,12 @@ import org.springframework.util.CollectionUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -1817,18 +1821,29 @@ public CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int
     @Override
     public List<CabinetEnergyMaxResVO> getEnergyMax() {
         List<CabinetEnergyMaxResVO> result = new ArrayList<>();
-        String endTime = DateUtil.formatDateTime(DateTime.now());
-        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-        //借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
-        extractedMaxEq("cabinet_eq_total_day", startTime, endTime, result, 0);
 
-        //上周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-        extractedMaxEq("cabinet_eq_total_week", startTime, endTime, result, 1);
-        //上月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-        extractedMaxEq("cabinet_eq_total_week", startTime, endTime, result, 2);
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
 
+        // 昨天的起始时间（00:00:00）
+        LocalDateTime start = yesterday.atTime(LocalTime.MIN);
+        LocalDateTime end = yesterday.atTime(LocalTime.MAX);
+
+        extractedMaxEq("cabinet_eq_total_day",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,0);
+        // 获取上周的开始时间（周一）
+        start = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+        end = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+
+        extractedMaxEq("cabinet_eq_total_week",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,1);
+
+        start = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+        end = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+
+        extractedMaxEq("cabinet_eq_total_month",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,2);
         return result;
     }
 

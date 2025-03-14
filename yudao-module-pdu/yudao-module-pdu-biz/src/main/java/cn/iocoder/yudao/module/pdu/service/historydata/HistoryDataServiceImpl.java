@@ -5,6 +5,8 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
+import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageReqVo;
@@ -18,6 +20,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -35,6 +38,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -132,24 +136,22 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
         String address = null;
 
-        // A 路
-        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(
-                new LambdaQueryWrapperX<CabinetPdu>()
-                        .eq(CabinetPdu::getPduKeyA, ipParts[0]+"-"+ipParts[1])
-//                        .eq(CabinetPdu::getCasIdA, )
-        );
+        List<CabinetPduResVO> vo = cabinetIndexMapper.selectCabinetPduByPduKey(ipParts[0]+"-"+ipParts[1]);
+        Map<String, List<CabinetPduResVO>> pathAMap = vo.stream().filter(i -> StringUtils.isNotEmpty(i.getPduKeyA())).collect(Collectors.groupingBy(CabinetPduResVO::getPduKeyA));
+        Map<String, List<CabinetPduResVO>> pathBMap = vo.stream().filter(i -> StringUtils.isNotEmpty(i.getPduKeyB())).collect(Collectors.groupingBy(CabinetPduResVO::getPduKeyB));
 
-        if (cabinetPduA != null) {
-            int cabinetId = cabinetPduA.getCabinetId();
-            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            if (Objects.nonNull(cabinet)) {
-                String cabinetName = cabinet.getCabinetName();
-                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+        // A 路
+        List<CabinetPduResVO> list = pathAMap.get(location);
+        if (!CollectionUtils.isAnyEmpty(list)) {
+            CabinetPduResVO cabinetPduResVO = list.get(0);
+            if (Objects.nonNull(cabinetPduResVO)) {
+                String cabinetName = cabinetPduResVO.getCabinetName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinetPduResVO.getRoomId());
                 if (Objects.nonNull(roomIndex)) {
                     String roomName = roomIndex.getRoomName();
 
-                    if (cabinet.getAisleId() != 0) {
-                        String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
+                    if (cabinetPduResVO.getAisleId() != 0) {
+                        String aisleName = aisleIndexMapper.selectById(cabinetPduResVO.getAisleId()).getAisleName();
                         address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
                     } else {
                         address = roomName + "-" + cabinetName + "-" + "A路";
@@ -158,22 +160,17 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
         // B 路
-        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(
-                new LambdaQueryWrapperX<CabinetPdu>()
-                        .eq(CabinetPdu::getPduKeyB, ipParts[0]+"-"+ipParts[1])
-//                        .eq(CabinetPdu::getCasIdB, ipParts[1])
-        );
+        List<CabinetPduResVO> list1 = pathBMap.get(location);
+        if (!CollectionUtils.isAnyEmpty(list1)) {
+            CabinetPduResVO cabinetPduResVO = list1.get(0);
 
-        if (cabinetPduB != null) {
-            int cabinetId = cabinetPduB.getCabinetId();
-            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            if (Objects.nonNull(cabinet)) {
-                String cabinetName = cabinet.getCabinetName();
-                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+            if (Objects.nonNull(cabinetPduResVO)) {
+                String cabinetName = cabinetPduResVO.getCabinetName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinetPduResVO.getRoomId());
                 if (Objects.nonNull(roomIndex)) {
                     String roomName = roomIndex.getRoomName();
-                if (cabinet.getAisleId() != 0) {
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
+                if (cabinetPduResVO.getAisleId() != 0) {
+                    String aisleName = aisleIndexMapper.selectById(cabinetPduResVO.getAisleId()).getAisleName();
                     address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
                 } else {
                     address = roomName + "-" + cabinetName + "-" + "B路";

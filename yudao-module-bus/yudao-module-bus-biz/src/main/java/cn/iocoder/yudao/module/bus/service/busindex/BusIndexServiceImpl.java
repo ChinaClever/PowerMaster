@@ -94,6 +94,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -259,17 +260,28 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public List<BusIndexMaxEqResVO> getMaxEq() {
         List<BusIndexMaxEqResVO> result = new ArrayList<>();
-        String endTime = DateUtil.formatDateTime(DateTime.now());
-        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        // 昨天的起始时间（00:00:00）
+        LocalDateTime start = yesterday.atTime(LocalTime.MIN);
+        LocalDateTime end = yesterday.atTime(LocalTime.MAX);
         //借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
-        extractedMaxEq("bus_eq_total_day", startTime, endTime, result, 0);
+        extractedMaxEq("bus_eq_total_day",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,0);
 
         //上周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-        extractedMaxEq("bus_eq_total_week", startTime, endTime, result, 1);
+        start = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+        end = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+        extractedMaxEq("bus_eq_total_week",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,1);
+
         //上月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-        extractedMaxEq("bus_eq_total_week", startTime, endTime, result, 2);
+        start = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+        end = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+        extractedMaxEq("bus_eq_total_week",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,2);
 
         List<String> collect = result.stream().map(BusResBase::getDevKey).collect(Collectors.toList());
         Map<String, BusNameVO> roomByKeys = getRoomByKeys(collect);
