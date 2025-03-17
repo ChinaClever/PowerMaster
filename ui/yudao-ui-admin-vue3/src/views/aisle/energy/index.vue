@@ -3,8 +3,11 @@
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
-          <div class="name">柜列</div>
+          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div> -->
+          <div>用能最大柜列</div>
+          <div>昨日：{{ yesterdayMaxEq==null?"无数据":yesterdayMaxEq }}</div>
+          <div>上周：{{ lastWeekMaxEq==null?"无数据":lastWeekMaxEq }}</div>
+          <div>上月：{{ lastMonthMaxEq==null?"无数据":lastMonthMaxEq }}</div>
         </div>
         <!-- <div class="line"></div>
         <div class="status">
@@ -186,6 +189,9 @@ const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const pageSizeArr=ref([24,36,48])
+const yesterdayMaxEq=ref(null)
+const lastWeekMaxEq=ref(null)
+const lastMonthMaxEq=ref(null)
 const queryParams = reactive({
   name: undefined,
   pageNo: 1,
@@ -237,7 +243,8 @@ const getTableData = async(reset = false) => {
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
-          status : item.runStatus
+          status : item.runStatus,
+          roomId: item.roomId
         }
       })
       queryParams.pageTotal = res.total
@@ -326,6 +333,18 @@ function handleCurrentChange(val) {
   queryParams.pageNo = val
   getTableData(false)
 }
+onBeforeMount(async ()=>{
+  let maxEq = await IndexApi.getMaxEq();
+  maxEq.forEach((item)=>{
+    if(item.type==0){
+      yesterdayMaxEq.value =item.roomName+"-"+item.aisleName;
+    }else if(item.type==1){
+      lastWeekMaxEq.value =item.roomName+"-"+item.aisleName;
+    }else if(item.type==2){
+      lastMonthMaxEq.value =item.roomName+"-"+item.aisleName;
+    }
+  })
+})
 </script>
 
 <style lang="scss" scoped>
@@ -410,27 +429,12 @@ function handleCurrentChange(val) {
     }
   }
   .header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-    .header_img {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #555;
-      img {
-        width: 75px;
-        height: 75px;
-      }
-    }
-    .name {
-      font-size: 15px;
-      margin: 15px 0;
+    margin-top: 45px;
+    margin-left: 20px;
+    display: inline-block;
+    div{
+      vertical-align: left;
+      font-size: 14px;
     }
   }
   .line {
