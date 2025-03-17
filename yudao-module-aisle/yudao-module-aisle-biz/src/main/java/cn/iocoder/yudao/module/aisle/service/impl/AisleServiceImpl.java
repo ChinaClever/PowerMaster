@@ -809,10 +809,6 @@ public class AisleServiceImpl implements AisleService {
             List<CabinetBox> cabinetBoxs = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>().in(CabinetBox::getCabinetId, cabinetIds));
             boxMap = cabinetBoxs.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
         }
-        List<Integer> idsAll = cabinetIndexList.stream().map(CabineIndexCfgVO::getId).collect(Collectors.toList());
-
-//        List<RackIndex> rackIndices = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, idsAll));
-//        Map<Integer, List<RackIndex>> rackMap = rackIndices.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
 
         List<CabinetAisleVO> aisleCabinetDTOList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(cabinetIndexList)) {
@@ -830,6 +826,7 @@ public class AisleServiceImpl implements AisleService {
             for (CabineIndexCfgVO cabinetIndex : cabinetIndexList) {
                 CabinetAisleVO cabinetDTO = BeanUtils.toBean(cabinetIndex, CabinetAisleVO.class);
                 cabinetDTO.setType(cabinetIndex.getCabinetType());
+                cabinetDTO.setPowCapacity(cabinetIndex.getPowerCapacity());
                 List<CabinetEnvSensor> envs = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
                         .eq(CabinetEnvSensor::getCabinetId, cabinetIndex.getId()));
                 if (!CollectionUtils.isEmpty(envs)) {
@@ -837,8 +834,6 @@ public class AisleServiceImpl implements AisleService {
                     cabinetDTO.setSensorList(left);
                 }
 
-//                List<RackIndex> rackIndices1 = rackMap.get(cabinetIndex.getId());
-//                cabinetDTO.setRackIndices(rackIndices1);
                 cabinetDTO.setUsedSpace(cabinetIndex.getCabinetUseHeight());
                 cabinetDTO.setFreeSpace(cabinetIndex.getCabinetHeight() - cabinetIndex.getCabinetUseHeight());
                 if (cabinetIndex.getPduBox()) {
@@ -1183,6 +1178,7 @@ public class AisleServiceImpl implements AisleService {
             cabinetIndexList.forEach(cabinetIndex -> {
                 CabinetDetailDataDTO cabDto = new CabinetDetailDataDTO();
                 cabDto.setId(cabinetIndex.getId());
+                cabDto.setPowerCapacity(cabinetIndex.getPowerCapacity());
                 CabinetCfg cabinetCfg = cfgMap.get(cabinetIndex.getId());
                 if (Objects.nonNull(cabinetCfg)) {
                     cabDto.setXCoordinate(cabinetCfg.getXCoordinate());

@@ -10,7 +10,6 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AisleHdaLineHour;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
@@ -272,7 +271,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (StringUtils.isNotEmpty(roomName)) {
                 res.setRoomName(roomName);
                 res.setLocation(roomName + SPLIT_KEY + aisleIndexDO.getAisleName());
-            }else {
+            } else {
                 res.setLocation(aisleIndexDO.getAisleName());
             }
 
@@ -335,8 +334,15 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             res.setRoomId(aisleIndexDO.getRoomId());
             result.add(res);
         });
-        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-        String endTime = DateUtil.formatDateTime(DateTime.now());
+
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        // 昨天的起始时间（00:00:00）
+        String startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        String endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+
         List<String> yesterdayList = getData(startTime, endTime, ids, "aisle_eq_total_day");
         Map<Integer, Double> yesterdayMap = new HashMap<>();
         if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)) {
@@ -347,8 +353,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         }
 
         //上周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
         List<String> weekList = getData(startTime, endTime, ids, "aisle_eq_total_week");
         Map<Integer, Double> weekMap = new HashMap<>();
         if (!org.springframework.util.CollectionUtils.isEmpty(weekList)) {
@@ -359,8 +365,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         }
 
         //上月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
         List<String> monthList = getData(startTime, endTime, ids, "aisle_eq_total_month");
         Map<Integer, Double> monthMap = new HashMap<>();
         if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
@@ -385,7 +391,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (StringUtils.isNotEmpty(roomName)) {
                 dto.setRoomName(roomName);
                 dto.setLocation(roomName + SPLIT_KEY + dto.getName());
-            }else {
+            } else {
                 dto.setLocation(dto.getName());
             }
         });
@@ -404,20 +410,21 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     @Override
     public PageResult<AisleEQRes> getEqPage1(AisleIndexPageReqVO pageReqVO) {
         String indices = null;
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
         String startTime = null;
-        String endTime = DateUtil.formatDateTime(DateTime.now());
+        String endTime = null;
         Integer total = 0;
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                 indices = "aisle_eq_total_day";
                 break;
             case "lastWeek":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
                 indices = "aisle_eq_total_week";
                 break;
             case "lastMonth":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
                 indices = "aisle_eq_total_month";
                 break;
             default:
@@ -458,8 +465,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 List<AisleIndexDO> boxIndices = aisleIndexCopyMapper.selectList(new LambdaUpdateWrapper<AisleIndexDO>().in(AisleIndexDO::getId, ids));
                 Map<Integer, AisleIndexDO> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(AisleIndexDO::getId, x -> x));
 
-
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 List<String> yesterdayList = getData(startTime, endTime, ids, "aisle_eq_total_day");
                 Map<Integer, Double> yesterdayMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)) {
@@ -470,7 +477,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 }
 
                 //上周
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 List<String> weekList = getData(startTime, endTime, ids, "aisle_eq_total_week");
                 Map<Integer, Double> weekMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(weekList)) {
@@ -481,7 +489,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 }
 
                 //上月
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 List<String> monthList = getData(startTime, endTime, ids, "aisle_eq_total_month");
                 Map<Integer, Double> monthMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
@@ -515,7 +524,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     if (StringUtils.isNotEmpty(roomName)) {
                         dto.setRoomName(roomName);
                         dto.setLocation(roomName + SPLIT_KEY + dto.getName());
-                    }else {
+                    } else {
                         dto.setLocation(dto.getName());
                     }
                     result.add(dto);
@@ -611,55 +620,75 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         switch (reqVO.getGranularity()) {
             case "realtime":
                 LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-                if (reqVO.getFlag()) {
+                if (Objects.equals(reqVO.getFlag(), 2)) {
                     heads = new String[]{"aisle_id", "apparent_total", "apparent_a", "apparent_b",
                             "active_total", "active_a", "active_b", "reactive_total", "reactive_a", "reactive_b", "factor_total", "factor_a", "factor_b", "create_time"};
                     index = "aisle_hda_pow_realtime";
-                } else {
+                }
+                if (Objects.equals(reqVO.getFlag(), 1)) {
+                    index = "aisle_ele_total_realtime";
+                    heads = new String[]{"aisle_id", "ele_total", "create_time"};
+                }
+                if (Objects.equals(reqVO.getFlag(), 0)) {
                     index = "aisle_hda_line_realtime";
-                    heads = new String[]{"aisle_id","line_id", "vol_a", "vol_b", "cur_a", "cur_b", "create_time"};
+                    heads = new String[]{"aisle_id", "line_id", "vol_a", "vol_b", "cur_a", "cur_b", "pow_a", "pow_b", "create_time"};
                 }
                 startTime = oneHourAgo.format(formatter);
                 endTime = now.format(formatter);
                 break;
             case "hour":
                 LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-                if (reqVO.getFlag()) {
+                if (Objects.equals(reqVO.getFlag(), 2)) {
                     index = "aisle_hda_pow_hour";
                     heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
-                } else {
+                }
+                if (Objects.equals(reqVO.getFlag(), 1)) {
+                    index = "aisle_ele_total_realtime";
+                    heads = new String[]{"aisle_id", "ele_total", "create_time"};
+                }
+                if (Objects.equals(reqVO.getFlag(), 0)) {
                     index = "aisle_hda_line_hour";
-                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    heads = new String[]{"aisle_id", "line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneDayAgo.format(formatter);
                 endTime = now.format(formatter);
                 break;
             case "SeventyHours":
                 LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
-                if (reqVO.getFlag()) {
+                if (Objects.equals(reqVO.getFlag(), 2)) {
                     index = "aisle_hda_pow_hour";
                     heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
-                } else {
+                }
+                if (Objects.equals(reqVO.getFlag(), 1)) {
+                    index = "aisle_ele_total_realtime";
+                    heads = new String[]{"aisle_id", "ele_total", "create_time"};
+                }
+                if (Objects.equals(reqVO.getFlag(), 0)) {
                     index = "aisle_hda_line_hour";
-                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    heads = new String[]{"aisle_id", "line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = threeDaysAgo.format(formatter);
                 endTime = now.format(formatter);
                 break;
             default:
                 LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-                if (reqVO.getFlag()) {
+                if (Objects.equals(reqVO.getFlag(), 2)) {
                     index = "aisle_hda_pow_day";
                     heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
                             "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
                             "create_time", "aisle_id"};
-                } else {
+                }
+                if (Objects.equals(reqVO.getFlag(), 1)) {
+                    index = "aisle_eq_total_day";
+                    heads = new String[]{"aisle_id", "eq_value", "create_time"};
+                }
+                if (Objects.equals(reqVO.getFlag(), 0)) {
                     index = "aisle_hda_line_day";
-                    heads = new String[]{"aisle_id","line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
+                    heads = new String[]{"aisle_id", "line_id", "vol_a_avg_value", "vol_b_avg_value", "cur_a_avg_value", "cur_b_avg_value", "create_time"};
                 }
                 startTime = oneMonthAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -673,11 +702,39 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         List<Object> resultLine2 = new ArrayList<>();
         List<Object> resultLine3 = new ArrayList<>();
 
+        String finalIndex = index;
         data.forEach(str -> {
             Map map = JsonUtils.parseObject(str, Map.class);
-            if (reqVO.getFlag()) {
+            if (Objects.equals(reqVO.getFlag(), 2)) {
                 list.add(map);
-            }else {
+            }
+            if (Objects.equals(reqVO.getFlag(), 1)) {
+                if (Objects.equals("aisle_ele_total_realtime", finalIndex)){
+                    Double newEle = (Double) map.get("ele_total");
+                    int sub = data.indexOf(str);
+                    if (sub > 0) {
+                        String oldStr = data.get(sub - 1);
+                        Map oldMap = JsonUtils.parseObject(oldStr, Map.class);
+                        Double oldEle = (Double) oldMap.get("ele_total");
+                        double ele = BigDemicalUtil.sub(newEle, oldEle, 1);
+                        HashMap eleMap = new HashMap();
+                        eleMap.put("ele", ele);
+                        eleMap.put("aisleId", map.get("aisle_id"));
+                        eleMap.put("create_time", map.get("create_time"));
+                        list.add(eleMap);
+                    }
+                }else {
+                    Double newEle = (Double) map.get("eq_value");
+                    HashMap eleMap = new HashMap();
+                    eleMap.put("ele", newEle);
+                    eleMap.put("aisleId", map.get("aisle_id"));
+                    eleMap.put("create_time", map.get("create_time"));
+                    list.add(eleMap);
+
+                }
+
+            }
+            if (Objects.equals(reqVO.getFlag(), 0)) {
                 Integer lindId = (Integer) map.get("line_id");
                 switch (lindId) {
                     case 1:
@@ -694,12 +751,13 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             }
         });
         Map map = new HashMap();
-        if (reqVO.getFlag()) {
-            map.put("data", list);
-        }else {
+
+        if (Objects.equals(reqVO.getFlag(), 0)) {
             map.put("L1", resultLine1);
             map.put("L2", resultLine2);
             map.put("L3", resultLine3);
+        }else {
+            map.put("data", list);
         }
         return map;
     }
@@ -715,20 +773,20 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         LocalDateTime start = yesterday.atTime(LocalTime.MIN);
         LocalDateTime end = yesterday.atTime(LocalTime.MAX);
 
-        extractedMaxEq("aisle_eq_total_day",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,0);
+        extractedMaxEq("aisle_eq_total_day", LocalDateTimeUtil.format(start, "yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end, "yyyy-MM-dd HH:mm:ss"), result, 0);
         // 获取上周的开始时间（周一）
-         start = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
-         end = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+        start = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+        end = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
 
-        extractedMaxEq("aisle_eq_total_week",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,1);
+        extractedMaxEq("aisle_eq_total_week", LocalDateTimeUtil.format(start, "yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end, "yyyy-MM-dd HH:mm:ss"), result, 1);
 
-         start = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
-         end = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+        start = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
+        end = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
 
-        extractedMaxEq("aisle_eq_total_month",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,2);
+        extractedMaxEq("aisle_eq_total_month", LocalDateTimeUtil.format(start, "yyyy-MM-dd HH:mm:ss"),
+                LocalDateTimeUtil.format(end, "yyyy-MM-dd HH:mm:ss"), result, 2);
         return result;
     }
 

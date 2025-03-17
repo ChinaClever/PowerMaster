@@ -832,11 +832,11 @@ public class CabinetServiceImpl implements CabinetService {
         List<String> keys = list.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
 
         //昨日
-
-//        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-        String endTime = DateUtil.formatDateTime(DateTime.now());
-//        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        String startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+        String endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
         List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> yesterdayMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(yesterdayList)) {
@@ -844,9 +844,8 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上周
-//        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-//        endTime = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+        startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
         List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> weekMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(weekList)) {
@@ -854,9 +853,8 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上月
-//        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-//        endTime = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+        startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
         List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> monthMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(monthList)) {
@@ -907,8 +905,11 @@ public class CabinetServiceImpl implements CabinetService {
     @Override
     public PageResult<CabinetEnergyStatisticsResVO> getEqPage1(CabinetIndexVo pageReqVO) {
         String indices = null;
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
         String startTime = null;
-        String endTime = DateUtil.formatDateTime(DateTime.now());
+        String endTime = null;
         Integer total = 0;
         List<Integer> cabinetIds = new ArrayList<>();
         if (!CollectionUtils.isEmpty(pageReqVO.getCabinetIds())) {
@@ -916,15 +917,12 @@ public class CabinetServiceImpl implements CabinetService {
         }
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                 indices = "cabinet_eq_total_day";
                 break;
             case "lastWeek":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
                 indices = "cabinet_eq_total_week";
                 break;
             case "lastMonth":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
                 indices = "cabinet_eq_total_month";
                 break;
             default:
@@ -971,7 +969,8 @@ public class CabinetServiceImpl implements CabinetService {
                 Map<Integer, CabineIndexCfgVO> map = voList.stream().collect(Collectors.toMap(CabineIndexCfgVO::getId, x -> x));
 
                 //昨日
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class,
                         new String[]{"cabinet_id", "eq_value"});
                 Map<Integer, BigDecimal> yesterdayMap = new HashMap<>();
@@ -980,7 +979,8 @@ public class CabinetServiceImpl implements CabinetService {
                 }
 
                 //上周
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
                 Map<Integer, BigDecimal> weekMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(weekList)) {
@@ -988,7 +988,8 @@ public class CabinetServiceImpl implements CabinetService {
                 }
 
                 //上月
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
                 Map<Integer, BigDecimal> monthMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(monthList)) {

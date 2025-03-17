@@ -485,6 +485,13 @@ const getTableData = async() => {
       queryParams.pageTotal = res.total;
 
     }
+     const resStatus =await CabinetApi.getCabinetInfoStatus();
+    Unbound.value = resStatus.unbound;
+    Normal.value = resStatus.normal;
+    Warning.value = resStatus.warning;
+    Alarm.value = resStatus.alarm;
+    Offline.value = resStatus.offline;
+    totalAll.value = resStatus.total;
   } finally {
     loading.value = false
   }
@@ -503,14 +510,6 @@ const formatLoadFactor = (value) => {
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({});
   navList.value = res;
-
-    const resStatus =await CabinetApi.getCabinetInfoStatus();
-    Unbound.value = resStatus.unbound;
-    Normal.value = resStatus.normal;
-    Warning.value = resStatus.warning;
-    Alarm.value = resStatus.alarm;
-    Offline.value = resStatus.offline;
-    totalAll.value = resStatus.total;
 }
 
 
