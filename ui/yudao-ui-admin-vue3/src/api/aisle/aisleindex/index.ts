@@ -59,6 +59,10 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/powerpage`, data })
   },
 
+  getLineChartData: async (data: any) => {
+    return await request.post({ url: `/aisle/index/chartDetail`, data })
+  },
+
   getEqPage: async (data: any) => {
     return await request.post({ url: `/aisle/index/eq/page`, data })
   },

@@ -13,9 +13,7 @@
         <el-collapse-item title="机柜参数" name="1">
           <div class="collapseItem">
             <el-form-item label="机房：" prop="roomId">
-              <el-select disabled v-model="machineFormData.roomId" placeholder="请选择">
-                <el-option v-for="room in roomList" :key="room.id" :label="room.name" :value="room.id" />
-              </el-select>
+              <el-input disabled v-model="machineFormData.roomName" placeholder="请输入" />
             </el-form-item>
             <el-form-item label="机柜名称：" prop="cabinetName">
               <el-input v-model="machineFormData.cabinetName" placeholder="请输入" />
@@ -349,6 +347,7 @@ const sensorListRight = reactive([
 ])
 const machineFormData = ref({
   roomId: '',
+  roomName: '',
   aisleId: '',
   index: '',
   cabinetName: '',
@@ -496,6 +495,7 @@ const open = async (type: string, data, machineColInfo) => {
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
+    roomName: '',
     aisleId: '',
     index: '',
     type: '',
@@ -521,6 +521,7 @@ const open = async (type: string, data, machineColInfo) => {
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
   }
+  machineFormData.value.roomName = machineColInfo.roomName
   machineFormData.value.roomId = machineColInfo.roomId
   machineFormData.value.aisleId = machineColInfo.aisleId
   machineFormData.value.index = machineColInfo.index
@@ -586,6 +587,7 @@ const resetForm = () => {
   machineFormData.value = {
     cabinetName: '',
     roomId: '',
+    roomName: '',
     type: '',
     cabinetHeight: 42,
     powCapacity: 8,

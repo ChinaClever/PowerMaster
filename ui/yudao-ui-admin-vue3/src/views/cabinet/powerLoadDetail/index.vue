@@ -682,6 +682,7 @@ const flashChartData = async () =>{
 const isHaveData = ref(true)
 
 const updateChart = async (type, visKey) => {
+  curChartData.value = {}
   switchType.value = type; // 设置 switchType
   await getCVLineChartData(); // 获取数据
 
