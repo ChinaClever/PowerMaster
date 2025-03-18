@@ -300,10 +300,9 @@ const statusList = reactive([
 const getTableData = async(reset = false) => {
   loading.value = true
   if (reset) queryParams.pageNo = 1
- 
   try {
     const res = await CabinetApi.getIndexLoadPage(queryParams)
-    console.log('res66666666', res);
+    getLoadStatusList();
     if (!res) {
       // 可以选择设置一个空数组和总页数为0，或者显示错误消息
       listPage.value = [];
@@ -424,7 +423,6 @@ const toMachineDetail = (row) => {
 onBeforeMount(() => {
   getNavList();
   getTableData();
-  getLoadStatusList();
   flashListTimer.value = setInterval((getTableData), 5000);
 })
 

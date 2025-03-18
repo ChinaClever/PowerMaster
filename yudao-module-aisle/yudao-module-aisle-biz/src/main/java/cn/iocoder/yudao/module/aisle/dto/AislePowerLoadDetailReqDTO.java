@@ -12,7 +12,7 @@ public class AislePowerLoadDetailReqDTO {
     @Schema(description = "时间粒度 realtime  hour  SeventyHours  day")
     private String granularity;
 
-    @Schema(description = "状态：false -电流/电压，其他为true")
-    private Boolean flag;
+    @Schema(description = "状态：0 -电流/电压，1-电能 2 -其他")
+    private Integer flag;
 
 }

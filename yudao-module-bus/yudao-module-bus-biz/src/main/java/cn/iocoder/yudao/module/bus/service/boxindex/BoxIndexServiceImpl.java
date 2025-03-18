@@ -1064,22 +1064,22 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public PageResult<BoxIndexDTO> getEqPage1(BoxIndexPageReqVO pageReqVO) {
         String indices = null;
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
         String startTime = null;
-        String endTime = DateUtil.formatDateTime(DateTime.now());
+        String endTime = null;
         List<BoxIndex> boxIndices1 = boxIndexMapper.selectList(new LambdaUpdateWrapper<BoxIndex>().eq(BoxIndex::getBoxType, 1));
         List<Integer> boxIds = boxIndices1.stream().map(BoxIndex::getId).collect(Collectors.toList());
         Integer total = 0;
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                 indices = "box_eq_total_day";
                 break;
             case "lastWeek":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
                 indices = "box_eq_total_week";
                 break;
             case "lastMonth":
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
                 indices = "box_eq_total_month";
                 break;
             default:
@@ -1120,7 +1120,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 List<BoxIndex> boxIndices = boxIndexCopyMapper.selectList(new LambdaUpdateWrapper<BoxIndex>().in(BoxIndex::getId, ids));
                 Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, x -> x));
                 List<BoxIndexDTO> result = new ArrayList<>();
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 List<String> yesterdayList = getData(startTime, endTime, ids, "box_eq_total_day", new String[]{"box_id,eq_value"});
                 Map<Integer, Double> yesterdayMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(yesterdayList)) {
@@ -1131,7 +1133,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
 
                 //上周
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 List<String> weekList = getData(startTime, endTime, ids, "box_eq_total_week", new String[]{"box_id,eq_value"});
                 Map<Integer, Double> weekMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(weekList)) {
@@ -1142,7 +1145,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
 
                 //上月
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 List<String> monthList = getData(startTime, endTime, ids, "box_eq_total_month", new String[]{"box_id,eq_value"});
                 Map<Integer, Double> monthMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(monthList)) {
@@ -1201,16 +1205,18 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (CollectionUtils.isEmpty(ids)) {
                 return new PageResult<>(result, boxIndexDOPageResult.getTotal());
             }
-
-            //昨日
             boxIndexDOList.forEach(boxIndex -> {
                 BoxIndexDTO boxIndexDTO = new BoxIndexDTO().setId(boxIndex.getId()).setRunStatus(boxIndex.getRunStatus());
                 boxIndexDTO.setDevKey(boxIndex.getBoxKey());
                 boxIndexDTO.setBoxName(boxIndex.getBoxName());
                 result.add(boxIndexDTO);
             });
-            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-            String endTime = DateUtil.formatDateTime(DateTime.now());
+            //昨日
+            LocalDate now = LocalDate.now();
+            // 获取昨天的日期
+            LocalDate yesterday = LocalDate.now().minusDays(1);
+            String startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+            String endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
             List<String> yesterdayList = getData(startTime, endTime, ids, "box_eq_total_day", new String[]{"box_id,eq_value"});
             Map<Integer, Double> yesterdayMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(yesterdayList)) {
@@ -1221,8 +1227,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
 
             //上周
-            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-            endTime = DateUtil.formatDateTime(DateTime.now());
+            startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+            endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
             List<String> weekList = getData(startTime, endTime, ids, "box_eq_total_week", new String[]{"box_id,eq_value"});
             Map<Integer, Double> weekMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(weekList)) {
@@ -1233,8 +1239,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
 
             //上月
-            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-            endTime = DateUtil.formatDateTime(DateTime.now());
+            startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+            endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
             List<String> monthList = getData(startTime, endTime, ids, "box_eq_total_month", new String[]{"box_id,eq_value"});
             Map<Integer, Double> monthMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(monthList)) {
