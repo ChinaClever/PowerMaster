@@ -114,4 +114,7 @@ export const IndexApi = {
   getMaxEq: async () => {
     return await request.post({ url: `/aisle/index/eq/maxEq`})
   },
+  getMaxAndMinPowFac: async () => {
+    return await request.get({ url: `/aisle/index/findAisleFactor`})
+  },
 }
