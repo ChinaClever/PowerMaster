@@ -3,8 +3,11 @@
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
-          <div class="name">柜列</div>
+          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div> -->
+          <div>用能最大柜列</div>
+          <div>昨日：{{ yesterdayMaxEq==null?"无数据":yesterdayMaxEq }}</div>
+          <div>上周：{{ lastWeekMaxEq==null?"无数据":lastWeekMaxEq }}</div>
+          <div>上月：{{ lastMonthMaxEq==null?"无数据":lastMonthMaxEq }}</div>
         </div>
         <!-- <div class="line"></div>
         <div class="status">
@@ -67,24 +70,24 @@
         label-width="68px"
       >
       <el-form-item label="用能排序"  label-width="100px" style="margin-left: -30px;">
-          <el-button @click="changeTimeGranularity('yesterday')"
+          <el-button @click="changeTimeGranularity('yesterday');timeButton=1" :type="timeButton==1?'primary':''"
           >
             昨日
           </el-button>
-          <el-button @click="changeTimeGranularity('lastWeek')"
+          <el-button @click="changeTimeGranularity('lastWeek');timeButton=2" :type="timeButton==2?'primary':''"
           >
             上周
           </el-button>
-          <el-button @click="changeTimeGranularity('lastMonth')"
+          <el-button @click="changeTimeGranularity('lastMonth');timeButton=3" :type="timeButton==3?'primary':''"
           >
             上月
           </el-button>
         </el-form-item>
         <div style="margin-left: 50px;">
-          <el-form-item label="公司名称" prop="username">
+          <el-form-item label="柜列名称" prop="username">
             <el-input
-              v-model="queryParams.company"
-              placeholder="请输入公司名称"
+              v-model="queryParams.name"
+              placeholder="请输入柜列名称"
               clearable
               class="!w-160px"
               height="35"
@@ -92,7 +95,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
-            <el-button @click="resetSearch" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button @click="resetSearch();timeButton=0" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -117,31 +120,31 @@
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true" :stripe="true" :header-cell-style="headerCellStyle">
+        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 215px);" :data="tableData" :border="true" :stripe="true" :header-cell-style="headerCellStyle">
           <el-table-column width="75" label="序号" align="center">
             <template #default="scope">
               {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
             </template>  
           </el-table-column>
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
+          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.yesterdayEq }} kW·h
+                {{ scope.row.yesterdayEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" >
+          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastWeekEq }} kW·h
+                {{ scope.row.lastWeekEq }} 
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastMonthEq }} kW·h
+                {{ scope.row.lastMonthEq }}
               </el-text>
             </template>
           </el-table-column>
@@ -161,7 +164,7 @@
         <Pagination
           :total="queryParams.pageTotal"
           :page-size="queryParams.pageSize"
-          :page-sizes="[15, 30, 50, 100]"
+          :page-sizes="pageSizeArr"
           :current-page="queryParams.pageNo"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -178,17 +181,21 @@
 import { IndexApi } from '@/api/aisle/aisleindex'
 
 const { push } = useRouter() // 路由跳转
-
+const timeButton=ref(0)
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const pageSizeArr=ref([24,36,48])
+const yesterdayMaxEq=ref(null)
+const lastWeekMaxEq=ref(null)
+const lastMonthMaxEq=ref(null)
 const queryParams = reactive({
-  company: undefined,
+  name: undefined,
   pageNo: 1,
-  pageSize: 15,
+  pageSize: 24,
   pageTotal: 0,
   timeGranularity:null,
   cabinetIds: []
@@ -224,7 +231,7 @@ const getTableData = async(reset = false) => {
       aisleIds : queryParams.aisleIds,
       runStatus: [],
       pduBox: 0,
-      company: queryParams.company,
+      name: queryParams.name,
       timeGranularity:queryParams.timeGranularity,
     })
     if (res.list) {
@@ -236,7 +243,8 @@ const getTableData = async(reset = false) => {
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
-          status : item.runStatus
+          status : item.runStatus,
+          roomId: item.roomId
         }
       })
       queryParams.pageTotal = res.total
@@ -250,8 +258,14 @@ const getTableData = async(reset = false) => {
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
-  queryParams.pageNo = 1
-  queryParams.pageSize = 15
+  if(switchValue.value == 0){
+    queryParams.pageSize=15;
+    pageSizeArr.value=[15,25,30,50,100];
+  }else{
+    queryParams.pageSize=24;
+    pageSizeArr.value=[24,36,48];
+  }
+  queryParams.pageNo = 1;
   queryParams.timeGranularity=null;
   switchValue.value = value
   getTableData(true)
@@ -300,7 +314,7 @@ function changeTimeGranularity(timeGranularity){
 
 function resetSearch(){
   queryParams.timeGranularity=null;
-  queryParams.company=null;
+  queryParams.name=null;
   getTableData(true);
 }
 
@@ -312,12 +326,25 @@ function headerCellStyle() {
   }
 function handleSizeChange(val) {
   queryParams.pageSize = val
+  queryParams.pageNo = 1
   getTableData(true)
 }
 function handleCurrentChange(val) {
   queryParams.pageNo = val
   getTableData(false)
 }
+onBeforeMount(async ()=>{
+  let maxEq = await IndexApi.getMaxEq();
+  maxEq.forEach((item)=>{
+    if(item.type==0){
+      yesterdayMaxEq.value =item.roomName+"-"+item.aisleName;
+    }else if(item.type==1){
+      lastWeekMaxEq.value =item.roomName+"-"+item.aisleName;
+    }else if(item.type==2){
+      lastMonthMaxEq.value =item.roomName+"-"+item.aisleName;
+    }
+  })
+})
 </script>
 
 <style lang="scss" scoped>
@@ -402,27 +429,12 @@ function handleCurrentChange(val) {
     }
   }
   .header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-    .header_img {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #555;
-      img {
-        width: 75px;
-        height: 75px;
-      }
-    }
-    .name {
-      font-size: 15px;
-      margin: 15px 0;
+    margin-top: 45px;
+    margin-left: 20px;
+    display: inline-block;
+    div{
+      vertical-align: left;
+      font-size: 14px;
     }
   }
   .line {
@@ -433,7 +445,7 @@ function handleCurrentChange(val) {
   }
 }
 .matrixContainer {
-  height: calc(100vh - 320px);
+  height: calc(100vh - 215px);
   overflow: auto;
   display: flex;
   flex-wrap: wrap;

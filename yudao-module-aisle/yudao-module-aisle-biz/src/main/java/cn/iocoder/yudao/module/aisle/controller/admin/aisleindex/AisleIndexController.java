@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
+import cn.iocoder.yudao.module.aisle.dto.AislePowerLoadDetailReqDTO;
 import cn.iocoder.yudao.module.aisle.service.aisleindex.AisleIndexService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -222,11 +223,26 @@ public class AisleIndexController {
         return success(indexService.getAislePFLine(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
+    @PostMapping("/chartDetail")
+    @Operation(summary = "折线图数据")
+    public CommonResult<Map> getBusLineChartDetailData(@RequestBody @Valid AislePowerLoadDetailReqDTO reqVO) throws IOException {
+
+        return success(indexService.getLineChartDetailData(reqVO));
+    }
+
     @GetMapping("/idList")
     @Operation(summary = "获得通道列id列表")
     public List<Integer> idList() {
         return indexService.idList();
     }
+
+    @Operation(summary = "柜列用能最多")
+    @PostMapping("/eq/maxEq")
+    public CommonResult<List<AisleMaxEqResVO>> getMaxEq() {
+        List<AisleMaxEqResVO> pageResult = indexService.getMaxEq();
+        return success(pageResult);
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出通道列 Excel")
 //    @PreAuthorize("@ss.hasPermission('aisle:index:export')")

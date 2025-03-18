@@ -53,6 +53,7 @@
               clearable
               class="!w-160px"
               height="35"
+              @keydown.enter.prevent="getTableData(true)"
             />
           </el-form-item>
           <el-form-item>
@@ -71,7 +72,7 @@
         <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
-            <div class="progressContainer" v-show="item.powApparentTotal!=null">
+            <div class="progressContainer" v-show="item.powApparentTotal!=null&&item.powActiveA!=null&&item.powActiveB!=null">
               <div class="progress" v-if="item.rateA">
                 <div class="left" :style="`flex: ${item.rateA==0&&item.rateB==0?50:(item.rateA>60?60:(item.rateA<40?40:item.rateA))}`">{{item.rateA}}%</div>
                 <div class="line"></div>
@@ -88,88 +89,159 @@
                 </div>
               </div>
               <div style="margin-right:10px;margin-left: 25px;margin-top: 30px; text-align: center;display: inline-block; width: 70px;">
-                {{item.powApparentTotal ? item.powApparentTotal : '0.000'}}kVA
+                <div style="font-size: medium;">{{item.powApparentTotal ? item.powApparentTotal : '0.000'}}</div>
                 <div>总视在功率</div>
+                <div>kVA</div>
               </div>
             </div>
             <div class="room">{{item.location}}</div>
-            <button v-show="item.powApparentTotal!=null" class="detail" @click.prevent="toDetail(item)">详情</button>
-            <div class="noData" v-show="item.powApparentTotal==null">无数据</div>
+            <button v-show="item.powApparentTotal!=null&&item.powActiveA!=null&&item.powActiveB!=null" class="detail" @click.prevent="toDetail(item)">详情</button>
+            <div class="noData" v-show="item.powApparentTotal==null||item.powActiveA==null||item.powActiveB==null">无数据</div>
           </div>
         </div>
-        <el-table v-show="switchValue == 1" style="width: 100%;" :data="tableData" :header-cell-style="headerCellStyle" stripe >
+        <el-table v-show="switchValue == 1" style="width: 100%; height: calc(100vh - 215px);" :data="tableData" stripe >
           <el-table-column width="75" label="序号" align="center">
             <template #default="scope">
               {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
             </template>  
           </el-table-column>
           <el-table-column label="名称" min-width="120" align="center" prop="location" />
-          <el-table-column label="总共" align="center">
-            <el-table-column label="视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" />
-            <el-table-column label="有功功率(kW)" min-width="90" align="center" prop="powActiveTotal" />
-            <el-table-column label="无功功率(kVar)" min-width="90" align="center" prop="powReactiveTotal" />
+          <el-table-column label="视在功率(kVA)" align="center">
+            <el-table-column label="总共" min-width="90" align="center" prop="powApparentTotal" />
+            <el-table-column label="A路" min-width="90" align="center" prop="powApparentA" />
+            <el-table-column label="B路" min-width="90" align="center" prop="powApparentB" />
           </el-table-column>
-          <el-table-column label="A路" align="center">
-            <el-table-column label="视在功率(kVA)" min-width="90" align="center" prop="powApparentA" />
-            <el-table-column label="有功功率(kW)" min-width="90" align="center" prop="powActiveA" />
-            <el-table-column label="无功功率(kVar)" min-width="90" align="center" prop="powReactiveA" />
+          <el-table-column label="有功功率(kW)" align="center">
+            <el-table-column label="总共" min-width="90" align="center" prop="powActiveTotal" />
+            <el-table-column label="A路" min-width="90" align="center" prop="powActiveA" />
+            <el-table-column label="B路" min-width="90" align="center" prop="powActiveB" />
           </el-table-column>
-          <el-table-column label="B路"  align="center">
-            <el-table-column label="视在功率(kVA)" min-width="90" align="center" prop="powApparentB" />
-            <el-table-column label="有功功率(kW)" min-width="90" align="center" prop="powActiveB" />
-            <el-table-column label="无功功率(kVar)" min-width="90" align="center" prop="powReactiveB" />
+          <el-table-column label="无功功率(kVar)"  align="center">
+            <el-table-column label="总共" min-width="90" align="center" prop="powReactiveTotal" />
+            <el-table-column label="A路" min-width="90" align="center" prop="powReactiveA" />
+            <el-table-column label="B路" min-width="90" align="center" prop="powReactiveB" />
+          </el-table-column>
+          <el-table-column label="操作" align="center">
+            <template #default="scope">
+              <el-button type="primary" @click.prevent="toDetail(scope.row)" v-if="scope.row.powApparentTotal!=null&&scope.row.powActiveA!=null&&scope.row.powActiveB!=null">详情</el-button>
+            </template>
           </el-table-column>
         </el-table>
         <el-dialog v-loading="detailLoading" v-model="showDetailDialog" @close="handleClose" >
           <!-- 自定义的头部内容（可选） -->
-          <template #header>
+          <!-- <template #header>
             <CardTitle title="AB占比情况" />
-            <div class="powerContainer" v-if="balanceObj.pow_active_percent > 0">
-              <div class="power">
-                <div class="label">有功功率：</div>
-                <div class="progressContainer">
-                  <div class="progress">
-                    <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
-                    <div class="line"></div>
-                    <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
-                  </div>
-                  <div class="tipInDialog">
-                      <span class="leftTip" :style="`flex: ${balanceObj.pow_active_percent}`">
+          </template> -->
+          <!-- 自定义的主要内容 -->
+          <div class="custom-content">
+            <div class="powerContainer" 
+            v-if="balanceObj.a_active_power !=null && balanceObj.b_active_power != null"
+            >
+              <el-card class="topCard">
+                <div class="powerInDialog">
+                  <div class="label"><b>总有功功率</b></div>
+                  <div class="progressContainer">
+                    <!-- <div class="progress progressInDialog">
+                      <div class="left" :style="`flex: ${balanceObj.pow_active_percent}`">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                      <div class="line"></div>
+                      <div class="right" :style="`flex: ${100 - balanceObj.pow_active_percent}`">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                    </div> -->
+                    <div class="progressInDialog">
+                      <div class="left" :style="{
+                        width:`${0.8*Math.max(Math.min(balanceObj.pow_active_percent,60),40)}%`
+                      }">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                      <div class="line"></div>
+                      <div class="right" :style="{
+                        width:`${0.8*Math.max(Math.min((100 - balanceObj.pow_active_percent),60),40)}%`
+                      }">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                    </div>
+                    <div class="tipInDialog">
+                      <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_active_percent,60),40)+'%'}">
                         <div style="white-space: nowrap;">{{balanceObj.a_active_power ? balanceObj.a_active_power: '0.000'}}kVA</div>
                         <div style="white-space: nowrap;">A路有功功率</div>
                       </span>
-                      <span class="rightTip" :style="`flex: ${100 - balanceObj.pow_active_percent}`">
+                      <span class="rightTip" :style="{width:0.8*Math.max(Math.min((100 - balanceObj.pow_active_percent),60),40)+'%'}">
                         <div style="white-space: nowrap;">{{balanceObj.b_active_power ? balanceObj.b_active_power: '0.000'}}kVA</div>
                         <div style="white-space: nowrap;">B路有功功率</div>
                       </span>
-                  </div>
+                    </div>
                 </div>
               </div>
-              <div class="power">
-                <div class="label">视在功率：</div>
-                <div class="progressContainer">
-                  <div class="progress">
-                    <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
-                    <div class="line"></div>
-                    <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
-                  </div>
-                  <div class="tipInDialog">
-                      <span class="leftTip" :style="`flex: ${balanceObj.pow_apparent_percent}`">
+              </el-card>
+              <el-card class="topCard" style="margin: 0 15px">
+                <div class="powerInDialog">
+                  <div class="label"><b>总视在功率</b></div>
+                  <div class="progressContainer">
+                    <!-- <div class="progress">
+                      <div class="left" :style="`flex: ${balanceObj.pow_apparent_percent}`">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                      <div class="line"></div>
+                      <div class="right" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                    </div> -->
+                    <!-- <div class="progressInDialog">
+                        <span class="left" :style="{
+                        width:`${0.8*Math.max(Math.min(balanceObj.pow_active_percent,60),40)}%`
+                      }">
+                          <div style="white-space: nowrap;">{{balanceObj.a_apparent_power ? balanceObj.a_apparent_power: '0.000'}}kVA</div>
+                          <div style="white-space: nowrap;">A路视在功率</div>
+                        </span>
+                        <div class="line"></div>
+                        <span class="right" :style="{
+                        width:`${0.8*Math.max(Math.min((100 - balanceObj.pow_active_percent),60),40)}%`
+                      }">
+                          <div style="white-space: nowrap;">{{balanceObj.b_apparent_power ? balanceObj.b_apparent_power: '0.000'}}kVA</div>
+                          <div style="white-space: nowrap;">B路视在功率</div>
+                        </span>
+                    </div> -->
+                    <div class="progressInDialog">
+                      <div class="left" :style="{
+                        width:`${0.8*Math.max(Math.min(balanceObj.pow_apparent_percent,60),40)}%`
+                      }">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                      <div class="line"></div>
+                      <div class="right" :style="{
+                        width:`${0.8*Math.max(Math.min((100 - balanceObj.pow_apparent_percent),60),40)}%`
+                      }">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                    </div>
+                    <div class="tipInDialog">
+                      <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_apparent_percent,60),40)+'%'}">
                         <div style="white-space: nowrap;">{{balanceObj.a_apparent_power ? balanceObj.a_apparent_power: '0.000'}}kVA</div>
                         <div style="white-space: nowrap;">A路视在功率</div>
                       </span>
-                      <span class="rightTip" :style="`flex: ${100 - balanceObj.pow_apparent_percent}`">
+                      <span class="rightTip" :style="{width:0.8*Math.max(Math.min((100 - balanceObj.pow_apparent_percent),60),40)+'%'}">
                         <div style="white-space: nowrap;">{{balanceObj.b_apparent_power ? balanceObj.b_apparent_power: '0.000'}}kVA</div>
                         <div style="white-space: nowrap;">B路视在功率</div>
                       </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </el-card>
+              <el-card class="topCard">
+                <div class="powerInDialog">
+                  <div class="label"><b>总无功功率</b></div>
+                  <div class="progressContainer">
+                    <div class="progressInDialog">
+                      <div class="left" :style="{
+                        width:`${0.8*Math.max(Math.min(balanceObj.pow_reactive_percent,60),40)}%`
+                      }">{{balanceObj.pow_reactive_percent.toFixed(0)}}%</div>
+                      <div class="line"></div>
+                      <div class="right" :style="{
+                        width:`${0.8*Math.max(Math.min((100 - balanceObj.pow_reactive_percent),60),40)}%`
+                      }">{{100 - balanceObj.pow_reactive_percent.toFixed(0)}}%</div>
+                    </div>
+                    <div class="tipInDialog">
+                      <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_reactive_percent,60),40)+'%'}">
+                        <div style="white-space: nowrap;">{{balanceObj.a_reactive_power ? balanceObj.a_reactive_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">A路无功功率</div>
+                      </span>
+                      <span class="rightTip" :style="{width:0.8*Math.max(Math.min((100 - balanceObj.pow_reactive_percent),60),40)+'%'}">
+                        <div style="white-space: nowrap;">{{balanceObj.b_reactive_power ? balanceObj.b_reactive_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">B路无功功率</div>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </el-card>
             </div>
-          </template>
-          <!-- 自定义的主要内容 -->
-          <div class="custom-content">
-            <div class="custom-content-container" v-if="apow !== null">
+            <div style="margin-top: 15px;" class="custom-content-container" v-if="apow !== null">
               <el-card class="cardChilc" shadow="hover">
                 <curUnblance :max="balanceObj.imbalanceValueA==null?0:balanceObj.imbalanceValueA.toFixed(0)" name="A路电流不平衡"/>
               </el-card>
@@ -200,9 +272,8 @@
                 </div>
               </el-card>
             </div>
-
             <br/>
-            <div class="custom-content-container" v-if="bpow !== null">
+            <div class="custom-content-container" style="margin-top: -5px;" v-if="bpow !== null">
               <el-card class="cardChilc" shadow="hover">
                 <volUnblance :max="balanceObj.imbalanceValueB==null?0:balanceObj.imbalanceValueB.toFixed(0)" name="B路电流不平衡"/>
               </el-card>
@@ -244,7 +315,7 @@
         <Pagination
           :total="queryParams.pageTotal"
           :page-size="queryParams.pageSize"
-          :page-sizes="[15, 30, 50, 100]"
+          :page-sizes="pageSizeArr"
           :current-page="queryParams.pageNo"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -265,7 +336,9 @@ import { tourEmits } from 'element-plus';
 import { table } from 'console';
 import { set } from 'nprogress';
 import ALine from '@/views/rack/reportcopy/component/ALine.vue';
-
+import { textShadow } from 'html2canvas/dist/types/css/property-descriptors/text-shadow';
+import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
+import { text } from 'stream/consumers';
 const { push } = useRouter() // 路由跳转
 const router = useRouter() // 路由跳转
 const tableLoading = ref(false) // 
@@ -276,10 +349,14 @@ const showDetailDialog = ref(false)
 const apow = ref(null)
 const bpow = ref(null)
 const detailLoading = ref(false)
+const pageSizeArr=ref([24,36,48]);
 const ABarOption = ref<EChartsOption>({
       title: {
         text: 'A路电流饼形图',
-        left: 'left'
+        left: 'left',
+        textStyle:{
+          fontWeight: 'bold'
+        }
       },
       tooltip: {
         trigger: 'item',
@@ -314,7 +391,10 @@ const ABarOption = ref<EChartsOption>({
 const BBarOption = ref<EChartsOption>({
       title: {
         text: 'B路电流饼形图',
-        left: 'left'
+        left: 'left',
+        textStyle:{
+          fontWeight: 'bold'
+        }
       },
       tooltip: {
         trigger: 'item',
@@ -349,7 +429,10 @@ const BBarOption = ref<EChartsOption>({
 const ALineOption = ref<EChartsOption>({
   title: {
     text: 'A路电流趋势',
-    left: 'center'
+    left: 'left',
+    textStyle:{
+      fontWeight: 'bold'
+    }
   },
   tooltip: {
     trigger: 'axis'
@@ -373,7 +456,10 @@ const ALineOption = ref<EChartsOption>({
 const BLineOption = ref<EChartsOption>({
   title: {
     text: 'B路电流趋势',
-    left: 'center'
+    left: 'left',
+    textStyle:{
+      fontWeight: 'bold'
+    }
   },
   tooltip: {
     trigger: 'axis'
@@ -397,14 +483,17 @@ const BLineOption = ref<EChartsOption>({
 const queryParams = reactive({
   name: undefined,
   pageNo: 1,
-  pageSize: 15,
+  pageSize: 24,
   pageTotal: 0,
 }) as any
 const balanceObj = reactive({
+  a_reactive_power: 0,
+  b_reactive_power: 0,
   a_apparent_power: 0,
   b_apparent_power: 0,
   a_active_power: 0,
   b_active_power: 0,
+  pow_reactive_percent: 0,
   pow_apparent_percent: 0,
   pow_active_percent: 0,
   cur_valueA: [],
@@ -453,15 +542,19 @@ const getTableData = async(reset = false) => {
 
 // 详情跳转
 const toDetail = async (item) => {
+  console.log('跳转详情', item);
   detailLoading.value = true
   showDetailDialog.value = true;
-  apow.value=balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
-  bpow.value=1-apow.value;
+  balanceObj.a_reactive_power=item.powReactiveA;
+  balanceObj.b_reactive_power=item.powReactiveB;
   balanceObj.a_apparent_power=item.powApparentA;
   balanceObj.b_apparent_power=item.powApparentB;
   balanceObj.a_active_power=item.powActiveA;
   balanceObj.b_active_power=item.powActiveB;
+  bpow.value=1-apow.value;
+  apow.value=balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
   balanceObj.pow_active_percent=item.powActiveA/item.powActiveTotal*100;
+  balanceObj.pow_reactive_percent=item.powReactiveA/item.powReactiveTotal*100;
   let response=await IndexApi.getBalanceDetail(item.id)
   // console.log(response)
   const cur_valueA=response.curLista
@@ -500,6 +593,13 @@ const toDetail = async (item) => {
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
   switchValue.value = value
+  if(switchValue.value == 0){
+    queryParams.pageSize = 24;
+    pageSizeArr.value=[24,36,48];
+  }else{
+    queryParams.pageSize = 15;
+    pageSizeArr.value=[15,25,30,50,100];
+  }
   getTableData(true)
 }
 
@@ -670,7 +770,7 @@ function headerCellStyle() {
   }
 }
 .matrixContainer {
-  height: calc(100vh - 320px);
+  height: calc(100vh - 215px);
   overflow: auto;
   display: flex;
   flex-wrap: wrap;
@@ -772,13 +872,15 @@ function headerCellStyle() {
       background-color: #fff;
       position: absolute;
       right: 10px;
-      top: 8px;
+      bottom: 5px;
     }
   }
 }
 
 .powerContainer {
   display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
   .power {
     width: 50%;
     display: flex;
@@ -787,6 +889,9 @@ function headerCellStyle() {
     // padding-left: 50px;
     margin: 20px 0;
     .label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
       font-size: 16px;
       font-weight: bold;
     }
@@ -858,10 +963,11 @@ function headerCellStyle() {
   display: flex;
   width: 400px;
   height: 30px;
-  top: 30px;
+  top: 50px;
   .leftTip{
     display: inline-block;
     // width: 150px;
+    margin-left: 40px;
     text-align: center;
     font-size: small;
   }
@@ -877,5 +983,50 @@ function headerCellStyle() {
   display: inline-block;
   right: 10px;
   top: 8px;
+}
+.topCard{
+  position: relative;
+  height: 135px;
+}
+.progressInDialog{
+  // left: 50px;
+  // right: 50px;
+  display: inline-block;
+  margin-top: 20px;
+  width: 100%;
+  .left{
+    text-align: center;
+    vertical-align: middle;
+    margin-left: 10%;
+    display: inline-block;
+    width:100px;
+    height: 20px;
+    background-color: rgb(59, 139, 245);
+  }
+  .line{
+    vertical-align: middle;
+    display: inline-block;
+    width: 3px;
+    height: 36px;
+    background-color: #000;
+  }
+  .right{
+    text-align: center;
+    vertical-align: middle;
+    display: inline-block;
+    width: 100px;
+    height: 20px;
+    background-color: rgb(248, 111, 19);
+  }
+}
+.powerInDialog{
+  width: 400px;
+  margin:20px;
+  .label{
+    position: relative;
+    top:-25px;
+    font-size: large;
+    left: -15px;
+  }
 }
 </style>

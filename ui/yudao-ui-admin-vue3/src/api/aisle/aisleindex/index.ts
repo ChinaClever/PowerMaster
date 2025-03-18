@@ -113,5 +113,9 @@ export const IndexApi = {
 
   getBalanceDetail: async (data) => {
     return await request.post({ url: `/aisle/index/balance/chart?id=${data}`, })
-  }
+  },
+
+  getMaxEq: async () => {
+    return await request.post({ url: `/aisle/index/eq/maxEq`})
+  },
 }

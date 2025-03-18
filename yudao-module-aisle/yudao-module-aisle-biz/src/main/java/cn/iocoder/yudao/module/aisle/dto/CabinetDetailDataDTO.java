@@ -118,4 +118,10 @@ public class CabinetDetailDataDTO {
      */
     @JsonProperty(value="yCoordinate")
     private int yCoordinate;
+
+    /**
+     * 电力容量
+     */
+    @Schema(description = "电力容量", example = "5")
+    private Double powerCapacity;
 }

@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartDom" style="width: 400px; height: 300px;margin-left:30px;"></div>
+  <div ref="chartDom" style="width: 441px; height: 300px;"></div>
 </template>
 
 <script setup lang="ts">
@@ -40,7 +40,10 @@ const restPercentageValue = computed(() => 100 - percentageValue.value);
 const option = computed(() => ({
   title: {
     text: props.name,
-    left: 'left'
+    left: 'left',
+    textStyle: {
+      fontWeight: 'bold'
+    }
   },
   tooltip: {
     trigger: 'item',

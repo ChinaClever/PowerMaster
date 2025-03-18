@@ -165,4 +165,44 @@ public class AisleDetailDTO {
     @Schema(description = "剩余空间", example = "1")
     private int freeSpace;
 
+
+    @Schema(description = "总视在功率")
+    private Double powApparentTotal;
+
+    @Schema(description = "总有功功率")
+    private Double powActiveTotal;
+
+    @Schema(description = "总无功功率")
+    private Double powReactiveTotal;
+
+    @Schema(description = "A路视在功率")
+    private Double powApparentA;
+
+    @Schema(description = "A路有功功率")
+    private Double powActiveA;
+
+    @Schema(description = "A路无功功率")
+    private Double powReactiveA;
+
+    @Schema(description = "B路视在功率")
+    private Double powApparentB;
+
+    @Schema(description = "B路有功功率")
+    private Double powActiveB;
+
+    @Schema(description = "B路无功功率")
+    private Double powReactiveB;
+
+    @Schema(description = "A路电流")
+    private List<Double> curAList;
+
+    @Schema(description = "B路电流")
+    private List<Double> curBList;
+
+    @Schema(description = "A路电压")
+    private List<Double> volAList;
+
+    @Schema(description = "B路电压")
+    private List<Double> volBList;
+
 }
