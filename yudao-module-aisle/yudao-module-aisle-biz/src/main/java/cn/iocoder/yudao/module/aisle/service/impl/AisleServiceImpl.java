@@ -842,10 +842,12 @@ public class AisleServiceImpl implements AisleService {
                     if (Objects.nonNull(cabinetBoxes)) {
                         if (!StringUtils.isBlank(cabinetBoxes.getBoxKeyA())) {
                             String[] keya = cabinetBoxes.getBoxKeyA().split(SPLIT_KEY);
-                            cabinetDTO.setBusIpA(keya[0]);
-                            cabinetDTO.setBarIdA(Integer.valueOf(keya[1]));
-                            cabinetDTO.setBoxIndexA(Integer.valueOf(keya[2]));
-                            cabinetDTO.setBoxOutletIdA(cabinetBoxes.getOutletIdA());
+                            if (keya.length ==3) {
+                                cabinetDTO.setBusIpA(keya[0]);
+                                cabinetDTO.setBarIdA(Integer.valueOf(keya[1]));
+                                cabinetDTO.setBoxIndexA(Integer.valueOf(keya[2]));
+                                cabinetDTO.setBoxOutletIdA(cabinetBoxes.getOutletIdA());
+                            }
                         }
                         if (!StringUtils.isBlank(cabinetBoxes.getBoxKeyB())) {
                             String[] keyb = cabinetBoxes.getBoxKeyB().split(SPLIT_KEY);

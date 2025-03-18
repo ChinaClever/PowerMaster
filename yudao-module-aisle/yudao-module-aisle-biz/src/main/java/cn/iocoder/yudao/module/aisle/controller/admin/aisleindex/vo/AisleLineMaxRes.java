@@ -33,4 +33,10 @@ public class AisleLineMaxRes extends AisleIndexRespVO{
     @Schema(description = "视在功率b")
     private String maxApparentBTime;
 
+    //视在功率b
+    @Schema(description = "视在功率")
+    private Float maxApparentTotal;
+    @Schema(description = "视在功率")
+    private String maxApparentTotalTime;
+
 }
