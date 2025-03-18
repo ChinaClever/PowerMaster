@@ -162,7 +162,7 @@
           </template>
         </el-table-column>
       </el-table>    
-      <div v-show="switchValue == 0  && valueMode == 0 && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0  && valueMode == 0 && list.length > 0" class="arrayContainer" v-loading="loading">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -175,7 +175,7 @@
               <div  v-if="item.pfB != null">B路:{{item.pfB}}</div>
             </div>           -->
             <div class="zu" v-if=" item.pfTotal != null">
-              <Bar :width="70" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
+              <Bar :width="65" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -666,7 +666,7 @@ const echartsOption = computed(() => ({
       },
       pointer: {
         icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
-        length: '12%',
+        length: '20%',
         width: 20,
         offsetCenter: [0, '-60%'],
         itemStyle: {
@@ -689,7 +689,7 @@ const echartsOption = computed(() => ({
       },
       axisLabel: {
         color: '#464646',
-        fontSize: 20,
+        fontSize: 25,
         distance: -60,
         rotate: 'tangential',
         formatter: function (value) {
@@ -706,7 +706,7 @@ const echartsOption = computed(() => ({
         fontSize: 20
       },
       detail: {
-        fontSize: 50,
+        fontSize: 25,
         offsetCenter: [0, '-10%'],
         valueAnimation: true,
         formatter: function (value) {
@@ -716,7 +716,7 @@ const echartsOption = computed(() => ({
       },
       data: [
         {
-          value: max.value
+          value: max.value!=null?max.value:0
         }
       ]
     }

@@ -1049,7 +1049,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     public PageResult<AisleLineMaxRes> getAisleLineMaxPage(AisleIndexPageReqVO pageReqVO) {
         try {
             List<AisleIndexDO> searchList = aisleIndexCopyMapper.selectList(new LambdaQueryWrapperX<AisleIndexDO>()
-                    .inIfPresent(AisleIndexDO::getId, pageReqVO.getAisleIds()));
+                    .inIfPresent(AisleIndexDO::getId, pageReqVO.getAisleIds())
+                    .likeIfPresent(AisleIndexDO::getAisleName, pageReqVO.getName()));
             if (org.springframework.util.CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);
             }

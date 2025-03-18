@@ -38,13 +38,15 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
+        result += "发生时间:&nbsp" +  series.value[i].maxTime[params[0].dataIndex]+" &nbsp&nbsp&nbsp&nbsp";
         result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
         if (params[i].seriesName.includes("视在功率")) {
           result += params[i].value.toFixed(3) +  ' KVA'; 
         } else if (params[i].seriesName.includes("有功功率")) {
           result += params[i].value.toFixed(3) + ' kW';
+        }else if(params[i].seriesName.includes("无功功率")){
+          result += params[i].value.toFixed(3) + ' kVar';
         }
-        result += " &nbsp&nbsp&nbsp&nbsp发生时间:&nbsp" +  series.value[i].maxTime[params[0].dataIndex];
         result += '<br>';
       }
       return result;
