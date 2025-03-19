@@ -2,11 +2,17 @@ package cn.iocoder.yudao.module.room.service.roomindex;
 import cn.hutool.core.date.DateTime;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
+import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
@@ -14,9 +20,11 @@ import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalR
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -36,6 +44,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
@@ -48,11 +58,9 @@ import cn.iocoder.yudao.module.room.dal.mysql.roomindex.RoomIndexCopyMapper;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -89,6 +97,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     private RestHighLevelClient client;
 
     public static final String DAY_FORMAT = "dd";
+
+    @Autowired
+    private RoomIndexMapper roomIndexMapper;
     
     @Override
     public Integer createIndex(RoomIndexSaveReqVO createReqVO) {
@@ -768,6 +779,127 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         return pageResult;
     }
 
+    @Override
+    public PageResult<RoomEQRes> getEqPage1(RoomIndexPageReqVO pageReqVO) {
+        String indices="";
+        switch (pageReqVO.getTimeGranularity()){
+            case "yesterday":
+                indices="room_eq_total_day";
+                break;
+            case "week":
+                indices="room_eq_total_week";
+                break;
+            case "month":
+                indices="room_eq_total_month";
+                break;
+                //todo 异常
+        }
+        String startTime = null;
+        String endTime = null;
+        LocalDate now =LocalDate.now();
+        //todo bug
+        LocalDate yesterday = LocalDate.now();
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from((pageReqVO.getPageNo()-1)*pageReqVO.getPageSize());
+        if(pageReqVO.getPageSize()*pageReqVO.getPageNo()>10000){
+            searchSourceBuilder.size(10000-(pageReqVO.getPageNo()-1)*pageReqVO.getPageSize());
+        }else {
+            searchSourceBuilder.size(pageReqVO.getPageSize());
+        }
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.sort("eq_value",SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME+".keyword").gte(startTime).lt(endTime))));
+        searchSourceBuilder.fetchSource(new String[]{"room_id"},null);
+        SearchRequest sourceRequest = new SearchRequest().indices(indices).source(searchSourceBuilder);
+        try {
+            SearchResponse searchResponse = client.search(sourceRequest, RequestOptions.DEFAULT);
+            ArrayList<RoomEqTotalDayDo> list = new ArrayList<>();
+            for (SearchHit hit : searchResponse.getHits()) {
+                list.add(JsonUtils.parseObject(hit.getSourceAsString(), RoomEqTotalDayDo.class));
+            }
+//            System.out.println(list);
+            if(!org.springframework.util.CollectionUtils.isEmpty(list)){
+                List<Integer> ids = list.stream().map(RoomEqTotalDayDo::getRoomId).collect(Collectors.toList());
+                List<RoomIndexDO> roomIndexDOS = roomIndexCopyMapper.selectList(new LambdaUpdateWrapper<RoomIndexDO>().in(RoomIndexDO::getId, ids));
+                Map<Integer, RoomIndexDO> collect = roomIndexDOS.stream().collect(Collectors.toMap(RoomIndexDO::getId, x -> x));
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+                List<String> yesterdayList = getData(startTime, endTime, ids, "room_eq_total_day");
+                Map<Integer, Double> yesterdayMap = new HashMap<>();
+                if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)) {
+                    yesterdayList.forEach(str -> {
+                        RoomEqTotalDayDo dayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
+                        yesterdayMap.put(dayDo.getRoomId(), dayDo.getEqValue());
+                    });
+                }
+
+                //上周
+                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+                List<String> weekList = getData(startTime, endTime, ids, "room_eq_total_week");
+                Map<Integer, Double> weekMap = new HashMap<>();
+                if (!org.springframework.util.CollectionUtils.isEmpty(weekList)) {
+                    weekList.forEach(str -> {
+                        RoomEqTotalWeekDo weekDo = JsonUtils.parseObject(str, RoomEqTotalWeekDo.class);
+                        weekMap.put(weekDo.getRoomId(), weekDo.getEqValue());
+                    });
+                }
+
+                //上月
+                startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                List<String> monthList = getData(startTime, endTime, ids, "aisle_eq_total_month");
+                Map<Integer, Double> monthMap = new HashMap<>();
+                if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
+                    monthList.forEach(str -> {
+                        RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
+                        monthMap.put(monthDo.getRoomId(), monthDo.getEqValue());
+                    });
+                }
+
+                List<RoomEQRes> res= new ArrayList<>();
+                List<Integer> roomIds = roomIndexDOS.stream().map(RoomIndexDO::getId).distinct().collect(Collectors.toList());
+                Map<Integer, String> voMap = getPositionByIds(roomIds);
+                list.forEach(item->{
+                    RoomEQRes roomEQRes = new RoomEQRes();
+                    RoomIndexDO roomIndexDO = collect.get(item.getRoomId());
+                    if (Objects.nonNull(roomIndexDO)) {
+                        roomEQRes.setId(roomIndexDO.getId());
+                        roomEQRes.setName(roomIndexDO.getRoomName());
+                    }
+                    if (Objects.nonNull(yesterdayMap.get(roomEQRes.getId()))) {
+                        roomEQRes.setYesterdayEq(yesterdayMap.get(roomEQRes.getId()));
+                    }
+                    if (Objects.nonNull(weekMap.get(roomEQRes.getId()))) {
+                        roomEQRes.setLastWeekEq(weekMap.get(roomEQRes.getId()));
+                    }
+                    if (Objects.nonNull(monthMap.get(roomEQRes.getId()))) {
+                        roomEQRes.setLastMonthEq(monthMap.get(roomEQRes.getId()));
+                    }
+                    String roomName = voMap.get(roomEQRes.getId());
+                    if (StringUtils.isNotEmpty(roomName)) {
+                        roomEQRes.setName(roomName);
+                        roomEQRes.setLocation(roomName + SPLIT_KEY + roomEQRes.getName());
+                    } else {
+                        roomEQRes.setLocation(roomEQRes.getName());
+                    }
+                    res.add(roomEQRes);
+                });
+                return new PageResult<>(res, searchResponse.getHits().getTotalHits().value);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+    private Map<Integer, String> getPositionByIds(List<Integer> roomIds) {
+        Map<Integer, String> roomMap = new HashMap<>();
+        if (cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.isAnyEmpty(roomIds)) {
+            return roomMap;
+        }
+        roomMap = roomIndexMapper.selectBatchIds(roomIds).stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
+        return roomMap;
+    }
 
 
     /**

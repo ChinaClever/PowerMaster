@@ -431,7 +431,7 @@ const handleExport = async () => {
 /** 详情操作*/
 const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
   push('/aisle/aisleenergyconsumption/powerAnalysis?start='+createTimeMin+
-  '&end='+createTimeMax+'&id='+ id);
+  '&end='+createTimeMax+'&id='+ id+"&startTime="+selectTimeRange.value[0]+"&endTime="+selectTimeRange.value[1]);
 }
 
 /** 初始化 **/

@@ -50,7 +50,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
-            <el-button @click="resetSearch();timeButton=0" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button @click="resetSearch()" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -109,6 +109,7 @@
 
 <script lang="ts" setup>
 import { IndexApi } from '@/api/room/roomindex'
+import { time } from 'console'
 import { id } from 'element-plus/es/locale'
 
 const { push } = useRouter() // 路由跳转
@@ -126,6 +127,7 @@ const queryParams = reactive({
 const roomListInTree=ref([])
 const pageTotal=ref(0)
 const pageSizes=ref([24,36,48])
+const timeButton=ref(0)
 // 获取表格数据
 const getTableData = async(reset = false) => {
   tableLoading.value = true
@@ -139,7 +141,8 @@ const getTableData = async(reset = false) => {
       roomIds : queryParams.roomIds,
       runStatus: [],
       pduBox: 0,
-      name: queryParams.name
+      name: queryParams.name,
+      timeGranularity:queryParams.timeGranularity
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
@@ -228,6 +231,25 @@ function handleCurrentChange(val){
   getTableData(false)
 }
 
+function resetSearch(){
+  timeButton.value=0;
+  queryParams.timeGranularity=null;
+  queryParams.name=null;
+  getTableData(true);
+}
+
+function changeTimeGranularity(timeGranularity){
+  if(queryParams.timeGranularity == timeGranularity) return;
+  if(queryParams.timeGranularity == "yesterday"){
+    timeButton.value=1;
+  }else if(queryParams.timeGranularity == "lastWeek"){
+    timeButton.value=2;
+  }else if(queryParams.timeGranularity == "lastMonth"){
+    timeButton.value=3;
+  }
+  queryParams.timeGranularity=timeGranularity;
+  getTableData(true);
+}
 handleNavTree();
 </script>
 
