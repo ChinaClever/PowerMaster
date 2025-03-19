@@ -361,7 +361,7 @@
             <div v-if="item.curAList">A路</div>
             <div v-if="item.curBList">B路</div>
           </div>
-          <div style="position: absolute;bottom: 0;right: 0">
+          <div v-if="item.eleActiveTotal != null && item.eleActiveTotal != 0" style="position: absolute;bottom: 0;right: 0">
             <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
           </div>
           <!-- <div v-if="item.eleActiveTotal != null" style="display: inline-block;
