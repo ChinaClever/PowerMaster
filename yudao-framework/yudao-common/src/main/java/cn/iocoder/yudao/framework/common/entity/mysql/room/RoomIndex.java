@@ -33,6 +33,24 @@ public class RoomIndex implements Serializable {
     private String roomName;
 
     /**
+     * 地址（楼层）
+     */
+    @Schema(description = "地址（楼层）", example = "地址（楼层）")
+    private String addr;
+
+    /**
+     * 显示选择
+     */
+    @Schema(description = "显示选择")
+    private Boolean displayFlag;
+
+    /**
+     * 显示类型（0-负载率/1-pue）
+     */
+    @Schema(description = "显示类型（0-负载率/1-pue）")
+    private Boolean displayType;
+
+    /**
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
@@ -50,26 +68,6 @@ public class RoomIndex implements Serializable {
      */
     @Schema(description = "空调额定功率", example = "0")
     private float airPower;
-
-//    /**
-//     * 日用能告警开关
-//     */
-//    private  int eleAlarmDay;
-//
-//    /**
-//     * 月用能告警开关
-//     */
-//    private  int eleAlarmMonth;
-//
-//    /**
-//     * 日用能限制
-//     */
-//    private double eleLimitDay;
-//
-//    /**
-//     * 月用能限制
-//     */
-//    private double eleLimitMonth;
 
 
     /**

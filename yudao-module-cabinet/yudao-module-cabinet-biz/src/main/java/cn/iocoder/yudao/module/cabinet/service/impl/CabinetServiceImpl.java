@@ -769,6 +769,10 @@ public class CabinetServiceImpl implements CabinetService {
         Page<CabineIndexCfgVO> page1 = cabinetIndexMapper.selectIndexLoadPage(page, req);
         if (page1.getRecords() != null && !page1.getRecords().isEmpty()) {
             List<CabineIndexCfgVO> records = page1.getRecords();
+
+            List<Integer> aisleIds = records.stream().map(CabineIndexCfgVO::getAisleId).distinct().collect(Collectors.toList());
+            Map<Integer,String> aisNameMap = aisleNameByIds(aisleIds);
+
             List<CabinetIndexLoadResVO> bean = BeanUtils.toBean(records, CabinetIndexLoadResVO.class);
             Map<String, CabinetIndexLoadResVO> map = bean.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
             List<String> keys = bean.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
@@ -786,6 +790,10 @@ public class CabinetServiceImpl implements CabinetService {
                 StringJoiner joiner = new StringJoiner("-");
                 if (!StringUtils.isEmpty(vo.getRoomName())) {
                     joiner.add(vo.getRoomName());
+                }
+                String aisleName = aisNameMap.get(vo.getAisleId());
+                if (StringUtils.isNotEmpty(aisleName)){
+                    joiner.add(aisleName);
                 }
                 joiner.add(vo.getCabinetName());
                 vo.setLocation(joiner.toString());
@@ -822,9 +830,11 @@ public class CabinetServiceImpl implements CabinetService {
     public PageResult<CabinetEnergyStatisticsResVO> getEnergyStatisticsPage(CabinetIndexVo pageReqVO) {
         Page page = new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize());
         Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
+
         List<CabinetEnergyStatisticsResVO> list = BeanUtils.toBean(voPage.getRecords(), CabinetEnergyStatisticsResVO.class);
         List<Integer> ids = list.stream().map(CabinetEnergyStatisticsResVO::getId).collect(Collectors.toList());
-
+        List<Integer> aisleIds = list.stream().map(CabinetEnergyStatisticsResVO::getAisleId).distinct().collect(Collectors.toList());
+       Map<Integer,String> aisNameMap = aisleNameByIds(aisleIds);
         if (CollectionUtils.isEmpty(ids)) {
             return new PageResult<>(list, voPage.getTotal());
         }
@@ -834,7 +844,7 @@ public class CabinetServiceImpl implements CabinetService {
         //昨日
         LocalDate now = LocalDate.now();
         // 获取昨天的日期
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now();
         String startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
         String endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
         List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
@@ -844,8 +854,8 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上周
-        startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
-        endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+        startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
         List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> weekMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(weekList)) {
@@ -853,8 +863,8 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         //上月
-        startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
-        endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+        startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
         List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
         Map<Integer, BigDecimal> monthMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(monthList)) {
@@ -887,6 +897,10 @@ public class CabinetServiceImpl implements CabinetService {
             if (!StringUtils.isEmpty(vo.getRoomName())) {
                 joiner.add(vo.getRoomName());
             }
+            String aisleName = aisNameMap.get(vo.getAisleId());
+            if (StringUtils.isNotEmpty(aisleName)){
+                joiner.add(aisleName);
+            }
             joiner.add(vo.getCabinetName());
             vo.setLocation(joiner.toString());
         }
@@ -902,12 +916,24 @@ public class CabinetServiceImpl implements CabinetService {
         return new PageResult<>(list, voPage.getTotal());
     }
 
+    private Map<Integer, String> aisleNameByIds(List<Integer> aisleIds) {
+        if (CollectionUtils.isEmpty(aisleIds)) {
+            return new HashMap<>();
+        }
+        Map<Integer, String> map = new HashMap<>();
+        List<AisleIndex> aisleIndices = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getId, aisleIds));
+        aisleIndices.forEach(iter ->{
+            map.put(iter.getId(), iter.getAisleName());
+        });
+        return map;
+    }
+
     @Override
     public PageResult<CabinetEnergyStatisticsResVO> getEqPage1(CabinetIndexVo pageReqVO) {
         String indices = null;
         LocalDate now = LocalDate.now();
         // 获取昨天的日期
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now();
         String startTime = null;
         String endTime = null;
         Integer total = 0;
@@ -979,8 +1005,8 @@ public class CabinetServiceImpl implements CabinetService {
                 }
 
                 //上周
-                startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
                 Map<Integer, BigDecimal> weekMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(weekList)) {
@@ -988,24 +1014,31 @@ public class CabinetServiceImpl implements CabinetService {
                 }
 
                 //上月
-                startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
                 List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class, new String[]{"cabinet_id", "eq_value"});
                 Map<Integer, BigDecimal> monthMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(monthList)) {
                     monthMap = monthList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
                 }
-
+                List<Integer> aisleIds = voList.stream().map(CabineIndexCfgVO::getAisleId).distinct().collect(Collectors.toList());
+                Map<Integer,String> aisNameMap = aisleNameByIds(aisleIds);
                 List<CabinetEnergyStatisticsResVO> result = new ArrayList<>();
                 for (CabinetEqTotalDay vo : list) {
                     Integer id = vo.getCabinetId();
                     CabineIndexCfgVO cabineIndexCfgVO = map.get(id);
                     CabinetEnergyStatisticsResVO vos = new CabinetEnergyStatisticsResVO().setId(cabineIndexCfgVO.getId()).setRunStatus(cabineIndexCfgVO.getRunStatus());
+                    StringJoiner joiner = new StringJoiner("-");
                     if (ObjectUtils.isNotEmpty(cabineIndexCfgVO.getRoomName())) {
-                        vos.setLocation(cabineIndexCfgVO.getRoomName() + "-" + cabineIndexCfgVO.getCabinetName());
-                    } else {
-                        vos.setLocation(cabineIndexCfgVO.getCabinetName());
+                        joiner.add(cabineIndexCfgVO.getRoomName());
+
                     }
+                    String aisleName = aisNameMap.get(vos.getAisleId());
+                    if (StringUtils.isNotEmpty(aisleName)){
+                        joiner.add(aisleName);
+                    }
+                    joiner.add(cabineIndexCfgVO.getCabinetName());
+                    vos.setLocation(joiner.toString());
                     vos.setCabinetName(cabineIndexCfgVO.getCabinetName());
                     vos.setRoomName(cabineIndexCfgVO.getRoomName());
                     vos.setYesterdayEq(yesterdayMap.get(id));
@@ -1825,26 +1858,22 @@ public CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int
 
         LocalDate now = LocalDate.now();
         // 获取昨天的日期
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now();
 
         // 昨天的起始时间（00:00:00）
-        LocalDateTime start = yesterday.atTime(LocalTime.MIN);
-        LocalDateTime end = yesterday.atTime(LocalTime.MAX);
+        String start = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+        String end = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
 
-        extractedMaxEq("cabinet_eq_total_day",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,0);
+        extractedMaxEq("cabinet_eq_total_day",start, end,result,0);
         // 获取上周的开始时间（周一）
-        start = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
-        end = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+        start = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        end = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
 
-        extractedMaxEq("cabinet_eq_total_week",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,1);
+        extractedMaxEq("cabinet_eq_total_week",start, end,result,1);
 
-        start = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
-        end = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
-
-        extractedMaxEq("cabinet_eq_total_month",LocalDateTimeUtil.format(start,"yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end,"yyyy-MM-dd HH:mm:ss"),result,2);
+        start = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+         end = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+        extractedMaxEq("cabinet_eq_total_month",start, end,result,2);
         return result;
     }
 

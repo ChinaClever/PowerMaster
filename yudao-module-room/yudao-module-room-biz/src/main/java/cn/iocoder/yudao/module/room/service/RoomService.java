@@ -6,10 +6,12 @@ import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.dto.*;
+import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author luowei
@@ -115,4 +117,9 @@ public interface RoomService {
 
     //恢复已删除机房
     void getRestoreRoom(int id);
+
+    List<RoomIndexAddrResVO> getRoomList(String addr);
+
+    List<String> getRoomAddrList();
+
 }
