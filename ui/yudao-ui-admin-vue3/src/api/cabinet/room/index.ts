@@ -66,6 +66,16 @@ restoreRoomInfo: async (params: any) => {
   return await request.get({ url: `/room/restoreRoomInfo`, params })
 },
 
+//获取机房楼层
+getRoomAddrList: async (params: any) => {
+  return await request.get({ url: `/room/getRoomAddrList`, params })
+},
+
+//获取楼层的所有机房
+getAddrAllRoomList: async (params: any) => {
+  return await request.post({ url: `/room/roomList`, params })
+}
+
 
 
 }
