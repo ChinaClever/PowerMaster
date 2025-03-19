@@ -89,6 +89,12 @@ public class AisleIndexController {
         return success(indexService.getAisleLineMaxPage(pageReqVO));
     }
 
+    @Operation(summary = "获得通道列需量AB路最大")
+    @PostMapping("/line/max")
+    public CommonResult<Map<String,AislePowerFactorMaxResVO>> getAisleLineMax(@RequestBody AisleIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAisleLineMax(pageReqVO));
+    }
+
     @Operation(summary = "柜列需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<AisleLineResBase> getAisleLineCurLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
@@ -161,6 +167,12 @@ public class AisleIndexController {
     public CommonResult<PageResult<AislePfRes>> getAislePFPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
         PageResult<AislePfRes> pageResult = indexService.getAislePFPage(pageReqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/findAisleFactor")
+    @Operation(summary = "获得最大最小功率因素")
+    public CommonResult<Map> findAisleFactor() throws IOException {
+        return success(indexService.findAisleFactor());
     }
 
     @Operation(summary = "柜列功率因素详情分页")

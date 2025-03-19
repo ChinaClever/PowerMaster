@@ -6,13 +6,7 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-  curChartData: {
-    type: Array,
-    required: true,
-  },
-  timeRadio: {
-    required: true,
-  },
+  curChartData: Object,
 });
 
 const L1Data = ref([]);
