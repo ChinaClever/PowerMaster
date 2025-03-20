@@ -1368,14 +1368,24 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public List<RoomIndexAddrResVO> getRoomList(String adder) {
+    public List<RoomIndexAddrResVO> getRoomList(String adder, String roomName) {
         if (StringUtils.isNotEmpty(adder)) {
-            LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getAddr, adder).eq(RoomIndex::getIsDelete,false);
+            LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getAddr, adder)
+                    .like(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName).eq(RoomIndex::getIsDelete,false);
             List<RoomIndex> roomIndices = roomIndexMapper.selectList(eq);
             List<RoomIndexAddrResVO> bean = BeanUtils.toBean(roomIndices, RoomIndexAddrResVO.class);
             getRoomListRedis(bean);
             return bean;
-        }else {
+        }
+        if (StringUtils.isEmpty(adder) && StringUtils.isNotEmpty(roomName)) {
+            LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getIsDelete,false)
+                    .like(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName);
+            List<RoomIndex> roomIndices = roomIndexMapper.selectList(eq);
+            List<RoomIndexAddrResVO> bean = BeanUtils.toBean(roomIndices, RoomIndexAddrResVO.class);
+            getRoomListRedis(bean);
+            return bean;
+        }
+        if (StringUtils.isEmpty(adder)) {
             LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getIsDelete,false).isNull(RoomIndex::getAddr);
             List<RoomIndex> roomIndices = roomIndexMapper.selectList(eq);
             List<RoomIndexAddrResVO> bean = BeanUtils.toBean(roomIndices, RoomIndexAddrResVO.class);
@@ -1383,6 +1393,7 @@ public class RoomServiceImpl implements RoomService {
             getRoomListRedis(bean);
             return bean;
         }
+        return null;
     }
 
     @Override

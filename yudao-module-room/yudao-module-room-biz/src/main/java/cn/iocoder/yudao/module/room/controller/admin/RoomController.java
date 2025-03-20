@@ -213,8 +213,9 @@ public class RoomController {
 
     @Operation(summary = "机房监测")
     @PostMapping("/roomList")
-    public CommonResult<List<RoomIndexAddrResVO>> getRoomList(@RequestParam(value = "addr", required = false)  @Parameter(description = "地址（楼层）") String addr) {
-        List<RoomIndexAddrResVO> roomIndexAddrResVO = roomService.getRoomList(addr);
+    public CommonResult<List<RoomIndexAddrResVO>> getRoomList(@RequestParam(value = "addr", required = false)  @Parameter(description = "地址（楼层）") String addr,
+                                                              @RequestParam(value = "roomName", required = false)  @Parameter(description = "机房名称") String roomName) {
+        List<RoomIndexAddrResVO> roomIndexAddrResVO = roomService.getRoomList(addr,roomName);
         return success(roomIndexAddrResVO);
     }
 }

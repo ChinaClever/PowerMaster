@@ -782,23 +782,29 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     @Override
     public PageResult<RoomEQRes> getEqPage1(RoomIndexPageReqVO pageReqVO) {
         String indices="";
-        switch (pageReqVO.getTimeGranularity()){
-            case "yesterday":
-                indices="room_eq_total_day";
-                break;
-            case "week":
-                indices="room_eq_total_week";
-                break;
-            case "month":
-                indices="room_eq_total_month";
-                break;
-                //todo 异常
-        }
         String startTime = null;
         String endTime = null;
         LocalDate now =LocalDate.now();
         //todo bug
         LocalDate yesterday = LocalDate.now();
+        switch (pageReqVO.getTimeGranularity()) {
+            case "yesterday":
+                indices = "room_eq_total_day";
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+                break;
+            case "lastWeek":
+                indices = "room_eq_total_week";
+                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+                break;
+            case "lastMonth":
+                indices = "room_eq_total_month";
+                startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                break;
+            default:
+        }
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.from((pageReqVO.getPageNo()-1)*pageReqVO.getPageSize());
         if(pageReqVO.getPageSize()*pageReqVO.getPageNo()>10000){

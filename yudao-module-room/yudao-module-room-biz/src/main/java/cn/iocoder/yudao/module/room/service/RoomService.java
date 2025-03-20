@@ -118,7 +118,7 @@ public interface RoomService {
     //恢复已删除机房
     void getRestoreRoom(int id);
 
-    List<RoomIndexAddrResVO> getRoomList(String addr);
+    List<RoomIndexAddrResVO> getRoomList(String addr, String roomName);
 
     List<String> getRoomAddrList();
 

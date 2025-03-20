@@ -1075,12 +1075,18 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
                 indices = "box_eq_total_day";
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 break;
             case "lastWeek":
                 indices = "box_eq_total_week";
+                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 break;
             case "lastMonth":
                 indices = "box_eq_total_month";
+                startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
                 break;
             default:
         }

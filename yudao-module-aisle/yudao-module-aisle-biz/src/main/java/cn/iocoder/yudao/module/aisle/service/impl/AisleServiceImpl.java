@@ -708,8 +708,8 @@ public class AisleServiceImpl implements AisleService {
                 List<AisleBoxDTO> boxDTOList = new ArrayList<>();
                 if (!CollectionUtils.isEmpty(boxList)) {
                     boxList.forEach(box -> {
-//                        BoxIndex boxIndex = finalBoxIndexMap.get(box.getBoxKey());
                         AisleBoxDTO boxDTO = BeanUtils.toBean(box, AisleBoxDTO.class);
+                        boxDTO.setType(box.getBoxType());
                         boxDTO.setBoxName(boxDTO.getBoxName());
                         String[] split1 = box.getBoxKey().split("-");
 
