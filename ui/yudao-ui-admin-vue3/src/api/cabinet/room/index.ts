@@ -17,6 +17,9 @@ export const MachineRoomApi = {
   getRoomDataDetail: async (params: any) => {
     return await request.get({ url: `/room/data/detail`, params })
   },
+  getRoomDataNewDetail: async (params: any) => {
+    return await request.get({ url: `/room/data/newDetail`, params })
+  },
   // 获取机房主页面设备数据
   getRoomDevData: async (params: any) => {
     return await request.get({ url: `/room/main/dev/data`, params })

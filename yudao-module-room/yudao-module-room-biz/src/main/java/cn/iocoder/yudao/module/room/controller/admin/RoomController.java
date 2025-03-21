@@ -12,6 +12,7 @@ import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
+import cn.iocoder.yudao.module.room.vo.RoomMainResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
@@ -115,8 +116,15 @@ public class RoomController {
      */
     @Operation(summary = "机房数据详情")
     @GetMapping("/data/detail")
-    public CommonResult<RoomDataDTO> getDataDetail(@Param("id") int id) throws IOException {
+    public CommonResult<RoomDataDTO> getDataDetail(@Param("id") int id){
         RoomDataDTO dto = roomService.getDataDetail(id);
+        return success(dto);
+    }
+
+    @Operation(summary = "新的机房数据详情")
+    @GetMapping("/data/newDetail")
+    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id){
+        RoomMainResVO dto = roomService.getDatanewDetail(id);
         return success(dto);
     }
 
@@ -133,7 +141,7 @@ public class RoomController {
      *
      * @param id 柜列id
      */
-    @Operation(summary = "主页面设备数据")
+    @Operation(summary = "主页面告警设备数据")
     @GetMapping("/main/dev/data")
     public CommonResult<RoomDevDataDTO> getMainDevData(@Param("id") int id) {
         RoomDevDataDTO dto = roomService.getMainDevData(id);
@@ -213,8 +221,9 @@ public class RoomController {
 
     @Operation(summary = "机房监测")
     @PostMapping("/roomList")
-    public CommonResult<List<RoomIndexAddrResVO>> getRoomList(@RequestParam(value = "addr", required = false)  @Parameter(description = "地址（楼层）") String addr) {
-        List<RoomIndexAddrResVO> roomIndexAddrResVO = roomService.getRoomList(addr);
+    public CommonResult<List<RoomIndexAddrResVO>> getRoomList(@RequestParam(value = "addr", required = false)  @Parameter(description = "地址（楼层）") String addr,
+                                                              @RequestParam(value = "roomName", required = false)  @Parameter(description = "机房名称") String roomName) {
+        List<RoomIndexAddrResVO> roomIndexAddrResVO = roomService.getRoomList(addr,roomName);
         return success(roomIndexAddrResVO);
     }
 }

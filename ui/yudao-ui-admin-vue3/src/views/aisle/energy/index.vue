@@ -3,63 +3,11 @@
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div> -->
           <div>用能最大柜列</div>
           <div>昨日：{{ yesterdayMaxEq==null?"无数据":yesterdayMaxEq }}</div>
           <div>上周：{{ lastWeekMaxEq==null?"无数据":lastWeekMaxEq }}</div>
           <div>上月：{{ lastMonthMaxEq==null?"无数据":lastMonthMaxEq }}</div>
         </div>
-        <!-- <div class="line"></div>
-        <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">24</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>空载
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>故障
-            </div>
-            <div class="value"><span class="number">0</span>个</div>
-          </div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -189,9 +137,10 @@ const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const pageSizeArr=ref([24,36,48])
-const yesterdayMaxEq=ref(null)
-const lastWeekMaxEq=ref(null)
-const lastMonthMaxEq=ref(null)
+// 定义变量时明确支持字符串类型
+const yesterdayMaxEq = ref<string | null>(null);
+const lastWeekMaxEq = ref<string | null>(null);
+const lastMonthMaxEq = ref<string | null>(null);
 const queryParams = reactive({
   name: undefined,
   pageNo: 1,

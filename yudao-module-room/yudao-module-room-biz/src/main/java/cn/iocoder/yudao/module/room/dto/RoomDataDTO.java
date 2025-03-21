@@ -1,9 +1,7 @@
 package cn.iocoder.yudao.module.room.dto;
 
-import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
-import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO;
+import cn.iocoder.yudao.framework.common.dto.room.RoomCabinetDTO;
 import lombok.Data;
 
 import java.util.List;

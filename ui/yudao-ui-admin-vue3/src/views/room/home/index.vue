@@ -3,13 +3,32 @@
     <div class="left">
       <ContentWrap>
         <div class="progress">
+          <el-form
+            class="-mb-15px"
+            ref="queryFormRef"
+            :inline="true"
+            label-width="68px"
+          >
+            <el-form-item label="" prop="jf" >
+              机房：{{roomDownVal?.roomName}}
+            </el-form-item >
+          </el-form>
+        </div>
+      </ContentWrap>
+      <ContentWrap>
+        <div style="font-weight: bold">
+          功率
+        </div>
+        <div class="progress">
           <!--<el-progress type="dashboard" :percentage="powerInfo.powApparent && powerInfo.powApparent.toFixed()">-->
-          <el-progress type="dashboard" :percentage="80">
-            <template #default="{ percentage }">
-              <span class="percentage-value">{{ percentage }}kVA</span>
+          <el-progress type="dashboard" :percentage="powerInfo.powActive/powerInfo.powApparent*100" width="200">
+              <span class="percentage-value">{{ powerInfo.powApparent ? powerInfo.powApparent.toFixed(0) : 0 }}</span>
               <span class="percentage-label">总视在功率</span>
-            </template>
+              <span class="percentage-unit">kVA</span>
           </el-progress>
+          <div class="powActiveTotal-text">
+           <span>{{ powerInfo.powActive ? powerInfo.powActive.toFixed(0) : 0 }}kW</span>
+          </div>
         </div>
       </ContentWrap>
       <!--<el-card shadow="never">
@@ -21,69 +40,92 @@
         <div>总空间：{{spaceInfo.totalSpace}}u</div>
         <div>机柜数：{{spaceInfo.cabNum}}</div>
       </el-card>-->
-      <el-card shadow="never">
+      <el-card shadow="never" style="margin-bottom: 15px;font-size: 12px;">
+        <div style="height:22vh;display: flex;flex-direction: column;justify-content: space-between">
+          <div style="font-weight: bold;font-size: 16px">
+            用能
+          </div>
+          <!--<template #header>
+            <div>当前用能</div>
+          </template>
+          <div>今日：{{EqInfo.todayEq && EqInfo.todayEq.toFixed(2)}}kW·h</div>
+          <div>本周：{{EqInfo.thisWeekEq && EqInfo.thisWeekEq.toFixed(2)}}kW·h</div>
+          <div>本月：{{EqInfo.thisMonthEq  && EqInfo.thisMonthEq.toFixed(2)}}kW·h</div>-->
+          <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+            <span>今日用能：</span>
+            <span 
+              style="display: inline-block; position: relative; width: 5vw;"
+            >
+              <el-progress :stroke-width="26" :format="format"  :percentage="EqInfo.todayEq/EqInfo.yesterdayEq*100" style="width: 9vw;" />
+              <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+                {{EqInfo.todayEq ? EqInfo.todayEq.toFixed(1) : 0}}kWh
+              </div>
+            </span>
+            <span style="margin-left:3vh;">{{EqInfo.yesterdayEq ? EqInfo.yesterdayEq.toFixed(1) : 0}}kWh</span>
+          </div>
+          <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+            <span>本周用能：</span>
+            <span 
+              style="display: inline-block; position: relative; width: 5vw;"
+            >
+              <el-progress :stroke-width="26" :format="format"  :percentage="EqInfo.thisWeekEq/EqInfo.lastWeekEq*100" style="width: 9vw;" />
+              <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+                {{EqInfo.thisWeekEq ? EqInfo.thisWeekEq.toFixed(1) : 0}}kWh
+              </div>
+            </span>
+            <span style="margin-left:3vh;">{{EqInfo.lastWeekEq ? EqInfo.lastWeekEq.toFixed(1) : 0}}kWh</span>
+          </div>
+          <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+            <span>本月用能：</span>
+            <span 
+              style="display: inline-block; position: relative; width: 5vw;"
+            >
+              <el-progress  :stroke-width="26" :format="format" :percentage="EqInfo.thisMonthEq/EqInfo.lastMonthEq*100" style="width: 9vw;" />
+              <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+                {{EqInfo.thisMonthEq ? EqInfo.thisMonthEq.toFixed(1) : 0}}kWh
+              </div>
+            </span>
+            <span style="margin-left:3vh;">{{EqInfo.lastMonthEq ? EqInfo.lastMonthEq.toFixed(1) : 0}}kWh</span>
+          </div>
+        </div>
+      </el-card>
+      <el-card shadow="never" style="">
         <template #header>
-          <div>环境数据</div>
+          <div style="font-weight: bold">环境</div>
           <el-link @click="updateChart(); toggleTable = !toggleTable" type="primary" style="margin-left:12vw;">{{toggleTable?'湿度':'温度'}}</el-link>
         </template>
-        <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:25vh;"></div>
+        <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:33vh;"></div>
         <!--<div>当前平均温度：{{envInfo.temAvg}}°C</div>
         <div>当前最高温度：{{envInfo.temMax}}°C</div>
         <div>当前最低温度：{{envInfo.temMin}}°C</div>
         <div>最近更新时间：{{envInfo.updateTime}}</div>-->
       </el-card>
-      <el-card shadow="never" style="margin-bottom: 15px">
-        <!--<template #header>
-          <div>当前用能</div>
-        </template>
-        <div>今日：{{EqInfo.todayEq && EqInfo.todayEq.toFixed(2)}}kW·h</div>
-        <div>本周：{{EqInfo.thisWeekEq && EqInfo.thisWeekEq.toFixed(2)}}kW·h</div>
-        <div>本月：{{EqInfo.thisMonthEq  && EqInfo.thisMonthEq.toFixed(2)}}kW·h</div>-->
-        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
-          <span>今日用能：</span>
-          <span 
-            style="display: inline-block; position: relative; width: 5vw;"
-          >
-            <el-progress :stroke-width="26" :format="format"  :percentage="38" style="width: 9vw;" />
-            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              150kw
-            </div>
-          </span>
-          <span style="margin-left:3vh;">390kw</span>
-        </div>
-        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
-          <span>本周用能：</span>
-          <span 
-            style="display: inline-block; position: relative; width: 5vw;"
-          >
-            <el-progress :stroke-width="26" :format="format"  :percentage="42" style="width: 9vw;" />
-            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              290kw
-            </div>
-          </span>
-          <span style="margin-left:3vh;">690kw</span>
-        </div>
-        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
-          <span>本月用能：</span>
-          <span 
-            style="display: inline-block; position: relative; width: 5vw;"
-          >
-            <el-progress  :stroke-width="26" :format="format" :percentage="46" style="width: 9vw;" />
-            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              759kw
-            </div>
-          </span>
-          <span style="margin-left:3vh;">1650kw</span>
-        </div>
-      </el-card>
     </div>
     <div class="center" id="center">
       <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
       <ContentWrap class="CabEchart">
-        <Echart :options="echartOptionsPower" height="30vh" width="100%" />
-        <div class="btns">
-          <el-button class="btn" size="small" :plain="!(radioBtn == 'pow')" type="primary" @click="switchTrend('pow')">功率</el-button>
-          <el-button class="btn" size="small" :plain="!(radioBtn == 'ele')" type="primary" @click="switchTrend('ele')">用能</el-button>
+        <div style="background-color: #ffffff;border-radius: 5px;">
+          <el-row>
+            <el-col :span="16">
+              <el-radio-group v-model="typeRadio">
+                <el-radio-button label="功率曲线" value="功率曲线" @click="switchChartContainer =0"/>
+                <el-radio-button label="有功电能" value="有功电能" :disabled="isPowActiveDisabled" @click="switchChartContainer =1"/>
+                <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =1"/>
+                <el-radio-button label="PUE" value="PUE" @click="switchChartContainer =1"/>
+              </el-radio-group>
+            </el-col>
+            <el-col :span="8">
+              <el-radio-group v-model="timeRadio">
+                <el-radio-button label="近一小时" value="近一小时" :disabled="isHourDisabled" />
+                <el-radio-button label="近一天" value="近一天" :disabled="isDayAndMonthDisabled" />
+                <el-radio-button label="近三天" value="近三天" :disabled="isDayAndMonthDisabled" />
+                <el-radio-button label="近一月" value="近一月" :disabled="isDayAndMonthDisabled"/>
+              </el-radio-group>
+            </el-col>
+          </el-row>
+          <br/>
+          <div ref="chartContainer2" id="chartContainer2" style="width: 55vw;height: 340px;" v-show="switchChartContainer == 0"></div>
+          <div ref="chartContainer3" id="chartContainer3" style="width: 55vw;height: 340px;" v-show="switchChartContainer == 1"></div>
         </div>
       </ContentWrap>
     </div>
@@ -98,9 +140,9 @@
         <template #header>
           <div>用能</div>
         </template>
-        <div>昨日用能：{{energyInfo.yesterdayEq ? energyInfo.yesterdayEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>上周用能：{{energyInfo.lastWeekEq ? energyInfo.lastWeekEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>上月用能：{{energyInfo.lastMonthEq ? energyInfo.lastMonthEq.toFixed(2) : '0.00'}}kW·h</div>
+        <div>昨日用能：{{EqInfo.yesterdayEq ? EqInfo.yesterdayEq.toFixed(2) : '0.00'}}kW·h</div>
+        <div>上周用能：{{EqInfo.lastWeekEq ? EqInfo.lastWeekEq.toFixed(2) : '0.00'}}kW·h</div>
+        <div>上月用能：{{EqInfo.lastMonthEq ? EqInfo.lastMonthEq.toFixed(2) : '0.00'}}kW·h</div>
       </el-card>
       <ContentWrap>
         <div class="progress">
@@ -112,31 +154,32 @@
           </el-progress>
         </div>
       </ContentWrap>-->
-      <el-card shadow="never" class="mb-8px">
-        <template #header>
-          <div class="h-3 flex justify-between">
-            <span>告警统计</span>
-          </div>
-        </template>
-        <el-table :data="tableData" style="width: 100%;height:25vh" border class="text-12px">
-          <el-table-column prop="error" label="告警内容"  />
-          <el-table-column prop="box" label="告警设备" />
-          <el-table-column prop="time" label="告警时间" />
-        </el-table>
-      </el-card>
       <el-card shadow="never">
         <template #header>
           <div class="h-3 flex justify-between">
             <span> 设备统计</span>
           </div>
         </template>
-          <el-table :data="tableData" style="width: 100%;height:25vh" border class="text-12px">
-            <el-table-column prop="name" label=""  width="100" />
-            <el-table-column prop="all" label="总数" width="56" />
-            <el-table-column prop="on" label="在线" width="56" />
-            <el-table-column prop="off" label="离线" width="56" />
-          </el-table>
+        <el-table :data="tableData" style="" border class="text-12px">
+          <el-table-column prop="name" label="" width="58" height="10vh" />
+          <el-table-column prop="all" label="PDU" width="70" height="10vh" />
+          <el-table-column prop="on" label="插接箱" width="70" height="10vh" />
+          <el-table-column prop="off" label="始端箱" width="70" height="10vh" />
+        </el-table>
       </el-card>
+      <el-card shadow="never" class="mb-8px">
+        <template #header>
+          <div class="h-3 flex justify-between">
+            <span>告警统计</span>
+          </div>
+        </template>
+        <el-table :data="tableData" border class="text-12px" height="57vh">
+          <el-table-column prop="error" label="告警内容"  />
+          <el-table-column prop="box" label="告警设备" />
+          <el-table-column prop="time" label="告警时间" />
+        </el-table>
+      </el-card>
+      
       <!--<el-card shadow="never" class="mb-8px">
         <template #header>
           <div class="h-3 flex justify-between">
@@ -167,6 +210,8 @@
 import CabTopology from "../topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
+import { formatDate} from '@/utils/formatTime';
+import { IndexApi } from '@/api/aisle/aisleindex'
 
 import * as echarts from 'echarts'
 
@@ -181,15 +226,15 @@ const containerInfo = reactive({
   roomId: history?.state?.roomId
 }) // 机房拓扑容器信息
 const deviceInfo = reactive({}) // 设备信息
-const energyInfo = reactive({}) // 用能信息
+const EqInfo = reactive({}) // 用能信息
 const powerInfo = reactive({}) // 功率信息
-const spaceInfo = reactive({}) // 空间信息
+const roomDownVal = reactive({}) // 机房信息
 const envInfo = reactive({}) // 空间信息
 const echartInfo = reactive<any>({}) //配置图表的数据系列
 const toggleTable = ref(false)
 const tableData = [
   {
-    name: 'PDU',
+    name: '总数',
     all: 35,
     on: 15,
     off: 20,
@@ -197,7 +242,7 @@ const tableData = [
     box:'温湿度01',
     time:'2022-11-07 12:15:46'
   },{
-    name: '始端箱',
+    name: '在线',
     all: 35,
     on: 15,
     off: 20,
@@ -205,7 +250,7 @@ const tableData = [
     box:'精密空调',
     time:'2022-11-07 12:15:46'
   },{
-    name: '插接箱',
+    name: '告警',
     all: 35,
     on: 15,
     off: 20,
@@ -213,70 +258,672 @@ const tableData = [
     box:'水浸',
     time:'2022-11-07 12:15:46'
   },{
-    name: 'PDU-1',
+    name: '离线',
     all: 35,
     on: 15,
     off: 20,
-    error:'开门时间异常',
-    box:'东门门禁',
-    time:'2022-11-07 12:15:46'
-  },{
-    name: '始端箱-1',
-    all: 35,
-    on: 15,
-    off: 20,
-    error:'设备离线',
-    box:'摄像机1',
-    time:'2022-11-07 12:15:46'
-  },{
-    name: '插接箱-1',
-    all: 35,
-    on: 15,
-    off: 20,
-    error:'检测到有人',
-    box:'红外1',
-    time:'2022-11-07 12:15:46'
-  },{
-    name: 'PDU-2',
-    all: 35,
-    on: 15,
-    off: 20,
-    error:'温度超阀值上限',
-    box:'温湿度02',
-    time:'2022-11-07 12:15:46'
-  },{
-    name: '始端箱-2',
-    all: 35,
-    on: 15,
-    off: 20,
-    error:'温度超阀值上限',
-    box:'温湿度03',
-    time:'2022-11-07 12:15:46'
-  },{
-    name: '插接箱-2',
-    all: 35,
-    on: 15,
-    off: 20,
-    error:'温度超阀值上限',
-    box:'温湿度04',
+    error:'检测到有水',
+    box:'水浸',
     time:'2022-11-07 12:15:46'
   }
 ]
 
 console.log('111',tableData)
 
+const switchChartContainer = ref(0);
+const instance = getCurrentInstance();
+const typeRadio = ref('功率曲线');
+const timeRadio = ref('近一小时');
+const isHourDisabled = ref(false);
+const isDayAndMonthDisabled = ref(false);
+const isPowActiveDisabled = ref(true);
+const isLoadRateDisabled = ref(false);
+
+const lineChartQueryParams = reactive({
+  id: 1,
+  granularity: 'realtime',
+  flag: 0
+})
+
+const createTimeData = ref<string[]>([]);
+const allLineData = ref<string[]>([]);
+const eqCreateTimeData = ref<string[]>([]);
+const allEqData = ref<string[]>([]);
+const eqValue = ref<number[]>([]);
+
+const L1Data = ref<number[]>([]);
+const L2Data = ref<number[]>([]);
+const L3Data = ref<number[]>([]);
+
+const chartContainer2 = ref<HTMLElement | null>(null);
+const chartContainer3 = ref<HTMLElement | null>(null);
+let myChart2 = null as echarts.ECharts | null; 
+let myChart3 = null as echarts.ECharts | null; 
+
+
 let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainer = ref<HTMLElement | null>(null);
 
+const initChart2 = () => {
+    console.log("bbbbbbbbbbbbbbbb")
+  if (chartContainer2.value && instance) {
+    myChart2 = echarts.init(chartContainer2.value);
+    myChart2.setOption(
+      {
+        title: { text: ''},
+        tooltip: { trigger: 'axis' ,formatter: function(params) {
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+            //判断是否给鼠标悬停上显示符号
+            if(typeRadio.value === '电流') {
+              result += ' A';
+            }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              result += ' V';
+            }else if (typeRadio.value === '有功功率') {
+              result += ' kW';
+            }else if (typeRadio.value === '无功功率') {
+              result += ' kVar';
+            }else if(typeRadio.value === '视在功率') {
+              result += ' kVA'; 
+            }else if(typeRadio.value === '功率曲线') {
+              if(params[i].componentIndex == 0) {
+                result += ' kVA'; 
+              }else if(params[i].componentIndex == 1) {
+                result += ' kW';
+              }else if(params[i].componentIndex == 2) {
+                result += ' kVar';
+              }
+            }else if (typeRadio.value === '负载率') {
+              result += '%';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
+        legend: { orient: 'horizontal', right: '25'},
+        dataZoom:[{type: "inside"}],
+        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { 
+          type: 'value',
+          axisLabel: {
+            formatter: function(value) {
+              // 根据 typeRadio 的值添加单位
+              if (typeRadio.value === '电流') {
+                return value + ' A';
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                return value + ' V';
+              } else if (typeRadio.value === '有功功率') {
+                return value + ' kW';
+              } else if (typeRadio.value === '无功功率') {
+                return value + ' kVar';
+              } else if (typeRadio.value === '视在功率') {
+                return value + ' kVA'; 
+              } else if (typeRadio.value === '负载率') {
+                return value + '%';
+              } else if (typeRadio.value === '有功电能') {
+                return value + ' kWh';
+              } else {
+                return value; // 如果没有匹配，返回原值
+              }
+            }
+          }
+        },
+        grid: {
+          left: '6%',   // 设置左侧边距
+          right: '6%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
+        series: typeRadio.value === '功率曲线' ? [
+          {name: '总视在功率', type: 'line', symbol: 'none', data: L1Data.value},
+          {name: '总有功功率', type: 'line', symbol: 'none', data: L2Data.value},
+          {name: '总无功功率', type: 'line', symbol: 'none', data: L3Data.value},
+        ] : [
+          {name: '统计', type: 'line', symbol: 'none', data: L1Data.value},
+          {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
+          {name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
+        ],
+      }
+    );
+    instance.appContext.config.globalProperties.myChart2 = myChart2;
+    console.log("aaaaaaaaaaaaaaaaaaaaaaaaa")
+  }
+}
+
+const initChart3 = () => {
+  if (chartContainer3.value && instance) {
+    myChart3 = echarts.init(chartContainer3.value);
+    myChart3.setOption(
+      {
+        title: { text: ''},
+        tooltip: { trigger: 'axis' ,formatter: function(params) {
+                                    var result = params[0].name + '<br>';
+                                    for (var i = 0; i < params.length; i++) {
+                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                      //判断是否给鼠标悬停上显示符号
+                                      if(typeRadio.value === '电流') {
+                                        result += ' A';
+                                      }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                        result += ' V';
+                                      }else if (typeRadio.value === '有功功率') {
+                                        result += ' kW';
+                                      }else if (typeRadio.value === '无功功率') {
+                                        result += ' kVar';
+                                      }else if(typeRadio.value === '视在功率') {
+                                        result += ' kVA'; 
+                                      }else if (typeRadio.value === '负载率') {
+                                        result += '%';
+                                      }else if (typeRadio.value === '有功电能') {
+                                        result += ' kWh';
+                                      }
+                                      result += '<br>';
+                                    }
+                                    return result;
+                                  }},
+        legend: { orient: 'horizontal', right: '25'},
+        dataZoom:[{type: "inside"}],
+        xAxis: {type: 'category', boundaryGap: false, data:eqCreateTimeData.value},
+        yAxis: { 
+          type: 'value',
+          axisLabel: {
+            formatter: function(value) {
+              // 根据 typeRadio 的值添加单位
+              if (typeRadio.value === '电流') {
+                return value + ' A';
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                return value + ' V';
+              } else if (typeRadio.value === '有功功率') {
+                return value + ' kW';
+              } else if (typeRadio.value === '无功功率') {
+                return value + ' kVar';
+              } else if (typeRadio.value === '视在功率') {
+                return value + ' kVA'; 
+              } else if (typeRadio.value === '负载率') {
+                return value + '%';
+              } else if (typeRadio.value === '有功电能') {
+                return value + ' kWh';
+              } else {
+                return value; // 如果没有匹配，返回原值
+              }
+            }
+          }
+        },
+        grid: {
+          left: '7%',   // 设置左侧边距
+          right: '7%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
+        series: typeRadio.value === '功率曲线' ? [
+          {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
+        ] : (typeRadio.value === 'PUE' ? [
+          {name: 'PUE', type: 'line', symbol: 'none', data: eqValue.value},
+        ] : [
+          {name: '负载率', type: 'line', symbol: 'none', data: eqValue.value},
+        ]),
+      }
+    );
+
+    instance.appContext.config.globalProperties.myChart3 = myChart3;
+  }
+}
+
+const isHaveData = ref(true)
+// 获取折线图数据
+const getLineChartData =async () => {
+ try {
+
+    allLineData.value = []
+
+    const res2 = await IndexApi.getLineChartData({...lineChartQueryParams,flag: 2});
+    const data2 = res2.data
+
+    if (data2 != null){
+      // 查到数据
+      allLineData.value = data2
+      console.log('allLineData',allLineData.value)
+      if (timeRadio.value == '近一小时'){
+        createTimeData.value = data2.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
+      }else if (timeRadio.value == '近一天' || '近三天'){
+        createTimeData.value = data2.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
+      } else{
+        createTimeData.value = data2.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      }
+      //L1Data.value = [];
+      //L2Data.value = [];
+      //L3Data.value = [];
+      await initData();
+      isHaveData.value = true
+    }else{
+    }
+
+    const res3 = await IndexApi.getLineChartData({...lineChartQueryParams,flag: 1});
+    const data3 = res3.data
+
+    if (data3 != null){
+      // 查到数据
+      allEqData.value = data3
+      console.log('allLineData',allLineData.value)
+      if (timeRadio.value == '近一天' || '近三天'){
+        eqCreateTimeData.value = data3.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
+      } else{
+        eqCreateTimeData.value = data3.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      }
+      //L1Data.value = [];
+      //L2Data.value = [];
+      //L3Data.value = [];
+      await initData();
+      isHaveData.value = true
+    }else{
+    }
+
+ } finally {
+ }
+}
+
+const initData = () => {
+  if(timeRadio.value == '近一天' || timeRadio.value == '近三天' || timeRadio.value == '近一月'){
+    switch (typeRadio.value){
+      case '有功电能':
+        if(allEqData.value != null){
+        eqValue.value = allEqData.value.map((item) => item.ele.toFixed(3));
+        }
+        break;
+      case '负载率':
+        if(allEqData.value != null){
+        eqValue.value = allEqData.value.map((item) => item.ele.toFixed(3));
+        }
+        break;
+      case 'PUE':
+        if(allEqData.value != null){
+        eqValue.value = allEqData.value.map((item) => item.ele.toFixed(3));
+        }
+        break;
+      case '功率曲线':
+        if(allLineData.value != null){
+        L1Data.value = allLineData.value.map((item) => item.apparent_total_avg_value.toFixed(3));
+        L2Data.value = allLineData.value.map((item) => item.active_total_avg_value.toFixed(3));
+        L3Data.value = allLineData.value.map((item) => item.reactive_total_avg_value.toFixed(3));
+        }
+       break;
+      }
+  } else if(timeRadio.value == '近一小时'){
+    switch (typeRadio.value){
+      case '有功电能':
+        if(allEqData.value != null){
+        eqValue.value = allEqData.value.map((item) => item.ele.toFixed(3));
+        }
+        break;
+      case '负载率':
+        if(allEqData.value != null){
+        eqValue.value = allEqData.value.map((item) => item.ele.toFixed(3));
+        }
+        break;
+      case 'PUE':
+        if(allEqData.value != null){
+        eqValue.value = allEqData.value.map((item) => item.ele.toFixed(3));
+        }
+        break;
+      case '功率曲线':
+        if(allLineData.value != null){
+        L1Data.value = allLineData.value.map((item) => item.apparent_total.toFixed(3));
+        L2Data.value = allLineData.value.map((item) => item.active_total.toFixed(3));
+        L3Data.value = allLineData.value.map((item) => item.reactive_total.toFixed(3));
+        }
+       break;
+      }
+  }
+}
+
+// 监听切换类型
+watch( ()=>typeRadio.value, async(value)=>{
+  //L1Data.value = [];
+  //L2Data.value = [];
+  //L3Data.value = [];
+  await initData();
+  if ( value == '有功电能'){
+     // 选有功电能不能选近一小时
+     isHourDisabled.value = true
+  }else{
+    isHourDisabled.value = false
+  }
+  if (value == '负载率' ){
+    isDayAndMonthDisabled.value = true
+  }else{
+    isDayAndMonthDisabled.value = false
+  }
+  // 更新数据后重新渲染图表
+  myChart2?.setOption({
+        tooltip: { trigger: 'axis' ,formatter: function(params) {
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+            //判断是否给鼠标悬停上显示符号
+            if(typeRadio.value === '电流') {
+              result += ' A';
+            }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              result += ' V';
+            }else if (typeRadio.value === '有功功率') {
+              result += ' kW';
+            }else if (typeRadio.value === '无功功率') {
+              result += ' kVar';
+            }else if(typeRadio.value === '视在功率') {
+              result += ' kVA'; 
+            }else if(typeRadio.value === '功率曲线') {
+              if(params[i].componentIndex == 0) {
+                result += ' kVA'; 
+              }else if(params[i].componentIndex == 1) {
+                result += ' kW';
+              }else if(params[i].componentIndex == 2) {
+                result += ' kVar';
+              }
+            }else if (typeRadio.value === '负载率') {
+              result += '%';
+            }else if (typeRadio.value === '有功电能') {
+              result += ' kWh';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
+        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { 
+          type: 'value',
+          axisLabel: {
+            formatter: function(value) {
+              // 根据 typeRadio 的值添加单位
+              if (typeRadio.value === '电流') {
+                return value + ' A';
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                return value + ' V';
+              } else if (typeRadio.value === '有功功率') {
+                return value + ' kW';
+              } else if (typeRadio.value === '无功功率') {
+                return value + ' kVar';
+              } else if (typeRadio.value === '视在功率') {
+                return value + ' kVA'; 
+              } else if (typeRadio.value === '负载率') {
+                return value + '%';
+              } else if (typeRadio.value === '有功电能') {
+                return value + ' kWh';
+              } else {
+                return value; // 如果没有匹配，返回原值
+              }
+            }
+          }
+        },
+                grid: {
+          left: '6%',   // 设置左侧边距
+          right: '6%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
+      series: typeRadio.value === '功率曲线' ? [
+        {name: '总视在功率', type: 'line', symbol: 'none', data: L1Data.value},
+        {name: '总有功功率', type: 'line', symbol: 'none', data: L2Data.value},
+        {name: '总无功功率', type: 'line', symbol: 'none', data: L3Data.value},
+      ] : [
+        {name: '统计', type: 'line', symbol: 'none', data: L1Data.value},
+        {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
+        {name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
+      ],
+    });
+  myChart3?.setOption({
+      tooltip: { trigger: 'axis' ,formatter: function(params) {
+                                  var result = params[0].name + '<br>';
+                                  for (var i = 0; i < params.length; i++) {
+                                    result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                    //判断是否给鼠标悬停上显示符号
+                                    if(typeRadio.value === '电流') {
+                                      result += ' A';
+                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                      result += ' V';
+                                    }else if (typeRadio.value === '有功功率') {
+                                      result += ' kW';
+                                    }else if (typeRadio.value === '无功功率') {
+                                      result += ' kVar';
+                                    }else if(typeRadio.value === '视在功率') {
+                                      result += ' kVA'; 
+                                    }else if (typeRadio.value === '负载率') {
+                                      result += '%';
+                                    }else if (typeRadio.value === '有功电能') {
+                                      result += ' kWh';
+                                    }
+                                    result += '<br>';
+                                  }
+                                  return result;
+                                }},
+      yAxis: { 
+        type: 'value',
+        axisLabel: {
+          formatter: function(value) {
+            // 根据 typeRadio 的值添加单位
+            if (typeRadio.value === '电流') {
+              return value + ' A';
+            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              return value + ' V';
+            } else if (typeRadio.value === '有功功率') {
+              return value + ' kW';
+            } else if (typeRadio.value === '无功功率') {
+              return value + ' kVar';
+            } else if (typeRadio.value === '视在功率') {
+              return value + ' kVA'; 
+            } else if (typeRadio.value === '负载率') {
+              return value + '%';
+            } else if (typeRadio.value === '有功电能') {
+              return value + ' kWh';
+            } else {
+              return value; // 如果没有匹配，返回原值
+            }
+          }
+        }
+      },            
+              grid: {
+          left: '7%',   // 设置左侧边距
+          right: '7%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
+      series: typeRadio.value === '功率曲线' ? [
+        {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
+      ] : (typeRadio.value === 'PUE' ? [
+        {name: 'PUE', type: 'line', symbol: 'none', data: eqValue.value},
+      ] : [
+        {name: '负载率', type: 'line', symbol: 'none', data: eqValue.value},
+      ]),
+    });
+});
+
+// 监听切换时间颗粒度
+watch( ()=>timeRadio.value, async(value)=>{
+  if ( value == '近一小时'){
+    // 选近一小时不能选有功电能
+    isPowActiveDisabled.value = true
+    isLoadRateDisabled.value = false
+    lineChartQueryParams.granularity = 'realtime'
+  }else if (value == '近一天'){
+    isPowActiveDisabled.value = false
+    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
+    lineChartQueryParams.granularity = 'hour'
+  }else if (value == '近三天'){
+    isPowActiveDisabled.value = false
+    isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
+    lineChartQueryParams.granularity = 'SeventyHours'
+  }else{
+    isPowActiveDisabled.value = false
+        isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
+    lineChartQueryParams.granularity = 'day'
+  }
+  await getLineChartData();
+  // 更新数据后重新渲染图表
+  if (isHaveData.value == true){
+    myChart2?.setOption({
+    title: { text: ''},
+     tooltip: { trigger: 'axis' ,formatter: function(params) {
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+        //判断是否给鼠标悬停上显示符号
+        if(typeRadio.value === '电流') {
+          result += ' A';
+        }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+          result += ' V';
+        }else if (typeRadio.value === '有功功率') {
+          result += ' kW';
+        }else if (typeRadio.value === '无功功率') {
+          result += ' kVar';
+        }else if(typeRadio.value === '视在功率') {
+          result += ' kVA'; 
+        }else if(typeRadio.value === '功率曲线') {
+          if(params[i].componentIndex == 0) {
+            result += ' kVA'; 
+          }else if(params[i].componentIndex == 1) {
+            result += ' kW';
+          }else if(params[i].componentIndex == 2) {
+            result += ' kVar';
+          }
+        }else if (typeRadio.value === '负载率') {
+          result += '%';
+        }else if (typeRadio.value === '有功电能') {
+          result += ' kWh';
+        }
+        result += '<br>';
+      }
+      return result;
+    }},
+    legend: { orient: 'horizontal', right: '25'},
+    dataZoom:[{type: "inside"}],
+    xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { 
+          type: 'value',
+          axisLabel: {
+            formatter: function(value) {
+              // 根据 typeRadio 的值添加单位
+              if (typeRadio.value === '电流') {
+                return value + ' A';
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                return value + ' V';
+              } else if (typeRadio.value === '有功功率') {
+                return value + ' kW';
+              } else if (typeRadio.value === '无功功率') {
+                return value + ' kVar';
+              } else if (typeRadio.value === '视在功率') {
+                return value + ' kVA'; 
+              } else if (typeRadio.value === '负载率') {
+                return value + '%';
+              } else if (typeRadio.value === '有功电能') {
+                return value + ' kWh';
+              } else {
+                return value; // 如果没有匹配，返回原值
+              }
+            }
+          }
+        },
+                grid: {
+          left: '6%',   // 设置左侧边距
+          right: '6%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
+    series: typeRadio.value === '功率曲线' ? [
+      {name: '总视在功率', type: 'line', symbol: 'none', data: L1Data.value},
+      {name: '总有功功率', type: 'line', symbol: 'none', data: L2Data.value},
+      {name: '总无功功率', type: 'line', symbol: 'none', data: L3Data.value},
+    ] : [
+      {name: '统计', type: 'line', symbol: 'none', data: L1Data.value},
+      {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
+      {name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
+    ],
+  }, true);
+  }
+  // 更新数据后重新渲染图表
+  if (isHaveData.value == true){
+    console.log(eqValue.value)
+    myChart3?.setOption({
+    title: { text: ''},
+    tooltip: { trigger: 'axis' ,formatter: function(params) {
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+        //判断是否给鼠标悬停上显示符号
+        if(typeRadio.value === '电流') {
+          result += ' A';
+        }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+          result += ' V';
+        }else if (typeRadio.value === '有功功率') {
+          result += ' kW';
+        }else if (typeRadio.value === '无功功率') {
+          result += ' kVar';
+        }else if(typeRadio.value === '视在功率') {
+          result += ' kVA'; 
+        }else if (typeRadio.value === '负载率') {
+          result += '%';
+        }else if (typeRadio.value === '有功电能') {
+          result += ' kWh';
+        }
+        result += '<br>';
+      }
+      return result;
+    }},
+    legend: { orient: 'horizontal', right: '25'},
+    dataZoom:[{type: "inside"}],
+    xAxis: {type: 'category', boundaryGap: false, data:eqCreateTimeData.value},
+        yAxis: { 
+          type: 'value',
+          axisLabel: {
+            formatter: function(value) {
+              // 根据 typeRadio 的值添加单位
+              if (typeRadio.value === '电流') {
+                return value + ' A';
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                return value + ' V';
+              } else if (typeRadio.value === '有功功率') {
+                return value + ' kW';
+              } else if (typeRadio.value === '无功功率') {
+                return value + ' kVar';
+              } else if (typeRadio.value === '视在功率') {
+                return value + ' kVA'; 
+              } else if (typeRadio.value === '负载率') {
+                return value + '%';
+              } else if (typeRadio.value === '有功电能') {
+                return value + ' kWh';
+              } else {
+                return value; // 如果没有匹配，返回原值
+              }
+            }
+          }
+        },
+                grid: {
+          left: '7%',   // 设置左侧边距
+          right: '7%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
+    series: typeRadio.value === '功率曲线' ? [
+      {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
+    ] : (typeRadio.value === 'PUE' ? [
+      {name: 'PUE', type: 'line', symbol: 'none', data: eqValue.value},
+    ] : [
+      {name: '负载率', type: 'line', symbol: 'none', data: eqValue.value},
+    ]),
+  }, true);
+  }
+
+});
+
 //获取数据
-const handleGetRoomId = (data) => {
+const handleGetRoomId = async (data) => {
   roomId.value = data
   getRoomDataDetail()
-  getRoomDevData()
+  // getRoomDevData()
   getRoomPowData()
   getRoomEchartData()
   getRoomEnvData()
   getRoomEqData()
+  await getLineChartData()
+  initChart2()
+  initChart3()
   console.log('handleGetRoomId', data)
 }
 // 获取机房数据详情
@@ -316,13 +963,13 @@ const getRoomEnvData = async() => {
 // 获取机房主页面用能
 const getRoomEqData = async() => {
   const res = await MachineRoomApi.getRoomEqData({id: roomId.value})
-  Object.assign(energyInfo, res)
+  Object.assign(EqInfo, res)
   console.log('***获取机房主页面用能', res)
 }
 // 获取空间信息 ?需不需要刷新
 const handleBackData = (data) => {
   console.log('***',data)
-  Object.assign(spaceInfo, data)
+  Object.assign(roomDownVal, data)
 }
 
 const initChart = () => {
@@ -333,7 +980,7 @@ const initChart = () => {
         let result = params[0].name + '<br>';
         params.forEach(param => {
           result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+          if (param.seriesName === '平均温度' || param.seriesName === '最高温度') {
             result += '℃';
           }else{
             result += '%'
@@ -343,32 +990,26 @@ const initChart = () => {
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
       legend: {
-        data: ['冷通道平均温度', '热通道平均温度'], // 图例项
+        data: ['平均温度', '最高温度'], // 图例项
         selected: false
       },
       xAxis: {
         type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:['周一','周二','周三','周四','周五']
+        data:['前门','后门']
       },
       yAxis: {
         type: 'value'
       },
       series: [
         {
-          name: '冷通道平均温度',
-          type: 'line',
-          data: [31,31,31,31,31],
-          symbol: 'circle',
-          symbolSize: 4
+          name: '平均温度',
+          type: 'bar',
+          data: [31,31],
         },
         {
-          name: '热通道平均温度',
-          type: 'line',
-          data: [33,34,35,36,37],
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
+          name: '最高温度',
+          type: 'bar',
+          data: [33,34],
         }
       ]
   })
@@ -383,7 +1024,7 @@ const updateChart = () => {
         let result = params[0].name + '<br>';
         params.forEach(param => {
           result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+          if (param.seriesName === '平均温度' || param.seriesName === '最高温度') {
             result += '℃';
           }else{
             result += '%'
@@ -393,32 +1034,26 @@ const updateChart = () => {
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
       legend: {
-        data: ['冷通道平均温度', '热通道平均温度'], // 图例项
+        data: ['平均温度', '最高温度'], // 图例项
         selected: false
       },
       xAxis: {
         type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:['周一','周二','周三','周四','周五']
+        data:['前门','后门']
       },
       yAxis: {
         type: 'value'
       },
       series: [
         {
-          name: '冷通道平均温度',
-          type: 'line',
-          data: [31,31,31,31,31],
-          symbol: 'circle',
-          symbolSize: 4
+          name: '平均温度',
+          type: 'bar',
+          data: [31,31]
         },
         {
-          name: '热通道平均温度',
-          type: 'line',
-          data: [33,34,35,36,37],
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
+          name: '最高温度',
+          type: 'bar',
+          data: [33,34]
         }
       ]
   })
@@ -429,7 +1064,7 @@ const updateChart = () => {
         let result = params[0].name + '<br>';
         params.forEach(param => {
           result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+          if (param.seriesName === '平均温度' || param.seriesName === '最高温度') {
             result += '℃';
           }else{
             result += '%'
@@ -439,32 +1074,26 @@ const updateChart = () => {
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
       legend: {
-        data: ['冷通道平均湿度','热通道平均湿度'], // 图例项
+        data: ['平均湿度','最高湿度'], // 图例项
         selected: false
       },
       xAxis: {
         type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        data:['周一','周二','周三','周四','周五']
+        data:['前门','后门']
       },
       yAxis: {
         type: 'value'
       },
       series: [
         {
-          name: '冷通道平均湿度',
-          type: 'line',
-          data: [81,81,81,81,81],
-          symbol: 'circle',
-          symbolSize: 4
+          name: '平均湿度',
+          type: 'bar',
+          data: [81,81]
         },
         {
-          name: '热通道平均湿度',
-          type: 'line',
-          data: [82,83,84,85,86],
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
+          name: '最高湿度',
+          type: 'bar',
+          data: [82,83]
         }
       ]
   })
@@ -613,34 +1242,37 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   .percentage-value {
     display: block;
     margin-top: 10px;
-    font-size: 28px;
+    font-size: 50px;
   }
   .percentage-label {
     display: block;
     margin-top: 10px;
-    font-size: 12px;
+    font-size: 16px;
+  }
+  .percentage-unit {
+    display: block;
+    font-size: 14px;
   }
 }
  
-:deep(.progress .el-progress__text::after ){
-  content: '60kW'; /* 要显示的文本 */
+.powActiveTotal-text {
   position: absolute;
   top: 0; /* 放置在原元素的 */
-  left: 100%;
+  right: 0;
   color: #000;
   padding: 5px;
   border-radius: 3px;
   white-space: nowrap;
-  transform: translateX(5px); /* 稍微向右边移动一点以避免与进度条重叠 */
-  opacity: 0; /* 默认隐藏 */
+  opacity: 0;
   transition: opacity 0.3s; /* 添加过渡效果 */
   pointer-events: none; /* 确保提示框不会干扰鼠标事件 */
 }
  
-:deep(.progress:hover .el-progress__text::after) {
+:deep(.progress:hover .powActiveTotal-text) {
   opacity: 1; /* 鼠标悬停时显示 */
 }
 
@@ -649,6 +1281,10 @@ onMounted(() => {
 }
 :deep(.el-card__header) {
   padding: 15px;
+}
+:deep(.el-progress-circle) {
+  width: 21vh;
+  height: 21vh;
 }
 :deep(.el-card__body) {
   padding: 15px;

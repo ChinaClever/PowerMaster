@@ -235,7 +235,7 @@
         ci.run_status,
         ci.load_status,
         ci.pdu_box,
-        CI.cabinet_use_height,
+        ci.cabinet_use_height,
         ci.is_deleted,
         ci.create_time,
         ci.update_time,

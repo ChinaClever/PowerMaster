@@ -1,27 +1,14 @@
-package cn.iocoder.yudao.module.room.dal.dataobject.roomindex;
+package cn.iocoder.yudao.framework.common.vo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import lombok.Data;
 
-/**
- * 机房索引 DO
- *
- * @author clever
- */
-@TableName("room_index")
-@KeySequence("room_index_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
-@ToString(callSuper = true)
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RoomIndexDO {
+public class RoomIndexCfgVO {
+
 
     @Schema(description = "机房id", example = "2")
     @TableId(value = "id", type = IdType.AUTO)
@@ -83,15 +70,24 @@ public class RoomIndexDO {
      */
     @JsonProperty(value="yLength")
     private int yLength;
-    /**
-     * 更新时间
-     */
-    @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
-    private LocalDateTime updateTime;
-    /**
-     * 创建时间
-     */
-    @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
-    private LocalDateTime createTime;
 
+    /**
+     * 日用能告警开关
+     */
+    private  int eleAlarmDay;
+
+    /**
+     * 月用能告警开关
+     */
+    private  int eleAlarmMonth;
+
+    /**
+     * 日用能限制
+     */
+    private double eleLimitDay;
+
+    /**
+     * 月用能限制
+     */
+    private double eleLimitMonth;
 }

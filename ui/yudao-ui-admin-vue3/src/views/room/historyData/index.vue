@@ -536,7 +536,8 @@ const handleCheck = async (node) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+    navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 // 获取导航的数据显示
