@@ -104,9 +104,38 @@ public class YudaoSwaggerAutoConfiguration {
     /**
      * 所有模块的 API 分组
      */
+//    @Bean
+//    public GroupedOpenApi allGroupedOpenApi() {
+//        return buildGroupedOpenApi("all", "");
+//    }
+
     @Bean
-    public GroupedOpenApi allGroupedOpenApi() {
-        return buildGroupedOpenApi("all", "");
+    public GroupedOpenApi busGroupApi() {
+        return GroupedOpenApi.builder().group("母线").packagesToScan("cn.iocoder.yudao.module.bus").build();
+    }
+
+    @Bean
+    public GroupedOpenApi pduGroupApi() {
+        return GroupedOpenApi.builder().group("PDU").packagesToScan("cn.iocoder.yudao.module.pdu").build();
+    }
+
+    @Bean
+    public GroupedOpenApi roomGroupApi() {
+        return GroupedOpenApi.builder().group("机房").packagesToScan("cn.iocoder.yudao.module.room").build();
+    }
+
+    @Bean
+    public GroupedOpenApi cabinetGroupApi() {
+        return GroupedOpenApi.builder().group("机柜").packagesToScan("cn.iocoder.yudao.module.cabinet").build();
+    }
+
+    @Bean
+    public GroupedOpenApi rackGroupApi() {
+        return GroupedOpenApi.builder().group("机架").packagesToScan("cn.iocoder.yudao.module.rack").build();
+    }
+    @Bean
+    public GroupedOpenApi sysGroupApi() {
+        return GroupedOpenApi.builder().group("系统").packagesToScan("cn.iocoder.yudao.module.system").build();
     }
 
     public static GroupedOpenApi buildGroupedOpenApi(String group) {
