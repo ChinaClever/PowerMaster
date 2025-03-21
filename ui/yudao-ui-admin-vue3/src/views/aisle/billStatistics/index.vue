@@ -395,6 +395,9 @@ const getNavNewData = async () => {
 
 /** 初始化 **/
 onMounted(() => {
+  const now=new Date()
+  const oneOfMonth=new Date(now.getFullYear(), now.getMonth(), 1,23,59,59)
+  selectTimeRange.value=[dayjs(oneOfMonth).format("YYYY-MM-DD HH:mm:ss"),dayjs(now).format("YYYY-MM-DD HH:mm:ss")]
   getNavList()
   getNavNewData()
   getList();

@@ -23,10 +23,10 @@ public interface RoomIndexCopyMapper extends BaseMapperX<RoomIndexDO> {
                 .eqIfPresent(RoomIndexDO::getIsDelete, reqVO.getIsDelete())
                 .eqIfPresent(RoomIndexDO::getPowerCapacity, reqVO.getPowerCapacity())
                 .betweenIfPresent(RoomIndexDO::getCreateTime, reqVO.getCreateTime())
-                .eqIfPresent(RoomIndexDO::getEleAlarmDay, reqVO.getEleAlarmDay())
-                .eqIfPresent(RoomIndexDO::getEleLimitDay, reqVO.getEleLimitDay())
-                .eqIfPresent(RoomIndexDO::getEleAlarmMonth, reqVO.getEleAlarmMonth())
-                .eqIfPresent(RoomIndexDO::getEleLimitMonth, reqVO.getEleLimitMonth())
+//                .eqIfPresent(RoomIndexDO::getEleAlarmDay, reqVO.getEleAlarmDay())
+//                .eqIfPresent(RoomIndexDO::getEleLimitDay, reqVO.getEleLimitDay())
+//                .eqIfPresent(RoomIndexDO::getEleAlarmMonth, reqVO.getEleAlarmMonth())
+//                .eqIfPresent(RoomIndexDO::getEleLimitMonth, reqVO.getEleLimitMonth())
                 .orderByAsc(RoomIndexDO::getId));
     }
 

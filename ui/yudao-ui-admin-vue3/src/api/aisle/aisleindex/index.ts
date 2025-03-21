@@ -124,4 +124,7 @@ export const IndexApi = {
   getMaxApparentPower: async (data) => {
     return await request.post({ url: `/aisle/index/line/max`,data})
   },
+  getRecordPage: async (data: any) => {
+    return await request.post({ url: `/system/alarm/record/page`, data})
+  },
 }

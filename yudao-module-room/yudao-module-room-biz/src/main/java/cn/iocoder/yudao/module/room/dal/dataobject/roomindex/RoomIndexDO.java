@@ -41,19 +41,19 @@ public class RoomIndexDO {
     /**
      * 日用电告警开关 0 关 1开
      */
-    private Integer eleAlarmDay;
+//    private Integer eleAlarmDay;
     /**
      * 日用能限制
      */
-    private Double eleLimitDay;
+//    private Double eleLimitDay;
     /**
      * 月用电告警开关 0关 1开
      */
-    private Integer eleAlarmMonth;
+//    private Integer eleAlarmMonth;
     /**
      * 月用能限制
      */
-    private Double eleLimitMonth;
+//    private Double eleLimitMonth;
     /**
      * 创建时间
      */
