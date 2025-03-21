@@ -246,7 +246,7 @@ const isHourDisabled = ref(false);
 const isDayAndMonthDisabled = ref(false);
 const isPowActiveDisabled = ref(true);
 const isLoadRateDisabled = ref(false);
-const switchChartContainer = ref(0);
+
 
 const lineChartQueryParams = reactive({
   id: history?.state?.id as number | undefined,
@@ -565,6 +565,7 @@ const getLineChartData =async () => {
 
     allLineData.value = []
     allCurVolData.value = []
+    allEqData.value = []
     
     const data = await IndexApi.getLineChartData(lineChartQueryParams);
     console.log('获取折线图数据',data)

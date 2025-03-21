@@ -2,24 +2,24 @@
 <!-- <div style="height:calc(100vh - 120px);"> -->
   <el-card shadow="never">
     <div class="toolbar">
-      <div style="display: flex;align-items:center">
+      <div style="display: flex;align-items:center" v-if="!isFromHome">
         机房：
         <el-select :size="isFromHome ? 'small' : ''" v-model="roomId" placeholder="请选择" class="!w-100px" @change="handleChangeRoom">
           <el-option v-for="item in roomList" :key="item.id" :label="item.roomName" :value="item.id" />
         </el-select>
-        <div class="status">
-          <template v-for="item in statusInfo" :key="item.value">
-            <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
-          </template>
-        </div>
-        <div class="btns">
-          <template v-for="item in btns" :key="item.value">
-            <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
-          </template>
-        </div>
+      </div>
+      <div class="status">
+        <template v-for="item in statusInfo" :key="item.value">
+          <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
+        </template>
+      </div>
+      <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : ''">
+        <template v-for="item in btns" :key="item.value">
+          <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+        </template>
       </div>
       <div>
-        <el-button @click="handleAdd" type="primary">新建机房</el-button>
+        <!-- <el-button @click="handleAdd" type="primary">新建机房</el-button> -->
         <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
         <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button>
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
@@ -405,6 +405,8 @@ const getRoomInfo = async() => {
   resetForm();
   loading.value = true;
   try {
+    // const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
+    // const res = result;
     const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
     const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
     const results = await Promise.all([result1, result2])
@@ -424,12 +426,7 @@ const getRoomInfo = async() => {
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
     })
-    emit('backData', {
-      totalSpace: res.totalSpace,
-      usedSpace: res.usedSpace,
-      freeSpace: res.freeSpace,
-      cabNum: res.cabNum,
-    })
+    emit('backData', res)
     
     for (let row = 0; row < res.yLength; row++) {
       const rowData: Record<string, any[]> = {};
@@ -471,7 +468,7 @@ const getRoomInfo = async() => {
       data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
     })
     tableData.value = data;
-    console.log("tableData.value".tableData.value)
+    console.log("tableData.value",tableData.value)
     getRoomStatus(results[1])
     handleCssScale()
   } finally {
@@ -481,7 +478,7 @@ const getRoomInfo = async() => {
 
 const getRoomStatus = async(res) => {
   if (!res) res = await MachineRoomApi.getRoomDataDetail({id: roomId.value})
-  //console.log('getRoomStatus', res)
+  console.log('getRoomStatus', res)
   if (res.cabinetList && res.cabinetList.length) {
     res.cabinetList.forEach(cab => {
       if (cab.yCoordinate > 0 && cab.xCoordinate > 0)
@@ -494,7 +491,8 @@ const getRoomStatus = async(res) => {
   if (res.aisleList && res.aisleList.length) {
     res.aisleList.forEach(aisle => {
       aisle.cabinetList.forEach((cab, index) => {
-       // console.log('tableData.value[aisle.yCoordinate][formParam.value[aisle.xCoordinate - 1]]', tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]], aisle.yCoordinate, formParam.value[aisle.xCoordinate - 1])
+       console.log('111', aisle,tableData.value)
+       console.log('tableData.value[aisle.yCoordinate][formParam.value[aisle.xCoordinate - 1]]', tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]], aisle.yCoordinate, formParam.value[aisle.xCoordinate - 1])
         const targetIndex = tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList.findIndex(item => item.id == cab.id)
         tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList[targetIndex] = {
           ...cab,
@@ -1050,6 +1048,7 @@ onUnmounted(() => {
 .toolbar {
   display: flex;
   justify-content: space-between;
+  align-items:center
 }
 .dragContainer {
   // transform-origin: left right;

@@ -236,7 +236,7 @@
       </div>
       <el-form
         v-if="!isFromHome"
-        class="-mb-15px topForm"
+        class="mt-15px topForm"
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
@@ -585,11 +585,10 @@ const initConnect = () => {
       return false
     }
     cabinetList.value[cabIndex][`boxOutletId${cabRoad}`] = +pluginOutLet
-    cabinetList.value[cabIndex][`boxIndex${cabRoad}`] = Number(pluginName.split('-')[1])
+    cabinetList.value[cabIndex][`boxIndex${cabRoad}`] = machineColInfo[`bar${cabRoad}`].boxList[Number(pluginName.split('-')[1])-1].boxIndex
     cabinetList.value[cabIndex][`barId${cabRoad}`] = machineColInfo[`bar${cabRoad}`].barId
     cabinetList.value[cabIndex][`busIp${cabRoad}`] = machineColInfo[`bar${cabRoad}`].devIp
-    
-    console.log('监听连接', connection, cabId, pluginId, cabinetList.value,)
+    console.log('监听连接', connection, cabId, pluginId, cabinetList.value[cabIndex],)
     // 处理手动连接的样式
     if (cabRoad == 'A') {
       connection.paintStyle = {
@@ -615,10 +614,10 @@ const initConnect = () => {
       const sourceId = connection.source.id
       const cabRoad = connection.source.id.includes('cab') ? sourceId.split('-')[1] : targetId.split(/[-_]/)[2]
       const index = connection.source.id.includes('cab') ? sourceId.split('-')[2] : targetId.split(/[-_]/)[1]
-      cabinetList.value[index][`boxOutletId${cabRoad}`] = ''
-      cabinetList.value[index][`boxIndex${cabRoad}`] = ''
-      cabinetList.value[index][`addr${cabRoad}`] = null
-      cabinetList.value[index][`busIp${cabRoad}`] = ''
+      cabinetList.value[index][`boxOutletId${cabRoad}`] = null
+      cabinetList.value[index][`boxIndex${cabRoad}`] = null
+      cabinetList.value[index][`barId${cabRoad}`] = null
+      cabinetList.value[index][`busIp${cabRoad}`] = null
       console.log(cabinetList.value[index])
       const cabElement = document.getElementById('cab-' + cabRoad + '-' + index) as Element
       instance?.addEndpoint(cabElement, {
@@ -1330,7 +1329,21 @@ const handleFormBox = (data) => {
   const bar = `bar${operateMenuBox.value.type}`
   const index = operateMenuBox.value.curIndex
   const length = data.outletNum
+  console.log(data)
   machineColInfo[bar].boxList.splice(index, 1, data)
+  console.log(machineColInfo[bar].boxList)
+  cabinetList.value.forEach(item => {
+      console.log(item[`boxIndex${operateMenuBox.value.type}`],index)
+    if(item[`boxIndex${operateMenuBox.value.type}`] == Number(index)) {
+      console.log(111)
+      item[`boxOutletId${operateMenuBox.value.type}`] = null
+      item[`boxIndex${operateMenuBox.value.type}`] = null
+      item[`barId${operateMenuBox.value.type}`] = null
+      item[`busIp${operateMenuBox.value.type}`] = null
+    }
+  })
+  instance?.deleteEveryConnection()
+  showAllConnect()
   for (let i=1; i <= length; i++) {
     const boxElement = document.getElementById('plugin-' + index + '_' + operateMenuBox.value.type + '-' + i) as Element
     if (!boxElement) {
@@ -2021,7 +2034,7 @@ const saveMachineBus = async() => {
     length: cabinetList.value.length,
     cabinetList: filterCabinet
   })
-  if(filterCabinet.length && (filterCabinet[0].busIpA || barChangeType.value == 'edit' || barChangeType.value == 'delete')) {
+  if(filterCabinet.length && barChangeType.value != 'edit' && barChangeType.value != 'delete') {
     filterCabinet.forEach(async (cab, index) => {
       const resCab = await CabinetApi.saveCabinetInfo({
         ...cab,
