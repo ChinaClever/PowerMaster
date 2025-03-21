@@ -15,5 +15,27 @@
          from
          aisle_index ai left join  aisle_cfg ac on ai.id = ac.aisle_id  where  ai.room_id =#{roomId} and  ai.is_delete = '0'
      </select>
+    <select id="selectRoomAisleList" resultType="cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO">
+        SELECT
+        ai.id as id,
+        ai.room_id as roomId,
+        ai.aisle_name as aisleName,
+        ai.aisle_length as length,
+        ai.x_coordinate as xCoordinate,
+        ai.y_coordinate as yCoordinate,
+        ai.pdu_bar as pduBar,
+        ai.direction as direction,
+        ac.aisle_type as type,
+        ac.power_capacity as powerCapacity,
+        ac.ele_alarm_day as eleAlarmDay,
+        ac.ele_alarm_month as eleAlarmMonth,
+        ac.ele_limit_day as eleLimitDay,
+        ac.ele_limit_month as eleLimitMonth
+        FROM
+        aisle_index ai
+        LEFT JOIN aisle_cfg ac ON ai.id = ac.aisle_id
+        WHERE
+        ai.room_id = #{id} and  ai.is_delete = '0'
+    </select>
 
 </mapper>

@@ -425,7 +425,8 @@ const handleClick = async (row) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+  navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 /** 搜索按钮操作 */

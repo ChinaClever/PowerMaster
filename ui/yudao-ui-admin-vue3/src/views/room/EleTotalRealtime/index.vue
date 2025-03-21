@@ -388,27 +388,15 @@ const handleCheck = async (node) => {
     }
   queryParams.roomIds = arr
   handleQuery()
-  //  let arr = [] as any
-  //   node.forEach(item => { 
-  //       arr.push(item.unique);
-  //   });
-  //   //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
-  //   if(arr.length == 0  && node.length != 0){
-  //     arr.push(0)
-  //     rankChart?.clear()
-  //     ElMessage({
-  //       message: '暂无数据',
-  //       type: 'warning',
-  //     });
-  //   }
-  //   queryParams.roomIds = arr
-  //   handleQuery()
 }
+
+
 
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+    navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 // 获取导航的数据显示

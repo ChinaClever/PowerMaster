@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -31,4 +32,5 @@ public interface RoomIndexMapper extends BaseMapper<RoomIndex> {
 
     List<String> getRoomAddrList();
 
+    RoomIndexCfgVO findRoomIndexCfg(int id);
 }
