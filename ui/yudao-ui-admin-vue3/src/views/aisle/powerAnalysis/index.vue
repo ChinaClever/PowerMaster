@@ -154,9 +154,10 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/aisle/aisleindex'
 import * as echarts from 'echarts';
+import router from '@/router'
 const message = useMessage() // 消息弹窗
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
@@ -171,7 +172,7 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref([useRoute().query.startTime,useRoute().query.endTime])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -297,23 +298,25 @@ const tableColumns = ref([
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
+  console.log("selectTimeRange",selectTimeRange.value)
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      // 开始时间的天数减一天 ，  一天的毫秒数
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      console.log("selectedStartTime",selectedStartTime)
+      console.log("selectedEndTime",selectedEndTime)
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(selectTimeRange.value == null){
+    if(selectTimeRange.value == null|| selectTimeRange.value[0] == null ||selectTimeRange.value[1] == null){
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item: { eq_value: any }) => formatEQ(item.eq_value, 1));
     list.value = data.list
-    console.log(list.value)
+    console.log("list",list.value)
     realTotel.value = data.total
     if (data.total > 10000){
       total.value = 10000
@@ -325,37 +328,37 @@ const getList = async () => {
     loading.value = false
   }
 }
-const getList1 = async () => {
-  loading.value = true
-  try {
-    if ( start.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
-      queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
-    	console.log('入参', queryParams);
-    // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(start.value == null){
-      queryParams.timeRange = undefined
-    }
-    queryParams.aisleIds =[id.value]
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    list.value = data.list
-    realTotel.value = data.total
-    if (data.total > 10000){
-      total.value = 10000
-    }else{
-      total.value = data.total
-    }
-  } finally {
-    initChart();
-    loading.value = false
-  }
-}
+// const getList1 = async () => {
+//   loading.value = true
+//   try {
+//     if ( start.value != undefined){
+//       // 格式化时间范围 加上23:59:59的时分秒 
+//       const selectedStartTime = formatDate(endOfDay(convertDate(startTime.value)))
+//       // 结束时间的天数多加一天 ，  一天的毫秒数
+//       const oneDay = 24 * 60 * 60 * 1000;
+//       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+//       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+//     }
+//     	console.log('入参', queryParams);
+//     // 时间段清空后值会变成null 此时搜索不能带上时间段
+//     if(start.value == null){
+//       queryParams.timeRange = undefined
+//     }
+//     queryParams.aisleIds =[id.value]
+//     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+//     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+//     list.value = data.list
+//     realTotel.value = data.total
+//     if (data.total > 10000){
+//       total.value = 10000
+//     }else{
+//       total.value = data.total
+//     }
+//   } finally {
+//     initChart();
+//     loading.value = false
+//   }
+// }
 
 // 自定义图表提示框
 function customTooltipFormatter(params: any[]) {
@@ -363,7 +366,7 @@ function customTooltipFormatter(params: any[]) {
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
   tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) +' '+ item.seriesName + ': ' + item.value + 'kWh <br/>'                 
-                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+list.value[item.dataIndex].end_ele +'kWh <br/>' 
+                    +item.marker + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].end_ele) +'kWh <br/>' 
                     +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh <br/>'
   return tooltipContent;
 }
@@ -481,25 +484,25 @@ const handleExport = async () => {
 const toDetails = (aisleId: number, location: string) => {
   push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location);
 }
-const start = ref('')
-const end = ref('')
+// const start = ref('')
+// const end = ref('')
 const id =  ref(0)
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
+  // start.value = useRoute().query.start as string;
+  // end.value = useRoute().query.end as string;
   id.value = useRoute().query.id as unknown as number;
-  if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', id);
-  getList1();
-  }else{
-      getList();
-  }
+  // if (start.value != null){
+  // 	console.log('详情页', start);
+	// console.log('详情页1', id);
+  // getList1();
+  // }else{
+  //     getList();
+  // }
+  getList();
 });
-
 </script>
 
 <style scoped>

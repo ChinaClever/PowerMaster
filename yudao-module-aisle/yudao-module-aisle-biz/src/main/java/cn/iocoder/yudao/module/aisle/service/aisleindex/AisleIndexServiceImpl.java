@@ -335,7 +335,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
         LocalDate now = LocalDate.now();
         // 获取昨天的日期
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now();
 
         // 昨天的起始时间（00:00:00）
         String startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
@@ -351,8 +351,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         }
 
         //上周
-        startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
-        endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+        startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.plusWeeks(1).plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         List<String> weekList = getData(startTime, endTime, ids, "aisle_eq_total_week");
         Map<Integer, Double> weekMap = new HashMap<>();
         if (!org.springframework.util.CollectionUtils.isEmpty(weekList)) {
@@ -363,8 +363,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         }
 
         //上月
-        startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
-        endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+        startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+        endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+//        endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
         List<String> monthList = getData(startTime, endTime, ids, "aisle_eq_total_month");
         Map<Integer, Double> monthMap = new HashMap<>();
         if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
@@ -410,7 +411,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         String indices = null;
         LocalDate now = LocalDate.now();
         // 获取昨天的日期
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now();
 
         String startTime = null;
         String endTime = null;
@@ -418,12 +419,18 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
                 indices = "aisle_eq_total_day";
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 break;
             case "lastWeek":
                 indices = "aisle_eq_total_week";
+                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
                 break;
             case "lastMonth":
                 indices = "aisle_eq_total_month";
+                startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
                 break;
             default:
         }
@@ -475,8 +482,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 }
 
                 //上周
-                startTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 List<String> weekList = getData(startTime, endTime, ids, "aisle_eq_total_week");
                 Map<Integer, Double> weekMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(weekList)) {
@@ -487,8 +494,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 }
 
                 //上月
-                startTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
                 List<String> monthList = getData(startTime, endTime, ids, "aisle_eq_total_month");
                 Map<Integer, Double> monthMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
@@ -765,26 +772,23 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         List<AisleMaxEqResVO> result = new ArrayList<>();
         LocalDate now = LocalDate.now();
         // 获取昨天的日期
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = LocalDate.now();
 
         // 昨天的起始时间（00:00:00）
-        LocalDateTime start = yesterday.atTime(LocalTime.MIN);
-        LocalDateTime end = yesterday.atTime(LocalTime.MAX);
+        String start =LocalDateTimeUtil.format( yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        String end = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
 
-        extractedMaxEq("aisle_eq_total_day", LocalDateTimeUtil.format(start, "yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end, "yyyy-MM-dd HH:mm:ss"), result, 0);
+        extractedMaxEq("aisle_eq_total_day", start, end, result, 0);
         // 获取上周的开始时间（周一）
-        start = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
-        end = now.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
+        start = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        end = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
 
-        extractedMaxEq("aisle_eq_total_week", LocalDateTimeUtil.format(start, "yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end, "yyyy-MM-dd HH:mm:ss"), result, 1);
+        extractedMaxEq("aisle_eq_total_week", start, end, result, 1);
 
-        start = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN);
-        end = now.minusMonths(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX);
-
-        extractedMaxEq("aisle_eq_total_month", LocalDateTimeUtil.format(start, "yyyy-MM-dd HH:mm:ss"),
-                LocalDateTimeUtil.format(end, "yyyy-MM-dd HH:mm:ss"), result, 2);
+        start = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+        end = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+        extractedMaxEq("aisle_eq_total_month", start,
+                end, result, 2);
         return result;
     }
 
@@ -1165,42 +1169,47 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             String startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
             String endTime = DateUtil.formatDateTime(TimeUtil.getEndOfDay(calendar.getTime()));
 
-            log.info("startTime : " + startTime + "endTime：" + endTime);
+            LocalDate old = LocalDate.now().minusDays(1);
+            LocalDate now = LocalDate.now();
+            List<AisleActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            List<AisleActivePowTrendDTO> todayList = new ArrayList<>();
+
+            for (int i = 0; i < 24; i++) {
+                String oldDay = LocalDateTimeUtil.format(LocalDateTime.of(old, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                AisleActivePowTrendDTO dto = new AisleActivePowTrendDTO();
+                dto.setDateTime(oldDay);
+                dto.setActivePow("0");
+                yesterdayList.add(dto);
+                AisleActivePowTrendDTO dto1 = new AisleActivePowTrendDTO();
+                String nowDay = LocalDateTimeUtil.format(LocalDateTime.of(now, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                dto1.setDateTime(nowDay);
+                dto1.setActivePow("");
+                todayList.add(dto1);
+            }
+
+            Map<String, AisleActivePowTrendDTO> yesterdayMap = yesterdayList.stream().collect(Collectors.toMap(AisleActivePowTrendDTO::getDateTime, Function.identity()));
             //获取昨日数据
             List<String> yesterdayData = getData(startTime, endTime, vo, "aisle_hda_pow_hour");
-
-
-            List<AisleActivePowTrendDTO> yesterdayList = new ArrayList<>();
             yesterdayData.forEach(str -> {
                 AislePowHourDo hourDo = JsonUtils.parseObject(str, AislePowHourDo.class);
-                AisleActivePowTrendDTO dto = new AisleActivePowTrendDTO();
-                dto.setActivePow(hourDo.getActiveTotalAvgValue());
-                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                yesterdayList.add(dto);
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
+                AisleActivePowTrendDTO powTrendDTO = yesterdayMap.get(dateTime);
+                powTrendDTO.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalAvgValue(),3)));
             });
 
 
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
             endTime = DateUtil.formatDateTime(DateTime.now());
 
-            log.info("startTime : " + startTime + "endTime：" + endTime);
             //获取今日数据
-            List<AisleActivePowTrendDTO> todayList = new ArrayList<>();
-
             List<String> todayData = getData(startTime, endTime, vo, "aisle_hda_pow_hour");
+            Map<String, AisleActivePowTrendDTO> todayMap = todayList.stream().collect(Collectors.toMap(AisleActivePowTrendDTO::getDateTime, Function.identity()));
             todayData.forEach(str -> {
                 AislePowHourDo hourDo = JsonUtils.parseObject(str, AislePowHourDo.class);
-                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
-                AisleActivePowTrendDTO dto = new AisleActivePowTrendDTO();
-                if (Objects.isNull(dto)) {
-                    dto = new AisleActivePowTrendDTO();
-                }
-                dto.setActivePow(hourDo.getActiveTotalAvgValue());
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                todayList.add(dto);
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
+                AisleActivePowTrendDTO powTrendDTO = todayMap.get(dateTime);
+                powTrendDTO.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalAvgValue(),3)));
+                powTrendDTO.setDateTime(dateTime);
             });
 
             powDTO.setYesterdayList(yesterdayList);
@@ -1208,10 +1217,10 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             //获取峰值
             AisleActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(AisleActivePowTrendDTO::getActivePow)).orElse(new AisleActivePowTrendDTO());
             AisleActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(AisleActivePowTrendDTO::getActivePow)).orElse(new AisleActivePowTrendDTO());
-            powDTO.setTodayMax(todayMax.getActivePow());
+            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
             powDTO.setTodayMaxTime(todayMax.getDateTime());
             powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(yesterdayMax.getActivePow());
+            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
 
             return powDTO;
         } catch (Exception e) {

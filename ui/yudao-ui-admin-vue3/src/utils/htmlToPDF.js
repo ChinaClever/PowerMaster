@@ -1,6 +1,6 @@
 // 页面导出为pdf格式 //title表示为下载的标题，html表示document.querySelector('#myPrintHtml')
-import html2Canvas from 'html2canvas'
-import JsPDF from 'jspdf'
+// import html2Canvas from 'html2canvas'
+// import JsPDF from 'jspdf'
 var noTableHeight = 0 //table外的元素高度
 
 export const htmlPdf = (title, html, fileList, type) => {// type传有效值pdf则为横版

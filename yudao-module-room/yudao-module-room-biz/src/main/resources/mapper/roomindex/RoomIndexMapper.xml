@@ -23,6 +23,9 @@
         where ci.is_delete = 1
         ORDER BY update_time desc
     </select>
+    <select id="getRoomAddrList" resultType="java.lang.String">
+        select distinct(addr)  from room_index where is_delete = 0
+    </select>
 
     <update id="restoreByDeleteRoom">
         update room_index rx set rx.is_delete = 0 where rx.id = #{id}

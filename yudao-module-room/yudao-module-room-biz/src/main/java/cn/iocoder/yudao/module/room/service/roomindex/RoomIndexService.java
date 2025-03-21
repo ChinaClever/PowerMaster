@@ -76,4 +76,5 @@ public interface RoomIndexService {
 
     PageResult<RoomEleTotalRealtimeResVO> getRoomEleTotalRealtime(RoomEleTotalRealtimeReqDTO reqVO, boolean flag) throws IOException;
 
+    PageResult<RoomEQRes> getEqPage1(RoomIndexPageReqVO pageReqVO);
 }

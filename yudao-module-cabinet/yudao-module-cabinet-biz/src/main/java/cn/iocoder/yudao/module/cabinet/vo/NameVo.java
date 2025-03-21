@@ -9,7 +9,11 @@ import lombok.Data;
  * @date 2024/5/6 9:17
  */
 @Data
-public class RoomVo {
+public class NameVo {
 
+    private String roomName;
 
+    private String aisleName;
+
+    private String location;
 }

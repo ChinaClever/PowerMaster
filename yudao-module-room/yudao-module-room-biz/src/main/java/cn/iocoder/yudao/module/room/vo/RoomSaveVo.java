@@ -31,6 +31,23 @@ public class RoomSaveVo {
     @Schema(description = "机房名称", example = "机房1")
     private String roomName;
 
+    /**
+     * 地址（楼层）
+     */
+    @Schema(description = "地址（楼层）", example = "地址（楼层）")
+    private String addr;
+
+    /**
+     * 显示选择
+     */
+    @Schema(description = "显示选择")
+    private Boolean displayFlag;
+
+    /**
+     * 显示类型（0-负载率/1-pue）
+     */
+    @Schema(description = "显示类型（0-负载率/1-pue）")
+    private Boolean displayType;
 
     /**
      * 电力容量

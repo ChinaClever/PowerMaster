@@ -11,6 +11,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author luowei
  * @version 1.0
@@ -26,4 +28,7 @@ public interface RoomIndexMapper extends BaseMapper<RoomIndex> {
     Page<RoomIndexDTO> selectRoomleteList(@Param("page") Page<RoomIndexDTO> page, @Param("indexVo") RoomIndexVo pageReqVO);
 
     int restoreByDeleteRoom(@Param("id")int id);
+
+    List<String> getRoomAddrList();
+
 }

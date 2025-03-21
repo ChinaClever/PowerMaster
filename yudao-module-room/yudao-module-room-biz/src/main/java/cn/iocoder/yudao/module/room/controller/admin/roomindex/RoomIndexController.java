@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.room.controller.admin.roomindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,7 +92,17 @@ public class RoomIndexController {
     @Operation(summary = "机房用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<RoomEQRes>> getEqPage(@RequestBody RoomIndexPageReqVO pageReqVO) {
-        PageResult<RoomEQRes> pageResult = indexService.getEqPage(pageReqVO);
+//        PageResult<RoomEQRes> pageResult = indexService.getEqPage(pageReqVO);
+//        return success(pageResult);
+        PageResult<RoomEQRes> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getRoomIds()) || ObjectUtil.isNotEmpty(pageReqVO.getName())) {
+            pageResult = indexService.getEqPage(pageReqVO);
+        } else {
+            pageResult = indexService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)) {
+                pageResult = indexService.getEqPage(pageReqVO);
+            }
+        }
         return success(pageResult);
     }
 
