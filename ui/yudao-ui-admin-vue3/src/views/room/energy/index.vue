@@ -3,17 +3,10 @@
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
-          <!-- <div class="name">微模块机房</div> -->
-        </div>
-        <div style="margin-left: 25px;">
-          <span>用能最大机房</span>
-          <br/>
-          <span>昨日：</span>
-          <br/>
-          <span>上周：</span>
-          <br/>
-          <span>上月：</span>
+          <div>用能最大柜列</div>
+          <div>昨日：{{ yesterdayMaxEq==null?"无数据":yesterdayMaxEq }}</div>
+          <div>上周：{{ lastWeekMaxEq==null?"无数据":lastWeekMaxEq }}</div>
+          <div>上月：{{ lastMonthMaxEq==null?"无数据":lastMonthMaxEq }}</div>
         </div>
       </div>
     </template>
@@ -113,7 +106,9 @@ import { time } from 'console'
 import { id } from 'element-plus/es/locale'
 
 const { push } = useRouter() // 路由跳转
-
+const yesterdayMaxEq = ref<string | null>(null);
+const lastWeekMaxEq = ref<string | null>(null);
+const lastMonthMaxEq = ref<string | null>(null);
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
@@ -204,8 +199,21 @@ const handleCheck = async (row) => {
 const toDetail = (roomId, id,location) => {
   push({path: '/room/roomenergydetail', state: { roomId, id,location }})
 }
+const getMaxData = async() => {
+  let maxEq = await IndexApi.getMaxEq();
+  maxEq.forEach((item)=>{
+    if(item.type==0){
+      yesterdayMaxEq.value =item.roomName;
+    }else if(item.type==1){
+      lastWeekMaxEq.value =item.roomName;
+    }else if(item.type==2){
+      lastMonthMaxEq.value =item.roomName;
+    }
+  })
+}
 
 onBeforeMount(() => {
+  getMaxData();
   getTableData()
 })
 

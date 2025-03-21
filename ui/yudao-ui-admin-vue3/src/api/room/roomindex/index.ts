@@ -24,6 +24,12 @@ export const IndexApi = {
     return await request.get({ url: `/room/index/get?id=` + id })
   },
 
+    // 获得机房用能最大
+    getMaxEq: async () => {
+      return await request.get({ url: `/room/index/eq/maxEq` })
+    },
+  
+
   // 新增机房索引
   createIndex: async (data: IndexVO) => {
     return await request.post({ url: `/room/index/create`, data })

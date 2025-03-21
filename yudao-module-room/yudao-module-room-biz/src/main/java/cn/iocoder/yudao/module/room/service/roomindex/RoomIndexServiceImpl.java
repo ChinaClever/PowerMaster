@@ -1,11 +1,8 @@
 package cn.iocoder.yudao.module.room.service.roomindex;
-import cn.hutool.core.date.DateTime;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
-import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
-import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
@@ -13,10 +10,15 @@ import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
+import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
+import cn.iocoder.yudao.module.room.dal.mysql.roomindex.RoomIndexCopyMapper;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -43,18 +45,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-
-import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
-import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
-import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
-import cn.iocoder.yudao.module.room.dal.mysql.roomindex.RoomIndexCopyMapper;
-
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -65,17 +58,11 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_ELE_TOTAL_REALTIME;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_EQ_TOTAL_DAY;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_EQ_TOTAL_MONTH;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_EQ_TOTAL_WEEK;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_ID;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.room.constant.RoomConstants.*;
 import static cn.iocoder.yudao.module.room.constant.RoomConstants.KEYWORD;
-import static cn.iocoder.yudao.module.room.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.room.constant.RoomConstants.*;
+import static cn.iocoder.yudao.module.room.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 
 /**
  * 机房索引 Service 实现类
@@ -100,7 +87,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
     @Autowired
     private RoomIndexMapper roomIndexMapper;
-    
+
     @Override
     public Integer createIndex(RoomIndexSaveReqVO createReqVO) {
         // 插入
@@ -149,7 +136,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         LineResBase barRes = new LineResBase();
         BarSeries barSeries = new BarSeries();
         try {
-            if(id != null){
+            if (id != null) {
                 String index = null;
                 boolean isSameDay = false;
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
@@ -173,55 +160,55 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 Double maxEle = null;
                 String maxEleTime = null;
                 int nowTimes = 0;
-                if (isSameDay){
+                if (isSameDay) {
                     for (String str : roomData) {
                         nowTimes++;
                         RoomEleTotalRealtimeDo roomEleTotalRealtimeDo = JsonUtils.parseObject(str, RoomEleTotalRealtimeDo.class);
                         if (nowTimes == 1) {
                             firstEq = roomEleTotalRealtimeDo.getEleTotal();
                         }
-                        if (nowTimes > 1){
-                            barSeries.getData().add((float)(roomEleTotalRealtimeDo.getEleTotal() -lastEq));
+                        if (nowTimes > 1) {
+                            barSeries.getData().add((float) (roomEleTotalRealtimeDo.getEleTotal() - lastEq));
                             barRes.getTime().add(roomEleTotalRealtimeDo.getCreateTime().toString("HH:mm:ss"));
                         }
                         lastEq = roomEleTotalRealtimeDo.getEleTotal();
                     }
                     String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "ele_total");
                     RoomEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, RoomEleTotalRealtimeDo.class);
-                    if(eleMaxValue != null){
+                    if (eleMaxValue != null) {
                         maxEle = eleMaxValue.getEleTotal();
                         maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
                     }
                     barRes.getSeries().add(barSeries);
-                    result.put("totalEle",totalEq);
-                    result.put("maxEle",maxEle);
-                    result.put("maxEleTime",maxEleTime);
-                    result.put("firstEq",firstEq);
-                    result.put("lastEq",lastEq);
-                    result.put("barRes",barRes);
-                }else {
+                    result.put("totalEle", totalEq);
+                    result.put("maxEle", maxEle);
+                    result.put("maxEleTime", maxEleTime);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
+                    result.put("barRes", barRes);
+                } else {
                     for (String str : roomData) {
                         nowTimes++;
                         RoomEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
                         totalEq += totalDayDo.getEqValue();
-                        barSeries.getData().add((float)totalDayDo.getEqValue());
+                        barSeries.getData().add((float) totalDayDo.getEqValue());
                         barRes.getTime().add(totalDayDo.getStartTime().toString("yyyy-MM-dd"));
                     }
                     String eqMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "eq_value");
                     RoomEqTotalDayDo eqMaxValue = JsonUtils.parseObject(eqMax, RoomEqTotalDayDo.class);
-                    if(eqMaxValue != null){
+                    if (eqMaxValue != null) {
                         maxEle = eqMaxValue.getEqValue();
                         maxEleTime = eqMaxValue.getStartTime().toString("yyyy-MM-dd HH:mm:ss");
                     }
                     barRes.getSeries().add(barSeries);
-                    result.put("totalEle",totalEq);
-                    result.put("maxEle",maxEle);
-                    result.put("maxEleTime",maxEleTime);
-                    result.put("barRes",barRes);
+                    result.put("totalEle", totalEq);
+                    result.put("maxEle", maxEle);
+                    result.put("maxEleTime", maxEleTime);
+                    result.put("barRes", barRes);
                 }
             }
-        }catch (Exception e){
-            log.error("获取数据失败",e);
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
         }
         return result;
     }
@@ -233,38 +220,38 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         LineResBase aLineRes = new LineResBase();
         LineResBase bLineRes = new LineResBase();
 
-        result.put("totalLineRes",totalLineRes);
-        result.put("aLineRes",aLineRes);
-        result.put("bLineRes",bLineRes);
+        result.put("totalLineRes", totalLineRes);
+        result.put("aLineRes", aLineRes);
+        result.put("bLineRes", bLineRes);
 
-        result.put("apparentPowMaxValue",null);
-        result.put("apparentPowMaxTime",null);
-        result.put("apparentPowMinValue",null);
-        result.put("apparentPowMinTime",null);
+        result.put("apparentPowMaxValue", null);
+        result.put("apparentPowMaxTime", null);
+        result.put("apparentPowMinValue", null);
+        result.put("apparentPowMinTime", null);
         result.put("activePowMaxValue", null);
-        result.put("activePowMaxTime",  null);
+        result.put("activePowMaxTime", null);
         result.put("activePowMinValue", null);
-        result.put("activePowMinTime",  null);
+        result.put("activePowMinTime", null);
 
-        result.put("AapparentPowMaxValue",  null);
-        result.put("AapparentPowMaxTime",   null);
-        result.put("AapparentPowMinValue",  null);
-        result.put("AapparentPowMinTime",   null);
-        result.put("AactivePowMaxValue",    null);
-        result.put("AactivePowMaxTime",     null);
-        result.put("AactivePowMinValue",    null);
-        result.put("AactivePowMinTime",     null);
+        result.put("AapparentPowMaxValue", null);
+        result.put("AapparentPowMaxTime", null);
+        result.put("AapparentPowMinValue", null);
+        result.put("AapparentPowMinTime", null);
+        result.put("AactivePowMaxValue", null);
+        result.put("AactivePowMaxTime", null);
+        result.put("AactivePowMinValue", null);
+        result.put("AactivePowMinTime", null);
 
-        result.put("BapparentPowMaxValue",  null);
-        result.put("BapparentPowMaxTime",   null);
-        result.put("BapparentPowMinValue",  null);
-        result.put("BapparentPowMinTime",   null);
-        result.put("BactivePowMaxValue",    null);
-        result.put("BactivePowMaxTime",     null);
-        result.put("BactivePowMinValue",    null);
-        result.put("BactivePowMinTime",     null);
+        result.put("BapparentPowMaxValue", null);
+        result.put("BapparentPowMaxTime", null);
+        result.put("BapparentPowMinValue", null);
+        result.put("BapparentPowMinTime", null);
+        result.put("BactivePowMaxValue", null);
+        result.put("BactivePowMaxTime", null);
+        result.put("BactivePowMinValue", null);
+        result.put("BactivePowMinTime", null);
         try {
-            if(id != null) {
+            if (id != null) {
                 String index = null;
 
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
@@ -307,7 +294,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 bLineRes.getSeries().add(apparentPowB);
                 bLineRes.getSeries().add(activePowB);
 
-                if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     roomPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
@@ -321,7 +308,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
                     });
-                }else{
+                } else {
                     roomPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
@@ -368,40 +355,40 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 String activeBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_b_min_value");
                 RoomPowHourDo minActiveB = JsonUtils.parseObject(activeBMinValue, RoomPowHourDo.class);
 
-                result.put("totalLineRes",totalLineRes);
-                result.put("aLineRes",aLineRes);
-                result.put("bLineRes",bLineRes);
+                result.put("totalLineRes", totalLineRes);
+                result.put("aLineRes", aLineRes);
+                result.put("bLineRes", bLineRes);
 
-                result.put("apparentPowMaxValue",totalMaxApparent.getApparentTotalMaxValue());
-                result.put("apparentPowMaxTime",totalMaxApparent.getApparentTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("apparentPowMinValue",totalMinApparent.getApparentTotalMinValue());
-                result.put("apparentPowMinTime",totalMinApparent.getApparentTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMaxValue",totalMaxActive.getActiveTotalMaxValue());
-                result.put("activePowMaxTime",totalMaxActive.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMinValue",totalMinActive.getActiveTotalMinValue());
-                result.put("activePowMinTime",totalMinActive.getActiveTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("apparentPowMaxValue", totalMaxApparent.getApparentTotalMaxValue());
+                result.put("apparentPowMaxTime", totalMaxApparent.getApparentTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("apparentPowMinValue", totalMinApparent.getApparentTotalMinValue());
+                result.put("apparentPowMinTime", totalMinApparent.getApparentTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("activePowMaxValue", totalMaxActive.getActiveTotalMaxValue());
+                result.put("activePowMaxTime", totalMaxActive.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("activePowMinValue", totalMinActive.getActiveTotalMinValue());
+                result.put("activePowMinTime", totalMinActive.getActiveTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
-                result.put("AapparentPowMaxValue",maxApparentA.getApparentAMaxValue());
-                result.put("AapparentPowMaxTime",maxApparentA.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("AapparentPowMinValue",minApparentA.getApparentAMinValue());
-                result.put("AapparentPowMinTime",minApparentA.getApparentAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("AactivePowMaxValue",maxActiveA.getActiveAMaxValue());
-                result.put("AactivePowMaxTime",maxActiveA.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("AactivePowMinValue",minActiveA.getActiveAMinValue());
-                result.put("AactivePowMinTime",minActiveA.getActiveAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("AapparentPowMaxValue", maxApparentA.getApparentAMaxValue());
+                result.put("AapparentPowMaxTime", maxApparentA.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("AapparentPowMinValue", minApparentA.getApparentAMinValue());
+                result.put("AapparentPowMinTime", minApparentA.getApparentAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("AactivePowMaxValue", maxActiveA.getActiveAMaxValue());
+                result.put("AactivePowMaxTime", maxActiveA.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("AactivePowMinValue", minActiveA.getActiveAMinValue());
+                result.put("AactivePowMinTime", minActiveA.getActiveAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
-                result.put("BapparentPowMaxValue",  maxApparentB.getApparentBMaxValue());
-                result.put("BapparentPowMaxTime",   maxApparentB.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("BapparentPowMinValue",  minApparentB.getApparentBMinValue());
-                result.put("BapparentPowMinTime",   minApparentB.getApparentBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("BactivePowMaxValue",    maxActiveB.getActiveBMaxValue());
-                result.put("BactivePowMaxTime",     maxActiveB.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("BactivePowMinValue",    minActiveB.getActiveBMinValue());
-                result.put("BactivePowMinTime",     minActiveB.getActiveBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("BapparentPowMaxValue", maxApparentB.getApparentBMaxValue());
+                result.put("BapparentPowMaxTime", maxApparentB.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("BapparentPowMinValue", minApparentB.getApparentBMinValue());
+                result.put("BapparentPowMinTime", minApparentB.getApparentBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("BactivePowMaxValue", maxActiveB.getActiveBMaxValue());
+                result.put("BactivePowMaxTime", maxActiveB.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("BactivePowMinValue", minActiveB.getActiveBMinValue());
+                result.put("BactivePowMinTime", minActiveB.getActiveBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
             }
-        }catch (Exception e){
-            log.error("获取数据失败",e);
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
         }
         return result;
     }
@@ -410,7 +397,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     public Map getRoomPFLine(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
         LineResBase totalLineRes = new LineResBase();
-        result.put("pfLineRes",totalLineRes);
+        result.put("pfLineRes", totalLineRes);
         try {
 
             String index = null;
@@ -443,7 +430,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             totalLineRes.getSeries().add(PFLineA);
             totalLineRes.getSeries().add(PFLineB);
 
-            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
+            if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                 powList.forEach(hourdo -> {
                     totalPFLine.getData().add(hourdo.getFactorTotalAvgValue());
                     PFLineA.getData().add(hourdo.getFactorAAvgValue());
@@ -452,7 +439,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                     totalLineRes.getTime().add(dateTime.toString("HH:mm"));
 
                 });
-            }else{
+            } else {
                 powList.forEach(hourdo -> {
                     totalPFLine.getData().add(hourdo.getFactorTotalAvgValue());
                     PFLineA.getData().add(hourdo.getFactorAAvgValue());
@@ -461,10 +448,10 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                     totalLineRes.getTime().add(dateTime.toString("yyyy-MM-dd"));
                 });
             }
-            result.put("pfLineRes",totalLineRes);
+            result.put("pfLineRes", totalLineRes);
 
-        }catch (Exception e){
-            log.error("获取数据失败",e);
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
         }
         return result;
     }
@@ -484,39 +471,39 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         });
         Map<Integer, RoomBalanceRes> resMap = result.stream().collect(Collectors.toMap(RoomBalanceRes::getId, Function.identity()));
         for (Object o : mutiRedis) {
-            if (Objects.isNull(o)){
+            if (Objects.isNull(o)) {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            Integer roomKey = jsonObject.getInteger("room_key") ;
+            Integer roomKey = jsonObject.getInteger("room_key");
             RoomBalanceRes roomBalanceRes = resMap.get(roomKey);
             JSONObject roomPower = jsonObject.getJSONObject("room_power");
             JSONObject totalData = roomPower.getJSONObject("total_data");
-            if (Objects.nonNull(totalData)){
+            if (Objects.nonNull(totalData)) {
                 roomBalanceRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
                 roomBalanceRes.setPowActiveTotal(totalData.getDouble("pow_active"));
                 roomBalanceRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
             }
 
             JSONObject pathA = roomPower.getJSONObject("path_a");
-            if (Objects.nonNull(pathA)){
+            if (Objects.nonNull(pathA)) {
                 roomBalanceRes.setPowApparentA(pathA.getDouble("pow_apparent"));
                 roomBalanceRes.setPowActiveA(pathA.getDouble("pow_active"));
                 roomBalanceRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
             }
 
             JSONObject pathB = roomPower.getJSONObject("path_b");
-            if (Objects.nonNull(pathB)){
+            if (Objects.nonNull(pathB)) {
                 roomBalanceRes.setPowApparentB(pathB.getDouble("pow_apparent"));
                 roomBalanceRes.setPowActiveB(pathB.getDouble("pow_active"));
                 roomBalanceRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
             }
 
-            if(roomBalanceRes.getPowApparentA() != null && roomBalanceRes.getPowApparentA() != 0 && roomBalanceRes.getPowApparentTotal() != null && roomBalanceRes.getPowApparentTotal() != 0){
-                roomBalanceRes.setRateA((roomBalanceRes.getPowApparentA() / roomBalanceRes.getPowApparentTotal())*100);
+            if (roomBalanceRes.getPowApparentA() != null && roomBalanceRes.getPowApparentA() != 0 && roomBalanceRes.getPowApparentTotal() != null && roomBalanceRes.getPowApparentTotal() != 0) {
+                roomBalanceRes.setRateA((roomBalanceRes.getPowApparentA() / roomBalanceRes.getPowApparentTotal()) * 100);
             }
         }
-        return new PageResult<>(result,roomIndexDOPageResult.getTotal());
+        return new PageResult<>(result, roomIndexDOPageResult.getTotal());
     }
 
     @Override
@@ -527,7 +514,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             List<RoomIndexDO> roomIndexDOList = roomIndexDOPageResult.getList();
             List<RoomEQRes> result = new ArrayList<>();
             List<Integer> ids = roomIndexDOList.stream().map(RoomIndexDO::getId).collect(Collectors.toList());
-            if (org.springframework.util.CollectionUtils.isEmpty(ids)){
+            if (org.springframework.util.CollectionUtils.isEmpty(ids)) {
                 return new PageResult<>(result, roomIndexDOPageResult.getTotal());
             }
             //昨日
@@ -539,37 +526,37 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 result.add(res);
             });
             String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-            String endTime =DateUtil.formatDateTime(DateTime.now());
-            List<String>  yesterdayList = getData(startTime,endTime, ids,"room_eq_total_day");
-            Map<Integer,Double> yesterdayMap = new HashMap<>();
-            if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)){
+            String endTime = DateUtil.formatDateTime(DateTime.now());
+            List<String> yesterdayList = getData(startTime, endTime, ids, "room_eq_total_day");
+            Map<Integer, Double> yesterdayMap = new HashMap<>();
+            if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)) {
                 yesterdayList.forEach(str -> {
                     RoomEqTotalDayDo dayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
-                    yesterdayMap.put(dayDo.getRoomId(),dayDo.getEqValue());
+                    yesterdayMap.put(dayDo.getRoomId(), dayDo.getEqValue());
                 });
             }
 
             //上周
             startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-            endTime =DateUtil.formatDateTime(DateTime.now());
-            List<String>  weekList = getData(startTime,endTime, ids,"room_eq_total_week");
-            Map<Integer,Double> weekMap = new HashMap<>();
-            if (!org.springframework.util.CollectionUtils.isEmpty(weekList)){
+            endTime = DateUtil.formatDateTime(DateTime.now());
+            List<String> weekList = getData(startTime, endTime, ids, "room_eq_total_week");
+            Map<Integer, Double> weekMap = new HashMap<>();
+            if (!org.springframework.util.CollectionUtils.isEmpty(weekList)) {
                 weekList.forEach(str -> {
                     RoomEqTotalWeekDo weekDo = JsonUtils.parseObject(str, RoomEqTotalWeekDo.class);
-                    weekMap.put(weekDo.getRoomId(),weekDo.getEqValue());
+                    weekMap.put(weekDo.getRoomId(), weekDo.getEqValue());
                 });
             }
 
             //上月
             startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-            endTime =DateUtil.formatDateTime(DateTime.now());
-            List<String>  monthList = getData(startTime,endTime, ids,"room_eq_total_month");
-            Map<Integer,Double> monthMap = new HashMap<>();
-            if (!org.springframework.util.CollectionUtils.isEmpty(monthList)){
+            endTime = DateUtil.formatDateTime(DateTime.now());
+            List<String> monthList = getData(startTime, endTime, ids, "room_eq_total_month");
+            Map<Integer, Double> monthMap = new HashMap<>();
+            if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
                 monthList.forEach(str -> {
                     RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
-                    monthMap.put(monthDo.getRoomId(),monthDo.getEqValue());
+                    monthMap.put(monthDo.getRoomId(), monthDo.getEqValue());
                 });
             }
 
@@ -579,7 +566,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 dto.setLastMonthEq(monthMap.get(dto.getId()));
             });
             return new PageResult<>(result, roomIndexDOPageResult.getTotal());
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("获取数据失败：", e);
         }
         return new PageResult<>(new ArrayList<>(), 0L);
@@ -588,65 +575,66 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
     public static final String TIME_STR = ":00:00";
-    
+
     @Override
     public RoomActivePowDTO getActivePow(RoomPowVo vo) {
         RoomActivePowDTO powDTO = new RoomActivePowDTO();
         try {
-
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR_OF_DAY, -24);
             String startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
             String endTime = DateUtil.formatDateTime(TimeUtil.getEndOfDay(calendar.getTime()));
-
-            log.info("startTime : " + startTime + "endTime：" + endTime);
+            List<RoomActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            List<RoomActivePowTrendDTO> todayList = new ArrayList<>();
+            LocalDate old = LocalDate.now().minusDays(1);
+            LocalDate now = LocalDate.now();
+            for (int i = 0; i < 24; i++) {
+                String oldDay = LocalDateTimeUtil.format(LocalDateTime.of(old, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                RoomActivePowTrendDTO dto = new RoomActivePowTrendDTO();
+                dto.setDateTime(oldDay);
+                dto.setActivePow("0");
+                yesterdayList.add(dto);
+                RoomActivePowTrendDTO dto1 = new RoomActivePowTrendDTO();
+                String nowDay = LocalDateTimeUtil.format(LocalDateTime.of(now, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
+                dto1.setDateTime(nowDay);
+                dto1.setActivePow("");
+                todayList.add(dto1);
+            }
             //获取昨日数据
             List<String> yesterdayData = getData(startTime, endTime, vo, "room_hda_pow_hour");
-
-
-            List<RoomActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            Map<String, RoomActivePowTrendDTO> yesterdayMap = yesterdayList.stream().collect(Collectors.toMap(RoomActivePowTrendDTO::getDateTime, Function.identity()));
             yesterdayData.forEach(str -> {
                 RoomPowHourDo hourDo = JsonUtils.parseObject(str, RoomPowHourDo.class);
-                RoomActivePowTrendDTO dto = new RoomActivePowTrendDTO();
-                dto.setActivePow(hourDo.getActiveTotalAvgValue());
-                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                yesterdayList.add(dto);
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
+                RoomActivePowTrendDTO dto = yesterdayMap.get(dateTime);
+                if (Objects.nonNull(dto)) {
+                    dto.setActivePow(String.valueOf(hourDo.getActiveTotalAvgValue()));
+                    yesterdayList.add(dto);
+                }
             });
-
-
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
             endTime = DateUtil.formatDateTime(DateTime.now());
-
-            log.info("startTime : " + startTime + "endTime：" + endTime);
             //获取今日数据
-            List<RoomActivePowTrendDTO> todayList = new ArrayList<>();
-
-            List<String> todayData = getData(startTime, endTime, vo,  "room_hda_pow_hour");
+            List<String> todayData = getData(startTime, endTime, vo, "room_hda_pow_hour");
+            Map<String, RoomActivePowTrendDTO> todayListMap = todayList.stream().collect(Collectors.toMap(RoomActivePowTrendDTO::getDateTime, Function.identity()));
             todayData.forEach(str -> {
                 RoomPowHourDo hourDo = JsonUtils.parseObject(str, RoomPowHourDo.class);
-                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
-                RoomActivePowTrendDTO dto = new RoomActivePowTrendDTO();
-                if (Objects.isNull(dto)) {
-                    dto = new RoomActivePowTrendDTO();
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
+                RoomActivePowTrendDTO dto = todayListMap.get(dateTime);
+                if (Objects.nonNull(dto)) {
+                    dto.setActivePow(String.valueOf(hourDo.getActiveTotalAvgValue()));
+                    todayList.add(dto);
                 }
-                dto.setActivePow(hourDo.getActiveTotalAvgValue());
-                dto.setDateTime(dateTime);
-//                log.info("dateTime : " + dateTime );
-                todayList.add(dto);
             });
-
             powDTO.setYesterdayList(yesterdayList);
             powDTO.setTodayList(todayList);
             //获取峰值
             RoomActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePow)).orElse(new RoomActivePowTrendDTO());
             RoomActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePow)).orElse(new RoomActivePowTrendDTO());
-            powDTO.setTodayMax(todayMax.getActivePow());
+            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
             powDTO.setTodayMaxTime(todayMax.getDateTime());
             powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(yesterdayMax.getActivePow());
-
+            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
             return powDTO;
         } catch (Exception e) {
             log.error("获取数据失败： ", e);
@@ -710,18 +698,18 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     public PageResult<RoomEleTotalRealtimeResVO> getRoomEleTotalRealtime(RoomEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
         PageResult<RoomEleTotalRealtimeResVO> pageResult = new PageResult<>();
         List<RoomEleTotalRealtimeResVO> list = new ArrayList<>();
-        List<RoomIndexDO> records =null;
+        List<RoomIndexDO> records = null;
         Long total = 0L;
         LambdaQueryWrapper<RoomIndexDO> queryWrapper = new LambdaQueryWrapper<RoomIndexDO>().eq(RoomIndexDO::getIsDelete, 0)
                 .orderByDesc(RoomIndexDO::getCreateTime);
-            if (reqDTO.getRoomIds() != null && reqDTO.getRoomIds().length != 0) {
-                queryWrapper.in(RoomIndexDO::getId,reqDTO.getRoomIds());
-            }
+        if (reqDTO.getRoomIds() != null && reqDTO.getRoomIds().length != 0) {
+            queryWrapper.in(RoomIndexDO::getId, reqDTO.getRoomIds());
+        }
         if (flag) {
             IPage<RoomIndexDO> iPage = roomIndexCopyMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
             records = iPage.getRecords();
-            total=iPage.getTotal();
-        }else {
+            total = iPage.getTotal();
+        } else {
             records = roomIndexCopyMapper.selectList(queryWrapper);
         }
         for (RoomIndexDO record : records) {
@@ -766,9 +754,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(resVO.getCreateTimeMin())) {
                     resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
-                    double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(),1);
+                    double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
                     resVO.setEleActive(sub);
-                    if (sub<0){
+                    if (sub < 0) {
                         resVO.setEleActive(resVO.getEleActiveEnd());
                     }
                 }
@@ -781,22 +769,22 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
     @Override
     public PageResult<RoomEQRes> getEqPage1(RoomIndexPageReqVO pageReqVO) {
-        String indices="";
+        String indices = "";
         String startTime = null;
         String endTime = null;
-        LocalDate now =LocalDate.now();
+        LocalDate now = LocalDate.now();
         //todo bug
         LocalDate yesterday = LocalDate.now();
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
                 indices = "room_eq_total_day";
-                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 break;
             case "lastWeek":
                 indices = "room_eq_total_week";
-                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN),"yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX),"yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 break;
             case "lastMonth":
                 indices = "room_eq_total_month";
@@ -806,16 +794,16 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             default:
         }
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.from((pageReqVO.getPageNo()-1)*pageReqVO.getPageSize());
-        if(pageReqVO.getPageSize()*pageReqVO.getPageNo()>10000){
-            searchSourceBuilder.size(10000-(pageReqVO.getPageNo()-1)*pageReqVO.getPageSize());
-        }else {
+        searchSourceBuilder.from((pageReqVO.getPageNo() - 1) * pageReqVO.getPageSize());
+        if (pageReqVO.getPageSize() * pageReqVO.getPageNo() > 10000) {
+            searchSourceBuilder.size(10000 - (pageReqVO.getPageNo() - 1) * pageReqVO.getPageSize());
+        } else {
             searchSourceBuilder.size(pageReqVO.getPageSize());
         }
         searchSourceBuilder.trackTotalHits(true);
-        searchSourceBuilder.sort("eq_value",SortOrder.DESC);
-        searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME+".keyword").gte(startTime).lt(endTime))));
-        searchSourceBuilder.fetchSource(new String[]{"room_id"},null);
+        searchSourceBuilder.sort("eq_value", SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))));
+        searchSourceBuilder.fetchSource(new String[]{"room_id"}, null);
         SearchRequest sourceRequest = new SearchRequest().indices(indices).source(searchSourceBuilder);
         try {
             SearchResponse searchResponse = client.search(sourceRequest, RequestOptions.DEFAULT);
@@ -824,7 +812,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 list.add(JsonUtils.parseObject(hit.getSourceAsString(), RoomEqTotalDayDo.class));
             }
 //            System.out.println(list);
-            if(!org.springframework.util.CollectionUtils.isEmpty(list)){
+            if (!org.springframework.util.CollectionUtils.isEmpty(list)) {
                 List<Integer> ids = list.stream().map(RoomEqTotalDayDo::getRoomId).collect(Collectors.toList());
                 List<RoomIndexDO> roomIndexDOS = roomIndexCopyMapper.selectList(new LambdaUpdateWrapper<RoomIndexDO>().in(RoomIndexDO::getId, ids));
                 Map<Integer, RoomIndexDO> collect = roomIndexDOS.stream().collect(Collectors.toMap(RoomIndexDO::getId, x -> x));
@@ -863,10 +851,10 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                     });
                 }
 
-                List<RoomEQRes> res= new ArrayList<>();
+                List<RoomEQRes> res = new ArrayList<>();
                 List<Integer> roomIds = roomIndexDOS.stream().map(RoomIndexDO::getId).distinct().collect(Collectors.toList());
                 Map<Integer, String> voMap = getPositionByIds(roomIds);
-                list.forEach(item->{
+                list.forEach(item -> {
                     RoomEQRes roomEQRes = new RoomEQRes();
                     RoomIndexDO roomIndexDO = collect.get(item.getRoomId());
                     if (Objects.nonNull(roomIndexDO)) {
@@ -898,6 +886,66 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         }
         return null;
     }
+
+    @Override
+    public List<RoomMaxEqResVO> getMaxEq() {
+        List<RoomMaxEqResVO> result = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now();
+
+        // 昨天的起始时间（00:00:00）
+        String start =LocalDateTimeUtil.format( yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        String end = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+
+        extractedMaxEq("room_eq_total_day", start, end, result, 0);
+        // 获取上周的开始时间（周一）
+        start = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        end = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+
+        extractedMaxEq("room_eq_total_week", start, end, result, 1);
+
+        start = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+        end = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+        extractedMaxEq("room_eq_total_month", start,
+                end, result, 2);
+        return result;
+    }
+
+    private void extractedMaxEq(String indexEs, String startTime, String endTime, List<RoomMaxEqResVO> result, Integer type) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(indexEs);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                    .gte(startTime).lte(endTime))
+                    .must(QueryBuilders.rangeQuery("eq_value").gt(0))));
+            builder.sort("eq_value", SortOrder.DESC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(1);
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            SearchHit[] hits = searchResponse.getHits().getHits();
+            if (hits.length > 0) {
+                // 获取最大值和时间字段
+                Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
+                RoomMaxEqResVO vo = new RoomMaxEqResVO();
+                vo.setMaxEq((Double) sourceAsMap.get("eq_value"));
+                vo.setId((Integer) sourceAsMap.get("room_id"));
+                RoomIndex roomIndex = roomIndexMapper.selectById(vo.getId());
+                vo.setRoomName(roomIndex.getRoomName());
+                vo.setType(type);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+                result.add(vo);
+            }
+        } catch (Exception e) {
+            log.error("插接箱用能最大查询异常：" + e);
+        }
+    }
+
     private Map<Integer, String> getPositionByIds(List<Integer> roomIds) {
         Map<Integer, String> roomMap = new HashMap<>();
         if (cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.isAnyEmpty(roomIds)) {
@@ -1403,13 +1451,14 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         }
         return eq;
     }
-    
+
     /**
      * 获取数据
+     *
      * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param ids 机柜id列表
-     * @param index 索引表
+     * @param endTime   结束时间
+     * @param ids       机柜id列表
+     * @param index     索引表
      */
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名
@@ -1553,7 +1602,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
             TopHits tophits = aggregations.get(top);
             SearchHits sophistsHits = tophits.getHits();
-            if (null != sophistsHits.getHits() && sophistsHits.getHits().length>0){
+            if (null != sophistsHits.getHits() && sophistsHits.getHits().length > 0) {
                 SearchHit hit = sophistsHits.getHits()[0];
                 realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), RoomEleTotalRealtimeDo.class);
             }
@@ -1564,7 +1613,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         return realtimeDo;
     }
 
-    private String getMaxData(String startTime, String endTime, List<Integer> ids, String index,String order) throws IOException {
+    private String getMaxData(String startTime, String endTime, List<Integer> ids, String index, String order) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);
         // 通过QueryBuilders构建ES查询条件，
@@ -1590,7 +1639,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         return null;
     }
 
-    private String getMinData(String startTime, String endTime, List<Integer> ids, String index,String order) throws IOException {
+    private String getMinData(String startTime, String endTime, List<Integer> ids, String index, String order) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);
         // 通过QueryBuilders构建ES查询条件，
@@ -1617,13 +1666,13 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
     }
 
-    private List getMutiRedis(List<RoomIndexDO> list){
+    private List getMutiRedis(List<RoomIndexDO> list) {
         List<String> devKeys = list.stream().map(roomIndexDO -> REDIS_KEY_ROOM + roomIndexDO.getId()).collect(Collectors.toList());
         ValueOperations ops = redisTemplate.opsForValue();
         return ops.multiGet(devKeys);
     }
-    
-    private String localDateTimeToString(LocalDateTime time){
+
+    private String localDateTimeToString(LocalDateTime time) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return time.format(fmt);
     }
