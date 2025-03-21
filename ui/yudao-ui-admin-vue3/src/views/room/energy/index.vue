@@ -346,7 +346,9 @@ handleNavTree();
     }
   }
   .header {
-    display: flex;
+    margin-top: 5px;
+    margin-left: 30px;
+    display: inline-block;
     flex-direction: column;
     align-items: center;
     font-size: 13px;
