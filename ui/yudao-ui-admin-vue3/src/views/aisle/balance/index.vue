@@ -149,11 +149,11 @@
                     <div class="progressInDialog">
                       <div class="left" :style="{
                         width:`${0.8*Math.max(Math.min(balanceObj.pow_active_percent,60),40)}%`
-                      }">{{balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                      }">{{balanceObj.pow_active_percent!=null?balanceObj.pow_active_percent.toFixed(0):0}}%</div>
                       <div class="line"></div>
                       <div class="right" :style="{
                         width:`${0.8*Math.max(Math.min((100 - balanceObj.pow_active_percent),60),40)}%`
-                      }">{{100 - balanceObj.pow_active_percent.toFixed(0)}}%</div>
+                      }">{{balanceObj.pow_active_percent==null? 100 - balanceObj.pow_active_percent.toFixed(0):0}}%</div>
                     </div>
                     <div class="tipInDialog">
                       <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_active_percent,60),40)+'%'}">
@@ -195,11 +195,11 @@
                     <div class="progressInDialog">
                       <div class="left" :style="{
                         width:`${0.8*Math.max(Math.min(balanceObj.pow_apparent_percent,60),40)}%`
-                      }">{{balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                      }">{{balanceObj.pow_apparent_percent!=null?balanceObj.pow_apparent_percent.toFixed(0):0}}%</div>
                       <div class="line"></div>
                       <div class="right" :style="{
                         width:`${0.8*Math.max(Math.min((100 - balanceObj.pow_apparent_percent),60),40)}%`
-                      }">{{100 - balanceObj.pow_apparent_percent.toFixed(0)}}%</div>
+                      }">{{balanceObj.pow_apparent_percent!=null?(100 - balanceObj.pow_apparent_percent.toFixed(0)):0}}%</div>
                     </div>
                     <div class="tipInDialog">
                       <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_apparent_percent,60),40)+'%'}">
@@ -221,11 +221,11 @@
                     <div class="progressInDialog">
                       <div class="left" :style="{
                         width:`${0.8*Math.max(Math.min(balanceObj.pow_reactive_percent,60),40)}%`
-                      }">{{balanceObj.pow_reactive_percent.toFixed(0)}}%</div>
+                      }">{{balanceObj.pow_reactive_percent != null?balanceObj.pow_reactive_percent.toFixed(0):0}}%</div>
                       <div class="line"></div>
                       <div class="right" :style="{
                         width:`${0.8*Math.max(Math.min((100 - balanceObj.pow_reactive_percent),60),40)}%`
-                      }">{{100 - balanceObj.pow_reactive_percent.toFixed(0)}}%</div>
+                      }">{{balanceObj.pow_reactive_percent !=null?100 - balanceObj.pow_reactive_percent.toFixed(0):0}}%</div>
                     </div>
                     <div class="tipInDialog">
                       <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_reactive_percent,60),40)+'%'}">
@@ -552,9 +552,9 @@ const toDetail = async (item) => {
   balanceObj.a_active_power=item.powActiveA;
   balanceObj.b_active_power=item.powActiveB;
   bpow.value=1-apow.value;
-  apow.value=balanceObj.pow_apparent_percent=item.powApparentA/item.powApparentTotal*100;
-  balanceObj.pow_active_percent=item.powActiveA/item.powActiveTotal*100;
-  balanceObj.pow_reactive_percent=item.powReactiveA/item.powReactiveTotal*100;
+  apow.value=balanceObj.pow_apparent_percent=isNaN(item.powApparentA/item.powApparentTotal*100)?0:item.powApparentA/item.powApparentTotal*100;
+  balanceObj.pow_active_percent=isNaN(item.powActiveA/item.powActiveTotal*100)?0:item.powActiveA/item.powActiveTotal*100;
+  balanceObj.pow_reactive_percent=isNaN(item.powReactiveA/item.powReactiveTotal*100)?0:item.powReactiveA/item.powReactiveTotal*100;
   let response=await IndexApi.getBalanceDetail(item.id)
   // console.log(response)
   const cur_valueA=response.curLista

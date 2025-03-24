@@ -30,7 +30,7 @@
               <span class="label">最近一月 :</span>
               <span class="value">{{ lastMonthTotalData }}条</span>
             </div>    <br/>
-            <div ><span>全部PDU新增能耗记录</span>
+            <div ><span>全部机房新增能耗记录</span>
               <div class="line" style="margin-top: 10px;"></div>
             </div>
           </div>
@@ -162,6 +162,7 @@ import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
+const route = useRoute()
 defineOptions({ name: 'PowerAnalysis' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -173,7 +174,16 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref([])
+if(route.query.startTime!=null&&route.query.endTime!=null){
+  selectTimeRange.value = [route.query.startTime, route.query.endTime]
+}else{
+  let now = new Date();
+  selectTimeRange.value=[dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")]
+}
+if(route.query.roomIds!=null){
+  queryParams.roomIds = [route.query.roomIds]
+}
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -265,7 +275,7 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }},
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;

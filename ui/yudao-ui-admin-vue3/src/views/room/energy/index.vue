@@ -39,6 +39,7 @@
               clearable
               class="!w-160px"
               height="35"
+              @keydown.enter.prevent="getTableData(true)"
             />
           </el-form-item>
           <el-form-item>
@@ -66,7 +67,9 @@
             <el-table-column prop="lastWeekEq" label="上周用能(kW·h)" align="center" />
             <el-table-column prop="lastMonthEq" label="上月用能(kW·h)" align="center" />
             <el-table-column label="详情" align="center" width="100px">
-              <el-button type="primary">详情</el-button>
+              <template #default="s">
+                <el-button type="primary" @click="toDetail(s.row.roomId,s.row.id,s.row.location)">详情</el-button>
+              </template>
             </el-table-column>
           </el-table>
           <div v-show="switchValue == 0 && tableData?.length" class="matrixContainer">
@@ -343,7 +346,9 @@ handleNavTree();
     }
   }
   .header {
-    display: flex;
+    margin-top: 5px;
+    margin-left: 30px;
+    display: inline-block;
     flex-direction: column;
     align-items: center;
     font-size: 13px;

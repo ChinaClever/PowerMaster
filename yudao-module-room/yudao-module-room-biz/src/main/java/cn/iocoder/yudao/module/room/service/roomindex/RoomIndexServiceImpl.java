@@ -873,7 +873,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                     String roomName = voMap.get(roomEQRes.getId());
                     if (StringUtils.isNotEmpty(roomName)) {
                         roomEQRes.setName(roomName);
-                        roomEQRes.setLocation(roomName + SPLIT_KEY + roomEQRes.getName());
+                        roomEQRes.setLocation(roomEQRes.getName());
                     } else {
                         roomEQRes.setLocation(roomEQRes.getName());
                     }

@@ -3,38 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container"> -->
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        <!-- </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div>
-      <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div> -->
-
-              <div class="nav_header">      
+        <div class="nav_header">      
           <span v-if="nowAddress">{{nowAddress}}</span>
         </div>
         <br/> 
@@ -78,7 +47,6 @@
         <el-tab-pane label="周数据" name="weekTabPane"/>
         <el-tab-pane label="月数据" name="monthTabPane"/>
       </el-tabs>
-      <!-- 搜索工作栏 -->
       <el-form
         class="-mb-15px"
         :model="queryParams"
@@ -111,7 +79,6 @@
       </el-form>
     </template>
     <template #Content>
-      <!-- 列表 -->
       <el-tabs v-model="activeName1" v-if="loading2">
         <el-tab-pane label="图表" name="lineChart">
           <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
@@ -127,13 +94,11 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
-              <!-- 添加行号列 -->
               <el-table-column label="序号" align="center" width="80px">
                 <template #default="{ $index }">
                   {{ $index + 1 }}
                 </template>  
               </el-table-column>
-              <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
                   <el-table-column prop="startEleData" label="数值"/>   
@@ -154,7 +119,6 @@
       </el-tabs>
     </template>
   </CommonMenu1>
-
 </template>
 
 <script setup lang="ts">
@@ -165,6 +129,7 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 import download from '@/utils/download'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
+import CommonMenu1 from './CommonMenu1.vue';
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'ECDistribution' })
 

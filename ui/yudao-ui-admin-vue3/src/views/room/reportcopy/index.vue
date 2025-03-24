@@ -4,8 +4,8 @@
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>{{ location}}</div>
+          <div class="name">机房</div>
+          <div >{{ location}}</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -427,18 +427,24 @@ const serverRoomArr =  ref([]) as any
 
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
-  }
+  // console.log("res="+JSON. res);
+  serverRoomArr.value = res.map(res => {
+    return {
+      id:res.id,
+      name:res.roomName
+    }
+  });
+  // if (res && res.length > 0) {
+  //   const room = res[0]
+  //   const keys = [] as string[]
+  //   room.children.forEach(child => {
+  //     if(child.children.length > 0) {
+  //       child.children.forEach(son => {
+  //         keys.push(son.id + '-' + son.type)
+  //       })
+  //     }
+  //   })
+  // }
 }
 
 const handleClick = (row) => {
