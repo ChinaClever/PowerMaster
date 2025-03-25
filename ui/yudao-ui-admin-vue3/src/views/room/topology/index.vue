@@ -815,6 +815,14 @@ const deleteMachine = () => {
   } else {
     tableData.value[Y][X].splice(0, 1)
   }
+  ElMessageBox.confirm('确认要删除吗？', '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    await MachineRoomApi.deletedRoomAisleInfo({id: roomId.value})
+    message.success('删除成功')
+  })
   operateMenu.value.show = false
 }
 // 处理增加/编辑机柜

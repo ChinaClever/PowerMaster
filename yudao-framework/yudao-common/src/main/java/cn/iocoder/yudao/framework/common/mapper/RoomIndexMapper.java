@@ -32,5 +32,7 @@ public interface RoomIndexMapper extends BaseMapper<RoomIndex> {
 
     List<String> getRoomAddrList();
 
-    RoomIndexCfgVO findRoomIndexCfg(int id);
+    RoomIndexCfgVO findRoomIndexCfg(@Param("id")int id);
+
+    Integer selectRoomByName(@Param("name") String name);
 }

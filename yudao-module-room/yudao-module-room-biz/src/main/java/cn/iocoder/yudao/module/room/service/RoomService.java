@@ -100,7 +100,7 @@ public interface RoomService {
     Integer roomAisleSave(AisleSaveVo vo);
 
     /**
-     * 新-机房详情
+     * 新-roomAisleDelete
      * @param id
      * @return
      */
@@ -124,4 +124,10 @@ public interface RoomService {
     List<String> getRoomAddrList();
 
     RoomMainResVO getDatanewDetail(int id);
+
+    //柜列编辑删除
+    Integer roomAisleDeleteById(int id);
+
+    //机房新增根据名称异步查询
+    Integer newSelectRoomByName(String name);
 }

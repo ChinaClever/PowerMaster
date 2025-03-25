@@ -928,6 +928,26 @@ public class RoomServiceImpl implements RoomService {
         return vo;
     }
 
+
+    //柜列删除
+    @Override
+    public Integer roomAisleDeleteById(int id) {
+        try {
+            return aisleIndexMapper.roomAisleDeleteById(id);
+        } finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
+    }
+
+
+    //机房新增根据名称异步查询
+    @Override
+    public Integer newSelectRoomByName(String name) {
+        return roomIndexMapper.selectRoomByName(name);
+    }
+
+
     private static void roomCabinetDetail(List<RoomCabinetDTO> cabinetDTOList, ValueOperations ops) {
         List<String> keys = cabinetDTOList.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
         List cabinetRedis = ops.multiGet(keys);
@@ -1299,6 +1319,7 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         } else {
+
             //新增
             int insert = roomIndexMapper.insert(index);
             if (insert > 0) {
