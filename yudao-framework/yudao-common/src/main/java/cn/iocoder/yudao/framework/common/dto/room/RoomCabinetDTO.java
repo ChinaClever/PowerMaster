@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author luowei
  * @version 1.0
@@ -148,4 +150,24 @@ public class RoomCabinetDTO {
      */
     @Schema(description = "负载率")
     private float loadRate;
+
+    @Schema(description = "A")
+    private String cabinetkeya;
+
+    @Schema(description = "B")
+    private String cabinetkeyb;
+
+    /**
+     * 昨日电量
+     */
+
+    @Schema(description = "昨日电量", example = "1")
+    private Double yesterdayEq;
+
+
+    @Schema(description = "A比例", example = "1.00")
+    private BigDecimal aPow;
+
+    @Schema(description = "B比例", example = "1.00")
+    private BigDecimal bPow;
 }

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.room.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
@@ -12,16 +13,15 @@ import cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.dto.room.RoomCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.CabinetBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.*;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg;
@@ -31,7 +31,9 @@ import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO;
 import cn.iocoder.yudao.module.aisle.api.AisleApi;
@@ -43,6 +45,7 @@ import cn.iocoder.yudao.module.room.vo.RoomMainResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import cn.iocoder.yudao.module.system.api.alarm.AlarmRecordApi;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -77,6 +80,10 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -144,6 +151,7 @@ public class RoomServiceImpl implements RoomService {
     CabinetApi cabinetApi;
     @Autowired
     AisleApi aisleApi;
+
 
     /**
      * 机房保存
@@ -861,7 +869,7 @@ public class RoomServiceImpl implements RoomService {
         roomDetailRedis(object, vo);
 
         //获取机柜 无柜列
-       List<RoomCabinetDTO> cabinetDTOList = cabinetCfgMapper.roomCabinetList(id,null);
+        List<RoomCabinetDTO> cabinetDTOList = cabinetCfgMapper.roomCabinetList(id, null);
         if (!CollectionUtils.isEmpty(cabinetDTOList)) {
             roomCabinetDetail(cabinetDTOList, ops);
             vo.setCabinetList(cabinetDTOList);
@@ -872,13 +880,13 @@ public class RoomServiceImpl implements RoomService {
 
         if (!CollectionUtils.isEmpty(aisleIndexList)) {
             List<Integer> ids = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
-            List<RoomCabinetDTO> cabinetDTOList1 = cabinetCfgMapper.roomCabinetList(id,ids);
+            List<RoomCabinetDTO> cabinetDTOList1 = cabinetCfgMapper.roomCabinetList(id, ids);
             Map<Integer, List<RoomCabinetDTO>> maps = cabinetDTOList1.stream().collect(Collectors.groupingBy(RoomCabinetDTO::getAisleId));
 
             List<String> keys = aisleIndexList.stream().map(i -> REDIS_KEY_AISLE + i.getId()).collect(Collectors.toList());
 
             List aisleRedis = ops.multiGet(keys);
-            Map<String,Object> aisleMap = (Map<String, Object>) aisleRedis.stream().filter(i -> Objects.nonNull(i)).collect(Collectors.toMap(i ->
+            Map<String, Object> aisleMap = (Map<String, Object>) aisleRedis.stream().filter(i -> Objects.nonNull(i)).collect(Collectors.toMap(i ->
                     JSON.parseObject(JSON.toJSONString(i)).getInteger("aisle_key"), Function.identity()));
 
             for (AisleDataDTO dataDTO : aisleIndexList) {
@@ -888,7 +896,7 @@ public class RoomServiceImpl implements RoomService {
                 }
                 dataDTO.setCabinetList(roomCabinetDTOS);
                 Object obj = aisleMap.get(dataDTO.getId());
-                if (Objects.isNull(obj)){
+                if (Objects.isNull(obj)) {
                     continue;
                 }
                 JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
@@ -948,24 +956,89 @@ public class RoomServiceImpl implements RoomService {
     }
 
 
-    private static void roomCabinetDetail(List<RoomCabinetDTO> cabinetDTOList, ValueOperations ops) {
+    public void roomCabinetDetail(List<RoomCabinetDTO> cabinetDTOList, ValueOperations ops) {
+        List<Integer> pduId = cabinetDTOList.stream().filter(i -> Objects.equals(i.getPduBox(), 0)).map(RoomCabinetDTO::getId).collect(Collectors.toList());
+        List<Integer> boxId = cabinetDTOList.stream().filter(i -> Objects.equals(i.getPduBox(), 1)).map(RoomCabinetDTO::getId).collect(Collectors.toList());
+        Map<Integer, CabinetPdu> pduMap = new HashMap<>();
+        Map<Integer, CabinetBox> boxMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(pduId)) {
+            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, pduId));
+            pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
+        }
+        if (!CollectionUtils.isEmpty(boxId)) {
+            List<CabinetBox> cabinetBoxs = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>().in(CabinetBox::getCabinetId, boxId));
+            boxMap = cabinetBoxs.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
+        }
+
+        List<Integer> ids = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
+
+        String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        String endTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+        List<CabinetEqBaseDo> list = getDataKey(startTime, endTime, ids, CABINET_EQ_TOTAL_DAY, "cabinet_id", CabinetEqBaseDo.class);
+        Map<Integer, List<CabinetEqBaseDo>> eqMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(list)) {
+            eqMap = list.stream().collect(Collectors.groupingBy(CabinetBaseDo::getCabinetId));
+        }
         List<String> keys = cabinetDTOList.stream().map(i -> REDIS_KEY_CABINET + i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
         List cabinetRedis = ops.multiGet(keys);
-        Map<String,Object> cabinetMap = (Map<String, Object>) cabinetRedis.stream().filter(i -> Objects.nonNull(i)).collect(
+        Map<String, Object> cabinetMap = (Map<String, Object>) cabinetRedis.stream().filter(i -> Objects.nonNull(i)).collect(
                 Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getString("cabinet_key"), Function.identity()));
-        cabinetDTOList.forEach(iter -> {
+        for (RoomCabinetDTO iter : cabinetDTOList) {
+            if (Objects.equals(iter.getPduBox(), 0)) {
+                CabinetPdu cabinetPdu = pduMap.get(iter.getId());
+                if (Objects.nonNull(cabinetPdu)) {
+                    iter.setCabinetkeya(cabinetPdu.getPduKeyA());
+                    iter.setCabinetkeyb(cabinetPdu.getPduKeyB());
+                }
+            } else {
+                CabinetBox cabinetBox = boxMap.get(iter.getId());
+                if (Objects.nonNull(cabinetBox)) {
+                    iter.setCabinetkeya(cabinetBox.getBoxKeyA());
+                    iter.setCabinetkeyb(cabinetBox.getBoxKeyB());
+                }
+            }
+            List<CabinetEqBaseDo> dos = eqMap.get(iter.getId());
+            if (!CollectionUtils.isEmpty(dos)){
+                CabinetEqBaseDo cabinetEqBaseDo = dos.get(0);
+                iter.setYesterdayEq(cabinetEqBaseDo.getEqValue());
+            }
             String cabKey = iter.getRoomId() + SPLIT_KEY + iter.getId();
             Object obj = cabinetMap.get(cabKey);
-            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
-            JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
-            if (Objects.nonNull(total)) {
-                iter.setPowActive(total.getFloatValue("pow_active"));
-                iter.setPowApparent(total.getFloatValue("pow_apparent"));
-                iter.setPowReactive(total.getFloatValue("pow_reactive"));
-                iter.setPowerFactor(total.getFloatValue(POWER_FACTOR));
+            if (Objects.nonNull(obj)) {
+                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
+                JSONObject aPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
+                JSONObject bPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
+                if (Objects.nonNull(total)) {
+                    iter.setPowActive(total.getFloatValue("pow_active"));
+                    iter.setPowApparent(total.getFloatValue("pow_apparent"));
+                    iter.setPowReactive(total.getFloatValue("pow_reactive"));
+                    iter.setPowerFactor(total.getFloatValue(POWER_FACTOR));
+                }
+                if (Objects.nonNull(aPath)) {
+                    //a的视在功率
+                    BigDecimal aPow = aPath.getBigDecimal("pow_apparent");
+                    iter.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, iter.getPowApparent()), 100));
+                }
+                if (Objects.nonNull(bPath)) {
+                    //a的视在功率
+                    BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
+                    iter.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, iter.getPowApparent()), 100));
+                }
+                iter.setLoadRate(jsonObject.getFloatValue("load_factor"));
+
+                JSONObject cabinetEnv = jsonObject.getJSONObject("cabinet_env");
+                if (cabinetEnv != null) {
+                    JSONObject temValue = cabinetEnv.getJSONArray("tem_value").getJSONObject(0);
+                    if (Objects.nonNull(temValue)) {
+                        List<Double> front = temValue.getList("front", Double.class);
+                        List<Double> black = temValue.getList("black", Double.class);
+
+                        iter.setTem(Math.max(Collections.max(front), Collections.max(black)));
+                    }
+                }
             }
-            iter.setLoadRate(jsonObject.getFloatValue("load_factor"));
-        });
+        }
     }
 
     private static void roomDetailRedis(Object object, RoomMainResVO vo) {
@@ -1300,12 +1373,6 @@ public class RoomServiceImpl implements RoomService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Integer newSaveRoom(RoomSavesVo vo) {
-//            RoomIndex index = new RoomIndex();
-//            index.setRoomName(vo.getRoomName());
-//            index.setPowerCapacity(vo.getPowerCapacity());
-//            index.setAirPower(vo.getAirPower());
-//            index.setYLength(vo.getYLength());
-//            index.setXLength(vo.getXLength());
         RoomIndex index = BeanUtils.toBean(vo, RoomIndex.class);
         if (Objects.nonNull(vo.getId())) {
             //编辑
@@ -1319,7 +1386,6 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         } else {
-
             //新增
             int insert = roomIndexMapper.insert(index);
             if (insert > 0) {
@@ -1332,6 +1398,16 @@ public class RoomServiceImpl implements RoomService {
                 cfg.setEleLimitMonth(vo.getEleLimitMonth());
                 roomCfgMapper.insert(cfg);
             }
+        }
+        if (!CollectionUtils.isEmpty(vo.getAisleList())){
+            List<AisleSaveVo> aisleList = vo.getAisleList();
+            for (AisleSaveVo aisleSaveVo : aisleList) {
+                AisleIndex aisleIndex = BeanUtils.toBean(aisleSaveVo, AisleIndex.class);
+                int i = aisleIndexMapper.updateById(aisleIndex);
+            }
+        }
+        if (!CollectionUtils.isEmpty(vo.getCabinetList())){
+            cabinetCfgMapper.updateBatchByCabinetId(vo.getCabinetList());
         }
         return index.getId();
     }
@@ -1518,14 +1594,14 @@ public class RoomServiceImpl implements RoomService {
     public List<RoomIndexAddrResVO> getRoomList(String adder, String roomName) {
         if (StringUtils.isNotEmpty(adder)) {
             LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getAddr, adder)
-                    .like(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName).eq(RoomIndex::getIsDelete,false);
+                    .like(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName).eq(RoomIndex::getIsDelete, false);
             List<RoomIndex> roomIndices = roomIndexMapper.selectList(eq);
             List<RoomIndexAddrResVO> bean = BeanUtils.toBean(roomIndices, RoomIndexAddrResVO.class);
             getRoomListRedis(bean);
             return bean;
         }
         if (StringUtils.isEmpty(adder) && StringUtils.isNotEmpty(roomName)) {
-            LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getIsDelete,false)
+            LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getIsDelete, false)
                     .like(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName);
             List<RoomIndex> roomIndices = roomIndexMapper.selectList(eq);
             List<RoomIndexAddrResVO> bean = BeanUtils.toBean(roomIndices, RoomIndexAddrResVO.class);
@@ -1533,7 +1609,7 @@ public class RoomServiceImpl implements RoomService {
             return bean;
         }
         if (StringUtils.isEmpty(adder)) {
-            LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getIsDelete,false).isNull(RoomIndex::getAddr);
+            LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getIsDelete, false).isNull(RoomIndex::getAddr);
             List<RoomIndex> roomIndices = roomIndexMapper.selectList(eq);
             List<RoomIndexAddrResVO> bean = BeanUtils.toBean(roomIndices, RoomIndexAddrResVO.class);
 
@@ -1549,24 +1625,23 @@ public class RoomServiceImpl implements RoomService {
     }
 
 
-
     private void getRoomListRedis(List<RoomIndexAddrResVO> bean) {
         List<String> keys = bean.stream().map(i -> REDIS_KEY_ROOM + i.getId()).distinct().collect(Collectors.toList());
         List list = redisTemplate.opsForValue().multiGet(keys);
-        Map<Integer, Object> roomMap = (Map<Integer, Object>) list.stream().filter(i ->Objects.nonNull(i)).collect(Collectors.toMap(i -> JSON.parseObject(JSONObject.toJSONString(i)).getInteger("room_key"), Function.identity()));
+        Map<Integer, Object> roomMap = (Map<Integer, Object>) list.stream().filter(i -> Objects.nonNull(i)).collect(Collectors.toMap(i -> JSON.parseObject(JSONObject.toJSONString(i)).getInteger("room_key"), Function.identity()));
         for (RoomIndexAddrResVO i : bean) {
             Object obj = roomMap.get(i.getId());
-            if (Objects.isNull(obj)){
+            if (Objects.isNull(obj)) {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
             JSONObject roomPower = jsonObject.getJSONObject("room_power");
 
-            if (Objects.isNull(roomPower) || roomPower.size()==0){
+            if (Objects.isNull(roomPower) || roomPower.size() == 0) {
                 continue;
             }
             JSONObject totalData = roomPower.getJSONObject("total_data");
-            if (Objects.nonNull(totalData)){
+            if (Objects.nonNull(totalData)) {
                 Double powActive = totalData.getDouble("pow_active");
                 Double eleActive = totalData.getDouble("ele_active");
                 Double powApparent = totalData.getDouble("pow_apparent");
@@ -2103,31 +2178,68 @@ public class RoomServiceImpl implements RoomService {
      * @throws IOException
      */
     private List<String> getData(String startTime, String endTime, int id, String index) throws IOException {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                .must(QueryBuilders.termQuery(ROOM_ID, id))));
-        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(10000);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termQuery(ROOM_ID, id))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
+            return list;
+        } catch (Exception e) {
+            log.error("获取数据异常：", e);
         }
-        return list;
+        return null;
+    }
 
+    private List getDataKey(String startTime, String endTime, List<Integer> ids, String index, String key, Class cla) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery(key, ids))));
+//            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
+
+            List list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    Object obj = JsonUtils.parseObject(str, cla);
+                    list.add(obj);
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("获取数据异常：", e);
+        }
+        return null;
     }
 
 }

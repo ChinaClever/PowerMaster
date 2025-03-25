@@ -146,6 +146,14 @@
         = #{vo.eleAlarmMonth}, cg.ele_limit_month = #{vo.eleLimitMonth}
         where cg.cabinet_id = #{vo.id}
     </update>
+    <update id="updateBatchByCabinetId">
+        <foreach collection="cabinetList" item="item" index="index"  separator=",">
+        update cabinet_cfg cg set
+        cg.x_coordinate = #{item.xCoordinate},
+        cg.y_coordinate = #{item.yCoordinate}
+        where cg.cabinet_id = #{item.id}
+        </foreach>
+    </update>
 
 
 </mapper>

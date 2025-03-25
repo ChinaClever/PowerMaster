@@ -978,7 +978,7 @@ public class AisleServiceImpl implements AisleService {
                         if (!CollectionUtils.isEmpty(temAverage)) {
                             cabinetDTO.setTemData(temAverage.getBigDecimal(0));
                             cabinetDTO.setTemDataHot(temAverage.getBigDecimal(1));
-//                            cabinetDTO.setTemData(Math.max(maxB, maxF));
+
                         }
                     }
                 }
