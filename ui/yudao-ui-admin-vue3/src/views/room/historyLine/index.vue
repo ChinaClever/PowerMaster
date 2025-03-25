@@ -1,5 +1,5 @@
 <template>
- <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机房趋势分析" :showCheckbox="false">
+ <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机房趋势分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -173,7 +173,7 @@
         </el-tabs>
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -914,7 +914,8 @@ const handleClick = async (row) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+  navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 /** 初始化 **/

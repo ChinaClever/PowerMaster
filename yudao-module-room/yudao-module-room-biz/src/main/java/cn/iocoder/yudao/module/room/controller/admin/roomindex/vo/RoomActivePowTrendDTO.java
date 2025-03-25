@@ -17,5 +17,5 @@ public class RoomActivePowTrendDTO {
      * 有功功率
      */
     @Schema(description = "有功功率", example = "0.11")
-    private float activePow;
+    private String activePow;
 }

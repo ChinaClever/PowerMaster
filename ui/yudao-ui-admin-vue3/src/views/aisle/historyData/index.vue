@@ -33,8 +33,6 @@
                 <div class="line" style="margin-top: 10px;"></div>
           </div>
           </div>
-
-        
       </div>
     </template>
       <template #ActionBar>
@@ -505,8 +503,8 @@ const tableColumns = ref([
 
 
 /** 查询列表 */
-const getList = async () => {
-  loading.value = true
+const getList = async (isLoading = true) => {
+  loading.value = isLoading
   try {
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
@@ -612,6 +610,10 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getList()
+  setInterval(() => {
+    getList(false)
+    getNavNewData()
+  }, 60000)
 })
 </script>
 

@@ -3,17 +3,10 @@
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
-          <!-- <div class="name">微模块机房</div> -->
-        </div>
-        <div style="margin-left: 25px;">
-          <span>用能最大机房</span>
-          <br/>
-          <span>昨日：</span>
-          <br/>
-          <span>上周：</span>
-          <br/>
-          <span>上月：</span>
+          <div>用能最大柜列</div>
+          <div>昨日：{{ yesterdayMaxEq==null?"无数据":yesterdayMaxEq }}</div>
+          <div>上周：{{ lastWeekMaxEq==null?"无数据":lastWeekMaxEq }}</div>
+          <div>上月：{{ lastMonthMaxEq==null?"无数据":lastMonthMaxEq }}</div>
         </div>
       </div>
     </template>
@@ -46,6 +39,7 @@
               clearable
               class="!w-160px"
               height="35"
+              @keydown.enter.prevent="getTableData(true)"
             />
           </el-form-item>
           <el-form-item>
@@ -73,7 +67,9 @@
             <el-table-column prop="lastWeekEq" label="上周用能(kW·h)" align="center" />
             <el-table-column prop="lastMonthEq" label="上月用能(kW·h)" align="center" />
             <el-table-column label="详情" align="center" width="100px">
-              <el-button type="primary">详情</el-button>
+              <template #default="s">
+                <el-button type="primary" @click="toDetail(s.row.roomId,s.row.id,s.row.location)">详情</el-button>
+              </template>
             </el-table-column>
           </el-table>
           <div v-show="switchValue == 0 && tableData?.length" class="matrixContainer">
@@ -113,7 +109,9 @@ import { time } from 'console'
 import { id } from 'element-plus/es/locale'
 
 const { push } = useRouter() // 路由跳转
-
+const yesterdayMaxEq = ref<string | null>(null);
+const lastWeekMaxEq = ref<string | null>(null);
+const lastMonthMaxEq = ref<string | null>(null);
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
@@ -204,8 +202,21 @@ const handleCheck = async (row) => {
 const toDetail = (roomId, id,location) => {
   push({path: '/room/roomenergydetail', state: { roomId, id,location }})
 }
+const getMaxData = async() => {
+  let maxEq = await IndexApi.getMaxEq();
+  maxEq.forEach((item)=>{
+    if(item.type==0){
+      yesterdayMaxEq.value =item.roomName;
+    }else if(item.type==1){
+      lastWeekMaxEq.value =item.roomName;
+    }else if(item.type==2){
+      lastMonthMaxEq.value =item.roomName;
+    }
+  })
+}
 
 onBeforeMount(() => {
+  getMaxData();
   getTableData()
 })
 
@@ -335,7 +346,9 @@ handleNavTree();
     }
   }
   .header {
-    display: flex;
+    margin-top: 5px;
+    margin-left: 30px;
+    display: inline-block;
     flex-direction: column;
     align-items: center;
     font-size: 13px;

@@ -237,6 +237,40 @@
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="bLineList"/>
           </div>
+          <div class="pageBox"  v-if="warnList!=null">
+            <div class="page-conTitle">
+              告警信息
+            </div>
+                <el-table
+                  ref="multipleTableRef"
+                  :data="warnList.list"
+                  highlight-current-row
+                  style="width: 100%"
+                  :stripe="true" 
+                  :border="true"
+                  @current-change="handleCurrentChange"
+                >
+                    <el-table-column type="index" width="80" label="序号" align="center" />
+                    <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
+                    <el-table-column property="devName" label="设备" min-width="100" align="center" />
+                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+                    <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+                    <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+                      <template #default="scope">
+                        <el-tooltip  placement="right">
+                          <div class="table-desc">{{scope.row.alarmDesc}}</div>
+                          <template #content>
+                            <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
+                          </template>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
+                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+                    <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+                    <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+                </el-table>
+          </div>
           <!-- <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
               输出位电量排名
@@ -276,6 +310,7 @@ const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 const location = ref("");
+const warnList=ref(null)
 
 const visControll = reactive({
   visAllReport : false,
@@ -570,6 +605,7 @@ const getList = async () => {
   await handlePowQuery();
   await handleDetailQuery();
   await handlePFLineQuery();
+  await handleWarn();
 
   visControll.visAllReport = true;
   loading.value = false
@@ -744,6 +780,16 @@ onMounted( async () =>  {
   getNavList();
   idList.value = await loadAll();
 })
+async function handleWarn(){
+  warnList.value= await IndexApi.getRecordPage({
+    pageNo: 1,
+    pageSize: 10,
+    devKey: queryParams.devKey,
+    devType: 2
+})
+}
+const handleCurrentChange = (val) => {
+}
 </script>
 <style scoped lang="scss">
 .master {

@@ -136,7 +136,7 @@ const loading = ref(false)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref([])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -228,7 +228,7 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }}
       ],
     });
     rankChart.on('click', function(params) {
@@ -283,7 +283,11 @@ const getList = async () => {
     }
     if(selectTimeRange.value == null){
       // queryParams.timeRange = undefined
-      alert('请输入时间范围');
+      ElMessage({
+        message: '请输入时间范围',
+        type: 'error',
+        plain: true,
+      })
     return;
     }
     const data = await RoomEnergyApi.getRoomEleTotalRealtime(queryParams)
@@ -388,27 +392,15 @@ const handleCheck = async (node) => {
     }
   queryParams.roomIds = arr
   handleQuery()
-  //  let arr = [] as any
-  //   node.forEach(item => { 
-  //       arr.push(item.unique);
-  //   });
-  //   //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
-  //   if(arr.length == 0  && node.length != 0){
-  //     arr.push(0)
-  //     rankChart?.clear()
-  //     ElMessage({
-  //       message: '暂无数据',
-  //       type: 'warning',
-  //     });
-  //   }
-  //   queryParams.roomIds = arr
-  //   handleQuery()
 }
+
+
 
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+    navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 // 获取导航的数据显示
@@ -463,8 +455,15 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (roomId: number, createTimeMin : string,createTimeMax : string) => {
+  if(selectTimeRange.value==null||selectTimeRange.value.length==0){
+    ElMessage({
+    message: '请输入时间范围',
+    type: 'error',
+    plain: true,
+  })
+  }
     push('/room/energyConsumption/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
-  '&end='+createTimeMax+'&roomId='+ roomId);
+  '&end='+createTimeMax+'&roomId='+ roomId+"&startTime="+selectTimeRange.value[0]+"&endTime="+selectTimeRange.value[1]);
 }
 
 /** 初始化 **/
@@ -473,7 +472,9 @@ onMounted(() => {
   getNavNewData()
   // getList();
 });
-
+let now = new Date()
+selectTimeRange.value = [dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")]
+getList();
 </script>
 
 <style scoped>

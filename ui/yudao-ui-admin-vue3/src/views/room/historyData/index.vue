@@ -78,7 +78,7 @@
         </el-form>
       </template>
       <template #Content>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :header-cell-style="headCellStyle">
            <!-- 添加行号列 -->
           <el-table-column label="序号" align="center" width="60px">
             <template #default="{ $index }">
@@ -121,6 +121,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/room/historydata'
 import { IndexApi } from '@/api/room/roomindex'
+import dayjs from 'dayjs'
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** 机房历史数据 列表 */
@@ -134,11 +135,12 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const pageSizeArr = ref([15,30,50,100])
+let now=new Date()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   granularity: 'realtime',
-  timeRange: undefined,
+  timeRange: [dayjs(new Date(now.getFullYear(), now.getMonth(), 1,0,0,0)).format("YYYY-MM-DD HH:mm:ss"),dayjs(now).format("YYYY-MM-DD HH:mm:ss")],
   roomIds:[]
 })
 const queryFormRef = ref() // 搜索的表单
@@ -536,7 +538,8 @@ const handleCheck = async (node) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+    navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 // 获取导航的数据显示
@@ -577,6 +580,11 @@ onMounted(() => {
   getNavNewData()
   getList()
 })
+function headCellStyle(){
+  return {
+    background:"rgb(245, 247, 250)"
+  }
+}
 </script>
 
 <style scoped>

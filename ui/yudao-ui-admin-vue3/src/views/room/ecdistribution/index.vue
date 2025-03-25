@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机房能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机房能耗排名" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -78,6 +78,7 @@
         <el-tab-pane label="数据" name="lineChartData">
           <div style="height: 58vh;">
             <el-table  
+              v-if="queryParams.roomId!=null"
               :border="true"
               :stripe="true"
               :data="tableData"
@@ -114,7 +115,7 @@
         </el-tab-pane>
       </el-tabs>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 
 </template>
 
@@ -126,6 +127,7 @@ import { IndexApi } from '@/api/room/roomindex'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import download from '@/utils/download';
+import CommonMenu1 from '@/components/CommonMenu1.vue/CommonMenu1.vue';
 defineOptions({ name: 'ECDistribution' })
 
 const exportLoading = ref(false)
@@ -317,6 +319,19 @@ loading.value = true
         message: '暂无数据',
         type: 'warning',
       });
+      totalEqData.value = 0;
+      data.list = [];
+      startEleData.value = data.list.map((item) => formatNumber(item.start_ele, 1));
+      startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
+      endEleData.value = data.list.map((item) => formatNumber(item.end_ele, 1));
+      endTimeData.value = data.list.map((item) => formatDate(item.end_time, 'YYYY-MM-DD'));
+      eqData.value = data.list.map((item) => formatNumber(item.eq_value, 1));
+      createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      maxEqDataTemp.value = "0.0";
+      minEqDataTemp.value = "0.0";
+      maxEqDataTimeTemp.value = "无数据"
+      minEqDataTimeTemp.value = "无数据"
+      nowAddress.value = nowAddressTemp.value
     }
  } finally {
    loading.value = false
@@ -425,7 +440,8 @@ const handleClick = async (row) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+  navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 /** 搜索按钮操作 */

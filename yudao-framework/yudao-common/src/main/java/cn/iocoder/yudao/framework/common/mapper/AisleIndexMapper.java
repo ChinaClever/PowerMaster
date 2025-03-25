@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndexVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -17,4 +18,7 @@ import java.util.List;
 @Mapper
 public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
     List<AisleIndexVo> selectAisleIndexByCfgList(@Param("roomId") Integer roomId);
+
+    List<AisleDataDTO> selectRoomAisleList(int id);
+
 }

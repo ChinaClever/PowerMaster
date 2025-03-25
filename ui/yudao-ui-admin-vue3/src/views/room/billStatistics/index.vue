@@ -3,7 +3,6 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
@@ -147,7 +146,8 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+let now=new Date()
+const selectTimeRange = ref([dayjs(new Date(now.getFullYear(), now.getMonth(), 1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -290,7 +290,7 @@ const getSummaries = (param) => {
 const getList = async () => {
   loading.value = true
   try {
-    if ( selectTimeRange.value != undefined){
+    if ( selectTimeRange.value != undefined&&selectTimeRange.value.length == 2){
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
@@ -385,7 +385,8 @@ const handleCheck = async (node) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+  navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 // 获取导航的数据显示

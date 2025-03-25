@@ -1,5 +1,5 @@
 <template>
- <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="柜列电力分析" :showCheckbox="false">
+ <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="柜列电力分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -41,7 +41,7 @@
         <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
           <div  class="description-item">
             <span class="label">最大值 :</span>
-            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
+            <span v-show="maxActivePowDataTemp!=null">{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
           </div>
           <div v-if="maxActivePowDataTimeTemp" class="description-item">
             <span class="label">发生时间 :</span>
@@ -77,7 +77,7 @@
          :inline="true"
          label-width="70px"
        >
-        <el-form-item label="参数类型" prop="type">
+        <!-- <el-form-item label="参数类型" prop="type">
            <el-select
              v-model="paramType"
              class="!w-120px">
@@ -85,7 +85,7 @@
              <el-option label="A路" value="a" />
              <el-option label="B路" value="b" />
            </el-select>
-         </el-form-item>
+         </el-form-item> -->
 
       <el-form-item label="时间段" prop="timeRange" >
           <el-date-picker
@@ -114,11 +114,12 @@
       <div v-loading="loading">
         <el-tabs v-model="activeName1">
           <el-tab-pane label="图表" name="myChart">
-            <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
+            <div v-if="isHaveData" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
-            <el-table  
+            <el-table 
+              v-if="isHaveData"
               :border="true"
               :stripe="true"
               :data="tableData"
@@ -204,7 +205,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -422,76 +423,85 @@ loading.value = true
     const data = await HistoryDataApi.getHistoryDataDetails(queryParams);
     if (data != null && data.total != 0){
       isHaveData.value = true
-      // 总、A、B路实时数据 有功视在
-      totalActivePowData.value = data.list.map((item) => formatNumber(item.active_total, 3));
-      aActivePowData.value = data.list.map((item) => formatNumber(item.active_a, 3));
-      bActivePowData.value = data.list.map((item) => formatNumber(item.active_b, 3));
-      totalApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_total, 3)); 
-      aApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_a, 3));
-      bApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_b, 3));
-      // 总、A、B路实时数据 无功 功率因素
-      totalReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_total, 3));
-      aReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_a, 3));
-      bReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_b, 3));
-      factorTotalData.value = data.list.map((item) => formatNumber(item.factor_total, 2));
-      factorAData.value = data.list.map((item) => formatNumber(item.factor_a, 2));
-      factorBData.value = data.list.map((item) => formatNumber(item.factor_b, 2));
+    }else{
+      data.list = [];
+      isHaveData.value = false;
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+    }
+    // 总、A、B路实时数据 有功视在
+    totalActivePowData.value = data.list.map((item) => formatNumber(item.active_total, 3));
+    aActivePowData.value = data.list.map((item) => formatNumber(item.active_a, 3));
+    bActivePowData.value = data.list.map((item) => formatNumber(item.active_b, 3));
+    totalApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_total, 3)); 
+    aApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_a, 3));
+    bApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_b, 3));
+    // 总、A、B路实时数据 无功 功率因素
+    totalReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_total, 3));
+    aReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_a, 3));
+    bReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_b, 3));
+    factorTotalData.value = data.list.map((item) => formatNumber(item.factor_total, 2));
+    factorAData.value = data.list.map((item) => formatNumber(item.factor_a, 2));
+    factorBData.value = data.list.map((item) => formatNumber(item.factor_b, 2));
 
-      if (activeName.value === 'dayExtremumTabPane'){
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-      }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
-      }
-      totalActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_total_avg_value, 3));
-      totalActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_total_max_value, 3));
-      totalActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_total_max_time, 'YYYY-MM-DD HH:mm'));
-      totalActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_total_min_value, 3));
-      totalActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_total_min_time, 'YYYY-MM-DD HH:mm'));
+    if (activeName.value === 'dayExtremumTabPane'){
+      createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+    }else{
+      createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
+    }
+    totalActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_total_avg_value, 3));
+    totalActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_total_max_value, 3));
+    totalActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_total_max_time, 'YYYY-MM-DD HH:mm'));
+    totalActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_total_min_value, 3));
+    totalActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_total_min_time, 'YYYY-MM-DD HH:mm'));
 
-      aActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_a_avg_value, 3));
-      aActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_a_max_value, 3));
-      aActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_a_max_time, 'YYYY-MM-DD HH:mm'));
-      aActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_a_min_value, 3));
-      aActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_a_min_time, 'YYYY-MM-DD HH:mm'));
-      
-      bActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_b_avg_value, 3));
-      bActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_b_max_value, 3));
-      bActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_b_max_time, 'YYYY-MM-DD HH:mm'));
-      bActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_b_min_value, 3));
-      bActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_b_min_time, 'YYYY-MM-DD HH:mm'));
+    aActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_a_avg_value, 3));
+    aActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_a_max_value, 3));
+    aActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_a_max_time, 'YYYY-MM-DD HH:mm'));
+    aActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_a_min_value, 3));
+    aActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_a_min_time, 'YYYY-MM-DD HH:mm'));
+    
+    bActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_b_avg_value, 3));
+    bActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_b_max_value, 3));
+    bActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_b_max_time, 'YYYY-MM-DD HH:mm'));
+    bActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_b_min_value, 3));
+    bActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_b_min_time, 'YYYY-MM-DD HH:mm'));
 
-      totalReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_total_avg_value, 3));
-      totalReactivePowMaxValueData.value = data.list.map((item) => formatNumber(item.reactive_total_max_value, 3));
-      totalReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_total_max_time, 'YYYY-MM-DD HH:mm'));
-      totalReactivePowMinValueData.value = data.list.map((item) => formatNumber(item.reactive_total_min_value, 3));
-      totalReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_total_min_time, 'YYYY-MM-DD HH:mm'));
+    totalReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_total_avg_value, 3));
+    totalReactivePowMaxValueData.value = data.list.map((item) => formatNumber(item.reactive_total_max_value, 3));
+    totalReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_total_max_time, 'YYYY-MM-DD HH:mm'));
+    totalReactivePowMinValueData.value = data.list.map((item) => formatNumber(item.reactive_total_min_value, 3));
+    totalReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_total_min_time, 'YYYY-MM-DD HH:mm'));
 
-      aReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_a_avg_value, 3));
-      bReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_b_avg_value, 3));
+    aReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_a_avg_value, 3));
+    bReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_b_avg_value, 3));
 
-      totalApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_total_avg_value, 3));
-      totalApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_total_max_value, 3));
-      totalApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_total_max_time, 'YYYY-MM-DD HH:mm'));
-      totalApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_total_min_value, 3));
-      totalApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_total_min_time, 'YYYY-MM-DD HH:mm'));
+    totalApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_total_avg_value, 3));
+    totalApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_total_max_value, 3));
+    totalApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_total_max_time, 'YYYY-MM-DD HH:mm'));
+    totalApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_total_min_value, 3));
+    totalApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_total_min_time, 'YYYY-MM-DD HH:mm'));
 
-      aApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_a_avg_value, 3));
-      aApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_a_max_value, 3));
-      aApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
-      aApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_a_min_value, 3));
-      aApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
+    aApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_a_avg_value, 3));
+    aApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_a_max_value, 3));
+    aApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
+    aApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_a_min_value, 3));
+    aApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
 
-      bApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_b_avg_value, 3));
-      bApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_b_max_value, 3));
-      bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
-      bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
-      bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
+    bApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_b_avg_value, 3));
+    bApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_b_max_value, 3));
+    bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
+    bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
+    bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
 
-      factorTotalAvgValueData.value = data.list.map((item) => formatNumber(item.factor_total_avg_value, 2));
-      factorAAvgValueData.value = data.list.map((item) => formatNumber(item.factor_a_avg_value, 2));
-      factorBAvgValueData.value = data.list.map((item) => formatNumber(item.factor_b_avg_value, 2));
+    factorTotalAvgValueData.value = data.list.map((item) => formatNumber(item.factor_total_avg_value, 2));
+    factorAAvgValueData.value = data.list.map((item) => formatNumber(item.factor_a_avg_value, 2));
+    factorBAvgValueData.value = data.list.map((item) => formatNumber(item.factor_b_avg_value, 2));
 
-      // 侧边栏数据计算
+    // 侧边栏数据计算
+    if(totalActivePowData.value!=null&&totalActivePowData.value.length>0){
       maxActivePowDataTemp.value = Math.max(...totalActivePowData.value);
       minActivePowDataTemp.value = Math.min(...totalActivePowData.value);
       totalActivePowData.value.forEach(function(num, index) {
@@ -502,16 +512,12 @@ loading.value = true
           minActivePowDataTimeTemp.value = createTimeData.value[index]
         }
       });
-      // 图表显示的位置变化
-      nowAddress.value = nowAddressTemp.value
-
     }else{
-      isHaveData.value = false;
-      ElMessage({
-        message: '暂无数据',
-        type: 'warning',
-      });
+      maxActivePowDataTimeTemp.value=null;
     }
+    
+    // 图表显示的位置变化
+    nowAddress.value = nowAddressTemp.value
  } finally {
    loading.value = false
  }
