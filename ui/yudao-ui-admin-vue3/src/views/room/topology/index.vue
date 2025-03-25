@@ -4,7 +4,7 @@
     <div class="toolbar">
       <div style="display: flex;align-items:center" v-if="!isFromHome">
         机房：
-        <el-select :size="isFromHome ? 'small' : ''" v-model="roomId" placeholder="请选择" class="!w-100px" @change="handleChangeRoom">
+        <el-select :size="isFromHome ? 'small' : ''" v-model="roomId" placeholder="请选择" class="!w-200px" @change="handleChangeRoom">
           <el-option v-for="item in roomList" :key="item.id" :label="item.roomName" :value="item.id" />
         </el-select>
       </div>
@@ -13,32 +13,37 @@
           <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
         </template>
       </div>
-      <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : ''">
+      <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px'">
         <template v-for="item in btns" :key="item.value">
           <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
         </template>
       </div>
-      <div>
+      <div style="display: flex;align-items: center">
         <!-- <el-button @click="handleAdd" type="primary">新建机房</el-button> -->
         <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
         <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button>
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
-        <el-button v-if="editEnable" @click="handleDelete" type="primary">删除机房</el-button>
+        <!-- <el-button v-if="editEnable" @click="handleDelete" type="primary">删除机房</el-button> -->
+        <div style="display: flex;justify-content: flex-end;margin:3px;width: 100%">
+          <el-button size="small" @click="tableScaleValue = 1;tableScaleWidth = 100;tableScaleHeight = 100" circle ><Icon icon="ep:refresh-right" /></el-button>
+          <el-button size="small" @click="tableScale(false)" circle ><Icon icon="ep:minus" /></el-button>
+          <el-button size="small" @click="tableScale(true)" circle ><Icon icon="ep:plus" /></el-button>
+        </div>
       </div>
     </div>
   </el-card>
   <el-card shadow="never">
-    <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="`cursor: ${dragCursor};`">
+    <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="{cursor: `${dragCursor}`}">
         <div class="dragContainer" 
           ref="tableContainer"
           v-loading="loading" 
-          style="overflow-x:auto;"
+          style=""
           @click.right="handleRightClick"
-          :style="isFromHome ? `transform-origin: 0 0;height: 50vh;` : 'height:calc(100vh - 230px);'">
+          :style="isFromHome ? `transform-origin: 0 0;height: 50vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
           <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
-          <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
+          <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
             <el-table-column fixed type="index" width="60" align="center" :resizable="false" />
             <template v-for="(formItem, index) in formParam" :key="index">
               <el-table-column :label="formItem" min-width="60" align="center" :resizable="false">
@@ -99,8 +104,8 @@
                                   已用空间：{{item.usedSpace}}U<br/>
                                   未用空间：{{item.freeSpace}}U<br/>
                                 </template>
-                                <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%</div>
-                                <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
+                                <div v-if="chosenBtn == 0">{{item.loadRate ? formItem : formItem}}%</div>
+                                <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(0) : '0'}}kW</div>
                                 <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.000'}}</div>
                                 <div v-if="chosenBtn == 3">{{item.tem}}°C</div>
                                 <div v-if="chosenBtn == 4">{{item.cabinetHeight}}U</div>
@@ -131,48 +136,78 @@
   </el-card>
   <layoutForm ref="machineForm" @success="handleChange" />
   <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
-    <el-form>
-      <el-form-item label="机房名" label-width="90">
-        <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
-      </el-form-item>
-      <el-form-item label="行数" label-width="90">
-        <el-input-number v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
-      </el-form-item>
-      <el-form-item label="列数" label-width="90">
-        <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
-      </el-form-item>
-      
-     <div class="double-formitem">
-         <el-form-item label="电力容量" label-width="90">
-              <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入" />
-         </el-form-item>
-         <el-form-item label="空调功率" label-width="90">
-              <el-input v-model="rowColInfo.airPower" placeholder="请输入" />
+      <el-form>
+        <div style="margin-bottom: 5px">
+          <el-text>机房</el-text>
+        </div>
+        <div class="double-formitem">
+          <el-form-item label="名称" label-width="90">
+            <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
           </el-form-item>
-      </div>
+          <el-form-item label="楼层" prop="type" label-width="90">
+            <el-select v-model="rowColInfo.addr" placeholder="请选择">
+              <el-option v-for="(addr_item,addr_index) in addrList" :key="addr_index" :label="addr_item" :value="addr_item" />
+            </el-select>
+          </el-form-item>
+        </div>
+        <div style="margin-bottom: 10px">
+          <el-text>地砖（地砖按60CM*60CM）</el-text>
+        </div>
+        <div class="double-formitem">
+          <el-form-item label="行数" label-width="90">
+            <el-input-number v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+          <el-form-item label="列数" label-width="90">
+            <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+        
+        <div style="margin-bottom: 5px">
+          <el-text>容量</el-text>
+        </div>
+        <el-form-item label="机房总电力容量" label-width="160">
+          <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入">
+            <template #append>kVA</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="非IT设备总额定功率" label-width="160">
+          <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
+            <template #append>kVA</template>
+          </el-input>
+        </el-form-item>
 
-      <div class="double-formitem">
-        <el-form-item label="日用能告警" label-width="90">
-          <el-switch v-model="rowColInfo.eleAlarmDay" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-        <el-form-item label="日用能限制" label-width="90">
-          <el-input-number v-model="rowColInfo.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
-        </el-form-item>
-      </div>
-      <div class="double-formitem">
-        <el-form-item label="月用能告警" label-width="90">
-          <el-switch v-model="rowColInfo.eleAlarmMonth" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-        <el-form-item label="月用能限制" label-width="90">
-          <el-input-number v-model="rowColInfo.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
-        </el-form-item>
-      </div>
-    </el-form>
-    <template #footer>
-      <el-button @click="handleDialogCancel">取 消</el-button>
-      <el-button type="primary" @click="submitSetting">确 定</el-button>
-    </template>
-  </el-dialog>
+        <div class="double-formitem">
+          <el-form-item label="显示选择" label-width="90" style="padding-top: 15px">
+            <el-switch v-model="rowColInfo.displayFlag" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+          <el-radio-group v-model="radio" size="large" style="margin-left: 15px;">
+            <el-radio-button label="负载率" value="负载率"/>
+            <el-radio-button label="PUE" value="PUE"/>
+          </el-radio-group>
+        </div>
+
+        <!-- <div class="double-formitem">
+          <el-form-item label="日用能告警" label-width="90">
+            <el-switch v-model="rowColInfo.eleAlarmDay" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+          <el-form-item label="日用能限制" label-width="90">
+            <el-input-number v-model="rowColInfo.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+        <div class="double-formitem">
+          <el-form-item label="月用能告警" label-width="90">
+            <el-switch v-model="rowColInfo.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+          <el-form-item label="月用能限制" label-width="90">
+            <el-input-number v-model="rowColInfo.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div> -->
+      </el-form>
+      <template #footer>
+        <el-button @click="handleDialogCancel">取 消</el-button>
+        <el-button type="primary" @click="submitSetting">确 定</el-button>
+      </template>
+    </el-dialog>
 
   
   <el-dialog v-model="dialogStopDelete" title="恢复机房"  :before-close="handleDialogStopDelete">
@@ -253,6 +288,9 @@ const dragTable = ref() // 可移动编辑表格
 const dragTableViewEle = ref()
 const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
+const tableScaleValue = ref(1)
+const tableScaleWidth = ref(100)
+const tableScaleHeight = ref(100)
 const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
@@ -266,13 +304,30 @@ const roomsId = reactive({
   roomDownValIds: history?.state?.id,
 })
 
+const addrList = ref([
+  '未区分',
+  '一楼',
+  '二楼',
+  '三楼',
+  '四楼',
+  '五楼',
+  '六楼',
+  '七楼',
+  '八楼',
+  '九楼',
+  '十楼',
+]) // 楼层
 
+const radio = ref("负载率")
 const rowColInfo = reactive({
   roomName: '', // 机房名
+  addr: '未区分', //楼层
   row: 14, // 行
   col: 18, // 列
   powerCapacity:0, //电力容量
-  airPower:0, //空调额定功率
+  airPower: null, //空调额定功率
+  displayType: 0, //0负载率 1PUE
+  displayFlag: 0, // 显示选择
   eleAlarmDay: 0, // 日用能告警
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
@@ -315,25 +370,102 @@ const statusInfo = ref([
 const btns = [
   {
     value: 0,
-    name: '负荷',
+    name: '机柜负荷',
   },
   {
     value: 1,
-    name: '功率',
+    name: '有功功率',
   },
   {
     value: 2,
     name: '功率因素',
   },
   {
+    value: 5,
+    name: '昨日用能',
+  },
+  {
     value: 3,
     name: '温度',
   },
-  {
-    value: 4,
-    name: '容量',
-  },
+  // {
+  //   value: 4,
+  //   name: '容量',
+  // },
 ]
+
+const emptyObject = {
+    "id": 0,
+    "cabinetName": null,
+    "roomId": 0,
+    "roomName": null,
+    "aisleId": 0,
+    "powCapacity": null,
+    "cabinetType": null,
+    "pduBox": null,
+    "isDisabled": null,
+    "isDeleted": null,
+    "cabinetHeight": 0,
+    "cabinetUseHeight": 0,
+    "type": null,
+    "company": null,
+    "pduIpA": null,
+    "casIdA": 0,
+    "pduIpB": null,
+    "casIdB": 0,
+    "runStatus": 0,
+    "sensorList": null,
+    "rackIndexList": null,
+    "outletA": null,
+    "outletB": null,
+    "usedSpace": 0,
+    "rackNum": 0,
+    "freeSpace": 0,
+    "busIpA": null,
+    "busNameA": null,
+    "boxNameA": null,
+    "barIdA": null,
+    "addrA": null,
+    "barIdB": null,
+    "addrB": null,
+    "boxOutletIdA": null,
+    "busIpB": null,
+    "busNameB": null,
+    "boxNameB": null,
+    "boxOutletIdB": null,
+    "index": 4,
+    "yesterdayEq": null,
+    "boxIndexA": null,
+    "boxIndexB": null,
+    "eleAlarmDay": null,
+    "eleAlarmMonth": null,
+    "eleLimitDay": null,
+    "eleLimitMonth": null,
+    "loadRate": 0,
+    "lineCurA": null,
+    "lineCurB": null,
+    "lineVolA": null,
+    "lineVolB": null,
+    "powerFactor": 0,
+    "powerFactorA": 0,
+    "powerFactorB": 0,
+    "powActive": 0,
+    "powActiveA": 0,
+    "powActiveB": 0,
+    "powReactive": 0,
+    "powReactiveA": 0,
+    "powReactiveB": 0,
+    "powApparent": 0,
+    "powApparentA": 0,
+    "powApparentB": 0,
+    "temData": null,
+    "temDataHot": null,
+    "cabinetBoxes": null,
+    "cabinetPdus": null,
+    "rackIndices": null,
+    "xCoordinate": 0,
+    "yCoordinate": 0
+}
 
 const dialogVisible = ref(false);
 const dialogStopDelete = ref(false);
@@ -362,10 +494,22 @@ const groupMachineBlank = {
     if (editEnable.value && moveBox.type == 1 && moveBox.amount > 1) {
       if (moveBox.direction == 1) {
         const X = +event.el.id.split('-')[1]
+        const Y = +event.el.id.split('-')[0]
         if (X + moveBox.amount > rowColInfo.col) return false
+        for(let i = 0;i < moveBox.amount;i++) {
+          if(tableData.value[Y][formParam.value[X+i]].length || tableData.value[Y+1][formParam.value[X+i]].length || (Y > 0 && tableData.value[Y-1][formParam.value[X+i]].length)) {
+            return false
+          }
+        }
       } else {
+        const X = +event.el.id.split('-')[1]
         const Y = +event.el.id.split('-')[0]
         if (Y + moveBox.amount > rowColInfo.row) return false
+        for(let i = 0;i < moveBox.amount;i++) {
+          if(tableData.value[Y+i][formParam.value[X]].length || tableData.value[Y+i][formParam.value[X+1]].length || (X > 0 && tableData.value[Y+i][formParam.value[X-1]].length)) {
+            return false
+          }
+        }
       }
     }
     return editEnable.value
@@ -405,22 +549,27 @@ const getRoomInfo = async() => {
   resetForm();
   loading.value = true;
   try {
-    // const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
-    // const res = result;
-    const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
-    const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
-    const results = await Promise.all([result1, result2])
-    const res = results[0];
+    const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
+    const res = result;
+    // const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
+    // const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
+    // const results = await Promise.all([result1, result2])
+    // const res = results[0];
     console.log("res",res)
+    res.aisleList = res.aisleList==null ? [] : res.aisleList
+    res.cabinetList = res.cabinetList==null ? [] : res.cabinetList
     updateCfgInfo.value=res;
     roomDownValId.value = res.id;
     const data: Record<string, any[]>[] = [];
     Object.assign(rowColInfo, {
       roomName: res.roomName,
-      row: res.yLength,
-      col: res.xLength,
+      row: res.y_length,
+      col: res.x_length,
       powerCapacity:res.powerCapacity,
       airPower:res.airPower,
+      addr: res.addr,
+      displayType: res.displayType, //0负载率 1PUE
+      displayFlag: res.displayFlag, // 显示选择
       eleAlarmDay: res.eleAlarmDay,
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
@@ -428,15 +577,22 @@ const getRoomInfo = async() => {
     })
     emit('backData', res)
     
-    for (let row = 0; row < res.yLength; row++) {
+    for (let row = 0; row < res.y_length; row++) {
       const rowData: Record<string, any[]> = {};
-      for (let col = 0; col < res.xLength; col++) {
+      for (let col = 0; col < res.x_length; col++) {
         const colKey = getTableColCharCode(col);
         rowData[colKey] = [];
       }
       data.push(rowData);
     }
     res.aisleList.forEach(item => {
+      if(item.cabinetList == null) {
+        item.cabinetList = []
+      }
+      let emptyLength = item.length-item.cabinetList.length
+      for(let j=0;j < emptyLength;j++) {
+        item.cabinetList.push(emptyObject)
+      }
       for(let i=0; i < item.length; i++) {
         const dataItem =  {
           id: item.id,
@@ -458,8 +614,10 @@ const getRoomInfo = async() => {
         if (dataItem.direction == 1) {
           console.log('----dataItem1', dataItem )
           data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
+          data[item.yCoordinate][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, {...dataItem,first: false})
         } else {
           data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, dataItem)
+          data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate)].splice(0, 1, {...dataItem,first: false})
         }
       }
     })
@@ -469,7 +627,7 @@ const getRoomInfo = async() => {
     })
     tableData.value = data;
     console.log("tableData.value",tableData.value)
-    getRoomStatus(results[1])
+    getRoomStatus(result)
     handleCssScale()
   } finally {
     loading.value = false
@@ -504,7 +662,29 @@ const getRoomStatus = async(res) => {
  // console.log('//////////', tableData.value)
 }
 
+let lastTime = 0;
+const throttleDelay = 100;
+const tableScale = (flag) => {
+  if(tableScaleValue.value == 0.4 && !flag) {
+    return
+  }
+  const now = Date.now();
 
+  // 如果距离上次执行的时间小于 throttleDelay，则跳过
+  if (now - lastTime < throttleDelay) {
+    return
+  } 
+  console.log(now)
+  lastTime = now;
+  if(flag) {
+    tableScaleValue.value += 0.2
+  } else {
+    tableScaleValue.value -= 0.2
+  }
+  tableScaleValue.value = Math.max(0.4, tableScaleValue.value);
+  tableScaleWidth.value = 1/tableScaleValue.value*100
+  tableScaleHeight.value = 1/tableScaleValue.value*100
+}
 
 // 计算出要缩放的比例
 const handleCssScale = () => {
@@ -525,6 +705,9 @@ const handleCssScale = () => {
 // 处理修改机房的事件
 const handleChangeRoom = (val) => {
   roomId.value = val
+  tableScaleValue.value = 1
+  tableScaleWidth.value = 100
+  tableScaleHeight.value = 100
   getRoomInfo()
 }
 //取消
@@ -580,15 +763,19 @@ const handleAdd = () => {
 const resetForm = () => {
   Object.assign(rowColInfo, {
     roomName: '', // 机房名
+    addr: '未区分', //楼层
     row: 14, // 行
     col: 18, // 列,
     powerCapacity:0,
-    airPower:0,
+    airPower:null,
+    displayType: 0, //0负载率 1PUE
+    displayFlag: 0, // 显示选择
     eleAlarmDay: 0, // 日用能告警
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
   })
+  radio.value = "负载率"
 }
 // 处理点击删除机房事件
 const handleDelete = () => {
@@ -617,15 +804,19 @@ const openSetting = () => {
   roomFlag.value = 2;
   Object.assign(rowColInfo, {
     roomName: updateCfgInfo.value.roomName,
-    row: updateCfgInfo.value.yLength,
-    col: updateCfgInfo.value.xLength,
+    row: updateCfgInfo.value.y_length,
+    col: updateCfgInfo.value.x_length,
     powerCapacity:updateCfgInfo.value.powerCapacity,
+    addr: updateCfgInfo.value.addr,
     airPower:updateCfgInfo.value.airPower,
+    displayType: updateCfgInfo.value.displayType ? 1 : 0, //0负载率 1PUE
+    displayFlag: updateCfgInfo.value.displayFlag ? 1 : 0,
     eleAlarmDay: updateCfgInfo.value.eleAlarmDay,
     eleLimitDay: updateCfgInfo.value.eleLimitDay,
     eleAlarmMonth: updateCfgInfo.value.eleAlarmMonth,
     eleLimitMonth: updateCfgInfo.value.eleLimitMonth,
   })
+  radio.value = updateCfgInfo.value.displayType ? "PUE" : "负载率"
   dialogVisible.value = true;
 }
 
@@ -699,23 +890,38 @@ const onStart = ({from}) => {
 }
 // 拖拽结束的事件
 const onEnd = ({from, to}) => {
- // console.log('onsEnd',tableData.value, from, to, from.id, to.id)
+ console.log('onsEnd',tableData.value, from, to, from.id, to.id)
   if (from.id != to.id) { // 发生移动才处理
-    const X = to.id.split('-')[1]
-    const Y = to.id.split('-')[0]
+    const X = +to.id.split('-')[1]
+    const Y = +to.id.split('-')[0]
     const targetTo = tableData.value[Y][formParam.value[X]][0]
-   // console.log('value*******', targetTo)
+   console.log('value*******', targetTo)
+    
     if (targetTo.type == 1 && targetTo.amount > 1) {
-      const X = +from.id.split('-')[1]
-      const Y = +from.id.split('-')[0]
+      const X1 = +from.id.split('-')[1]
+      const Y1 = +from.id.split('-')[0]
+      if (targetTo.direction == 1) {
+        tableData.value[Y1+1][formParam.value[X1]] = []
+        tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
+      } else {
+        tableData.value[Y1][formParam.value[X1+1]] = []
+        tableData.value[Y][formParam.value[X+1]] = [{...targetTo,first: false}]
+      }
       for (let i=  1; i < targetTo.amount; i++) {
         if (targetTo.direction == 1) {
-          tableData.value[Y][formParam.value[X+i]] = []
+          tableData.value[Y1][formParam.value[X1+i]] = []
+          tableData.value[Y1+1][formParam.value[X1+i]] = []
+          tableData.value[Y][formParam.value[X+i]] = [{...targetTo,first: false}]
+          tableData.value[Y+1][formParam.value[X+i]] = [{...targetTo,first: false}]
         } else {
-          tableData.value[Y+i][formParam.value[X]] = []
+          tableData.value[Y1+i][formParam.value[X1]] = []
+          tableData.value[Y1+i][formParam.value[X1+1]] = []
+          tableData.value[Y+i][formParam.value[X]] = [{...targetTo,first: false}]
+          tableData.value[Y+i][formParam.value[X+1]] = [{...targetTo,first: false}]
         }
       }
     }
+    console.log('tableData.value*******', tableData.value)
   }
 }
 //移动表格视图
@@ -736,7 +942,16 @@ const onMouseDown = (e) => {
     return false
   }
 }
+
 const onMouseMove = (e) => {
+  const now = Date.now();
+
+  // 如果距离上次执行的时间小于 throttleDelay，则跳过
+  if (now - lastTime < throttleDelay) {
+    return
+  } 
+
+  lastTime = now;
   if (dragCursor.value == 'grabbing') {
     const dx = e.pageX - startX.value;
     const dy = e.pageY - startY.value;
@@ -886,14 +1101,23 @@ const submitSetting = async() => {
       roomFlagId = roomId.value; 
       messageRoomFlag = "修改成功！";
    }
+   if(radio.value === "PUE") {
+    rowColInfo.displayType = 1
+   }
+   else {
+    rowColInfo.displayType = 0
+   }
    try {
     const res = await MachineRoomApi.saveRoomDetail({
       id: roomFlagId,
       roomName: rowColInfo.roomName,
+      addr: rowColInfo.addr,
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
       powerCapacity:rowColInfo.powerCapacity, 
       airPower:rowColInfo.airPower, 
+      displayType: rowColInfo.displayType, 
+      displayFlag: rowColInfo.displayFlag, 
       eleAlarmDay: rowColInfo.eleAlarmDay,
       eleAlarmMonth: rowColInfo.eleAlarmMonth,
       eleLimitDay: rowColInfo.eleLimitDay,
@@ -970,10 +1194,13 @@ const handleSubmit = async() => {
     const res = await MachineRoomApi.saveRoomDetail({
         id: isAddRoom.value ? '' : roomId.value,
         roomName: rowColInfo.roomName,
+        addr: rowColInfo.addr,
         xLength: rowColInfo.col,
         yLength: rowColInfo.row,
         powerCapacity:rowColInfo.powerCapacity, 
         airPower:rowColInfo.airPower, 
+        displayType: rowColInfo.displayType, 
+        displayFlag: rowColInfo.displayFlag, 
         eleAlarmDay: rowColInfo.eleAlarmDay,
         eleAlarmMonth: rowColInfo.eleAlarmMonth,
         eleLimitDay: rowColInfo.eleLimitDay,

@@ -246,7 +246,7 @@ const isHourDisabled = ref(false);
 const isDayAndMonthDisabled = ref(false);
 const isPowActiveDisabled = ref(true);
 const isLoadRateDisabled = ref(false);
-
+const switchChartContainer = ref(0);
 
 const lineChartQueryParams = reactive({
   id: history?.state?.id as number | undefined,
@@ -313,7 +313,7 @@ let myChart2 = null as echarts.ECharts | null;
 let myChart3 = null as echarts.ECharts | null; 
 let myChart4 = null as echarts.ECharts | null; 
 const initChart2 = () => {
-  console.log(L4Data.value,L5Data.value,L6Data.value)
+  // console.log(L4Data.value,L5Data.value,L6Data.value)
   if (chartContainer2.value && instance) {
     myChart2 = echarts.init(chartContainer2.value);
     myChart2.setOption(
@@ -474,7 +474,7 @@ const initChart3 = () => {
 }
 
 const initChart4 = () => {
-  console.log(L4Data.value,L5Data.value,L6Data.value)
+  // console.log(L4Data.value,L5Data.value,L6Data.value)
   if (chartContainer4.value && instance) {
     myChart4 = echarts.init(chartContainer4.value);
     myChart4.setOption(
@@ -589,6 +589,7 @@ const getLineChartData =async () => {
       //L3Data.value = [];
       await initData();
       isHaveData.value = true
+      initChart4()
     }else{
     }
 
@@ -611,6 +612,7 @@ const getLineChartData =async () => {
       //L3Data.value = [];
       await initData();
       isHaveData.value = true
+      initChart2()
     }else{
     }
 
@@ -631,6 +633,7 @@ const getLineChartData =async () => {
       //L3Data.value = [];
       await initData();
       isHaveData.value = true
+      initChart3()
     }else{
     }
 
