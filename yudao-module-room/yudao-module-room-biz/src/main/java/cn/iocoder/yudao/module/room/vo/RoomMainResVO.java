@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -111,6 +112,8 @@ public class RoomMainResVO {
     @Schema(description = "无功功率")
     private float powReactive;
 
+
+
     /**
      * 视在功率
      */
@@ -119,12 +122,42 @@ public class RoomMainResVO {
 
     @Schema(description = "柜列数据")
     private List<AisleDataDTO> aisleList;
-//    private List<AisleDetailDTO> aisleList;
 
     /**
      * 机柜数据
      */
     @Schema(description = "机柜数据")
     private List<RoomCabinetDTO> cabinetList;
+
+
+    @Schema(description = "机房负载")
+    private BigDecimal roomLoadFactor;
+
+    @Schema(description = "PUE")
+    private BigDecimal roomPue;
+
+    @Schema(description = "前门最高湿度")
+    private BigDecimal humMaxFront;
+
+    @Schema(description = "后门最高湿度")
+    private BigDecimal humMaxBlack;
+
+    @Schema(description = "前门最高温度")
+    private BigDecimal temMaxFront;
+
+    @Schema(description = "后门最高温度")
+    private BigDecimal temMaxBlack;
+
+    @Schema(description = "前门平均湿度")
+    private Double humAvgFront;
+
+    @Schema(description = "后门平均湿度")
+    private Double humAvgBlack;
+
+    @Schema(description = "前门平均温度")
+    private Double temAvgFront;
+
+    @Schema(description = "后门平均温度")
+    private Double temAvgBlack;
 
 }

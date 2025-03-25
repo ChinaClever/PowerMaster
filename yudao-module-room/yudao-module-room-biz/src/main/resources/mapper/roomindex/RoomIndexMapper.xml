@@ -10,17 +10,17 @@
      -->
 
     <update id="updateByDeleteRoom">
-          update room_index rx set rx.is_delete = 1 where rx.id = #{id}
+          update room_index set is_delete = 1 where id = #{id}
     </update>
 
     <select id="selectRoomleteList"  parameterType="cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo"
             resultType="cn.iocoder.yudao.framework.common.dto.room.RoomIndexDTO">
         select
-        ri.id ,
-        ri.room_name,
-        ri.update_time
-        from room_index ri
-        where ci.is_delete = 1
+        id ,
+        room_name,
+        update_time
+        from room_index
+        where is_delete = 1
         ORDER BY update_time desc
     </select>
     <select id="getRoomAddrList" resultType="java.lang.String">
@@ -31,7 +31,7 @@
         ri.is_delete,ri.power_capacity,ri.air_power,ri.x_length,ri.y_length,
         rc.ele_alarm_day,rc.ele_alarm_month,rc.ele_limit_day,rc.ele_limit_month
         from room_index ri
-        left join  room_cfg rc on rc.room_id = ri.id
+        left join room_cfg rc on rc.room_id = ri.id
         <where>
             ri.is_delete =0 and ri.id = #{id}
         </where>
@@ -39,11 +39,11 @@
     </select>
 
     <update id="restoreByDeleteRoom">
-        update room_index rx set rx.is_delete = 0 where rx.id = #{id}
+        update room_index set is_delete = 0 where id = #{id}
     </update>
 
     <select id="selectRoomByName" resultType="java.lang.Integer">
-        select  *  from  aisle_index ai  where ai.aisle_name = #{name}
+        select  *  from aisle_index where aisle_name = #{name}
     </select>
 
 </mapper>

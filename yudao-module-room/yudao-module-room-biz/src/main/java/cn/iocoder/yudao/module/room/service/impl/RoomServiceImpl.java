@@ -31,7 +31,6 @@ import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
-import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -45,7 +44,6 @@ import cn.iocoder.yudao.module.room.vo.RoomMainResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import cn.iocoder.yudao.module.system.api.alarm.AlarmRecordApi;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -82,7 +80,6 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -875,6 +872,16 @@ public class RoomServiceImpl implements RoomService {
             vo.setCabinetList(cabinetDTOList);
         }
 
+        List<BigDecimal> humAvgFronts = new ArrayList<>();
+        List<BigDecimal> humAvgBlacks = new ArrayList<>();
+        List<BigDecimal> humMaxFronts = new ArrayList<>();
+        List<BigDecimal> humMaxBlacks = new ArrayList<>();
+
+        List<BigDecimal> temMaxFronts = new ArrayList<>();
+        List<BigDecimal> temMaxBlacks = new ArrayList<>();
+        List<BigDecimal> temAvgFronts = new ArrayList<>();
+        List<BigDecimal> temAvgBlacks = new ArrayList<>();
+
         //柜列
         List<AisleDataDTO> aisleIndexList = aisleIndexMapper.selectRoomAisleList(id);
 
@@ -900,9 +907,22 @@ public class RoomServiceImpl implements RoomService {
                     continue;
                 }
                 JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                vo.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"),2));
+                vo.setRoomPue(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_pue"),2));
                 JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
                 JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
                 JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
+
+                humAvgFronts.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("hum_avg_front"));
+                humAvgBlacks.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("hum_avg_black"));
+                humMaxFronts.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("hum_max_front"));
+                humMaxBlacks.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("hum_max_black"));
+
+                temMaxFronts.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("tem_max_front"));
+                temMaxBlacks.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("tem_max_black"));
+                temAvgFronts.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("tem_avg_front"));
+                temAvgBlacks.add(jsonObject.getJSONObject("aisle_power").getBigDecimal("tem_avg_black"));
+
                 if (totalData != null) {
                     dataDTO.setEleActiveTotal(totalData.getDouble("ele_active"));
                     dataDTO.setPowApparentTotal(totalData.getDouble("pow_apparent"));
@@ -932,6 +952,46 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
             vo.setAisleList(aisleIndexList);
+        }
+
+        humMaxFronts.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(humMaxFronts)) {
+            vo.setHumMaxFront(Collections.max(humMaxFronts));
+        }
+
+        humMaxBlacks.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(humMaxBlacks)) {
+            vo.setHumMaxBlack(Collections.max(humMaxBlacks));
+        }
+
+        temMaxFronts.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(temMaxFronts)) {
+            vo.setTemMaxFront(Collections.max(temMaxFronts));
+        }
+
+        temMaxBlacks.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(temMaxBlacks)) {
+            vo.setTemMaxBlack(Collections.max(temMaxBlacks));
+        }
+
+        humAvgFronts.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(humAvgFronts)) {
+            vo.setHumAvgFront(humAvgFronts.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble());
+        }
+
+        humAvgBlacks.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(humAvgBlacks)) {
+            vo.setHumAvgBlack(humAvgBlacks.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble());
+        }
+
+        temAvgFronts.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(temAvgFronts)) {
+            vo.setTemAvgFront(temAvgFronts.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble());
+        }
+
+        temAvgBlacks.removeIf(Objects::isNull);
+        if (!CollectionUtils.isEmpty(temAvgBlacks)) {
+            vo.setTemAvgBlack(temAvgBlacks.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble());
         }
         return vo;
     }
@@ -998,7 +1058,7 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
             List<CabinetEqBaseDo> dos = eqMap.get(iter.getId());
-            if (!CollectionUtils.isEmpty(dos)){
+            if (!CollectionUtils.isEmpty(dos)) {
                 CabinetEqBaseDo cabinetEqBaseDo = dos.get(0);
                 iter.setYesterdayEq(cabinetEqBaseDo.getEqValue());
             }
@@ -1399,14 +1459,14 @@ public class RoomServiceImpl implements RoomService {
                 roomCfgMapper.insert(cfg);
             }
         }
-        if (!CollectionUtils.isEmpty(vo.getAisleList())){
+        if (!CollectionUtils.isEmpty(vo.getAisleList())) {
             List<AisleSaveVo> aisleList = vo.getAisleList();
             for (AisleSaveVo aisleSaveVo : aisleList) {
                 AisleIndex aisleIndex = BeanUtils.toBean(aisleSaveVo, AisleIndex.class);
                 int i = aisleIndexMapper.updateById(aisleIndex);
             }
         }
-        if (!CollectionUtils.isEmpty(vo.getCabinetList())){
+        if (!CollectionUtils.isEmpty(vo.getCabinetList())) {
             cabinetCfgMapper.updateBatchByCabinetId(vo.getCabinetList());
         }
         return index.getId();
