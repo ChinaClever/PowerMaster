@@ -44,7 +44,7 @@
       <div class="btns">
         <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
         <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-        <el-button @click="valueMode = 2;switchValue = 0" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
+        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
         <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
         <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
         <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
@@ -177,7 +177,7 @@
         </el-table-column>
         
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center" width="140px">
+        <el-table-column label="操作" align="center" width="70px">
           <template #default="scope">
             <el-button
               link
@@ -186,14 +186,6 @@
               style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
             >
             详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.id)"
-              style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
-            >
-              删除
             </el-button>
           </template>
         </el-table-column>
@@ -253,7 +245,7 @@
         </el-table-column>
 
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center" width="140px">
+        <el-table-column label="操作" align="center" width="70px">
           <template #default="scope">
             <el-button
               link
@@ -262,14 +254,6 @@
               style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
             >
             详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.id)"
-              style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
-            >
-              删除
             </el-button>
           </template>
         </el-table-column>
@@ -282,7 +266,7 @@
         </div>
         <div class="double-formitem">
           <el-form-item label="名称" label-width="90">
-            <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
+            <el-input v-model="rowColInfo.roomName" placeholder="请输入"  @blur="handleBlur" />
           </el-form-item>
           <el-form-item label="楼层" prop="type" label-width="90">
             <el-select v-model="rowColInfo.addr" placeholder="请选择">
@@ -353,13 +337,13 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import type { CollapseModelValue,ElMessageBox } from 'element-plus'
+import type { CollapseModelValue } from 'element-plus'
 import * as echarts from 'echarts';
 import { formatTime } from '@/utils'
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { MachineHomeApi } from '@/api/cabinet/home'
 
-const activeNames = ref(0)
+const activeNames = ref()
 const valueMode = ref(0)
 const switchValue = ref(0)
 const roomFlag =ref();
@@ -437,6 +421,16 @@ const handleQuery = async () => {
   }
 }
 
+
+const handleBlur = async() =>{
+  const res = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
+  if(res != null){
+    message.error('该机房名称已存在,请重新输入!');
+    rowColInfo.roomName = "";
+  }
+}
+
+
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryParams.roomName = undefined;
@@ -456,24 +450,6 @@ const handleAdd = () => {
   roomFlag.value = 1;
   dialogVisible.value = true;
   resetForm();
-}
-
-// 处理点击删除机房事件
-const handleDelete = (id) => {
-  console.log(id)
-  ElMessageBox.confirm('确认删除机房吗？', '提示', {
-    confirmButtonText: '确 认',
-    cancelButtonText: '取 消',
-    type: 'warning'
-  }).then(async () => {
-    const res = await MachineRoomApi.deleteRoom({id})
-    console.log('handleDelete', res)
-    message.success('删除成功')
-    addrAllRoomList.value.forEach((item,index) => {
-      addrAllRoomList.value[index] = addrAllRoomList.value[index].filter(ele => ele.id != id)
-    })
-    // getRoomAddrList()
-  })
 }
 
 // 重置表单
