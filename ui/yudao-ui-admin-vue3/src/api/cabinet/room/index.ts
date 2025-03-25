@@ -59,6 +59,18 @@ saveRoomCabinet: async (data: any) => {
   return await request.post({ url: `/room/roomCabinetSave`, data })
 },
 
+
+//机房柜列删除
+deletedRoomAisleInfo: async (params: any) => {
+  return await request.get({ url: `/room/roomAisleDelete`, params })
+},
+
+selectRoomByName: async (params: any) => {
+  return await request.get({ url: `/room/newSelectRoomByName`, params })
+},
+
+
+
 //机房删除
 deletedRoomInfo: async (data: any) => {
   return await request.post({ url: `/room/deletedRoomPage`, data })

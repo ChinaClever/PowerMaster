@@ -21,4 +21,6 @@ public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
 
     List<AisleDataDTO> selectRoomAisleList(int id);
 
+    //柜列删除
+    Integer roomAisleDeleteById(@Param("aisleId") int id);
 }

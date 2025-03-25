@@ -42,4 +42,8 @@
         update room_index rx set rx.is_delete = 0 where rx.id = #{id}
     </update>
 
+    <select id="selectRoomByName" resultType="java.lang.Integer">
+        select  *  from  aisle_index ai  where ai.aisle_name = #{name}
+    </select>
+
 </mapper>

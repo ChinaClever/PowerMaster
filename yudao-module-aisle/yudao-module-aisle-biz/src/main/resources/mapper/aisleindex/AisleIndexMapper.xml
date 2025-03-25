@@ -38,4 +38,8 @@
         ai.room_id = #{id} and  ai.is_delete = '0'
     </select>
 
+    <update id="roomAisleDeleteById">
+        update aisle_index ai set ai.is_delete = 1 where ai.room_id = #{aisleId}
+    </update>
+
 </mapper>

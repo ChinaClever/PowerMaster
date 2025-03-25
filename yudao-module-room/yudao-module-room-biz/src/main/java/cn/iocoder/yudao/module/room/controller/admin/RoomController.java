@@ -88,6 +88,16 @@ public class RoomController {
         return success(i);
     }
 
+
+    @Operation(summary = "机房新增根据名称异步查询")
+    @GetMapping("/newSelectRoomByName")
+    public CommonResult<Integer> newSelectRoomByName(@Param("roomName") String name) {
+        Integer i = roomService.newSelectRoomByName(name);
+        return success(i);
+    }
+
+
+
     /**
      * 机房删除
      *
@@ -190,6 +200,15 @@ public class RoomController {
     public CommonResult<Integer> roomAisleSave(@RequestBody AisleSaveVo vo) {
         return success(roomService.roomAisleSave(vo));
     }
+
+
+    @Operation(summary = "柜类删除")
+    @GetMapping("/roomAisleDelete")
+    public CommonResult<Integer> roomAisleDelete(@Param("id") int id) {
+        return success(roomService.roomAisleDeleteById(id));
+    }
+
+
 
     @Operation(summary = "机房柜列新增/编辑")
     @PostMapping("/roomCabinetSave")
