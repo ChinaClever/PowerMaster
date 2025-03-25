@@ -44,7 +44,7 @@
       <div class="btns">
         <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
         <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
+        <el-button @click="valueMode = 2;switchValue = 0" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
         <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
         <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
         <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
@@ -211,7 +211,7 @@
         </el-table-column>
         
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center" width="70px">
+        <el-table-column label="操作" align="center" width="140px">
           <template #default="scope">
             <el-button
               link
@@ -220,6 +220,14 @@
               style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
             >
             详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -279,7 +287,7 @@
         </el-table-column>
 
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center" width="70px">
+        <el-table-column label="操作" align="center" width="140px">
           <template #default="scope">
             <el-button
               link
@@ -288,6 +296,14 @@
               style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
             >
             详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -371,7 +387,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import type { CollapseModelValue } from 'element-plus'
+import type { CollapseModelValue,ElMessageBox  } from 'element-plus'
 import * as echarts from 'echarts';
 import { formatTime } from '@/utils'
 import { MachineRoomApi } from '@/api/cabinet/room'
