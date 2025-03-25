@@ -67,7 +67,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" :header-cell-style="headCellStyle">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -115,10 +115,11 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
+let now=new Date()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
-  timeRange: undefined as any,
+  timeRange: [dayjs(new Date(now.getFullYear(), now.getMonth(), 1,0,0,0)).format("YYYY-MM-DD HH:mm:ss"),dayjs(now).format("YYYY-MM-DD HH:mm:ss")],
   roomIds: [],
 })
 const pageSizeArr = ref([15,30,50,100])
@@ -329,6 +330,12 @@ onMounted(() => {
   getNavOneDayData()
   getList();
 })
+
+function headCellStyle(){
+  return {
+    backgroundColor: 'rgb(245, 247, 250)',
+  }
+}
 </script>
 
 <style scoped>

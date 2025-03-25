@@ -1,5 +1,5 @@
 <template>
- <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机房趋势分析" :showCheckbox="false">
+ <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机房趋势分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -173,7 +173,7 @@
         </el-tabs>
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">

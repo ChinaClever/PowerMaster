@@ -16,9 +16,9 @@ public class InfraWebConfiguration {
     /**
      * infra 模块的 API 分组
      */
-    @Bean
-    public GroupedOpenApi infraGroupedOpenApi() {
-        return YudaoSwaggerAutoConfiguration.buildGroupedOpenApi("infra");
-    }
+//    @Bean
+//    public GroupedOpenApi infraGroupedOpenApi() {
+//        return YudaoSwaggerAutoConfiguration.buildGroupedOpenApi("infra");
+//    }
 
 }

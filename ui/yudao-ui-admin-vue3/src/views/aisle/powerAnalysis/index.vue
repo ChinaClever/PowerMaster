@@ -172,13 +172,15 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref([useRoute().query.startTime,useRoute().query.endTime])
+let now=new Date();
+const selectTimeRange = ref([useRoute().query.startTime!=null?useRoute().query.startTime:dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),
+useRoute().query.endTime!=null?useRoute().query.endTime:dayjs(now).format("YYYY-MM-DD")])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  aisleIds:[] as number[]
+  aisleIds:useRoute().query.id!=null?[useRoute().query.id]:[] as number[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()

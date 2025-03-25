@@ -121,6 +121,12 @@ public class RoomIndexController {
         return success(dto);
     }
 
+    @Operation(summary = "获得机房用能最大")
+    @GetMapping("/eq/maxEq")
+    public CommonResult<List<RoomMaxEqResVO>> maxEq(){
+        return success(indexService.getMaxEq());
+    }
+
     /**
      * 机房用能趋势
      *
