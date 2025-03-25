@@ -43,7 +43,7 @@
     </update>
 
     <select id="selectRoomByName" resultType="java.lang.Integer">
-        select  *  from  aisle_index ai  where ai.aisle_name = #{name}
+        select  *  from  room_index ri  where ri.room_name = #{name}
     </select>
 
 </mapper>
