@@ -48,6 +48,7 @@
         <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
         <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
         <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        <el-button @click="switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
       </div>
     </div>
     <el-collapse v-if="switchValue == 0" v-model="activeNames" @change="handleChange">
@@ -149,8 +150,41 @@
         </el-skeleton>
       </el-collapse-item>
     </el-collapse>
+    <div v-if="switchValue == 2">
+      <el-table v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+        <el-table-column label="编号" min-width="110" align="center">
+            <template #default="scope">
+               <div>{{scope.row.id}}</div>
+            </template>
+        </el-table-column>
+
+        <el-table-column label="机房名称" min-width="110" align="center">
+            <template #default="scope">
+               <div>{{scope.row.roomName}}</div>
+            </template>
+        </el-table-column>
+        
+        <el-table-column label="删除日期" min-width="110" align="center">
+           <template #default="scope">
+               {{ (new Date(scope.row.updateTime)).toISOString().slice(0, 10) }}
+            </template>
+        </el-table-column>
+
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.id)"
+            >
+              恢复机房
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
     <div v-if="switchValue == 3">
-      <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="addrAllRoomList.flat()" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="楼层" align="center" prop="addr" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="机房名" align="center" prop="roomName" width="300px"/>
@@ -199,7 +233,7 @@
         </el-table-column>
       </el-table>
 
-      <el-table v-if="switchValue == 3 && valueMode == 1" v-loading="loading" :data="addrAllRoomList.flat()" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-if="switchValue == 3 && valueMode == 1" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="楼层" align="center" prop="addr" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="机房名" align="center" prop="roomName" width="300px"/>
@@ -365,6 +399,7 @@ const switchValue = ref(0)
 const roomFlag =ref();
 const dialogVisible = ref(false);
 const isAddRoom = ref(false) // 是否为添加机房模式 
+const deletedList = ref<any>([]) //已删除的
 const roomId = ref(0) // 房间id
 const radio = ref("负载率")
 const rowColInfo = reactive({
@@ -394,6 +429,14 @@ const powCopyInfo = reactive({})
 const roomAddrList = ref(['未区分'])
 const addrAllRoomList = ref([[]])
 const clickIndex = ref(0)
+
+const queryDeleteParams = reactive({
+  company: undefined,
+  showCol: [1, 2, 12, 13, 15, 16] as number[],
+  pageNo: 1,
+  pageSize: 24,
+  pageTotal: 0,
+})
 
 const addrList = ref([
   '未区分',
@@ -473,6 +516,30 @@ const handleDelete = (id) => {
       addrAllRoomList.value[index] = addrAllRoomList.value[index].filter(ele => ele.id != id)
     })
     // getRoomAddrList()
+  })
+}
+
+//已删除
+const handleStopDelete = async() =>{
+  const res = await MachineRoomApi.deletedRoomInfo({
+    pageNo: queryDeleteParams.pageNo,
+    pageSize: queryDeleteParams.pageSize,
+  })
+  deletedList.value = res.list;
+  queryDeleteParams.pageTotal = res.total;
+}
+
+//恢复机房
+const handleRestore = async (flagRoomid) => {
+  ElMessageBox.confirm('确认恢复机房吗？', '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    const res = await MachineRoomApi.restoreRoomInfo({id: flagRoomid});
+    if(res != null || res != "")
+    message.success('恢复成功')
+    getRoomAddrList()
   })
 }
 
@@ -731,5 +798,8 @@ const handleChange = async (val: CollapseModelValue) => {
 }
 :deep .el-input-group__append {
   padding: 0 10px; /* 设置为所需的字体大小 */
+}
+:deep .el-table thead th.el-table__cell {
+  background: var(--el-fill-color-light);
 }
 </style>

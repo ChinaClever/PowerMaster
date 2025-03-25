@@ -169,7 +169,7 @@
       </el-table>
 
 
-   <el-table v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+   <el-table v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border="true">
          <el-table-column label="位置" min-width="110" align="center">
             <template #default="scope">
                <div>{{scope.row.roomname}} - {{scope.row.name}}</div>

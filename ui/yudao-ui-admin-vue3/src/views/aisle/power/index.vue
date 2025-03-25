@@ -87,7 +87,7 @@
     </template>
     <template #Content>    
       <div v-if="switchValue == 3" style="height:710px;overflow-y:auto;">
-        <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+        <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -165,7 +165,7 @@
           </el-table-column>
         </el-table>
 
-        <el-table v-if="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+        <el-table v-if="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -243,7 +243,7 @@
           </el-table-column>
         </el-table>
 
-        <el-table v-if="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+        <el-table v-if="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
