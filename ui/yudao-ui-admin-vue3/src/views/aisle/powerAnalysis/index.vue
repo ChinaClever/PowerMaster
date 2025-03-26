@@ -72,10 +72,13 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+         </el-form-item>
+
+         <el-form-item style="position: absolute; right: 0;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
-         </el-form-item>
+          </el-form-item>
       </el-form> 
     </template>
     <template #Content>
@@ -98,7 +101,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -118,7 +121,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>

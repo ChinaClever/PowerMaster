@@ -75,7 +75,9 @@
          
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+         </el-form-item>
+         <el-form-item style="position: absolute; right: 0;">
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>

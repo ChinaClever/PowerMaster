@@ -40,6 +40,8 @@ const echartsOption = ref({
           result += params[i].value.toFixed(3) +  ' kVA'; 
         } else if (params[i].seriesName.includes("有功功率")) {
           result += params[i].value.toFixed(3) + ' kW';
+        } else if (params[i].seriesName.includes("无功功率")) {
+          result += params[i].value.toFixed(3) + ' kVar';
         }
         result += '<br>';
       }
