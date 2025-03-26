@@ -9,7 +9,7 @@
           <!-- <br/> -->
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-      </div>
+        </div>
       
         <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
           <div  class="description-item">
@@ -205,6 +205,7 @@ import { IndexApi } from '@/api/bus/busindex'
 import { ElMessage } from 'element-plus'
 import download from '@/utils/download'
 import  CommonMenu1 from './component/CommonMenu1.vue'
+import { isNull } from '@/utils/is';
 
 
 defineOptions({ name: 'PDUHistoryLine' })
@@ -1316,14 +1317,19 @@ const disabledDate = (date) => {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 6){
-    queryParams.busId = undefined
-    queryParams.devkey = row.unique
-    findFullName(navList.value, row.unique, fullName => {
-      nowAddressTemp.value = fullName
-      nowLocationTemp.value = row.unique
-    });
-    handleQuery();
+  if(row.type != null  && row.type == 6){
+      queryParams.busId = undefined
+      queryParams.devkey = row.unique
+      findFullName(navList.value, row.unique, fullName => {
+        if(row.parentId != null){
+            nowAddressTemp.value = fullName
+            nowLocationTemp.value = row.unique
+        }else{
+            nowAddressTemp.value = "未绑定"
+            nowLocationTemp.value = ""
+        }
+      });
+      handleQuery();
   }
 }
 
