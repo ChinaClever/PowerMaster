@@ -1,0 +1,1 @@
+import{r as a}from"./index-mcOGIq4g.js";const e=()=>a.get({url:"/system/user/profile/get"}),t=s=>a.put({url:"/system/user/profile/update",data:s}),u=(s,r)=>a.put({url:"/system/user/profile/update-password",data:{oldPassword:s,newPassword:r}}),o=s=>a.upload({url:"/system/user/profile/update-avatar",data:s});export{u as a,o as b,e as g,t as u};
