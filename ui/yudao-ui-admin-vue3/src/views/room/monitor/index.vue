@@ -48,11 +48,115 @@
         <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
         <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
         <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
-        <el-button @click="switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
       </div>
     </div>
+    <div v-if="switchValue == 0" style="padding: 20px 0;background-color: #fff">
+      <el-skeleton :loading="loading" animated v-if="valueMode===0" style="padding: 0 20px">
+        <el-row>
+          <template v-if="roomShowType">
+            <el-col>
+              <div ref="scrollableContainer" class="arrayContainer">
+                <div 
+                  class="arrayItem"
+                  v-for="(item, index) in addrAllRoomList[0]"
+                  :key="`card-${index}`"
+                >
+                  <el-card shadow="hover">
+                    <div class="flex items-center h-21px mb-2">
+                      <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+                      <span class="text-15px">{{ item.roomName || '' }}</span>
+                    </div>
+                    <div style="display: flex;justify-content: space-around;align-items: center;">
+                      <div style="">
+                        <div><el-text>视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</el-text></div>
+                        <div><el-text>有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</el-text></div>
+                        <div><el-text>无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVAr</el-text></div>
+                      </div>
+                      <div style="display: flex;flex-direction: column">
+                        <div v-if="item.displayFlag" style="text-align: center;font-size: 24px;">{{item.displayType ? (item.pue ? item.pue : 0) : (item.loadRate ? item.loadRate : 0)}}</div>
+                        <div v-if="item.displayFlag" style="text-align: center;font-size: 12px;">{{item.displayType ? "PUE" : "负载率"}}</div>
+                      </div>
+                    </div>
+                  </el-card>
+                  <div style="position: absolute;bottom: 0;right: 0">
+                    <button class="detail" @click="handleRoomHome(item.id)" >详情</button>
+                  </div>
+                </div>
+              </div>
+            </el-col>
+          </template>
+        </el-row>
+      </el-skeleton>
+      <el-skeleton :loading="loading" animated v-else-if="valueMode===1" style="padding: 0 20px">
+        <el-row>
+          <template v-if="roomShowType">
+            <el-col>
+              <div ref="scrollableContainer" class="arrayContainer">
+                <div 
+                  class="arrayItem"
+                  v-for="(item, index) in addrAllRoomList[0]"
+                  :key="`card-${index}`"
+                >
+                  <el-card shadow="hover" @dblclick="handleRoomHome(item.id)">
+                    <div class="flex items-center h-21px">
+                      <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+                      <span class="text-15px">{{ item.roomName || '' }}</span>
+                    </div>
+                    <div class="mt-14px flex justify-around text-12px text-gray-400">
+                      <div style="width: 33%;text-align:center"></div>
+                      <div style="width: 33%;text-align:center"><el-text>前门</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>后门</el-text></div>
+                    </div>
+                    <div class="mt-14px flex justify-around text-12px text-gray-400">
+                      <div style="width: 33%;text-align:center"><el-text>最高温度：</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.temMaxFront ? item.temMaxFront.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.temMaxBlack ? item.temMaxBlack.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                    </div>
+                    <div class="mt-14px flex justify-around text-12px text-gray-400">
+                      <div style="width: 33%;text-align:center"><el-text>平均温度：</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.temAvgFront ? item.temAvgFront.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.temAvgBlack ? item.temAvgBlack.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                    </div>
+                    <div class="mt-14px flex justify-around text-12px text-gray-400">
+                      <div style="width: 33%;text-align:center"><el-text>最高湿度：</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.humMaxFront ? item.humMaxFront.toFixed(0) : '0'}}%</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.humMaxBlack ? item.humMaxBlack.toFixed(0) : '0'}}%</el-text></div>
+                    </div>
+                    <div class="mt-14px flex justify-around text-12px text-gray-400">
+                      <div style="width: 33%;text-align:center"><el-text>平均湿度：</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.humAvgFront ? item.humAvgFront.toFixed(0) : '0'}}%</el-text></div>
+                      <div style="width: 33%;text-align:center"><el-text>{{item.humAvgBlack ? item.humAvgBlack.toFixed(0) : '0'}}%</el-text></div>
+                    </div>
+                    <div style="position: absolute;bottom: 0;right: 0">
+                      <button class="detail" @click="handleRoomHome(item.id)" >详情</button>
+                    </div>
+                  </el-card>
+                </div>
+              </div>
+            </el-col>
+          </template>
+        </el-row>
+      </el-skeleton>
+      <el-skeleton :loading="loading" animated v-else-if="valueMode===2" style="padding: 0 20px">
+          <el-row>
+            <template v-if="roomShowType">
+              <el-col 
+                :xl="24"
+                :lg="24"
+                :md="24"
+                :sm="24"
+                :xs="24">
+                <div ref="scrollableContainer" class="arrayContainer">
+                  <Echart :options="powOptionsData[0]" :height="400" :width="1702"/>
+                </div>
+              </el-col>
+            </template>
+          </el-row>
+      </el-skeleton>
+    </div>
     <el-collapse v-if="switchValue == 0" v-model="activeNames" @change="handleChange">
-      <el-collapse-item v-for="(e,i) in roomAddrList" :key="i" :title="e" :name="i" style="padding: 10px 0;">
+      <el-collapse-item v-for="(e,i) in roomAddrList.slice(1)" :key="i" :title="e" :name="i" style="padding: 10px 0;">
         <el-skeleton :loading="loading" animated v-if="valueMode===0" style="padding: 0 20px">
             <el-row>
               <template v-if="roomShowType">
@@ -60,7 +164,7 @@
                   <div ref="scrollableContainer" class="arrayContainer">
                     <div 
                       class="arrayItem"
-                      v-for="(item, index) in addrAllRoomList[i]"
+                      v-for="(item, index) in addrAllRoomList[i+1]"
                       :key="`card-${index}`"
                     >
                       <el-card shadow="hover">
@@ -96,7 +200,7 @@
                   <div ref="scrollableContainer" class="arrayContainer" @scroll="handleScroll">
                     <div 
                       class="arrayItem"
-                      v-for="(item, index) in addrAllRoomList[i]"
+                      v-for="(item, index) in addrAllRoomList[i+1]"
                       :key="`card-${index}`"
                     >
                       <el-card shadow="hover" @dblclick="handleRoomHome(item.id)">
@@ -111,18 +215,23 @@
                         </div>
                         <div class="mt-14px flex justify-around text-12px text-gray-400">
                           <div style="width: 33%;text-align:center"><el-text>最高温度：</el-text></div>
-                          <div style="width: 33%;text-align:center"><el-text>{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</el-text></div>
-                          <div style="width: 33%;text-align:center"><el-text>{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.temMaxFront ? item.temMaxFront.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.temMaxBlack ? item.temMaxBlack.toFixed(1) : '0.0'}}&deg;C</el-text></div>
                         </div>
                         <div class="mt-14px flex justify-around text-12px text-gray-400">
                           <div style="width: 33%;text-align:center"><el-text>平均温度：</el-text></div>
-                          <div style="width: 33%;text-align:center"><el-text>{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</el-text></div>
-                          <div style="width: 33%;text-align:center"><el-text>{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.temAvgFront ? item.temAvgFront.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.temAvgBlack ? item.temAvgBlack.toFixed(1) : '0.0'}}&deg;C</el-text></div>
+                        </div>
+                        <div class="mt-14px flex justify-around text-12px text-gray-400">
+                          <div style="width: 33%;text-align:center"><el-text>最高湿度：</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.humMaxFront ? item.humMaxFront.toFixed(0) : '0'}}%</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.humMaxBlack ? item.humMaxBlack.toFixed(0) : '0'}}%</el-text></div>
                         </div>
                         <div class="mt-14px flex justify-around text-12px text-gray-400">
                           <div style="width: 33%;text-align:center"><el-text>平均湿度：</el-text></div>
-                          <div style="width: 33%;text-align:center"><el-text>{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}%</el-text></div>
-                          <div style="width: 33%;text-align:center"><el-text>{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}%</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.humAvgFront ? item.humAvgFront.toFixed(0) : '0'}}%</el-text></div>
+                          <div style="width: 33%;text-align:center"><el-text>{{item.humAvgBlack ? item.humAvgBlack.toFixed(0) : '0'}}%</el-text></div>
                         </div>
                         <div style="position: absolute;bottom: 0;right: 0">
                           <button class="detail" @click="handleRoomHome(item.id)" >详情</button>
@@ -143,7 +252,7 @@
                   :md="24"
                   :sm="24"
                   :xs="24">
-                  <Echart :options="powOptionsData[i]" :height="400" :width="1702"/>
+                  <Echart :options="powOptionsData[i+1]" :height="400" :width="1702"/>
                 </el-col>
               </template>
             </el-row>
@@ -154,34 +263,41 @@
       <el-table v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" min-width="110" align="center">
             <template #default="scope">
-               <div>{{scope.row.id}}</div>
+              <div>{{scope.row.id}}</div>
             </template>
         </el-table-column>
 
         <el-table-column label="机房名称" min-width="110" align="center">
             <template #default="scope">
-               <div>{{scope.row.roomName}}</div>
+              <div>{{scope.row.roomName}}</div>
             </template>
         </el-table-column>
         
         <el-table-column label="删除日期" min-width="110" align="center">
-           <template #default="scope">
-               {{ (new Date(scope.row.updateTime)).toISOString().slice(0, 10) }}
+          <template #default="scope">
+              {{ (new Date(scope.row.updateTime)).toISOString().slice(0, 10) }}
             </template>
         </el-table-column>
 
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="120px">
           <template #default="scope">
             <el-button
               link
               type="danger"
               @click="handleRestore(scope.row.id)"
+              style="background-color:#409EFF;color:#fff;border:none;width:90px;height:30px;"
             >
               恢复机房
             </el-button>
           </template>
         </el-table-column>
       </el-table>
+      <Pagination
+        :total="queryDeleteParams.pageTotal"
+        v-model:page="queryDeleteParams.pageNo"
+        v-model:limit="queryDeleteParams.pageSize"
+        @pagination="handleStopDelete"
+      />
     </div>
     <div v-if="switchValue == 3">
       <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
@@ -316,7 +432,7 @@
         </div>
         <div class="double-formitem">
           <el-form-item label="名称" label-width="90">
-            <el-input v-model="rowColInfo.roomName" placeholder="请输入"  @blur="handleBlur" />
+            <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
           </el-form-item>
           <el-form-item label="楼层" prop="type" label-width="90">
             <el-select v-model="rowColInfo.addr" placeholder="请选择">
@@ -434,7 +550,7 @@ const queryDeleteParams = reactive({
   company: undefined,
   showCol: [1, 2, 12, 13, 15, 16] as number[],
   pageNo: 1,
-  pageSize: 24,
+  pageSize: 20,
   pageTotal: 0,
 })
 
@@ -472,23 +588,14 @@ const handleQuery = async () => {
       let index = roomAddrList.value.findIndex(item => item == ele.addr)
       if(index != -1) {
         addrAllRoomList.value[index].push(ele)
-        activeNames.value.push(index)
+        if(ele.addr != '未区分')
+        activeNames.value.push(index-1)
       }
     })
     activeNames.value = [...new Set(activeNames.value)]
     console.log("222",activeNames.value)
   }
 }
-
-
-const handleBlur = async() =>{
-  const res = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
-  if(res != null){
-    message.error('该机房名称已存在,请重新输入!');
-    rowColInfo.roomName = "";
-  }
-}
-
 
 /** 重置按钮操作 */
 const resetQuery = () => {
@@ -549,6 +656,7 @@ const handleRestore = async (flagRoomid) => {
     const res = await MachineRoomApi.restoreRoomInfo({id: flagRoomid});
     if(res != null || res != "")
     message.success('恢复成功')
+    deletedList.value = deletedList.value.filter(item => item.id != flagRoomid)
     getRoomAddrList()
   })
 }
@@ -574,6 +682,17 @@ const resetForm = () => {
 
 // 处理设置提交
 const submitSetting = async() => {
+  if(rowColInfo.roomName == '') {
+    message.error('机房名称不能为空,请输入!')
+    return
+  }
+  const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
+  if(resSelect != null){
+    message.error('该机房名称已存在,请重新输入!');
+    rowColInfo.roomName = '';
+    return
+  }
+
    let roomFlagId:any = null;
    let messageRoomFlag = "保存成功！";
    console.log("aaaaaaaaaa",rowColInfo)
@@ -730,6 +849,7 @@ const handleChange = async (val: CollapseModelValue) => {
   display: flex;
   flex-wrap: wrap;
   padding: 0 20px;
+  background-color: #fff;
   .arrayItem {
     width: 25%;
     font-size: 13px;
@@ -811,5 +931,9 @@ const handleChange = async (val: CollapseModelValue) => {
 }
 :deep .el-table thead th.el-table__cell {
   background: var(--el-fill-color-light);
+}
+:deep .el-pagination {
+  justify-content: flex-end;
+  float: none;
 }
 </style>

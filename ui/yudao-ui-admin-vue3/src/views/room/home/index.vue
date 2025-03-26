@@ -130,11 +130,11 @@
       </ContentWrap>
     </div>
     <div class="right">
-      <el-card shadow="never">
+      <el-card shadow="never" v-if="roomDownVal.displayFlag">
         <template #header>
-          <div style="margin-left:45%">PUE</div>
+          <div style="text-align: center">{{roomDownVal.displayType ? 'PUE' : '负载率'}}</div>
         </template>
-        <div style="margin-left:45%">1.03</div>
+        <div style="text-align: center">{{roomDownVal.displayType ? (roomDownVal.roomPue ? roomDownVal.roomPue.toFixed(0) : '0') : (roomDownVal.roomLoadFactor ? roomDownVal.roomLoadFactor.toFixed(0)+'%' : '0%')}}</div>
       </el-card>
       <!--<el-card shadow="never">
         <template #header>
@@ -767,7 +767,7 @@ const handleGetRoomId = (data) => {
   // getRoomDevData()
   // getRoomPowData()
   getRoomEchartData()
-  getRoomEnvData()
+  // getRoomEnvData()
   getRoomEqData()
   getLineChartData()
   console.log('handleGetRoomId', data)
@@ -816,6 +816,7 @@ const getRoomEqData = async() => {
 const handleBackData = (data) => {
   console.log('***',data)
   Object.assign(roomDownVal, data)
+  initChart()
 }
 
 const initChart = () => {
@@ -837,7 +838,6 @@ const initChart = () => {
       }},
       legend: {
         data: ['平均温度', '最高温度'], // 图例项
-        selected: false
       },
       xAxis: {
         type: 'category',nameLocation: 'end',
@@ -850,12 +850,12 @@ const initChart = () => {
         {
           name: '平均温度',
           type: 'bar',
-          data: [31,31],
+          data: [roomDownVal.temAvgFront,roomDownVal.temAvgBlack],
         },
         {
           name: '最高温度',
           type: 'bar',
-          data: [33,34],
+          data: [roomDownVal.temMaxFront,roomDownVal.temMaxBlack],
         }
       ]
   })
@@ -881,7 +881,6 @@ const updateChart = () => {
       }},
       legend: {
         data: ['平均温度', '最高温度'], // 图例项
-        selected: false
       },
       xAxis: {
         type: 'category',nameLocation: 'end',
@@ -894,12 +893,12 @@ const updateChart = () => {
         {
           name: '平均温度',
           type: 'bar',
-          data: [31,31]
+          data: [roomDownVal.temAvgFront,roomDownVal.temAvgBlack],
         },
         {
           name: '最高温度',
           type: 'bar',
-          data: [33,34]
+          data: [roomDownVal.temMaxFront,roomDownVal.temMaxBlack],
         }
       ]
   })
@@ -921,7 +920,6 @@ const updateChart = () => {
       }},
       legend: {
         data: ['平均湿度','最高湿度'], // 图例项
-        selected: false
       },
       xAxis: {
         type: 'category',nameLocation: 'end',
@@ -934,12 +932,12 @@ const updateChart = () => {
         {
           name: '平均湿度',
           type: 'bar',
-          data: [81,81]
+          data: [roomDownVal.humAvgFront,roomDownVal.humAvgBlack],
         },
         {
           name: '最高湿度',
           type: 'bar',
-          data: [82,83]
+          data: [roomDownVal.humMaxFront,roomDownVal.humMaxBlack],
         }
       ]
   })
@@ -1032,7 +1030,6 @@ onMounted(() => {
   const centerEle = document.getElementById('center')
   containerInfo.width = centerEle?.offsetWidth as number
   console.log('centerEle', containerInfo.width, centerEle?.offsetWidth, centerEle?.offsetHeight)
-  initChart()
 })
 </script>
 
