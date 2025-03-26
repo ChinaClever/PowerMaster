@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="功率因素">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="功率因数">
     <template #NavInfo>
       <div>
         <!-- <div class="header">
@@ -120,28 +120,28 @@
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>  
-          <el-table-column v-if="valueMode == 0" label="总功率因素" align="center" prop="apf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="总功率因数" align="center" prop="apf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.totalPf != null">
                 {{ scope.row.totalPf }}
               </el-text>
             </template>
           </el-table-column> 
-          <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="A相功率因数" align="center" prop="apf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.apf != null">
                 {{ scope.row.apf }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column v-if="valueMode == 0" label="B相功率因素" align="center" prop="bpf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="B相功率因数" align="center" prop="bpf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bpf != null">
                 {{ scope.row.bpf }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column v-if="valueMode == 0" label="C相功率因素" align="center" prop="cpf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="C相功率因数" align="center" prop="cpf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.cpf != null">
                 {{ scope.row.cpf }}
@@ -187,7 +187,7 @@
             </div>-->
             <div class="icon">
               <div v-if=" item.totalPf != null ">
-                <span style="font-size: 20px;">{{ item.totalPf }}</span><br/>总功率因素
+                <span style="font-size: 20px;">{{ item.totalPf }}</span><br/>总功率因数
               </div>                    
             </div>
             <div v-show="item.status != 0"><Bar :width="130" :height="100" :max="{L1:item.apf,L2:item.bpf,L3:item.cpf}" /></div>
@@ -217,7 +217,7 @@
         <div class="custom-row" style="display: flex; align-items: center;">
           <!-- 位置标签 -->
           <div class="location-tag el-col">
-            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因数详情</span>
             <span>所在位置：{{ location?location:'未绑定' }}</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
@@ -251,9 +251,9 @@
         <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
           <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time" />
-          <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
-          <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
-          <el-table-column label="C相功率因素" align="center" prop="powerFactorAvgValueC" />
+          <el-table-column label="A相功率因数" align="center" prop="powerFactorAvgValueA" />
+          <el-table-column label="B相功率因数" align="center" prop="powerFactorAvgValueB" />
+          <el-table-column label="C相功率因数" align="center" prop="powerFactorAvgValueC" />
         </el-table>
         </div>
       </el-dialog>

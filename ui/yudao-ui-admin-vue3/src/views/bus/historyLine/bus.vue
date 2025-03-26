@@ -9,7 +9,7 @@
           <!-- <br/> -->
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-        </div>
+      </div>
       
         <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
           <div  class="description-item">
@@ -205,7 +205,6 @@ import { IndexApi } from '@/api/bus/busindex'
 import { ElMessage } from 'element-plus'
 import download from '@/utils/download'
 import  CommonMenu1 from './component/CommonMenu1.vue'
-import { isNull } from '@/utils/is';
 
 
 defineOptions({ name: 'PDUHistoryLine' })
