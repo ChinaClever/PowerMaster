@@ -609,7 +609,6 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 RoomActivePowTrendDTO dto = yesterdayMap.get(dateTime);
                 if (Objects.nonNull(dto)) {
                     dto.setActivePow(String.valueOf(hourDo.getActiveTotalAvgValue()));
-                    yesterdayList.add(dto);
                 }
             });
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
@@ -623,7 +622,6 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 RoomActivePowTrendDTO dto = todayListMap.get(dateTime);
                 if (Objects.nonNull(dto)) {
                     dto.setActivePow(String.valueOf(hourDo.getActiveTotalAvgValue()));
-                    todayList.add(dto);
                 }
             });
             powDTO.setYesterdayList(yesterdayList);

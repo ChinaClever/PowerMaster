@@ -97,4 +97,6 @@ public interface AisleIndexService {
     Map findAisleFactor() throws IOException;
 
     Map<String, AislePowerFactorMaxResVO> getAisleLineMax(AisleIndexPageReqVO pageReqVO) throws IOException;
+
+    PageResult<AisleIndexDelResVO> getDelPage(AisleIndexPageReqVO pageReqVO);
 }

@@ -11,6 +11,7 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AisleHdaLineHour;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
@@ -28,7 +29,9 @@ import cn.iocoder.yudao.module.aisle.dto.AislePowerLoadDetailReqDTO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -909,6 +912,20 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             map.put("B",resVO);
         }
         return map;
+    }
+
+    @Override
+    public PageResult<AisleIndexDelResVO> getDelPage(AisleIndexPageReqVO pageReqVO) {
+        Page page = new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        LambdaQueryWrapper<AisleIndexDO> queryWrapper = new LambdaQueryWrapper<AisleIndexDO>().eq(AisleIndexDO::getIsDelete,1)
+                .eq(StringUtils.isNotEmpty(pageReqVO.getName()),AisleIndexDO::getAisleName,pageReqVO.getName());
+        Page<AisleIndexDO> page1 = aisleIndexCopyMapper.selectPage(page, queryWrapper);
+        if (page1.getTotal() > 0) {
+            List<AisleIndexDO> records = page1.getRecords();
+            List<AisleIndexDelResVO> bean = BeanUtils.toBean(records, AisleIndexDelResVO.class);
+           return new PageResult<>(bean,page1.getTotal());
+        }
+        return null;
     }
 
     private void extractedMaxEq(String indexEs, String startTime, String endTime, List<AisleMaxEqResVO> result, Integer type) {

@@ -21,7 +21,7 @@
       <div style="display: flex;align-items: center">
         <!-- <el-button @click="handleAdd" type="primary">新建机房</el-button> -->
         <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
-        <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button>
+        <!-- <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button> -->
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
@@ -104,7 +104,7 @@
                                   已用空间：{{item.usedSpace}}U<br/>
                                   未用空间：{{item.freeSpace}}U<br/>
                                 </template>
-                                <div v-if="chosenBtn == 0">{{item.loadRate ? formItem : formItem}}%</div>
+                                <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%</div>
                                 <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(0) : '0'}}kW</div>
                                 <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.000'}}</div>
                                 <div v-if="chosenBtn == 3">{{item.tem}}°C</div>
@@ -491,13 +491,14 @@ const groupMachineBlank = {
   put: (event) => {
    // console.log('event', event.el.id)
     const moveBox = movingInfo.value
+    // console.log(moveBox)
     if (editEnable.value && moveBox.type == 1 && moveBox.amount > 1) {
       if (moveBox.direction == 1) {
         const X = +event.el.id.split('-')[1]
         const Y = +event.el.id.split('-')[0]
         if (X + moveBox.amount > rowColInfo.col) return false
         for(let i = 0;i < moveBox.amount;i++) {
-          if(tableData.value[Y][formParam.value[X+i]].length || tableData.value[Y+1][formParam.value[X+i]].length || (Y > 0 && tableData.value[Y-1][formParam.value[X+i]].length)) {
+          if(tableData.value[Y][formParam.value[X+i]].length || tableData.value[Y+1][formParam.value[X+i]].length) {
             return false
           }
         }
@@ -506,7 +507,7 @@ const groupMachineBlank = {
         const Y = +event.el.id.split('-')[0]
         if (Y + moveBox.amount > rowColInfo.row) return false
         for(let i = 0;i < moveBox.amount;i++) {
-          if(tableData.value[Y+i][formParam.value[X]].length || tableData.value[Y+i][formParam.value[X+1]].length || (X > 0 && tableData.value[Y+i][formParam.value[X-1]].length)) {
+          if(tableData.value[Y+i][formParam.value[X]].length || tableData.value[Y+i][formParam.value[X+1]].length) {
             return false
           }
         }
@@ -622,8 +623,10 @@ const getRoomInfo = async() => {
       }
     })
     res.cabinetList.forEach(item => {
-      if (item.xCoordinate > 0 && item.yCoordinate > 0)
-      data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
+      if (item.xCoordinate > 0 && item.yCoordinate > 0) {
+        data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2,first: true})
+        data[item.yCoordinate][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2,first: false})
+      }
     })
     tableData.value = data;
     console.log("tableData.value",tableData.value)
@@ -844,7 +847,11 @@ const arraySpanMethod = ({
       }
     } 
     if (tdData && tdData.type && tdData.type == 2) { // 如果是机柜
-      return [2, 1]
+      if (tdData.first) { // 如果是柜列中开头第一个  合并单元格
+        return [2, 1]
+      } else { // 如果不是柜列中开头第一个 该单元格不显示
+        return [0, 0]
+      }
     } 
   }
   return [1, 1]
@@ -885,7 +892,7 @@ const onStart = ({from}) => {
   const X = from.id.split('-')[1]
   const Y = from.id.split('-')[0]
   const target = tableData.value[Y][formParam.value[X]][0]
-  if (target.type == 1) movingInfo.value = target
+  movingInfo.value = target
   //console.log('onStssasrt', target)
 }
 // 拖拽结束的事件
@@ -894,12 +901,12 @@ const onEnd = ({from, to}) => {
   if (from.id != to.id) { // 发生移动才处理
     const X = +to.id.split('-')[1]
     const Y = +to.id.split('-')[0]
+    const X1 = +from.id.split('-')[1]
+    const Y1 = +from.id.split('-')[0]
     const targetTo = tableData.value[Y][formParam.value[X]][0]
-   console.log('value*******', targetTo)
+    console.log('value*******', targetTo)
     
-    if (targetTo.type == 1 && targetTo.amount > 1) {
-      const X1 = +from.id.split('-')[1]
-      const Y1 = +from.id.split('-')[0]
+    if (targetTo.type == 1) {
       if (targetTo.direction == 1) {
         tableData.value[Y1+1][formParam.value[X1]] = []
         tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
@@ -920,6 +927,9 @@ const onEnd = ({from, to}) => {
           tableData.value[Y+i][formParam.value[X+1]] = [{...targetTo,first: false}]
         }
       }
+    } else if (targetTo.type == 2) {
+      tableData.value[Y1+1][formParam.value[X1]] = []
+      tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
     }
     console.log('tableData.value*******', tableData.value)
   }
@@ -1180,7 +1190,7 @@ const handleSubmit = async() => {
           eleAlarmMonth: target.eleAlarmMonth,
           eleLimitMonth: target.eleLimitMonth,
         })
-      } else if (target && target.type == 2) {
+      } else if (target && target.type == 2 && target.first) {
         cabinetList.push({
           id: target.id,
           cabinetName: target.name,
