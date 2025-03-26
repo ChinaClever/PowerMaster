@@ -38,6 +38,11 @@ export const IndexApi = {
     return await request.delete({ url: `/aisle/index/delete?id=` + id })
   },
 
+  // 删除通道列分页
+  deletedAisleInfo: async (data: any) => {
+    return await request.post({ url: `/aisle/index/delPage`, data })
+  },
+
   // 导出通道列 Excel
   exportIndex: async (params) => {
     return await request.download({ url: `/aisle/index/export-excel`, params })
