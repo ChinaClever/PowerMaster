@@ -40,6 +40,8 @@ const echartsOption = ref({
           result += params[i].value.toFixed(3) +  ' kVA'; 
         } else if (params[i].seriesName.includes("有功功率")) {
           result += params[i].value.toFixed(3) + ' kW';
+        }else{
+          result += params[i].value.toFixed(3) + ' kVar';
         }
         result += '<br>';
       }
@@ -54,7 +56,6 @@ const echartsOption = ref({
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
-
   series.value = prop.list.series;
   console.log("平均功率曲线series.value",  series.value)
   if(  series.value != null && series.value?.length > 0){

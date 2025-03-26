@@ -82,10 +82,45 @@
           <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>    
+      <div v-if="switchValue == 2" style="height:710px;overflow-y:auto;">
+        <el-table v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+          <el-table-column label="编号" min-width="110" align="center">
+              <template #default="scope">
+                <div>{{scope.row.id}}</div>
+              </template>
+          </el-table-column>
+
+          <el-table-column label="柜列名称" min-width="110" align="center">
+              <template #default="scope">
+                <div>{{scope.row.aisleName}}</div>
+              </template>
+          </el-table-column>
+          
+          <el-table-column label="删除日期" min-width="110" align="center">
+            <template #default="scope">
+                {{ (new Date(scope.row.updateTime)).toISOString().slice(0, 10) }}
+              </template>
+          </el-table-column>
+
+          <el-table-column label="操作" align="center" width="120px">
+            <template #default="scope">
+              <el-button
+                type="danger"
+                @click="handleRestore(scope.row.id)"
+                style="background-color:#409EFF;color:#fff;border:none;width:90px;height:30px;"
+              >
+                恢复柜列
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        
+      </div>
       <div v-if="switchValue == 3" style="height:710px;overflow-y:auto;">
         <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
@@ -141,13 +176,13 @@
           </el-table-column>
           
           <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center" width="70px">
+          <el-table-column label="操作" align="center" width="140px">
             <template #default="scope">
               <el-button
+                v-if="scope.row.eleActiveTotal != null && scope.row.eleActiveTotal != 0"
                 link
                 type="primary"
                 @click="toDetail(scope.row)"
-                v-if="scope.row.status != null && scope.row.status != 5"
                 style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
               >
               详情
@@ -155,8 +190,7 @@
               <el-button
                 link
                 type="danger"
-                @click="handleDelete(scope.row.boxId)"
-                v-if="scope.row.status == 5"
+                @click="handleDelete(scope.row.id)"
                 style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
               >
                 删除
@@ -219,13 +253,13 @@
           </el-table-column>
 
           <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center" width="70px">
+          <el-table-column label="操作" align="center" width="140px">
             <template #default="scope">
               <el-button
+                v-if="scope.row.eleActiveTotal != null && scope.row.eleActiveTotal != 0"
                 link
                 type="primary"
                 @click="toDetail(scope.row)"
-                v-if="scope.row.status != null && scope.row.status != 5"
                 style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
               >
               详情
@@ -233,8 +267,7 @@
               <el-button
                 link
                 type="danger"
-                @click="handleDelete(scope.row.boxId)"
-                v-if="scope.row.status == 5"
+                @click="handleDelete(scope.row.id)"
                 style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
               >
                 删除
@@ -247,7 +280,7 @@
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
-          <el-table-column label="视在功率 (KVA)" align="center">
+          <el-table-column label="视在功率 (kVA)" align="center">
             <el-table-column label="A路" align="center" prop="powApparentA" >
               <template #default="scope" >
                 <el-text line-clamp="2" v-if="scope.row.powApparentA != null">
@@ -263,7 +296,7 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column label="有功功率 (KW)" align="center">
+          <el-table-column label="有功功率 (kW)" align="center">
             <el-table-column label="A路" align="center" prop="powActiveA" >
               <template #default="scope" >
                 <el-text line-clamp="2" v-if="scope.row.powActiveA != null">
@@ -279,7 +312,7 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column label="无功功率 (KVAR)" align="center">
+          <el-table-column label="无功功率 (kVar)" align="center">
             <el-table-column label="A路" align="center" prop="powReactiveA" >
               <template #default="scope" >
                 <el-text line-clamp="2" v-if="scope.row.powReactiveA != null">
@@ -297,13 +330,13 @@
           </el-table-column>
           
           <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center" width="70px">
+          <el-table-column label="操作" align="center" width="140px">
             <template #default="scope">
               <el-button
+                v-if="scope.row.eleActiveTotal != null && scope.row.eleActiveTotal != 0"
                 link
                 type="primary"
                 @click="toDetail(scope.row)"
-                v-if="scope.row.status != null && scope.row.status != 5"
                 style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
               >
               详情
@@ -311,8 +344,7 @@
               <el-button
                 link
                 type="danger"
-                @click="handleDelete(scope.row.boxId)"
-                v-if="scope.row.status == 5"
+                @click="handleDelete(scope.row.id)"
                 style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
               >
                 删除
@@ -351,18 +383,18 @@
           <div style="display:flex;height:10vh;justify-content: center;align-item:center;margin-bottom: -3vh;margin-top: 1vh">
             <Environment v-if="valueMode == 0 && item.curAList" class="chart" width="100%" height="100%" :load-factor="{first: item.curAList?.[2] ? item.curAList[2].toFixed(0) : 0,second: item.curAList?.[1] ? item.curAList[1].toFixed(0) : 0,third: item.curAList?.[0] ? item.curAList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A'],color: ['#AD3762','#C8603A','#E5B849']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电流 -->
             <Environment v-else-if="valueMode == 1 && item.volAList" class="chart" width="100%" height="100%" :load-factor="{first: item.volALis?.[2] ? item.volAList[2].toFixed(0) : 0,second: item.volAList?.[1] ? item.volAList[1].toFixed(0) : 0,third: item.volAList?.[0] ? item.volAList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V'],color: ['#45C0C9','#119CB5','#075F71']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电压 -->
-            <Environment v-else-if="valueMode == 2 && item.curAList" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveA ? Number(item.powReactiveA).toFixed(0) : 0,second: item.powActiveA ? Number(item.powActiveA).toFixed(0) : 0,third: item.powApparentA ? Number(item.powApparentA).toFixed(0) : 0,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA'],color: ['#800080','#91cc75','#5470c6']}" style="margin-right:-15px;"/>
+            <Environment v-else-if="valueMode == 2 && item.curAList" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveA ? Number(item.powReactiveA).toFixed(0) : 0,second: item.powActiveA ? Number(item.powActiveA).toFixed(0) : 0,third: item.powApparentA ? Number(item.powApparentA).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}" style="margin-right:-15px;"/>
 
             <EnvironmentCopy v-if="valueMode == 0 && item.curBList" class="chart" width="100%" height="100%" :load-factor="{first: item.curBList?.[2] ? item.curBList[2].toFixed(0) : 0,second: item.curBList?.[1] ? item.curBList[1].toFixed(0) : 0,third: item.curBList?.[0] ? item.curBList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A'],color: ['#AD3762','#C8603A','#E5B849']}"/> <!-- TODO 换成B路电流 -->
             <EnvironmentCopy v-else-if="valueMode == 1 && item.volBList" class="chart" width="100%" height="100%" :load-factor="{first: item.volBList?.[2] ? item.volBList[2].toFixed(0) : 0,second: item.volBList?.[1] ? item.volBList[1].toFixed(0) : 0,third: item.volBList ? item.volBList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V'],color: ['#45C0C9','#119CB5','#075F71']}"/> <!-- TODO 换成B路电压 -->
-            <EnvironmentCopy v-else-if="valueMode == 2 && item.curBList" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveB ? Number(item.powReactiveB).toFixed(0) : 0,second: item.powActiveB ? Number(item.powActiveB).toFixed(0) : 0,third: item.powApparentB ? Number(item.powApparentB).toFixed(0) : 0,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA'],color: ['#800080','#91cc75','#5470c6']}"/>
+            <EnvironmentCopy v-else-if="valueMode == 2 && item.curBList" class="chart" width="100%" height="100%" :load-factor="{first: item.powReactiveB ? Number(item.powReactiveB).toFixed(0) : 0,second: item.powActiveB ? Number(item.powActiveB).toFixed(0) : 0,third: item.powApparentB ? Number(item.powApparentB).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}"/>
           </div>
           <div v-if="item.curAList || item.curBList" style="display:flex;justify-content: space-around;padding: 5px 0;">
             <div v-if="item.curAList">A路</div>
             <div v-if="item.curBList">B路</div>
           </div>
           <div v-if="item.eleActiveTotal != null && item.eleActiveTotal != 0" style="position: absolute;bottom: 0;right: 0">
-            <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
+            <button class="detail" @click="toDetail(item)">详情</button>
           </div>
           <!-- <div v-if="item.eleActiveTotal != null" style="display: inline-block;
             width: 50%;
@@ -392,6 +424,14 @@
       </div>
 
       <Pagination
+        v-if="switchValue == 2"
+        :total="queryDeleteParams.pageTotal"
+        v-model:page="queryDeleteParams.pageNo"
+        v-model:limit="queryDeleteParams.pageSize"
+        @pagination="handleStopDelete"
+      />
+      <Pagination
+        v-else
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
@@ -432,6 +472,7 @@ const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const valueMode = ref(2)
+const deletedList = ref<any>([]) //已删除的
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -506,6 +547,14 @@ const queryParams = reactive({
 })as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+
+const queryDeleteParams = reactive({
+  company: undefined,
+  showCol: [1, 2, 12, 13, 15, 16] as number[],
+  pageNo: 1,
+  pageSize: 20,
+  pageTotal: 0,
+})
 
 /** 查询列表 */
 const getList = async () => {
@@ -632,11 +681,30 @@ const handleExport = async () => {
   }
 }
 
-function headerCellStyle() {
-    return {
-      backgroundColor: '#eee', // 表头背景颜色
-    };
-  }
+//已删除
+const handleStopDelete = async() =>{
+  const res = await IndexApi.deletedAisleInfo({
+    pageNo: queryDeleteParams.pageNo,
+    pageSize: queryDeleteParams.pageSize,
+  })
+  deletedList.value = res.list;
+  queryDeleteParams.pageTotal = res.total;
+}
+
+//恢复机房
+const handleRestore = async (flagAisleid) => {
+  ElMessageBox.confirm('确认恢复机房吗？', '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    // const res = await MachineRoomApi.restoreRoomInfo({id: flagAisleid});
+    // if(res != null || res != "")
+    // message.success('恢复成功')
+    // deletedList.value = deletedList.value.filter(item => item.id != flagAisleid)
+    // getRoomAddrList()
+  })
+}
 
 /** 初始化 **/
 onMounted(async () => {
@@ -1008,5 +1076,8 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+:deep .el-table thead th.el-table__cell {
+  background: var(--el-fill-color-light);
 }
 </style>

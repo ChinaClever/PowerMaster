@@ -44,9 +44,9 @@
           :style="isFromHome ? `transform-origin: 0 0;height: 50vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
           <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
           <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
-            <el-table-column fixed type="index" width="60" align="center" :resizable="false" />
+            <el-table-column fixed type="index" align="center" :resizable="false" />
             <template v-for="(formItem, index) in formParam" :key="index">
-              <el-table-column :label="formItem" min-width="60" align="center" :resizable="false">
+              <el-table-column :label="formItem" min-width="54" align="center" :resizable="false">
                 <template #default="scope">
                   <draggable
                     :id="`${scope.$index}-${index}`"
@@ -78,10 +78,11 @@
                               未用空间：{{element.freeSpace}}U<br/>
                             </template>
                             <div v-if="chosenBtn == 0">{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%</div>
-                            <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW</div>
-                            <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.000'}}</div>
+                            <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0'}}<br/>kW</div>
+                            <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
                             <div v-if="chosenBtn == 3">{{element.tem}}°C</div>
                             <div v-if="chosenBtn == 4">{{element.cabinetHeight}}U</div>
+                            <div v-if="chosenBtn == 5">{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}<br/>kWh</div>
                           </el-tooltip>
                         </template>
                       </div>
@@ -105,10 +106,11 @@
                                   未用空间：{{item.freeSpace}}U<br/>
                                 </template>
                                 <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%</div>
-                                <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(0) : '0'}}kW</div>
-                                <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.000'}}</div>
+                                <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<br/>kW</div>
+                                <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
                                 <div v-if="chosenBtn == 3">{{item.tem}}°C</div>
                                 <div v-if="chosenBtn == 4">{{item.cabinetHeight}}U</div>
+                                <div v-if="chosenBtn == 5">{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}<br/>kWh</div>
                               </el-tooltip>
                             </template>
                           </div>
@@ -337,7 +339,7 @@ const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，
 const tableData = ref<Record<string, any[]>[]>([]);
 const statusInfo = ref([
   {
-    name: '空机柜',
+    name: '空载',
     color: '#effaff',
     value: 0,
   },
@@ -498,7 +500,7 @@ const groupMachineBlank = {
         const Y = +event.el.id.split('-')[0]
         if (X + moveBox.amount > rowColInfo.col) return false
         for(let i = 0;i < moveBox.amount;i++) {
-          if(tableData.value[Y][formParam.value[X+i]].length || tableData.value[Y+1][formParam.value[X+i]].length) {
+          if((tableData.value[Y][formParam.value[X+i]].length && tableData.value[Y][formParam.value[X+i]][0].id != moveBox.id) || (tableData.value[Y+1][formParam.value[X+i]].length && tableData.value[Y+1][formParam.value[X+i]][0].id != moveBox.id)) {
             return false
           }
         }
@@ -507,7 +509,7 @@ const groupMachineBlank = {
         const Y = +event.el.id.split('-')[0]
         if (Y + moveBox.amount > rowColInfo.row) return false
         for(let i = 0;i < moveBox.amount;i++) {
-          if(tableData.value[Y+i][formParam.value[X]].length || tableData.value[Y+i][formParam.value[X+1]].length) {
+          if((tableData.value[Y+i][formParam.value[X]].length && tableData.value[Y+i][formParam.value[X]][0].id != moveBox.id) || (tableData.value[Y+i][formParam.value[X+1]].length && tableData.value[Y+i][formParam.value[X+1]][0].id != moveBox.id)) {
             return false
           }
         }
@@ -865,7 +867,7 @@ const handleRightClick = (e) => {
   const offsetX = e.clientX - Math.ceil(rect.left) + 1
   const offsetY = e.clientY - Math.ceil(rect.top) + 1
   const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  e.target.parentNode.parentNode.id)
-  //console.log('handleRightClick', e.target, currentId, offsetX, offsetY)
+  console.log('handleRightClick', e.target, currentId, offsetX, offsetY)
   const lndexX = currentId.split('-')[1]
   const lndexY = currentId.split('-')[0]
   if (!currentId) return
@@ -1023,28 +1025,33 @@ const handleJump = (data) => {
 }
 // 删除机柜
 const deleteMachine = () => {
-  const Y = operateMenu.value.lndexY
-  const X = formParam.value[operateMenu.value.lndexX]
-  const target = JSON.parse(JSON.stringify(tableData.value[Y][X][0])) // 要删除的目标
- // console.log('删除机柜',tableData.value[Y][X], target)
-  if (target.type && target.type == 1) {
-    for (let i = 0; i < target.originAmount; i++) {
-      if (target.direction == 1) {
-        // const charCode = X.charCodeAt(0) + i
-    //    console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
-        tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
-      } else {
-        tableData.value[+Y + i][X].splice(0, 1)
-      }
-    }
-  } else {
-    tableData.value[Y][X].splice(0, 1)
-  }
+//  console.log('删除机柜',tableData.value[Y][X], target,Y,X)
+  // console.log("tableData.value",tableData.value)
   ElMessageBox.confirm('确认要删除吗？', '提示', {
     confirmButtonText: '确 认',
     cancelButtonText: '取 消',
     type: 'warning'
   }).then(async () => {
+    const Y = operateMenu.value.lndexY
+    const X = formParam.value[operateMenu.value.lndexX]
+    const target = JSON.parse(JSON.stringify(tableData.value[Y][X][0])) // 要删除的目标
+    if (target.type && target.type == 1) {
+      for (let i = 0; i < target.originAmount; i++) {
+        if (target.direction == 1) {
+          // const charCode = X.charCodeAt(0) + i
+      //    console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
+          tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
+          tableData.value[+Y + 1][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
+        } else {
+          tableData.value[+Y + i][X].splice(0, 1)
+          tableData.value[+Y + i][formParam.value[+operateMenu.value.lndexX + 1]].splice(0, 1)
+        }
+      }
+      // console.log("tableData.value",tableData.value)
+    } else {
+      tableData.value[Y][X].splice(0, 1)
+      tableData.value[+Y + 1][X].splice(0, 1)
+    }
     await MachineRoomApi.deletedRoomAisleInfo({id: roomId.value})
     message.success('删除成功')
   })
@@ -1109,10 +1116,13 @@ const getColumnCharCodeToNumber = (columnId: string): number => {
   return result - 1; // 因为我们的计算是从 1 开始的（A=1），而通常我们希望索引从 0 开始
 };
 
-
-
 // 处理设置提交
 const submitSetting = async() => {
+   if(rowColInfo.roomName == '') {
+      message.error('机房名称不能为空,请输入!')
+      return
+   }
+
    let roomFlagId:any = null;
    let messageRoomFlag = "保存成功！";
    if(roomFlag.value == 2){
@@ -1333,7 +1343,6 @@ onUnmounted(() => {
   .dragTd {
     width: 100%;
     height: 100%;
-    min-height: 40px;
     .dragChild {
       width: 100%;
       height: 100%;
@@ -1341,6 +1350,9 @@ onUnmounted(() => {
       box-sizing: border-box;
       display: flex;
       border: 1px solid #000;
+      &:hover {
+        border: 1px solid #007BFF;
+      }
       // align-items: center;
       .dragSon {
         min-height: 40px;
@@ -1370,6 +1382,9 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       border: 1px solid #000;
+      &:hover {
+        border: 1px solid #007BFF;
+      }
       .dragSon {
         flex: 1;
         min-height: 40px;
@@ -1402,7 +1417,10 @@ onUnmounted(() => {
     // height: 40px;
     background-color: #effaff;
     box-sizing: border-box;
-    border-right: 1px solid #ebeef5;
+    border: 1px solid #000;
+      &:hover {
+        border: 1px solid #007BFF;
+      }
     &>div {
       display: flex;
       align-items: center;
@@ -1440,7 +1458,7 @@ onUnmounted(() => {
 :deep(.dragTable .el-table__cell .cell) {
   width: 100%;
   height: 100%;
-  min-height: 40px;
+  min-height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;

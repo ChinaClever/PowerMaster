@@ -41,8 +41,8 @@
           </div>
         </div>
         <div style="display:flex;height:10vh;justify-content: center;align-item:center;margin-bottom: -40px">
-          <Environment class="chart" width="100%" height="100%" :load-factor="{first: mainInfo.powReactiveA,second: mainInfo.powActiveA,third: mainInfo.powApparentA,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电流 -->
-          <EnvironmentCopy class="chart" width="100%" height="100%" :load-factor="{first: mainInfo.powReactiveB,second: mainInfo.powActiveB,third: mainInfo.powApparentB,label: ['Q','P','S'],unit: ['KVAR', 'KW', 'KVA']}"/>
+          <Environment class="chart" width="100%" height="100%" :load-factor="{first: mainInfo.powReactiveA,second: mainInfo.powActiveA,third: mainInfo.powApparentA,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA']}" style="margin-right:-15px;"/> <!-- TODO 换成A路电流 -->
+          <EnvironmentCopy class="chart" width="100%" height="100%" :load-factor="{first: mainInfo.powReactiveB,second: mainInfo.powActiveB,third: mainInfo.powApparentB,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA']}"/>
         </div>
         <!-- <div style="display:flex;justify-content: space-around">
           <div>A路</div>
@@ -1379,90 +1379,6 @@ const getMainData = async() => {
       }
     ]
   })
-  
-//Object.assign(echartsOptionA, {
-//  title: {
-//    text: '实时功率'
-//  },
-//  legend: {
-//    data: ['视在功率', '有功功率'],
-//    top: 0,
-//    right: 0,
-//  },
-//  grid: {
-//    bottom: 0,
-//    top: 0,
-//  },
-//  radar: {
-//    indicator: res.cabinetList.map((item, index) => {
-//      return {
-//        name: '机柜' + (index+1),
-//        max: 10
-//      }
-//    })
-//  },
-//  series: [
-//    {
-//      name: 'power',
-//      type: 'radar',
-//      data: [
-//        {
-//          value: res.cabinetList.map(item => item.powApparentA),
-//          name: '视在功率'
-//        },
-//        {
-//          value: res.cabinetList.map(item => item.powActiveA),
-//          name: '有功功率',
-//          areaStyle: {
-//            color: 'rgba(206, 255, 171, 0.6)'
-//          }
-//        }
-//      ]
-//    }
-//  ]
-//})
-//
-//Object.assign(echartsOptionB, {
-//  title: {
-//    text: 'B路功率'
-//  },
-//  legend: {
-//    data: ['视在功率', '有功功率'],
-//    top: 0,
-//    right: 0,
-//  },
-//  grid: {
-//    bottom: 0,
-//    top: 0,
-//  },
-//  radar: {
-//    indicator: res.cabinetList.map((item, index) => {
-//      return {
-//        name: '机柜' + (index+1),
-//        max: 10
-//      }
-//    })
-//  },
-//  series: [
-//    {
-//      name: 'power',
-//      type: 'radar',
-//      data: [
-//        {
-//          value: res.cabinetList.map(item => item.powApparentB),
-//          name: '视在功率'
-//        },
-//        {
-//          value: res.cabinetList.map(item => item.powActiveB),
-//          name: '有功功率',
-//          areaStyle: {
-//            color: 'rgba(206, 255, 171, 0.6)'
-//          }
-//        }
-//      ]
-//    }
-//  ]
-//})
 }
 
 const getMainEq = async() => {
@@ -1479,9 +1395,6 @@ const sendRoomIdValList = async (result) =>{
    getMainData()
    getMainEq()
    await getLineChartData()
-   initChart2()
-   initChart3()
-   initChart4()
 }
 
 
