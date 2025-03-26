@@ -132,6 +132,25 @@
             </choose>
         </where>
     </select>
+    <select id="roomCabinetListByIds" resultType="cn.iocoder.yudao.framework.common.dto.room.RoomCabinetDTO">
+        select
+        ci.id ,
+        ci.room_id as roomId,
+        ci.cabinet_name as cabinetName,
+        ci.aisle_id as aisleId,
+        ci.power_capacity as powCapacity,
+        ci.pdu_box as pduBox,
+        ci.cabinet_height as cabinetHeight
+        from cabinet_index ci
+        <where> ci.is_disabled = 0 and ci.is_deleted = 0
+            <if test="roomIds != null and roomIds.size >0">
+                AND ci.room_id in
+                <foreach collection="roomIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 
     <!-- 设备恢复 -->

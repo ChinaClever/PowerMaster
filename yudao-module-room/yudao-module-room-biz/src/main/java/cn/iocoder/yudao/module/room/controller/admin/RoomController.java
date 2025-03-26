@@ -2,9 +2,7 @@ package cn.iocoder.yudao.module.room.controller.admin;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
-import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -82,7 +80,7 @@ public class RoomController {
     @PostMapping("/newSave")
     public CommonResult<Integer> newSaveRoom(@RequestBody RoomSavesVo vo) {
         Integer i = roomService.newSaveRoom(vo);
-        if (i>0){
+        if (i > 0) {
             HttpUtil.get(adder);
         }
         return success(i);
@@ -95,7 +93,6 @@ public class RoomController {
         Integer i = roomService.newSelectRoomByName(name);
         return success(i);
     }
-
 
 
     /**
@@ -118,7 +115,6 @@ public class RoomController {
     }
 
 
-
     /**
      * 机房数据详情
      *
@@ -126,14 +122,14 @@ public class RoomController {
      */
     @Operation(summary = "机房数据详情")
     @GetMapping("/data/detail")
-    public CommonResult<RoomDataDTO> getDataDetail(@Param("id") int id){
+    public CommonResult<RoomDataDTO> getDataDetail(@Param("id") int id) {
         RoomDataDTO dto = roomService.getDataDetail(id);
         return success(dto);
     }
 
     @Operation(summary = "新的机房数据详情")
     @GetMapping("/data/newDetail")
-    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id){
+    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id) {
         RoomMainResVO dto = roomService.getDatanewDetail(id);
         return success(dto);
     }
@@ -209,7 +205,6 @@ public class RoomController {
     }
 
 
-
     @Operation(summary = "机房柜列新增/编辑")
     @PostMapping("/roomCabinetSave")
     public CommonResult<Integer> roomCabinetSave(@RequestBody CabinetSaveVo vo) {
@@ -240,9 +235,9 @@ public class RoomController {
 
     @Operation(summary = "机房监测")
     @PostMapping("/roomList")
-    public CommonResult<List<RoomIndexAddrResVO>> getRoomList(@RequestParam(value = "addr", required = false)  @Parameter(description = "地址（楼层）") String addr,
-                                                              @RequestParam(value = "roomName", required = false)  @Parameter(description = "机房名称") String roomName) {
-        List<RoomIndexAddrResVO> roomIndexAddrResVO = roomService.getRoomList(addr,roomName);
+    public CommonResult<List<RoomIndexAddrResVO>> getRoomList(@RequestParam(value = "addr", required = false) @Parameter(description = "地址（楼层）") String addr,
+                                                                    @RequestParam(value = "roomName", required = false) @Parameter(description = "机房名称") String roomName) {
+        List<RoomIndexAddrResVO> roomIndexAddrResVO = roomService.getRoomList(addr, roomName);
         return success(roomIndexAddrResVO);
     }
 }

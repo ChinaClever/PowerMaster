@@ -54,4 +54,6 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
     List<RoomCabinetDTO> roomCabinetList(@Param("id") int id, @Param("aisleIds") List<Integer> aisleIds);
 
     void updateBatchByCabinetId(@Param("cabinetList") List<CabinetVo> cabinetList);
+
+    List<RoomCabinetDTO> roomCabinetListByIds(@Param("roomIds") List<Integer> roomIds);
 }

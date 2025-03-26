@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -33,7 +34,7 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 @Validated
 public class AisleIndexController {
 
-    @Resource
+    @Autowired
     private AisleIndexService indexService;
 
     @PostMapping("/create")
@@ -56,8 +57,14 @@ public class AisleIndexController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('aisle:index:delete')")
     public CommonResult<Boolean> deleteIndex(@RequestParam("id") Integer id) {
-        indexService.deleteIndex(id);
-        return success(true);
+        return success(indexService.deleteIndex(id));
+    }
+
+    @GetMapping("/restore")
+    @Operation(summary = "恢复通道列")
+    @Parameter(name = "id", description = "编号", required = true)
+    public CommonResult<Boolean> restore(@RequestParam("id") Integer id) {
+        return success(indexService.restore(id));
     }
 
     @GetMapping("/get")
@@ -244,7 +251,6 @@ public class AisleIndexController {
     @PostMapping("/chartDetail")
     @Operation(summary = "折线图数据")
     public CommonResult<Map> getBusLineChartDetailData(@RequestBody @Valid AislePowerLoadDetailReqDTO reqVO) throws IOException {
-
         return success(indexService.getLineChartDetailData(reqVO));
     }
 
