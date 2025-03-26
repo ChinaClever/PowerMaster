@@ -96,8 +96,8 @@ public class AisleSaveVo {
      */
     private AisleBarDTO barB;
 
-//    @Schema(description = "机柜列表", example = "[]")
-//    private List<CabinetVo>  cabinetList;
+    @Schema(description = "机柜列表", example = "[]")
+    private List<CabinetVo>  cabinetList;
 
 
     /**

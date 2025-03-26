@@ -822,6 +822,9 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public ReportBasicInformationResVO getReportBasicInformationResVO(BusIndexPageReqVO pageReqVO) {
         BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaUpdateWrapper<BusIndexDO>().eq(BusIndexDO::getBusKey, pageReqVO.getDevKey()));
+        if (busIndexDO == null){
+            return new ReportBasicInformationResVO();
+        }
         ReportBasicInformationResVO vo = new ReportBasicInformationResVO();
         Object obj = redisTemplate.opsForValue().get(REDIS_KEY_BUS + busIndexDO.getBusKey());
         JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
@@ -839,7 +842,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         return vo;
     }
 
-
+    @Override
     public List<BoxReportcopyResVO> getReportBasicInformationByBusResVO(BusIndexPageReqVO pageReqVO) {
 
         String devKey = pageReqVO.getDevKey();

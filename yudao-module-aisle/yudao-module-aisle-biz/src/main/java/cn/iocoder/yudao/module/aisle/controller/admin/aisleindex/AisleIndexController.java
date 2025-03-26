@@ -76,6 +76,12 @@ public class AisleIndexController {
         return success(pageResult);
     }
 
+    @PostMapping("/delPage")
+    @Operation(summary = "删除通道列分页")
+    public CommonResult<PageResult<AisleIndexDelResVO>> getDelPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getDelPage(pageReqVO));
+    }
+
     @PostMapping("/powerpage")
     @Operation(summary = "获得通道列电力索引分页")
     public CommonResult<PageResult<AislePowerRes>> getPowerPage(@RequestBody AisleIndexPageReqVO pageReqVO) {

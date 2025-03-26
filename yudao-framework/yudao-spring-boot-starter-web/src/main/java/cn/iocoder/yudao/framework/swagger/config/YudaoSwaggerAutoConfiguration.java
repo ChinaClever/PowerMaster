@@ -127,6 +127,11 @@ public class YudaoSwaggerAutoConfiguration {
     }
 
     @Bean
+    public GroupedOpenApi aisleGroupApi() {
+        return buildGroupedOpenApi("柜列", "aisle");
+//        return GroupedOpenApi.builder().group("机房").packagesToScan("cn.iocoder.yudao.module.room").build();
+    }
+    @Bean
     public GroupedOpenApi cabinetGroupApi() {
         return buildGroupedOpenApi("机柜", "cabinet");
 //        return GroupedOpenApi.builder().group("机柜").packagesToScan("cn.iocoder.yudao.module.cabinet").build();
