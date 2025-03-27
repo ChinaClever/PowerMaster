@@ -102,7 +102,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" >
+      <el-table v-loading="loading" :data="list" :border="true"  :show-overflow-tooltip="true" >
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -121,7 +121,7 @@
                            >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
               </div>
               <div v-else-if="column.slot === 'detect'">
                 {{ getCombinedString(row.address?.channel, row.address?.position) }}

@@ -16,6 +16,7 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomIndexChartDetailDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
 import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
 import cn.iocoder.yudao.module.room.dal.mysql.roomindex.RoomIndexCopyMapper;
@@ -275,51 +276,65 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
-
+                totalLineRes.getSeries().add(totalReactivePow);
 
                 LineSeries apparentPowA = new LineSeries();
                 apparentPowA.setName("A路平均视在功率");
                 LineSeries activePowA = new LineSeries();
                 activePowA.setName("A路平均有功功率");
+                LineSeries reactivePowA = new LineSeries();
+                reactivePowA.setName("A路平均无功功率");
                 aLineRes.getSeries().add(apparentPowA);
                 aLineRes.getSeries().add(activePowA);
+                aLineRes.getSeries().add(reactivePowA);
 
 
                 LineSeries apparentPowB = new LineSeries();
                 apparentPowB.setName("B路平均视在功率");
                 LineSeries activePowB = new LineSeries();
                 activePowB.setName("B路平均有功功率");
+                LineSeries reactivePowB = new LineSeries();
+                reactivePowB.setName("B路平均无功功率");
                 bLineRes.getSeries().add(apparentPowB);
                 bLineRes.getSeries().add(activePowB);
+                bLineRes.getSeries().add(reactivePowB);
 
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     roomPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
                     });
                 } else {
                     roomPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
                     });
                 }
@@ -333,7 +348,6 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 RoomPowHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, RoomPowHourDo.class);
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_total_min_value");
                 RoomPowHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, RoomPowHourDo.class);
-
 
                 String apparentAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_a_max_value");
                 RoomPowHourDo maxApparentA = JsonUtils.parseObject(apparentAMaxValue, RoomPowHourDo.class);
@@ -910,6 +924,98 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         return result;
     }
 
+    @Override
+    public List<Map<String, Object>> getChartDetail(RoomIndexChartDetailDTO dto) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+
+        String index = null;
+        String[] heads = new String[]{};
+        String startTime = null;
+        String endTime = null;
+        switch (dto.getGranularity()) {
+            case "realtime":
+                LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+                if (Objects.equals(dto.getFlag(), 2)) {
+                    heads = new String[]{"room_id", "active_a", "active_b", "active_total", "apparent_a", "apparent_b",
+                            "apparent_total", "factor_a", "factor_b", "factor_total", "reactive_a", "reactive_b", "reactive_total", "create_time"};
+                    index = "room_hda_pow_realtime";
+                }
+                if (Objects.equals(dto.getFlag(), 0)) {
+                    index = "room_ele_total_realtime";
+                    heads = new String[]{"room_id", "ele_a", "ele_b","ele_total", "create_time"};
+                }
+                if (Objects.equals(dto.getFlag(), 1)) {
+                    index = "room_hda_pue_realtime";
+                    heads = new String[]{"room_id", "room_pue", "load_rate", "create_time"};
+                }
+                startTime = oneHourAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+            case "hour":
+                LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+                if (Objects.equals(dto.getFlag(), 2)) {
+                    index = "room_hda_pow_hour";
+                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "aisle_id"};
+                }
+                if (Objects.equals(dto.getFlag(), 0)) {
+                    index = "room_ele_total_realtime";
+                    heads = new String[]{"room_id", "ele_total", "create_time"};
+                }
+                if (Objects.equals(dto.getFlag(), 1)) {
+                    index = "room_hda_pue_hour";
+                    heads = new String[]{"room_id", "room_pue_avg_value", "load_rate_avg_value", "create_time"};
+                }
+                startTime = oneDayAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+            case "SeventyHours":
+                LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+                if (Objects.equals(dto.getFlag(), 2)) {
+                    index = "room_hda_pow_hour";
+                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "aisle_id"};
+                }
+                if (Objects.equals(dto.getFlag(), 0)) {
+                    index = "room_ele_total_realtime";
+                    heads = new String[]{"room_id", "ele_total", "create_time"};
+                }
+                if (Objects.equals(dto.getFlag(), 1)) {
+                    index = "room_hda_pue_hour";
+                    heads = new String[]{"room_id", "room_pue_avg_value", "load_rate_avg_value", "create_time"};
+                }
+                startTime = threeDaysAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+            default:
+                LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+                if (Objects.equals(dto.getFlag(), 2)) {
+                    index = "room_hda_pow_day";
+                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "aisle_id"};
+                }
+                if (Objects.equals(dto.getFlag(), 0)) {
+                    index = "room_eq_total_day";
+                    heads = new String[]{"room_id", "eq_value", "create_time"};
+                }
+                if (Objects.equals(dto.getFlag(), 1)) {
+                    index = "room_hda_pue_day";
+                    heads = new String[]{"room_id", "room_pue_avg_value", "load_rate_avg_value", "create_time"};
+                }
+                startTime = oneMonthAgo.format(formatter);
+                endTime = now.format(formatter);
+                break;
+        }
+
+        List<Map<String, Object>> dataMap = getDataMap(startTime, endTime, dto.getRoomId(), index, heads);
+
+        return dataMap;
+    }
+
     private void extractedMaxEq(String indexEs, String startTime, String endTime, List<RoomMaxEqResVO> result, Integer type) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
@@ -1482,7 +1588,6 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             }
         }
         return list;
-
     }
 
     /**
@@ -1532,32 +1637,69 @@ public class RoomIndexServiceImpl implements RoomIndexService {
      * @return
      * @throws IOException
      */
-    private List<String> getData(String startTime, String endTime, int id, String index) throws IOException {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+    private List<String> getData(String startTime, String endTime, int id, String index){
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                .must(QueryBuilders.termQuery(ROOM_ID, id))));
-        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(2000);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termQuery(ROOM_ID, id))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(2000);
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
+            return list;
+        }catch (Exception e){
+            log.error("获取es数据失败"+e);
         }
-        return list;
+        return null;
+    }
 
+
+    private List<Map<String,Object>> getDataMap(String startTime, String endTime, int id, String index,String[] heads){
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.fetchSource(heads,null);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termQuery(ROOM_ID, id))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(2000);
+
+            List<Map<String,Object>> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+//                    String str = hit.getSourceAsString();
+                    list.add(hit.getSourceAsMap());
+                }
+            }
+            return list;
+        }catch (Exception e){
+            log.error("获取es数据失败"+e);
+        }
+        return null;
     }
 
     /**

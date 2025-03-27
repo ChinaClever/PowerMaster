@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -71,4 +72,10 @@ public class AislePowerRes extends  AisleIndexRespVO{
 
     @Schema(description = "功率因素")
     private Double powerFactor;
+
+    @Schema(description = "能否删除")
+    private Boolean flagType;
+
+//    @Schema(description = "机柜")
+//    private List<CabinetIndex> cabinetIndexList;
 }
