@@ -5,8 +5,10 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 通道列 Mapper
@@ -30,4 +32,7 @@ public interface AisleIndexCopyMapper extends BaseMapperX<AisleIndexDO> {
                 .orderByAsc(AisleIndexDO::getId));
     }
 
+    Page<AisleIndexDelResVO> selectDelPageQuery(@Param("page") Page page, @Param("pageReqVO") AisleIndexPageReqVO pageReqVO);
+
+    Integer selectxOrY(AisleIndexDO aisleIndexDO);
 }

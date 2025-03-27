@@ -1,21 +1,16 @@
 package cn.iocoder.yudao.module.room.controller.admin;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.dto.main.DevDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.EqDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.PowDataDTO;
 import cn.iocoder.yudao.module.room.service.MainService;
-import cn.iocoder.yudao.module.room.service.RoomService;
-import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -34,7 +29,6 @@ public class MainController {
     MainService mainService;
 
 
-
     @Operation(summary = "主页面用能数据")
     @GetMapping("/eq/data")
     public CommonResult<EqDataDTO> getMainEq() {
@@ -44,7 +38,6 @@ public class MainController {
 
     /**
      * 主页面数据
-     *
      */
     @Operation(summary = "主页面设备数据")
     @GetMapping("/dev/data")

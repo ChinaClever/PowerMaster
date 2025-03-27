@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -129,7 +130,7 @@ public class RoomController {
 
     @Operation(summary = "新的机房数据详情")
     @GetMapping("/data/newDetail")
-    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id) {
+    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id) throws ExecutionException, InterruptedException {
         RoomMainResVO dto = roomService.getDatanewDetail(id);
         return success(dto);
     }

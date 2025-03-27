@@ -187,63 +187,66 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         String[] ipParts = location.split("-");
         String address = null;
         CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduKeyA, ipParts[0]+"-"+ipParts[1]));//.eq(CabinetPdu::getCasIdA, ipParts[1])
+                .eq(CabinetPdu::getPduKeyA, ipParts[0]+"-"+ipParts[1]).last("limit 1"));//.eq(CabinetPdu::getCasIdA, ipParts[1])
         CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduKeyB, ipParts[0]+"-"+ipParts[1]));//.eq(CabinetPdu::getCasIdB, ipParts[1])
+                .eq(CabinetPdu::getPduKeyB, ipParts[0]+"-"+ipParts[1]).last("limit 1"));//.eq(CabinetPdu::getCasIdB, ipParts[1])
         if(cabinetPduA != null){
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getCabinetName();
-            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getRoomName();
-            if(cabinet.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
+            if (Objects.nonNull(cabinet)) {
+                String cabinetName = cabinet.getCabinetName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getRoomName();
+                if (cabinet.getAisleId() != 0) {
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
-                address = roomName + "-" + aisleName + "-" + cabinetName;
-            }else {
+                    address = roomName + "-" + aisleName + "-" + cabinetName;
+                } else {
 //                address = roomName + "-"  + cabinetName +  "-" + "A路";
-                address = roomName + "-"  + cabinetName ;
-            }
-            // 查传感器在机柜的前后门上中下位置
-            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
-                    .eq(CabinetEnvSensor::getCabinetId, cabinetId)
-                    .eq(CabinetEnvSensor::getPathPdu, 'A')
-                    .eq(CabinetEnvSensor::getSensorId, sensorId));
-            if (cabinetEnvSensor != null){
-                map.put("channel", cabinetEnvSensor.getChannel());
-                map.put("position", cabinetEnvSensor.getPosition());
-            }else{
-                map.put("channel", null);
-                map.put("position", null);
+                    address = roomName + "-" + cabinetName;
+                }
+                // 查传感器在机柜的前后门上中下位置
+                CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                        .eq(CabinetEnvSensor::getCabinetId, cabinetId)
+                        .eq(CabinetEnvSensor::getPathPdu, 'A')
+                        .eq(CabinetEnvSensor::getSensorId, sensorId));
+                if (cabinetEnvSensor != null) {
+                    map.put("channel", cabinetEnvSensor.getChannel());
+                    map.put("position", cabinetEnvSensor.getPosition());
+                } else {
+                    map.put("channel", null);
+                    map.put("position", null);
+                }
             }
         }
         if(cabinetPduB != null){
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getCabinetName();
-            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getRoomName();
-            if(cabinet.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
+            if (Objects.nonNull(cabinet)) {
+                String cabinetName = cabinet.getCabinetName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getRoomName();
+                if (cabinet.getAisleId() != 0) {
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
-                address = roomName + "-" + aisleName + "-" + cabinetName ;
-            }else {
+                    address = roomName + "-" + aisleName + "-" + cabinetName;
+                } else {
 //                address = roomName + "-"  + cabinetName +  "-" + "B路";
-                address = roomName + "-"  + cabinetName ;
+                    address = roomName + "-" + cabinetName;
+                }
+                // 查传感器在机柜的前后门上中下位置
+                CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                        .eq(CabinetEnvSensor::getCabinetId, cabinetId)
+                        .eq(CabinetEnvSensor::getPathPdu, 'B')
+                        .eq(CabinetEnvSensor::getSensorId, sensorId));
+                if (cabinetEnvSensor != null) {
+                    map.put("channel", cabinetEnvSensor.getChannel());
+                    map.put("position", cabinetEnvSensor.getPosition());
+                } else {
+                    map.put("channel", null);
+                    map.put("position", null);
+                }
             }
-            // 查传感器在机柜的前后门上中下位置
-            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
-                    .eq(CabinetEnvSensor::getCabinetId, cabinetId)
-                    .eq(CabinetEnvSensor::getPathPdu, 'B')
-                    .eq(CabinetEnvSensor::getSensorId, sensorId));
-            if (cabinetEnvSensor != null){
-                map.put("channel", cabinetEnvSensor.getChannel());
-                map.put("position", cabinetEnvSensor.getPosition());
-            }else{
-                map.put("channel", null);
-                map.put("position", null);
-            }
-
         }
         map.put("address", address);
         return map;

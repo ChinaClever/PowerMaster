@@ -30,4 +30,20 @@
             </if>
         </where>
     </select>
+    <select id="equipmentStatisticsQuery"
+            resultType="cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO">
+        select
+        count(id) as total,
+        count(case when run_status != 5 then 1 end) as online,
+        count(case when run_status = 2 then 1 end) as offline,
+        count(case when run_status = 5 then 1 end) as alarm
+        from pdu_index
+        <where>
+            is_deleted = 0
+            and pdu_key in
+            <foreach collection="pduKey" item="key" separator="," open="(" close=")">
+                #{key}
+            </foreach>
+        </where>
+    </select>
 </mapper>

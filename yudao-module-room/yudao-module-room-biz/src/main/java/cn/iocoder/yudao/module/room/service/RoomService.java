@@ -13,6 +13,7 @@ import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author luowei
@@ -123,11 +124,13 @@ public interface RoomService {
 
     List<String> getRoomAddrList();
 
-    RoomMainResVO getDatanewDetail(int id);
+    RoomMainResVO getDatanewDetail(int id) throws ExecutionException, InterruptedException;
 
     //柜列编辑删除
     Integer roomAisleDeleteById(int id);
 
     //机房新增根据名称异步查询
     Integer newSelectRoomByName(String name);
+
+    void getRoomListRedis(List<RoomIndexAddrResVO> bean);
 }
