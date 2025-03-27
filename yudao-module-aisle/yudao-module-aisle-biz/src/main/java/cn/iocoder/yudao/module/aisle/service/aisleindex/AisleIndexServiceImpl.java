@@ -12,8 +12,10 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
@@ -92,7 +94,7 @@ import static cn.iocoder.yudao.module.aisle.enums.ErrorCodeConstants.INDEX_NOT_E
 @Slf4j
 public class AisleIndexServiceImpl implements AisleIndexService {
 
-    @Resource
+    @Autowired
     private AisleIndexCopyMapper aisleIndexCopyMapper;
 
     @Autowired
@@ -106,6 +108,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    private CabinetIndexMapper cabinetIndexMapper;
 
     public static final String DAY_FORMAT = "dd";
 
@@ -128,11 +133,15 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
-    public void deleteIndex(Integer id) {
+    public Boolean deleteIndex(Integer id) {
         // 校验存在
         validateIndexExists(id);
+        AisleIndexDO indexDO = new AisleIndexDO();
+        indexDO.setId(id);
+        indexDO.setIsDelete(1);
         // 删除
-        aisleIndexCopyMapper.deleteById(id);
+      return aisleIndexCopyMapper.updateById(indexDO)>0;
+//        aisleIndexCopyMapper.deleteById(id);
     }
 
     private void validateIndexExists(Integer id) {
@@ -249,6 +258,11 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
 
         List<Integer> aisleIds = list.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
+        List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>().in(CabinetIndex::getAisleId, aisleIds)
+                .eq(CabinetIndex::getIsDeleted, false).eq(CabinetIndex::getIsDisabled,false));
+        Map<Integer, List<CabinetIndex>> cabinetMap = cabinetIndexList.stream().collect(Collectors.groupingBy(CabinetIndex::getAisleId));
+
+
         Map<Integer, Map<String, String>> devKey = getDevKey(aisleIds);
         List<Integer> roomIds = list.stream().map(AisleIndexDO::getRoomId).collect(Collectors.toList());
         Map<Integer, String> voMap = getPositionByIds(roomIds);
@@ -257,14 +271,20 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         Map<Integer, Object> redisMap = (Map<Integer, Object>) redisList.stream().filter(i -> Objects.nonNull(i)).collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getInteger("aisle_key"), Function.identity()));
 
         for (AisleIndexDO aisleIndexDO : list) {
-            AislePowerRes res = new AislePowerRes();
+            AislePowerRes res = BeanUtils.toBean(aisleIndexDO, AislePowerRes.class);
+//            AislePowerRes res = new AislePowerRes();
             result.add(res);
+
             Map<String, String> aisleBarMap = devKey.get(aisleIndexDO.getId());
             if (Objects.nonNull(aisleBarMap)) {
                 res.setDevKeyA(aisleBarMap.get("A"));
                 res.setDevKeyB(aisleBarMap.get("B"));
             }
             res.setId(aisleIndexDO.getId());
+            res.setFlagType(true);
+            if (!CollectionUtils.isAnyEmpty(cabinetMap.get(aisleIndexDO.getId()))){
+                res.setFlagType(false);
+            }
             res.setName(aisleIndexDO.getAisleName());
             res.setRoomId(aisleIndexDO.getRoomId());
             res.setPduBar(aisleIndexDO.getPduBar());
@@ -281,7 +301,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
-//            Integer aisleKey = jsonObject.getInteger("aisle_key");
+
             res.setStatus(jsonObject.getInteger("status"));
             JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
             JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
@@ -928,6 +948,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         return null;
     }
 
+    @Override
+    public Boolean restore(Integer id) {
+        AisleIndexDO indexDO = new AisleIndexDO();
+        indexDO.setId(id);
+        indexDO.setIsDelete(0);
+        return aisleIndexCopyMapper.updateById(indexDO)>0;
+    }
+
     private void extractedMaxEq(String indexEs, String startTime, String endTime, List<AisleMaxEqResVO> result, Integer type) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
@@ -1565,51 +1593,66 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
                 totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总平均无功功率");
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
+                totalLineRes.getSeries().add(totalReactivePow);
 
 
                 LineSeries apparentPowA = new LineSeries();
                 apparentPowA.setName("A路平均视在功率");
                 LineSeries activePowA = new LineSeries();
                 activePowA.setName("A路平均有功功率");
+                LineSeries reactivePowA = new LineSeries();
+                reactivePowA.setName("A路平均无功功率");
                 aLineRes.getSeries().add(apparentPowA);
                 aLineRes.getSeries().add(activePowA);
+                aLineRes.getSeries().add(reactivePowA);
 
 
                 LineSeries apparentPowB = new LineSeries();
                 apparentPowB.setName("B路平均视在功率");
                 LineSeries activePowB = new LineSeries();
                 activePowB.setName("B路平均有功功率");
+                LineSeries reactivePowB = new LineSeries();
+                reactivePowB.setName("B路平均无功功率");
                 bLineRes.getSeries().add(apparentPowB);
                 bLineRes.getSeries().add(activePowB);
+                bLineRes.getSeries().add(reactivePowB);
 
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     aislePowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
                     });
                 } else {
                     aislePowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                         apparentPowA.getData().add(hourdo.getApparentAAvgValue());
                         activePowA.getData().add(hourdo.getActiveAAvgValue());
+                        reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
                         aLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                         apparentPowB.getData().add(hourdo.getApparentBAvgValue());
                         activePowB.getData().add(hourdo.getActiveBAvgValue());
+                        reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
                         bLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
                     });
                 }

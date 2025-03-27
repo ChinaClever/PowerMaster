@@ -23,9 +23,10 @@ public interface AisleIndexCopyMapper extends BaseMapperX<AisleIndexDO> {
                 .eqIfPresent(AisleIndexDO::getId,reqVO.getId())
                 .likeIfPresent(AisleIndexDO::getAisleName, reqVO.getName())
                 .eqIfPresent(AisleIndexDO::getPduBar, reqVO.getPduBar())
-                .eqIfPresent(AisleIndexDO::getIsDelete, reqVO.getIsDelete())
+//                .eqIfPresent(AisleIndexDO::getIsDelete, reqVO.getIsDelete())
                 .betweenIfPresent(AisleIndexDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(AisleIndexDO::getAisleLength, reqVO.getLength())
+                .eq(AisleIndexDO::getIsDelete, 0)
                 .orderByAsc(AisleIndexDO::getId));
     }
 

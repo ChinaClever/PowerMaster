@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.room.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 
 /**
  * @author luowei
@@ -72,9 +74,36 @@ public class RoomIndexAddrResVO {
     @Schema(description = "电能")
     private Double eleActive;
 
-    @Schema(description = "pue")
-    private Double pue;
+    @Schema(description = "机房负载")
+    private BigDecimal roomLoadFactor;
 
-    @Schema(description = "负载率")
-    private Double loadRate;
+    @Schema(description = "PUE")
+    private BigDecimal roomPue;
+
+    @Schema(description = "前门最高湿度")
+    private BigDecimal humMaxFront;
+
+    @Schema(description = "后门最高湿度")
+    private BigDecimal humMaxBlack;
+
+    @Schema(description = "前门最高温度")
+    private BigDecimal temMaxFront;
+
+    @Schema(description = "后门最高温度")
+    private BigDecimal temMaxBlack;
+
+    @Schema(description = "前门平均湿度")
+    private Double humAvgFront;
+
+    @Schema(description = "后门平均湿度")
+    private Double humAvgBlack;
+
+    @Schema(description = "前门平均温度")
+    private Double temAvgFront;
+
+    @Schema(description = "后门平均温度")
+    private Double temAvgBlack;
+
+
+    private Boolean flagType;
 }

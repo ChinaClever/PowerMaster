@@ -82,6 +82,8 @@
 
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          </el-form-item>
+          <el-form-item style="position: absolute;right: 0px;">
             <el-button
               type="success"
               plain

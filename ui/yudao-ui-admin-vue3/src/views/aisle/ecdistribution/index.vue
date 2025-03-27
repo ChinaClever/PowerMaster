@@ -72,9 +72,11 @@
 
       <el-form-item >
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+      </el-form-item>
+      <el-form-item style="position: absolute;right: 0px;">
         <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
-            <Icon icon="ep:download" class="mr-5px" /> 导出
-          </el-button>
+          <Icon icon="ep:download" class="mr-5px" /> 导出
+        </el-button>
       </el-form-item>
       </el-form>
     </template>
@@ -127,7 +129,7 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/aisle/aisleindex'
 import download from '@/utils/download'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
 import CommonMenu1 from './CommonMenu1.vue';
 // import PDUImage from '@/assets/imgs/PDU.jpg';
@@ -289,10 +291,9 @@ const getLineChartData =async () => {
 loading.value = true
  try {
     // 格式化时间范围 加上23:59:59的时分秒 
-    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+    queryParams.timeRange[0] = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
-    const oneDay = 24 * 60 * 60 * 1000;
-    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+    queryParams.timeRange[1] = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data != null && data.total != 0){

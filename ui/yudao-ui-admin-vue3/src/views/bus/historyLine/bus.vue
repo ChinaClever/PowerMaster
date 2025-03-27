@@ -1316,14 +1316,19 @@ const disabledDate = (date) => {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 6){
-    queryParams.busId = undefined
-    queryParams.devkey = row.unique
-    findFullName(navList.value, row.unique, fullName => {
-      nowAddressTemp.value = fullName
-      nowLocationTemp.value = row.unique
-    });
-    handleQuery();
+  if(row.type != null  && row.type == 6){
+      queryParams.busId = undefined
+      queryParams.devkey = row.unique
+      findFullName(navList.value, row.unique, fullName => {
+        if(row.parentId != null){
+            nowAddressTemp.value = fullName
+            nowLocationTemp.value = row.unique
+        }else{
+            nowAddressTemp.value = "未绑定"
+            nowLocationTemp.value = ""
+        }
+      });
+      handleQuery();
   }
 }
 
