@@ -55,6 +55,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -1834,6 +1835,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<String> boxTemHour = getData(startTime, endTime, ids, "box_tem_hour", new String[]{"box_id,eq_value"});
             List<BoxTemHourDo> strList = boxTemHour.stream()
                     .map(str -> JsonUtils.parseObject(str, BoxTemHourDo.class))
+                    .sorted((a, b) -> {
+                        DateTime timeA = a.getCreateTime();
+                        DateTime timeB = b.getCreateTime();
+                        return timeA.compareTo(timeB); // 升序
+                    })
                     .collect(Collectors.toList());
 
             BusTemDetailRes result = new BusTemDetailRes();
@@ -1861,6 +1867,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 result.getTemAvgValueN().add(boxTemHourDo.getTemNAvgValue());
                 result.getTemAvgTime().add(boxTemHourDo.getCreateTime().toString("HH:mm"));
             });
+            tableList.sort((a, b) -> {
+                LocalTime timeA = LocalTime.parse(a.getTemAvgTime());
+                LocalTime timeB = LocalTime.parse(b.getTemAvgTime());
+                return timeA.compareTo(timeB); // 升序
+            });
+
+
+
             HashMap<String, Object> resultMap = new HashMap<>();
             resultMap.put("chart", result);
             resultMap.put("table", tableList);
