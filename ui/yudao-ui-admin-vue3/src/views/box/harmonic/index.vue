@@ -156,7 +156,7 @@
             <el-button
               link
               type="primary"
-              @click="toDetail(scope.row)"
+              @click="showDialog(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
