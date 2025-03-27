@@ -1963,6 +1963,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             List<BoxPFDetail> strList = outletHour.stream()
                     .map(str -> JsonUtils.parseObject(str, BoxPFDetail.class))
+                    .sorted((a, b) -> {
+                        String timeA = a.getCreateTime();
+                        String timeB = b.getCreateTime();
+                        return timeA.compareTo(timeB); // 升序
+                    })
                     .collect(Collectors.toList());
 
             Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
