@@ -733,10 +733,11 @@ public class BusIndexServiceImpl implements BusIndexService {
         String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
         String mess = getSearchResponse(index, startTime, endTime);
-        if (mess == null) return null;
+        if(mess == null){ return null;}
         LineMaxResVO resVO = JsonUtils.parseObject(mess, LineMaxResVO.class);
         if (Objects.nonNull(resVO)) {
             BusIndexDO busIndexDO = busIndexMapper.selectById(resVO.getBusId());
+            if(busIndexDO == null){ return null;}
             resVO.setDevKey(busIndexDO.getBusKey());
             resVO.setBusName(busIndexDO.getBusName());
             switch (resVO.getLineId()) {
