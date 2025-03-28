@@ -62,7 +62,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.id,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.id,String(selectTimeRange!=null?selectTimeRange[0]:null),String(selectTimeRange!=null?selectTimeRange[1]:null))">详情</el-button>
           </template>
         </el-table-column>
         
@@ -269,7 +269,7 @@ const getList = async () => {
   loading.value = true
   try {
     if(selectTimeRange.value == null){
-      alert('请输入时间范围');
+      ElMessage.warning('请选择时间范围')
     return;
     }
     if ( selectTimeRange.value != undefined){
@@ -403,6 +403,9 @@ const getNavNewData = async() => {
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
+    if(queryParams.timeRange == null||queryParams.timeRange.length != 2){
+      return ElMessage.warning('请选择时间范围')
+    }
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
@@ -412,7 +415,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.getCabinetEleTotalRealtimeExcel(queryParams, axiosConfig)
-    await download.excel(data, '机柜实时能耗.xlsx')
+    await download.excel(data, '机柜能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -433,6 +436,9 @@ const format = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+watch(() => selectTimeRange.value, (newValue) => {
+  queryParams.timeRange = newValue
+})
 /** 初始化 **/
 onMounted(() => {
   getNavList()

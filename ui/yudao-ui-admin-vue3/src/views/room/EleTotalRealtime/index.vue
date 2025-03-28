@@ -124,6 +124,7 @@ import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/
 import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
 import { RoomEnergyApi } from '@/api/room/roomenergy'
+import { time } from 'console'
 const message = useMessage() // 消息弹窗
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
@@ -412,11 +413,21 @@ const getNavNewData = async() => {
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
 }
-
+watch(()=>selectTimeRange.value,(newValue)=>{
+  queryParams.timeRange = newValue
+});
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
     // 导出的二次确认
+    if(queryParams.timeRange == null||queryParams.timeRange.length != 2){
+      ElMessage({
+        message: '请输入时间范围',
+        type: 'error',
+        plain: true,
+      })
+      return;
+    }
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
@@ -425,7 +436,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await RoomEnergyApi.getRoomEleTotalRealtimeExcel(queryParams, axiosConfig)
-    await download.excel(data, '机房能耗趋势.xlsx')
+    await download.excel(data, '机房能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -457,15 +468,8 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (roomId: number, createTimeMin : string,createTimeMax : string) => {
-  if(selectTimeRange.value==null||selectTimeRange.value.length==0){
-    ElMessage({
-    message: '请输入时间范围',
-    type: 'error',
-    plain: true,
-  })
-  }
     push('/room/energyConsumption/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
-  '&end='+createTimeMax+'&roomId='+ roomId+"&startTime="+selectTimeRange.value[0]+"&endTime="+selectTimeRange.value[1]);
+  '&end='+createTimeMax+'&roomId='+ roomId+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:""));
 }
 
 /** 初始化 **/

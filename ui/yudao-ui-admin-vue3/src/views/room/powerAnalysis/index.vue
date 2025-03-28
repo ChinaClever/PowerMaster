@@ -177,7 +177,7 @@ const list = ref<Array<{ }>>([]) as any;
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 const selectTimeRange = ref([])
-if(route.query.startTime!=null&&route.query.endTime!=null){
+if(route.query.startTime!=null&&route.query.startTime!=""&&route.query.endTime!=null&&route.query.endTime!=""){
   selectTimeRange.value = [route.query.startTime, route.query.endTime]
 }else{
   let now = new Date();
@@ -471,7 +471,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '机房能耗趋势.xlsx')
+    await download.excel(data, '机房能耗数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -483,7 +483,7 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (roomId: number, location: string) => {
-  push('/room/energyConsumption/ecdistribution?roomId='+roomId+'&location='+location);
+  push('/room/energyConsumption/ecdistribution?roomId='+roomId+'&location='+location+"&start="+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?selectTimeRange.value[0]:'')+"&end="+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?selectTimeRange.value[1]:''));
 }
 const start = ref('')
 const end = ref('')

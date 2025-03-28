@@ -176,8 +176,8 @@ const list = ref<Array<{ }>>([]) as any;
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 let now=new Date();
-const selectTimeRange = ref([useRoute().query.startTime!=null?useRoute().query.startTime:dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),
-useRoute().query.endTime!=null?useRoute().query.endTime:dayjs(now).format("YYYY-MM-DD")])
+const selectTimeRange = ref([useRoute().query.startTime!=null&&useRoute().query.startTime!=''?useRoute().query.startTime:dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),
+useRoute().query.endTime!=null&&useRoute().query.startTime!=''?useRoute().query.endTime:dayjs(now).format("YYYY-MM-DD")])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -475,7 +475,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '柜列能耗趋势.xlsx')
+    await download.excel(data, '柜列能耗数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -487,7 +487,7 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (aisleId: number, location: string) => {
-  push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location);
+  push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?('&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]):''));
 }
 // const start = ref('')
 // const end = ref('')
