@@ -9,4 +9,33 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="selectDelPageQuery"
+            resultType="cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.AisleIndexDelResVO">
+
+            SELECT ai.id ,ai.aisle_name ,ri.room_name,ai.update_time
+        from aisle_index ai
+            left join room_index ri on ai.room_id = ri.id
+            <where>
+                ai.is_delete = 1
+                <if test="pageReqVO.name != null and pageReqVO.name != ''">
+                    AND ai.aisle_name LIKE CONCAT('%', #{pageReqVO.name}, '%')
+                </if>
+                order by ai.update_time desc
+            </where>
+        </select>
+    <select id="selectxOrY" resultType="java.lang.Integer">
+        SELECT
+        count(id)
+        FROM
+        `aisle_index`
+        WHERE
+        room_id = #{roomId}
+        AND (
+        y_coordinate = #{yCoordinate}
+        AND #{xCoordinate} BETWEEN x_coordinate
+        AND ( x_coordinate + aisle_length ))
+        OR ( x_coordinate = #{xCoordinate}
+        AND #{yCoordinate} BETWEEN y_coordinate
+        AND ( y_coordinate + aisle_length ))
+    </select>
 </mapper>

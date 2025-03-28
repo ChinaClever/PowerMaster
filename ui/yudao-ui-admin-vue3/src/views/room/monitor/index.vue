@@ -44,7 +44,7 @@
       <div class="btns">
         <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
         <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-        <el-button @click="valueMode = 2;switchValue = 0" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
+        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
         <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
         <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
         <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
@@ -74,7 +74,7 @@
                         <div><el-text>无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVAr</el-text></div>
                       </div>
                       <div style="display: flex;flex-direction: column">
-                        <div v-if="item.displayFlag" style="text-align: center;font-size: 24px;">{{item.displayType ? (item.pue ? item.pue : 0) : (item.loadRate ? item.loadRate : 0)}}</div>
+                        <div v-if="item.displayFlag" style="text-align: center;font-size: 24px;">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0)}}</div>
                         <div v-if="item.displayFlag" style="text-align: center;font-size: 12px;">{{item.displayType ? "PUE" : "负载率"}}</div>
                       </div>
                     </div>
@@ -179,7 +179,7 @@
                             <div><el-text>无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVAr</el-text></div>
                           </div>
                           <div style="display: flex;flex-direction: column">
-                            <div v-if="item.displayFlag" style="text-align: center;font-size: 24px;">{{item.displayType ? (item.pue ? item.pue : 0) : (item.loadRate ? item.loadRate : 0)}}</div>
+                            <div v-if="item.displayFlag" style="text-align: center;font-size: 24px;">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0)}}</div>
                             <div v-if="item.displayFlag" style="text-align: center;font-size: 12px;">{{item.displayType ? "PUE" : "负载率"}}</div>
                           </div>
                         </div>
@@ -300,25 +300,25 @@
       />
     </div>
     <div v-if="switchValue == 3">
-      <el-table v-if="switchValue == 3 && valueMode == 0" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-if="valueMode == 0" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="楼层" align="center" prop="addr" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="机房名" align="center" prop="roomName" width="300px"/>
-        <el-table-column label="视在功率 (KVA)" align="center" prop="powApparent">
+        <el-table-column label="视在功率 (kVA)" align="center">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powApparent != null">
               {{ scope.row.powApparent.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="有功功率 (KW)" align="center" prop="AIb">
+        <el-table-column label="有功功率 (kW)" align="center">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powActive != null">
               {{ scope.row.powActive.toFixed(3) }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="无功功率 (KVAR)" align="center" prop="BIb">
+        <el-table-column label="无功功率 (kVar)" align="center">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powReactive != null">
               {{ scope.row.powReactive.toFixed(3) }}
@@ -340,6 +340,7 @@
             <el-button
               link
               type="danger"
+              v-if="scope.row.flagType"
               @click="handleDelete(scope.row.id)"
               style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
             >
@@ -349,54 +350,70 @@
         </el-table-column>
       </el-table>
 
-      <el-table v-if="switchValue == 3 && valueMode == 1" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-if="valueMode == 1" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="楼层" align="center" prop="addr" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="机房名" align="center" prop="roomName" width="300px"/>
         <el-table-column label="最高温度 (&deg;C)" align="center">
-          <el-table-column label="前门" align="center" prop="AUa" >
+          <el-table-column label="前门" align="center">
             <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparent != null">
-                {{ scope.row.powApparent.toFixed(1) }}
+              <el-text line-clamp="2" v-if="scope.row.temMaxFront != null">
+                {{ scope.row.temMaxFront.toFixed(1) }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="后门" align="center" prop="BUa" >
+          <el-table-column label="后门" align="center">
             <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparent != null">
-                {{ scope.row.powApparent.toFixed(1) }}
+              <el-text line-clamp="2" v-if="scope.row.temMaxBlack != null">
+                {{ scope.row.temMaxBlack.toFixed(1) }}
               </el-text>
             </template>
           </el-table-column>
         </el-table-column>
         <el-table-column label="平均温度 (&deg;C)" align="center">
-          <el-table-column label="前门" align="center" prop="AUb" >
+          <el-table-column label="前门" align="center">
             <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparent != null">
-                {{ scope.row.powApparent.toFixed(1) }}
+              <el-text line-clamp="2" v-if="scope.row.temAvgFront != null">
+                {{ scope.row.temAvgFront.toFixed(1) }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="后门" align="center" prop="BUb" >
+          <el-table-column label="后门" align="center">
             <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparent != null">
-                {{ scope.row.powApparent.toFixed(1) }}
+              <el-text line-clamp="2" v-if="scope.row.temAvgBlack != null">
+                {{ scope.row.temAvgBlack.toFixed(1) }}
+              </el-text>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label="最高湿度 (%)" align="center">
+          <el-table-column label="前门" align="center">
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.humMaxFront != null">
+                {{ scope.row.humMaxFront.toFixed(0) }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="后门" align="center">
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.humMaxBlack != null">
+                {{ scope.row.humMaxBlack.toFixed(0) }}
               </el-text>
             </template>
           </el-table-column>
         </el-table-column>
         <el-table-column label="平均湿度 (%)" align="center">
-          <el-table-column label="前门" align="center" prop="AUc" >
+          <el-table-column label="前门" align="center">
             <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparent != null">
-                {{ scope.row.powApparent.toFixed(0) }}
+              <el-text line-clamp="2" v-if="scope.row.humAvgFront != null">
+                {{ scope.row.humAvgFront.toFixed(0) }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="后门" align="center" prop="BUc" >
+          <el-table-column label="后门" align="center">
             <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.powApparent != null">
-                {{ scope.row.powApparent.toFixed(0) }}
+              <el-text line-clamp="2" v-if="scope.row.humAvgBlack != null">
+                {{ scope.row.humAvgBlack.toFixed(0) }}
               </el-text>
             </template>
           </el-table-column>
@@ -416,6 +433,64 @@
             <el-button
               link
               type="danger"
+              v-if="scope.row.flagType"
+              @click="handleDelete(scope.row.id)"
+              style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-table v-if="valueMode == 2" v-loading="loading" :data="addrAllRoomList.flat()" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+        <el-table-column label="楼层" align="center" prop="addr" width="80px"/>
+        <!-- 数据库查询 -->
+        <el-table-column label="机房名" align="center" prop="roomName" width="300px"/>
+        <el-table-column label="视在功率 (kVA)" align="center">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparent != null">
+              {{ scope.row.powApparent.toFixed(3) }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="有功功率 (kW)" align="center">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powActive != null">
+              {{ scope.row.powActive.toFixed(3) }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="无功功率 (kVar)" align="center">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactive != null">
+              {{ scope.row.powReactive.toFixed(3) }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="功率因数" align="center">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powerFactor != null">
+              {{ scope.row.powerFactor.toFixed(2) }}
+            </el-text>
+          </template>
+        </el-table-column>
+        
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center" width="140px">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="handleRoomHome(scope.row.id)"
+              style="background-color:#409EFF;color:#fff;border:none;width:40px;height:30px;"
+            >
+            详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              v-if="scope.row.flagType"
               @click="handleDelete(scope.row.id)"
               style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
             >
@@ -425,6 +500,7 @@
         </el-table-column>
       </el-table>
     </div>
+    
     <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
       <el-form>
         <div style="margin-bottom: 5px">
@@ -577,12 +653,10 @@ const handleRoomHome = (id) => {
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-  // 还未实现不同楼层同名机房
   const res = await MachineRoomApi.getAddrAllRoomList(queryParams)
   console.log(res)
   if(res) {
     addrAllRoomList.value = addrAllRoomList.value.map(() => [])
-    console.log("111",activeNames.value)
     activeNames.value = []
     res.forEach((ele,i) => {
       let index = roomAddrList.value.findIndex(item => item == ele.addr)
@@ -593,7 +667,6 @@ const handleQuery = async () => {
       }
     })
     activeNames.value = [...new Set(activeNames.value)]
-    console.log("222",activeNames.value)
   }
 }
 
@@ -654,10 +727,13 @@ const handleRestore = async (flagRoomid) => {
     type: 'warning'
   }).then(async () => {
     const res = await MachineRoomApi.restoreRoomInfo({id: flagRoomid});
-    if(res != null || res != "")
-    message.success('恢复成功')
-    deletedList.value = deletedList.value.filter(item => item.id != flagRoomid)
-    getRoomAddrList()
+    if(res != null || res != "") {
+      message.success('恢复成功')
+      deletedList.value = deletedList.value.filter(item => item.id != flagRoomid)
+      getRoomAddrList()
+    } else {
+      message.error('恢复失败')
+    }
   })
 }
 

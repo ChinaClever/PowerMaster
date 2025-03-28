@@ -23,8 +23,8 @@
       </el-form-item> 
       <el-form-item v-if="formData.type == 1" label="方向" prop="direction">
         <el-select v-model="formData.direction" placeholder="请选择活动区域">
-          <el-option label="横向" :value="1" />
-          <el-option label="纵向" :value="2" />
+          <el-option label="横向" :value="1" :disabled="!operateInfo.maxlndexX" />
+          <el-option label="纵向" :value="2" :disabled="!operateInfo.maxlndexY" />
         </el-select>
       </el-form-item>
       <el-form-item v-if="formData.type == 1" label="数量" prop="amount">
@@ -88,7 +88,7 @@ const formData = ref({
   type: 1,
   name: '',
   cabinetHeight: 42,
-  direction: 1,
+  direction: operateInfo.value.maxlndexX ? 1 : 2,
   amount: 12,
   id: '',
   cabinetList: [] as any
@@ -106,7 +106,7 @@ const open = async (type: string, data, info) => {
   formType.value = type
   operateInfo.value = info
   resetForm()
-  console.log('data', data)
+  console.log('data', data,info)
   if (data && data.type == 1 && data.amount > 1 && data.cabinetList.length > 0) { // 如果是柜列且长度大于一，则该柜列的最小长度应为其中最后那个绑定id机柜的下标值，如果最小值比这个下标值还小的话就会删掉该机柜
     const length = data.amount
     beginAmount.value = length
@@ -170,7 +170,7 @@ const resetForm = () => {
     type: 1,
     name: '',
     cabinetHeight: 42,
-    direction: 1,
+    direction: operateInfo.value.maxlndexX ? 1 : 2,
     amount: 12,
     id: '',
     cabinetList: []

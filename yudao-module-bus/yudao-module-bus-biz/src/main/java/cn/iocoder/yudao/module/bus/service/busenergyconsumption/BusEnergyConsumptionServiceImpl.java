@@ -369,9 +369,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             searchRequest = new SearchRequest(indices[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo[0].format(formatter))
-                    .to(timeAgo[1].format(formatter)));
-            String format = now.format(formatter);
+                    .from(timeAgo[i].format(formatter))
+                    .to(now.format(formatter)));
+//            String format = now.format(formatter);
             // 添加计数聚合
             if (indices[0].contains("bus")) {
                 searchSourceBuilder.aggregation(

@@ -88,7 +88,7 @@
                       </div>
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
-                          <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: statusInfo[item.runStatus].color}" v-for="(item, i) in element.cabinetList" :key="i">
+                          <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: item.cabinetName ? statusInfo[item.runStatus].color : '#effaff'}" v-for="(item, i) in element.cabinetList" :key="i">
                             <template v-if="item.id > 0">
                               <el-tooltip effect="light">
                                 <template #content>
@@ -260,6 +260,7 @@ import draggable from "vuedraggable";
 import layoutForm from './component/layoutForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MachineRoomApi } from '@/api/cabinet/room'
+import { CabinetApi } from '@/api/cabinet/info'
 import { Console } from "console";
 
 const { push } = useRouter() // 路由跳转
@@ -339,8 +340,8 @@ const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，
 const tableData = ref<Record<string, any[]>[]>([]);
 const statusInfo = ref([
   {
-    name: '空载',
-    color: '#effaff',
+    name: '未绑定',
+    color: '#05ebfc',
     value: 0,
   },
   {
@@ -359,13 +360,13 @@ const statusInfo = ref([
     value: 3,
   },
   {
-    name: '未绑定',
-    color: '#05ebfc',
+    name: '离线',
+    color: '#7700ff',
     value: 4,
   },
   {
-    name: '离线',
-    color: '#7700ff',
+    name: '空载',
+    color: '#effaff',
     value: 5,
   },
 ])
@@ -395,6 +396,8 @@ const btns = [
   //   name: '容量',
   // },
 ]
+
+const flashListTimer = ref();
 
 const emptyObject = {
     "id": 0,
@@ -493,23 +496,26 @@ const groupMachineBlank = {
   put: (event) => {
    // console.log('event', event.el.id)
     const moveBox = movingInfo.value
-    // console.log(moveBox)
-    if (editEnable.value && moveBox.type == 1 && moveBox.amount > 1) {
-      if (moveBox.direction == 1) {
+    console.log(moveBox)
+    if (editEnable.value) {
+      if(moveBox.type == 2) {
+        moveBox.amount = 1
+      }
+      if (moveBox.direction == 2) {
         const X = +event.el.id.split('-')[1]
         const Y = +event.el.id.split('-')[0]
-        if (X + moveBox.amount > rowColInfo.col) return false
+        if (Y + moveBox.amount > rowColInfo.row) return false
         for(let i = 0;i < moveBox.amount;i++) {
-          if((tableData.value[Y][formParam.value[X+i]].length && tableData.value[Y][formParam.value[X+i]][0].id != moveBox.id) || (tableData.value[Y+1][formParam.value[X+i]].length && tableData.value[Y+1][formParam.value[X+i]][0].id != moveBox.id)) {
+          if((tableData.value[Y+i][formParam.value[X]].length && tableData.value[Y+i][formParam.value[X]][0].id != moveBox.id) || (tableData.value[Y+i][formParam.value[X+1]].length && tableData.value[Y+i][formParam.value[X+1]][0].id != moveBox.id)) {
             return false
           }
         }
       } else {
         const X = +event.el.id.split('-')[1]
         const Y = +event.el.id.split('-')[0]
-        if (Y + moveBox.amount > rowColInfo.row) return false
+        if (X + moveBox.amount > rowColInfo.col) return false
         for(let i = 0;i < moveBox.amount;i++) {
-          if((tableData.value[Y+i][formParam.value[X]].length && tableData.value[Y+i][formParam.value[X]][0].id != moveBox.id) || (tableData.value[Y+i][formParam.value[X+1]].length && tableData.value[Y+i][formParam.value[X+1]][0].id != moveBox.id)) {
+          if((tableData.value[Y][formParam.value[X+i]].length && tableData.value[Y][formParam.value[X+i]][0].id != moveBox.id) || (tableData.value[Y+1][formParam.value[X+i]].length && tableData.value[Y+1][formParam.value[X+i]][0].id != moveBox.id)) {
             return false
           }
         }
@@ -592,10 +598,18 @@ const getRoomInfo = async() => {
       if(item.cabinetList == null) {
         item.cabinetList = []
       }
-      let emptyLength = item.length-item.cabinetList.length
-      for(let j=0;j < emptyLength;j++) {
-        item.cabinetList.push(emptyObject)
+      const arr = [] as any
+      let canDelete = true
+      for(let j=0;j < item.length;j++) {
+        arr.push(emptyObject)
       }
+      item.cabinetList && item.cabinetList.forEach(ele => {
+        if(ele.index > 0) {
+          arr.splice(ele.index - 1, 1, ele)
+          canDelete = false
+        }
+      })
+      item.cabinetList = arr
       for(let i=0; i < item.length; i++) {
         const dataItem =  {
           id: item.id,
@@ -605,6 +619,7 @@ const getRoomInfo = async() => {
           amount: item.cabinetList.length,
           cabinetList: item.cabinetList,
           first: false,
+          canDelete,
           originAmount: item.cabinetList.length,
           originDirection: item.direction == 'x' ? 1 : 2,
           powerCapacity:item.powerCapacity,
@@ -639,30 +654,108 @@ const getRoomInfo = async() => {
   }
 }
 
-const getRoomStatus = async(res) => {
-  if (!res) res = await MachineRoomApi.getRoomDataDetail({id: roomId.value})
-  console.log('getRoomStatus', res)
-  if (res.cabinetList && res.cabinetList.length) {
-    res.cabinetList.forEach(cab => {
-      if (cab.yCoordinate > 0 && cab.xCoordinate > 0)
-      tableData.value[cab.yCoordinate - 1][formParam.value[cab.xCoordinate - 1]][0] = {
-        ...cab,
-        ...tableData.value[cab.yCoordinate - 1][formParam.value[cab.xCoordinate - 1]][0],
-      }
+const getRoomInfoNoLoading = async() => {
+  resetForm();
+  try {
+    const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
+    const res = result;
+    // const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
+    // const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
+    // const results = await Promise.all([result1, result2])
+    // const res = results[0];
+    console.log("res",res)
+    res.aisleList = res.aisleList==null ? [] : res.aisleList
+    res.cabinetList = res.cabinetList==null ? [] : res.cabinetList
+    updateCfgInfo.value=res;
+    roomDownValId.value = res.id;
+    const data: Record<string, any[]>[] = [];
+    Object.assign(rowColInfo, {
+      roomName: res.roomName,
+      row: res.y_length,
+      col: res.x_length,
+      powerCapacity:res.powerCapacity,
+      airPower:res.airPower,
+      addr: res.addr,
+      displayType: res.displayType, //0负载率 1PUE
+      displayFlag: res.displayFlag, // 显示选择
+      eleAlarmDay: res.eleAlarmDay,
+      eleLimitDay: res.eleLimitDay,
+      eleAlarmMonth: res.eleAlarmMonth,
+      eleLimitMonth: res.eleLimitMonth,
     })
-  }
-  if (res.aisleList && res.aisleList.length) {
-    res.aisleList.forEach(aisle => {
-      aisle.cabinetList.forEach((cab, index) => {
-       console.log('111', aisle,tableData.value)
-       console.log('tableData.value[aisle.yCoordinate][formParam.value[aisle.xCoordinate - 1]]', tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]], aisle.yCoordinate, formParam.value[aisle.xCoordinate - 1])
-        const targetIndex = tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList.findIndex(item => item.id == cab.id)
-        tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList[targetIndex] = {
-          ...cab,
-          ...tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList[targetIndex]
+    emit('backData', res)
+    
+    for (let row = 0; row < res.y_length; row++) {
+      const rowData: Record<string, any[]> = {};
+      for (let col = 0; col < res.x_length; col++) {
+        const colKey = getTableColCharCode(col);
+        rowData[colKey] = [];
+      }
+      data.push(rowData);
+    }
+    res.aisleList.forEach(item => {
+      if(item.cabinetList == null) {
+        item.cabinetList = []
+      }
+      const arr = [] as any
+      let canDelete = true
+      for(let j=0;j < item.length;j++) {
+        arr.push(emptyObject)
+      }
+      item.cabinetList && item.cabinetList.forEach(ele => {
+        if(ele.index > 0) {
+          arr.splice(ele.index - 1, 1, ele)
+          canDelete = false
         }
       })
+      item.cabinetList = arr
+      for(let i=0; i < item.length; i++) {
+        const dataItem =  {
+          id: item.id,
+          name: item.aisleName,
+          direction: item.direction == 'x' ? 1 : 2,
+          type: 1,
+          amount: item.cabinetList.length,
+          cabinetList: item.cabinetList,
+          first: false,
+          canDelete,
+          originAmount: item.cabinetList.length,
+          originDirection: item.direction == 'x' ? 1 : 2,
+          powerCapacity:item.powerCapacity,
+          eleAlarmDay: item.eleAlarmDay,
+          eleLimitDay: item.eleLimitDay,
+          eleAlarmMonth: item.eleAlarmMonth,
+          eleLimitMonth: item.eleLimitMonth,
+        }
+        if (i == 0) dataItem.first = true
+        if (dataItem.direction == 1) {
+          console.log('----dataItem1', dataItem )
+          data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
+          data[item.yCoordinate][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, {...dataItem,first: false})
+        } else {
+          data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, dataItem)
+          data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate)].splice(0, 1, {...dataItem,first: false})
+        }
+      }
     })
+    res.cabinetList.forEach(item => {
+      if (item.xCoordinate > 0 && item.yCoordinate > 0) {
+        data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2,first: true})
+        data[item.yCoordinate][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2,first: false})
+      }
+    })
+    tableData.value = data;
+    console.log("tableData.value",tableData.value)
+    getRoomStatus(result)
+    handleCssScale()
+  } finally {
+  }
+}
+
+const getRoomStatus = async(res) => {
+  if (!res) {
+    res = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value})
+    emit('backData', res)
   }
  // console.log('//////////', tableData.value)
 }
@@ -871,14 +964,31 @@ const handleRightClick = (e) => {
   const lndexX = currentId.split('-')[1]
   const lndexY = currentId.split('-')[0]
   if (!currentId) return
+  console.log(tableData.value,tableData.value[5][formParam.value[lndexX]],lndexY,formParam.value[lndexX])
+  let itemId = tableData.value[lndexY][formParam.value[lndexX]]?.[0]?.id
+  let maxX = 26
+  let maxY = 26
+  for(let i = 0;i < rowColInfo.col-(+lndexX);i++) {
+    if((!itemId && (tableData.value[+lndexY][formParam.value[+lndexX+i]].length || (+lndexY+1 != rowColInfo.row && tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length))) || (tableData.value[+lndexY][formParam.value[+lndexX+i]].length && tableData.value[+lndexY][formParam.value[+lndexX+i]][0].id != itemId) || (+lndexY+1 != rowColInfo.row && tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length && tableData.value[+lndexY+1][formParam.value[+lndexX+i]][0].id != itemId)) {
+      maxX = i
+      break
+    }
+  }
+  for(let i = 0;i < rowColInfo.row-(+lndexY);i++) {
+    if((!itemId && (tableData.value[+lndexY+i][formParam.value[+lndexX]].length || (+lndexX+1 != rowColInfo.col && tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length))) || (tableData.value[+lndexY+i][formParam.value[+lndexX]].length && tableData.value[+lndexY+i][formParam.value[+lndexX]][0].id != itemId) || (+lndexX+1 != rowColInfo.col && tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length && tableData.value[+lndexY+i][formParam.value[+lndexX+1]][0].id != itemId)) {
+      maxY = i
+      break
+    }
+  }
+  console.log(maxX,maxY)
   operateMenu.value = {
     left: offsetX + 'px',
     top: offsetY + 'px',
     show: true,
     lndexX, // 当前列
     lndexY, // 当前行
-    maxlndexX: rowColInfo.col - lndexX,
-    maxlndexY: rowColInfo.row - lndexY,
+    maxlndexX: (rowColInfo.col - (+lndexX)) < maxX ? (rowColInfo.col - (+lndexX)) : maxX,
+    maxlndexY: (rowColInfo.row - (+lndexY)) < maxY ? (rowColInfo.row - (+lndexY)) : maxY,
   }
   console.log('editEnable.value', editEnable.value)
 }
@@ -1020,48 +1130,58 @@ const handleJump = (data) => {
   if (target.type == 1) {
     push({path: '/aisle/columnHome', state: { id: target.id, roomId: roomId.value }})
   } else {
-    push({path: '/cabinet/cab/detail', state: {id: target.id}})
+    if(target.runStatus == 0){
+     message.error('未绑定设备无法查看详情!')
+     return;
+    }
+    push({path: '/cabinet/cab/detail', state: {id: target.id, roomId: target.roomId,type: 'hour',location: rowColInfo.roomName,cabinetName: target.cabinetName}})
   }
 }
 // 删除机柜
 const deleteMachine = () => {
-//  console.log('删除机柜',tableData.value[Y][X], target,Y,X)
   // console.log("tableData.value",tableData.value)
+   const Y = operateMenu.value.lndexY
+    const X = formParam.value[operateMenu.value.lndexX]
+    const target = JSON.parse(JSON.stringify(tableData.value[Y][X][0])) // 要删除的目标
+ console.log('删除机柜',tableData.value[Y][X], target,Y,X)
+    console.log(target)
+  if (target.type && target.type == 1 && !target.canDelete) {
+    message.warning(`该柜列有机柜，无法删除，请先删除机柜`)
+    return
+  } else if(target.type && target.type == 2 && (target.cabinetkeya || target.cabinetkeyb)) {
+    message.warning(`该机柜已绑定，无法删除，请先删除绑定关系`)
+    return
+  }
   ElMessageBox.confirm('确认要删除吗？', '提示', {
     confirmButtonText: '确 认',
     cancelButtonText: '取 消',
     type: 'warning'
   }).then(async () => {
-    const Y = operateMenu.value.lndexY
-    const X = formParam.value[operateMenu.value.lndexX]
-    const target = JSON.parse(JSON.stringify(tableData.value[Y][X][0])) // 要删除的目标
+   
     if (target.type && target.type == 1) {
-      for (let i = 0; i < target.originAmount; i++) {
-        if (target.direction == 1) {
-          // const charCode = X.charCodeAt(0) + i
-      //    console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
-          tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
-          tableData.value[+Y + 1][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
-        } else {
-          tableData.value[+Y + i][X].splice(0, 1)
-          tableData.value[+Y + i][formParam.value[+operateMenu.value.lndexX + 1]].splice(0, 1)
-        }
+      const aisleRes = await MachineRoomApi.deletedRoomAisleInfo({id: target.id})
+      if(aisleRes != null || aisleRes != "") {
+        getRoomInfoNoLoading()
+        message.success('删除成功')
       }
       // console.log("tableData.value",tableData.value)
-    } else {
-      tableData.value[Y][X].splice(0, 1)
-      tableData.value[+Y + 1][X].splice(0, 1)
+    } else if(target.type && target.type == 2) {
+      const cabinetRes = await CabinetApi.deleteCabinetInfo({
+        id: target.id,
+        type: 4
+      })
+      if(cabinetRes != null || cabinetRes != "") {
+        getRoomInfoNoLoading()
+        message.success('删除成功')
+      }
     }
-    await MachineRoomApi.deletedRoomAisleInfo({id: roomId.value})
-    message.success('删除成功')
   })
   operateMenu.value.show = false
 }
 // 处理增加/编辑机柜
 const handleChange = async(data) => {
-  tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]].splice(0, 1, {...data, first: true, originAmount: data.amount, originDirection: data.direction});
   const X =getColumnCharCodeToNumber(formParam.value[operateMenu.value.lndexX]);
-  const Y = (operateMenu.value.lndexY).toString(); // 当前机柜/机柜列所处行
+  const Y = operateMenu.value.lndexY; // 当前机柜/机柜列所处行
   let aisleFlagId:any = null;
   let messageAisleFlag = "保存成功！";
   if(aisleFlag.value == 2){
@@ -1075,7 +1195,7 @@ const handleChange = async(data) => {
           aisleName:data.name,
           aisleLength:data.amount,
           xCoordinate:X+1,
-          yCoordinate:parseInt(Y)+1,
+          yCoordinate:+Y+1,
           direction:data.direction == 1 ? 'x' : 'y',
           powerCapacity:data.powerCapacity,
           eleAlarmDay:data.eleAlarmDay,
@@ -1083,8 +1203,10 @@ const handleChange = async(data) => {
           eleLimitDay:data.eleLimitDay,
           eleLimitMonth:data.eleLimitMonth
       }) 
-      if(aisleRes != null || aisleRes != "")
-      message.success(messageAisleFlag);
+      if(aisleRes != null || aisleRes != "") {
+        getRoomInfoNoLoading()
+        message.success(messageAisleFlag);
+      }
   }else{
       const cabinetRes = await MachineRoomApi.saveRoomCabinet({
           id:aisleFlagId,
@@ -1092,15 +1214,17 @@ const handleChange = async(data) => {
           cabinetName: data.name,
           cabinetHeight: data.cabinetHeight,
           xCoordinate:X+1,
-          yCoordinate:parseInt(Y)+1,
+          yCoordinate:+Y+1,
           powerCapacity:data.powerCapacity,
           eleAlarmDay: data.eleAlarmDay,
           eleLimitDay: data.eleLimitDay,
           eleAlarmMonth: data.eleAlarmMonth,
           eleLimitMonth: data.eleLimitMonth
       })
-      if(cabinetRes != null || cabinetRes != "")
-      message.success(messageAisleFlag);
+      if(cabinetRes != null || cabinetRes != "") {
+        getRoomInfoNoLoading()
+        message.success(messageAisleFlag);
+      }
   }
 }
 
@@ -1266,8 +1390,10 @@ watch(() => containerInfo, (val) => {
 },{immediate: true})
 
 onMounted(() => {
+  flashListTimer.value = setInterval((getRoomStatus), 5000);
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
+    console.log(event)
     if (event.button == 0 && operateMenu.value.show && element.className != 'menu_item') {
       operateMenu.value.show = false
     }
@@ -1275,6 +1401,20 @@ onMounted(() => {
   // timer = setInterval(() => {
   //   getRoomStatus(false)
   // }, 5000)
+})
+
+onBeforeUnmount(() => {
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
 })
 
 onUnmounted(() => {

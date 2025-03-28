@@ -514,6 +514,10 @@ const btns = [
     unitName: '昨日用能(kW·h)',
   },
 ]
+
+const flashListTimer = ref();
+const flashListTimerCopy = ref();
+
 const echartsOptionCab = ref<EChartsOption>({})
 let intervalTimer = null as any
 const topologyContainer = ref()
@@ -2136,6 +2140,7 @@ const handleNavList = (cabinetroomId) => {
   if (!queryParams.cabinetColumnId && machineList.value) {
     queryParams.cabinetColumnId = machineList.value[0].id
   }
+  emit('idChange', queryParams.cabinetroomId)
   getMachineColInfo()
 }
 
@@ -2170,6 +2175,7 @@ onMounted(() => {
   getNavList()
   initConnect()
   getCabinetColorAll()
+  flashListTimer.value = setInterval((getMachineColInfo), 5000);
   // intervalTimer = setInterval(() => {
   //   getDataDetail()
   // }, 10000)
@@ -2185,7 +2191,17 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  intervalTimer = null
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
 })
 </script>
 

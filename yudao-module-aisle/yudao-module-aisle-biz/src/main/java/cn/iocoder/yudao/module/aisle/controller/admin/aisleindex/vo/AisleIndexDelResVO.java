@@ -11,6 +11,8 @@ public class AisleIndexDelResVO {
 
     private Integer id;
 
+    private String roomName;
+
     /**
      * 柜列名称
      */
