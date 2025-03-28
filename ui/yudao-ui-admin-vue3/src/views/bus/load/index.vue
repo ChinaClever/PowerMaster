@@ -144,7 +144,7 @@
       </el-form>      
     </template>
     <template #Content>
-      <div v-show="switchValue !== 2 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y:auto;">
+      <div v-show="switchValue !== 2" style="height:720px;margin-top:-10px;overflow-y:auto;">
         <el-table :data="list" v-if="switchValue == 3 && list" v-loading="loading" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -206,7 +206,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -404,6 +404,7 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
+  console.log(row)
   if(row.length == 0){
     queryParams.busDevKeyList = null;
     queryDeletedPageParams.busDevKeyList = null;

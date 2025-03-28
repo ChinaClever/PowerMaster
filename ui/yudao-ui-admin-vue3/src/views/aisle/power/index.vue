@@ -95,6 +95,12 @@
               </template>
           </el-table-column>
 
+          <el-table-column label="机房名称" min-width="110" align="center">
+              <template #default="scope">
+                <div>{{scope.row.roomName}}</div>
+              </template>
+          </el-table-column>
+
           <el-table-column label="柜列名称" min-width="110" align="center">
               <template #default="scope">
                 <div>{{scope.row.aisleName}}</div>
@@ -179,7 +185,6 @@
           <el-table-column label="操作" align="center" width="140px">
             <template #default="scope">
               <el-button
-                v-if="scope.row.eleActiveTotal != null && scope.row.eleActiveTotal != 0"
                 link
                 type="primary"
                 @click="toDetail(scope.row)"
@@ -190,6 +195,7 @@
               <el-button
                 link
                 type="danger"
+                v-if="scope.row.flagType"
                 @click="handleDelete(scope.row.id)"
                 style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
               >
@@ -256,7 +262,6 @@
           <el-table-column label="操作" align="center" width="140px">
             <template #default="scope">
               <el-button
-                v-if="scope.row.eleActiveTotal != null && scope.row.eleActiveTotal != 0"
                 link
                 type="primary"
                 @click="toDetail(scope.row)"
@@ -267,6 +272,7 @@
               <el-button
                 link
                 type="danger"
+                v-if="scope.row.flagType"
                 @click="handleDelete(scope.row.id)"
                 style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
               >
@@ -333,7 +339,6 @@
           <el-table-column label="操作" align="center" width="140px">
             <template #default="scope">
               <el-button
-                v-if="scope.row.eleActiveTotal != null && scope.row.eleActiveTotal != 0"
                 link
                 type="primary"
                 @click="toDetail(scope.row)"
@@ -344,6 +349,7 @@
               <el-button
                 link
                 type="danger"
+                v-if="scope.row.flagType"
                 @click="handleDelete(scope.row.id)"
                 style="background-color:#fa3333;color:#fff;border:none;width:40px;height:30px;"
               >
@@ -551,6 +557,7 @@ const exportLoading = ref(false) // 导出的加载中
 const queryDeleteParams = reactive({
   company: undefined,
   showCol: [1, 2, 12, 13, 15, 16] as number[],
+  name: undefined,
   pageNo: 1,
   pageSize: 20,
   pageTotal: 0,
@@ -638,7 +645,13 @@ const toDetail = async(item) =>{
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
-  getList()
+  queryDeleteParams.pageNo = 1
+  queryDeleteParams.name = queryParams.name
+  if(switchValue.value == 2) {
+    handleStopDelete()
+  } else {
+    getList()
+  }
 }
 
 /** 重置按钮操作 */
@@ -683,26 +696,25 @@ const handleExport = async () => {
 
 //已删除
 const handleStopDelete = async() =>{
-  const res = await IndexApi.deletedAisleInfo({
-    pageNo: queryDeleteParams.pageNo,
-    pageSize: queryDeleteParams.pageSize,
-  })
+  const res = await IndexApi.deletedAisleInfo(queryDeleteParams)
   deletedList.value = res.list;
   queryDeleteParams.pageTotal = res.total;
 }
 
 //恢复机房
 const handleRestore = async (flagAisleid) => {
-  ElMessageBox.confirm('确认恢复机房吗？', '提示', {
+  ElMessageBox.confirm('确认恢复柜列吗？', '提示', {
     confirmButtonText: '确 认',
     cancelButtonText: '取 消',
     type: 'warning'
   }).then(async () => {
-    // const res = await MachineRoomApi.restoreRoomInfo({id: flagAisleid});
-    // if(res != null || res != "")
-    // message.success('恢复成功')
-    // deletedList.value = deletedList.value.filter(item => item.id != flagAisleid)
-    // getRoomAddrList()
+    const res = await IndexApi.restoreAisleInfo({id: flagAisleid});
+    if(res != null || res != "") {
+      message.success('恢复成功')
+      deletedList.value = deletedList.value.filter(item => item.id != flagAisleid)
+    } else {
+      message.error('恢复失败')
+    }
   })
 }
 
