@@ -90,12 +90,17 @@
           </el-table-column>
           <!-- 遍历其他列 -->
           <template v-for="column in tableColumns">
-            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
-              <template #default="{ row }" v-if="column.slot === 'actions'">
+            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.label!='操作'" >
+              <!-- <template #default="{ row }" v-if="column.slot === 'actions'">
                 <el-button type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
-              </template>
+              </template> -->
             </el-table-column>
           </template>
+          <el-table-column label="操作" align="center" width="90">
+            <template #default="{ row }">
+                <el-button type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
+              </template>
+          </el-table-column>
           <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
             <tr>
