@@ -20,7 +20,12 @@
         room_name,
         update_time
         from room_index
-        where is_delete = 1
+        <where>
+            is_delete = 1
+            <if test="roomName !=null and roomName !=''">
+                room_name like concat('%',#{roomName},'%')
+            </if>
+        </where>
         ORDER BY update_time desc
     </select>
     <select id="getRoomAddrList" resultType="java.lang.String">

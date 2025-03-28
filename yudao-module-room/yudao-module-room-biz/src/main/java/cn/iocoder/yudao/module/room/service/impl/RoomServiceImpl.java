@@ -1847,9 +1847,6 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public List<RoomIndexAddrResVO> getRoomList(String adder, String roomName) {
-//        if (StringUtils.isEmpty(adder)){
-//            adder = "未区分";
-//        }
         if (StringUtils.isNotEmpty(adder)) {
             LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getAddr, adder)
                     .like(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName).eq(RoomIndex::getIsDelete, false);
@@ -1883,6 +1880,9 @@ public class RoomServiceImpl implements RoomService {
 
 
     public void getRoomListRedis(List<RoomIndexAddrResVO> bean) {
+        if (CollectionUtils.isEmpty(bean)){
+            return;
+        }
         ValueOperations ops = redisTemplate.opsForValue();
         List<String> keys = bean.stream().map(i -> REDIS_KEY_ROOM + i.getId()).distinct().collect(Collectors.toList());
         List list = ops.multiGet(keys);
