@@ -804,7 +804,7 @@ onActivated(() => {
   //   flashListTimer.value = setInterval(() => {
   //       getListAll();
   // }, 10000);
-    // flashListTimer.value = setInterval((getListAll), 5000);
+  //   flashListTimer.value = setInterval((getListAll), 5000);
   // }
 })
 </script>

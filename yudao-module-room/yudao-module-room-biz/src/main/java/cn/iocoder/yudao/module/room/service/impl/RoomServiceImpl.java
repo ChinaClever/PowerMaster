@@ -28,6 +28,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.enums.*;
+import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
@@ -1630,6 +1631,10 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         } else {
+            Long count = roomIndexMapper.selectCount(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, vo.getRoomName()).eq(RoomIndex::getIsDelete, 0));
+            if (count>0){
+                BusinessAssert.error(10010,"当前机房名称已存在");
+            }
             //新增
             int insert = roomIndexMapper.insert(index);
             if (insert > 0) {
@@ -1824,6 +1829,12 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public void getRestoreRoom(int id) {
         try {
+            RoomIndex vo = roomIndexMapper.selectById(id);
+            Long count = roomIndexMapper.selectCount(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, vo.getRoomName()).eq(RoomIndex::getIsDelete, 0));
+            if (count>0){
+                BusinessAssert.error(10010,"当前机房名称已存在");
+            }
+
             int affectedRows = roomIndexMapper.restoreByDeleteRoom(id);
             if (affectedRows > 0) {
                 roomCfgMapper.restoreByRoomCfg(id);
