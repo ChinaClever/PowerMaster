@@ -1910,9 +1910,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Override
     public BusLineResBase getBusLoadRateLine(BusIndexPageReqVO pageReqVO) {
-        if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")) {
-            return null;
-        }
+        //if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")) {
+            //return null;
+        //}
         BusHarmonicLineRes result = new BusHarmonicLineRes();
         try {
             List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
