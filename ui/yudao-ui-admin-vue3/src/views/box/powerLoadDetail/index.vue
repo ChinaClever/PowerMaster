@@ -596,7 +596,6 @@ const getBoxIdAndLocation =async () => {
       location.value = data.location
       busName.value = data.busName
       boxName.value = data.boxName
-      devKey.value = data.devKey;
     }else{
       location.value = null
       busName.value = null

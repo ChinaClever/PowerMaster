@@ -126,7 +126,7 @@
         <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer =0"/>
         <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =0"/>
         <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =0"/>
-        <el-radio-button label="负载率" value="负载率" :disabled="isLoadRateDisabled" @click="switchChartContainer =0"/>
+        <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =0"/>
         <el-radio-button label="线电压" value="线电压" @click="switchChartContainer =0"/>
       </el-radio-group>
     </el-col>
@@ -629,11 +629,6 @@ watch( ()=>typeRadio.value, async(value)=>{
      isHourDisabled.value = true
   }else{
     isHourDisabled.value = false
-  }
-  if (value == '负载率' ){
-    isDayAndMonthDisabled.value = true
-  }else{
-    isDayAndMonthDisabled.value = false
   }
   // 更新数据后重新渲染图表
   myChart2?.setOption({
