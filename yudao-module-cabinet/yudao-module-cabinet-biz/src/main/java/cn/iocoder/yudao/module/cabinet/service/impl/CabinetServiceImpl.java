@@ -1640,31 +1640,29 @@ public class CabinetServiceImpl implements CabinetService {
             switch (reqVO.getGranularity()) {
                 case "realtime":
                     index = "cabinet_hda_pow_realtime";
-                    heads = new String[]{"cabinet_id", "apparent_total", "apparent_a", "apparent_b", "active_total", "active_a",
-                            "active_b", "reactive_a", "reactive_b", "reactive_total", "factor_a", "factor_b", "factor_total", "load_rate", "create_time"};
                     start = LocalDateTime.now().minusHours(1).format(formatter);
                     break;
                 case "hour":
                     index = "cabinet_hda_pow_hour";
-                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
-                            "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
-                            "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
                     start = LocalDateTime.now().minusDays(1).format(formatter);
                     break;
                 case "SeventyHours":
                     index = "cabinet_hda_pow_hour";
-                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
-                            "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
-                            "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
                     start = LocalDateTime.now().minusDays(3).format(formatter);
                     break;
                 default:
                     index = "cabinet_hda_pow_day";
-                    heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
-                            "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
-                            "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
                     start = LocalDateTime.now().minusMonths(1).format(formatter);
             }
+            if (Objects.equals(reqVO.getGranularity(), "realtime")){
+                heads = new String[]{"cabinet_id", "apparent_total", "apparent_a", "apparent_b", "active_total", "active_a",
+                        "active_b", "reactive_a", "reactive_b", "reactive_total", "factor_a", "factor_b", "factor_total", "load_rate", "create_time"};
+            }else {
+                heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
+                        "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
+                        "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
+            }
+
             List<Map<String, Object>> mapList = getDataEsChart(start, end, idKey, cabinet, index, heads);
             mapList.forEach(map -> {
                 // 获取文档内容，假设它以 Map 的形式存储

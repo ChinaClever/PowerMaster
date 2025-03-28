@@ -49,15 +49,15 @@
             <span>机房状态</span>
             <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" style="margin-left:0px;margin-right:0vw;" size="small">机房功率</el-button>
             <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">机房温度</el-button>
-            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:-39vw;margin-right:-1vw;" size="small">机房对比</el-button>
-            <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" style="margin-left:-38vw;margin-right:0vw;" size="small">实时曲线</el-button>
+            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">机房对比</el-button>
+            <!-- <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" style="margin-left:-38vw;margin-right:0vw;" size="small">实时曲线</el-button> -->
             <!--<el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>-->
             <el-button @click="push({path: '/room/monitor'})" :type="toggleButton ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">全屏</el-button>
             <el-dialog
               title="自定义弹窗"
               v-model="dialogVisible"
               @close="handleClose"
-            >       
+            >
               <!-- 自定义的头部内容（可选） -->
               <template #header>
                 <div class="custom-header">
@@ -65,7 +65,7 @@
                   <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" size="small">机房功率</el-button>
                   <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" size="small">机房温度</el-button>
                   <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" size="small">机房对比</el-button>
-                  <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" size="small">实时曲线</el-button>
+                  <!-- <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" size="small">实时曲线</el-button> -->
                 </div>
               </template>
 
@@ -104,20 +104,20 @@
                         <el-card shadow="hover">
                           <div class="flex items-center h-21px">
                             <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                            <span class="text-16px">{{ item.name || '' }}</span>
-                            <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
+                            <span class="text-16px">{{ item.roomName || '' }}</span>
+                            <span class="text-15px" style="margin-left:5vw;">PUE：{{roomPue}}</span>
                           </div>
                           <div class="mt-14px flex justify-between text-12px text-gray-400">
                             <span style="margin-left:3vw">冷通道</span>
                             <span style="margin-right:2vw">热通道</span>
                           </div>
                           <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span class="text-12px">最高温度：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
-                            <span class="text-12px" style="margin-right:2vw">{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
+                            <span class="text-12px">最高温度：{{item.temMaxFront ? item.temMaxFront.toFixed(1) : '0.0'}}&deg;C</span>
+                            <span class="text-12px" style="margin-right:2vw">{{item.temMaxBlack ? item.temMaxBlack.toFixed(1) : '0.0'}}&deg;C</span>
                           </div>
                           <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span class="text-12px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                            <span class="text-12px" style="margin-right:2vw">{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                            <span class="text-12px">平均温度：{{item.temAvgFront ? item.temAvgFront.toFixed(1) : '0.0'}}&deg;C</span>
+                            <span class="text-12px" style="margin-right:2vw">{{item.temAvgBlack ? item.temAvgBlack.toFixed(1) : '0.0'}}&deg;C</span>
                           </div>
                           <div class="mt-14px flex justify-between text-12px text-gray-400">
                             <span>时间：{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
@@ -165,12 +165,12 @@
                       <el-card shadow="hover">
                         <div class="flex items-center h-21px">
                           <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                          <span class="text-15px">{{ item.name || '' }}</span>
-                          <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
+                          <span class="text-15px">{{ item.roomName || '' }}</span>
+                          <span class="text-15px" style="margin-left:5vw;">PUE：{{roomPue}}</span>
                         </div>
                         <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
+                          <span class="text-14px">实时视在功率：{{item.temAvgBlack ? item.temAvgBlack.toFixed(3) : '0.000'}}kVA</span>
                           <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
                         </div>
                       </el-card>
@@ -193,19 +193,19 @@
                       <el-card shadow="hover">
                         <div class="flex items-center h-21px">
                           <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                          <span class="text-16px">{{ item.name || '' }}</span>
-                          <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
+                          <span class="text-16px">{{ item.roomName || '' }}</span>
+                          <span class="text-15px" style="margin-left:5vw;">PUE：{{roomPue}}</span>
                         </div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
                           <span style="margin-left:3vw">冷通道</span>
                           <span style="margin-right:2vw">热通道</span>
                         </div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span class="text-12px">最高温度：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
-                          <span class="text-12px" style="margin-right:2vw">{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
+                          <span class="text-12px">最高温度：{{item.temMaxFront ? item.temMaxFront.toFixed(1) : '0.0'}}&deg;C</span>
+                          <span class="text-12px" style="margin-right:2vw">{{item.temMaxBlack ? item.temMaxBlack.toFixed(1) : '0.0'}}&deg;C</span>
                         </div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span class="text-12px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                          <span class="text-12px">平均温度：{{item.temAvgFront ? item.temAvgFront.toFixed(1) : '0.0'}}&deg;C</span>
                           <span class="text-12px" style="margin-right:2vw">{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
                         </div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
@@ -664,14 +664,14 @@ const getHomePowData = async() => {
   Object.assign(powInfo, res)
   Object.assign(powCopyInfo, res)
 
-  const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
-    ...item, // 复制对象的所有属性
-    name: item.name + '1' // 修改name属性，在后面加上'*'号
-  }))
+  // const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
+  //   ...item, // 复制对象的所有属性
+  //   name: item.name + '1' // 修改name属性，在后面加上'*'号
+  // }))
 
-  powInfo.roomDataList = [...powInfo.roomDataList,...modifiedRoomEqList] //添加了模拟数据
+  powInfo.roomDataList = [...powInfo.roomDataList] //添加了模拟数据
 
-  console.log('111',powInfo.roomDataList)
+
   
   Object.assign(powOptionsData, {
     grid: {
@@ -711,7 +711,7 @@ const getHomePowData = async() => {
     },
     xAxis: {
       type: 'category',
-      data: powInfo.roomDataList.map(item => item.name)
+      data: powInfo.roomDataList.map(item => item.roomName)
     },
     yAxis: {
       type: 'value',
@@ -759,88 +759,90 @@ const getHomePowData = async() => {
       },
     ]
   })
-  Object.assign(powOptionsDataOne, {
-    grid: {
-      left: 50,
-      right: 20,
-      bottom: 20
-    },
-    legend: {
-      right: 10,
-      selectedMode: 'single'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      },
-      formatter: function (params) {
-        console.log('params', params)
-        let result = '';
-        params.forEach(function (item) {
-          // item 是每一个系列的数据
-          const seriesName = item.seriesName; // 系列名称
-          const value = item.value; // 数据值
-          const marker = item.marker; // 标志图形
-          let unit = ''
-          if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
-            unit = '℃'
-          }
-          result += `${marker}${seriesName}: ${value}${unit}<br/>`;
-        });
-        return result;
-      }
-    },
-    xAxis: {
-      type: 'category',
-      data: powInfo.roomDataList.map(item => item.name)
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        name: '最低温度',
-        data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '平均温度',
-        data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '最高温度',
-        data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '目前温度',
-        data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-    ]
-  })
+  // Object.assign(powOptionsDataOne, {
+  //   grid: {
+  //     left: 50,
+  //     right: 20,
+  //     bottom: 20
+  //   },
+  //   legend: {
+  //     right: 10,
+  //     selectedMode: 'single'
+  //   },
+  //   tooltip: {
+  //     trigger: 'axis',
+  //     axisPointer: {
+  //       type: 'shadow'
+  //     },
+  //     formatter: function (params) {
+  //       console.log('params', params)
+  //       let result = '';
+  //       params.forEach(function (item) {
+  //         // item 是每一个系列的数据
+  //         const seriesName = item.seriesName; // 系列名称
+  //         const value = item.value; // 数据值
+  //         const marker = item.marker; // 标志图形
+  //         let unit = ''
+  //         if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
+  //           unit = '℃'
+  //         }
+  //         result += `${marker}${seriesName}: ${value}${unit}<br/>`;
+  //       });
+  //       return result;
+  //     }
+  //   },
+  //   xAxis: {
+  //     type: 'category',
+  //     data: powInfo.roomDataList.map(item => item.name)
+  //   },
+  //   yAxis: {
+  //     type: 'value',
+  //   },
+    
+
+  //   series: [
+  //     {
+  //       name: '最低温度',
+  //       data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '平均温度',
+  //       data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '最高温度',
+  //       data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '目前温度',
+  //       data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //   ]
+  // })
   console.log('获取主页面功率数据', res)
 }
 // 获取主页面用能
@@ -848,17 +850,17 @@ const getHomeEqData = async() => {
   const res =  await MachineHomeApi.getHomeEqData({})
 
   console.log('222',res)
-const modifiedRoomEqList = (res.roomEqList && Array.isArray(res.roomEqList)) ? res.roomEqList.map(item => {
-  if (item && typeof item.name === 'string') {
-    return {
-      ...item,
-      name: item.name + '1'
-    };
-  }
-  return item; // 如果item不存在或name不是字符串，保持原样
-}) : [];
+// const modifiedRoomEqList = (res.roomEqList && Array.isArray(res.roomEqList)) ? res.roomEqList.map(item => {
+//   if (item && typeof item.name === 'string') {
+//     return {
+//       ...item,
+//       name: item.name + '1'
+//     };
+//   }
+//   return item; // 如果item不存在或name不是字符串，保持原样
+// }) : [];
 
-  res.roomEqList = [...res.roomEqList, ...modifiedRoomEqList] //添加了模拟数据
+  res.roomEqList = [...res.roomEqList] //添加了模拟数据
   //.slice(0, 12)
   
   Object.assign(eqInfo, res)

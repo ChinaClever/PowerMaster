@@ -254,9 +254,11 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     @Override
     public PageResult<AislePowerRes> getPowerPage(AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
+        if (Objects.equals(aisleIndexDOPageResult.getTotal(),0L)){
+            return null;
+        }
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
         List<AislePowerRes> result = new ArrayList<>();
-
 
         List<Integer> aisleIds = list.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
         List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>().in(CabinetIndex::getAisleId, aisleIds)
@@ -273,7 +275,6 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
         for (AisleIndexDO aisleIndexDO : list) {
             AislePowerRes res = BeanUtils.toBean(aisleIndexDO, AislePowerRes.class);
-//            AislePowerRes res = new AislePowerRes();
             result.add(res);
 
             Map<String, String> aisleBarMap = devKey.get(aisleIndexDO.getId());
