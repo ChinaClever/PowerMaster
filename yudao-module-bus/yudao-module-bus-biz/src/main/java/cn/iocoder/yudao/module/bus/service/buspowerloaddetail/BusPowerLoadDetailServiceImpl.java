@@ -437,9 +437,8 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
             DecimalFormat df = new DecimalFormat("#.000");
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-            LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-            LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+            //LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+            //LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
             LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
             if (busId == null) {
                 return null;
@@ -458,17 +457,13 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                         .from(oneMonthAgo.format(formatter))
                         .to(now.format(formatter)));
-            } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
+            } else if (Objects.equals(reqVO.getGranularity(), "hour") || Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
+                int daysOffset = "SeventyHours".equals(reqVO.getGranularity()) ? 3 : 1;
+                LocalDateTime startTime = LocalDateTime.now().minusDays(daysOffset);
                 searchRequest.indices("bus_ele_total_realtime");
                 searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
                 searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(oneDayAgo.format(formatter))
-                        .to(now.format(formatter)));
-            } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-                searchRequest.indices("bus_ele_total_realtime");
-                searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
-                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(threeDaysAgo.format(formatter))
+                        .from(startTime.format(formatter))
                         .to(now.format(formatter)));
             } else {
                 searchRequest.indices("bus_eq_total_day");
