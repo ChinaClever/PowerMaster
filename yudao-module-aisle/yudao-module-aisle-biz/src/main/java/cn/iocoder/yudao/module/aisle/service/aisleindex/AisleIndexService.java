@@ -38,7 +38,7 @@ public interface AisleIndexService {
      *
      * @param id 编号
      */
-    void deleteIndex(Integer id);
+    Boolean deleteIndex(Integer id);
 
     /**
      * 获得通道列
@@ -99,4 +99,6 @@ public interface AisleIndexService {
     Map<String, AislePowerFactorMaxResVO> getAisleLineMax(AisleIndexPageReqVO pageReqVO) throws IOException;
 
     PageResult<AisleIndexDelResVO> getDelPage(AisleIndexPageReqVO pageReqVO);
+
+    Boolean restore(Integer id);
 }

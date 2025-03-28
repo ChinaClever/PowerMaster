@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomIndexChartDetailDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
 import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
 import cn.iocoder.yudao.module.room.service.roomindex.RoomIndexService;
@@ -141,7 +142,6 @@ public class RoomIndexController {
 
     /**
      * 机房用能环比
-     *
      * @param id 机房id
      */
     @Operation(summary = "机房用能环比")
@@ -150,19 +150,6 @@ public class RoomIndexController {
         RoomEleChainDTO dto = indexService.getEleChain(id);
         return success(dto);
     }
-
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出机房索引 Excel")
-//    @PreAuthorize("@ss.hasPermission('room:index:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportIndexExcel(@Valid RoomIndexPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<RoomIndexDO> list = indexService.getIndexPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "机房索引.xls", "数据", RoomIndexRespVO.class,
-//                        BeanUtils.toBean(list, RoomIndexRespVO.class));
-//    }
 
     @PostMapping("/report/ele")
     @Operation(summary = "获得机房报表数据")
@@ -201,7 +188,12 @@ public class RoomIndexController {
         PageResult<RoomEleTotalRealtimeResVO> list = indexService.getRoomEleTotalRealtime(reqVO, false);
         ExcelUtils.write(response, "机房实时电能记录数据.xlsx", "数据", RoomEleTotalRealtimeResVO.class,
                 BeanUtils.toBean(list.getList(), RoomEleTotalRealtimeResVO.class));
+    }
 
+    @PostMapping("/chartDetail")
+    @Operation(summary = "折线图数据")
+    public CommonResult<List<Map<String, Object>>> getChartDetail(@RequestBody @Valid RoomIndexChartDetailDTO detailDTO) throws IOException {
+        return success(indexService.getChartDetail(detailDTO));
     }
 
 }

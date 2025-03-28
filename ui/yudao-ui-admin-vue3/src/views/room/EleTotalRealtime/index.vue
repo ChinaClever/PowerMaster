@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房实时能耗">
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
@@ -33,10 +33,12 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
          </el-form-item>
+         <el-form-item style="position: absolute;right: 0px;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>         
+          </el-form-item>
       </el-form> 
     </template>
     <template #Content>
@@ -62,7 +64,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -82,7 +84,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.roomId,row.createTimeMin,row.createTimeMax)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.roomId,row.createTimeMin,row.createTimeMax)">详情</el-button>
               </template>
             </el-table-column>
           </template>

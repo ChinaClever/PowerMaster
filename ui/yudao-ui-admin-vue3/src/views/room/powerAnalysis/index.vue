@@ -74,10 +74,12 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+         </el-form-item>
+         <el-form-item style="position: absolute;right: 0;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
-         </el-form-item>
+          </el-form-item>
       </el-form> 
     </template>
     <template #Content>
@@ -100,7 +102,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -120,7 +122,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -156,7 +158,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime,startOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
@@ -313,10 +315,9 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -345,8 +346,7 @@ const getList1 = async () => {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     	console.log('入参', queryParams);

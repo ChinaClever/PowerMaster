@@ -2,12 +2,14 @@ package cn.iocoder.yudao.module.room.vo;
 
 import cn.iocoder.yudao.framework.common.dto.room.RoomCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO;
+import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class RoomMainResVO {
@@ -159,5 +161,8 @@ public class RoomMainResVO {
 
     @Schema(description = "后门平均温度")
     private Double temAvgBlack;
+
+    @Schema(description = "设备统计")
+    private Map<String, EquipmentStatisticsResVO> map;
 
 }

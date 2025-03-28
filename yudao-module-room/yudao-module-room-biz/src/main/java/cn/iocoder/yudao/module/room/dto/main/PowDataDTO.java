@@ -1,8 +1,10 @@
 package cn.iocoder.yudao.module.room.dto.main;
 
-import cn.iocoder.yudao.module.room.dto.RoomPowDataDTO;
+import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -18,28 +20,33 @@ public class PowDataDTO {
     /**
      * 机房数据
      */
-    List<RoomPowDataDTO> roomDataList;
+    @Schema(description = "机房数据")
+    private List<RoomIndexAddrResVO> roomDataList;
 
 
     /**
      * 有功功率
      */
-    private  float  totalPowActive;
+    @Schema(description = "有功功率")
+    private BigDecimal totalPowActive;
 
     /**
      * 无功功率
      */
-    private  float  totalPowReactive;
+    @Schema(description = "无功功率")
+    private BigDecimal totalPowReactive;
 
     /**
      * 视在功率
      */
-    private  float  totalPowApparent;
+    @Schema(description = "视在功率")
+    private BigDecimal totalPowApparent;
 
     /**
-     * 视在功率
+     * 总功率因素
      */
-    private  float  totalPowerFactor;
+    @Schema(description = "总功率因素")
+    private BigDecimal totalPowerFactor;
 
 
 }

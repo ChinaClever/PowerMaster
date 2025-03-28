@@ -86,6 +86,9 @@
 
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          </el-form-item>
+
+          <el-form-item style="position:absolute; right: 0;">
             <el-button
               type="success"
               plain
@@ -98,7 +101,7 @@
         </el-form>
       </template>
       <template #Content>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
            <!-- 添加行号列 -->
           <el-table-column label="序号" align="center" width="60px">
             <template #default="{ $index }">
@@ -109,7 +112,7 @@
           <template v-for="column in tableColumns">
             <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
               <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>

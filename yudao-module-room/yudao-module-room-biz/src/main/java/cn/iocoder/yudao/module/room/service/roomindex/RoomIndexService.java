@@ -6,6 +6,7 @@ import java.util.*;
 import javax.validation.*;
 
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomIndexChartDetailDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
 import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -79,4 +80,6 @@ public interface RoomIndexService {
     PageResult<RoomEQRes> getEqPage1(RoomIndexPageReqVO pageReqVO);
 
     List<RoomMaxEqResVO> getMaxEq();
+
+    List<Map<String, Object>> getChartDetail(RoomIndexChartDetailDTO detailDTO);
 }
