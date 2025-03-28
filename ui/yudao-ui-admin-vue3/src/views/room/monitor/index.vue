@@ -1,5 +1,5 @@
 <template>
-  <div class="demo-collapse">
+  <div :style="isFromHome ? `height: 50vh;overflow: auto` : ``">
     <div style="display: flex;align-items: center;justify-content: space-between">
       <el-form
         class="-mb-15px"
@@ -19,8 +19,9 @@
             />
           </el-form-item>
           <el-form-item style="margin-left: 10px;">
-            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button @click="handleQuery" :size="isFromHome ? 'small' : ''"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button @click="resetQuery" :size="isFromHome ? 'small' : ''"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button @click="activeNames = []" :size="isFromHome ? 'small' : ''"><Icon icon="ep:arrow-up" class="mr-5px" /> 一键收缩</el-button>
             <el-button
               type="primary"
               plain
@@ -42,17 +43,17 @@
         </div>
       </el-form>
       <div class="btns">
-        <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
-        <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
-        <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
-        <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-        <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
-        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+        <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
+        <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
+        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
+        <el-button v-if="!isFromHome" @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
+        <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+        <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3" :size="isFromHome ? 'small' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
       </div>
     </div>
     <div v-if="switchValue == 0" style="padding: 20px 0;background-color: #fff">
-      <el-skeleton :loading="loading" animated v-if="valueMode===0" style="padding: 0 20px">
+      <el-skeleton :loading="loading" animated v-if="valueMode===0" style="padding: 0 20px;box-sizing: border-box">
         <el-row>
           <template v-if="roomShowType">
             <el-col>
@@ -80,7 +81,7 @@
                     </div>
                   </el-card>
                   <div style="position: absolute;bottom: 0;right: 0">
-                    <button class="detail" @click="handleRoomHome(item.id)" >详情</button>
+                    <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''" >详情</button>
                   </div>
                 </div>
               </div>
@@ -129,7 +130,7 @@
                       <div style="width: 33%;text-align:center"><el-text>{{item.humAvgBlack ? item.humAvgBlack.toFixed(0) : '0'}}%</el-text></div>
                     </div>
                     <div style="position: absolute;bottom: 0;right: 0">
-                      <button class="detail" @click="handleRoomHome(item.id)" >详情</button>
+                      <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
                     </div>
                   </el-card>
                 </div>
@@ -185,7 +186,7 @@
                         </div>
                       </el-card>
                       <div style="position: absolute;bottom: 0;right: 0">
-                        <button class="detail" @click="handleRoomHome(item.id)" >详情</button>
+                        <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
                       </div>
                     </div>
                   </div>
@@ -234,7 +235,7 @@
                           <div style="width: 33%;text-align:center"><el-text>{{item.humAvgBlack ? item.humAvgBlack.toFixed(0) : '0'}}%</el-text></div>
                         </div>
                         <div style="position: absolute;bottom: 0;right: 0">
-                          <button class="detail" @click="handleRoomHome(item.id)" >详情</button>
+                          <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
                         </div>
                       </el-card>
                     </div>
@@ -612,6 +613,8 @@ const queryParams = reactive({
   roomName: undefined,
 })as any
 
+const flashListTimer = ref();
+
 const loading = ref(true)
 const roomShowType = ref(true)
 const powOptionsData = ref([{}])
@@ -623,8 +626,7 @@ const addrAllRoomList = ref([[]])
 const clickIndex = ref(0)
 
 const queryDeleteParams = reactive({
-  company: undefined,
-  showCol: [1, 2, 12, 13, 15, 16] as number[],
+  roomName: undefined,
   pageNo: 1,
   pageSize: 20,
   pageTotal: 0,
@@ -647,12 +649,23 @@ const addrList = ref([
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
 
+
+const { isFromHome } = defineProps({
+  isFromHome: {
+    type: Boolean,
+    default: false,
+  }
+})
+
 const handleRoomHome = (id) => {
   push({path: '/room/home', state: { roomId: id }})
 }
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
+  queryDeleteParams.pageNo = 1
+  queryDeleteParams.roomName = queryParams.roomName
+  handleStopDelete()
   const res = await MachineRoomApi.getAddrAllRoomList(queryParams)
   console.log(res)
   if(res) {
@@ -673,6 +686,8 @@ const handleQuery = async () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryParams.roomName = undefined;
+  queryDeleteParams.roomName = queryParams.roomName
+  handleStopDelete()
   roomAddrList.value.forEach(async (item,index) => {
     await getAddrAllRoomList({addr: item},index)
   })
@@ -711,10 +726,7 @@ const handleDelete = (id) => {
 
 //已删除
 const handleStopDelete = async() =>{
-  const res = await MachineRoomApi.deletedRoomInfo({
-    pageNo: queryDeleteParams.pageNo,
-    pageSize: queryDeleteParams.pageSize,
-  })
+  const res = await MachineRoomApi.deletedRoomInfo(queryDeleteParams)
   deletedList.value = res.list;
   queryDeleteParams.pageTotal = res.total;
 }
@@ -815,7 +827,7 @@ const getRoomAddrList = async() => {
 }
 
 const getAddrAllRoomList = async(query,index) => {
-  const res2 = await MachineRoomApi.getAddrAllRoomList(query)
+  const res2 = await MachineRoomApi.getAddrAllRoomList({...queryParams,...query})
   console.log(res2)
   addrAllRoomList.value[index] = res2
   
@@ -915,9 +927,28 @@ const getAllApi = async () => {
 
 getAllApi()
 
+onMounted(() => {
+  flashListTimer.value = setInterval((getRoomAddrList), 5000);
+})
+
+onBeforeUnmount(() => {
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
 const handleChange = async (val: CollapseModelValue) => {
   console.log(val)
 }
+
 </script>
 
 <style scoped lang="scss">
