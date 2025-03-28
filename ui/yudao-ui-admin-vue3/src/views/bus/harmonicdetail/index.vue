@@ -55,8 +55,8 @@
         </el-form-item> -->
         
         <el-form-item>  
-          <span>机房：</span>
-          <el-tag size="large">{{ roomName?roomName:'未绑定' }}</el-tag>
+          <span>位置：</span>
+          <el-tag size="large">{{ roomName?location:'未绑定' }}</el-tag>
           <span> 名称：</span>
           <el-tag size="large">{{ busName }}</el-tag>
           <span>网络地址：</span>

@@ -148,7 +148,11 @@
         <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="300px">
+          <template #default="scope" >
+                <div>{{ scope.row.roomName === null ? '未绑定' : scope.row.location }}</div>
+          </template>
+        </el-table-column> 
         <el-table-column label="设备地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="设备名称" align="center" prop="boxName" />
         <el-table-column label="运行状态" align="center" prop="color" >

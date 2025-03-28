@@ -733,10 +733,11 @@ public class BusIndexServiceImpl implements BusIndexService {
         String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
         String mess = getSearchResponse(index, startTime, endTime);
-        if (mess == null) return null;
+        if(mess == null){ return null;}
         LineMaxResVO resVO = JsonUtils.parseObject(mess, LineMaxResVO.class);
         if (Objects.nonNull(resVO)) {
             BusIndexDO busIndexDO = busIndexMapper.selectById(resVO.getBusId());
+            if(busIndexDO == null){ return null;}
             resVO.setDevKey(busIndexDO.getBusKey());
             resVO.setBusName(busIndexDO.getBusName());
             switch (resVO.getLineId()) {
@@ -1909,9 +1910,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Override
     public BusLineResBase getBusLoadRateLine(BusIndexPageReqVO pageReqVO) {
-        if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")) {
-            return null;
-        }
+        //if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")) {
+            //return null;
+        //}
         BusHarmonicLineRes result = new BusHarmonicLineRes();
         try {
             List<Integer> ids = Arrays.asList(pageReqVO.getBusId());

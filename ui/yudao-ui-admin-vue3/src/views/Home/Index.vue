@@ -470,14 +470,14 @@ const getHomePowData = async() => {
   Object.assign(powInfo, res)
   Object.assign(powCopyInfo, res)
 
-  const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
-    ...item, // 复制对象的所有属性
-    name: item.name + '1' // 修改name属性，在后面加上'*'号
-  }))
+  // const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
+  //   ...item, // 复制对象的所有属性
+  //   name: item.name + '1' // 修改name属性，在后面加上'*'号
+  // }))
 
-  powInfo.roomDataList = [...powInfo.roomDataList,...modifiedRoomEqList] //添加了模拟数据
+  powInfo.roomDataList = [...powInfo.roomDataList] //添加了模拟数据
 
-  console.log('111',powInfo.roomDataList)
+
   
   Object.assign(powOptionsData, {
     grid: {
@@ -517,7 +517,7 @@ const getHomePowData = async() => {
     },
     xAxis: {
       type: 'category',
-      data: powInfo.roomDataList.map(item => item.name)
+      data: powInfo.roomDataList.map(item => item.roomName)
     },
     yAxis: {
       type: 'value',
@@ -565,88 +565,90 @@ const getHomePowData = async() => {
       },
     ]
   })
-  Object.assign(powOptionsDataOne, {
-    grid: {
-      left: 50,
-      right: 20,
-      bottom: 20
-    },
-    legend: {
-      right: 10,
-      selectedMode: 'single'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      },
-      formatter: function (params) {
-        console.log('params', params)
-        let result = '';
-        params.forEach(function (item) {
-          // item 是每一个系列的数据
-          const seriesName = item.seriesName; // 系列名称
-          const value = item.value; // 数据值
-          const marker = item.marker; // 标志图形
-          let unit = ''
-          if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
-            unit = '℃'
-          }
-          result += `${marker}${seriesName}: ${value}${unit}<br/>`;
-        });
-        return result;
-      }
-    },
-    xAxis: {
-      type: 'category',
-      data: powInfo.roomDataList.map(item => item.name)
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        name: '最低温度',
-        data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '平均温度',
-        data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '最高温度',
-        data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '目前温度',
-        data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-    ]
-  })
+  // Object.assign(powOptionsDataOne, {
+  //   grid: {
+  //     left: 50,
+  //     right: 20,
+  //     bottom: 20
+  //   },
+  //   legend: {
+  //     right: 10,
+  //     selectedMode: 'single'
+  //   },
+  //   tooltip: {
+  //     trigger: 'axis',
+  //     axisPointer: {
+  //       type: 'shadow'
+  //     },
+  //     formatter: function (params) {
+  //       console.log('params', params)
+  //       let result = '';
+  //       params.forEach(function (item) {
+  //         // item 是每一个系列的数据
+  //         const seriesName = item.seriesName; // 系列名称
+  //         const value = item.value; // 数据值
+  //         const marker = item.marker; // 标志图形
+  //         let unit = ''
+  //         if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
+  //           unit = '℃'
+  //         }
+  //         result += `${marker}${seriesName}: ${value}${unit}<br/>`;
+  //       });
+  //       return result;
+  //     }
+  //   },
+  //   xAxis: {
+  //     type: 'category',
+  //     data: powInfo.roomDataList.map(item => item.name)
+  //   },
+  //   yAxis: {
+  //     type: 'value',
+  //   },
+    
+
+  //   series: [
+  //     {
+  //       name: '最低温度',
+  //       data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '平均温度',
+  //       data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '最高温度',
+  //       data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '目前温度',
+  //       data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //   ]
+  // })
   console.log('获取主页面功率数据', res)
 }
 // 获取主页面用能
@@ -654,17 +656,17 @@ const getHomeEqData = async() => {
   const res =  await MachineHomeApi.getHomeEqData({})
 
   console.log('222',res)
-const modifiedRoomEqList = (res.roomEqList && Array.isArray(res.roomEqList)) ? res.roomEqList.map(item => {
-  if (item && typeof item.name === 'string') {
-    return {
-      ...item,
-      name: item.name + '1'
-    };
-  }
-  return item; // 如果item不存在或name不是字符串，保持原样
-}) : [];
+// const modifiedRoomEqList = (res.roomEqList && Array.isArray(res.roomEqList)) ? res.roomEqList.map(item => {
+//   if (item && typeof item.name === 'string') {
+//     return {
+//       ...item,
+//       name: item.name + '1'
+//     };
+//   }
+//   return item; // 如果item不存在或name不是字符串，保持原样
+// }) : [];
 
-  res.roomEqList = [...res.roomEqList, ...modifiedRoomEqList] //添加了模拟数据
+  res.roomEqList = [...res.roomEqList] //添加了模拟数据
   //.slice(0, 12)
   
   Object.assign(eqInfo, res)

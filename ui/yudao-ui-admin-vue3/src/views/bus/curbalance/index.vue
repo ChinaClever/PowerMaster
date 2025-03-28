@@ -1785,7 +1785,5 @@ onActivated(() => {
   --el-card-padding:5px;
 }
 
-:deep(.el-tag){
-  margin-right:-40px;
-}
+
 </style>

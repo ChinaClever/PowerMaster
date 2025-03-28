@@ -27,9 +27,9 @@
         SELECT
         count(id)
         FROM
-        `aisle_index`
+        aisle_index
         WHERE
-        room_id = #{roomId}
+        room_id = #{roomId} and is_delete = 0
         AND (
         y_coordinate = #{yCoordinate}
         AND #{xCoordinate} BETWEEN x_coordinate

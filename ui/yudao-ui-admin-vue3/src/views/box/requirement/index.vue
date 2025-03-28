@@ -149,12 +149,10 @@
             <el-button
               link
               type="primary"
-              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
               @click="queryParams.lineType = 0;openDetail(scope.row)"
             >
             设备详情
             </el-button>
-
             <el-button
               link
               type="danger"
@@ -595,14 +593,14 @@ const getList = async () => {
     var tableIndex = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      obj.l1MaxCur = obj.l1MaxCur?.toFixed(2);
-      obj.l1MaxVol = obj.l1MaxVol?.toFixed(2);
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
+      obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
       obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
-      obj.l2MaxCur = obj.l2MaxCur?.toFixed(2);
-      obj.l2MaxVol = obj.l2MaxVol?.toFixed(2);
+      obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
+      obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
       obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
-      obj.l3MaxCur = obj.l3MaxCur?.toFixed(2);
-      obj.l3MaxVol = obj.l3MaxVol?.toFixed(2);
+      obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
+      obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
       obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
       obj.l1MaxCurTime = obj.l1MaxCurTime?.slice(0,16);
       obj.l2MaxCurTime = obj.l2MaxCurTime?.slice(0,16);

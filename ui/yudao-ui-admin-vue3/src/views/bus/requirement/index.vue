@@ -34,7 +34,7 @@
           </div>
           <div >
             <span>电流：</span>
-            <span>{{ statusNumber.cur_max_value }}</span>
+            <span>{{ statusNumber.cur_max_value }} A</span>
           </div>
         </div>
         <!-- <div class="status">
