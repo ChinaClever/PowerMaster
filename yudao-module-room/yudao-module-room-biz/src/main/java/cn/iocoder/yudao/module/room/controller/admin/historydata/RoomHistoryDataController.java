@@ -52,15 +52,15 @@ public class RoomHistoryDataController {
     public void getHistoryDataDetailsExcel(RoomHistoryDataDetailsReqVO reqVO,HttpServletResponse response) throws IOException {
         PageResult<Object> pageResult = roomHistoryDataService.getHistoryDataDetails(reqVO);
         List<Object> list = pageResult.getList();
-        if (Objects.equals("hour",reqVO.getGranularity())) {
-            List<HourAndDayPageRespVO> bean = BeanUtils.toBean(list, HourAndDayPageRespVO.class);
-            bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-            ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespVO.class,
-                    bean);
-        }else {
+        if (Objects.equals("realtime",reqVO.getGranularity())) {
             List<RoomPowerAnalysisResVO> bean = BeanUtils.toBean(list, RoomPowerAnalysisResVO.class);
             bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
             ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", RoomPowerAnalysisResVO.class,
+                    bean);
+        }else {
+            List<HourAndDayPageRespVO> bean = BeanUtils.toBean(list, HourAndDayPageRespVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
+            ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespVO.class,
                     bean);
         }
     }
