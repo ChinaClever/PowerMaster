@@ -785,7 +785,7 @@ const handleExport1 = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await HistoryDataApi.exportEnvHistorydetailsPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU环境分析历史数据详情.xlsx')
+    await download.excel(data, '机柜环境分析.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)

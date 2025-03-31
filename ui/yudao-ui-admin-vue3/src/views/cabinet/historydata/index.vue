@@ -110,12 +110,13 @@
           </el-table-column>
           <!-- 遍历其他列 -->
           <template v-for="column in tableColumns">
-            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
-              <template #default="{ row }" v-if="column.slot === 'actions'">
+            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.label!='操作'" />
+          </template>
+          <el-table-column label="操作" align="center" :width="90">
+              <template #default="{ row }">
                 <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
-          </template>
           <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
             <tr>
@@ -534,7 +535,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
-    await download.excel(data, '机柜电力历史数据.xlsx')
+    await download.excel(data, '机柜电力数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)

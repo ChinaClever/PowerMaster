@@ -152,7 +152,7 @@
                 <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =0"/>
                 <el-radio-button label="电流" value="电流" @click="switchChartContainer =2"/>
                 <el-radio-button label="电压" value="电压" @click="switchChartContainer =2"/>
-                <el-radio-button label="有功电能" value="有功电能" :disabled="isPowActiveDisabled" @click="switchChartContainer =1"/>
+                <el-radio-button label="有功电能" value="有功电能" :disabled="isPowActiveDisabled" @click="clickPower()"/>
               </el-radio-group>
             </el-col>
             <el-col :span="6">
@@ -264,34 +264,6 @@ const EqInfo = reactive({})
 
 const roomDownVal = ref()
 
-const ceshi = ref({
-    "id": 1,
-    "roomId": 1,
-    "roomName": "王雁杰机房",
-    "name": "12",
-    "pduBar": true,
-    "isDelete": null,
-    "createTime": null,
-    "length": null,
-    "devKeyA": "172.16.101.2-1",
-    "devKeyB": "172.16.101.2-2",
-    "type": null,
-    "location": "王雁杰机房-12",
-    "status": 0,
-    "eleActiveTotal": 57236.734375,
-    "powApparentTotal": 426.88,
-    "powActiveTotal": 377,
-    "powReactiveTotal": 146.742,
-    "eleActiveA": 28624.53741610683,
-    "powApparentA": 236,
-    "powActiveA": 195,
-    "powReactiveA": 98,
-    "eleActiveB": 28612.196358193876,
-    "powApparentB": 190,
-    "powActiveB": 182,
-    "powReactiveB": 48
-})
-
 const createTimeData = ref<string[]>([]);
 const allLineData = ref<string[]>([]);
 const allEqData = ref<string[]>([]);
@@ -312,6 +284,13 @@ const chartContainer4 = ref<HTMLElement | null>(null);
 let myChart2 = null as echarts.ECharts | null; 
 let myChart3 = null as echarts.ECharts | null; 
 let myChart4 = null as echarts.ECharts | null; 
+
+const clickPower = () => {
+  if(!isPowActiveDisabled) {
+    switchChartContainer.value =1
+  }
+}
+
 const initChart2 = () => {
   // console.log(L4Data.value,L5Data.value,L6Data.value)
   if (chartContainer2.value && instance) {

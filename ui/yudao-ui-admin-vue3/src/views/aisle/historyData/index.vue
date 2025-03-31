@@ -105,12 +105,13 @@
           </el-table-column>
           <!-- 遍历其他列 -->
           <template v-for="column in tableColumns">
-            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
-              <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
-              </template>
-            </el-table-column>
+            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.label!='操作'" />
           </template>
+          <el-table-column label="操作" width="90" align="center">
+            <template #default="{ row }">
+                <el-button type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
+              </template>
+          </el-table-column>
           <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
             <tr>
@@ -139,6 +140,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/aisle/historydata'
 import { IndexApi } from '@/api/aisle/aisleindex'
+import { any } from 'vue-types'
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** 柜列历史数据 列表 */
@@ -328,17 +330,17 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
         { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
         { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
-        { label: '总无功功率(kVA)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
+        { label: '总无功功率(kVar)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
         { label: '总功率因素', align: 'center', prop: 'factor_total' , istrue:true, width: '180px', formatter: formatPowerFactor},
 
         { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, width: '180px', formatter: formatPower},
-        { label: 'A路无功功率(kVA)', align: 'center', prop: 'reactive_a' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路无功功率(kVar)', align: 'center', prop: 'reactive_a' , istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路功率因素', align: 'center', prop: 'factor_a' , istrue:false, width: '180px', formatter: formatPowerFactor},
         
         { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, width: '180px', formatter: formatPower},
-        { label: 'B路无功功率(kVA)', align: 'center', prop: 'reactive_b' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路无功功率(kVar)', align: 'center', prop: 'reactive_b' , istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路功率因素', align: 'center', prop: 'factor_b' , istrue:false, width: '180px', formatter: formatPowerFactor},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true},
       ]
@@ -440,10 +442,10 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: formatTime, width: '200px', istrue:false},
 
-        { label: '总平均无功功率(kVA)', align: 'center', prop: 'reactive_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '总最大无功功率(kVA)', align: 'center', prop: 'reactive_total_max_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: '总平均无功功率(kVar)', align: 'center', prop: 'reactive_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大无功功率(kVar)', align: 'center', prop: 'reactive_total_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最大无功功率时间', align: 'center', prop: 'reactive_total_max_time', formatter: formatTime, width: '200px', istrue:false},
-        { label: '总最小无功功率(kVA)', align: 'center', prop: 'reactive_total_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: '总最小无功功率(kVar)', align: 'center', prop: 'reactive_total_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最小无功功率时间', align: 'center', prop: 'reactive_total_min_time', formatter: formatTime, width: '200px', istrue:false},
         { label: '总平均功率因素', align: 'center', prop: 'factor_total_avg_value', istrue:true, width: '180px', formatter: formatPowerFactor},
 
@@ -458,7 +460,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: 'A路最小视在功率(kVA)', align: 'center', prop: 'apparent_a_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最小视在功率时间', align: 'center', prop: 'apparent_a_min_time', formatter: formatTime, width: '200px', istrue:false},
 
-        { label: 'A路平均无功功率(kVA)', align: 'center', prop: 'reactive_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路平均无功功率(kVar)', align: 'center', prop: 'reactive_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路平均功率因素', align: 'center', prop: 'factor_a_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
 
         { label: 'B路平均有功功率(kW)', align: 'center', prop: 'active_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
@@ -472,7 +474,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: 'B路最小视在功率(kVA)', align: 'center', prop: 'apparent_b_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最小视在功率时间', align: 'center', prop: 'apparent_b_min_time', formatter: formatTime, width: '200px', istrue:false},
 
-        { label: 'B路平均无功功率(kVA)', align: 'center', prop: 'reactive_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路平均无功功率(kVar)', align: 'center', prop: 'reactive_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路平均功率因素', align: 'center', prop: 'factor_b_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
         { label: '操作', align: 'center', slot: 'actions', istrue:true},
       ];
@@ -488,17 +490,17 @@ const tableColumns = ref([
   { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
-  { label: '总无功功率(kVA)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
+  { label: '总无功功率(kVar)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
   { label: '总功率因素', align: 'center', prop: 'factor_total' , istrue:true, width: '180px', formatter: formatPowerFactor},
 
   { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, width: '180px', formatter: formatPower},
   { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, width: '180px', formatter: formatPower},
-  { label: 'A路无功功率(kVA)', align: 'center', prop: 'reactive_a' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'A路无功功率(kVar)', align: 'center', prop: 'reactive_a' , istrue:false, width: '180px', formatter: formatPower},
   { label: 'A路功率因素', align: 'center', prop: 'factor_a' , istrue:false, width: '180px', formatter: formatPowerFactor},
   
   { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, width: '180px', formatter: formatPower},
   { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, width: '180px', formatter: formatPower},
-  { label: 'B路无功功率(kVA)', align: 'center', prop: 'reactive_b' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'B路无功功率(kVar)', align: 'center', prop: 'reactive_b' , istrue:false, width: '180px', formatter: formatPower},
   { label: 'B路功率因素', align: 'center', prop: 'factor_b' , istrue:false, width: '180px', formatter: formatPowerFactor},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
@@ -577,7 +579,7 @@ const getNavNewData = async() => {
 
 /** 详情操作*/
 const toDetails = (aisleId: number, location:string) => {
-  push('/aisle/aislerecord/historyLine?aisleId='+aisleId+'&location='+location);
+  push('/aisle/aislerecord/historyLine?aisleId='+aisleId+'&location='+location+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?('&start='+queryParams.timeRange[0]+'&end='+queryParams.timeRange[1]):''));
 }
 
 /** 导出按钮操作 */
@@ -592,7 +594,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
-    await download.excel(data, '柜列电力历史数据.xlsx')
+    await download.excel(data, '柜列电力数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -607,16 +609,23 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   }
   return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
+let intervalId:any=ref(null);
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
   getList()
-  setInterval(() => {
+  intervalId=setInterval(() => {
     getList(false)
     getNavNewData()
   }, 60000)
 })
+onBeforeMount(() => {
+  if(intervalId.value!=null){
+    clearInterval(intervalId.value);
+    intervalId.value=null;
+  }
+});
 </script>
 
 <style scoped>

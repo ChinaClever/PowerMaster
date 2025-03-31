@@ -2013,6 +2013,18 @@ const getMachineColInfo = async() => {
     console.log('getMachineColInfo', result);
 }
 
+// 接口获取柜列信息
+const getMachineColInfoReal = async() => {
+  const result = await MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
+
+  emit('sendList', result);
+    //push({path: '/aisle/index', state: { roomDownVal: result.roomId}});
+    Object.assign(machineColInfo, result);
+    handleCabinetListReal(result); 
+    // handleBusInit(result);
+    console.log('getMachineColInfo', result);
+}
+
 
 const saveMachineBus = async() => {
   const filterCabinet = cabinetList.value.filter(item => item.cabinetName)
@@ -2073,6 +2085,23 @@ const handleCabinetList = async(data) => {
   await toCreatConnect()
   controlEndpointShow(true)
 }
+// 实时处理机柜列表
+const handleCabinetListReal = async(data) => {
+  console.log('处理机柜列表', data)
+  const arr = [] as any
+  for (let i=0; i < data.length; i++) {
+    arr.push({})
+  }
+  // 给机柜要连接的插接箱 找到对应的下标
+  data.cabinetList && data.cabinetList.forEach(item => {
+    if(item.index > 0) {
+      arr.splice(item.index - 1, 1, item)
+    }
+  })
+  console.log('arr', arr)
+  cabinetList.value = arr
+  handleDataDetail(data)
+}
 // 增加空机柜
 const addMachine = () => {
   console.log('addMachine')
@@ -2088,7 +2117,7 @@ const deleteMachine = () => {
 //
 const switchBtn = (value) => {
   chosenBtn.value = value
-  nextTick(()=>{updatePluginAnchor()})
+  nextTick(()=>{updateCabinetConnect()})
   console.log('switchBtn', value, cabinetList.value,)
 }
 
@@ -2175,7 +2204,7 @@ onMounted(() => {
   getNavList()
   initConnect()
   getCabinetColorAll()
-  flashListTimer.value = setInterval((getMachineColInfo), 5000);
+  flashListTimer.value = setInterval((getMachineColInfoReal), 5000);
   // intervalTimer = setInterval(() => {
   //   getDataDetail()
   // }, 10000)
@@ -2281,6 +2310,7 @@ onBeforeRouteLeave(()=>{
 }
 .Container {
   display: flex;
+  // overflow: hidden;
   // align-items: center;
   // padding-bottom: 20px;
   // min-height: calc(100vh - 270px);

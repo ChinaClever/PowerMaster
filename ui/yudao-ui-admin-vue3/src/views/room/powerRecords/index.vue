@@ -45,6 +45,10 @@
       />
       </el-form-item>
 
+      <el-form-item >
+        <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+      </el-form-item>
+
       <el-form-item label="筛选列">
         <el-cascader
           v-model="defaultOptionsCol"
@@ -57,10 +61,7 @@
           class="!w-180px"
         />
         </el-form-item>
-
-        <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-        </el-form-item>
+        
         <el-form-item style="position: absolute; right: 0;">
           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
             <Icon icon="ep:download" class="mr-5px" /> 导出

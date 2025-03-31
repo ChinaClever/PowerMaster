@@ -77,11 +77,11 @@
                               已用空间：{{element.usedSpace}}U<br/>
                               未用空间：{{element.freeSpace}}U<br/>
                             </template>
-                            <div v-if="chosenBtn == 0">{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%</div>
+                            <div v-if="chosenBtn == 0">{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}<br/>%</div>
                             <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0'}}<br/>kW</div>
                             <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                            <div v-if="chosenBtn == 3">{{element.tem}}°C</div>
-                            <div v-if="chosenBtn == 4">{{element.cabinetHeight}}U</div>
+                            <div v-if="chosenBtn == 3">{{element.tem}}<br/>°C</div>
+                            <div v-if="chosenBtn == 4">{{element.cabinetHeight}}<br/>U</div>
                             <div v-if="chosenBtn == 5">{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}<br/>kWh</div>
                           </el-tooltip>
                         </template>
@@ -105,11 +105,11 @@
                                   已用空间：{{item.usedSpace}}U<br/>
                                   未用空间：{{item.freeSpace}}U<br/>
                                 </template>
-                                <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%</div>
+                                <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}<br/>%</div>
                                 <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<br/>kW</div>
                                 <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                <div v-if="chosenBtn == 3">{{item.tem}}°C</div>
-                                <div v-if="chosenBtn == 4">{{item.cabinetHeight}}U</div>
+                                <div v-if="chosenBtn == 3">{{item.tem}}<br/>°C</div>
+                                <div v-if="chosenBtn == 4">{{item.cabinetHeight}}<br/>U</div>
                                 <div v-if="chosenBtn == 5">{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}<br/>kWh</div>
                               </el-tooltip>
                             </template>
@@ -969,13 +969,13 @@ const handleRightClick = (e) => {
   let maxX = 26
   let maxY = 26
   for(let i = 0;i < rowColInfo.col-(+lndexX);i++) {
-    if((!itemId && (tableData.value[+lndexY][formParam.value[+lndexX+i]].length || (+lndexY+1 != rowColInfo.row && tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length))) || (tableData.value[+lndexY][formParam.value[+lndexX+i]].length && tableData.value[+lndexY][formParam.value[+lndexX+i]][0].id != itemId) || (+lndexY+1 != rowColInfo.row && tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length && tableData.value[+lndexY+1][formParam.value[+lndexX+i]][0].id != itemId)) {
+    if(+lndexY+1 == rowColInfo.row || (!itemId && (tableData.value[+lndexY][formParam.value[+lndexX+i]].length || tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length)) || (tableData.value[+lndexY][formParam.value[+lndexX+i]].length && tableData.value[+lndexY][formParam.value[+lndexX+i]][0].id != itemId) || (tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length && tableData.value[+lndexY+1][formParam.value[+lndexX+i]][0].id != itemId)) {
       maxX = i
       break
     }
   }
   for(let i = 0;i < rowColInfo.row-(+lndexY);i++) {
-    if((!itemId && (tableData.value[+lndexY+i][formParam.value[+lndexX]].length || (+lndexX+1 != rowColInfo.col && tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length))) || (tableData.value[+lndexY+i][formParam.value[+lndexX]].length && tableData.value[+lndexY+i][formParam.value[+lndexX]][0].id != itemId) || (+lndexX+1 != rowColInfo.col && tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length && tableData.value[+lndexY+i][formParam.value[+lndexX+1]][0].id != itemId)) {
+    if(+lndexX+1 == rowColInfo.col || (!itemId && (tableData.value[+lndexY+i][formParam.value[+lndexX]].length || tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length)) || (tableData.value[+lndexY+i][formParam.value[+lndexX]].length && tableData.value[+lndexY+i][formParam.value[+lndexX]][0].id != itemId) || (tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length && tableData.value[+lndexY+i][formParam.value[+lndexX+1]][0].id != itemId)) {
       maxY = i
       break
     }
@@ -1099,6 +1099,11 @@ const onSelectStart = (e) => {
 
 // 增加机柜弹框
 const addMachine = () => {
+  if(!operateMenu.value.maxlndexX && !operateMenu.value.maxlndexY) {
+    message.warning("当前位置空间不足，请选择其他位置")
+    operateMenu.value.show = false
+    return
+  }
   aisleFlag.value = 1;
   machineForm.value.open('add', null, operateMenu.value)
   operateMenu.value.show = false
@@ -1161,7 +1166,18 @@ const deleteMachine = () => {
     if (target.type && target.type == 1) {
       const aisleRes = await MachineRoomApi.deletedRoomAisleInfo({id: target.id})
       if(aisleRes != null || aisleRes != "") {
-        getRoomInfoNoLoading()
+        // getRoomInfoNoLoading()
+        for (let i = 0; i < target.originAmount; i++) {
+          if (target.direction == 1) {
+            // const charCode = X.charCodeAt(0) + i
+        //    console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
+            tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
+            tableData.value[+Y + 1][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
+          } else {
+            tableData.value[+Y + i][X].splice(0, 1)
+            tableData.value[+Y + i][formParam.value[+operateMenu.value.lndexX + 1]].splice(0, 1)
+          }
+        }
         message.success('删除成功')
       }
       // console.log("tableData.value",tableData.value)
@@ -1170,10 +1186,14 @@ const deleteMachine = () => {
         id: target.id,
         type: 4
       })
+      console.log("tableData.value",tableData.value)
       if(cabinetRes != null || cabinetRes != "") {
-        getRoomInfoNoLoading()
+        // getRoomInfoNoLoading()
+        tableData.value[Y][X].splice(0, 1)
+        tableData.value[+Y + 1][X].splice(0, 1)
         message.success('删除成功')
       }
+      console.log("tableData.value",tableData.value)
     }
   })
   operateMenu.value.show = false
@@ -1204,7 +1224,35 @@ const handleChange = async(data) => {
           eleLimitMonth:data.eleLimitMonth
       }) 
       if(aisleRes != null || aisleRes != "") {
-        getRoomInfoNoLoading()
+        if(tableData.value[+Y][formParam.value[X]].length) {
+          let lastMount = tableData.value[+Y][formParam.value[X]][0].amount
+          for(let i=  0; i < lastMount; i++) {
+            if (data.direction == 1) {
+              tableData.value[+Y][formParam.value[X+i]] = []
+              tableData.value[+Y+1][formParam.value[X+i]] = []
+            } else {
+              tableData.value[+Y+i][formParam.value[X]] = []
+              tableData.value[+Y+i][formParam.value[X+1]] = []
+            }
+          }
+        }
+        
+        if (data.direction == 1) {
+          tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
+          tableData.value[+Y+1][formParam.value[X]] = [{...data,first: false}]
+        } else {
+          tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
+          tableData.value[+Y][formParam.value[X+1]] = [{...data,first: false}]
+        }
+        for (let i=  1; i < data.amount; i++) {
+          if (data.direction == 1) {
+            tableData.value[+Y][formParam.value[X+i]] = [{...data,first: false}]
+            tableData.value[+Y+1][formParam.value[X+i]] = [{...data,first: false}]
+          } else {
+            tableData.value[+Y+i][formParam.value[X]] = [{...data,first: false}]
+            tableData.value[+Y+i][formParam.value[X+1]] = [{...data,first: false}]
+          }
+        }
         message.success(messageAisleFlag);
       }
   }else{
@@ -1222,7 +1270,6 @@ const handleChange = async(data) => {
           eleLimitMonth: data.eleLimitMonth
       })
       if(cabinetRes != null || cabinetRes != "") {
-        getRoomInfoNoLoading()
         message.success(messageAisleFlag);
       }
   }

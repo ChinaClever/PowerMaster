@@ -145,6 +145,10 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(7)) as any
+const route=useRoute()
+if(route.query.start!=null&&route.query.end!=null){
+  selectTimeRange.value=[route.query.start,route.query.end]
+}
 const loading = ref(false) 
 const loading2 = ref(false) 
 const exportLoading = ref(false)
@@ -244,13 +248,13 @@ const shortcuts = [
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(7)
+    // selectTimeRange.value = defaultDayTimeRange(7)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(1)
+    // selectTimeRange.value = defaultMonthTimeRange(1)
   }else{
     queryParams.granularity = 'month'
-    selectTimeRange.value = defaultMonthTimeRange(12)
+    // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
@@ -450,6 +454,14 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 //导出Excel
 const handleExport1 = async () => {
   try {
+    if(queryParams.aisleId == null){
+      ElMessage({
+        message: '未选择机房',
+        type: 'warning',
+      });
+      return;
+    }
+    
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
@@ -459,7 +471,7 @@ const handleExport1 = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportDetailPageData(queryParams, axiosConfig)
-    await download.excel(data, '柜列能耗排名.xlsx')
+    await download.excel(data, '柜列能耗分析.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -525,7 +537,7 @@ onMounted(async () => {
   object-fit: cover; 
 }
 .description-item {
-  display: flex;
+  /* display: flex; */
   align-items: center;
 }
 

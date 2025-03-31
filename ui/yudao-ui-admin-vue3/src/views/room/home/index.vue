@@ -109,7 +109,7 @@
             <el-col :span="16">
               <el-radio-group v-model="typeRadio">
                 <el-radio-button label="功率曲线" value="功率曲线" @click="switchChartContainer =0"/>
-                <el-radio-button label="有功电能" value="有功电能" :disabled="isPowActiveDisabled" @click="switchChartContainer =1"/>
+                <el-radio-button label="有功电能" value="有功电能" :disabled="isPowActiveDisabled" @click="clickPower()"/>
                 <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =2"/>
                 <el-radio-button label="PUE" value="PUE" @click="switchChartContainer =2"/>
               </el-radio-group>
@@ -283,7 +283,7 @@ const isPowActiveDisabled = ref(true);
 const isLoadRateDisabled = ref(false);
 
 const lineChartQueryParams = reactive({
-  roomId: 1,
+  roomId: history?.state?.roomId as number | undefined,
   granularity: 'realtime',
   flag: 1
 })
@@ -310,6 +310,12 @@ let myChart4 = null as echarts.ECharts | null;
 
 let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainer = ref<HTMLElement | null>(null);
+
+const clickPower = () => {
+  if(!isPowActiveDisabled) {
+    switchChartContainer.value =1
+  }
+}
 
 const initChart2 = () => {
     console.log("bbbbbbbbbbbbbbbb")
@@ -552,6 +558,9 @@ const initChart4 = () => {
 const isHaveData = ref(true)
 // 获取折线图数据
 const getLineChartData =async () => {
+  if(!lineChartQueryParams.roomId) {
+    return
+  }
  try {
 
     allLineData.value = []
@@ -924,6 +933,7 @@ watch( ()=>timeRadio.value, async(value)=>{
 //获取数据
 const handleGetRoomId = (data) => {
   roomId.value = data
+  lineChartQueryParams.roomId = data
   // getRoomDataDetail()
   // getRoomDevData()
   // getRoomPowData()
