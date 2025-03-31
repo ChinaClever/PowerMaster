@@ -126,7 +126,7 @@ import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/room/roomindex'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay,startOfDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, betweenDay,startOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import download from '@/utils/download';
 import CommonMenu1 from '@/components/CommonMenu1.vue/CommonMenu1.vue';
@@ -141,7 +141,11 @@ const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
-const selectTimeRange = ref(defaultDayTimeRange(7)) as any
+const route=useRoute()
+const selectTimeRange : any= ref(defaultDayTimeRange(7))
+if(route.query.start!=null&&route.query.end!=null&&route.query.start!=''&&route.query.end!=''){
+  selectTimeRange.value=[route.query.start as string,route.query.end as string]
+}
 const loading = ref(false) 
 const message = useMessage() // 消息弹窗
 const queryParams = reactive({
@@ -238,13 +242,13 @@ const shortcuts = [
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(7)
+    // selectTimeRange.value = defaultDayTimeRange(7)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(1)
+    // selectTimeRange.value = defaultMonthTimeRange(1)
   }else{
     queryParams.granularity = 'month'
-    selectTimeRange.value = defaultMonthTimeRange(12)
+    // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
@@ -474,6 +478,10 @@ onMounted(async () => {
 const handleExport1 = async () => {
   try {
     // 导出的二次确认
+    if(queryParams.roomId ==undefined){
+      ElMessage.error('机房不能为空')
+      return;
+    }
     await message.exportConfirm()
     // 发起导出
     exportLoading.value = true
@@ -481,7 +489,7 @@ const handleExport1 = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.getEQDataDetailsExcel(queryParams, axiosConfig)
-    await download.excel(data, '机房能耗排名.xlsx')
+    await download.excel(data, '机房能耗分析.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)

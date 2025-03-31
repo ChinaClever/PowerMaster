@@ -109,7 +109,7 @@ public class CabinetVo {
      * A路级联编号
      */
     @Schema(description = "A路级联编号", example = "0")
-    private int casIdA;
+    private Integer casIdA;
     /**
      * B路IP地址
      */
@@ -119,7 +119,7 @@ public class CabinetVo {
      * B路级联编号
      */
     @Schema(description = "B路级联编号", example = "0")
-    private int casIdB;
+    private Integer casIdB;
 
 
     @Schema(description = "温度传感器绑定", example = "[]")
@@ -165,12 +165,12 @@ public class CabinetVo {
     /**
      * 标记位-名字  前端用
      */
-    private String boxIndexA;
+    private Integer boxIndexA;
 
     /**
      * 标记位-名字  前端用
      */
-    private String boxIndexB;
+    private Integer boxIndexB;
 
     /**
      * 日用能告警开关

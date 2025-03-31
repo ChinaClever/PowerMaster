@@ -580,18 +580,18 @@ const ALineOption = ref<EChartsOption>({
   },
   tooltip: {
     trigger: 'axis',
-    formatter: function (params) {
-      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
-      // 遍历params数组，构建电压信息
-      const phases = ['A相电流', 'B相电流', 'C相电流'];
-      params.forEach((item, index) => {
-        if (index < phases.length && item.seriesName) {
-          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
-        }
-      });
+    // formatter: function (params) {
+    //   let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+    //   // 遍历params数组，构建电压信息
+    //   const phases = ['A相电流', 'B相电流', 'C相电流'];
+    //   params.forEach((item, index) => {
+    //     if (index < phases.length && item.seriesName) {
+    //       tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+    //     }
+    //   });
       
-      return tooltipContent;
-    }
+    //   return tooltipContent;
+    // }
   },
   grid: {
     left: '3%',
@@ -606,8 +606,8 @@ const ALineOption = ref<EChartsOption>({
       formatter: '{value} A'
     }
   },
-  xAxis: {},
-  series: []
+  xAxis:{},
+  series: [{data:[],type:"line",symbol:"none"}]
 })
 
 const BLineOption = ref<EChartsOption>({
@@ -617,19 +617,17 @@ const BLineOption = ref<EChartsOption>({
   },
   tooltip: {
     trigger: 'axis',
-    formatter: function (params) {
-      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
-      
-      // 遍历params数组，构建电压信息
-      const phases = ['A相电压', 'B相电压', 'C相电压'];
-      params.forEach((item, index) => {
-        if (index < phases.length && item.seriesName) {
-          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
-        }
-      });
-      
-      return tooltipContent;
-    }
+    // formatter: function (params) {
+    //   let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+    //   // 遍历params数组，构建电压信息
+    //   const phases = ['A相电压', 'B相电压', 'C相电压'];
+    //   params.forEach((item, index) => {
+    //     if (index < phases.length && item.seriesName) {
+    //       tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+    //     }
+    //   });
+    //   return tooltipContent;
+    // }
   },
   grid: {
     left: '3%',
@@ -645,7 +643,7 @@ const BLineOption = ref<EChartsOption>({
     }
   },
   xAxis:{},
-  series: []
+  series: [{data:[],type:"line",symbol:"none"}]
 })
 
 const getBalanceDetail = async(item) => {
@@ -670,7 +668,7 @@ const getBalanceDetail = async(item) => {
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{b} : {c}'
+      // formatter: '{b} : {c}'
     },
     series: [
       {

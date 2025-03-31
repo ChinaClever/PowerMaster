@@ -86,6 +86,15 @@
              <el-option label="B路" value="b" />
            </el-select>
          </el-form-item> -->
+        <el-form-item label="参数类型" prop="type">
+          <el-select
+            v-model="paramType"
+            class="!w-120px">
+            <el-option label="总" value="total" />
+            <el-option label="A路" value="a" />
+            <el-option label="B路" value="b" />
+          </el-select>
+        </el-form-item>
 
       <el-form-item label="时间段" prop="timeRange" >
           <el-date-picker
@@ -242,6 +251,10 @@ const queryParams = reactive({
   granularity: 'realtime',
   timeRange: defaultHourTimeRange(1) as any,
 })
+const route=useRoute()
+if(route.query.start!=null&&route.query.end!=null){
+  queryParams.timeRange = [route.query.start, route.query.end] as any
+}
 const loading = ref(false) // 列表的加载中
 // const carouselItems = ref([
 //       { imgUrl: PDUImage},
@@ -422,11 +435,16 @@ const isHaveData = ref(false);
 const getList = async () => {
 loading.value = true
  try {
-    const data = await HistoryDataApi.getHistoryDataDetails(queryParams);
+    let data = await HistoryDataApi.getHistoryDataDetails(queryParams);
     if (data != null && data.total != 0){
       isHaveData.value = true
     }else{
-      data.list = [];
+      if(data==null){
+        data={}
+      }
+      if(data.list == null){
+        data.list = [];
+      }
       isHaveData.value = false;
       ElMessage({
         message: '暂无数据',
@@ -537,7 +555,7 @@ const initChart = () => {
            realtimeChart.setOption({
               title: { text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-              legend: { data: ['总有功功率','总视在功率','总无功功率','总功率因素']},
+              legend: { selected:{"总有功功率":true,"总视在功率":true,"总无功功率":true,"总功率因素":false},data: ['总有功功率','总视在功率','总无功功率','总功率因素']},
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
               toolbox: {feature: { restore:{}, saveAsImage: {}}},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -580,6 +598,33 @@ const initChart = () => {
         }
        
       }
+
+      realtimeChart.on('legendselectchanged', function (params) {
+        console.log(params.name)
+        const selectedSeries = params.selected;
+        const option = realtimeChart.getOption();
+        console.log(option)
+        if(params.name.includes ('功率因素')&& selectedSeries[params.name] == true){
+          // console.log("总功率因素")
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (!item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        if(!params.name.includes('功率因素')&& selectedSeries[params.name] == true){
+          // option.legend[0].selected['总功率因素'] = false;
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        realtimeChart.setOption(option);
+      });
+
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
@@ -602,13 +647,13 @@ watch( ()=>activeName.value, async(newActiveName)=>{
 
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultMonthTimeRange(1)
+    // queryParams.timeRange = defaultMonthTimeRange(1)
   }
   needFlush.value ++;
 });
@@ -623,7 +668,9 @@ watch(() => paramType.value , (newValues) => {
   if(activeName.value == 'realtimeTabPane'){
     if ( newParamType == 'total'){
       realtimeChart?.setOption({
-        legend: { data: ['总有功功率', '总视在功率','总无功功率','总功率因素'] },
+        legend: { data: ['总有功功率', '总视在功率','总无功功率','总功率因素'],
+        selected:{"总有功功率":true,"总视在功率":true,"总无功功率":true,"总功率因素":false}
+         },
         series: [
           {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
           {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
@@ -633,7 +680,9 @@ watch(() => paramType.value , (newValues) => {
       })
     }else if( newParamType == 'a' ){
       realtimeChart?.setOption({
-        legend: { data: ['A路有功功率', 'A路视在功率', 'A路无功功率', 'A路功率因素'] },
+        legend: { data: ['A路有功功率', 'A路视在功率', 'A路无功功率', 'A路功率因素'],
+          selected:{"A路有功功率":true,"A路视在功率":true,"A路无功功率":true,"A路功率因素":false}
+         },
         series: [
           {name: 'A路有功功率', type: 'line', symbol: 'none', data: aActivePowData.value},
           {name: 'A路视在功率', type: 'line', symbol: 'none', data: aApparentPowData.value},
@@ -643,7 +692,9 @@ watch(() => paramType.value , (newValues) => {
       })
     }else{
       realtimeChart?.setOption({
-        legend: { data: ['B路有功功率', 'B路视在功率', 'B路无功功率', 'B路功率因素'] },
+        legend: { data: ['B路有功功率', 'B路视在功率', 'B路无功功率', 'B路功率因素'],
+          selected:{"B路有功功率":true,"B路视在功率":true,"B路无功功率":true,"B路功率因素":false}
+         },
         series: [
           {name: 'B路有功功率', type: 'line', symbol: 'none', data: bActivePowData.value},
           {name: 'B路视在功率', type: 'line', symbol: 'none', data: bApparentPowData.value},
@@ -653,12 +704,20 @@ watch(() => paramType.value , (newValues) => {
       })
     }
   }else{
+    realtimeChart?.dispose();
+    realtimeChart = echarts.init(document.getElementById('chartContainer'));
     if ( newParamType == 'total'){
       realtimeChart?.setOption({
+        title: {text: ''},
+          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+          toolbox: {feature: { restore:{}, saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+          yAxis: { type: 'value'},
+          dataZoom:[{type: "inside"}],
         legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
                           , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
               selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false
-                          , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: true}},
+                          , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: false}},
         series: [
           { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
           { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -675,10 +734,16 @@ watch(() => paramType.value , (newValues) => {
       })
     }else if( newParamType == 'a' ){
       realtimeChart?.setOption({
+        title: {text: ''},
+          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+          toolbox: {feature: { restore:{}, saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+          yAxis: { type: 'value'},
+          dataZoom:[{type: "inside"}],
         legend: { data: ['A路平均有功功率', 'A路最大有功功率', 'A路最小有功功率','A路平均视在功率', 'A路最大视在功率', 'A路最小视在功率'
                 , 'A路平均无功功率', 'A路平均功率因素'],
               selected: { A路平均有功功率: true, A路最大有功功率: false, A路最小有功功率: false, A路平均视在功率: true, A路最大视在功率: false, A路最小视在功率: false
-                    , A路平均无功功率: true, A路平均功率因素: true}},
+                    , A路平均无功功率: true, A路平均功率因素: false}},
         series: [
           { name: 'A路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
           { name: 'A路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -693,30 +758,65 @@ watch(() => paramType.value , (newValues) => {
       })
     }else{
       realtimeChart?.setOption({
+        title: {text: ''},
+          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+          toolbox: {feature: { restore:{}, saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+          yAxis: { type: 'value'},
+          dataZoom:[{type: "inside"}],
        legend: { data: ['B路平均有功功率', 'B路最大有功功率', 'B路最小有功功率','B路平均视在功率', 'B路最大视在功率', 'B路最小视在功率'
                     , 'B路平均无功功率', 'B路平均功率因素'],
               selected: { B路平均有功功率: true, B路最大有功功率: false, B路最小有功功率: false, B路平均视在功率: true, B路最大视在功率: false, B路最小视在功率: false
-              , B路平均无功功率: true, B路平均功率因素: true}},
+              , B路平均无功功率: true, B路平均功率因素: false}},
         series: [
-          { name: 'B路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
-          { name: 'B路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-          { name: 'B路最小有功功率', type: 'line', data: aActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路平均视在功率', type: 'line', data: aApparentPowAvgValueData.value},
-          { name: 'B路最大视在功率', type: 'line', data: aApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路最小视在功率', type: 'line', data: aApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'B路平均有功功率', type: 'line', data: bActivePowAvgValueData.value},
+          { name: 'B路最大有功功率', type: 'line', data: bActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
+          { name: 'B路最小有功功率', type: 'line', data: bActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'B路平均视在功率', type: 'line', data: bApparentPowAvgValueData.value},
+          { name: 'B路最大视在功率', type: 'line', data: bApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'B路最小视在功率', type: 'line', data: bApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
 
           { name: 'B路平均无功功率',type: 'line',data:  bReactivePowAvgValueData.value},
           { name: 'B路平均功率因素',type: 'line',data:  factorBAvgValueData.value},
         ],
       })
     }
+
+    // 监听图例点击事件
+    realtimeChart.on('legendselectchanged', function (params) {
+        console.log(params.name)
+        const selectedSeries = params.selected;
+        const option = realtimeChart.getOption();
+        console.log(option)
+        if(params.name.includes ('功率因素')&& selectedSeries[params.name] == true){
+          // console.log("总功率因素")
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (!item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        if(!params.name.includes('功率因素')&& selectedSeries[params.name] == true){
+          // option.legend[0].selected['总功率因素'] = false;
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        realtimeChart.setOption(option);
+      });
+
   }
   // 每次切换图就要动态生成数据表头
   headerData.value = realtimeChart?.getOption().series as any[];
+  console.log("headerData.value",headerData.value)
   // 如果不是总数据 要去掉最后两条数据 不然会多总最小无功功率和总平均功率因素这两条 因为赋值只改变了前八条（原先总数据有十条在里面了）
-  if ( newParamType != 'total' )(
-    headerData.value = headerData.value.slice(0, 8)
-  )
+  // if ( newParamType != 'total' )(
+  //   headerData.value = headerData.value.slice(0, 8)
+  // )
   updateTableData();
     
 })
@@ -739,7 +839,9 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         realtimeChart.setOption({
         title: { text: ''},
         tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-        legend: { data: ['总有功功率','总视在功率','总无功功率','总功率因素']},
+        legend: { data: ['总有功功率','总视在功率','总无功功率','总功率因素'],
+          selected:{"总有功功率":true,"总视在功率":true,"总无功功率":true,"总功率因素":false}
+        },
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: { restore:{}, saveAsImage: {}}},
         xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -752,6 +854,34 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         ],
         dataZoom:[{type: "inside"}],
         });
+
+        // 监听图例点击事件
+      realtimeChart.on('legendselectchanged', function (params) {
+        console.log(params.name)
+        const selectedSeries = params.selected;
+        const option = realtimeChart.getOption();
+        console.log(option)
+        if(params.name.includes ('功率因素')&& selectedSeries[params.name] == true){
+          // console.log("总功率因素")
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (!item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        if(!params.name.includes('功率因素')&& selectedSeries[params.name] == true){
+          // option.legend[0].selected['总功率因素'] = false;
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        realtimeChart.setOption(option);
+      });
+
       }
     }
     // 每次切换图就要动态生成数据表头
@@ -771,14 +901,15 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         realtimeChart.setOption( {
           title: {text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+          toolbox: {feature: { restore:{}, saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+          yAxis: { type: 'value'},
+          dataZoom:[{type: "inside"}],
           legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
                           , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
                 selected:  { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false
                           , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: false}},
           grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-          toolbox: {feature: { restore:{}, saveAsImage: {}}},
-          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
-          yAxis: { type: 'value'},
           series: [
             { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
             { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -792,8 +923,34 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             { name: '总最小无功功率',type: 'line',data:  totalReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
             { name: '总平均功率因素',type: 'line',data:  factorTotalAvgValueData.value},
           ],
-          dataZoom:[{type: "inside"}],
         });
+
+        // 监听图例点击事件
+      realtimeChart.on('legendselectchanged', function (params) {
+        console.log(params.name)
+        const selectedSeries = params.selected;
+        const option = realtimeChart.getOption();
+        console.log(option)
+        if(params.name.includes ('功率因素')&& selectedSeries[params.name] == true){
+          // console.log("总功率因素")
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (!item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        if(!params.name.includes('功率因素')&& selectedSeries[params.name] == true){
+          // option.legend[0].selected['总功率因素'] = false;
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        realtimeChart.setOption(option);
+      });
       }
     }
     // 每次切换图就要动态生成数据表头
@@ -846,82 +1003,98 @@ const updateTableData = () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; // X 轴数值
   params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '总有功功率':
-      case 'A路有功功率':
-      case 'B路有功功率':
-      case '总平均有功功率':
-      case 'A路平均有功功率':
-      case 'B路平均有功功率':
-      case '总无功功率':
-      case 'A路无功功率':
-      case 'B路无功功率':
-      case '总平均无功功率':
-      case 'A路平均无功功率':
-      case 'B路平均无功功率':
-        tooltipContent += item.marker + ' 记录时间: ' +params[0].name + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case '总最大有功功率':
-        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case '总最小有功功率':
-        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case 'A路最大有功功率':
-        tooltipContent += item.marker +' 发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case 'A路最小有功功率':
-        tooltipContent += item.marker +' 发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case 'B路最大有功功率':
-        tooltipContent += item.marker +' 发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case 'B路最小有功功率':
-        tooltipContent += item.marker +' 发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      // 
-      case '总最大无功功率':
-        tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case '总最小无功功率':
-        tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-        break;
-      case '总视在功率':
-      case 'A路视在功率':
-      case 'B路视在功率':
-      case '总平均视在功率':
-      case 'A路平均视在功率':
-      case 'B路平均视在功率':
-        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-        break;
-     case '总最大视在功率':
-        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-        break;
-      case '总最小视在功率':
-        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-        break;
-      case 'A路最大视在功率':
-        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-        break;
-      case 'A路最小视在功率':
-        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-        break;
-      case 'B路最大视在功率':
-        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-        break;
-      case 'B路最小视在功率':
-        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-        break;
-      case '总功率因素':
-      case 'A路功率因素':
-      case 'B路功率因素':
-      case '总平均功率因素':
-      case 'A路平均功率因素':
-      case 'B路平均功率因素':
-        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + '<br/>';
-        break;
+    // switch( item.seriesName ){
+    //   case '总有功功率':
+    //     tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' kW  <br/>';
+    //     break;
+    //   case 'A路有功功率':
+    //   case 'B路有功功率':
+    //   case '总平均有功功率':
+    //   case 'A路平均有功功率':
+    //   case 'B路平均有功功率':
+    //   case '总无功功率':
+    //     tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' kVar  <br/>';
+    //     break;
+    //   case 'A路无功功率':
+    //   case 'B路无功功率':
+    //   case '总平均无功功率':
+    //   case 'A路平均无功功率':
+    //   case 'B路平均无功功率':
+    //     tooltipContent += item.marker + ' 记录时间: ' +params[0].name + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case '总最大有功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case '总最小有功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case 'A路最大有功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case 'A路最小有功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case 'B路最大有功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case 'B路最小有功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   // 
+    //   case '总最大无功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case '总最小无功功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+    //     break;
+    //   case '总视在功率':
+    //     tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + ' kVA  <br/>';
+    //     break;
+    //   case 'A路视在功率':
+    //   case 'B路视在功率':
+    //   case '总平均视在功率':
+    //   case 'A路平均视在功率':
+    //   case 'B路平均视在功率':
+    //     tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+    //     break;
+    //  case '总最大视在功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+    //     break;
+    //   case '总最小视在功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+    //     break;
+    //   case 'A路最大视在功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+    //     break;
+    //   case 'A路最小视在功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+    //     break;
+    //   case 'B路最大视在功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+    //     break;
+    //   case 'B路最小视在功率':
+    //     tooltipContent += item.marker +' 发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+    //     break;
+    //   case '总功率因素':
+    //     tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+    //     break;
+    //   case 'A路功率因素':
+    //   case 'B路功率因素':
+    //   case '总平均功率因素':
+    //   case 'A路平均功率因素':
+    //   case 'B路平均功率因素':
+    //     tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + '<br/>';
+    //     break;
+    // }
+    if(item.seriesName.includes('有功')){
+      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' kW  <br/>';
+    }else if(item.seriesName.includes('无功')){
+      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' kVar  <br/>';
+    }else if(item.seriesName.includes('视在')){
+      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' kVA  <br/>';
+    }else if(item.seriesName.includes('功率因素')){
+      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' <br/>';
     }
-    
   });
   return tooltipContent;
 }
@@ -960,6 +1133,9 @@ function defaultMonthTimeRange(month) {
 const handleExport1 = async () => {
   try {
     // 导出的二次确认
+    if(queryParams.aisleId==null){
+      return message.error('请选择柜列')
+    }
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1

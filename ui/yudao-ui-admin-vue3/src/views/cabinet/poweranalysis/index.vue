@@ -472,7 +472,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '机柜能耗趋势.xlsx')
+    await download.excel(data, '机柜能耗数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
