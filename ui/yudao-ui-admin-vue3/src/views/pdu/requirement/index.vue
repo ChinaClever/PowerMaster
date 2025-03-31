@@ -393,9 +393,10 @@
 
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 28px"><Pie :width="100" :height="100" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+           <!--<div style="padding: 0 28px"><Pie :width="100" :height="100" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div> -->
           </div>   
-          <div class="content" v-if="item.l3MaxCur == undefined || item.l3MaxCur == null && item.l2MaxCur == undefined && item.l2MaxCur == null && item.l1MaxCur == undefined && item.l1MaxCur == null">
+         <!-- <div class="content" v-if="item.l3MaxCur == undefined || item.l3MaxCur == null && item.l2MaxCur == undefined && item.l2MaxCur == null && item.l1MaxCur == undefined && item.l1MaxCur == null"> -->
+          <div class="content" v-if="item.l1MaxCur == null">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info">
               
