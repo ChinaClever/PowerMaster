@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartDom" :style="{height: height, width: width}"></div>
+  <Echart :height="height" :width="width" :options="echartsOption" />
 </template>
 
 <script setup lang="ts">
@@ -34,7 +34,7 @@ const dataWithPercent = ref([
 ]);
 
 // 图表配置
-const echartsOption = {
+const echartsOption = computed(() => ({
   tooltip: {
     trigger: 'item',
     formatter: function (params: any) {
@@ -61,79 +61,31 @@ const echartsOption = {
         borderRadius: 7 // 设置圆角半径为10
       },
       padAngle: 1,
-      data: dataWithPercent.value
-    }
-  ]
-};
-
-// 初始化图表
-const initChart = () => {
-  if (chartDom.value) {
-    myChart = echarts.init(chartDom.value);
-    updateData(props.max); // 在初始化时更新数据
-    myChart.setOption(echartsOption);
-  }
-  console.log('123123123', dataWithPercent.value);
-};
-
-// 更新数据
-const updateData = (newMax: any) => {
-  const total = newMax.L1 + newMax.L2 + newMax.L3;
-  dataWithPercent.value = [
-    {
-      value: newMax.L1,
-      name: 'A相电流',
-      percent: ((newMax.L1 / total) * 100).toFixed(2) + '%',
-      itemStyle: { color: '#E5B849' }
-    },
-    {
-      value: newMax.L2,
-      name: 'B相电流',
-      percent: ((newMax.L2 / total) * 100).toFixed(2) + '%',
-      itemStyle: { color: '#C8603A' }
-    },
-    {
-      value: newMax.L3,
-      name: 'C相电流',
-      percent: ((newMax.L3 / total) * 100).toFixed(2) + '%',
-      itemStyle: { color: '#AD3762' }
-    }
-  ];
-  echartsOption.series[0].data = dataWithPercent.value;
-};
-
-// 更新图表数据
-const updateChart = () => {
-  if (myChart) {
-    myChart.setOption({
-      series: [
+      data: [
         {
-          data: dataWithPercent.value
+          value: props.max.L1,
+          name: 'A相电流',
+          itemStyle: { color: '#E5B849' }
+        },
+        {
+          value: props.max.L2,
+          name: 'B相电流',
+          itemStyle: { color: '#C8603A' }
+        },
+        {
+          value: props.max.L3,
+          name: 'C相电流',
+          itemStyle: { color: '#AD3762' }
         }
       ]
-    });
-  }
-};
+    }
+  ]
+}));
 
-// 监听 max 变化并更新数据
-watch(() => props.max, (newMax) => {
-  updateData(newMax);
-  updateChart();
-}, { deep: true });
-
-// 组件挂载时初始化图表
-onMounted(() => {
-  nextTick(() => {
-    initChart();
-  });
-});
 
 // 组件卸载时销毁图表
 onUnmounted(() => {
-  if (myChart) {
-    myChart.dispose();
-    myChart = null;
-  }
+
 });
 </script>
 

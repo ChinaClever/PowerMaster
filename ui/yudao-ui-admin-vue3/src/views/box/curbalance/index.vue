@@ -860,7 +860,7 @@ const getBalanceDetail = async(item) => {
   // 设置电流饼形图数据
   ABarOption.value = {
     title: {
-      text: '电流饼形图',
+      text: '相电流',
       left: 'left'
     },
     tooltip: {
@@ -895,7 +895,7 @@ const getBalanceDetail = async(item) => {
   // 设置电压饼形图数据
   BBarOption.value = {
     title: {
-      text: '电压饼形图',
+      text: '相电压',
       left: 'left'
     },
     tooltip: {
@@ -1088,6 +1088,15 @@ const handleExport = async () => {
     exportLoading.value = false
   }
 }
+
+watch(() => list.value ,async()=>{
+  if(dialogVisibleCur.value) {
+    getBalanceDetail({devKey: curdevkey.value})
+  }
+  if(dialogVisibleVol.value) {
+    getBalanceDetail({devKey: voldevkey.value})
+  }
+})
 
 /** 初始化 **/
 onMounted(async () => {

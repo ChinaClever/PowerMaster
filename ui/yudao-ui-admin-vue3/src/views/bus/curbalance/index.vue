@@ -996,7 +996,7 @@ const getList = async () => {
       obj.acur = obj.acur?.toFixed(2);
       obj.bcur = obj.bcur?.toFixed(2);
       obj.ccur = obj.ccur?.toFixed(2);
-      obj.curUnbalance = obj.curUnbalance?.toFixed(2);
+      obj.curUnbalance = isFinite(obj.curUnbalance) ? obj.curUnbalance?.toFixed(2) : 0;
       obj.avol = obj.avol?.toFixed(1);
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
@@ -1125,6 +1125,15 @@ const handleExport = async () => {
     exportLoading.value = false
   }
 }
+
+watch(() => list.value ,async()=>{
+  if(dialogVisibleCur.value) {
+    getBalanceDetail({devKey: curdevkey.value})
+  }
+  if(dialogVisibleVol.value) {
+    getBalanceDetail({devKey: voldevkey.value})
+  }
+})
 
 /** 初始化 **/
 onMounted(async () => {
