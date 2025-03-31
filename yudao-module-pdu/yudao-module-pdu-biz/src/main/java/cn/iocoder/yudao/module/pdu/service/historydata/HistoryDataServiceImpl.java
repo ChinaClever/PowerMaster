@@ -15,6 +15,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPa
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
 import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionService;
+import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -38,6 +39,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -74,18 +76,26 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Autowired
     private CabinetEnvSensorMapper cabinetEnvSensorMapper;
 
+    @Autowired
+    private PDUDeviceService pDUDeviceService;
 
     @Override
     public List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>(mapList.size());
+        List<Integer> pduIds = mapList.stream().map(i -> (Integer)i.get("pdu_id")).collect(Collectors.toList());
+        List<PduIndex> list = pduIndexMapper.selectList(new LambdaQueryWrapper<PduIndex>().in(PduIndex::getId, pduIds));
+        Map<Integer, PduIndex> pduIndexMap = list.stream().collect(Collectors.toMap(PduIndex::getId, Function.identity()));
+        List<String> collect = list.stream().map(PduIndex::getPduKey).collect(Collectors.toList());
+        Map<String, String> location = pDUDeviceService.setLocation(collect);
         for (Map<String, Object> map : mapList){
             Object pduId = map.get("pdu_id");
             if (pduId instanceof Integer) {
                 // 查询位置
-                PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
+                PduIndex pduIndex = pduIndexMap.get((int) pduId);
+//                PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
                 if (pduIndex != null){
                     map.put("location", pduIndex.getPduKey());
-                    map.put("address", getAddressByIpAddr(pduIndex.getPduKey()));
+                    map.put("address", location.get(pduIndex.getPduKey()));
                 }else{
                     map.put("location", null);
                     map.put("address", null);
