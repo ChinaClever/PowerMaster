@@ -949,35 +949,26 @@ const volMaxValues = ref({
   L2: 0,
   L3: 0
 });
-const itemValue = ref();
 const showDialogVol = (item) => {
   barMaxValues.value = {
-  L1: item.acur.toFixed(2),
-  L2: item.bcur.toFixed(2),
-  L3: item.ccur.toFixed(2)
-};
+    L1: item.acur.toFixed(2),
+      L2: item.bcur.toFixed(2),
+      L3: item.ccur.toFixed(2)
+  };
 
-volMaxValues.value = {
-  L1: item.avol.toFixed(1),
-  L2: item.bvol.toFixed(1),
-  L3: item.cvol.toFixed(1)
-};
-  // if(item.status==5){
-  //   ElMessage({
-  //     message: '设备未启动',
-  //     type: 'warning',
-  //     duration: 2000
-  //   })
-  //   return;
-  // }
+  volMaxValues.value = {
+    L1: item.avol.toFixed(1),
+    L2: item.bvol.toFixed(1),
+    L3: item.cvol.toFixed(1)
+  };
+
   dialogVisibleVol.value = true
   vollocation.value = item.devKey
   getBalanceDetail(item)
   getBalanceTrend(item)
   curUnblance1.value = balanceObj.imbalanceValueA
-// 将 item 的属性赋值给 barMaxValues
-
-BarFlag.value = true;
+  // 将 item 的属性赋值给 barMaxValues
+  BarFlag.value = true;
 }
 
 const loadAll = async () => {
