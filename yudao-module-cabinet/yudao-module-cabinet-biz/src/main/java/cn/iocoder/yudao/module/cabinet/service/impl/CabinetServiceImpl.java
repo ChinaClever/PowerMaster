@@ -348,20 +348,22 @@ public class CabinetServiceImpl implements CabinetService {
                         if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyA())) {
                             BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
                                     .eq(BoxIndex::getBoxKey, cabinetBus.getBoxKeyA()));
-
+                            dto.setBoxIndexA(cabinetBus.getBoxIndexA());
                             if (Objects.nonNull(boxIndex)) {
 
                                 dto.setBusIpA(boxIndex.getIpAddr());
 //                                dto.setBusNameA(boxIndex.getBusName());
                                 dto.setBoxNameA(boxIndex.getBoxName());
                                 dto.setBarIdA(boxIndex.getBusId());
-                                dto.setBoxIndexA(boxIndex.getBoxId());
+                                dto.setCasIdA(boxIndex.getBoxId());
+
+
                                 dto.setBoxOutletIdA(cabinetBus.getOutletIdA());
                             } else {
                                 String[] keys = cabinetBus.getBoxKeyA().split(SPLIT_KEY);
                                 dto.setBusIpA(keys[0]);
                                 dto.setBarIdA(Integer.valueOf(keys[1]));
-                                dto.setBoxIndexA(Integer.valueOf(keys[2]));
+                                dto.setCasIdA(Integer.valueOf(keys[2]));
                                 dto.setBoxOutletIdA(cabinetBus.getOutletIdA());
                             }
                         }
@@ -369,19 +371,20 @@ public class CabinetServiceImpl implements CabinetService {
                         if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyB())) {
                             BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
                                     .eq(BoxIndex::getBoxKey, cabinetBus.getBoxKeyB()));
+                            dto.setBoxIndexB(cabinetBus.getBoxIndexB());
                             if (Objects.nonNull(boxIndex)) {
 
                                 dto.setBusIpB(boxIndex.getIpAddr());
 //                                dto.setBusNameB(boxIndex.getBusName());
                                 dto.setBoxNameB(boxIndex.getBoxName());
                                 dto.setBarIdB(boxIndex.getBusId());
-                                dto.setBoxIndexB(boxIndex.getBoxId());
+                                dto.setCasIdB(boxIndex.getBoxId());
                                 dto.setBoxOutletIdB(cabinetBus.getOutletIdB());
                             } else {
                                 String[] keys = cabinetBus.getBoxKeyB().split(SPLIT_KEY);
                                 dto.setBusIpB(keys[0]);
                                 dto.setBarIdB(Integer.valueOf(keys[1]));
-                                dto.setBoxIndexB(Integer.valueOf(keys[2]));
+                                dto.setCasIdB(Integer.valueOf(keys[2]));
                                 dto.setBoxOutletIdB(cabinetBus.getOutletIdB());
                             }
 
@@ -402,25 +405,6 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(rackIndexList)) {
                     List<RackIndexResVO> bean = BeanUtils.toBean(rackIndexList, RackIndexResVO.class);
 
-//                    List<String> rackIds = bean.stream().map(i -> "packet:rack:" + i.getId()).distinct().collect(Collectors.toList());
-//                    List list = redisTemplate.opsForValue().multiGet(rackIds);
-//                    Map<Integer, Object> rackKey = new HashMap<>();
-//                    if (Objects.nonNull(list.get(0))) {
-//                        rackKey = (Map<Integer, Object>) list.stream().collect(Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getInteger("rack_key"), Function.identity()));
-//                    }
-//                    for (RackIndexResVO t : bean){
-//                        Object obj = rackKey.get(t.getId());
-//
-//                        JSONObject rackPower = JSON.parseObject(JSON.toJSONString(obj)).getJSONObject("rack_power");
-//                        if (Objects.nonNull(rackPower)) {
-//                            Double cura = rackPower.getJSONObject("total_data").getDouble("cur_a");
-//                            Double curb = rackPower.getJSONObject("total_data").getDouble("cur_b");
-//                            Double powApparent = rackPower.getJSONObject("total_data").getDouble("pow_apparent");
-//                            t.setPowActive(BigDecimal.valueOf(powApparent).setScale(3, BigDecimal.ROUND_HALF_DOWN));
-//                            t.setCurValueA(BigDecimal.valueOf(cura).setScale(2, BigDecimal.ROUND_HALF_DOWN));
-//                            t.setCurValueB(BigDecimal.valueOf(curb).setScale(2, BigDecimal.ROUND_HALF_DOWN));
-//                        }
-//                    }
                     dto.setRackIndexList(bean);
                     int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0, Integer::sum);
                     int rackNum = rackIndexList.size();
@@ -2086,8 +2070,11 @@ public class CabinetServiceImpl implements CabinetService {
                 && Objects.nonNull(vo.getBarIdA())
                 && Objects.nonNull(vo.getBoxIndexA())) {
             StringJoiner boxKeyA = new StringJoiner(SPLIT_KEY);
-            boxKeyA.add(vo.getBusIpA()).add(String.valueOf(vo.getBarIdA())).add(vo.getBoxIndexA());
+            boxKeyA.add(vo.getBusIpA())
+                    .add(String.valueOf(vo.getBarIdA()))
+                    .add(String.valueOf(vo.getCasIdA()));
             cabinetBus.setBoxKeyA(boxKeyA.toString());
+            cabinetBus.setBoxIndexA(vo.getBoxIndexA());
         } else {
             cabinetBus.setBoxKeyA("");
         }
@@ -2097,8 +2084,9 @@ public class CabinetServiceImpl implements CabinetService {
                 && Objects.nonNull(vo.getBarIdB())
                 && Objects.nonNull(vo.getBoxIndexB())) {
             StringJoiner boxKeyB = new StringJoiner(SPLIT_KEY);
-            boxKeyB.add(vo.getBusIpB()).add(String.valueOf(vo.getBarIdB())).add(vo.getBoxIndexB());
+            boxKeyB.add(vo.getBusIpB()).add(String.valueOf(vo.getBarIdB())).add(String.valueOf(vo.getCasIdB()));
             cabinetBus.setBoxKeyB(boxKeyB.toString());
+            cabinetBus.setBoxIndexB(vo.getBoxIndexB());
         } else {
             cabinetBus.setBoxKeyB("");
         }

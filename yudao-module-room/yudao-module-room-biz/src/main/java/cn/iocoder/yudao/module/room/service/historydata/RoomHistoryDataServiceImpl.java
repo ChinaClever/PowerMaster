@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.RoomHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.RoomHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.room.service.energyconsumption.RoomEnergyConsumptionService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -86,7 +87,7 @@ public class RoomHistoryDataServiceImpl implements RoomHistoryDataService {
         SearchRequest searchRequest = new SearchRequest();
 
         String[] roomIds = pageReqVO.getRoomIds();
-        if (roomIds != null){
+        if (ObjectUtils.isNotEmpty(roomIds)){
             searchSourceBuilder.query(QueryBuilders.termsQuery("room_id", roomIds));
         }
         if ("realtime".equals(pageReqVO.getGranularity())) {

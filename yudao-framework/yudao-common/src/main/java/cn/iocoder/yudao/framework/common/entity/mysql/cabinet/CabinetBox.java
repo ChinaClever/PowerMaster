@@ -45,14 +45,14 @@ public class CabinetBox implements Serializable {
     private Integer outletIdB;
 
     /**
-     * 标记位-名字  前端用
+     * 标记位-
      */
-//    private String boxIndexA;
+    private Integer boxIndexA;
 
     /**
-     * 标记位-名字  前端用
+     * 标记位-
      */
-//    private String boxIndexB;
+    private Integer boxIndexB;
 
     /**
      * 更新时间
