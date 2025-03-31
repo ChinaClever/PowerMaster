@@ -69,6 +69,11 @@ selectRoomByName: async (params: any) => {
   return await request.get({ url: `/room/newSelectRoomByName`, params })
 },
 
+//获取机房主页折线图
+getLineChartData: async (data: any) => {
+  return await request.post({ url: `/room/index/chartDetail`, data })
+},
+
 
 
 //机房删除

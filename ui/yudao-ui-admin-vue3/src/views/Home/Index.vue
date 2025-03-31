@@ -47,211 +47,12 @@
         <template #header>
           <div class="h-3 flex justify-between">
             <span>机房状态</span>
-            <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" style="margin-left:0px;margin-right:0vw;" size="small">机房功率</el-button>
-            <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">机房温度</el-button>
-            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:-39vw;margin-right:-1vw;" size="small">机房对比</el-button>
-            <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" style="margin-left:-38vw;margin-right:0vw;" size="small">实时曲线</el-button>
-            <!--<el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>-->
-            <el-button @click="push({path: '/room/monitor'})" :type="toggleButton ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">全屏</el-button>
-            <el-dialog
-              title="自定义弹窗"
-              v-model="dialogVisible"
-              @close="handleClose"
-            >       
-              <!-- 自定义的头部内容（可选） -->
-              <template #header>
-                <div class="custom-header">
-                  <span style="margin-right:70vw;">机房状态全屏显示</span>
-                  <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" size="small">机房功率</el-button>
-                  <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" size="small">机房温度</el-button>
-                  <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" size="small">机房对比</el-button>
-                  <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" size="small">实时曲线</el-button>
-                </div>
-              </template>
-
-              <!-- 自定义的主要内容 -->
-              <div class="custom-content">
-                <el-row>
-                  <template v-if="switchValue === 0">
-                    <el-col>
-                      <div 
-                        class="full-screen-item"
-                        v-for="(item, index) in powInfo.roomDataList"
-                        :key="`card-${index}`"
-                      >
-                        <el-card shadow="hover">
-                          <div class="flex items-center h-21px">
-                            <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                            <span class="text-15px">{{ item.name || '' }}</span>
-                            <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
-                          </div>
-                          <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
-                          <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
-                            <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                          </div>
-                        </el-card>
-                      </div>
-                    </el-col>
-                  </template>
-                  <template v-else-if="switchValue === 1">
-                    <el-col>
-                      <div 
-                        class="full-screen-item"
-                        v-for="(item, index) in powInfo.roomDataList"
-                        :key="`card-${index}`"
-                      >
-                        <el-card shadow="hover">
-                          <div class="flex items-center h-21px">
-                            <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                            <span class="text-16px">{{ item.name || '' }}</span>
-                            <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
-                          </div>
-                          <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span style="margin-left:3vw">冷通道</span>
-                            <span style="margin-right:2vw">热通道</span>
-                          </div>
-                          <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span class="text-12px">最高温度：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
-                            <span class="text-12px" style="margin-right:2vw">{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
-                          </div>
-                          <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span class="text-12px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                            <span class="text-12px" style="margin-right:2vw">{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                          </div>
-                          <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span>时间：{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                          </div>
-                        </el-card>
-                      </div>
-                    </el-col>
-                  </template>
-                  <template v-else-if="switchValue === 2">
-                    <el-col>
-                      <Echart :options="powOptionsData" :height="400" />
-                    </el-col>
-                  </template>
-                  <template v-if="switchValue === 3">
-                    <el-col>
-                      <div 
-                        class="centerCope"
-                      >
-                        <CabTopology v-show="false" :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
-                        <ContentWrap class="CabEchart">
-                          <Echart :options="echartOptionsPower" height="60vh" width="100%" />
-                          <div class="btns">
-                            <el-button class="btn" size="small" :plain="!(radioBtn == 'pow')" type="primary" @click="switchTrend('pow')">功率</el-button>
-                            <el-button class="btn" size="small" :plain="!(radioBtn == 'ele')" type="primary" @click="switchTrend('ele')">用能</el-button>
-                          </div>
-                        </ContentWrap>
-                      </div>
-                    </el-col>
-                  </template>
-                </el-row>
-              </div>
-            </el-dialog>
+            <div class="roomPowerBtns">
+              <el-button @click="push({path: '/room/roommonitor/roompower'})" :type="toggleButton ? 'primary' : ''" size="small">全屏</el-button>
+            </div>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated v-if="switchValue===0">
-            <el-row>
-              <template v-if="roomShowType">
-                <el-col>
-                  <div ref="scrollableContainer" class="scrollable-container" @scroll="handleScroll">
-                    <div 
-                      class="scroll-item"
-                      v-for="(item, index) in powInfo.roomDataList"
-                      :key="`card-${index}`"
-                    >
-                      <el-card shadow="hover">
-                        <div class="flex items-center h-21px">
-                          <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                          <span class="text-15px">{{ item.name || '' }}</span>
-                          <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
-                        </div>
-                        <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
-                        <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
-                          <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                        </div>
-                      </el-card>
-                    </div>
-                  </div>
-                </el-col>
-              </template>
-            </el-row>
-        </el-skeleton>
-        <el-skeleton :loading="loading" animated v-else-if="switchValue===1">
-            <el-row>
-              <template v-if="roomShowType">
-                <el-col>
-                  <div ref="scrollableContainer" class="temperature-container" @scroll="handleScroll">
-                    <div 
-                      class="scroll-item"
-                      v-for="(item, index) in powInfo.roomDataList"
-                      :key="`card-${index}`"
-                    >
-                      <el-card shadow="hover">
-                        <div class="flex items-center h-21px">
-                          <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                          <span class="text-16px">{{ item.name || '' }}</span>
-                          <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
-                        </div>
-                        <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span style="margin-left:3vw">冷通道</span>
-                          <span style="margin-right:2vw">热通道</span>
-                        </div>
-                        <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span class="text-12px">最高温度：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
-                          <span class="text-12px" style="margin-right:2vw">{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
-                        </div>
-                        <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span class="text-12px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                          <span class="text-12px" style="margin-right:2vw">{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                        </div>
-                        <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span>时间：{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                        </div>
-                      </el-card>
-                    </div>
-                  </div>
-                </el-col>
-              </template>
-            </el-row>
-        </el-skeleton>
-        <el-skeleton :loading="loading" animated v-else-if="switchValue===2">
-            <el-row>
-              <template v-if="roomShowType">
-                <el-col 
-                  :xl="24"
-                  :lg="24"
-                  :md="24"
-                  :sm="24"
-                  :xs="24">
-                  <Echart :options="powOptionsData" :height="400" />
-                </el-col>
-              </template>
-            </el-row>
-        </el-skeleton>
-        <el-skeleton :loading="loading" animated v-else-if="switchValue===3">
-            <el-row>
-              <template v-if="roomShowType">
-                <el-col>
-                  <div 
-                    class="center"
-                  >
-                    <CabTopology v-show="false" :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
-                    <ContentWrap class="CabEchart">
-                      <Echart :options="echartOptionsPower" height="30vh" width="100%" />
-                      <div class="btns">
-                        <el-button class="btn" size="small" :plain="!(radioBtn == 'pow')" type="primary" @click="switchTrend('pow')">功率</el-button>
-                        <el-button class="btn" size="small" :plain="!(radioBtn == 'ele')" type="primary" @click="switchTrend('ele')">用能</el-button>
-                      </div>
-                    </ContentWrap>
-                  </div>
-                </el-col>
-              </template>
-            </el-row>
-        </el-skeleton>
+        <RoomPower :isFromHome="true" />
       </el-card>
 
       <el-card shadow="never" class="mt-8px">
@@ -392,10 +193,16 @@ import { MachineHomeApi } from '@/api/cabinet/home'
 import { defineComponent } from 'vue'
 
 import CabTopology from "@/views/room/topology/index.vue"
+import RoomPower from "@/views/room/monitor/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
 
 
 defineOptions({ name: 'Home' })
+
+const { push } = useRouter() // 路由跳转
+
+const valueMode = ref(0)
+const switchValue = ref(0) //控制按钮的切换
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -414,7 +221,6 @@ const eqInfo = reactive<any>({}) // 用能信息
 const alarmInfo = reactive({}) // 警告信息
 const tableData = ref([]) 
 const prePowBtn = ref(0) // 当前所选的功率
-const switchValue = ref(0) //控制按钮的切换
 const toggleTable = ref(false) //设备统计和告警统计的切换
 const toggleButton = ref(false) //全屏按钮的样式切换
 const dialogVisible = ref(false) //全屏弹窗的显示隐藏
@@ -664,14 +470,14 @@ const getHomePowData = async() => {
   Object.assign(powInfo, res)
   Object.assign(powCopyInfo, res)
 
-  const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
-    ...item, // 复制对象的所有属性
-    name: item.name + '1' // 修改name属性，在后面加上'*'号
-  }))
+  // const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
+  //   ...item, // 复制对象的所有属性
+  //   name: item.name + '1' // 修改name属性，在后面加上'*'号
+  // }))
 
-  powInfo.roomDataList = [...powInfo.roomDataList,...modifiedRoomEqList] //添加了模拟数据
+  powInfo.roomDataList = [...powInfo.roomDataList] //添加了模拟数据
 
-  console.log('111',powInfo.roomDataList)
+
   
   Object.assign(powOptionsData, {
     grid: {
@@ -711,7 +517,7 @@ const getHomePowData = async() => {
     },
     xAxis: {
       type: 'category',
-      data: powInfo.roomDataList.map(item => item.name)
+      data: powInfo.roomDataList.map(item => item.roomName)
     },
     yAxis: {
       type: 'value',
@@ -759,88 +565,90 @@ const getHomePowData = async() => {
       },
     ]
   })
-  Object.assign(powOptionsDataOne, {
-    grid: {
-      left: 50,
-      right: 20,
-      bottom: 20
-    },
-    legend: {
-      right: 10,
-      selectedMode: 'single'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      },
-      formatter: function (params) {
-        console.log('params', params)
-        let result = '';
-        params.forEach(function (item) {
-          // item 是每一个系列的数据
-          const seriesName = item.seriesName; // 系列名称
-          const value = item.value; // 数据值
-          const marker = item.marker; // 标志图形
-          let unit = ''
-          if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
-            unit = '℃'
-          }
-          result += `${marker}${seriesName}: ${value}${unit}<br/>`;
-        });
-        return result;
-      }
-    },
-    xAxis: {
-      type: 'category',
-      data: powInfo.roomDataList.map(item => item.name)
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        name: '最低温度',
-        data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '平均温度',
-        data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '最高温度',
-        data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-      {
-        name: '目前温度',
-        data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}℃', // 显示数据值
-        },
-      },
-    ]
-  })
+  // Object.assign(powOptionsDataOne, {
+  //   grid: {
+  //     left: 50,
+  //     right: 20,
+  //     bottom: 20
+  //   },
+  //   legend: {
+  //     right: 10,
+  //     selectedMode: 'single'
+  //   },
+  //   tooltip: {
+  //     trigger: 'axis',
+  //     axisPointer: {
+  //       type: 'shadow'
+  //     },
+  //     formatter: function (params) {
+  //       console.log('params', params)
+  //       let result = '';
+  //       params.forEach(function (item) {
+  //         // item 是每一个系列的数据
+  //         const seriesName = item.seriesName; // 系列名称
+  //         const value = item.value; // 数据值
+  //         const marker = item.marker; // 标志图形
+  //         let unit = ''
+  //         if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
+  //           unit = '℃'
+  //         }
+  //         result += `${marker}${seriesName}: ${value}${unit}<br/>`;
+  //       });
+  //       return result;
+  //     }
+  //   },
+  //   xAxis: {
+  //     type: 'category',
+  //     data: powInfo.roomDataList.map(item => item.name)
+  //   },
+  //   yAxis: {
+  //     type: 'value',
+  //   },
+    
+
+  //   series: [
+  //     {
+  //       name: '最低温度',
+  //       data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '平均温度',
+  //       data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '最高温度',
+  //       data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //     {
+  //       name: '目前温度',
+  //       data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
+  //       type: 'bar',
+  //       label: {
+  //         show: true,
+  //         position: 'top', // 顶部显示
+  //         formatter: '{c}℃', // 显示数据值
+  //       },
+  //     },
+  //   ]
+  // })
   console.log('获取主页面功率数据', res)
 }
 // 获取主页面用能
@@ -848,17 +656,17 @@ const getHomeEqData = async() => {
   const res =  await MachineHomeApi.getHomeEqData({})
 
   console.log('222',res)
-const modifiedRoomEqList = (res.roomEqList && Array.isArray(res.roomEqList)) ? res.roomEqList.map(item => {
-  if (item && typeof item.name === 'string') {
-    return {
-      ...item,
-      name: item.name + '1'
-    };
-  }
-  return item; // 如果item不存在或name不是字符串，保持原样
-}) : [];
+// const modifiedRoomEqList = (res.roomEqList && Array.isArray(res.roomEqList)) ? res.roomEqList.map(item => {
+//   if (item && typeof item.name === 'string') {
+//     return {
+//       ...item,
+//       name: item.name + '1'
+//     };
+//   }
+//   return item; // 如果item不存在或name不是字符串，保持原样
+// }) : [];
 
-  res.roomEqList = [...res.roomEqList, ...modifiedRoomEqList] //添加了模拟数据
+  res.roomEqList = [...res.roomEqList] //添加了模拟数据
   //.slice(0, 12)
   
   Object.assign(eqInfo, res)
@@ -943,7 +751,7 @@ const switchPowBtn = (index) => {
 const getAllApi = async () => {
   await Promise.all([
     getHomeDevData(),
-    getHomePowData(),
+    // getHomePowData(),
     getHomeEqData(),
     getHomeAlarmData()
   ])
@@ -1226,6 +1034,13 @@ onUnmounted(() => {
       top: 20px;
     }
   }
+}
+
+.roomPowerBtns {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 5px;
 }
 
 :deep(.CabEchart) {

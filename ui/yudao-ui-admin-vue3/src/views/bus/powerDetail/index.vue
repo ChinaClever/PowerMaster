@@ -313,7 +313,6 @@ const handleQuery = async () => {
 }
 
 const changeTime = async (data) => {
-    console.log('changeTime',data);
     queryParams.timeGranularity = data;   
     handleQuery();
 }

@@ -28,12 +28,15 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.enums.*;
+import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import cn.iocoder.yudao.framework.common.util.ThreadPoolConfig;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO;
 import cn.iocoder.yudao.module.aisle.api.AisleApi;
 import cn.iocoder.yudao.module.cabinet.api.CabinetApi;
@@ -47,7 +50,6 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -73,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -82,6 +85,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -134,20 +139,26 @@ public class RoomServiceImpl implements RoomService {
     @Autowired
     private AisleBoxMapper aisleBoxMapper;
     @Autowired
-    AlarmRecordApi alarmRecordApi;
+    private AlarmRecordApi alarmRecordApi;
     @Autowired
-    PduIndexDoMapper pduIndexDoMapper;
+    private PduIndexDoMapper pduIndexDoMapper;
 
     @Autowired
-    CabinetCfgMapper cabinetCfgMapper;
+    private CabinetCfgMapper cabinetCfgMapper;
 
     @Autowired
-    CabinetEnvSensorMapper envSensorMapper;
+    private CabinetEnvSensorMapper envSensorMapper;
 
     @Autowired
-    CabinetApi cabinetApi;
+    private CabinetApi cabinetApi;
     @Autowired
-    AisleApi aisleApi;
+    private AisleApi aisleApi;
+
+    @Autowired
+    private BusIndexDoMapper busIndexDoMapper;
+
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
 
 
     /**
@@ -855,9 +866,11 @@ public class RoomServiceImpl implements RoomService {
 
 
     @Override
-    public RoomMainResVO getDatanewDetail(int id) {
+    public RoomMainResVO getDatanewDetail(int id) throws ExecutionException, InterruptedException {
         RoomIndexCfgVO roomIndex = roomIndexMapper.findRoomIndexCfg(id);
-
+        if (Objects.isNull(roomIndex)) {
+            return null;
+        }
         RoomMainResVO vo = BeanUtils.toBean(roomIndex, RoomMainResVO.class);
         ValueOperations ops = redisTemplate.opsForValue();
 
@@ -878,13 +891,24 @@ public class RoomServiceImpl implements RoomService {
         //获取机柜 无柜列
         List<RoomCabinetDTO> cabinetDTOList = cabinetCfgMapper.roomCabinetList(id, null);
         if (!CollectionUtils.isEmpty(cabinetDTOList)) {
-            roomCabinetDetail1(cabinetDTOList, ops,humAvgFronts, humAvgBlacks, humMaxFronts, humMaxBlacks, temMaxFronts, temMaxBlacks, temAvgFronts, temAvgBlacks);
+            roomCabinetDetail1(cabinetDTOList, ops, humAvgFronts, humAvgBlacks, humMaxFronts, humMaxBlacks, temMaxFronts, temMaxBlacks, temAvgFronts, temAvgBlacks);
             vo.setCabinetList(cabinetDTOList);
         }
 
+        List<Integer> cabinetIds = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
+
         //柜列
         List<AisleDataDTO> aisleIndexList = aisleIndexMapper.selectRoomAisleList(id);
+        List<Integer> aisleIds = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
 
+        ThreadPoolTaskExecutor tHreadPool = ThreadPoolConfig.getTHreadPool();
+        Future<Object> future = tHreadPool.submit(() -> {
+            //部门
+            Map<String, EquipmentStatisticsResVO> map = equipmentStatisticsMethod(cabinetIds, aisleIds);
+            return map;
+        });
+        Map<String, EquipmentStatisticsResVO> map = (Map<String, EquipmentStatisticsResVO>) future.get();
+        vo.setMap(map);
         if (!CollectionUtils.isEmpty(aisleIndexList)) {
             List<Integer> ids = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
             List<RoomCabinetDTO> cabinetDTOList1 = cabinetCfgMapper.roomCabinetList(id, ids);
@@ -899,7 +923,7 @@ public class RoomServiceImpl implements RoomService {
             for (AisleDataDTO dataDTO : aisleIndexList) {
                 List<RoomCabinetDTO> roomCabinetDTOS = maps.get(dataDTO.getId());
                 if (!CollectionUtils.isEmpty(roomCabinetDTOS)) {
-                    roomCabinetDetail(roomCabinetDTOS, ops);
+                    roomCabinetDetail(roomCabinetDTOS, ops, dataDTO);
                 }
                 dataDTO.setCabinetList(roomCabinetDTOS);
                 Object obj = aisleMap.get(dataDTO.getId());
@@ -907,8 +931,8 @@ public class RoomServiceImpl implements RoomService {
                     continue;
                 }
                 JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
-                vo.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"),2));
-                vo.setRoomPue(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_pue"),2));
+                vo.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"), 2));
+                vo.setRoomPue(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_pue"), 2));
                 JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
                 JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
                 JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
@@ -994,6 +1018,61 @@ public class RoomServiceImpl implements RoomService {
             vo.setTemAvgBlack(temAvgBlacks.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble());
         }
         return vo;
+    }
+
+    private Map<String, EquipmentStatisticsResVO> equipmentStatisticsMethod(List<Integer> cabinetIds, List<Integer> aisleIds) {
+
+        List<String> pduKey = new ArrayList<>();
+        List<String> boxKey = new ArrayList<>();
+        List<String> busKey = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(aisleIds)) {
+            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>().in(CabinetIndex::getAisleId, aisleIds));
+            List<Integer> cabinetIds1 = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
+            cabinetIds.addAll(cabinetIds1);
+            List<AisleBox> aisleBoxes = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getAisleId, aisleIds));
+            List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>().in(AisleBar::getAisleId, aisleIds));
+
+            List<String> aisleBoxKey = aisleBoxes.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
+            boxKey.addAll(aisleBoxKey);
+
+            List<String> aisleBusKey = aisleBoxes.stream().map(AisleBox::getBusKey).collect(Collectors.toList());
+            List<String> aisleBusKey1 = aisleBars.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
+            busKey.addAll(aisleBusKey);
+            busKey.addAll(aisleBusKey1);
+        }
+
+        if (!CollectionUtils.isEmpty(cabinetIds)) {
+            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, cabinetIds));
+            List<CabinetBox> cabinetBoxes = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>().in(CabinetBox::getCabinetId, cabinetIds));
+
+            List<String> pduKeya = cabinetPdus.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
+            List<String> pduKeyb = cabinetPdus.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
+            pduKey.addAll(pduKeya);
+            pduKey.addAll(pduKeyb);
+
+            List<String> boxKeya = cabinetBoxes.stream().map(CabinetBox::getBoxKeyA).collect(Collectors.toList());
+            List<String> boxKeyb = cabinetBoxes.stream().map(CabinetBox::getBoxKeyB).collect(Collectors.toList());
+            boxKey.addAll(boxKeya);
+            boxKey.addAll(boxKeyb);
+        }
+
+        pduKey.stream().distinct().collect(Collectors.toList());
+        busKey.stream().distinct().collect(Collectors.toList());
+        boxKey.stream().distinct().collect(Collectors.toList());
+        Map<String, EquipmentStatisticsResVO> map = new HashMap<>();
+        if (!CollectionUtils.isEmpty(pduKey)) {
+            EquipmentStatisticsResVO pdu = pduIndexDoMapper.equipmentStatisticsQuery(pduKey);
+            map.put("pdu", pdu);
+        }
+        if (!CollectionUtils.isEmpty(busKey)) {
+            EquipmentStatisticsResVO bus = busIndexDoMapper.equipmentStatisticsQuery(busKey);
+            map.put("bus", bus);
+        }
+        if (!CollectionUtils.isEmpty(boxKey)) {
+            EquipmentStatisticsResVO box = boxIndexMapper.equipmentStatisticsQuery(boxKey);
+            map.put("box", box);
+        }
+        return map;
     }
 
 
@@ -1115,7 +1194,7 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
-    public void roomCabinetDetail(List<RoomCabinetDTO> cabinetDTOList, ValueOperations ops) {
+    public void roomCabinetDetail(List<RoomCabinetDTO> cabinetDTOList, ValueOperations ops, AisleDataDTO dataDTO) {
         List<Integer> pduId = cabinetDTOList.stream().filter(i -> Objects.equals(i.getPduBox(), 0)).map(RoomCabinetDTO::getId).collect(Collectors.toList());
         List<Integer> boxId = cabinetDTOList.stream().filter(i -> Objects.equals(i.getPduBox(), 1)).map(RoomCabinetDTO::getId).collect(Collectors.toList());
         Map<Integer, CabinetPdu> pduMap = new HashMap<>();
@@ -1143,6 +1222,14 @@ public class RoomServiceImpl implements RoomService {
         Map<String, Object> cabinetMap = (Map<String, Object>) cabinetRedis.stream().filter(i -> Objects.nonNull(i)).collect(
                 Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getString("cabinet_key"), Function.identity()));
         for (RoomCabinetDTO iter : cabinetDTOList) {
+            if ("x".equals(dataDTO.getDirection())) {
+                //横向
+                iter.setIndex(iter.getXCoordinate() - dataDTO.getXCoordinate() + 1);
+            }
+            if ("y".equals(dataDTO.getDirection())) {
+                //纵向
+                iter.setIndex(iter.getYCoordinate() - dataDTO.getYCoordinate() + 1);
+            }
             if (Objects.equals(iter.getPduBox(), 0)) {
                 CabinetPdu cabinetPdu = pduMap.get(iter.getId());
                 if (Objects.nonNull(cabinetPdu)) {
@@ -1544,6 +1631,10 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         } else {
+            Long count = roomIndexMapper.selectCount(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, vo.getRoomName()).eq(RoomIndex::getIsDelete, 0));
+            if (count>0){
+                BusinessAssert.error(10010,"当前机房名称已存在");
+            }
             //新增
             int insert = roomIndexMapper.insert(index);
             if (insert > 0) {
@@ -1738,6 +1829,12 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public void getRestoreRoom(int id) {
         try {
+            RoomIndex vo = roomIndexMapper.selectById(id);
+            Long count = roomIndexMapper.selectCount(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, vo.getRoomName()).eq(RoomIndex::getIsDelete, 0));
+            if (count>0){
+                BusinessAssert.error(10010,"当前机房名称已存在");
+            }
+
             int affectedRows = roomIndexMapper.restoreByDeleteRoom(id);
             if (affectedRows > 0) {
                 roomCfgMapper.restoreByRoomCfg(id);
@@ -1750,9 +1847,6 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public List<RoomIndexAddrResVO> getRoomList(String adder, String roomName) {
-//        if (StringUtils.isEmpty(adder)){
-//            adder = "未区分";
-//        }
         if (StringUtils.isNotEmpty(adder)) {
             LambdaQueryWrapper<RoomIndex> eq = new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getAddr, adder)
                     .like(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName).eq(RoomIndex::getIsDelete, false);
@@ -1785,7 +1879,10 @@ public class RoomServiceImpl implements RoomService {
     }
 
 
-    private void getRoomListRedis(List<RoomIndexAddrResVO> bean) {
+    public void getRoomListRedis(List<RoomIndexAddrResVO> bean) {
+        if (CollectionUtils.isEmpty(bean)){
+            return;
+        }
         ValueOperations ops = redisTemplate.opsForValue();
         List<String> keys = bean.stream().map(i -> REDIS_KEY_ROOM + i.getId()).distinct().collect(Collectors.toList());
         List list = ops.multiGet(keys);
@@ -1804,7 +1901,7 @@ public class RoomServiceImpl implements RoomService {
         List<Integer> ids = bean.stream().map(RoomIndexAddrResVO::getId).collect(Collectors.toList());
 
         //柜列
-        LambdaQueryWrapper<AisleIndex> queryWrapper = new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getRoomId, ids).eq(AisleIndex::getIsDelete,0);
+        LambdaQueryWrapper<AisleIndex> queryWrapper = new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getRoomId, ids).eq(AisleIndex::getIsDelete, 0);
         List<AisleIndex> aisleIndices = aisleIndexMapper.selectList(queryWrapper);
         Map<Integer, List<AisleIndex>> collect = aisleIndices.stream().collect(Collectors.groupingBy(AisleIndex::getRoomId));
         List<String> AisleIndexKeys = aisleIndices.stream().map(i -> REDIS_KEY_AISLE + i.getId()).collect(Collectors.toList());
@@ -1846,12 +1943,12 @@ public class RoomServiceImpl implements RoomService {
                 i.setPowReactive(powReactive);
             }
             List<CabinetIndex> cabinetList = cabinetMap.get(i.getId());
-            if (!CollectionUtils.isEmpty(cabinetList)){
+            if (!CollectionUtils.isEmpty(cabinetList)) {
                 extracted(cabinetList, cabinetRedisMap, temAvgBlacks, temAvgFronts, temMaxFronts, temMaxBlacks, humAvgFronts, humAvgBlacks, humMaxFronts, humMaxBlacks);
                 i.setFlagType(false);
             }
             List<AisleIndex> indices = collect.get(i.getId());
-            if (!CollectionUtils.isEmpty(indices)){
+            if (!CollectionUtils.isEmpty(indices)) {
                 aisleExtracted(indices, aisleMap, obj, humAvgFronts, humAvgBlacks, humMaxFronts, humMaxBlacks, temMaxFronts, temMaxBlacks, temAvgFronts, temAvgBlacks);
                 i.setFlagType(false);
             }
@@ -1898,25 +1995,27 @@ public class RoomServiceImpl implements RoomService {
     }
 
     private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {
-        indices.forEach(iter ->{
+        indices.forEach(iter -> {
             Object objAisle = aisleMap.get(iter.getId());
             if (Objects.nonNull(obj)) {
                 JSONObject jsonAisle = JSON.parseObject(JSON.toJSONString(objAisle));
-                humAvgFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_avg_front"));
-                humAvgBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_avg_black"));
-                humMaxFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_max_front"));
-                humMaxBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_max_black"));
+                if (Objects.nonNull(jsonAisle)) {
+                    humAvgFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_avg_front"));
+                    humAvgBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_avg_black"));
+                    humMaxFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_max_front"));
+                    humMaxBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("hum_max_black"));
 
-                temMaxFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_max_front"));
-                temMaxBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_max_black"));
-                temAvgFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_avg_front"));
-                temAvgBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_avg_black"));
+                    temMaxFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_max_front"));
+                    temMaxBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_max_black"));
+                    temAvgFronts.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_avg_front"));
+                    temAvgBlacks.add(jsonAisle.getJSONObject("aisle_power").getBigDecimal("tem_avg_black"));
+                }
             }
         });
     }
 
     private static void extracted(List<CabinetIndex> cabinetList, Map<String, Object> cabinetRedisMap, List<BigDecimal> temAvgBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks) {
-        cabinetList.forEach(iter ->{
+        cabinetList.forEach(iter -> {
             String cabKey = iter.getRoomId() + SPLIT_KEY + iter.getId();
             Object cabinetObj = cabinetRedisMap.get(cabKey);
             if (Objects.nonNull(cabinetObj)) {

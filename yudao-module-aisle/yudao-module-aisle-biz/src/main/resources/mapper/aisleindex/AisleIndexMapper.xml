@@ -39,7 +39,7 @@
     </select>
 
     <update id="roomAisleDeleteById">
-        update aisle_index ai set ai.is_delete = 1 where ai.room_id = #{aisleId}
+        update aisle_index ai set ai.is_delete = 1 where ai.id = #{aisleId}
     </update>
 
 </mapper>

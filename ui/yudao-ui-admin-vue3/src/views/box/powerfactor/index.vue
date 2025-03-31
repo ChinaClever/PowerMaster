@@ -651,12 +651,9 @@ const exportLoading = ref(false) // 导出的加载中
 const getDetail = async () => {
   const data = await IndexApi.getBoxPFDetail(queryParams);
   pfESList.value = data;
-  console.log('pfESList.value',pfESList.value);
-
   pfTableList.value = data?.table;
-  console.log('pfTableList',pfTableList.value);
   pfTableList.value?.forEach((obj) => {
-    console.log(obj,obj.powerFactorAvgValue);
+    obj.create_time = obj.create_time.substring(0, 13);
     obj.power_factor_avg_value = obj?.power_factor_avg_value?.toFixed(2);
   });
 }

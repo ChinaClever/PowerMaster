@@ -170,4 +170,7 @@ public class RoomCabinetDTO {
 
     @Schema(description = "B比例", example = "1.00")
     private BigDecimal bPow;
+
+    @Schema(description = "位置")
+    private Integer index;
 }

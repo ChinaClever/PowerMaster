@@ -265,14 +265,19 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">
-              <div v-if="item.acur != null">A相电流：{{ item.acur.toFixed(2) }}A</div>
+              <template v-if="item.bcur == null || item.ccur == null">
+                  <div v-if="item.acur != null">相电流：{{ item.acur.toFixed(2) }}A</div>
+              </template>
+              <template v-else>
+                <div v-if="item.acur != null">A相电流：{{ item.acur.toFixed(2) }}A</div>
+              </template>
               <div v-if="item.bcur != null">B相电流：{{ item.bcur.toFixed(2) }}A</div>
               <div v-if="item.ccur != null">C相电流：{{ item.ccur.toFixed(2) }}A</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <div class="icon" style="margin-left: 50px">
-              <div v-if="item.curUnbalance != null">
+              <div v-if="item.curUnbalance != null && item.bcur != null || item.ccur != null">
                 <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
               </div>
             </div>
@@ -316,8 +321,8 @@
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <div class="icon">
-              <div v-if="item.volUnbalance != null">
-                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度
+              <div v-if="item.volUnbalance != null && item.bvol != 0 || item.cvol != 0">
+                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度 
               </div>
             </div>
             
@@ -387,7 +392,8 @@
             <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 40px;">
               <Bar :max="barMaxValues" width="300px" height="250px" />
             </div>
-            <div style="display: inline-block;
+            <div
+style="display: inline-block;
               position: absolute;
               width: 100px;
               height: 100px;
@@ -443,7 +449,8 @@
             <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 50px;margin-left: -25px;">
               <Vol :max="volMaxValues" width="300px" height="250px"/>
             </div>
-            <div style="display: inline-block;
+            <div
+style="display: inline-block;
             position: absolute;
             width: 100px;
             height: 100px;
@@ -669,6 +676,11 @@ const getBalanceDetail = async (item) => {
   const res = await PDUDeviceApi.balanceDetail({ devKey: item.devKey })
   if (res.data== null) 
   if (res.cur_value) {
+      barMaxValues.value = {
+      L1: res.cur_value[0].toFixed(2),
+      L2: res.cur_value[1].toFixed(2),
+      L3: res.cur_value[2].toFixed(2)
+    };
     const cur_valueA = res.cur_value.map(num => formatEQ(num,2))
     // const max = Math.max(...cur_valueA) // 最大值
     // // 计算平均值
@@ -724,6 +736,12 @@ const getBalanceDetail = async (item) => {
     }
   }
   if (res.vol_value) {
+    volMaxValues.value = {
+      L1: res.vol_value[0].toFixed(1),
+      L2: res.vol_value[1].toFixed(1),
+      L3: res.vol_value[2].toFixed(1)
+    };
+
     const vol_value = res.vol_value.map(w => formatEQ(w,1))
     BBarOption.value = {
       title: {
@@ -950,28 +968,18 @@ const volMaxValues = ref({
   L3: 0
 });
 const itemValue = ref();
-const showDialogVol = (item) => {
-  barMaxValues.value = {
-  L1: item.acur.toFixed(2),
-  L2: item.bcur.toFixed(2),
-  L3: item.ccur.toFixed(2)
-};
 
-volMaxValues.value = {
-  L1: item.avol.toFixed(1),
-  L2: item.bvol.toFixed(1),
-  L3: item.cvol.toFixed(1)
-};
-  // if(item.status==5){
-  //   ElMessage({
-  //     message: '设备未启动',
-  //     type: 'warning',
-  //     duration: 2000
-  //   })
-  //   return;
-  // }
+const timer = ref(); // 修改 timer 的类型定义
+const showDialogVol = (item) => {
+
   dialogVisibleVol.value = true
   vollocation.value = item.devKey
+
+timer.value = setInterval(() => {
+        // 你的定时器逻辑
+         getBalanceDetail(item);
+      }, 5000);
+
   getBalanceDetail(item)
   getBalanceTrend(item)
   curUnblance1.value = balanceObj.imbalanceValueA
@@ -1244,13 +1252,13 @@ onMounted(async () => {
     // flashListTimer.value = setInterval(getList, 5000);
   // }
 
-  //   setInterval(() => {
-  //        setTimeout(() => {
-  //         getList()
-  //      }, 0);
-  // }, 5000);
-  flashListTimer.value = setInterval((getList), 5000);
-  flashListTimer.value = setInterval((getNavAList), 5000);
+  flashListTimer.value = setInterval(() => {
+        // 你的定时器逻辑
+           getList();
+             getNavAList();
+      }, 5000);
+  // flashListTimer.value = setInterval((getList), 5000);
+  // flashListTimer.value = setInterval((getNavAList), 5000);
 })
 
 onBeforeUnmount(() => {
@@ -1260,7 +1268,13 @@ onBeforeUnmount(() => {
   }
 })
 const lineidBeforeChartUnmountOne = () => {
+  console.log('关闭',timer.value)
   dialogVisibleVol.value = false
+   if (timer.value !== null) {
+    clearInterval(timer.value);
+    timer.value = null; // 重置引用，避免内存泄漏
+      console.log('关闭1',timer.value)
+  }
 }
 onBeforeRouteLeave(() => {
   if (flashListTimer.value) {
@@ -1276,11 +1290,11 @@ onActivated(() => {
   // if (!firstTimerCreate.value) {
     // flashListTimer.value = setInterval(getList, 5000);
   // }
-  setInterval(() => {
-         setTimeout(() => {
-          getList()
-       }, 0);
-  }, 5000);
+  // setInterval(() => {
+  //        setTimeout(() => {
+  //         getList()
+  //      }, 0);
+  // }, 5000);
 
 })
 </script>

@@ -127,8 +127,8 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+        //LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+        //LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
         if (busId == null) {
             return null;
@@ -147,21 +147,17 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(oneHourAgo.format(formatter))
                     .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
+        } else if (Objects.equals(reqVO.getGranularity(), "hour") || Objects.equals(reqVO.getGranularity(), "SeventyHours")){
+            int daysOffset = "SeventyHours".equals(reqVO.getGranularity()) ? 3 : 1;
+            LocalDateTime startTime = LocalDateTime.now().minusDays(daysOffset);
             searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value","load_rate", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneDayAgo.format(formatter))
+                    .from(startTime.format(formatter))
                     .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-            searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(threeDaysAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else {
+        }else {
             searchRequest.indices("bus_hda_line_day");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "load_rate","vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(oneMonthAgo.format(formatter))
                     .to(now.format(formatter)));
@@ -264,14 +260,41 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
     @Override
     public Map<String, Object> getBoxLineChartDetailData(BusPowerLoadDetailReqVO reqVO) throws IOException {
         Long boxId = reqVO.getId();
+        if (boxId == null) {
+            return null;
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
         LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        if (boxId == null) {
-            return null;
+
+        String index;
+        String[] heads;
+        String startTime;
+        String endTime=now.format(formatter);
+        switch (reqVO.getGranularity()){
+            case "realtime":
+                index = "box_hda_line_realtime";
+                heads =  new String[]{"box_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value", "cur_value", "load_rate", "create_time"};
+                startTime = oneHourAgo.format(formatter);
+                break;
+            case "hour":
+                index = "box_hda_line_hour";
+                heads =  new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"};
+                startTime =oneDayAgo.format(formatter);
+                break;
+            case "SeventyHours":
+                index = "box_hda_line_hour";
+                heads = new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"};
+                startTime =threeDaysAgo.format(formatter);
+                break;
+            default:
+                index = "box_hda_line_day";
+                heads =  new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"};
+                startTime =oneMonthAgo.format(formatter);
+                break;
         }
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -281,31 +304,13 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
-        if (Objects.equals(reqVO.getGranularity(), "realtime")) {
-            searchRequest.indices("box_hda_line_realtime");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value", "cur_value", "load_rate", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneHourAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
-            searchRequest.indices("box_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneDayAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-            searchRequest.indices("box_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(threeDaysAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else {
-            searchRequest.indices("box_hda_line_day");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneMonthAgo.format(formatter))
-                    .to(now.format(formatter)));
-        }
+
+        searchRequest.indices(index);
+        searchSourceBuilder.fetchSource(heads, null);
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(startTime)
+                .to(endTime));
+
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -441,9 +446,8 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
             DecimalFormat df = new DecimalFormat("#.000");
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-            LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-            LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+            //LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+            //LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
             LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
             if (busId == null) {
                 return null;
@@ -462,17 +466,13 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                         .from(oneMonthAgo.format(formatter))
                         .to(now.format(formatter)));
-            } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
+            } else if (Objects.equals(reqVO.getGranularity(), "hour") || Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
+                int daysOffset = "SeventyHours".equals(reqVO.getGranularity()) ? 3 : 1;
+                LocalDateTime startTime = LocalDateTime.now().minusDays(daysOffset);
                 searchRequest.indices("bus_ele_total_realtime");
                 searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
                 searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(oneDayAgo.format(formatter))
-                        .to(now.format(formatter)));
-            } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-                searchRequest.indices("bus_ele_total_realtime");
-                searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
-                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(threeDaysAgo.format(formatter))
+                        .from(startTime.format(formatter))
                         .to(now.format(formatter)));
             } else {
                 searchRequest.indices("bus_eq_total_day");

@@ -419,7 +419,7 @@ const handleExport = async () => {
     const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
     queryParams.timeRange = [selectedStartTime, selectedEndTime];
     const data = await EnergyConsumptionApi.getAisleEleTotalRealtimeExcel(queryParams, axiosConfig)
-    await download.excel(data, '柜列实时能耗.xlsx')
+    await download.excel(data, '柜列能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -431,7 +431,7 @@ const handleExport = async () => {
 /** 详情操作*/
 const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
   push('/aisle/aisleenergyconsumption/powerAnalysis?start='+createTimeMin+
-  '&end='+createTimeMax+'&id='+ id+"&startTime="+selectTimeRange.value[0]+"&endTime="+selectTimeRange.value[1]);
+  '&end='+createTimeMax+'&id='+ id+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:''));
 }
 
 /** 初始化 **/
