@@ -458,7 +458,6 @@ public class CabinetServiceImpl implements CabinetService {
                         if (isExist(vo.getPduIpA(), vo.getCasIdA(), ids)) {
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
-
                         if (isExist(vo.getPduIpB(), vo.getCasIdB(), ids)) {
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
@@ -1563,7 +1562,7 @@ public class CabinetServiceImpl implements CabinetService {
         BigDecimal powApparent = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_apparent");//视在功率=运行负荷
         BigDecimal margin = BigDemicalUtil.safeSubtract(2, powCapacity, powApparent);//余量
 
-        BigDecimal powActive = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_value");
+        BigDecimal powActive = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_active");
         BigDecimal powReactive = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_reactive");
 
         // 等待异步操作完成并获取结果
@@ -1604,7 +1603,10 @@ public class CabinetServiceImpl implements CabinetService {
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             // 从聚合结果中获取最大值
             Max maxAggregation = searchResponse.getAggregations().get("pow_apparent_max");
-            return maxAggregation.getValue();
+            if (maxAggregation.getValue()>0){
+                return maxAggregation.getValue();
+            }
+            return 0.0;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -1723,7 +1725,7 @@ public class CabinetServiceImpl implements CabinetService {
                     break;
                 case "hour":
                     index = "pdu_hda_line_hour";
-                    heads = new String[]{"cabinet_id", "line_id", "cur_avg_value", "vol_avg_value", "create_time"};
+                    heads = new String[]{"pdu_id", "line_id", "cur_avg_value", "vol_avg_value", "create_time"};
                     start = LocalDateTime.now().minusDays(1).format(formatter);
                     break;
                 case "SeventyHours":
