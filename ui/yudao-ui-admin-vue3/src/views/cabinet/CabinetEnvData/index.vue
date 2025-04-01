@@ -3,8 +3,6 @@
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
-
-
           <div class="descriptions-container" style="font-size: 14px;">
             <div class="description-item">
                 <span class="label">最近一小时 :</span>
@@ -501,7 +499,9 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, address: string, channel: number, position: number, sensorId: number) => {
   let detectValue = channel?.toString()+position?.toString()
-  push('/cabinet/record/CabinetEnvAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId);
+  console.log("selectTimeRange",selectTimeRange);
+  push('/cabinet/record/CabinetEnvAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId+
+  (selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+dayjs(selectTimeRange.value[0]).format("YYYY-MM-DD HH:mm:ss")+'&end='+dayjs(selectTimeRange.value[1]).format("YYYY-MM-DD HH:mm:ss"):''));
 }
 
 /** 导出按钮操作 */
@@ -541,11 +541,11 @@ const format = (date) => {
 /** 初始化 **/
 onMounted( () => {
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  dayjs(startOfMonth).format('YYYY-MM-DD HH:mm:ss'),
+  dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 ];
   getNavList()
   getNavNewData()

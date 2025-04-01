@@ -65,7 +65,7 @@
           <!-- 处理天极值数据的菜单栏 -->
           <div v-if="queryParams.granularity == 'day'&& queryParams.timeRange != null" class="description-item" > 
             <span class="label">开始时间 :</span>
-            <span class="value">{{   formatTime(queryParams.timeRange[0])  }}</span>
+            <span class="value">{{   formatTime(queryParams.timeRange[0])}}</span>
           </div>
           
           <div  v-if="queryParams.granularity == 'day'  && queryParams.timeRange != null" class="description-item">
@@ -251,6 +251,7 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
 })
+// const route=useRoute()
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -539,13 +540,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -887,6 +888,9 @@ const getNavList = async() => {
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
+if(route.query.start!=null&&route.query.end!=null){
+  queryParams.timeRange=[route.query.start as string,route.query.end as string]
+}
 /** 搜索按钮操作 */
 const handleQuery = () => {
   

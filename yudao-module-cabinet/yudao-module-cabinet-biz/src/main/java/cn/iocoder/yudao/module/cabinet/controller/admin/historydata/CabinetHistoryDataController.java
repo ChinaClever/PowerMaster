@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -81,7 +82,13 @@ public class CabinetHistoryDataController {
     public void exportDetailsHistoryDataExcel(CabinetHistoryDataDetailsReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = cabinetHistoryDataService.getHistoryDataDetails(pageReqVO).getList();
+        PageResult<Object> historyDataDetails = cabinetHistoryDataService.getHistoryDataDetails(pageReqVO);
+        List<Object> list=null;
+        if (historyDataDetails != null) {
+            list = historyDataDetails.getList();
+        }else{
+            list = new ArrayList<>();
+        }
         cabinetHistoryDataService.getNewDetailHistoryList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
