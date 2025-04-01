@@ -92,7 +92,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
+      <el-table border v-loading="loading" :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -112,7 +112,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.pdu_id,row.address,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.pdu_id,row.address)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -133,7 +133,7 @@
               :width="child.width"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -157,7 +157,7 @@
         layout = "sizes, prev, pager, next, jumper"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
-        @pagination="getList1"/>
+        @pagination="getList"/>
       <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
       <br/><br/><br/><br/>
       <ContentWrap>
@@ -171,7 +171,7 @@
 import dayjs from 'dayjs'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 import { ElMessage } from 'element-plus'
@@ -191,7 +191,8 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref()
+const now=new Date()
+const selectTimeRange = ref([dayjs(new Date(now.getFullYear(), now.getMonth(), 1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")])
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -322,6 +323,9 @@ const initChart = () => {
       },
       ],
     });
+    rankChart.on("click",(params)=>{
+      toDetails(list.value[params.dataIndex].pdu_id, list.value[params.dataIndex].address)
+    })
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
@@ -358,10 +362,8 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -403,10 +405,9 @@ const getLists = async () => {
   try {
     if (start.value != "" && start.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
+      const selectedStartTime = formatDate(startOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
       selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
@@ -515,7 +516,7 @@ const disabledDate = (date) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
  queryParams.pageNo = 1
- getLists()
+ getList()
 }
 
 
@@ -595,8 +596,8 @@ const getNavNewData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, address: string,createTimeMin : string,createTimeMax : string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+'&start='+createTimeMin+'&end='+createTimeMax);
+const toDetails = (pduId: number, address: string) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
 }
 
 /** 导出按钮操作 */
@@ -705,8 +706,8 @@ const clearQuery = () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-  ::v-deep .el-table th,
+  /* ::v-deep .el-table th,
    ::v-deep .el-table td{
     border-right: none;
-   }
+   } */
 </style>

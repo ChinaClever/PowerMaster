@@ -62,7 +62,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.id,String(selectTimeRange!=null?selectTimeRange[0]:null),String(selectTimeRange!=null?selectTimeRange[1]:null))">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.id,selectTimeRange!=null?selectTimeRange[0]:null,selectTimeRange!=null?selectTimeRange[1]:null)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -82,7 +82,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.id,selectTimeRange!=null?selectTimeRange[0]:null,selectTimeRange!=null?selectTimeRange[1]:null)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -232,7 +232,7 @@ const initChart = () => {
     });
     rankChart.on('click', function(params) {
       // 控制台打印数据的名称
-      toDetails(list.value[params.dataIndex].roomId,
+      toDetails(list.value[params.dataIndex].id,
       list.value[params.dataIndex].createTimeMin,
       list.value[params.dataIndex].createTimeMax);
     });
@@ -403,13 +403,14 @@ const getNavNewData = async() => {
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
-    if(queryParams.timeRange == null||queryParams.timeRange.length != 2){
+    if(selectTimeRange.value == null||selectTimeRange.value.length != 2){
       return ElMessage.warning('请选择时间范围')
     }
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    queryParams.timeRange=[formatDate(startOfDay(convertDate(selectTimeRange.value[0]))),formatDate(endOfDay(convertDate(selectTimeRange.value[1])))]
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
@@ -426,9 +427,9 @@ const handleExport = async () => {
 
 
 /** 详情操作*/
-const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
-  push('/cabinet/nenghao/powerAnalysis?start='+createTimeMin+
-  '&end='+createTimeMax+'&id='+ id);
+const toDetails = (id: number, createTimeMin : any,createTimeMax : any) => {
+  push('/cabinet/nenghao/powerAnalysis?id='+id+(createTimeMax!=null&&createTimeMax!=''&&createTimeMin!=null&&createTimeMin!=''?"&start="+createTimeMin+
+  '&end='+createTimeMax:''));
 }
 const format = (date) => {
   const year = date.getFullYear();

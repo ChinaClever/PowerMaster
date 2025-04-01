@@ -229,7 +229,7 @@ const initChart = () => {
     });
     rankChart.on('click', function(params) {
       // 控制台打印数据的名称
-      toDetails(list.value[params.dataIndex].roomId,
+      toDetails(list.value[params.dataIndex].id,
       list.value[params.dataIndex].createTimeMin,
       list.value[params.dataIndex].createTimeMax);
     });
