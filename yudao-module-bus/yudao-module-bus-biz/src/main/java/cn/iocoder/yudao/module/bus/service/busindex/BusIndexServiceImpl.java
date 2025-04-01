@@ -732,7 +732,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         String startTime = localDateTimeToString(pageReqVO.getOldTime());
         String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
-        String mess = getSearchResponse(index, startTime, endTime);
+        String mess = getSearchResponse(index, startTime, endTime,pageReqVO.getFlagVlaue());
         if(mess == null){ return null;}
         LineMaxResVO resVO = JsonUtils.parseObject(mess, LineMaxResVO.class);
         if (Objects.nonNull(resVO)) {
@@ -784,7 +784,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         return resVO;
     }
 
-    private String getSearchResponse(String index, String startTime, String endTime) throws IOException {
+    private String getSearchResponse(String index, String startTime, String endTime,int flagValue) throws IOException {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -794,7 +794,11 @@ public class BusIndexServiceImpl implements BusIndexService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
                     .gte(startTime).lt(endTime))));
-            builder.sort("cur_max_value", SortOrder.DESC);
+            if(flagValue == 0){
+                builder.sort("cur_max_value", SortOrder.DESC);
+            }else{
+                builder.sort("pow_active_max_value", SortOrder.DESC);
+            }
 //        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
             // 设置搜索条件
             searchRequest.source(builder);
