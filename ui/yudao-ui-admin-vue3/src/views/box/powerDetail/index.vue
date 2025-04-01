@@ -180,9 +180,9 @@
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0].toFixed(3)}}kVA</span>
           </div>
-          <!-- <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
-          </div> -->
+          <div class="label-container">
+            <span class="bullet" style="color:transparent;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
+          </div>
         </div>
     </div>
     <div class="bottom-part">
@@ -206,9 +206,9 @@
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1].toFixed(3)}}kVA</span>
           </div>
-          <!-- <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
-          </div> -->
+          <div class="label-container">
+            <span class="bullet" style="color:transparent;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
+          </div>
         </div>
     </div>
     <div class="bottom-part">
@@ -232,9 +232,9 @@
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2].toFixed(3)}}kVA</span>
           </div>
-          <!-- <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
-          </div> -->
+          <div class="label-container">
+            <span class="bullet" style="color:transparent;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
+          </div>
         </div>
     </div>
     <div style="width:98.5%;heigth:100%;">
@@ -304,6 +304,8 @@ import TemValue from './component/TemValue.vue'
 import { IndexApi } from '@/api/bus/boxindex'
 import { CabinetApi } from '@/api/cabinet/detail'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+
+const flashListTimer = ref();
 
 const redisData = ref() as any;
 const peakDemand = ref(0);
@@ -428,6 +430,21 @@ const createFilter = (queryString: string) => {
 onMounted(async () => {
   devKeyList.value = await loadAll();
   getRedisData();
+  flashListTimer.value = setInterval((getRedisData), 5000);
+})
+
+onBeforeUnmount(() => {
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
 })
 
 

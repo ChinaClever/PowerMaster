@@ -589,7 +589,10 @@ const initConnect = () => {
       return false
     }
     cabinetList.value[cabIndex][`boxOutletId${cabRoad}`] = +pluginOutLet
-    cabinetList.value[cabIndex][`boxIndex${cabRoad}`] = machineColInfo[`bar${cabRoad}`].boxList[Number(pluginName.split('-')[1])-1].boxIndex
+    cabinetList.value[cabIndex][`boxIndex${cabRoad}`] = Number(pluginName.split('-')[1])
+    let boxList_Index = machineColInfo[`bar${cabRoad}`].boxList.findIndex(box => box.boxIndex == Number(pluginName.split('-')[1]))
+
+    cabinetList.value[cabIndex][`casId${cabRoad}`] = machineColInfo[`bar${cabRoad}`].boxList[boxList_Index].casAddr
     cabinetList.value[cabIndex][`barId${cabRoad}`] = machineColInfo[`bar${cabRoad}`].barId
     cabinetList.value[cabIndex][`busIp${cabRoad}`] = machineColInfo[`bar${cabRoad}`].devIp
     console.log('监听连接', connection, cabId, pluginId, cabinetList.value[cabIndex],)
@@ -620,6 +623,7 @@ const initConnect = () => {
       const index = connection.source.id.includes('cab') ? sourceId.split('-')[2] : targetId.split(/[-_]/)[1]
       cabinetList.value[index][`boxOutletId${cabRoad}`] = null
       cabinetList.value[index][`boxIndex${cabRoad}`] = null
+      cabinetList.value[index][`casId${cabRoad}`] = null
       cabinetList.value[index][`barId${cabRoad}`] = null
       cabinetList.value[index][`busIp${cabRoad}`] = null
       console.log(cabinetList.value[index])

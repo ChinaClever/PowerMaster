@@ -121,12 +121,12 @@
       <el-radio-group v-model="typeRadio">
         <el-radio-button label="电流" value="电流" @click="switchChartContainer =0"/>
         <el-radio-button label="电压" value="电压" @click="switchChartContainer =0"/>
-        <el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled" @click="switchChartContainer =1"/>
+        <el-radio-button label="有效电能" value="有效电能" @click="getEqLineChartData()"/>
         <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer =0"/>
         <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer =0"/>
         <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =0"/>
         <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =0"/>
-        <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =0"/>
+        <el-radio-button label="负载率" value="负载率" :disabled="isLoadRateDisabled" @click="switchChartContainer =0"/>
         <el-radio-button label="线电压" value="线电压" @click="switchChartContainer =0"/>
       </el-radio-group>
     </el-col>
@@ -630,6 +630,11 @@ watch( ()=>typeRadio.value, async(value)=>{
   }else{
     isHourDisabled.value = false
   }
+  if (value == '负载率' ){
+    isDayAndMonthDisabled.value = true
+  }else{
+    isDayAndMonthDisabled.value = false
+  }
   // 更新数据后重新渲染图表
   myChart2?.setOption({
       tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -693,66 +698,6 @@ watch( ()=>typeRadio.value, async(value)=>{
         {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
       ],
     });
-  myChart3?.setOption({
-      tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                  var result = params[0].name + '<br>';
-                                  for (var i = 0; i < params.length; i++) {
-                                    result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                    //判断是否给鼠标悬停上显示符号
-                                    if(typeRadio.value === '电流') {
-                                      result += ' A';
-                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-                                      result += ' V';
-                                    }else if (typeRadio.value === '有功功率') {
-                                      result += ' kW';
-                                    }else if (typeRadio.value === '无功功率') {
-                                      result += ' kVar';
-                                    }else if(typeRadio.value === '视在功率') {
-                                      result += ' kVA'; 
-                                    }else if (typeRadio.value === '负载率') {
-                                      result += '%';
-                                    }else if (typeRadio.value === '有效电能') {
-                                      result += ' kWh';
-                                    }
-                                    result += '<br>';
-                                  }
-                                  return result;
-                                }},
-      yAxis: { 
-        type: 'value',
-        axisLabel: {
-          formatter: function(value) {
-            // 根据 typeRadio 的值添加单位
-            if (typeRadio.value === '电流') {
-              return value + ' A';
-            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-              return value + ' V';
-            } else if (typeRadio.value === '有功功率') {
-              return value + ' kW';
-            } else if (typeRadio.value === '无功功率') {
-              return value + ' kVar';
-            } else if (typeRadio.value === '视在功率') {
-              return value + ' kVA'; 
-            } else if (typeRadio.value === '负载率') {
-              return value + '%';
-            } else if (typeRadio.value === '有效电能') {
-              return value + ' kWh';
-            } else {
-              return value; // 如果没有匹配，返回原值
-            }
-          }
-        }
-      },            
-              grid: {
-          left: '5%',   // 设置左侧边距
-          right: '5%',  // 设置右侧边距
-          top: '10%',    // 设置上侧边距
-          bottom: '10%', // 设置下侧边距
-        },
-      series: [
-        {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
-      ],
-    });
 });
 
 // 监听切换时间颗粒度
@@ -775,7 +720,12 @@ watch( ()=>timeRadio.value, async(value)=>{
         isLoadRateDisabled.value = true//没选中近一个小时不能选负载率
     lineChartQueryParams.granularity = 'day'
   }
-  await getLineChartData();
+  if(typeRadio.value == "有效电能") {
+    await getEqLineChartData()
+  }
+  else {
+    await getLineChartData()
+  }
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
     myChart2?.setOption({
@@ -845,74 +795,6 @@ watch( ()=>timeRadio.value, async(value)=>{
     ],
   }, true);
   }
-  // 更新数据后重新渲染图表
-  if (isHaveData.value == true){
-    console.log(eqValue.value)
-    myChart3?.setOption({
-    title: { text: ''},
-    tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                var result = params[0].name + '<br>';
-                                for (var i = 0; i < params.length; i++) {
-                                  result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                  //判断是否给鼠标悬停上显示符号
-                                  if(typeRadio.value === '电流') {
-                                    result += ' A';
-                                  }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-                                    result += ' V';
-                                  }else if (typeRadio.value === '有功功率') {
-                                    result += ' kW';
-                                  }else if (typeRadio.value === '无功功率') {
-                                    result += ' kVar';
-                                  }else if(typeRadio.value === '视在功率') {
-                                    result += ' kVA'; 
-                                  }else if (typeRadio.value === '负载率') {
-                                    result += '%';
-                                  }else if (typeRadio.value === '有效电能') {
-                                    result += ' kWh';
-                                  }
-                                  result += '<br>';
-                                }
-                                return result;
-                              }},
-    legend: { orient: 'horizontal', right: '25'},
-    dataZoom:[{type: "inside"}],
-    xAxis: {type: 'category', boundaryGap: false, data:eqCreateTimeData.value},
-        yAxis: { 
-          type: 'value',
-          axisLabel: {
-            formatter: function(value) {
-              // 根据 typeRadio 的值添加单位
-              if (typeRadio.value === '电流') {
-                return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-                return value + ' V';
-              } else if (typeRadio.value === '有功功率') {
-                return value + ' kW';
-              } else if (typeRadio.value === '无功功率') {
-                return value + ' kVar';
-              } else if (typeRadio.value === '视在功率') {
-                return value + ' kVA'; 
-              } else if (typeRadio.value === '负载率') {
-                return value + '%';
-              } else if (typeRadio.value === '有效电能') {
-                return value + ' kWh';
-              } else {
-                return value; // 如果没有匹配，返回原值
-              }
-            }
-          }
-        },
-                grid: {
-          left: '5%',   // 设置左侧边距
-          right: '5%',  // 设置右侧边距
-          top: '10%',    // 设置上侧边距
-          bottom: '10%', // 设置下侧边距
-        },
-    series: [
-      {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
-    ],
-  }, true);
-  }
 
 });
 
@@ -920,6 +802,7 @@ watch( ()=>timeRadio.value, async(value)=>{
 const flashChartData = async () =>{
   await getDetailData();
   await getLineChartData();
+  await getEqLineChartData();
   //await initData();
         function getTextColor (value) {
             if (value <= 40) {
@@ -1233,25 +1116,38 @@ const getLineChartData =async () => {
       isHaveData.value = true
     }else{
     }
-
-    const data2 = await BusPowerLoadDetailApi.getBusEqChartData(lineChartQueryParams);
-    if (data2 != null){
-      // 查到数据
-      allEqData.value = data2
-       if (timeRadio.value == '近一天'|| '近三天'){
-        eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
-      } else{
-        eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-      }
-      //L1Data.value = [];
-      //L2Data.value = [];
-      //L3Data.value = [];
-      await initData();
-      isHaveData.value = true
-    }else{
-    }
  } finally {
  }
+}
+
+const getEqLineChartData = async () => {
+    switchChartContainer.value =1
+    if(timeRadio.value == "近一小时") {
+      timeRadio.value = '近一天'
+      lineChartQueryParams.granularity = 'hour'
+      isHourDisabled.value = true
+    }
+    
+    try {
+      const data2 = await BusPowerLoadDetailApi.getBusEqChartData(lineChartQueryParams);
+      if (data2 != null){
+        // 查到数据
+        allEqData.value = data2
+        if (timeRadio.value == '近一天'|| '近三天'){
+          eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
+        } else{
+          eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+        }
+        //L1Data.value = [];
+        //L2Data.value = [];
+        //L3Data.value = [];
+        await initData();
+        isHaveData.value = true
+        initChart3()
+      }else{
+      }
+      } finally {
+    }
 }
 
 const initData = () => {
@@ -1336,7 +1232,7 @@ const initData = () => {
         }
         break;
       case '有效电能':
-        if(allEqData.value != null){
+        if(allEqData.value != null && allEqData.value?.L1){
         eqValue.value = allEqData.value.L1.map((item) => item.ele_active.toFixed(3));
         }
         break;
@@ -1400,7 +1296,7 @@ const initData = () => {
         }
         break;
       case '有效电能':
-        if(allEqData.value != null){
+        if(allEqData.value != null && allEqData.value?.L1){
         eqValue.value = allEqData.value.L1.map((item) => item.eq_value.toFixed(3));
         }
         break;

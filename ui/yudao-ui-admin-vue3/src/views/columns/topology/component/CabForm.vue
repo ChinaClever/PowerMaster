@@ -102,7 +102,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
-                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index" />
+                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
@@ -565,6 +565,17 @@ const submitForm = async () => {
     const sensorListFilter = sensorList.filter(item => item.sensorId)
     console.log('sensorListFilter', sensorListFilter)
     machineFormData.value.sensorList = sensorListFilter
+
+    console.log(boxListA.value,machineFormData.value)
+
+    let boxListA_Index = boxListA.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexA)
+    let boxListB_Index = boxListB.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexB)
+    
+    console.log(boxListA_Index,boxListB_Index)
+
+    machineFormData.value.casIdA = boxListA_Index != -1 ? boxListA.value[boxListA_Index].casAddr : 0
+    machineFormData.value.casIdB = boxListB_Index != -1 ? boxListB.value[boxListB_Index].casAddr : 0
+
     console.log('roomName', {...machineFormData.value})
     const res = await CabinetApi.saveCabinetInfo({
       ...machineFormData.value,

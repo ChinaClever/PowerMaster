@@ -22,54 +22,6 @@ const props = defineProps({
   }
 });
 
-
-const gaugeData = [
-  {
-    value: props.loadFactor.temValue[0],
-    name: 'A',
-    itemStyle: { color: '#B47660' },
-    title: {
-      offsetCenter: ['-60%', '80%']
-    },
-    detail: {
-      offsetCenter: ['-60%', '95%']
-    }
-  },
-  {
-    value: props.loadFactor.temValue[1],
-    name: 'B',
-    itemStyle: { color: '#C8603A' },
-    title: {
-      offsetCenter: ['-20%', '80%']
-    },
-    detail: {
-      offsetCenter: ['-20%', '95%']
-    }
-  },
-  {
-    value: props.loadFactor.temValue[2],
-    name: 'C',
-    itemStyle: { color: '#AD3762' },
-    title: {
-      offsetCenter: ['20%', '80%']
-    },
-    detail: {
-      offsetCenter: ['20%', '95%']
-    }
-  },
-  {
-    value: props.loadFactor.temValue[3],
-    name: 'N',
-    itemStyle: { color: '#E5B849' },
-    title: {
-      offsetCenter: ['60%', '80%']
-    },
-    detail: {
-      offsetCenter: ['60%', '95%']
-    }
-  }
-];
-
 // 使用 computed 属性来创建 ECharts 配置
 const chartOptions = computed(() => ( {
   series: [
@@ -97,7 +49,52 @@ const chartOptions = computed(() => ( {
       axisLine: {
         roundCap: true
       },
-      data: gaugeData,
+      data: [
+        {
+          value: props.loadFactor.temValue[0],
+          name: 'A',
+          itemStyle: { color: '#B47660' },
+          title: {
+            offsetCenter: ['-60%', '80%']
+          },
+          detail: {
+            offsetCenter: ['-60%', '95%']
+          }
+        },
+        {
+          value: props.loadFactor.temValue[1],
+          name: 'B',
+          itemStyle: { color: '#C8603A' },
+          title: {
+            offsetCenter: ['-20%', '80%']
+          },
+          detail: {
+            offsetCenter: ['-20%', '95%']
+          }
+        },
+        {
+          value: props.loadFactor.temValue[2],
+          name: 'C',
+          itemStyle: { color: '#AD3762' },
+          title: {
+            offsetCenter: ['20%', '80%']
+          },
+          detail: {
+            offsetCenter: ['20%', '95%']
+          }
+        },
+        {
+          value: props.loadFactor.temValue[3],
+          name: 'N',
+          itemStyle: { color: '#E5B849' },
+          title: {
+            offsetCenter: ['60%', '80%']
+          },
+          detail: {
+            offsetCenter: ['60%', '95%']
+          }
+        }
+      ],
       title: {
         fontSize: 12
       },

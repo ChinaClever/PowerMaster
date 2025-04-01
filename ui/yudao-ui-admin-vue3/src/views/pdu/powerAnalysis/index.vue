@@ -368,7 +368,9 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-     queryParams.ipArray = [ip.value];
+        if (ip.value != undefined){
+          queryParams.ipArray = [ip.value];
+        }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     eqData.value = data.list.map((item) => {
@@ -412,7 +414,10 @@ const getLists = async () => {
     if(start.value == null){
       queryParams.timeRange = undefined
     }
-    queryParams.ipArray = [ip.value];
+        if (ip.value != undefined){
+          queryParams.ipArray = [ip.value];
+        }
+    // queryParams.ipArray = [ip.value];
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
@@ -548,9 +553,9 @@ const handleCheck = async (node) => {
         arr.push(item.unique);
       }
     });
-    if (ip.value != null ){
-      arr =[ip]
-    }
+    // if (ip.value != null ){
+    //   arr =[ip]
+    // }
     //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
     if(arr.length == 0  && node.length != 0){
       arr.push(0)
