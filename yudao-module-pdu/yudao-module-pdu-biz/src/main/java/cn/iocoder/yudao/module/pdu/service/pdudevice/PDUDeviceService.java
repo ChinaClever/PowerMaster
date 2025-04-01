@@ -72,4 +72,7 @@ public interface PDUDeviceService {
     PduDeviceCountResVO getPDUDeviceCount();
 
     BalancedDistributionStatisticsVO getBalancedDistribution();
+
+    Map<String, String> setLocation(List<String> collect1);
+
 }

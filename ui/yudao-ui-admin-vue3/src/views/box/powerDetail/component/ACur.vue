@@ -7,7 +7,7 @@ import 'echarts'
 import { reactive, watch, defineProps, onUnmounted } from 'vue';
 const props = defineProps({
   loadFactor: {
-    type: Number,
+    type: Object as () => { ua: number; ub: number; uc: number; ia?: number; ib?: number; ic?: number },
     required: true
   },
   height: {
@@ -22,7 +22,7 @@ console.log('loadFactor',props.loadFactor)
 
 // 设置饼图的选项
 // 设置饼图的选项
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   tooltip: {
     trigger: 'item',
     formatter: (params) => `${params.name}: ${params.value}A`
@@ -52,7 +52,7 @@ const echartsOption = reactive({
       ]
     }
   ]
-});
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')

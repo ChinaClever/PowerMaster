@@ -845,7 +845,8 @@ public class AisleServiceImpl implements AisleService {
                             if (keya.length ==3) {
                                 cabinetDTO.setBusIpA(keya[0]);
                                 cabinetDTO.setBarIdA(Integer.valueOf(keya[1]));
-                                cabinetDTO.setBoxIndexA(Integer.valueOf(keya[2]));
+                                cabinetDTO.setCasIdA(Integer.valueOf(keya[2]));
+                                cabinetDTO.setBoxIndexA(cabinetBoxes.getBoxIndexA());
                                 cabinetDTO.setBoxOutletIdA(cabinetBoxes.getOutletIdA());
                             }
                         }
@@ -854,7 +855,8 @@ public class AisleServiceImpl implements AisleService {
                             if (keyb.length==3) {
                                 cabinetDTO.setBusIpB(keyb[0]);
                                 cabinetDTO.setBarIdB(Integer.valueOf(keyb[1]));
-                                cabinetDTO.setBoxIndexB(Integer.valueOf(keyb[2]));
+                                cabinetDTO.setCasIdB(Integer.valueOf(keyb[2]));
+                                cabinetDTO.setBoxIndexB(cabinetBoxes.getBoxIndexB());
                                 cabinetDTO.setBoxOutletIdB(cabinetBoxes.getOutletIdB());
                             }
                         }

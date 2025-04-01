@@ -764,6 +764,8 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             collect = records.stream().map(PduIndex::getId).collect(Collectors.toList());
             collect.stream().map(String::valueOf).collect(Collectors.joining(","));
         }
+        List<String> collect1 = records.stream().map(PduIndex::getPduKey).collect(Collectors.toList());
+        Map<String,String> locaMap = pduDeviceService.setLocation(collect1);
         for (PduIndex record : records) {
             EleTotalRealtimeRespVO respVO = new EleTotalRealtimeRespVO();
             respVO.setPduId(record.getId()).setLocation(record.getPduKey()).setAddress(historyDataService.getAddressByIpAddr(record.getPduKey()));
@@ -812,6 +814,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                         respVO.setEleActive(respVO.getEleActiveEnd());
                     }
                 }
+            }
+            String s = locaMap.get(record.getPduKey());
+            if (Objects.nonNull(s)){
+                respVO.setAddress(s);
             }
             mapList.add(respVO);
         }
