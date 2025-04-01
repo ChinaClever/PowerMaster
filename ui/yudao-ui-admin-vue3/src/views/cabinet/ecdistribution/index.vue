@@ -5,7 +5,7 @@
       <div class="nav_data">
         <div class="nav_header">      
           <span>{{nowAddress}}</span>
-          <span style="padding-top:10px">{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span>
+          <!-- <span style="padding-top:10px">{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span> -->
         </div>
       <div class="nav_content">
        <div class="description-item">
@@ -97,15 +97,15 @@
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
-                  <el-table-column prop="startEleData" label="数值"/>   
+                  <el-table-column prop="startEleData" label="开始电能(kWh)"/>   
                   <el-table-column prop="startTimeData" label="发生时间"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
-                  <el-table-column prop="endEleData" label="数值"/>   
+                  <el-table-column prop="endEleData" label="结束电能(kWh)"/>   
                   <el-table-column prop="endTimeData" label="发生时间"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column :prop="item.name" label="耗电量(kWh)"/>   
                   <el-table-column prop="create_time" label="记录时间"/>
                 </el-table-column>
               </template>
@@ -142,6 +142,10 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14)) as any
+const route=useRoute()
+if(route.query.start!=null&&route.query.end!=null){
+  selectTimeRange.value=[route.query.start as string,route.query.end as string]
+}
 const loading = ref(false) 
 const queryParams = reactive({
   pageNo: 1,
@@ -240,13 +244,13 @@ const shortcuts = [
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(14)
+    // selectTimeRange.value = defaultDayTimeRange(14)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(3)
+    // selectTimeRange.value = defaultMonthTimeRange(3)
   }else{
     queryParams.granularity = 'month'
-    selectTimeRange.value = defaultMonthTimeRange(12)
+    // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
@@ -381,30 +385,30 @@ function customTooltipFormatter(params: any[]) {
 
 // 处理时间选择不超过xxx范围
 const handleDayPick = () => {
-  if (activeName.value=='weekTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差不超过7天，则重置选择的日期
-    if (diffDays < 7) {
-      selectTimeRange.value = defaultDayTimeRange(7)
-      ElMessage({
-        message: '时间选择不少于7天,已默认选择最近一周',
-        type: 'warning',
-      })
-    }
-  }
-  if (activeName.value=='monthTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差超过30天，则重置选择的日期
-    if (diffDays < 30) {
-      selectTimeRange.value = defaultMonthTimeRange(1)
-      ElMessage({
-        message: '时间选择不少于1个月,已默认选择最近一个月',
-        type: 'warning',
-      })
-    }
-  }
+  // if (activeName.value=='weekTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差不超过7天，则重置选择的日期
+  //   if (diffDays < 7) {
+  //     selectTimeRange.value = defaultDayTimeRange(7)
+  //     ElMessage({
+  //       message: '时间选择不少于7天,已默认选择最近一周',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
+  // if (activeName.value=='monthTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差超过30天，则重置选择的日期
+  //   if (diffDays < 30) {
+  //     selectTimeRange.value = defaultMonthTimeRange(1)
+  //     ElMessage({
+  //       message: '时间选择不少于1个月,已默认选择最近一个月',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
 }
 
 // 禁选未来的日期
@@ -495,7 +499,6 @@ onMounted(async () => {
     initLineChart();
   }
 })
-
 </script>
 
 <style scoped>

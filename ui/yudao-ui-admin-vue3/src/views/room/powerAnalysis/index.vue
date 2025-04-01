@@ -280,6 +280,10 @@ const initChart = () => {
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }},
       ],
     });
+    rankChart.on('click', function(params) {
+      console.log(list.value[params.dataIndex].room_id,list.value[params.dataIndex].location)
+      toDetails(list.value[params.dataIndex].room_id,list.value[params.dataIndex].location)
+    });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };

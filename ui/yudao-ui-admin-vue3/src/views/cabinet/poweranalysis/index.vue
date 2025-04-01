@@ -174,7 +174,11 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const now=new Date()
+const selectTimeRange = ref([dayjs(new Date(now.getFullYear(), now.getMonth(), 1)).format('YYYY-MM-DD'), dayjs(new Date()).format('YYYY-MM-DD')])
+if(useRoute().query.start!=null&&useRoute().query.start!=''&&useRoute().query.end!=null&&useRoute().query.end!=''){
+  selectTimeRange.value=[useRoute().query.start as string,useRoute().query.end as string]
+}
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -269,6 +273,9 @@ const initChart = () => {
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
       ],
     });
+    rankChart.on("click",(params)=>{
+      toDetails(list.value[params.dataIndex].cabinet_id, list.value[params.dataIndex].location)
+    })
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
@@ -489,7 +496,7 @@ const format = (date) => {
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location: string) => {
-  push('/cabinet/nenghao/ecdistribution?cabinetId='+cabinetId+'&location='+location);
+  push('/cabinet/nenghao/ecdistribution?cabinetId='+cabinetId+'&location='+location+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?"&start="+selectTimeRange.value[0]+"&end="+selectTimeRange.value[1]:""));
 }
 const start = ref('')
 const end = ref('')

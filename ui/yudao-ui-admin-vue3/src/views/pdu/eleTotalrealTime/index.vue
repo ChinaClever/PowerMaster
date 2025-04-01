@@ -43,7 +43,7 @@
     <template #Content>
       <div>
 
-        <el-table  :data="list"  :show-overflow-tooltip="true" width="1800px"  :header-cell-style="{background:'#f7f7f7',color:'#606266',height:'30px'}">
+        <el-table :border="true" :data="list"  :show-overflow-tooltip="true" width="1800px"  :header-cell-style="{background:'#f7f7f7',color:'#606266',height:'30px'}">
           <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
@@ -91,7 +91,7 @@
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="center">
+          <el-table-column label="操作" align="center" width="100px">
           <template #default="scope">
             <el-button
               link
@@ -557,8 +557,8 @@ const format = (date) => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
    
-   ::v-deep .el-table th,
+   /* ::v-deep .el-table th,
    ::v-deep .el-table td{
     border-right: none;
-   }
+   } */
 </style>
