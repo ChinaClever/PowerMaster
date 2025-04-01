@@ -4,14 +4,14 @@
       
       <div class="nav_data">
       <div class="nav_header">       
-          <span v-if="nowAddress">{{nowAddress?'暂未绑定设备':nowAddress}}</span>
-          <span v-if="devKey">({{devKey}})</span>
+          <span v-if="nowAddress">{{nowAddress.value ?nowAddress.value :'暂未绑定设备'}}</span>
+          <span v-if="devKey">( {{ devKye.value }} )</span>
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
         <div class="description-item">
         <span class="label">网络地址 :</span>
-        <span >{{ devKye }} </span>
+        <span >{{ devKye.value }} </span>
       </div>
       <div class="description-item">
         <span class="label">总耗电量 :</span>

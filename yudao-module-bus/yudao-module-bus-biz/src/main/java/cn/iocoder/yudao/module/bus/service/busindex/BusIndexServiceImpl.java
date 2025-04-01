@@ -2211,6 +2211,11 @@ public class BusIndexServiceImpl implements BusIndexService {
             List<String> busHdaLineHour = getData(startTime, endTime, ids, "bus_hda_line_hour");
             List<BusLineHourDo> strList = busHdaLineHour.stream()
                     .map(str -> JsonUtils.parseObject(str, BusLineHourDo.class))
+                    .sorted((a, b) -> {
+                        DateTime timeA = a.getCreateTime();
+                        DateTime timeB = b.getCreateTime();
+                        return timeA.compareTo(timeB); // 升序
+                    })
                     .collect(Collectors.toList());
 
             HashMap<String, Object> resultMap = new HashMap<>();
@@ -2237,7 +2242,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 result.getPowerFactorAvgValueA().add(busLineHourDo.getPowerFactorAvgValue());
                 result.getTime().add(busLineHourDo.getCreateTime().toString("HH:mm"));
                 busPFTableRes.setPowerFactorAvgValueA(busLineHourDo.getPowerFactorAvgValue());
-                busPFTableRes.setTime(busLineHourDo.getCreateTime().toString("HH:mm"));
+                busPFTableRes.setTime(busLineHourDo.getCreateTime().toString());
                 tableList.add(busPFTableRes);
                 i++;
             }
