@@ -2166,6 +2166,11 @@ public class BusIndexServiceImpl implements BusIndexService {
             List<String> busTemHour = getData(startTime, endTime, ids, "bus_tem_hour");
             List<BusTemHourDo> strList = busTemHour.stream()
                     .map(str -> JsonUtils.parseObject(str, BusTemHourDo.class))
+                    .sorted((a, b) -> {
+                        DateTime timeA = a.getCreateTime();
+                        DateTime timeB = b.getCreateTime();
+                        return timeA.compareTo(timeB); // 升序
+                    })
                     .collect(Collectors.toList());
 
             BusTemDetailRes result = new BusTemDetailRes();
@@ -2189,6 +2194,11 @@ public class BusIndexServiceImpl implements BusIndexService {
                 result.getTemAvgValueC().add(busTemHourDo.getTemCAvgValue());
                 result.getTemAvgValueN().add(busTemHourDo.getTemNAvgValue());
                 result.getTemAvgTime().add(busTemHourDo.getCreateTime().toString("HH:mm"));
+            });
+            tableList.sort((a, b) -> {
+                LocalTime timeA = LocalTime.parse(a.getTemAvgTime());
+                LocalTime timeB = LocalTime.parse(b.getTemAvgTime());
+                return timeA.compareTo(timeB); // 升序
             });
             HashMap<String, Object> resultMap = new HashMap<>();
             resultMap.put("chart", result);
