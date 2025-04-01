@@ -381,7 +381,7 @@ const getList = async () => {
     
     });
   }finally{
-
+    loading.value = false;
   }
 }
 
