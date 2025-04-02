@@ -62,9 +62,10 @@ public class PDUDeviceController {
     }
 
     @GetMapping("/balance/trend")
-    @Operation(summary = "获得插接箱不平衡度详情图表")
-    public CommonResult<List<PduTrendVO>> getPudBalanceTrend(Integer pduId) {
-        List<PduTrendVO> result = pDUDeviceService.getPudBalanceTrend(pduId);
+    @Operation(summary = "获得PDU不平衡度详情图表")
+    public CommonResult<List<PduTrendVO>> getPudBalanceTrend(@RequestParam(value = "pduId")@Parameter(description = "机柜id") Integer pduId,
+                                                             @RequestParam(value = "timeType")@Parameter(description = "0 - 实时；1-历史") Integer timeType) {
+        List<PduTrendVO> result = pDUDeviceService.getPudBalanceTrend(pduId,timeType);
         return success(result);
     }
 

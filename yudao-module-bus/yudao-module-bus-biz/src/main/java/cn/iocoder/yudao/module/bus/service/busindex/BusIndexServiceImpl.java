@@ -5,11 +5,8 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.BusBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
@@ -22,8 +19,6 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
@@ -33,18 +28,12 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import cn.iocoder.yudao.framework.common.vo.AisleBoxResVO;
-import cn.iocoder.yudao.framework.common.vo.CabinetBoxResVO;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCreateTime;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexMaxEqResVO;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
-import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
@@ -83,7 +72,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
@@ -102,11 +90,11 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.bus.constant.BoxConstants.BOX_HDA_LINE_HOUR;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.REDIS_KEY_BOX;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
-import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.SMS_TEMPLATE_API_AUDIT_FAIL;
 
 /**
  * 始端箱索引 Service 实现类
@@ -1400,53 +1388,83 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
-    public List<BusTrendDTO> getBusBalanceTrend(Integer busId) {
+    public List<BusTrendDTO> getBusBalanceTrend(Integer busId, Integer timeType) {
         List<BusTrendDTO> result = new ArrayList<>();
         try {
-            DateTime end = DateTime.now();
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.HOUR_OF_DAY, -24);
-            DateTime start = DateTime.of(calendar.getTime());
-
-            String startTime = DateUtil.formatDateTime(start);
-            String endTime = DateUtil.formatDateTime(end);
             List<Integer> ids = Arrays.asList(busId);
-            List<String> data = getData(startTime, endTime, ids, BUS_HDA_LINE_HOUR);
-            Map<String, List<BusLineHourDo>> timeBus = new HashMap<>();
+            String startTime ;
+            String endTime ;
+            LocalDateTime now = LocalDateTime.now();
+            String index = BUS_HDA_LINE_HOUR;
+            startTime= LocalDateTimeUtil.format(now.minusHours(24),"yyyy-MM-dd HH:mm:ss");
+            endTime = LocalDateTimeUtil.format(now,"yyyy-MM-dd HH:mm:ss");
+            if (Objects.equals(timeType,0)){
+                index =  "bus_hda_line_realtime";
+                startTime= LocalDateTimeUtil.format(now.minusHours(1),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now,"yyyy-MM-dd HH:mm:ss");
+            }
+            List<String> data = getData(startTime, endTime, ids,index);
+            Map<String, List> timeBus = new HashMap<>();
             data.forEach(str -> {
-                BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
-
-                String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH");
-                List<BusLineHourDo> lineHourDos = timeBus.get(dateTime);
-                if (CollectionUtils.isEmpty(lineHourDos)) {
-                    lineHourDos = new ArrayList<>();
+                if (Objects.equals(timeType,0)){
+                    BusLineRealtimeDo hourDo = JsonUtils.parseObject(str, BusLineRealtimeDo.class);
+                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH:mm:ss");
+                    List<BusLineRealtimeDo> lineHourDos = timeBus.get(dateTime);
+                    if (CollectionUtils.isEmpty(lineHourDos)) {
+                        lineHourDos = new ArrayList<>();
+                    }
+                    lineHourDos.add(hourDo);
+                    timeBus.put(dateTime, lineHourDos);
+                }else {
+                    BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH");
+                    List<BusLineHourDo> lineHourDos = timeBus.get(dateTime);
+                    if (CollectionUtils.isEmpty(lineHourDos)) {
+                        lineHourDos = new ArrayList<>();
+                    }
+                    lineHourDos.add(hourDo);
+                    timeBus.put(dateTime, lineHourDos);
                 }
-                lineHourDos.add(hourDo);
-                timeBus.put(dateTime, lineHourDos);
             });
 
             timeBus.keySet().forEach(dateTime -> {
                 //获取每个时间段数据
-                List<BusLineHourDo> busLineHourDos = timeBus.get(dateTime);
-
                 BusTrendDTO trendDTO = new BusTrendDTO();
                 trendDTO.setDateTime(dateTime);
                 //获取相数据
                 List<Map<String, Object>> cur = new ArrayList<>();
                 List<Map<String, Object>> vol = new ArrayList<>();
-                busLineHourDos.forEach(hourDo -> {
-                    Map<String, Object> curMap = new HashMap<>();
-                    curMap.put("lineId", hourDo.getLineId());
-                    curMap.put("curValue", hourDo.getCurAvgValue());
-                    Map<String, Object> volMap = new HashMap<>();
-                    volMap.put("lineId", hourDo.getLineId());
-                    volMap.put("volValue", hourDo.getVolAvgValue());
-                    cur.add(curMap);
-                    vol.add(volMap);
-                });
+                if (Objects.equals(timeType,0)){
+                    List<BusLineRealtimeDo> boxLineHourDos = timeBus.get(dateTime);
+                    boxLineHourDos.forEach(hourDo ->{
+                        Map<String, Object> curMap = new HashMap<>();
+                        curMap.put("lineId", hourDo.getLineId());
+                        curMap.put("curValue", hourDo.getCurValue());
+                        Map<String, Object> volMap = new HashMap<>();
+                        volMap.put("lineId", hourDo.getLineId());
+                        volMap.put("volValue", hourDo.getVolValue());
+                        cur.add(curMap);
+                        vol.add(volMap);
+                    });
+                }else {
+                    List<BusLineHourDo> boxLineHourDos = timeBus.get(dateTime);
+                    boxLineHourDos.forEach(hourDo -> {
+                        Map<String, Object> curMap = new HashMap<>();
+                        curMap.put("lineId", hourDo.getLineId());
+                        curMap.put("curValue", hourDo.getCurAvgValue());
+                        curMap.put("curMaxValue", hourDo.getCurMaxValue());
+                        curMap.put("curMinValue", hourDo.getCurMinValue());
+                        Map<String, Object> volMap = new HashMap<>();
+                        volMap.put("lineId", hourDo.getLineId());
+                        volMap.put("volValue", hourDo.getVolAvgValue());
+                        volMap.put("volMaxValue", hourDo.getVolMaxValue());
+                        volMap.put("volMinValue", hourDo.getVolMinValue());
+                        cur.add(curMap);
+                        vol.add(volMap);
+                    });
+                }
                 trendDTO.setCur(cur);
                 trendDTO.setVol(vol);
-
                 result.add(trendDTO);
             });
             return result.stream().sorted(Comparator.comparing(BusTrendDTO::getDateTime)).collect(Collectors.toList());
@@ -3847,7 +3865,11 @@ public class BusIndexServiceImpl implements BusIndexService {
                     vo.setRoomName(json.getString("room_name"));
 
                     StringJoiner joiner = new StringJoiner(SPLIT_KEY);
-                    joiner.add(json.getString("room_name"));
+                    if (Objects.nonNull(json.getString("room_name"))){
+                        joiner.add(json.getString("room_name"));
+                    }else {
+                        joiner.add("未绑定");
+                    }
                     joiner.add(json.getString("aisle_name"));
                     joiner.add(aislePathMap.get(key) + "路");
 

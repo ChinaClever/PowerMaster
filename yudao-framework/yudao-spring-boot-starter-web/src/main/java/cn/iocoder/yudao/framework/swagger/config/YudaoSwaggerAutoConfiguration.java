@@ -115,6 +115,11 @@ public class YudaoSwaggerAutoConfiguration {
     }
 
     @Bean
+    public GroupedOpenApi boxGroupApi() {
+        return buildGroupedOpenApi("插接箱", "box");
+    }
+
+    @Bean
     public GroupedOpenApi pduGroupApi() {
         return buildGroupedOpenApi("PDU", "pdu");
 //        return GroupedOpenApi.builder().group("PDU").packagesToScan("cn.iocoder.yudao.module.pdu").build();

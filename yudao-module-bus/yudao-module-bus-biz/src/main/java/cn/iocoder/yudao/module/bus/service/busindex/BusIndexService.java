@@ -96,7 +96,7 @@ public interface BusIndexService {
 
     BusBalanceDeatilRes getBusBalanceDetail(String devKey);
 
-    List<BusTrendDTO> getBusBalanceTrend(Integer busId);
+    List<BusTrendDTO> getBusBalanceTrend(Integer busId, Integer timeType);
 
     BusLineResBase getBusLineCurLine(BusIndexPageReqVO pageReqVO);
 

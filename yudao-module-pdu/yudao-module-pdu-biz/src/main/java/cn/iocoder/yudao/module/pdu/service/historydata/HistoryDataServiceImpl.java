@@ -82,6 +82,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Override
     public List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>(mapList.size());
+        if (CollectionUtils.isAnyEmpty(mapList)){
+            return resultList;
+        }
+
         List<Integer> pduIds = mapList.stream().map(i -> (Integer)i.get("pdu_id")).collect(Collectors.toList());
         List<PduIndex> list = pduIndexMapper.selectList(new LambdaQueryWrapper<PduIndex>().in(PduIndex::getId, pduIds));
         Map<Integer, PduIndex> pduIndexMap = list.stream().collect(Collectors.toMap(PduIndex::getId, Function.identity()));
