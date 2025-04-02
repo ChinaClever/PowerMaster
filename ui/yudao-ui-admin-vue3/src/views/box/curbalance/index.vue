@@ -217,10 +217,10 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
             <el-tag type="info"  v-if="item.color == 0">单相设备</el-tag>
-            <el-tag type="info"  v-if="item.color == 1">{{statusList[3].name}}</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
+            <el-tag type="info"  v-if="item.color == 1 && item.status != 0">{{statusList[3].name}}</el-tag>
+            <el-tag type="success"  v-if="item.color == 2 && item.status != 0">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-if="item.color == 3 && item.status != 0">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-if="item.color == 4 && item.status != 0">{{ statusList[2].name }}</el-tag>
           </div>
           <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0">详情</button>
         </div>

@@ -50,19 +50,8 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item label="柜列名称" prop="name" label-width="100px" style="position: relative; left: -30px;">
-          <el-input
-            v-model="queryParams.name"
-            placeholder="请输入柜列名称"
-            clearable
-            style="width: 200px"
-            @keydown.enter.prevent="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item style="position: absolute; left: 285px;">
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-        </el-form-item>
-        <el-form-item label="时间段" prop="createTime" label-width="100px" style="vertical-align: center; position: relative; left: -220px;">
+
+        <el-form-item label="时间段" prop="createTime" label-width="100px" style="vertical-align: center; position: relative; left: -30px;">
           <el-button id="latest24h"
             @click="queryParams.timeType = 0;queryParams.oldTime = dayjs(new Date()).subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss');queryParams.newTime = dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss');queryParams.timeArr = null;handleQuery()" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
@@ -81,6 +70,18 @@
           >
             自定义
           </el-button>                            
+        </el-form-item>
+        <el-form-item label="柜列名称" prop="name" label-width="100px" style="position: relative; left: -220px;">
+          <el-input
+            v-model="queryParams.name"
+            placeholder="请输入柜列名称"
+            clearable
+            style="width: 200px"
+            @keydown.enter.prevent="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item style="position: absolute; left: 720px;">
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <el-form-item style="position: absolute; left: 725px; vertical-align: center;">
           <el-date-picker

@@ -89,4 +89,8 @@ public class BusIndexPageReqVO extends PageParam {
 
     @Schema(description = "三相不平衡")
     private List<Integer> curUnbalanceStatus;
+
+    @Schema(description = "电流/功率/标识")
+    private Integer flagVlaue;
+
 }

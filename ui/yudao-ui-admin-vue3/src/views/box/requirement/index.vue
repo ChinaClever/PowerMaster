@@ -6,7 +6,7 @@
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
         <div style="font-size:14px; margin-top:45px; margin-left:20px">
-                    <div ><span>最大电流需量</span>
+          <div ><span>{{ titleName }}</span>
           </div>
           <div>
             <span>位置：</span>
@@ -25,8 +25,8 @@
             <span>{{ statusNumber.create_time }}</span>
           </div>
           <div >
-            <span>电流：</span>
-            <span>{{ statusNumber.cur_max_value }}</span>
+            <span>{{ flagName }}：</span>
+            <span>{{ statusNumber.cur_max_value }} A</span>
           </div>
         </div>
       </div>
@@ -105,8 +105,8 @@
           </el-form-item>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
-          <el-button @click="visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
+          <el-button @click="visModeShow(0)" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
+          <el-button @click="visModeShow(1)" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
@@ -150,6 +150,7 @@
               link
               type="primary"
               @click="queryParams.lineType = 0;openDetail(scope.row)"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -198,6 +199,7 @@
               link
               type="primary"
               @click="queryParams.lineType = 1;openDetail(scope.row)"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
 
             >
             设备详情
@@ -339,6 +341,8 @@ const switchValue = ref(0)
 const showSearchBtn = ref(false)
 const switchChartOrTable = ref(0)
 const pfTableList = ref([]) as any
+const titleName = ref();
+const flagName = ref();
 const statusNumber = reactive({
     location : null,
     devKey : null,
@@ -410,6 +414,17 @@ const statusList = reactive([
 
   },
 ])
+
+
+const visModeShow = (flag) => {
+  if(flag == 0){
+    visMode.value =0;
+    getListAll(flag);
+  }else{
+    visMode.value =1;
+    getListAll(flag);
+  }
+}
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -593,14 +608,14 @@ const getList = async () => {
     var tableIndex = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
-      obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(2);
+      obj.l1MaxVol = obj.l1MaxVol?.toFixed(2);
       obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
-      obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
-      obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
+      obj.l2MaxCur = obj.l2MaxCur?.toFixed(2);
+      obj.l2MaxVol = obj.l2MaxVol?.toFixed(2);
       obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
-      obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
-      obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
+      obj.l3MaxCur = obj.l3MaxCur?.toFixed(2);
+      obj.l3MaxVol = obj.l3MaxVol?.toFixed(2);
       obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
       obj.l1MaxCurTime = obj.l1MaxCurTime?.slice(0,16);
       obj.l2MaxCurTime = obj.l2MaxCurTime?.slice(0,16);
@@ -613,9 +628,10 @@ const getList = async () => {
   }
 }
 
-const getListAll = async () => {
+const getListAll = async (flagVlaue) => {
   try {
-        const allData = await IndexApi.getBoxLineMax(queryParams)
+    queryParams.flagVlaue = flagVlaue
+    const allData = await IndexApi.getBoxLineMax(queryParams)
     //设置左边数量
     statusNumber.location = allData.location?allData.location:allData.devKey;
     statusNumber.devKey = allData.devKey;
@@ -624,7 +640,15 @@ const getListAll = async () => {
     statusNumber.bus_id = allData.bus_id;
     statusNumber.line_id = allData.line_id;
     statusNumber.create_time = allData.create_time;
-    statusNumber.cur_max_value = allData.cur_max_value;
+    if(flagVlaue == 0){
+      titleName.value ='最大电流需量';
+      flagName.value ='电流';
+      statusNumber.cur_max_value = parseFloat(allData.cur_max_value).toFixed(2);
+    }else{
+      titleName.value ='最大功率需量';
+      flagName.value ='功率';
+      statusNumber.cur_max_value = parseFloat(allData.pow_active_max_value).toFixed(2);
+    }
   } catch (error) {
   }
 }
@@ -670,7 +694,7 @@ const handleQuery = () => {
     return;
   }
   getList()
-    getListAll();
+    getListAll(0);
 }
 
 /** 重置按钮操作 */
@@ -724,7 +748,7 @@ onMounted(async() => {
     devKeyList.value = await loadAll();
   getList()
   getNavList();
-  getListAll();
+  getListAll(0);
 })
 
 

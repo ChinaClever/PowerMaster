@@ -114,7 +114,7 @@ import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption';
 import { HistoryDataApi } from '@/api/pdu/historydata';
 import { CabinetApi } from '@/api/cabinet/info';
 import PDUImage from '@/assets/imgs/PDU.jpg';
-import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { formatDate,startOfDay, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { ElMessage } from 'element-plus';
 defineOptions({ name: 'PowerRecords' });
 
@@ -259,7 +259,7 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化日期范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
      
       const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       selectTimeRange.value = [selectedStartTime, selectedEndTime];

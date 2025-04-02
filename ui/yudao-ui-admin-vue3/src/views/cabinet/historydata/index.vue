@@ -453,8 +453,8 @@ const tableColumns = ref([
 
 
 /** 查询列表 */
-const getList = async () => {
-  loading.value = true
+const getList = async (isLoading = true) => {
+  loading.value = isLoading
   try {
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
@@ -520,7 +520,7 @@ const getNavNewData = async() => {
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location:string) => {
-  push('/cabinet/record/historyLine?cabinetId='+cabinetId+'&location='+location);
+  push('/cabinet/record/historyLine?cabinetId='+cabinetId+'&location='+location+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?"&start="+queryParams.timeRange[0]+"&end="+queryParams.timeRange[1]:""));
 }
 
 /** 导出按钮操作 */
@@ -555,6 +555,17 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getList()
+  intervalId.value=setInterval(() => {
+      getList(false)
+  }, 1000 * 60)
+})
+
+const intervalId:any=ref(null)
+
+onBeforeUnmount(() => {
+  if(intervalId.value!=null){
+    clearInterval(intervalId.value)
+  }
 })
 </script>
 
