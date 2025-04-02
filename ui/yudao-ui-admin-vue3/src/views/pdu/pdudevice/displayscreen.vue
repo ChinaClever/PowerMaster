@@ -32,7 +32,14 @@
             <el-button type="primary" @click="openNewPage(queryParams.devKey)" >进入管理界面</el-button>
           </el-col>
     </div>
-
+    <div>
+      <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+        <el-option label="实时" value="实时" />
+        <el-option label="平均" value="平均" />
+        <el-option label="最大" value="最大" />
+        <el-option label="最小" value="最小" />
+      </el-select>
+    </div>
   </div>
 
   <!-- <el-row :gutter="18">
@@ -449,6 +456,7 @@ const toggleValueV = ref(0);
 const toggleTime = ref('oneHour');
 const toggleTimeV = ref('oneHour');
 const message = useMessage() // 消息弹窗
+const typeRadioShow = ref("最大")
 
 //折叠列表显示的项
 const activeNames = ref(["1","2","3","4","5"])
@@ -2799,6 +2807,7 @@ queryParams.devKey = devKey;
 .header_app{
   background-color: white;
   display: flex;
+  align-items: center;
   height: 50px;
   padding-left: 10px;
   box-shadow: 20px;

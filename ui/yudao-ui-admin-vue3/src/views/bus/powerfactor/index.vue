@@ -115,7 +115,7 @@
     </template>
     <template #Content>
       <div v-if="switchValue !== 0  && list.length > 0">
-        <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+        <el-table v-show="switchValue == 3" v-loading="loading" :stripe="true" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
@@ -249,7 +249,8 @@
         <br/>
         <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
         <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
-          <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
+          <el-table style="height:70vh;" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+          <el-table-column label="序号" align="center" prop="index" />
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="A相功率因数" align="center" prop="powerFactorAvgValueA" />
           <el-table-column label="B相功率因数" align="center" prop="powerFactorAvgValueB" />
@@ -509,7 +510,8 @@ const getDetail = async () => {
   });
 
   pfTableList.value = data?.table;
-  pfTableList.value?.forEach((obj) => {
+  pfTableList.value?.forEach((obj,index) => {
+    obj.index = index+1
     obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
     obj.powerFactorAvgValueB = obj?.powerFactorAvgValueB?.toFixed(2);
     obj.powerFactorAvgValueC = obj?.powerFactorAvgValueC?.toFixed(2);

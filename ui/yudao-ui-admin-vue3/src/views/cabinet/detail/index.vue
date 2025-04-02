@@ -2,11 +2,11 @@
 <div style="background-color: #E7E7E7;margin-bottom:20px;" class="centainer-height">
   <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
     <div style="padding: 5px 10px;" class="header_app_text_left">
-      <span>所在位置：{{ location }}-{{ busName }}</span>
+      <span>所在位置：{{ location }}-{{ cabinetName }}</span>
       <span style="margin-left:10px;">A路网络地址：{{ keyAlocation }}</span>
       <span style="margin-left:10px;">B路网络地址：{{ keyBlocation }}</span>
-      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA,location,busName,'A路')">A路PDU详情</el-button><el-button @click="goPDU(keyB,location,busName,'B路')">B路PDU详情</el-button></span>
-      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA,location,busName,'A路')">A路母线详情</el-button><el-button @click="goBus(keyB,location,busName,'A路')">B路母线详情</el-button></span>
+      <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA,location,cabinetName,'A路')">A路PDU详情</el-button><el-button @click="goPDU(keyB,location,cabinetName,'B路')">B路PDU详情</el-button></span>
+      <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA,location,cabinetName,'A路')">A路母线详情</el-button><el-button @click="goBus(keyB,location,cabinetName,'A路')">B路母线详情</el-button></span>
     </div>
     <div  style="display: flex; justify-content: flex-end; gap: 10px;" class="header_app_text_right">
       <!--<el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>-->
@@ -220,6 +220,7 @@
 <script setup lang="ts">
 
 import { ref } from 'vue'
+import { useCabinetDetailStore } from '@/store/modules/cabinetDetail'
 import RealTimePower from './component/RealTimePower.vue'
 import PowerFactor from './component/PowerFactor.vue'
 import Gauge from './component/Gauge.vue'
@@ -242,12 +243,13 @@ const router = useRouter();
 const { push } = useRouter(); // 路由跳转
 const message = useMessage(); // 消息弹窗
 const peakDemand = ref(0);
+const cabinetDetailStore = useCabinetDetailStore()
 //const peakDemandTime = ref('');
 const resultData = ref() as any;
 const loadRateList = ref() as any;
 const selectedOption = ref('current')
 const location = ref(history?.state?.location);
-const busName = ref(history?.state?.cabinetName);
+const cabinetName = ref(history?.state?.cabinetName);
 const id = ref(history?.state?.id);
 const roomId = ref(history?.state?.roomId);
 const type = ref(history?.state.type);
@@ -267,22 +269,22 @@ const keyB = ref();
 const keyAlocation = ref();
 const keyBlocation = ref();
 
-const goPDU = (devKey,location,busName,path) => {
+const goPDU = (devKey,location,cabinetName,path) => {
   if(devKey == -0){
     message.error('未绑定A路设备!')
     return;    
   }
-  var name= location+'-'+busName+'-'+path;
+  var name= location+'-'+cabinetName+'-'+path;
   console.log('跳转', devKey );
   push({path: '/pdu/pdudisplayscreen', query: { devKey, location: name }});
 }
 
-const goBus = (devKey,location,busName,path) => {
+const goBus = (devKey,location,cabinetName,path) => {
   if(devKey == -0){
     message.error('未绑定B路设备!')
     return;    
   }
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey ,location,busName,roomName:path}})
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey ,location,cabinetName,roomName:path}})
 }
 
 const getFullTimeByDate = (date) => {
@@ -332,7 +334,7 @@ const getRedisData = async () => {
   powActiveBig.value = result.powActiveBig;
   powActiveTime.value = result.powActiveTime;
   location.value = result.roomName;
-  busName.value = result.cabinetName;
+  cabinetName.value = result.cabinetName;
   pduBox.value = result.pduBox;
   keyA.value = result.keyA.split('-').slice(0, 2).join('-');
   keyB.value = result.keyB.split('-').slice(0, 2).join('-');
@@ -369,11 +371,11 @@ const getBusIdAndLocation =async () => {
     if (data != null){
       location.value = data.location
       queryParams.busId = data.busId
-      busName.value = data.busName
+      cabinetName.value = data.cabinetName
     }else{
       location.value = null
       queryParams.busId = null
-      busName.value = null
+      cabinetName.value = null
     }
  } finally {
  }
@@ -435,6 +437,15 @@ onMounted(async () => {
   // await getDetailData();
   // await getLineChartData();
   // devKeyList.value = await loadAll();
+  if(location.value && cabinetName.value && id.value && roomId.value && type.value) {
+    cabinetDetailStore.updateCabinetDetail(location.value, cabinetName.value, id.value, roomId.value, type.value)
+  } else if(cabinetDetailStore.id != '') {
+    location.value = cabinetDetailStore.location
+    cabinetName.value = cabinetDetailStore.cabinetName 
+    id.value = cabinetDetailStore.id 
+    roomId.value = cabinetDetailStore.roomId 
+    type.value = cabinetDetailStore.type
+  }
   await getRedisData();
   //await getLoadRateList();
   // initChart1();

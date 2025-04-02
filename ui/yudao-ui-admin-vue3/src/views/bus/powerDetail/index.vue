@@ -30,7 +30,13 @@
     </div>
     <div class="header_app_text_other flex-container">
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-        <el-button @click="changeTime('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
+            <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px;margin-left: 5px;">
+                <el-option label="实时" value="实时" />
+                <el-option label="平均" value="平均" />
+                <el-option label="最大" value="最大" />
+                <el-option label="最小" value="最小" />
+            </el-select>
+        <el-button @click="changeTime('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 5px;">近一小时</el-button>
         <el-button @click="changeTime('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
         <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
         <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>

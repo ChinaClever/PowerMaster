@@ -161,7 +161,7 @@
               link
               type="primary"
               
-              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0,scope.row.l1MaxCur)"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0,scope.row.l1MaxCur)"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -203,7 +203,7 @@
             <el-button
               link
               type="primary"
-              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -258,7 +258,7 @@
             <el-button
               link
               type="primary"
-              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day',1, scope.row.l1MaxPow);"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day',1, scope.row.l1MaxPow);"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -298,7 +298,7 @@
             <el-button
               link
               type="primary"
-              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1,scope.row.l1MaxPow);"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1,scope.row.l1MaxPow);"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -347,7 +347,7 @@
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
           <!-- <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button> -->    
-          <button class="detail" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null" @click="onlyDevKey=item.devKey,location=item.location;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1,item.l1MaxPow);location1=item.location">详情</button>
+          <button class="detail" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null" @click="onlyDevKey=item.devKey;location=item.location;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1,item.l1MaxPow);location1=item.location">详情</button>
         </div>
       </div>
 
@@ -408,7 +408,7 @@
           </div>       
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
-          <button class="detail" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" @click="onlyDevKey=item.devKey,location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0,item.l1MaxCur);">详情</button>
+          <button class="detail" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" @click="onlyDevKey=item.devKey;location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0,item.l1MaxCur);">详情</button>
         </div>
       </div>
       
