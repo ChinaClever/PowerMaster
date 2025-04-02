@@ -360,7 +360,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            MaxCurAndOtherData maxCurAndOtherData = getMaxCurMaxValue(startTime, endTime, index);
+            MaxCurAndOtherData maxCurAndOtherData = getMaxCurMaxValue(startTime, endTime, index,pageReqVO.getFlagVlaue());
 
             result.setPduId(maxCurAndOtherData.getPdu_id());
             result.setL1MaxCur(maxCurAndOtherData.getMaxValue().floatValue());
@@ -1961,7 +1961,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     }
 
-    public MaxCurAndOtherData getMaxCurMaxValue(String startTime, String endTime, String index) throws IOException {
+    public MaxCurAndOtherData getMaxCurMaxValue(String startTime, String endTime, String index,int flaValue) throws IOException {
         // 创建搜索请求
         SearchRequest searchRequest = new SearchRequest(index);
 
@@ -1971,12 +1971,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 QueryBuilders.boolQuery()
                         .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").from(startTime).to(endTime))
         );
+        String[] includeFields;
+        if(flaValue == 0){
+            // 排序字段
+            searchSourceBuilder.sort("cur_max_value", SortOrder.DESC);
+            // 限制字段，只取需要的字段
+             includeFields = new String[]{"cur_max_value", "cur_max_time", "line_id", "pdu_id"};
+        }else {
+            // 排序字段
+            searchSourceBuilder.sort("pow_active_max_value", SortOrder.DESC);
+            // 限制字段，只取需要的字段
+             includeFields = new String[]{"pow_active_max_value", "pow_active_max_time", "line_id", "pdu_id"};
+        }
 
-        // 排序字段
-        searchSourceBuilder.sort("cur_max_value", SortOrder.DESC);
-
-        // 限制字段，只取需要的字段
-        String[] includeFields = {"cur_max_value", "cur_max_time", "line_id", "pdu_id"};
         FetchSourceContext fetchSourceContext = new FetchSourceContext(true, includeFields, null);
         searchSourceBuilder.fetchSource(fetchSourceContext);
 
@@ -1991,14 +1998,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (hits.getHits().length > 0) {
             var hit = hits.getAt(0); // 由于已按 cur_max_value 降序排序，取第一个即为最大值
             var sourceAsMap = hit.getSourceAsMap();
-
             // 构建结果对象
             MaxCurAndOtherData result = new MaxCurAndOtherData();
-            result.setMaxValue((Double) sourceAsMap.get("cur_max_value"));
-            result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
-            result.setLine_id((Integer) sourceAsMap.get("line_id"));
-            result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
-
+            if(flaValue == 0) {
+                result.setMaxValue((Double) sourceAsMap.get("cur_max_value"));
+                result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                result.setLine_id((Integer) sourceAsMap.get("line_id"));
+                result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
+            }else {
+                // 构建结果对象
+                result.setMaxValue((Double) sourceAsMap.get("pow_active_max_value"));
+                result.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                result.setLine_id((Integer) sourceAsMap.get("line_id"));
+                result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
+            }
             return result;
         } else {
             throw new RuntimeException("No data found for the specified time range.");

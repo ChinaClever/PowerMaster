@@ -22,7 +22,7 @@
       <span class="value">{{ item.l1MaxCurTime }}</span>
     </div>
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
-      <span>最大电流 :</span>
+      <span>{{ flagName }} :</span>
       <span>{{ item.l1MaxCur}}A</span>
     </div>    
 
@@ -108,8 +108,8 @@
         
         
         <div style="float:right ">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />电流</el-button>
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />功率</el-button>          
+          <el-button @click="visModeShow(0)" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />电流</el-button>
+          <el-button @click="visModeShow(1)" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />功率</el-button>          
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
@@ -466,6 +466,7 @@ import Bar from './component/Bar.vue'
 import pow from './component/pow.vue'
 
 const searchbth = ref(false);
+const flagName = ref('最大电流');
 const now1 = new Date();
 let startTime = new Date(now1.getTime() - 24 * 60 * 60 * 1000);
 let endTime = new Date();
@@ -511,6 +512,7 @@ onMounted(() => {
   giveValue()
   getList()
   getNavList()
+  getListAll(0);
   if (chartDom.value) {
     myChart = echarts.init(chartDom.value);
     myChart.setOption(option);
@@ -780,16 +782,34 @@ const getList = async () => {
   try {
     const data = await PDUDeviceApi.getPDULinePage(queryParams)
     list.value = data.list
-    const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
-    maxCurAll.value = allData.list
-    maxCurAll.value.forEach((obj) => {
-      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
-    })
     total.value = data.total
   } finally {
     loading.value = false
   }
 }
+
+const visModeShow = (flag) => {
+  if(flag == 0){
+    valueMode.value =0;
+    flagName.value ='最大电流';
+    getListAll(flag);
+  }else{
+    valueMode.value =1;
+    flagName.value ='最大功率';
+    getListAll(flag);
+  }
+}
+
+const getListAll = async (flagVlaue) => {
+  queryParams.flagVlaue = flagVlaue
+  const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
+  maxCurAll.value = allData.list
+  maxCurAll.value.forEach((obj) => {
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
+  })
+}
+
+
 
 // 接口获取导航列表
 const getNavList = async() => {
