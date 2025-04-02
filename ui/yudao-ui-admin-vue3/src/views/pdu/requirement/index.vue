@@ -11,7 +11,7 @@
     </div>  -->
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>所在位置 :</span>
-      <span>{{ item.location}}</span>
+      <span class="text-ellipsis">{{ item.location }}</span>
     </div>     
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
@@ -359,8 +359,8 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
-          <div><h3>功率详情</h3></div> 
-          <div>所在位置：{{ location?location:'未绑定' }}<span style="margin-left: 10px;">网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</span><span style="float: right;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
+          <span style="float: right; margin: 7px 10px;">时间段：{{ createTimes }}-{{ endTimes }}</span>
+          <div><span style="font-weight: 700; font-size: 20px;">功率详情</span> 所在位置：{{ location?location:'未绑定' }}  网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</div> 
         </template>
 
         <!-- 自定义的主要内容 -->
@@ -419,9 +419,9 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
-          <div><h3>需量电流详情</h3></div> 
-          <div>所在位置：{{location?location:'未绑定'}} 
-            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="float: right;">{{ createTimes }} - {{ endTimes }}</span>
+          <span style="float: right; margin:7px 10px;">{{ createTimes }} - {{ endTimes }}</span>
+          <div>
+            <div><span style="font-weight: 700; font-size: 20px;">需量电流详情</span> 所在位置：{{location?location:'未绑定'}} 网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</div> 
           </div>
           
         </template>
@@ -1406,6 +1406,13 @@ window.addEventListener('resize', function() {
 </script>
 
 <style scoped lang="scss">
+
+.text-ellipsis {
+  white-space: nowrap;    /* 禁止换行 */
+  overflow: hidden;       /* 隐藏溢出内容 */
+  text-overflow: ellipsis; /* 显示省略号 */
+  width: 120px;
+}
 :deep(.ip:hover) {
   color: blue !important;
   cursor: pointer;
