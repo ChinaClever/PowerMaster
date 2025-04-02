@@ -339,7 +339,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value =([
           { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '200px'},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
@@ -374,7 +374,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
@@ -409,7 +409,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
@@ -462,7 +462,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
@@ -508,7 +508,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
@@ -561,7 +561,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, width: '100px', formatter: formatLoopId},
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
@@ -606,7 +606,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent},
@@ -651,7 +651,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '100px'},
           { label: '平均电流(A)', align: 'center', prop: 'cur_avg_value', istrue:false, width: '140px', formatter: formatCurrent},
@@ -679,7 +679,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
-  { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
   { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '200px'},
   { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
