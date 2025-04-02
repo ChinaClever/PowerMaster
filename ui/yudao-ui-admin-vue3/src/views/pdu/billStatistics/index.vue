@@ -148,7 +148,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import { ElMessage } from 'element-plus'
@@ -311,8 +311,8 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       // const oneDay = 24 * 60 * 60 * 1000;
       const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))

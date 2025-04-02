@@ -390,10 +390,7 @@ onMounted(() => {
   getList();
   getNavList()
   getNavNewData()
-
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
-
-  
 });
 
 </script>
