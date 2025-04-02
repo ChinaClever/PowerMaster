@@ -117,19 +117,9 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
 
     @Override
     public PageResult<AlarmRecordRespVO> getRecordPage(AlarmRecordPageReqVO pageReqVO) {
-//        if(pageReqVO.getA().equals("1")){
-//            pageReqVO.setPageSize(-1);
-//        }
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
         Page<SystemAlarmRecord> recordPageResult = alarmRecordMapper.selectPage(page, new LambdaQueryWrapperX<SystemAlarmRecord>()
-                .likeIfPresent(SystemAlarmRecord::getDevKey, pageReqVO.getDevKey())
-                .likeIfPresent(SystemAlarmRecord::getDevName, pageReqVO.getDevName())
-                .likeIfPresent(SystemAlarmRecord::getDevPosition, pageReqVO.getDevPosition())
-                .eqIfPresent(SystemAlarmRecord::getAlarmLevel, pageReqVO.getAlarmLevel())
-                .eqIfPresent(SystemAlarmRecord::getAlarmType, pageReqVO.getAlarmType())
-                .eqIfPresent(SystemAlarmRecord::getDevType, pageReqVO.getDevType())
                 .inIfPresent(SystemAlarmRecord::getStatus, pageReqVO.getStatus())
-                .betweenIfPresent(SystemAlarmRecord::getCreateTime, pageReqVO.getOldTime(), pageReqVO.getNewTime())
                 .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()), wrapper -> wrapper
                         .like(SystemAlarmRecord::getDevKey, pageReqVO.getLikeName())
                         .or()

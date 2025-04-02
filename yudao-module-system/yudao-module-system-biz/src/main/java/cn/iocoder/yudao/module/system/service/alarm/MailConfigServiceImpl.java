@@ -83,6 +83,19 @@ public class MailConfigServiceImpl implements MailConfigService {
     }
 
     @Override
+    public void batchSave(List<MailConfigSaveReqVO> saveReqVOS) {
+        if (!CollectionUtils.isEmpty(saveReqVOS)) {
+            List<SystemMailAlarmConfig> list = BeanUtils.toBean(saveReqVOS, SystemMailAlarmConfig.class);
+            alarmMailConfigMapper.insertBatch(list);
+        }
+    }
+
+    @Override
+    public void deleteMailAll() {
+        alarmMailConfigMapper.delete(null);
+    }
+
+    @Override
     public List<SystemMailAlarmConfig> getMailConfig() {
         return alarmMailConfigMapper.selectList(new LambdaUpdateWrapper<>());
     }

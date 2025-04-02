@@ -48,4 +48,7 @@ public interface SmsConfigService {
      */
     PageResult<SystemSmsAlarmConfig> getSmsAccountPage(SmsConfigPageReqVO pageReqVO);
 
+    void batchSave(List<SmsConfigSaveReqVO> saveReqVOS);
+
+    void deleteSmsAll();
 }
