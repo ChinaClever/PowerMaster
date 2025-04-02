@@ -37,4 +37,8 @@ public class LineBoxMaxResVO {
     @JsonProperty("cur_max_value")
     @Schema(description = "最大电流")
     private String curMaxValue;
+
+    @JsonProperty("pow_active_max_value")
+    @Schema(description = "最大电流")
+    private String powActiveMaxValue;
 }

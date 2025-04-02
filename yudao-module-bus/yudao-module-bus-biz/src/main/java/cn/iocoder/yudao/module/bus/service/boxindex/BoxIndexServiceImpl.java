@@ -462,7 +462,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
                     .gte(startTime).lt(endTime))));
-            builder.sort("cur_max_value", SortOrder.DESC);
+            if(pageReqVO.getFlagVlaue() == 0){
+                builder.sort("cur_max_value", SortOrder.DESC);
+            }else{
+                builder.sort("pow_active_max_value", SortOrder.DESC);
+            }
 //        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
             // 设置搜索条件
             searchRequest.source(builder);
