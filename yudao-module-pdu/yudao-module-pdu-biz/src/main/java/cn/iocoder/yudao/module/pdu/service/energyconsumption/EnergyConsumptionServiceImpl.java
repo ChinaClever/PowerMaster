@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
 import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
@@ -59,93 +60,98 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     @Override
     public PageResult<Object> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = null;
-        try {
 
-            // 创建BoolQueryBuilder对象
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            // 搜索源构建对象
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            // 设置要排除的字段
-            searchSourceBuilder.fetchSource(null, new String[]{"id", "bill_value", "bill_mode", "bill_period"});
-            int pageNo = pageReqVO.getPageNo();
-            int pageSize = pageReqVO.getPageSize();
-            int index = (pageNo - 1) * pageSize;
-            searchSourceBuilder.from(index);
-            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-            if (index + pageSize > 10000) {
-                searchSourceBuilder.size(10000 - index);
-            } else {
-                searchSourceBuilder.size(pageSize);
-            }
-            searchSourceBuilder.trackTotalHits(true);
-            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
-            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-            if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(pageReqVO.getTimeRange()[0])
-                        .to(pageReqVO.getTimeRange()[1]));
-            }
-            // 假设相关对象已经正确导入和初始化
-            List<String> pduIds = null;
-            String[] ipArray = pageReqVO.getIpArray();
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        // 设置要排除的字段
+        searchSourceBuilder.fetchSource(null, new String[]{"id", "bill_value", "bill_mode", "bill_period"});
+        int pageNo = pageReqVO.getPageNo();
+        int pageSize = pageReqVO.getPageSize();
+        int index = (pageNo - 1) * pageSize;
+        searchSourceBuilder.from(index);
+        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+        if (index + pageSize > 10000) {
+            searchSourceBuilder.size(10000 - index);
+        } else {
+            searchSourceBuilder.size(pageSize);
+        }
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(pageReqVO.getTimeRange()[0])
+                    .to(pageReqVO.getTimeRange()[1]));
+        }
+        // 假设相关对象已经正确导入和初始化
+        List<String> pduIds = null;
+        String[] ipArray = pageReqVO.getIpArray();
 
-            if (ObjectUtils.isNotEmpty(ipArray)) {
-                pduIds = historyDataService.getPduIdsByIps(ipArray);
-                boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduIds)); // 将 termsQuery 加入 boolQuery 的 must 子句
-            }
+        if (ObjectUtils.isNotEmpty(ipArray)) {
+            pduIds = historyDataService.getPduIdsByIps(ipArray);
+            boolQuery.must(QueryBuilders.termsQuery("pdu_id", pduIds)); // 将 termsQuery 加入 boolQuery 的 must 子句
+        }
 
 // 搜索请求对象
-            SearchRequest searchRequest = new SearchRequest();
-            switch (pageReqVO.getType()) {
-                case "total":
-                    if ("day".equals(pageReqVO.getGranularity())) {
-                        searchRequest.indices("pdu_eq_total_day");
-                    } else if ("week".equals(pageReqVO.getGranularity())) {
-                        searchRequest.indices("pdu_eq_total_week");
-                    } else {
-                        searchRequest.indices("pdu_eq_total_month");
-                    }
-                    break;
-                case "outlet":
-                    // 搜索请求对象
-                    searchRequest = new SearchRequest();
-                    if ("day".equals(pageReqVO.getGranularity())) {
-                        searchRequest.indices("pdu_eq_outlet_day");
-                    } else if ("week".equals(pageReqVO.getGranularity())) {
-                        searchRequest.indices("pdu_eq_outlet_week");
-                    } else {
-                        searchRequest.indices("pdu_eq_outlet_month");
-                    }
-                    if (pageReqVO.getOutletId() != null) {
-                        Integer outletId = pageReqVO.getOutletId();
-                        // 创建匹配查询
-                        QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
-                        boolQuery.must(termQuery); // 将 termQuery 加入 boolQuery 的 must 子句
-                    }
-                    break;
-                default:
-            }
-            // 将最终的 boolQuery 作为查询添加到 searchSourceBuilder 中
-            searchSourceBuilder.query(boolQuery);
-            searchRequest.source(searchSourceBuilder);
+        SearchRequest searchRequest = new SearchRequest();
+        switch (pageReqVO.getType()) {
+            case "total":
+                if ("day".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_total_day");
+                } else if ("week".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_total_week");
+                } else {
+                    searchRequest.indices("pdu_eq_total_month");
+                }
+                break;
+            case "outlet":
+                // 搜索请求对象
+                searchRequest = new SearchRequest();
+                if ("day".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_outlet_day");
+                } else if ("week".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_outlet_week");
+                } else {
+                    searchRequest.indices("pdu_eq_outlet_month");
+                }
+                if (pageReqVO.getOutletId() != null) {
+                    Integer outletId = pageReqVO.getOutletId();
+                    // 创建匹配查询
+                    QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
+                    boolQuery.must(termQuery); // 将 termQuery 加入 boolQuery 的 must 子句
+                }
+                break;
+            default:
+        }
+        // 将最终的 boolQuery 作为查询添加到 searchSourceBuilder 中
+        searchSourceBuilder.query(boolQuery);
+        searchRequest.source(searchSourceBuilder);
+        SearchResponse searchResponse = null;
+        try {
             // 执行搜索,向ES发起http请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            // 搜索结果
-            List<Map<String, Object>> mapList = new ArrayList<>();
-            SearchHits hits = searchResponse.getHits();
-            hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-            // 匹配到的总记录数
-            Long totalHits = hits.getTotalHits().value;
-            // 返回的结果
-            pageResult = new PageResult<>();
-            pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
-                    .setTotal(totalHits);
-
-            return pageResult;
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (Exception e) {
             log.error("EnergyConsumptionServiceImpl.getEQDataPage error:{}", e.getMessage());
         }
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        if (totalHits == 0) {
+            BusinessAssert.error(50010, "暂无数据");
+        }
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
+                .setTotal(totalHits);
+
         return pageResult;
+
+
     }
 
     @Override

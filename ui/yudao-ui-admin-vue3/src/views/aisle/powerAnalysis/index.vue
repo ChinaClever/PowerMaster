@@ -271,6 +271,11 @@ const initChart = () => {
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
       ],
     });
+    rankChart.on('click', function(params) {
+      // 控制台打印数据的名称
+      toDetails(list.value[params.dataIndex].aisle_id,
+      list.value[params.dataIndex].location);
+    });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };

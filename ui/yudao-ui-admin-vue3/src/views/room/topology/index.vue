@@ -1533,7 +1533,7 @@ onUnmounted(() => {
     .dragChild {
       width: 100%;
       height: 100%;
-      min-height: 40px;
+      min-height: 20px;
       box-sizing: border-box;
       display: flex;
       border: 1px solid #000;
@@ -1542,7 +1542,7 @@ onUnmounted(() => {
       }
       // align-items: center;
       .dragSon {
-        min-height: 40px;
+        min-height: 20px;
         flex: 1;
         display: flex;
         align-items: center;
@@ -1551,7 +1551,7 @@ onUnmounted(() => {
         background-color: #effaff;
         border-right: 1px solid #bed1ff;
         &>div {
-          min-height: 40px;
+          min-height: 20px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1564,7 +1564,7 @@ onUnmounted(() => {
     .dragChildCol {
       width: 100%;
       height: 100%;
-      min-height: 40px;
+      min-height: 20px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -1574,7 +1574,7 @@ onUnmounted(() => {
       }
       .dragSon {
         flex: 1;
-        min-height: 40px;
+        min-height: 20px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
@@ -1588,7 +1588,7 @@ onUnmounted(() => {
     }
   }
   .warnDrag {
-    min-height: 40px;
+    min-height: 20px;
     height: 100%;
     width: 100%;
     display: flex;
@@ -1598,7 +1598,7 @@ onUnmounted(() => {
     background-color: rgb(255, 219, 12);
   }
   .normalDrag {
-    min-height: 40px;
+    min-height: 20px;
     height: 100%;
     width: 100%;
     // height: 40px;
@@ -1614,7 +1614,7 @@ onUnmounted(() => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      min-height: 40px;
+      min-height: 20px;
     }
   }
 }

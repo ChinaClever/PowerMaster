@@ -1102,12 +1102,15 @@ const handleBoxOperate = async(type, road) => {
     }
     operateMenuBox.value.show = false;
     cabinetList.value.forEach(async item => {
-      if(item[`boxIndex${road}`] == index) {
+      if(item[`boxIndex${road}`] == data.boxIndex) {
         item[`busIp${road}`] = null
         item[`barId${road}`] = null
         item[`boxIndex${road}`] = null
+        item[`casId${road}`] = null
         item[`boxOutletId${road}`] = null
-        item.cabinetBoxes = null
+        item.cabinetBoxes[`boxIndex${road}`] = null
+        item.cabinetBoxes[`boxKey${road}`] = null
+        item.cabinetBoxes[`outletId${road}`] = null
         const resItem = await CabinetApi.saveCabinetInfo({
           ...item,
           pduBox: true
@@ -1340,14 +1343,22 @@ const handleFormBox = (data) => {
   console.log(data)
   machineColInfo[bar].boxList.splice(index, 1, data)
   console.log(machineColInfo[bar].boxList)
+  console.log(index)
   cabinetList.value.forEach(item => {
       console.log(item[`boxIndex${operateMenuBox.value.type}`],index)
-    if(item[`boxIndex${operateMenuBox.value.type}`] == Number(index)) {
-      console.log(111)
-      item[`boxOutletId${operateMenuBox.value.type}`] = null
-      item[`boxIndex${operateMenuBox.value.type}`] = null
-      item[`barId${operateMenuBox.value.type}`] = null
+    if(item[`boxIndex${operateMenuBox.value.type}`] == data.boxIndex && item[`boxOutletId${operateMenuBox.value.type}`] > data.outletNum) {
       item[`busIp${operateMenuBox.value.type}`] = null
+      item[`barId${operateMenuBox.value.type}`] = null
+      item[`boxIndex${operateMenuBox.value.type}`] = null
+      item[`casId${operateMenuBox.value.type}`] = null
+      item[`boxOutletId${operateMenuBox.value.type}`] = null
+      item.cabinetBoxes[`boxIndex${operateMenuBox.value.type}`] = null
+      item.cabinetBoxes[`boxKey${operateMenuBox.value.type}`] = null
+      item.cabinetBoxes[`outletId${operateMenuBox.value.type}`] = null
+      console.log(item)
+    } else if(item[`boxIndex${operateMenuBox.value.type}`] == data.boxIndex && item[`casId${operateMenuBox.value.type}`] != data.casAddr) {
+      item[`casId${operateMenuBox.value.type}`] = data.casAddr
+      console.log(item)
     }
   })
   instance?.deleteEveryConnection()
@@ -2023,7 +2034,7 @@ const getMachineColInfoReal = async() => {
 
   emit('sendList', result);
     //push({path: '/aisle/index', state: { roomDownVal: result.roomId}});
-    Object.assign(machineColInfo, result);
+    // Object.assign(machineColInfo, result);
     handleCabinetListReal(result); 
     // handleBusInit(result);
     console.log('getMachineColInfo', result);
@@ -2091,20 +2102,8 @@ const handleCabinetList = async(data) => {
 }
 // 实时处理机柜列表
 const handleCabinetListReal = async(data) => {
-  console.log('处理机柜列表', data)
-  const arr = [] as any
-  for (let i=0; i < data.length; i++) {
-    arr.push({})
-  }
-  // 给机柜要连接的插接箱 找到对应的下标
-  data.cabinetList && data.cabinetList.forEach(item => {
-    if(item.index > 0) {
-      arr.splice(item.index - 1, 1, item)
-    }
-  })
-  console.log('arr', arr)
-  cabinetList.value = arr
   handleDataDetail(data)
+  updateCabinetConnect()
 }
 // 增加空机柜
 const addMachine = () => {

@@ -55,7 +55,7 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "颜色")
     private List<Integer> color;
 
-    @Schema(description = "时间类型")
+    @Schema(description = "时间类型")//    0 - 实时；1-历史
     private Integer timeType;
 
     @Schema(description = "开始时间")

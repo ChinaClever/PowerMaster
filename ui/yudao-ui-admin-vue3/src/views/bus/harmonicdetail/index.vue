@@ -66,50 +66,10 @@
             placeholder="请选择"
             style="width: 240px"
           >
-            <el-option label="A相电压谐波" :value = 0 />
-            <el-option label="B相电压谐波" :value = 1 />
-            <el-option label="C相电压谐波" :value = 2 />
-            <el-option label="A相电流谐波" :value = 3 />
-            <el-option label="B相电流谐波" :value = 4 />
-            <el-option label="C相电流谐波" :value = 5 />
+            <el-option v-for="(item,index) in harmonicLabel" :key="index" :label="item.label" :value="item.value" />
           </el-select>
 
-          <el-select
-            v-model="queryParams.harmonicArr"
-            multiple
-            placeholder="Select"
-            collapse-tags
-            collapse-tags-tooltip
-            style="width: 240px"
-          >
-          <el-option label='全选' value='全选' @click='selectAll' />
-          <el-option
-            v-for="item in harmonicMultiple"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-            @click="getLabel(item.value)"
-          />
-          </el-select>
-
-          <el-button 
-            @click="subtractOneDay();handleDayPick()" 
-          >
-            &lt;
-          </el-button>
-          <el-date-picker
-            v-model="queryParams.oldTime"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            type="date"
-            :disabled-date="disabledDate"
-            @change="handleDayPick"
-            class="!w-160px"
-          />
-          <el-button 
-            @click="addtractOneDay();handleDayPick()" 
-          >
-            &gt;
-          </el-button>
+          
         </el-form-item>
 
         <el-form-item>
@@ -123,12 +83,52 @@
     <template #Content>
       <div >
         <div v-if="realTimeVis">
-          <div>{{ labeldata +'谐波柱状图' }}</div>
+          <div>{{ harmonicLabel[queryParams.harmonicType].label +'32次谐波含量谐波柱状图' }}</div>
           <HarmonicRealTime  width="70vw" height="58vh" :list="harmonicRealTime"/>
         </div>
         <br/>
         <div v-if="lineVis">
-          <div>{{ labeldata +'谐波趋势图' }}</div>
+          <div style="display: flex;align-items: center;justify-content: space-between;width: 80%">
+            <div>{{ harmonicLabel[queryParams.harmonicType].label +'各次谐波含量谐波趋势图' }}</div>
+            <div>
+              <el-select
+                v-model="queryParams.harmonicArr"
+                multiple
+                placeholder="Select"
+                collapse-tags
+                collapse-tags-tooltip
+                style="width: 240px"
+              >
+              <el-option label='全选' value='全选' @click='selectAll' />
+              <el-option
+                v-for="item in harmonicMultiple"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+                @click="getLabel(item.value)"
+              />
+              </el-select>
+
+              <el-button 
+                @click="subtractOneDay();handleDayPick()" 
+              >
+                &lt;
+              </el-button>
+              <el-date-picker
+                v-model="queryParams.oldTime"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                type="date"
+                :disabled-date="disabledDate"
+                @change="handleDayPick"
+                class="!w-160px"
+              />
+              <el-button 
+                @click="addtractOneDay();handleDayPick()" 
+              >
+                &gt;
+              </el-button>
+            </div>
+          </div>
           <HarmonicLine  width="70vw" height="58vh" :list="harmonicLine"/>
         </div>
       </div>
@@ -160,6 +160,31 @@ const harmonicLine = ref({ value: { series: [], time: [] } }) as any;
 const realTimeVis = ref(false);
 const lineVis = ref(false);
 const seriesAndTimeArr = ref() as any;
+const harmonicLabel = ref([
+  {
+  label: "A相电压谐波",
+  value: 0
+  },
+  {
+  label: "B相电压谐波",
+  value: 1
+  },
+  {
+  label: "C相电压谐波",
+  value: 2
+  },
+  {
+  label: "A相电流谐波",
+  value: 3
+  },
+  {
+  label: "B相电流谐波",
+  value: 4
+  },{
+  label: "C相电流谐波",
+  value: 5
+  }
+])
 const harmonicMultiple = ref([
   {
   label: "A相电压1次谐波含量",

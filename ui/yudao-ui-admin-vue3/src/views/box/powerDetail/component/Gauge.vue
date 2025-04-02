@@ -64,6 +64,7 @@ const echartsOption = computed(() => ({
       },
       detail: {
         valueAnimation: true,
+        offsetCenter: [0, '60%'],
         formatter: '{value}%',
         color: 'inherit'
       },

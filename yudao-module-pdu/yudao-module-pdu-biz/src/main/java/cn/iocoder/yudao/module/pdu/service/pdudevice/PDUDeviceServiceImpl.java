@@ -3,13 +3,16 @@ package cn.iocoder.yudao.module.pdu.service.pdudevice;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
@@ -357,7 +360,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            MaxCurAndOtherData maxCurAndOtherData = getMaxCurMaxValue(startTime, endTime, index);
+            MaxCurAndOtherData maxCurAndOtherData = getMaxCurMaxValue(startTime, endTime, index,pageReqVO.getFlagVlaue());
 
             result.setPduId(maxCurAndOtherData.getPdu_id());
             result.setL1MaxCur(maxCurAndOtherData.getMaxValue().floatValue());
@@ -1026,53 +1029,82 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
-    public List<PduTrendVO> getPudBalanceTrend(Integer pduId) {
+    public List<PduTrendVO> getPudBalanceTrend(Integer pduId, Integer timeType) {
         List<PduTrendVO> result = new ArrayList<>();
         try {
-            DateTime end = DateTime.now();
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.HOUR_OF_DAY, -24);
-            DateTime start = DateTime.of(calendar.getTime());
-
-            String startTime = DateUtil.formatDateTime(start);
-            String endTime = DateUtil.formatDateTime(end);
             List<Integer> ids = Arrays.asList(pduId);
-            List<String> data = getData(startTime, endTime, ids, "pdu_hda_line_hour");
-            Map<String, List<BoxLineHourDo>> timeBus = new HashMap<>();
+            String startTime ;
+            String endTime ;
+            LocalDateTime now = LocalDateTime.now();
+            String index = "pdu_hda_line_hour";
+            startTime= LocalDateTimeUtil.format(now.minusHours(24),"yyyy-MM-dd HH:mm:ss");
+            endTime = LocalDateTimeUtil.format(now,"yyyy-MM-dd HH:mm:ss");
+            if (Objects.equals(timeType,0)){
+                index = "pdu_hda_line_realtime";
+                startTime= LocalDateTimeUtil.format(now.minusHours(1),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now,"yyyy-MM-dd HH:mm:ss");
+            }
+            List<String> data = getData(startTime, endTime, ids, index);
+            Map<String, List> timeBus = new HashMap<>();
             data.forEach(str -> {
-                BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
-
-                String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH");
-                List<BoxLineHourDo> lineHourDos = timeBus.get(dateTime);
-                if (CollectionUtils.isEmpty(lineHourDos)) {
-                    lineHourDos = new ArrayList<>();
+                if (Objects.equals(timeType,0)){
+                    PduHdaLineRealtimeDo hourDo = JsonUtils.parseObject(str, PduHdaLineRealtimeDo.class);
+                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH:mm:ss");
+                    List<PduHdaLineRealtimeDo> lineHourDos = timeBus.get(dateTime);
+                    if (CollectionUtils.isEmpty(lineHourDos)) {
+                        lineHourDos = new ArrayList<>();
+                    }
+                    lineHourDos.add(hourDo);
+                    timeBus.put(dateTime, lineHourDos);
+                }else {
+                    PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
+                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH");
+                    List<PduHdaLineHourDo> lineHourDos = timeBus.get(dateTime);
+                    if (CollectionUtils.isEmpty(lineHourDos)) {
+                        lineHourDos = new ArrayList<>();
+                    }
+                    lineHourDos.add(hourDo);
+                    timeBus.put(dateTime, lineHourDos);
                 }
-                lineHourDos.add(hourDo);
-                timeBus.put(dateTime, lineHourDos);
             });
 
             timeBus.keySet().forEach(dateTime -> {
-                //获取每个时间段数据
-                List<BoxLineHourDo> boxLineHourDos = timeBus.get(dateTime);
-
                 PduTrendVO trendDTO = new PduTrendVO();
                 trendDTO.setDateTime(dateTime);
-                //获取相数据
                 List<Map<String, Object>> cur = new ArrayList<>();
                 List<Map<String, Object>> vol = new ArrayList<>();
-                boxLineHourDos.forEach(hourDo -> {
-                    Map<String, Object> curMap = new HashMap<>();
-                    curMap.put("lineId", hourDo.getLineId());
-                    curMap.put("curValue", hourDo.getCurAvgValue());
-                    Map<String, Object> volMap = new HashMap<>();
-                    volMap.put("lineId", hourDo.getLineId());
-                    volMap.put("volValue", hourDo.getVolAvgValue());
-                    cur.add(curMap);
-                    vol.add(volMap);
-                });
+                //获取每个时间段数据
+                if (Objects.equals(timeType,0)){
+                    List<PduHdaLineRealtimeDo> boxLineHourDos = timeBus.get(dateTime);
+                    boxLineHourDos.forEach(hourDo ->{
+                        Map<String, Object> curMap = new HashMap<>();
+                        curMap.put("lineId", hourDo.getLineId());
+                        curMap.put("curValue", hourDo.getCur());
+                        Map<String, Object> volMap = new HashMap<>();
+                        volMap.put("lineId", hourDo.getLineId());
+                        volMap.put("volValue", hourDo.getVol());
+                        cur.add(curMap);
+                        vol.add(volMap);
+                    });
+                }else {
+                    List<PduHdaLineHourDo> boxLineHourDos = timeBus.get(dateTime);
+                    boxLineHourDos.forEach(hourDo -> {
+                        Map<String, Object> curMap = new HashMap<>();
+                        curMap.put("lineId", hourDo.getLineId());
+                        curMap.put("curValue", hourDo.getCurAvgValue());
+                        curMap.put("curMaxValue", hourDo.getCurMaxValue());
+                        curMap.put("curMinValue", hourDo.getCurMinValue());
+                        Map<String, Object> volMap = new HashMap<>();
+                        volMap.put("lineId", hourDo.getLineId());
+                        volMap.put("volValue", hourDo.getVolAvgValue());
+                        volMap.put("volMaxValue", hourDo.getVolMaxValue());
+                        volMap.put("volMinValue", hourDo.getVolMinValue());
+                        cur.add(curMap);
+                        vol.add(volMap);
+                    });
+                }
                 trendDTO.setCur(cur);
                 trendDTO.setVol(vol);
-
                 result.add(trendDTO);
             });
             return result.stream().sorted(Comparator.comparing(PduTrendVO::getDateTime)).collect(Collectors.toList());
@@ -1929,7 +1961,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     }
 
-    public MaxCurAndOtherData getMaxCurMaxValue(String startTime, String endTime, String index) throws IOException {
+    public MaxCurAndOtherData getMaxCurMaxValue(String startTime, String endTime, String index,int flaValue) throws IOException {
         // 创建搜索请求
         SearchRequest searchRequest = new SearchRequest(index);
 
@@ -1939,12 +1971,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 QueryBuilders.boolQuery()
                         .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").from(startTime).to(endTime))
         );
+        String[] includeFields;
+        if(flaValue == 0){
+            // 排序字段
+            searchSourceBuilder.sort("cur_max_value", SortOrder.DESC);
+            // 限制字段，只取需要的字段
+             includeFields = new String[]{"cur_max_value", "cur_max_time", "line_id", "pdu_id"};
+        }else {
+            // 排序字段
+            searchSourceBuilder.sort("pow_active_max_value", SortOrder.DESC);
+            // 限制字段，只取需要的字段
+             includeFields = new String[]{"pow_active_max_value", "pow_active_max_time", "line_id", "pdu_id"};
+        }
 
-        // 排序字段
-        searchSourceBuilder.sort("cur_max_value", SortOrder.DESC);
-
-        // 限制字段，只取需要的字段
-        String[] includeFields = {"cur_max_value", "cur_max_time", "line_id", "pdu_id"};
         FetchSourceContext fetchSourceContext = new FetchSourceContext(true, includeFields, null);
         searchSourceBuilder.fetchSource(fetchSourceContext);
 
@@ -1959,14 +1998,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (hits.getHits().length > 0) {
             var hit = hits.getAt(0); // 由于已按 cur_max_value 降序排序，取第一个即为最大值
             var sourceAsMap = hit.getSourceAsMap();
-
             // 构建结果对象
             MaxCurAndOtherData result = new MaxCurAndOtherData();
-            result.setMaxValue((Double) sourceAsMap.get("cur_max_value"));
-            result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
-            result.setLine_id((Integer) sourceAsMap.get("line_id"));
-            result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
-
+            if(flaValue == 0) {
+                result.setMaxValue((Double) sourceAsMap.get("cur_max_value"));
+                result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                result.setLine_id((Integer) sourceAsMap.get("line_id"));
+                result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
+            }else {
+                // 构建结果对象
+                result.setMaxValue((Double) sourceAsMap.get("pow_active_max_value"));
+                result.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                result.setLine_id((Integer) sourceAsMap.get("line_id"));
+                result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
+            }
             return result;
         } else {
             throw new RuntimeException("No data found for the specified time range.");

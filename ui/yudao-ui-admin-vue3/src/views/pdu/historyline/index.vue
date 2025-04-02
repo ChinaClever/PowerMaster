@@ -1305,8 +1305,9 @@ const getTypeMaxValue = async () => {
 // 导航栏选择后触发
 const handleClick = async (row) => {
    if(row.type != null  && row.type == 4){
-    queryParams.pduId = undefined
-    queryParams.ipAddr = row.ip
+    console.log(row)
+    queryParams.pduId = row.id
+    queryParams.ipAddr = row.ip?.split("-")[0]
     queryParams.cascadeAddr = row?.unique?.split("-")[1];
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
@@ -1339,24 +1340,11 @@ const getNavList = async() => {
 }
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
-  if(queryParams.ipAddr ==undefined){
-      ElMessage.error('IP地址为空！')
-      return;
-  }
-          console.log('ip：', queryParams.ipAddr)
-  // IP地址的正则表达式
-  const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
-    queryParams.cascadeAddr = cascadeAddr.value.toString();
-    if (queryParams.ipAddr != undefined && ipRegex.test(queryParams.ipAddr)){
-      queryParams.pduId = undefined;
-    }
-    needFlush.value++;
-        console.log('ip：', queryParams.ipAddr)
-  }else{
-    ElMessage.error('IP地址格式有误,请重新输入！')
-  }
+const handleQuery = async () => {
+  await getList();
+  // await getRankChartData();
+  initChart();
+  // initRankChart();
 }
 
 /** 初始化 **/

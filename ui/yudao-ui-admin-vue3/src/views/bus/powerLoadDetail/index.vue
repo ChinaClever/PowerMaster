@@ -117,7 +117,7 @@
   </div>
   <div style="margin:10px;background-color: #ffffff;padding: 10px;border-radius: 5px" v-show="hasData">
     <el-row  v-show="hasData">
-      <el-col :span="19">
+      <el-col :span="17">
       <el-radio-group v-model="typeRadio">
         <el-radio-button label="电流" value="电流" @click="switchChartContainer =0"/>
         <el-radio-button label="电压" value="电压" @click="switchChartContainer =0"/>
@@ -126,17 +126,25 @@
         <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer =0"/>
         <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =0"/>
         <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =0"/>
-        <el-radio-button label="负载率" value="负载率" :disabled="isLoadRateDisabled" @click="switchChartContainer =0"/>
+        <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =0"/>
         <el-radio-button label="线电压" value="线电压" @click="switchChartContainer =0"/>
       </el-radio-group>
     </el-col>
-    <el-col :span="5">
-      <el-radio-group v-model="timeRadio">
-        <el-radio-button label="近一小时" value="近一小时" :disabled="isHourDisabled" />
-        <el-radio-button label="近一天" value="近一天" :disabled="isDayAndMonthDisabled" />
-        <el-radio-button label="近三天" value="近三天" :disabled="isDayAndMonthDisabled" />
-        <el-radio-button label="近一月" value="近一月" :disabled="isDayAndMonthDisabled"/>
-      </el-radio-group>
+    <el-col :span="7">
+      <div style="display: flex;align-items: center;justify-content: space-around">
+        <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+          <el-option label="实时" value="实时" />
+          <el-option label="平均" value="平均" />
+          <el-option label="最大" value="最大" />
+          <el-option label="最小" value="最小" />
+        </el-select>
+        <el-radio-group v-model="timeRadio">
+          <el-radio-button label="近一小时" value="近一小时" :disabled="isHourDisabled" />
+          <el-radio-button label="近一天" value="近一天" />
+          <el-radio-button label="近三天" value="近三天" />
+          <el-radio-button label="近一月" value="近一月" />
+        </el-radio-group>
+      </div>
     </el-col>
     </el-row>
     <br/>
@@ -165,7 +173,6 @@ const instance = getCurrentInstance();
 const typeRadio = ref('电流');
 const timeRadio = ref('近一小时');
 const isHourDisabled = ref(false);
-const isDayAndMonthDisabled = ref(false);
 const isPowActiveDisabled = ref(true);
 const isLoadRateDisabled = ref(false);
 const switchChartContainer = ref(0);
@@ -192,6 +199,7 @@ const powActivepPercentage = ref();
 const powReactivepPercentage = ref();
 const loadPercentage = ref();
 const xAxisLabel = ref('');
+const typeRadioShow = ref("最大")
 
 const devKeyList = ref([]);
 const loadAll = async () => {
@@ -629,11 +637,6 @@ watch( ()=>typeRadio.value, async(value)=>{
      isHourDisabled.value = true
   }else{
     isHourDisabled.value = false
-  }
-  if (value == '负载率' ){
-    isDayAndMonthDisabled.value = true
-  }else{
-    isDayAndMonthDisabled.value = false
   }
   // 更新数据后重新渲染图表
   myChart2?.setOption({

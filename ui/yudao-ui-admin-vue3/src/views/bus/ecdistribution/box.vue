@@ -3,7 +3,7 @@
     <template #NavInfo>
       <div class="nav_data">
       <div class="nav_header">       
-          <span v-if="nowAddress">{{nowAddress?'暂未绑定设备':nowAddress}}</span>
+          <span v-if="nowAddress">{{nowAddress?nowAddress:'暂未绑定设备'}}</span>
           <span v-if="devKey">({{devKey}})</span>
         </div>
         <br/> 

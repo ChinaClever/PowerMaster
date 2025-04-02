@@ -15,8 +15,6 @@ import java.util.Map;
 @Schema(description = "管理后台 - 机柜pdu电流趋势 Response VO")
 @Data
 public class PduTrendVO {
-
-
     /**
      * 时间
      */
@@ -40,6 +38,5 @@ public class PduTrendVO {
      */
     @Schema(description = "电压", example = "[]")
     private List<Map<String,Object>> vol;
-
 
 }

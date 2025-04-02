@@ -287,7 +287,7 @@ public class BoxIndexController {
     @PostMapping("/balance/trend")
     @Operation(summary = "获得插接箱不平衡度详情图表")
     public CommonResult<List<BusTrendDTO>> getBoxBalanceTrend(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        List<BusTrendDTO> result = indexService.getBoxBalanceTrend(pageReqVO.getBoxId());
+        List<BusTrendDTO> result = indexService.getBoxBalanceTrend(pageReqVO.getBoxId(),pageReqVO.getTimeType());
         return success(result);
     }
 

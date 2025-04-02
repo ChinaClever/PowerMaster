@@ -236,6 +236,9 @@ const queryParams = reactive({
   granularity: 'realtime',
   timeRange: defaultHourTimeRange(1) as any,
 })
+if(useRoute().query.start!=null&&useRoute().query.end!=null){
+  queryParams.timeRange = [useRoute().query.start as string, useRoute().query.end as string]
+}
 const loading = ref(false) // 列表的加载中
 const carouselItems = ref([
       { imgUrl: PDUImage},
@@ -572,15 +575,15 @@ const status = ref(0)
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
     status.value = 0
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
     status.value = 1
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
     status.value = 2
   }
   needFlush.value ++;
