@@ -333,7 +333,7 @@ const getList = async () => {
     // 时间段清空后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       // queryParams.timeRange = undefined
-      alert('请输入时间范围');
+      ElMessage.error('请输入时间范围');
     return;
     }
     const data = await EnergyConsumptionApi.getEleTotalRealtime(queryParams);
@@ -468,7 +468,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.getEleTotalRealtimeExcel(queryParams, axiosConfig);
-    await download.excel(data, 'PDU实时能耗统计.xlsx')
+    await download.excel(data, 'PDU能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
