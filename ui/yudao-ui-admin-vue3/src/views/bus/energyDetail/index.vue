@@ -271,6 +271,9 @@ const getActivePowTrend = async() => {
         label: {
           backgroundColor: '#505765'
         }
+      },
+      formatter: function(params) {
+          return `${params[0].seriesName}：${params[0].value}kW` + '<br>' + `${params[1].seriesName}：${params[1].value}kW`; // 使用 <b> 标签使数值加粗显示
       }
     },
     legend: {
