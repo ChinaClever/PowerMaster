@@ -169,6 +169,9 @@ const nowAddress = ref()// 导航栏的位置信息
 const nowLocation = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+if(useRoute().query.location!=null){
+  nowLocationTemp.value = useRoute().query.location
+}
 const activeName = ref('dayTabPane')
 const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
