@@ -78,8 +78,9 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          format="YYYY-MM-DD HH:mm"
+          format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
+          value-format="YYYY-MM-DD HH:mm:ss"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -106,7 +107,7 @@
     <template #Content>
       <el-table v-loading="loading" 
                 :data="list" 
-                
+                border
                 :show-overflow-tooltip="true" 
                 
                 >
@@ -124,7 +125,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address)">详情</el-button>
+              <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -692,13 +693,17 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
+      // console.log(selectTimeRange.value,"selectTimeRange.value");
       // 格式化日期范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-     
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
-     // selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedStartTime = selectTimeRange.value[0];
+    //  console.log(selectedStartTime,"selectedStartTime");
+      const selectedEndTime = selectTimeRange.value[1];
+      // console.log(selectedEndTime,"selectedEndTime");
+     selectTimeRange.value = [selectedStartTime, selectedEndTime];
+     console.log(selectTimeRange,"selectedStartTime");
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
+    console.log(queryParams,"搜索queryParams");
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -870,7 +875,7 @@ const handleQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (pduId: number, location: string, address: string) => {
-  push('/pdu/record/historyLine?pduId='+pduId+'&location='+location+'&address='+address);
+  push('/pdu/record/historyLine?pduId='+pduId+'&location='+location+'&address='+address+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
 }
 
 /** 导出按钮操作 */
@@ -880,12 +885,14 @@ const handleExport = async () => {
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    // queryParams.cascadeAddr = cascadeAddr.value.toString();
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
+    console.log(queryParams,"导出queryParams")
     const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU电力历史数据.xlsx')
+    await download.excel(data, 'PDU电力数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -914,10 +921,10 @@ onMounted( () => {
   getNavNewData()
   getTypeMaxValue();
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       selectTimeRange.value = [
-      formatDate1(startOfMonth),
-      formatDate1(now)
+      dayjs(startOfMonth).format('YYYY-MM-DD HH:mm:ss'),
+      dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 ];
   getList();
 });

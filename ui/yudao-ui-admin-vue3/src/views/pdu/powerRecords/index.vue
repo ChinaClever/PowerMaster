@@ -74,7 +74,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" border>
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -259,10 +259,10 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化日期范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = selectTimeRange.value[0];
      
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedEndTime = selectTimeRange.value[1]
+      // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
@@ -447,10 +447,11 @@ onMounted(() => {
   const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
-selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
-];
+    selectTimeRange.value = [
+      // format(startOfMonth),
+      dayjs(startOfMonth).format("YYYY-MM-DD HH:mm:ss"),
+      dayjs(now).format("YYYY-MM-DD HH:mm:ss")
+    ];
   getList();
 })
 </script>
