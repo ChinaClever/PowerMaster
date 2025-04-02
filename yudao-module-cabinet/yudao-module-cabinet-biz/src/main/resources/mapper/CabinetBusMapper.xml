@@ -46,7 +46,8 @@
         left join cabinet_index ci on cb.cabinet_id = ci.id
         left join room_index ri on ci.room_id = ri.id
         <where>
-            cb.box_key_a in
+            ri.is_delete =0 and ci.is_deleted =0
+            and cb.box_key_a in
             <foreach collection="keys" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>

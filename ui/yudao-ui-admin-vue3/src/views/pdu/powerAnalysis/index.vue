@@ -3,21 +3,6 @@
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
-          <!-- <div class="carousel-container">
-            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-              </el-carousel-item>
-            </el-carousel>
-          </div>
-          <div class="nav_content">
-            <el-descriptions title="全部PDU新增能耗记录" direction="vertical" :column="1" width="60px" border >
-              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions>
-          </div>
-        </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">最近一天 :</span>
@@ -92,7 +77,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table border v-loading="loading" :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
+      <el-table  v-loading="loading" :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -410,11 +395,15 @@ const getLists = async () => {
       const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
       selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
+    }else{
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+}
     // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(start.value == null){
-      queryParams.timeRange = undefined
-    }
+    // if(start.value == null){
+    //   queryParams.timeRange = undefined
+    // }
         if (ip.value != undefined){
           queryParams.ipArray = [ip.value];
         }

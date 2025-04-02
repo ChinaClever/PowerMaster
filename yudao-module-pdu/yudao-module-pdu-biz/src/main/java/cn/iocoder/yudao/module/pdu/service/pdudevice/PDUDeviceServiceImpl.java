@@ -3,13 +3,16 @@ package cn.iocoder.yudao.module.pdu.service.pdudevice;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
@@ -1026,53 +1029,82 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
-    public List<PduTrendVO> getPudBalanceTrend(Integer pduId) {
+    public List<PduTrendVO> getPudBalanceTrend(Integer pduId, Integer timeType) {
         List<PduTrendVO> result = new ArrayList<>();
         try {
-            DateTime end = DateTime.now();
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.HOUR_OF_DAY, -24);
-            DateTime start = DateTime.of(calendar.getTime());
-
-            String startTime = DateUtil.formatDateTime(start);
-            String endTime = DateUtil.formatDateTime(end);
             List<Integer> ids = Arrays.asList(pduId);
-            List<String> data = getData(startTime, endTime, ids, "pdu_hda_line_hour");
-            Map<String, List<BoxLineHourDo>> timeBus = new HashMap<>();
+            String startTime ;
+            String endTime ;
+            LocalDateTime now = LocalDateTime.now();
+            String index = "pdu_hda_line_hour";
+            startTime= LocalDateTimeUtil.format(now.minusHours(24),"yyyy-MM-dd HH:mm:ss");
+            endTime = LocalDateTimeUtil.format(now,"yyyy-MM-dd HH:mm:ss");
+            if (Objects.equals(timeType,0)){
+                index = "pdu_hda_line_realtime";
+                startTime= LocalDateTimeUtil.format(now.minusHours(1),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now,"yyyy-MM-dd HH:mm:ss");
+            }
+            List<String> data = getData(startTime, endTime, ids, index);
+            Map<String, List> timeBus = new HashMap<>();
             data.forEach(str -> {
-                BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
-
-                String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH");
-                List<BoxLineHourDo> lineHourDos = timeBus.get(dateTime);
-                if (CollectionUtils.isEmpty(lineHourDos)) {
-                    lineHourDos = new ArrayList<>();
+                if (Objects.equals(timeType,0)){
+                    PduHdaLineRealtimeDo hourDo = JsonUtils.parseObject(str, PduHdaLineRealtimeDo.class);
+                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH:mm:ss");
+                    List<PduHdaLineRealtimeDo> lineHourDos = timeBus.get(dateTime);
+                    if (CollectionUtils.isEmpty(lineHourDos)) {
+                        lineHourDos = new ArrayList<>();
+                    }
+                    lineHourDos.add(hourDo);
+                    timeBus.put(dateTime, lineHourDos);
+                }else {
+                    PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
+                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH");
+                    List<PduHdaLineHourDo> lineHourDos = timeBus.get(dateTime);
+                    if (CollectionUtils.isEmpty(lineHourDos)) {
+                        lineHourDos = new ArrayList<>();
+                    }
+                    lineHourDos.add(hourDo);
+                    timeBus.put(dateTime, lineHourDos);
                 }
-                lineHourDos.add(hourDo);
-                timeBus.put(dateTime, lineHourDos);
             });
 
             timeBus.keySet().forEach(dateTime -> {
-                //获取每个时间段数据
-                List<BoxLineHourDo> boxLineHourDos = timeBus.get(dateTime);
-
                 PduTrendVO trendDTO = new PduTrendVO();
                 trendDTO.setDateTime(dateTime);
-                //获取相数据
                 List<Map<String, Object>> cur = new ArrayList<>();
                 List<Map<String, Object>> vol = new ArrayList<>();
-                boxLineHourDos.forEach(hourDo -> {
-                    Map<String, Object> curMap = new HashMap<>();
-                    curMap.put("lineId", hourDo.getLineId());
-                    curMap.put("curValue", hourDo.getCurAvgValue());
-                    Map<String, Object> volMap = new HashMap<>();
-                    volMap.put("lineId", hourDo.getLineId());
-                    volMap.put("volValue", hourDo.getVolAvgValue());
-                    cur.add(curMap);
-                    vol.add(volMap);
-                });
+                //获取每个时间段数据
+                if (Objects.equals(timeType,0)){
+                    List<PduHdaLineRealtimeDo> boxLineHourDos = timeBus.get(dateTime);
+                    boxLineHourDos.forEach(hourDo ->{
+                        Map<String, Object> curMap = new HashMap<>();
+                        curMap.put("lineId", hourDo.getLineId());
+                        curMap.put("curValue", hourDo.getCur());
+                        Map<String, Object> volMap = new HashMap<>();
+                        volMap.put("lineId", hourDo.getLineId());
+                        volMap.put("volValue", hourDo.getVol());
+                        cur.add(curMap);
+                        vol.add(volMap);
+                    });
+                }else {
+                    List<PduHdaLineHourDo> boxLineHourDos = timeBus.get(dateTime);
+                    boxLineHourDos.forEach(hourDo -> {
+                        Map<String, Object> curMap = new HashMap<>();
+                        curMap.put("lineId", hourDo.getLineId());
+                        curMap.put("curValue", hourDo.getCurAvgValue());
+                        curMap.put("curMaxValue", hourDo.getCurMaxValue());
+                        curMap.put("curMinValue", hourDo.getCurMinValue());
+                        Map<String, Object> volMap = new HashMap<>();
+                        volMap.put("lineId", hourDo.getLineId());
+                        volMap.put("volValue", hourDo.getVolAvgValue());
+                        volMap.put("volMaxValue", hourDo.getVolMaxValue());
+                        volMap.put("volMinValue", hourDo.getVolMinValue());
+                        cur.add(curMap);
+                        vol.add(volMap);
+                    });
+                }
                 trendDTO.setCur(cur);
                 trendDTO.setVol(vol);
-
                 result.add(trendDTO);
             });
             return result.stream().sorted(Comparator.comparing(PduTrendVO::getDateTime)).collect(Collectors.toList());
