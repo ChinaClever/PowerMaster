@@ -169,6 +169,7 @@
         />
         <el-table-column label="运行状态" align="center" prop="color" width="120px">
           <template #default="scope">
+             <el-tag type="info" v-if="scope.row.color == 0">单相设备</el-tag>
             <el-tag type="info" v-if="scope.row.color == 1">小电流不平衡</el-tag>
             <el-tag type="success" v-if="scope.row.color == 2">大电流不平衡</el-tag>
             <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>

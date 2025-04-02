@@ -1274,7 +1274,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public PageResult<BusBalanceDataRes> getBusBalancePage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
-//        BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+
         List<BusIndexDO> list = busIndexDOPageResult.getList();
         List<BusBalanceDataRes> res = new ArrayList<>();
         List<String> keys = list.stream().map(BusIndexDO::getBusKey).collect(Collectors.toList());
@@ -1286,6 +1286,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                         JSON.parseObject(JSON.toJSONString(i)).getString("bar_id"), Function.identity()));
         for (BusIndexDO busIndexDO : list) {
             BusBalanceDataRes busBalanceDataRes = new BusBalanceDataRes();
+            res.add(busBalanceDataRes);
             busBalanceDataRes.setStatus(busIndexDO.getRunStatus());
             busBalanceDataRes.setBusId(busIndexDO.getId());
             busBalanceDataRes.setDevKey(busIndexDO.getBusKey());
@@ -1329,7 +1330,6 @@ public class BusIndexServiceImpl implements BusIndexService {
                     res.removeIf(bus -> bus.getBusId().equals(busBalanceDataRes.getBusId()));
                 }
             }
-            res.add(busBalanceDataRes);
         }
 
         return new PageResult<>(res, busIndexDOPageResult.getTotal());

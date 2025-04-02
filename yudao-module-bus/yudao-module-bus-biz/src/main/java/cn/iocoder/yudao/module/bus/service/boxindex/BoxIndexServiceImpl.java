@@ -1715,6 +1715,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 endTime = LocalDateTimeUtil.format(now,"yyyy-MM-dd HH:mm:ss");
             }
             List<String> data = getData(startTime, endTime, ids,index);
+
             Map<String, List> timeBus = new HashMap<>();
             data.forEach(str -> {
                 if (Objects.equals(timeType,0)){
@@ -1774,8 +1775,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         vol.add(volMap);
                     });
                 }
-                trendDTO.setCur(cur);
-                trendDTO.setVol(vol);
+                trendDTO.setCur(cur.stream().distinct().collect(Collectors.toList()));
+                trendDTO.setVol(vol.stream().distinct().collect(Collectors.toList()));
                 result.add(trendDTO);
             });
             return result.stream().sorted(Comparator.comparing(BusTrendDTO::getDateTime)).collect(Collectors.toList());
@@ -2182,27 +2183,23 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             List<Integer> ids = Arrays.asList(pageReqVO.getBoxId());
 
-            List<BoxLineHourDo> boxHdaLine = getBoxHarmonicData(startTime, endTime, ids, lines, "box_hda_line_realtime", BoxLineHourDo.class);
+            List<BoxLineRealtimeDo> boxHdaLine = getBoxHarmonicData(startTime, endTime, ids, "box_hda_line_realtime", BoxLineRealtimeDo.class);
             if (ObjectUtils.isNotEmpty(boxHdaLine)) {
-                result.setTime(boxHdaLine.stream().map(i -> i.getCreateTime().toString("HH:mm")).distinct().collect(Collectors.toList()));
-                Map<Integer, List<BoxLineHourDo>> collect = boxHdaLine.stream().collect(Collectors.groupingBy(BoxLineBaseDo::getLineId));
-                List<BoxLineHourDo> line1 = collect.get(1);
-                List<BoxLineHourDo> line2 = collect.get(2);
-                List<BoxLineHourDo> line3 = collect.get(3);
+                result.setTime(boxHdaLine.stream().map(i -> i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList()));
+                Map<Integer, List<BoxLineRealtimeDo>> collect = boxHdaLine.stream().collect(Collectors.groupingBy(BoxLineRealtimeDo::getLineId));
+                List<BoxLineRealtimeDo> line1 = collect.get(1);
+                List<BoxLineRealtimeDo> line2 = collect.get(2);
+                List<BoxLineRealtimeDo> line3 = collect.get(3);
                 if (Objects.nonNull(line1)) {
-                    result.setLineOne(line1.stream().map(BoxLineBaseDo::getCurThdAvgValue).collect(Collectors.toList()));
+                    result.setLineOne(line1.stream().map(BoxLineRealtimeDo::getCurThd).collect(Collectors.toList()));
                 }
                 if (Objects.nonNull(line2)) {
-                    result.setLinetwe(line2.stream().map(BoxLineBaseDo::getCurThdAvgValue).collect(Collectors.toList()));
+                    result.setLinetwe(line2.stream().map(BoxLineRealtimeDo::getCurThd).collect(Collectors.toList()));
                 }
                 if (Objects.nonNull(line3)) {
-                    result.setLinethree(line3.stream().map(BoxLineBaseDo::getCurThdAvgValue).collect(Collectors.toList()));
+                    result.setLinethree(line3.stream().map(BoxLineRealtimeDo::getCurThd).collect(Collectors.toList()));
                 }
             }
-//            boxHdaLine.forEach(boxLineHourDo -> {
-//                result.getTime().add(boxLineHourDo.getCreateTime().toString("HH:mm"));
-//                lineSeries.getData().add(boxLineHourDo.getCurThdAvgValue());
-//            });
             return result;
         } catch (Exception e) {
             log.error("获取数据失败", e);
@@ -3766,8 +3763,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return realtimeDo;
     }
 
-    private List<BoxLineHourDo> getBoxHarmonicData(String startTime, String endTime, List<Integer> ids, List<Integer> lines, String index, Class cla) throws IOException {
-        List<BoxLineHourDo> list = new ArrayList<>();
+    private List getBoxHarmonicData(String startTime, String endTime, List<Integer> ids, String index, Class cla){
+        List list = new ArrayList<>();
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -3776,22 +3773,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
-                    .must(QueryBuilders.termsQuery("box_id", ids))
-                    .must(QueryBuilders.termsQuery("line_id", lines))));
+                    .must(QueryBuilders.termsQuery("box_id", ids))));//.must(QueryBuilders.termsQuery("line_id", lines))
             builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
-            builder.size(3000);
-
-
+            builder.size(10000);
             // 执行ES请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             if (searchResponse != null) {
                 SearchHits hits = searchResponse.getHits();
                 for (SearchHit hit : hits) {
 
-                    BoxLineHourDo boxLineHourDo = JsonUtils.parseObject(hit.getSourceAsString(), BoxLineHourDo.class);
-                    list.add(boxLineHourDo);
+                    Object obj = JsonUtils.parseObject(hit.getSourceAsString(), cla);
+                    list.add(obj);
                 }
             }
             return list;
