@@ -349,7 +349,7 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       defaultOptionsCol.value = [
-        ["total", "active_pow", "active_total_avg_value"],["total", "apparent_pow", "apparent_total_avg_value"],["total", "reactive_pow", "reactive_total_avg_value"],
+        ["total", "active_pow", "active_total_max"],["total", "apparent_pow", "apparent_total_max"],["total", "reactive_pow", "reactive_total_max"],
         ["total", "factor_total_avg_value"],
       ]
       optionsCol.value = [

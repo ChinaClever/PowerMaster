@@ -716,8 +716,8 @@ watch(() => paramType.value , (newValues) => {
           dataZoom:[{type: "inside"}],
         legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
                           , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
-              selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false
-                          , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: false}},
+              selected: { 总平均有功功率: false, 总最大有功功率: true, 总最小有功功率: false, 总平均视在功率: false, 总最大视在功率: true, 总最小视在功率: false
+                          , 总平均无功功率: false, 总最大无功功率: true, 总最小无功功率: false, 总平均功率因素: false}},
         series: [
           { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
           { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -742,8 +742,8 @@ watch(() => paramType.value , (newValues) => {
           dataZoom:[{type: "inside"}],
         legend: { data: ['A路平均有功功率', 'A路最大有功功率', 'A路最小有功功率','A路平均视在功率', 'A路最大视在功率', 'A路最小视在功率'
                 , 'A路平均无功功率', 'A路平均功率因素'],
-              selected: { A路平均有功功率: true, A路最大有功功率: false, A路最小有功功率: false, A路平均视在功率: true, A路最大视在功率: false, A路最小视在功率: false
-                    , A路平均无功功率: true, A路平均功率因素: false}},
+              selected: { A路平均有功功率: false, A路最大有功功率: true, A路最小有功功率: false, A路平均视在功率: false, A路最大视在功率: true, A路最小视在功率: false
+                    , A路平均无功功率: false, A路平均功率因素: false}},
         series: [
           { name: 'A路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
           { name: 'A路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -766,8 +766,8 @@ watch(() => paramType.value , (newValues) => {
           dataZoom:[{type: "inside"}],
        legend: { data: ['B路平均有功功率', 'B路最大有功功率', 'B路最小有功功率','B路平均视在功率', 'B路最大视在功率', 'B路最小视在功率'
                     , 'B路平均无功功率', 'B路平均功率因素'],
-              selected: { B路平均有功功率: true, B路最大有功功率: false, B路最小有功功率: false, B路平均视在功率: true, B路最大视在功率: false, B路最小视在功率: false
-              , B路平均无功功率: true, B路平均功率因素: false}},
+              selected: { B路平均有功功率: false, B路最大有功功率: true, B路最小有功功率: false, B路平均视在功率: false, B路最大视在功率: true, B路最小视在功率: false
+              , B路平均无功功率: false, B路平均功率因素: false}},
         series: [
           { name: 'B路平均有功功率', type: 'line', data: bActivePowAvgValueData.value},
           { name: 'B路最大有功功率', type: 'line', data: bActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -826,6 +826,7 @@ watch(() => paramType.value , (newValues) => {
 watch(() => [activeName.value, needFlush.value], async (newValues) => {
   const [newActiveName] = newValues;
   if ( newActiveName == 'realtimeTabPane'){
+    paramType.value = 'total'
     await getList();
     // 销毁原有的图表实例
     beforeUnmount()
@@ -888,12 +889,12 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
     headerData.value = realtimeChart?.getOption().series as any[];
     updateTableData();
   }else{
+    paramType.value = 'total'
     await getList();
     // 销毁原有的图表实例
     beforeUnmount()
     if ( isHaveData.value == true ){
       // 参数类型变回总
-      paramType.value = 'total'
       // 创建新的图表实例
       realtimeChart = echarts.init(document.getElementById('chartContainer'));
       // 设置新的配置对象
@@ -907,8 +908,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           dataZoom:[{type: "inside"}],
           legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
                           , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
-                selected:  { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false
-                          , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: false}},
+                selected:  { 总平均有功功率: false, 总最大有功功率: true, 总最小有功功率: false, 总平均视在功率: false, 总最大视在功率: true, 总最小视在功率: false
+                          , 总平均无功功率: false, 总最大无功功率: true, 总最小无功功率: false, 总平均功率因素: false}},
           grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
           series: [
             { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
@@ -1184,6 +1185,7 @@ const handleQuery = async() => {
 // 导航栏选择后触发
 const handleClick = async (row) => {
    if(row.type != null  && row.type == 2){
+    paramType.value="total"
     queryParams.aisleId = row.id
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName

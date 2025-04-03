@@ -1114,7 +1114,7 @@ function setupLegendListener1(realtimeChart) {
       case '最大视在功率(kVA)':
       case '最小视在功率(kVA)':
       if (params.selected[legendName]){
-        optionsToUpdate = {  "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false };
+        optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false };
       }
         break;
 
@@ -1156,7 +1156,7 @@ function setupLegendListener1(realtimeChart) {
       case '最小电压(V)':
       if (params.selected[legendName]){
         optionsToUpdate = { "平均电压(V)": true, "最大电压(V)": true, "最小电压(V)": true , "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-        "平均视在功率": false, "最大视在功率": false, "最小视在功率": false, "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, };
+        "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, };
       }
         break;
 

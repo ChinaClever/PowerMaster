@@ -518,13 +518,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -863,25 +863,28 @@ const getNavList = async() => {
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
+if(route.query.start!=null&&route.query.end!=null){
+  queryParams.timeRange = [route.query.start as string, route.query.end as string]
+}
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  
-    
    // const firstChar = detect.value[0];
-    const secondChar = detect.value[0];
-    if (secondChar != null){    
+    // const secondChar = detect.value[0];
+    // if (secondChar != null){    
     // queryParams.channel = Number(firstChar);
-    queryParams.sensorId = Number(secondChar);
+    // queryParams.sensorId = Number(secondChar);
     // 更新路由查询参数
-    const querySensorId = String(Number(secondChar));
-        router.push({
-            query: {
-                ...route.query, // 保留现有查询参数
-                sensorId: querySensorId // 添加或更新 sensorId 参数
-            }
-        });
-    }
+    // const querySensorId = String(Number(secondChar));
+    // router.push({
+    //     query: {
+    //         ...route.query, // 保留现有查询参数
+    //         sensorId: querySensorId // 添加或更新 sensorId 参数
+    //     }
+    // });
+    // }
+    queryParams.sensorId=detect.value
     needFlush.value++;
+    
 }
 /** 初始化 **/
 onMounted( async () => {
