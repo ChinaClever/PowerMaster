@@ -181,6 +181,7 @@ const queryParams = reactive({
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
   timeRange: undefined,
+    ipArray: [],
   cabinetIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
@@ -302,7 +303,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value =([
         { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '180px'},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
@@ -344,7 +345,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address.address', istrue:true, width: '180px'}, 
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
@@ -368,7 +369,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '230px'},
-  { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
   { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:true, width: '120px'},
@@ -444,9 +445,9 @@ function formatData1(_row: any, _column: any, cellValue: number): string {
 const handleCheck = async (node) => {
    let arr = [] as any
   node.forEach(item => { 
-    if(item.type == 3){
-      arr.push(item.id);
-    }
+      if(item.type == 4){
+        arr.push(item.unique);
+      }
   });
    //没筛选到 不显示任何数据 参数传0 后端返回空
    if(arr.length == 0 && node.length != 0){
@@ -456,7 +457,7 @@ const handleCheck = async (node) => {
         type: 'warning',
       });
     }
-    queryParams.cabinetIds = arr
+    queryParams.ipArray = arr
     handleQuery()
 
 }

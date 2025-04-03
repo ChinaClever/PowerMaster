@@ -127,8 +127,7 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        //LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-        //LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
         if (busId == null) {
             return null;

@@ -1,0 +1,1 @@
+import{d as a,o as s,c as r,t as e}from"./index-mcOGIq4g.js";import{_ as i}from"./_plugin-vue_export-helper-BCo6x5W8.js";const p={class:"card-title"},o=i(a({__name:"CardTitle",props:{title:{type:String,required:!0}},setup:t=>(d,_)=>(s(),r("span",p,e(t.title),1))}),[["__scopeId","data-v-307d15a9"]]);export{o as _};

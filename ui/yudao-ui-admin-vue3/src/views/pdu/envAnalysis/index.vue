@@ -222,6 +222,7 @@ const queryParams = reactive({
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
   nowAddress: undefined as string | undefined,
+  pduKey: undefined as string | undefined,
   granularity: 'realtime',
   // ipAddr: undefined as string | undefined,
   // cascadeAddr: '0',
@@ -427,7 +428,7 @@ const getList = async () => {
         }});
       }
       // 图表显示的ip变化
-      nowLocation.value = data.ipAddr     
+      nowLocation.value = data.ipAddr
     }else{
       isHaveData.value = false;
       loading2.value=false
@@ -827,13 +828,8 @@ const handleExport1 = async () => {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 3){
-    nowLocation.value = ''
-    maxTemDataTemp.value = 0
-    minTemDataTemp.value = 0
-    //切换机柜要把初始化sensorId， 不然传到接口报错
-    queryParams.sensorId = undefined
-    queryParams.cabinetId = row.id
+   if(row.type != null  && row.type == 4){
+    queryParams.pduKey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
     });
@@ -900,9 +896,10 @@ onMounted( async () => {
   let queryLocation = useRoute().query.location as string;
   let queryAddress = useRoute().query.address as string;
   let queryDetectValue = useRoute().query.detectValue as string;
-  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  // queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  queryParams.pduKey =queryLocation;
   queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : undefined;
-  if (queryParams.pduId != undefined){
+  if (queryParams.pduKey != undefined){
     await getList();
     if (queryAddress == null) {
       nowAddress.value = '该设备还未绑定机房';

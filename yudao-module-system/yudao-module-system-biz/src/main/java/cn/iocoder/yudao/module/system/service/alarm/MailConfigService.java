@@ -66,4 +66,8 @@ public interface MailConfigService {
      * 播放声音
      */
     void playAudio();
+
+    void batchSave(List<MailConfigSaveReqVO> saveReqVOS);
+
+    void deleteMailAll();
 }

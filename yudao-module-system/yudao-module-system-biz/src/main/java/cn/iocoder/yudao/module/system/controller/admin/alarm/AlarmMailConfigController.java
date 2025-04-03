@@ -41,8 +41,9 @@ public class AlarmMailConfigController {
     @Operation(summary = "批量保存邮件配置")
     @PreAuthorize("@ss.hasPermission('system:alarm:mail:save')")
     public CommonResult<Integer> batchSave(@Valid @RequestBody List<MailConfigSaveReqVO> saveReqVOS) {
+        mailConfigService.deleteMailAll();
         if (!CollectionUtils.isEmpty(saveReqVOS)){
-            saveReqVOS.forEach(saveReqVO -> mailConfigService.saveMailConfig(saveReqVO));
+            mailConfigService.batchSave(saveReqVOS);
         }
         return success(saveReqVOS.size());
     }
