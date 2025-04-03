@@ -263,7 +263,7 @@
 
       <div v-if="switchValue == 2 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">
               <template v-if="item.bcur == null || item.ccur == null">
@@ -312,7 +312,7 @@
 
       <div v-if="switchValue == 99 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">
               <template v-if="item.bvol == null || item.cvol == null">

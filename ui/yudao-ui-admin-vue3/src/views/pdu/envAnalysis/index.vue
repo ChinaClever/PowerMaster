@@ -598,7 +598,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           });
         }
         // 图例切换监听
-        setupLegendListener1(realtimeChart);          
+        setupLegendListener1(realtimeChart);
       }
       // 每次切换图就要动态生成数据表头
       //debugger

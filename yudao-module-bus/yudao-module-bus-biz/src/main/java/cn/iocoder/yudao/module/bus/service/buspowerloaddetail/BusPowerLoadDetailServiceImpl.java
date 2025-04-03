@@ -150,13 +150,29 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
             int daysOffset = "SeventyHours".equals(reqVO.getGranularity()) ? 3 : 1;
             LocalDateTime startTime = LocalDateTime.now().minusDays(daysOffset);
             searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value","load_rate", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id",
+                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value",
+                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value",
+                    "power_factor_avg_value","power_factor_max_value","power_factor_min_value",
+                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value",
+                    "load_rate",
+                    "vol_avg_value","vol_max_value","vol_min_value",
+                    "cur_avg_value","cur_max_value","cur_min_value",
+                    "vol_line_avg_value","vol_line_max_value","vol_line_min_value", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(startTime.format(formatter))
                     .to(now.format(formatter)));
         }else {
             searchRequest.indices("bus_hda_line_day");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "load_rate","vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id",
+                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value",
+                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value",
+                    "power_factor_avg_value","power_factor_max_value","power_factor_min_value",
+                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value",
+                    "load_rate",
+                    "vol_avg_value","vol_max_value","vol_min_value",
+                    "cur_avg_value","cur_max_value","cur_min_value",
+                    "vol_line_avg_value","vol_line_max_value","vol_line_min_value", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(oneMonthAgo.format(formatter))
                     .to(now.format(formatter)));
