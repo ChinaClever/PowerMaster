@@ -127,8 +127,6 @@
       
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        
-        
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="130px" >
           <template #default="scope" >
@@ -319,7 +317,7 @@
       
       <div  v-if="switchValue == 1 && list.length > 0  && valueMode == 1" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
             <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
             <div class="info" style="margin-bottom: 60px">
@@ -371,7 +369,7 @@
 
       <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" style="width: 500px;height: 100px">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info" style="margin-bottom: 20px;">

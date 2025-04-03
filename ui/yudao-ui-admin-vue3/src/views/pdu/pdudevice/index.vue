@@ -143,6 +143,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="网络地址" align="center" prop="devKey" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
@@ -223,6 +224,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="网络地址" align="center" prop="devKey" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag type="info" v-if="scope.row.deleted">已删除</el-tag>
@@ -255,7 +257,7 @@
       <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" style="margin-left: 10px;">
             <div class="info">
               <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kVA</div>

@@ -526,8 +526,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
                                 apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowAvgValue()));
                                 activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowAvgValue()));
-                                factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
                                 reactiveList.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveAvgValue()));
+                                factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
 
                                 apparentListMax.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMaxValue()));
                                 activeListMax.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMaxValue()));
@@ -554,15 +554,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             result.put("activeList", activeList);
             result.put("factorList", factorList);
 
-            result.put("reactiveListMax", reactiveList);
-            result.put("apparentListMax", apparentList);
-            result.put("activeListMax", activeList);
-            result.put("factorListMax", factorList);
+            result.put("reactiveListMax", reactiveListMax);
+            result.put("apparentListMax", apparentListMax);
+            result.put("activeListMax", activeListMax);
+            result.put("factorListMax", factorListMax);
 
-            result.put("reactiveListMin", reactiveList);
-            result.put("apparentListMin", apparentList);
-            result.put("activeListMin", activeList);
-            result.put("factorListMin", factorList);
+            result.put("reactiveListMin", reactiveListMin);
+            result.put("apparentListMin", apparentListMin);
+            result.put("activeListMin", activeListMin);
+            result.put("factorListMin", factorListMin);
 
             result.put("dateTimes", dateTimes);
             return result;
