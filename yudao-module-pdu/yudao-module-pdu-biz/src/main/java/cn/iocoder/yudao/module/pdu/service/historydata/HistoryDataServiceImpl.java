@@ -938,9 +938,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public Map<String, Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
-
-
         // 创建BoolQueryBuilder对象
+        Map<String, Object> map = new HashMap<>();
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -960,52 +959,22 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
-        Map<String, Object> map = new HashMap<>();
-        Integer sensorId = reqVO.getSensorId();
-        Integer pduId = reqVO.getPduId();
-        Integer cabinetId = reqVO.getCabinetId();
-        Integer channel = reqVO.getChannel();
-        Integer position = reqVO.getPosition();
-        String ipAddr = null;
-        /**
-         * 不是跳转到环境分析的情况 此时没有pduId和sensorId 要用cabinetId、channel和position来查
-         */
-        if (pduId == null && sensorId == null) {
-            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
-            cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetId)
-//                    .eq("channel", channel)
-                    .eq("sensor_id", sensorId);
-            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
-            // 表示此机柜此位置没有传感器 直接返回
-            if (cabinetEnvSensor == null) {
-                System.out.println("机柜此位置没有传感器");
-                map.put("list", null);
-                map.put("total", 0);
-                map.put("ipAddr", null);
-                return map;
-            }
-            sensorId = cabinetEnvSensor.getSensorId();
-            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
-            cabinetPduQueryWrapper.eq("cabinet_id", cabinetId);
-            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
-            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())) {
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(), null);
-                ipAddr = cabinetPdu.getPduKeyA();
-            } else if (Objects.equals('B', cabinetEnvSensor.getPathPdu())) {
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), null);
-                ipAddr = cabinetPdu.getPduKeyB();
-            }
-        }
-        if (pduId == null) {
+
+        PduIndex pduIndex = pduIndexMapper.selectOne(new LambdaQueryWrapper<PduIndex>().eq(PduIndex::getPduKey, reqVO.getPduKey()).eq(PduIndex::getIsDeleted, 0));
+        if (ObjectUtils.isEmpty(pduIndex)) {
             return map;
         }
+        Integer sensorId = reqVO.getSensorId();
+        Integer pduId = pduIndex.getId();
 
         // 创建匹配查询
         QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
-        QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", sensorId);
         // 将匹配查询添加到布尔查询中
         boolQuery.must(termQuery);
-        boolQuery.must(termQuery1);
+        if (sensorId != null) {
+            QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", sensorId);
+            boolQuery.must(termQuery1);
+        }
         // 将布尔查询设置到SearchSourceBuilder中
         searchSourceBuilder.query(boolQuery);
         searchRequest.source(searchSourceBuilder);
@@ -1020,7 +989,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         // 返回的结果
         map.put("list", resultList);
         map.put("total", totalHits);
-        map.put("ipAddr", ipAddr);
+        map.put("ipAddr", pduIndex.getPduKey());
 
         return map;
     }

@@ -1316,7 +1316,7 @@ const handleClick = async (row) => {
     console.log(row)
     queryParams.pduId = row.id
     queryParams.ipAddr = row.ip?.split("-")[0]
-    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+     queryParams.cascadeAddr = row?.unique?.split("-")[1];
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
       nowLocationTemp.value = row.unique

@@ -30,4 +30,6 @@ public class EnvDataDetailsReqVO extends PageParam {
 
     private String nowAddress;
 
+    private String pduKey;
+
 }
