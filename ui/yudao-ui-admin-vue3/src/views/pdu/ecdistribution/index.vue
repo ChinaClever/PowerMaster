@@ -575,6 +575,7 @@ function formatNumber(value, decimalPlaces) {
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = '';
+  console.log(params)
   params.forEach(function(item) {
     switch( item.seriesName ){
       case '耗电量':
@@ -582,6 +583,7 @@ function customTooltipFormatter(params: any[]) {
         break;
     }
   });
+  tooltipContent += '<br/>时间: ' + params[0].name;
   return tooltipContent;
 }
 

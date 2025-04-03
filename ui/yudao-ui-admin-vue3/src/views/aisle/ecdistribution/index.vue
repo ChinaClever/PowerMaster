@@ -381,6 +381,7 @@ function customTooltipFormatter(params: any[]) {
         break;
     }
   });
+  tooltipContent += '<br/>'+'时间: ' + params[0].name;
   return tooltipContent;
 }
 
