@@ -238,7 +238,7 @@
           </div>
         </template>
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
+        <div class="custom-content" style="margin-top: -30px;">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
             <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name"/>
@@ -371,7 +371,7 @@
           </div>
         </template>
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
+        <div class="custom-content" style="margin-top: -30px;">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
               <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
@@ -2050,6 +2050,7 @@ onActivated(() => {
   display: flex;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin: 10px;
 }
 
 .question {
