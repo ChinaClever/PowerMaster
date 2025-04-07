@@ -316,10 +316,7 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       // 配置筛选列
-      defaultOptionsCol.value = [
-        ["tem_value", "tem_avg_value"],["tem_value", "tem_max"], ["tem_value", "tem_min"],
-        ["hum_value", "hum_avg_value"],["hum_value", "hum_max"], ["hum_value", "hum_min"],
-      ];
+      defaultOptionsCol.value = [["tem_value", "tem_max"],["hum_value", "hum_max"]];
       optionsCol.value = [
         { value: "tem_value", label: '温度', children: [
             { value: "tem_avg_value", label: '平均温度'},

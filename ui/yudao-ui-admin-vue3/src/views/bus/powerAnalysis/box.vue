@@ -78,7 +78,7 @@
       </el-form> 
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" border>
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -97,7 +97,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -117,7 +117,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -284,6 +284,10 @@ const initChart = () => {
                         position: 'top'
                     }},
       ],
+    });
+    rankChart.on('click', function(params) {
+      console.log("params==",params)
+      toDetails(list.value[params.dataIndex].box_id,list.value[params.dataIndex].location,list.value[params.dataIndex].dev_key);
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }

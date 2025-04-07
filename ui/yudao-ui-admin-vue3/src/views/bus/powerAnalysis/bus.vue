@@ -97,7 +97,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -117,7 +117,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -284,6 +284,11 @@ const eqData = ref<number[]>([]);
                         position: 'top'
                     }},
       ],
+    });
+    rankChart.on('click', function(params) {
+      console.log("params==",params)
+      console.log("list.value===",list.value)
+      toDetails(list.value[params.dataIndex].bus_id,list.value[params.dataIndex].location,list.value[params.dataIndex].dev_key);
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }

@@ -37,9 +37,9 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -171,7 +171,7 @@ import { number } from 'vue-types';
 import { Select } from '@element-plus/icons-vue/dist/types';
 defineOptions({ name: 'PDUHistoryLine' })
 
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
@@ -200,11 +200,11 @@ const queryParams = reactive({
   loopId: undefined,
   outletId: undefined,
   type: 'total',
-  granularity: 'realtime',
+  granularity: 'day',
   ipAddr: undefined as string | undefined,
   cascadeAddr: '0' as string | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1) as any
+  timeRange: defaultHourTimeRange(24*30) as any
 })
 const route=useRoute()
 if(route.query.start!=null&&route.query.end!=null){
@@ -626,8 +626,8 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)'],
-                        selected: { "平均有功功率(kW)": true, "最大有功功率(kW)": false, "最小有功功率(kW)": false, 
-                        "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, }
+                        selected: { "平均有功功率(kW)": false, "最大有功功率(kW)": true, "最小有功功率(kW)": false, 
+                        "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false, }
               },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}}},

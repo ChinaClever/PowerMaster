@@ -65,9 +65,10 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
+
       </el-tabs>
        <!-- 搜索工作栏 -->
        <el-form
@@ -221,7 +222,7 @@ const exportLoading = ref(false)
 
 const nowAddress = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart')
 const instance = getCurrentInstance()
 const tableData = ref<Array<{ }>>([]) // 列表数据
@@ -233,8 +234,8 @@ const queryParams = reactive({
   pageSize: 15,
   abtotal: "total",
   cabinetId: undefined as number | undefined,
-  granularity: 'realtime',
-  timeRange: defaultHourTimeRange(1) as any,
+  granularity: 'day',
+  timeRange: defaultHourTimeRange(24*30) as any,
 })
 if(useRoute().query.start!=null&&useRoute().query.end!=null){
   queryParams.timeRange = [useRoute().query.start as string, useRoute().query.end as string]

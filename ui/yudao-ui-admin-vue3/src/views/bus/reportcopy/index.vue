@@ -218,7 +218,7 @@
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVA， 发生时间{{powData.reactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVar， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
@@ -883,17 +883,17 @@ const getList = async () => {
   temList.value = temData.value.lineRes;
   if(temList.value?.time != null && temList.value?.time?.length > 0 ){
 
-    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(2);
-    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(2);
+    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(1);
+    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(1);
 
-    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(2);
-    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(2);
+    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(1);
+    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(1);
 
-    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(2);
-    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(2);
+    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(1);
+    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(1);
 
-    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(2);
-    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(2);
+    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(1);
+    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(1);
     visControll.temVis = true;
   }else{
     visControll.temVis = false;

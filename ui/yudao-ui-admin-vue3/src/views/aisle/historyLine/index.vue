@@ -65,9 +65,9 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
        <!-- 搜索工作栏 -->
        <el-form
@@ -235,7 +235,7 @@ const nowAddress = ref('')// 导航栏的位置信息
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart')
 const instance = getCurrentInstance()
 const tableData = ref<Array<{ }>>([]) // 列表数据
@@ -248,8 +248,8 @@ const queryParams = reactive({
   abtotal: "total",
   nowAddress: undefined as string | undefined,
   aisleId: undefined as number | undefined,
-  granularity: 'realtime',
-  timeRange: defaultHourTimeRange(1) as any,
+  granularity: 'day',
+  timeRange: defaultHourTimeRange(24*30) as any,
 })
 const route=useRoute()
 if(route.query.start!=null&&route.query.end!=null){
@@ -574,8 +574,8 @@ const initChart = () => {
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
                               , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
-                    selected:  { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false
-                              , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: false}},
+                    selected:  { 总平均有功功率: false, 总最大有功功率: true, 总最小有功功率: false, 总平均视在功率: false, 总最大视在功率: true, 总最小视在功率: false
+                              , 总平均无功功率: false, 总最大无功功率: true, 总最小无功功率: false, 总平均功率因素: false}},
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
               toolbox: {feature: { restore:{}, saveAsImage: {}}},
               xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},

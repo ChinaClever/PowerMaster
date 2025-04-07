@@ -249,6 +249,10 @@ const eqData = ref<number[]>([]);
                     }},
       ],
     });
+    rankChart.on('click', function(params) {
+      console.log("params==",params)
+      toDetails(list.value[params.dataIndex].devKey,selectTimeRange.value[0],selectTimeRange.value[1]);
+    });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };

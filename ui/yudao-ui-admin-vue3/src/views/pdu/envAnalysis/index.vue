@@ -75,9 +75,9 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -201,7 +201,7 @@ import  CommonMenu1 from './CommonMenu1.vue'
 /** pdu曲线 */
 defineOptions({ name: 'PDUEnvLine' })
 import { ElMessage } from 'element-plus'
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('') as any// 导航栏的位置信息
@@ -223,12 +223,12 @@ const queryParams = reactive({
   position: undefined as number | undefined,
   nowAddress: undefined as string | undefined,
   pduKey: undefined as string | undefined,
-  granularity: 'realtime',
+  granularity: 'day',
   // ipAddr: undefined as string | undefined,
   // cascadeAddr: '0',
   cabinetId: undefined as number | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1)
+  timeRange: defaultHourTimeRange(24*30)
 })
 const carouselItems = ref([
       { imgUrl: PDUImage},
