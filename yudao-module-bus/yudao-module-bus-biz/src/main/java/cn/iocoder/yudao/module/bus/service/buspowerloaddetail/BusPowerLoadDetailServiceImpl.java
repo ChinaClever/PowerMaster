@@ -126,12 +126,49 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         Long busId = reqVO.getId();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        String startTime;
+        String endTime = now.format(formatter);
         if (busId == null) {
             return null;
         }
+        String index;
+        switch (reqVO.getGranularity()) {
+            case "realtime":
+                index = "bus_hda_line_realtime";
+                LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+                startTime = oneHourAgo.format(formatter);
+                break;
+            case "hour":
+                index = "bus_hda_line_hour";
+                LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+                startTime = oneDayAgo.format(formatter);
+                break;
+            case "SeventyHours":
+                index = "bus_hda_line_hour";
+                LocalDateTime threeDayAgo = LocalDateTime.now().minusDays(3);
+                startTime = threeDayAgo.format(formatter);
+                break;
+            default:
+                index = "bus_hda_line_day";
+                LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+                startTime = oneMonthAgo.format(formatter);
+        }
+        String[] heads;
+        if (reqVO.getGranularity().equals("realtime")) {
+            heads = new String[]{"bus_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value",
+                    "cur_value", "load_rate", "vol_line", "create_time"};
+        } else {
+            heads = new String[]{"bus_id", "line_id",
+                    "pow_active_avg_value", "pow_active_max_value", "pow_active_min_value",
+                    "pow_reactive_avg_value", "pow_reactive_max_value", "pow_reactive_min_value",
+                    "power_factor_avg_value", "power_factor_max_value", "power_factor_min_value",
+                    "pow_apparent_avg_value", "pow_apparent_max_value", "pow_apparent_min_value",
+                    "load_rate",
+                    "vol_avg_value", "vol_max_value", "vol_min_value",
+                    "cur_avg_value", "cur_max_value", "cur_min_value",
+                    "vol_line_avg_value", "vol_line_max_value", "vol_line_min_value", "create_time"};
+        }
+
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -140,43 +177,12 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
-        if (Objects.equals(reqVO.getGranularity(), "realtime")) {
-            searchRequest.indices("bus_hda_line_realtime");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value", "cur_value", "load_rate", "vol_line", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneHourAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "hour") || Objects.equals(reqVO.getGranularity(), "SeventyHours")){
-            int daysOffset = "SeventyHours".equals(reqVO.getGranularity()) ? 3 : 1;
-            LocalDateTime startTime = LocalDateTime.now().minusDays(daysOffset);
-            searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id",
-                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value",
-                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value",
-                    "power_factor_avg_value","power_factor_max_value","power_factor_min_value",
-                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value",
-                    "load_rate",
-                    "vol_avg_value","vol_max_value","vol_min_value",
-                    "cur_avg_value","cur_max_value","cur_min_value",
-                    "vol_line_avg_value","vol_line_max_value","vol_line_min_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(startTime.format(formatter))
-                    .to(now.format(formatter)));
-        }else {
-            searchRequest.indices("bus_hda_line_day");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id",
-                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value",
-                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value",
-                    "power_factor_avg_value","power_factor_max_value","power_factor_min_value",
-                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value",
-                    "load_rate",
-                    "vol_avg_value","vol_max_value","vol_min_value",
-                    "cur_avg_value","cur_max_value","cur_min_value",
-                    "vol_line_avg_value","vol_line_max_value","vol_line_min_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneMonthAgo.format(formatter))
-                    .to(now.format(formatter)));
-        }
+        searchSourceBuilder.fetchSource(heads, null);
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(startTime)
+                .to(endTime));
+
+        searchRequest.indices(index);
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -209,7 +215,6 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 default:
             }
         });
-
         resultMap.put("L1", resultLine1);
         resultMap.put("L2", resultLine2);
         resultMap.put("L3", resultLine3);
@@ -288,27 +293,36 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         String index;
         String[] heads;
         String startTime;
-        String endTime=now.format(formatter);
-        switch (reqVO.getGranularity()){
+        String endTime = now.format(formatter);
+        if (Objects.equals(reqVO.getGranularity(),"realtime")){
+            heads = new String[]{"box_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value",
+                    "cur_value", "load_rate", "create_time"};
+        }else {
+            heads = new String[]{"box_id", "line_id",
+                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value",
+                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value",
+                    "power_factor_avg_value",
+                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value",
+                    "vol_avg_value","vol_max_value","vol_min_value",
+                    "cur_avg_value","cur_max_value","cur_min_value",
+                    "create_time"};
+        }
+        switch (reqVO.getGranularity()) {
             case "realtime":
                 index = "box_hda_line_realtime";
-                heads =  new String[]{"box_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value", "cur_value", "load_rate", "create_time"};
                 startTime = oneHourAgo.format(formatter);
                 break;
             case "hour":
                 index = "box_hda_line_hour";
-                heads =  new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"};
-                startTime =oneDayAgo.format(formatter);
+                startTime = oneDayAgo.format(formatter);
                 break;
             case "SeventyHours":
                 index = "box_hda_line_hour";
-                heads = new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"};
-                startTime =threeDaysAgo.format(formatter);
+                startTime = threeDaysAgo.format(formatter);
                 break;
             default:
                 index = "box_hda_line_day";
-                heads =  new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"};
-                startTime =oneMonthAgo.format(formatter);
+                startTime = oneMonthAgo.format(formatter);
                 break;
         }
         // 搜索源构建对象
@@ -537,8 +551,8 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
 
             resultMap.put("L1", result);
             return resultMap;
-        }catch (Exception e){
-            log.error("母线用能详情错误："+e);
+        } catch (Exception e) {
+            log.error("母线用能详情错误：" + e);
             return null;
         }
     }
