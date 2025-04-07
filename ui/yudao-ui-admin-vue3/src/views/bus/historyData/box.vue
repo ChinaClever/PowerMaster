@@ -122,7 +122,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true" border>
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -133,7 +133,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)">详情</el-button>
+              <el-button type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)">详情</el-button>
             </template>
           </el-table-column>
         </template>

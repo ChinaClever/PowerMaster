@@ -32,10 +32,10 @@ series.value = [
 ];
 
 //设置饼图的选项
-const echartsOption = ref({
+const echartsOption = computed(() => ({
   dataZoom: [{ type: "inside" }],
   legend: {
-    data: legendList,
+    data: ['A相电流谐波','B相电流谐波','C相电流谐波'],
     type: 'scroll',
     orient: 'horizontal',
     width: 1000
@@ -62,7 +62,7 @@ const echartsOption = ref({
     }
   },
   series: series.value,
-});
+}));
 //watchEffect(() => {
 //  // 直接访问即可，watchEffect会自动跟踪变化
 //

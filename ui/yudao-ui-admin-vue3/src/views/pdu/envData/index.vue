@@ -316,10 +316,7 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       // 配置筛选列
-      defaultOptionsCol.value = [
-        ["tem_value", "tem_avg_value"],["tem_value", "tem_max"], ["tem_value", "tem_min"],
-        ["hum_value", "hum_avg_value"],["hum_value", "hum_max"], ["hum_value", "hum_min"],
-      ];
+      defaultOptionsCol.value = [["tem_value", "tem_max"],["hum_value", "hum_max"]];
       optionsCol.value = [
         { value: "tem_value", label: '温度', children: [
             { value: "tem_avg_value", label: '平均温度'},
@@ -501,7 +498,7 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, address: string, channel: number, position: number, sensorId: number) => {
   let detectValue = channel?.toString()+position?.toString()
-  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId);
+  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+dayjs(selectTimeRange.value[0]).format("YYYY-MM-DD HH:mm:ss")+'&end='+dayjs(selectTimeRange.value[1]).format("YYYY-MM-DD HH:mm:ss"):''));
 }
 
 /** 导出按钮操作 */

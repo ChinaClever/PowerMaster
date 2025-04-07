@@ -97,7 +97,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.pdu_id,row.address)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.pdu_id,row.address,row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -118,7 +118,7 @@
               :width="child.width"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.address,row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -321,7 +321,7 @@ const initChart = () => {
       ],
     });
     rankChart.on("click",(params)=>{
-      toDetails(list.value[params.dataIndex].pdu_id, list.value[params.dataIndex].address)
+      toDetails(list.value[params.dataIndex].pdu_id, list.value[params.dataIndex].address,list.value[params.dataIndex].location)
     })
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
@@ -604,8 +604,9 @@ const getNavNewData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, address: string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
+const toDetails = (pduId: number, address: string, location: string) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+"&location="+location+
+  (selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
 }
 
 /** 导出按钮操作 */

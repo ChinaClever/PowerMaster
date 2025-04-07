@@ -52,7 +52,7 @@
             月份
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showSearchBtn = true;" 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showSearchBtn = true;dateSwitch = false" 
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
@@ -127,8 +127,6 @@
       
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        
-        
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="130px" >
           <template #default="scope" >
@@ -319,7 +317,7 @@
       
       <div  v-if="switchValue == 1 && list.length > 0  && valueMode == 1" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
             <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
             <div class="info" style="margin-bottom: 60px">
@@ -359,7 +357,7 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
-          <span style="float: right; margin: 7px 10px;">时间段：{{ createTimes }}-{{ endTimes }}</span>
+          <span style="float: right; margin: 7px 10px;">时间段：{{ queryParams1.startTime }} - {{ queryParams1.endTime }}</span>
           <div><span style="font-weight: 700; font-size: 20px;">功率详情</span> 所在位置：{{ location?location:'未绑定' }}  网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</div> 
         </template>
 
@@ -371,7 +369,7 @@
 
       <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" style="width: 500px;height: 100px">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info" style="margin-bottom: 20px;">
@@ -419,7 +417,7 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
-          <span style="float: right; margin:7px 10px;">{{ createTimes }} - {{ endTimes }}</span>
+          <span style="float: right; margin:7px 10px;">{{ queryParams1.startTime }} - {{ queryParams1.endTime }}</span>
           <div>
             <div><span style="font-weight: 700; font-size: 20px;">需量电流详情</span> 所在位置：{{location?location:'未绑定'}} 网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</div> 
           </div>
@@ -701,7 +699,10 @@ const handleDayPick = () => {
 
     queryParams.oldTime = queryParams.timeArr[0];
     queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
+    startTime = new Date(queryParams.oldTime);
+    endTime = new Date(queryParams.newTime);
   }
+  handleQuery()
 }
 
 const handleMonthPick = () => {
@@ -996,7 +997,7 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
   tooltip: {
     trigger: 'axis',
     formatter: function (params) {
-        let result = '';
+        let result = params[0].value.Year + '<br>';
         params.forEach((param) => {
             let unit = param.seriesName.includes('功率')? 'kW' : 'A';
             result += `${param.seriesName}: ${param.value.Income} ${unit}<br>`;
@@ -1006,7 +1007,9 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
 },
   xAxis: {
     type: 'category',
-    nameLocation: 'middle'
+    axisTick: {
+      alignWithLabel: true, // 让刻度线与标签对齐
+    },
   },
   yAxis: {
     

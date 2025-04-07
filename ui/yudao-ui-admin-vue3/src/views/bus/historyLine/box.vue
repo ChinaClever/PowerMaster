@@ -37,9 +37,9 @@
     </template> 
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -197,7 +197,7 @@ import  CommonMenu1 from './component/CommonMenu1.vue'
 
 defineOptions({ name: 'PDUHistoryLine' })
 
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const message = useMessage() // 消息弹窗
@@ -220,9 +220,9 @@ const queryParams = reactive({
   outletId: undefined,
   nowAddress: undefined as string | undefined,
   type: 'total',
-  granularity: 'realtime',
+  granularity: 'day',
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1) as any,
+  timeRange: defaultHourTimeRange(24*30) as any,
   devkey: undefined as string | undefined,
 })
 
@@ -426,7 +426,7 @@ const loading2=ref(false);
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-  if (nowAddress.value == null){
+  if (nowAddress.value == null&&nowAddressTemp.value==null){
     ElMessage.error('请先选择设备！');
   }
   loading.value = true;
@@ -596,13 +596,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(50)
+    // queryParams.timeRange = defaultHourTimeRange(50)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(100)
+    // queryParams.timeRange = defaultHourTimeRange(100)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -662,8 +662,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)' ],
-                        selected: { "平均有功功率(kW)": true, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": true, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
-                                  "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
+                        selected: { "平均有功功率(kW)": false, "最大有功功率(kW)": true, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": true, "最小无功功率(kVar)": false,
+                                  "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},

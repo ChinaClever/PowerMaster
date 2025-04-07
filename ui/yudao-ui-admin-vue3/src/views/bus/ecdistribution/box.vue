@@ -79,7 +79,7 @@
           <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
         </el-tab-pane>
         <el-tab-pane label="数据" name="lineChartData">
-          <div style="height: 58vh;">
+          <div style="height: 70vh;">
             <el-table  
             :border="true"
               :stripe="true"
@@ -379,6 +379,7 @@ function customTooltipFormatter(params: any[]) {
         break;
     }
   });
+  tooltipContent += '<br/>时间: ' + params[0].name;
   return tooltipContent;
 }
 

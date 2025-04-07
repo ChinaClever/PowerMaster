@@ -261,6 +261,7 @@
             class="!w-160px"
           />
           <el-button 
+            :disabled="clickAdd"
             @click="addtractOneDay();handleDayPick()" 
           >
             &gt;
@@ -321,6 +322,8 @@ const roomName = ref() as any;
 const butColor = ref(0);
 const onclickColor = ref(-1);
 const dialogVisible = ref(false);
+
+const clickAdd = ref(true)
 
 const harmonicColorForm = ref()
 const flashListTimer = ref();
@@ -669,8 +672,8 @@ const handleDayPick = async () => {
 
 const subtractOneDay = () => {
   var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
-
   date.setDate(date.getDate() - 1); // 减去一天
+  clickAdd.value = false
 
   queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
@@ -678,7 +681,16 @@ const subtractOneDay = () => {
 const addtractOneDay = () => {
   var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
 
-  date.setDate(date.getDate() + 1); // 减去一天
+  date.setDate(date.getDate() + 1); // 加去一天
+
+  var today = new Date(); // 今天的日期
+  today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+  console.log(date,today)
+
+  if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+    clickAdd.value = true
+  }
 
   queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
@@ -704,6 +716,7 @@ const showDialog = async (item) => {
   devkey.value = item.devKey;
   busName.value = item.busName;
   boxName.value = item.boxName;
+  queryParamsCopy.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0))
   dialogVisible.value = true;
   await handleQueryCopy();
 }

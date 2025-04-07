@@ -1356,8 +1356,9 @@ const handleFormBox = (data) => {
       item.cabinetBoxes[`boxKey${operateMenuBox.value.type}`] = null
       item.cabinetBoxes[`outletId${operateMenuBox.value.type}`] = null
       console.log(item)
-    } else if(item[`boxIndex${operateMenuBox.value.type}`] == data.boxIndex && item[`casId${operateMenuBox.value.type}`] != data.casAddr) {
-      item[`casId${operateMenuBox.value.type}`] = data.casAddr
+    } else if(item[`boxIndex${operateMenuBox.value.type}`] == data.boxIndex && data.casAddr != '' && item[`casId${operateMenuBox.value.type}`] != Number(data.casAddr) ) {
+      console.log(data)
+      item[`casId${operateMenuBox.value.type}`] = Number(data.casAddr)
       console.log(item)
     }
   })
@@ -1394,6 +1395,8 @@ const getDataDetail = async() => {
 // 处理柜列状态数据详情
 const handleDataDetail = (res) => {
   console.log('machineColInfo', machineColInfo)
+  let show = cabinetList.value
+  console.log(show)
   res.cabinetList && res.cabinetList.forEach(cab => {
     cabinetList.value.forEach((item, index) => {
       if (item.id == cab.id) {
@@ -1426,8 +1429,8 @@ const handleDataDetail = (res) => {
           }]
         }
         cabinetList.value[index] = {
-          ...item,
           ...cab,
+          ...item,
           echartsOptionLoad: { // 负载
             xAxis: {
               type: 'category',
@@ -2102,6 +2105,8 @@ const handleCabinetList = async(data) => {
 }
 // 实时处理机柜列表
 const handleCabinetListReal = async(data) => {
+  let show = cabinetList.value
+  console.log(show)
   handleDataDetail(data)
   updateCabinetConnect()
 }

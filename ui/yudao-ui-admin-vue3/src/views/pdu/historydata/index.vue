@@ -352,8 +352,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],["pow_active", "pow_active_max"], 
-          ["pow_active", "pow_active_min"]
+          ["pow_active", "pow_active_max"], ["pow_apparent", "pow_apparent_max"]
         ];
         optionsCol.value = [
           { value: "pow_active", label: '有功功率', children: [
@@ -425,9 +424,9 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],
+          ["vol_value", "vol_max"],
+          ["cur_value", "cur_max"],
           ["pow_active", "pow_active_max"],
-          ["pow_active", "pow_active_min"],
         ];
         optionsCol.value = [
           { value: "vol_value", label: '电压', children: [
@@ -524,9 +523,9 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],
+          ["vol_value", "vol_max"],
+          ["cur_value", "cur_max"],
           ["pow_active", "pow_active_max"],
-          ["pow_active", "pow_active_min"],
         ];
         optionsCol.value = [
           { value: "vol_value", label: '电压', children: [
@@ -621,9 +620,9 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
          // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],
+          ["cur_value", "cur_max"],
           ["pow_active", "pow_active_max"],
-          ["pow_active", "pow_active_min"],
+          ["pow_apparent", "pow_apparent_max"],
         ];
         optionsCol.value = [
           { value: "cur_value", label: '电流', children: [
