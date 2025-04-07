@@ -75,9 +75,9 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -201,7 +201,7 @@ import  CommonMenu1 from './CommonMenu1.vue'
 /** pdu曲线 */
 defineOptions({ name: 'PDUEnvLine' })
 import { ElMessage } from 'element-plus'
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('') as any// 导航栏的位置信息
@@ -222,12 +222,13 @@ const queryParams = reactive({
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
   nowAddress: undefined as string | undefined,
-  granularity: 'realtime',
+  pduKey: undefined as string | undefined,
+  granularity: 'day',
   // ipAddr: undefined as string | undefined,
   // cascadeAddr: '0',
   cabinetId: undefined as number | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1)
+  timeRange: defaultHourTimeRange(24*30)
 })
 const carouselItems = ref([
       { imgUrl: PDUImage},
@@ -427,7 +428,7 @@ const getList = async () => {
         }});
       }
       // 图表显示的ip变化
-      nowLocation.value = data.ipAddr     
+      nowLocation.value = data.ipAddr
     }else{
       isHaveData.value = false;
       loading2.value=false
@@ -517,13 +518,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -597,7 +598,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           });
         }
         // 图例切换监听
-        setupLegendListener1(realtimeChart);          
+        setupLegendListener1(realtimeChart);
       }
       // 每次切换图就要动态生成数据表头
       //debugger
@@ -827,13 +828,8 @@ const handleExport1 = async () => {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 3){
-    nowLocation.value = ''
-    maxTemDataTemp.value = 0
-    minTemDataTemp.value = 0
-    //切换机柜要把初始化sensorId， 不然传到接口报错
-    queryParams.sensorId = undefined
-    queryParams.cabinetId = row.id
+   if(row.type != null  && row.type == 4){
+    queryParams.pduKey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
     });
@@ -867,25 +863,28 @@ const getNavList = async() => {
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
+if(route.query.start!=null&&route.query.end!=null){
+  queryParams.timeRange = [route.query.start as string, route.query.end as string]
+}
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  
-    
    // const firstChar = detect.value[0];
-    const secondChar = detect.value[0];
-    if (secondChar != null){    
+    // const secondChar = detect.value[0];
+    // if (secondChar != null){    
     // queryParams.channel = Number(firstChar);
-    queryParams.sensorId = Number(secondChar);
+    // queryParams.sensorId = Number(secondChar);
     // 更新路由查询参数
-    const querySensorId = String(Number(secondChar));
-        router.push({
-            query: {
-                ...route.query, // 保留现有查询参数
-                sensorId: querySensorId // 添加或更新 sensorId 参数
-            }
-        });
-    }
+    // const querySensorId = String(Number(secondChar));
+    // router.push({
+    //     query: {
+    //         ...route.query, // 保留现有查询参数
+    //         sensorId: querySensorId // 添加或更新 sensorId 参数
+    //     }
+    // });
+    // }
+    queryParams.sensorId=detect.value
     needFlush.value++;
+    
 }
 /** 初始化 **/
 onMounted( async () => {
@@ -900,9 +899,10 @@ onMounted( async () => {
   let queryLocation = useRoute().query.location as string;
   let queryAddress = useRoute().query.address as string;
   let queryDetectValue = useRoute().query.detectValue as string;
-  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  // queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  queryParams.pduKey =queryLocation;
   queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : undefined;
-  if (queryParams.pduId != undefined){
+  if (queryParams.pduKey != undefined){
     await getList();
     if (queryAddress == null) {
       nowAddress.value = '该设备还未绑定机房';

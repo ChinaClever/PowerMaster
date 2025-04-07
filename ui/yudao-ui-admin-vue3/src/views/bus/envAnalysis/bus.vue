@@ -1032,6 +1032,8 @@ const handleExport1 = async () => {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
+
+  console.log(row)
    if(row.type != null  && row.type == 6){
     nowIpAddr.value = ''
     maxTemDataTemp.value = 0

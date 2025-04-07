@@ -461,6 +461,21 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Override
     public Map getHistoryDataByDevKey(String devKey, String type) {
         HashMap result = new HashMap<>();
+        List<String> dateTimes = new ArrayList<>();
+        List<Double> apparentList = new ArrayList<>();//视在功率
+        List<Double> activeList = new ArrayList<>();//有功功率
+        List<Double> factorList = new ArrayList<>();
+        List<Double> reactiveList = new ArrayList<>();
+
+        List<Double> apparentListMax = new ArrayList<>();
+        List<Double> activeListMax = new ArrayList<>();
+        List<Double> factorListMax = new ArrayList<>();
+        List<Double> reactiveListMax = new ArrayList<>();
+
+        List<Double> apparentListMin = new ArrayList<>();
+        List<Double> activeListMin = new ArrayList<>();
+        List<Double> factorListMin = new ArrayList<>();
+        List<Double> reactiveListMin = new ArrayList<>();
 
         PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
         if (pduIndex != null) {
@@ -480,7 +495,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 pastTime = now.minusHours(73);
                 searchRequest = new SearchRequest("pdu_hda_total_hour");
             }
-
             // 构建查询请求
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -489,13 +503,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     .from(formatter.format(pastTime))
                     .to(formatter.format(now)));
             searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-            searchSourceBuilder.size(1000); // 设置返回的最大结果数
-
+            searchSourceBuilder.size(10000); // 设置返回的最大结果数
             searchRequest.source(searchSourceBuilder);
-            List<Double> apparentList = new ArrayList<>();
-            List<Double> activeList = new ArrayList<>();
-            List<String> dateTimes = new ArrayList<>();
-            List<Double> factorList = new ArrayList<>();
             // 执行查询请求
             try {
                 SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -503,37 +512,59 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     SearchHits hits = searchResponse.getHits();
                     for (SearchHit hit : hits) {
                         String str = hit.getSourceAsString();
-                        if ("oneHour".equals(type)) {
-                            PduHdaTotalRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
-                            apparentList.add(Double.valueOf(pduHdaTotalRealtimeDo.getApparentPow()));
-                            activeList.add(Double.valueOf(pduHdaTotalRealtimeDo.getActivePow()));
-                            factorList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowerFactor()));
-                            dateTimes.add(pduHdaTotalRealtimeDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-                        } else if ("twentyfourHour".equals(type)) {
-                            PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
-                            apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowAvgValue()));
-                            activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowAvgValue()));
-                            factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
-                            dateTimes.add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-                        } else if ("seventytwoHour".equals(type)) {
-                            PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
-                            apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMaxValue()));
-                            activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMaxValue()));
-                            factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
-                            dateTimes.add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        switch (type){
+                            case "oneHour":
+                                PduHdaTotalRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
+                                apparentList.add(Double.valueOf(pduHdaTotalRealtimeDo.getApparentPow()));
+                                activeList.add(Double.valueOf(pduHdaTotalRealtimeDo.getActivePow()));
+                                factorList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowerFactor()));
+                                reactiveList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowReactive()));
+                                dateTimes.add(pduHdaTotalRealtimeDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            case "twentyfourHour":
+                            case "seventytwoHour":
+                                PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
+                                apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowAvgValue()));
+                                activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowAvgValue()));
+                                reactiveList.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveAvgValue()));
+                                factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
+
+                                apparentListMax.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMaxValue()));
+                                activeListMax.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMaxValue()));
+                                reactiveListMax.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveMaxValue()));
+                                factorListMax.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorMaxValue()));
+
+                                apparentListMin.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMinValue()));
+                                activeListMin.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMinValue()));
+                                reactiveListMin.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveMinValue()));
+                                factorListMin.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorMinValue()));
+
+                                dateTimes.add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            default:
                         }
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            List<Double> reactiveList = calculateReactivePower(apparentList, activeList);
+//            List<Double> reactiveList = calculateReactivePower(apparentList, activeList);
             result.put("reactiveList", reactiveList);
             result.put("apparentList", apparentList);
             result.put("activeList", activeList);
             result.put("factorList", factorList);
-            result.put("dateTimes", dateTimes);
 
+            result.put("reactiveListMax", reactiveListMax);
+            result.put("apparentListMax", apparentListMax);
+            result.put("activeListMax", activeListMax);
+            result.put("factorListMax", factorListMax);
+
+            result.put("reactiveListMin", reactiveListMin);
+            result.put("apparentListMin", apparentListMin);
+            result.put("activeListMin", activeListMin);
+            result.put("factorListMin", factorListMin);
+
+            result.put("dateTimes", dateTimes);
             return result;
         } else {
             return result;
@@ -580,7 +611,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 searchRequest = new SearchRequest("pdu_hda_line_hour");
             } else if ("seventytwoHour".equals(type)) {
                 pastTime = now.minusHours(73);
-                searchRequest = new SearchRequest("pdu_hda_line_day");
+                searchRequest = new SearchRequest("pdu_hda_line_hour");
             }
 
             // 构建查询请求

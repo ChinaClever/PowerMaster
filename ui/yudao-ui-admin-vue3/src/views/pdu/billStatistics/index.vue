@@ -148,7 +148,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import { ElMessage } from 'element-plus'
@@ -267,7 +267,7 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
         { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '开始时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '开始时间', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束时间', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -287,7 +287,7 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '开始时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '开始时间', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束时间', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -311,8 +311,8 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
+      // 格式化日期范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       // const oneDay = 24 * 60 * 60 * 1000;
       const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))

@@ -504,14 +504,8 @@ const handleSelectStatus = (index) => {
   }
   colorIndex.value = index;
   selectedIndex.value = index;
-  if(switchValue.value ==1){
-  queryParams.startNum = statusList.value[index].startNum+15;
-  queryParams.endNum = statusList.value[index].endNum+15;
-  }else{
   queryParams.startNum = statusList.value[index].startNum;
   queryParams.endNum = statusList.value[index].endNum;
-  }
-
   handleQuery();
 }
 

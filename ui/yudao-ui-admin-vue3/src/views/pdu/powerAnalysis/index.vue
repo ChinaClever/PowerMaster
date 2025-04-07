@@ -97,7 +97,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.pdu_id,row.address)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.pdu_id,row.address,row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -118,7 +118,7 @@
               :width="child.width"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.address,row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -246,7 +246,19 @@ const typeCascaderChange = (selected) => {
     }
   }else{
     // 选择总，移除索引为 1 的位置上的行数据
-    tableColumns.value.splice(1, 1);
+    // tableColumns.value.splice(1, 1);
+    for(let i=0;i<tableColumns.value.length;i++){
+      if(tableColumns.value[i].label === '输出位'){
+        tableColumns.value.splice(i, 1,{ label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, istrue: true});
+      }
+    }
+    // if(!haveRecord){
+      // for(let i=0;i<tableColumns.value.length;i++){
+      //   if(tableColumns.value[i].label === '网络地址'){
+      //     tableColumns.value.splice(i, 0, { label: '记录时间', align: 'center', prop: 'record_time', istrue: true});
+      //   }
+      // }
+    // }
   }
   handleQuery();
 }
@@ -309,7 +321,7 @@ const initChart = () => {
       ],
     });
     rankChart.on("click",(params)=>{
-      toDetails(list.value[params.dataIndex].pdu_id, list.value[params.dataIndex].address)
+      toDetails(list.value[params.dataIndex].pdu_id, list.value[params.dataIndex].address,list.value[params.dataIndex].location)
     })
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
@@ -355,16 +367,22 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-        if (ip.value != undefined){
-          queryParams.ipArray = [ip.value];
-        }
+    // if (ip.value != undefined){
+    //   queryParams.ipArray = [ip.value];
+    // }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     eqData.value = data.list.map((item) => {
        const difference = item.end_ele - item.start_ele;
        return difference < 0 ? item.end_ele : formatEQ(difference, 1);
-    
     });
+    list.value = data.list
+    if (data.total > 10000){
+      total.value = 10000
+    }else{
+      total.value = data.total
+    }
+    realTotel.value = data.total
   }finally{
     loading.value = false;
   }
@@ -401,12 +419,12 @@ const getLists = async () => {
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
 }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
-    // if(start.value == null){
-    //   queryParams.timeRange = undefined
-    // }
-        if (ip.value != undefined){
-          queryParams.ipArray = [ip.value];
-        }
+    if(start.value == null){
+      queryParams.timeRange = undefined
+    }
+    if (ip.value != undefined){
+      queryParams.ipArray = [ip.value];
+    }
     // queryParams.ipArray = [ip.value];
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
@@ -537,6 +555,7 @@ const getTypeMaxValue = async () => {
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
+  console.log("node",node)
     let arr = [] as any
     node.forEach(item => { 
       if(item.type == 4){
@@ -585,8 +604,9 @@ const getNavNewData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, address: string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
+const toDetails = (pduId: number, address: string, location: string) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+"&location="+location+
+  (selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
 }
 
 /** 导出按钮操作 */
@@ -601,7 +621,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU能耗统计.xlsx')
+    await download.excel(data, 'PDU能耗数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)

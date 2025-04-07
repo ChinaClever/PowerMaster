@@ -14,6 +14,7 @@ import lombok.Getter;
 public enum AlarmLevelEnums {
     ONE(1, "一级告警"),
     TWO(2, "二级告警"),
+    THREE(3, "三级告警"),
     ;
 
     /**

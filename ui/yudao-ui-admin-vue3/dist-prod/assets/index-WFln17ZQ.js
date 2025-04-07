@@ -1,0 +1,1 @@
+import{r}from"./index-mcOGIq4g.js";const t=a=>r.post({url:"/infra/data-source-config/create",data:a}),e=a=>r.put({url:"/infra/data-source-config/update",data:a}),o=a=>r.delete({url:"/infra/data-source-config/delete?id="+a}),i=a=>r.get({url:"/infra/data-source-config/get?id="+a}),s=()=>r.get({url:"/infra/data-source-config/list"});export{i as a,t as c,o as d,s as g,e as u};

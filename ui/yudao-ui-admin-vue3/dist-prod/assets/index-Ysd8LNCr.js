@@ -1,0 +1,1 @@
+import{r as a}from"./index-mcOGIq4g.js";const i={getActivePowTrend:async e=>await a.get({url:"/aisle/index/activePowTrend",params:e}),getEleChain:async e=>await a.get({url:"/aisle/index/eleChain",params:e}),getEleTrend:async e=>await a.get({url:"/aisle/index/eleTrend",params:e})};export{i as A};

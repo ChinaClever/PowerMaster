@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.sms.SmsConfigSav
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemSmsAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.mysql.alarm.SysAlarmSmsConfigMapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -42,6 +43,19 @@ public class SmsConfigServiceImpl implements SmsConfigService {
         }
         return config.getId();
 
+    }
+
+    @Override
+    public void batchSave(List<SmsConfigSaveReqVO> saveReqVOS) {
+        if (!CollectionUtils.isEmpty(saveReqVOS)){
+            List<SystemSmsAlarmConfig> list = BeanUtils.toBean(saveReqVOS, SystemSmsAlarmConfig.class);
+            alarmSmsConfigMapper.insertBatch(list);
+        }
+    }
+
+    @Override
+    public void deleteSmsAll() {
+        alarmSmsConfigMapper.delete(null);
     }
 
     @Override

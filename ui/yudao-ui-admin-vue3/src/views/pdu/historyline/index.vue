@@ -37,9 +37,9 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -70,10 +70,8 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate"
-
           class="!w-350px"
         />
-                    <!-- @change="handleDayPick" -->
       </el-form-item>
 
         <el-form-item >
@@ -87,7 +85,6 @@
 
       </el-form>
     </template>
-
     <template #Content>
       <div v-loading="loading">
         <el-tabs v-model="activeName1">
@@ -174,13 +171,17 @@ import { number } from 'vue-types';
 import { Select } from '@element-plus/icons-vue/dist/types';
 defineOptions({ name: 'PDUHistoryLine' })
 
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
 const nowLocation = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+if(useRoute().query.location!=null){
+  nowLocationTemp.value = useRoute().query.location
+  // nowAddress.value=useRoute().query.location
+}
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 列表数据
 const headerData = ref<any[]>([]);
@@ -199,13 +200,16 @@ const queryParams = reactive({
   loopId: undefined,
   outletId: undefined,
   type: 'total',
-  granularity: 'realtime',
+  granularity: 'day',
   ipAddr: undefined as string | undefined,
   cascadeAddr: '0' as string | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1) as any
+  timeRange: defaultHourTimeRange(24*30) as any
 })
-
+const route=useRoute()
+if(route.query.start!=null&&route.query.end!=null){
+  queryParams.timeRange = [route.query.start, route.query.end] as any
+}
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -324,6 +328,7 @@ const typeSelection = ref([]) as any;
 // 参数类型改变触发
 const typeChangeFlushFlag = ref(['total']) as any//为了触发监听
 const typeCascaderChange = (selected) => {
+  console.log(selected)
   queryParams.type = selected[0];
   typeChangeFlushFlag.value = [selected[0],selected[1]]
   switch(selected[0]){
@@ -554,13 +559,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -568,6 +573,10 @@ watch( ()=>activeName.value, async(newActiveName)=>{
 // 监听类型颗粒度
 watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], async (newValues) => {
     const [newActiveName, newType] = newValues;
+    if(queryParams.ipAddr==null){
+      ElMessage.error("未选择ip地址")
+      return;
+    }
     // 处理参数变化
     if (newType[0] == 'total'){
       if ( newActiveName == 'realtimeTabPane'){
@@ -617,8 +626,8 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)'],
-                        selected: { "平均有功功率(kW)": true, "最大有功功率(kW)": false, "最小有功功率(kW)": false, 
-                        "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, }
+                        selected: { "平均有功功率(kW)": false, "最大有功功率(kW)": true, "最小有功功率(kW)": false, 
+                        "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false, }
               },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -785,6 +794,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               legend: { data: ['平均电流(A)', '最大电流(A)', '最小电流(A)','平均电压(V)', '最大电压(V)', '最小电压(V)',
                                 '平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)'],
                         selected: { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, 
+                                  '平均有功功率(kW)':false, '最大有功功率(kW)':false, '最小有功功率(kW)':false,
                                     "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false}
                       },
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
@@ -835,7 +845,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
             title: { text: ''},
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
             legend: { data: [ '电流(A)', '有功功率(kW)', '视在功率(kVA)', '功率因素'],
-                  selected: { "电流": true, "有功功率": false, "视在功率": false, '功率因素': false }},
+                  selected: { "电流(A)": true, "有功功率(kW)": false, "视在功率(kVA)": false, '功率因素': false }},
             grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
             toolbox: {feature: {  restore:{}, saveAsImage: {}}},
             xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -868,7 +878,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均电流(A)', '最大电流(A)', '最小电流(A)', '平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)'],
-                        selected: { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false}
+                        selected: { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true,"平均有功功率(kW)":false,"最大有功功率(kW)":false,"最小有功功率(kW)":false, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false}
                       },
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'50'},
@@ -939,8 +949,8 @@ function setupLegendListener(realtimeChart) {
 
       return; 
     }
-
     var optionsToUpdate = {};
+    console.log(legendName,"==========legendName");
     switch (legendName) {
       case '电压(V)':
         optionsToUpdate = { "电压(V)": true, "电流(A)": false, "有功功率(kW)": false, "视在功率(kVA)": false, "功率因素": false };
@@ -966,11 +976,10 @@ function setupLegendListener(realtimeChart) {
             optionsToUpdate = {  "功率因素": true , "有功功率(kW)": false, "电流(A)": false, "电压(V)": false, "视在功率(kVA)": false};
         }
         break;
-        
       default:
+        console.log('inDefault');
         break;
     }
-
     realtimeChart?.setOption({
       legend: {
         data: ['电压(V)', '电流(A)', '有功功率(kW)', '视在功率(kVA)', '功率因素'],
@@ -1084,6 +1093,8 @@ function setupLegendListener1(realtimeChart) {
   realtimeChart?.on('legendselectchanged', function (params) {
     var legendName = params.name;
     var legendData = realtimeChart?.getOption().legend[0]?.data;
+    console.log("legendData",legendData)
+    console.log("legendName",legendName)
     // var legendSelected = realtimeChart?.getOption().legend[0]?.selected;
     // 检查图例是否有电压，没有就是输出位
     if (!legendData.includes('平均电压(V)')) {
@@ -1103,7 +1114,7 @@ function setupLegendListener1(realtimeChart) {
       case '最大视在功率(kVA)':
       case '最小视在功率(kVA)':
       if (params.selected[legendName]){
-        optionsToUpdate = {  "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false };
+        optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false };
       }
         break;
 
@@ -1129,8 +1140,6 @@ function setupLegendListener1(realtimeChart) {
 
       return; 
     }
-
-
     var optionsToUpdate = {};
     switch (legendName) {
       case '平均电流(A)':
@@ -1147,7 +1156,7 @@ function setupLegendListener1(realtimeChart) {
       case '最小电压(V)':
       if (params.selected[legendName]){
         optionsToUpdate = { "平均电压(V)": true, "最大电压(V)": true, "最小电压(V)": true , "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-        "平均视在功率": false, "最大视在功率": false, "最小视在功率": false, "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, };
+        "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, };
       }
         break;
 
@@ -1173,7 +1182,6 @@ function setupLegendListener1(realtimeChart) {
       default:
         break;
     }
-
     realtimeChart?.setOption({
       legend: {
         data: ['平均电流(A)', '最大电流(A)', '最小电流(A)','平均电压(V)', '最大电压(V)', '最小电压(V)',
@@ -1308,7 +1316,7 @@ const handleClick = async (row) => {
     console.log(row)
     queryParams.pduId = row.id
     queryParams.ipAddr = row.ip?.split("-")[0]
-    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+     queryParams.cascadeAddr = row?.unique?.split("-")[1];
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
       nowLocationTemp.value = row.unique
@@ -1340,11 +1348,26 @@ const getNavList = async() => {
 }
 
 /** 搜索按钮操作 */
-const handleQuery = async () => {
-  await getList();
-  // await getRankChartData();
-  initChart();
-  // initRankChart();
+const handleQuery = () => {
+  console.log('queryParams.ipAddr：', queryParams.ipAddr)
+  if(queryParams.ipAddr ==undefined){
+      ElMessage.error('IP地址为空！')
+      return;
+  }
+          console.log('ip：', queryParams.ipAddr)
+  // IP地址的正则表达式
+  const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
+    queryParams.cascadeAddr = cascadeAddr.value.toString();
+    if (queryParams.ipAddr != undefined && ipRegex.test(queryParams.ipAddr)){
+      queryParams.pduId = undefined;
+    }
+    needFlush.value++;
+    console.log('ip：', queryParams.ipAddr)
+    getList();
+  }else{
+    ElMessage.error('IP地址格式有误,请重新输入！')
+  }
 }
 
 /** 初始化 **/
@@ -1373,6 +1396,10 @@ onMounted( async () => {
 //导出Excel
 const handleExport1 = async () => {
   try {
+    if(queryParams.ipAddr==null){
+      ElMessage.error('IP地址为空！')
+      return;
+    }
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出

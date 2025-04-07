@@ -39,8 +39,9 @@ public class AlarmSmsConfigController {
     @Operation(summary = "保存配置")
     @PreAuthorize("@ss.hasPermission('system:alarm:sms:save')")
     public CommonResult<Integer> batchSave(@Valid @RequestBody List<SmsConfigSaveReqVO> saveReqVOS) {
+        smsConfigService.deleteSmsAll();
         if (!CollectionUtils.isEmpty(saveReqVOS)){
-            saveReqVOS.forEach(smsConfigSaveReqVO -> smsConfigService.saveSmsConfig(smsConfigSaveReqVO));
+            smsConfigService.batchSave(saveReqVOS);
         }
         return success(saveReqVOS.size());
     }

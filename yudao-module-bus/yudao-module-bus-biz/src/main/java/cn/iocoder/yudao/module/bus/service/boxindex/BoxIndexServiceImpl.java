@@ -2185,7 +2185,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
             List<BoxLineRealtimeDo> boxHdaLine = getBoxHarmonicData(startTime, endTime, ids, "box_hda_line_realtime", BoxLineRealtimeDo.class);
             if (ObjectUtils.isNotEmpty(boxHdaLine)) {
-                result.setTime(boxHdaLine.stream().map(i -> i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList()));
+                result.setTime(boxHdaLine.stream().map(i -> i.getCreateTime().toString("HH:mm:ss")).distinct().collect(Collectors.toList()));
                 Map<Integer, List<BoxLineRealtimeDo>> collect = boxHdaLine.stream().collect(Collectors.groupingBy(BoxLineRealtimeDo::getLineId));
                 List<BoxLineRealtimeDo> line1 = collect.get(1);
                 List<BoxLineRealtimeDo> line2 = collect.get(2);
