@@ -611,7 +611,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 searchRequest = new SearchRequest("pdu_hda_line_hour");
             } else if ("seventytwoHour".equals(type)) {
                 pastTime = now.minusHours(73);
-                searchRequest = new SearchRequest("pdu_hda_line_day");
+                searchRequest = new SearchRequest("pdu_hda_line_hour");
             }
 
             // 构建查询请求
