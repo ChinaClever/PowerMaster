@@ -127,8 +127,7 @@
   </el-col>
   <el-col :span="7">
     <div style="display: flex;align-items: center;justify-content: space-around">
-      <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
-        <el-option label="实时" value="实时" />
+      <el-select v-model="typeRadioShow" placeholder="请选择" :style="{width: '100px',opacity: timeRadio != '近一小时' && typeRadio != '有效电能' ? '1' : '0'}">
         <el-option label="平均" value="平均" />
         <el-option label="最大" value="最大" />
         <el-option label="最小" value="最小" />
@@ -151,10 +150,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useBoxLoadDetailStore } from '@/store/modules/boxLoadDetail'
 import * as echarts from 'echarts';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import { ElMessage } from 'element-plus';
 import { formatDate} from '@/utils/formatTime'
+const boxLoadDetailStore = useBoxLoadDetailStore()
 const input = ref('')
 
 const busName = ref()
@@ -162,6 +163,7 @@ const boxName = ref()
 const devKey = ref(history?.state?.devKey)
 const location = ref(history?.state?.location)
 const roomName = ref(history?.state?.roomName)
+const boxId = ref(history?.state?.boxId)
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
 const timeRadio = ref('近一小时')
@@ -569,6 +571,7 @@ const initChart3 = () => {
 
 const getDetailData =async () => {
  try {
+    console.log(queryParams)
     const data = await BusPowerLoadDetailApi.getBoxDetailData(queryParams);
     if (data != null){
       hasData.value = true
@@ -618,6 +621,10 @@ watch(() => loadPercentage.value ,async()=>{
   await initChart()
 })
 
+watch( ()=>typeRadioShow.value, async()=>{
+  await initData()
+  await initChart2()
+})
 // 监听切换类型
 watch( ()=>typeRadio.value, async(value)=>{
   if ( value == '有效电能'){
@@ -1200,17 +1207,19 @@ function initData (){
   }else if(timeRadio.value == '近一天' || timeRadio.value == '近三天'){
     switch (typeRadio.value){
       case '电流':
+        let itemCurType = typeRadioShow.value == "最小" ? 'cur_min_value' : (typeRadioShow.value == "最大" ? 'cur_max_value' : 'cur_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemCurType], 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemCurType], 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemCurType], 2));
         }
         break;
       case '电压':
+        let itemVolType = typeRadioShow.value == "最小" ? 'vol_min_value' : (typeRadioShow.value == "最大" ? 'vol_max_value' : 'vol_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_avg_value, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_avg_value, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_avg_value, 1));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemVolType], 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemVolType], 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemVolType], 1));
         }
         break;
       case '有效电能':
@@ -1220,55 +1229,65 @@ function initData (){
         }
         break;
       case '有功功率':
+        let itemActiveType = typeRadioShow.value == "最小" ? 'pow_active_min_value' : (typeRadioShow.value == "最大" ? 'pow_active_max_value' : 'pow_active_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemActiveType], 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemActiveType], 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemActiveType], 3));
         }
         break;              
       case '无功功率':
+        let itemReactiveType = typeRadioShow.value == "最小" ? 'pow_reactive_min_value' : (typeRadioShow.value == "最大" ? 'pow_reactive_max_value' : 'pow_reactive_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemReactiveType], 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemReactiveType], 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemReactiveType], 3));
         }
        break;
       case '视在功率':
+        let itemApparentType = typeRadioShow.value == "最小" ? 'pow_apparent_min_value' : (typeRadioShow.value == "最大" ? 'pow_apparent_max_value' : 'pow_apparent_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemApparentType], 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemApparentType], 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemApparentType], 3));
         }
        break;
       case '功率因素':
+        let itemFactorType = typeRadioShow.value == "最小" ? 'power_factor_min_value' : (typeRadioShow.value == "最大" ? 'power_factor_max_value' : 'power_factor_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor_avg_value, 2));
+          if(!allLineData.value.L1[0]?.[itemFactorType]) {
+            itemFactorType = 'power_factor_avg_value'
+          }
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemFactorType], 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemFactorType], 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemFactorType], 2));
         }
         break;
       case '负载率':
+        let itemLoadLineType = typeRadioShow.value == "最小" ? 'load_rate_min_value' : (typeRadioShow.value == "最大" ? 'load_rate_max_value' : 'load_rate_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemLoadLineType], 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemLoadLineType], 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemLoadLineType], 1));
         }
         break;    
       }
   }else{
         switch (typeRadio.value){
       case '电流':
+        let itemCurType = typeRadioShow.value == "最小" ? 'cur_min_value' : (typeRadioShow.value == "最大" ? 'cur_max_value' : 'cur_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemCurType], 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemCurType], 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemCurType], 2));
         }
         break;
       case '电压':
+        let itemVolType = typeRadioShow.value == "最小" ? 'vol_min_value' : (typeRadioShow.value == "最大" ? 'vol_max_value' : 'vol_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_avg_value, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_avg_value, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_avg_value, 1));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemVolType], 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemVolType], 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemVolType], 1));
         }
         break;
       case '有效电能':
@@ -1277,38 +1296,46 @@ function initData (){
         }
         break;
       case '有功功率':
+        let itemActiveType = typeRadioShow.value == "最小" ? 'pow_active_min_value' : (typeRadioShow.value == "最大" ? 'pow_active_max_value' : 'pow_active_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemActiveType], 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemActiveType], 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemActiveType], 3));
         }
         break;              
       case '无功功率':
+        let itemReactiveType = typeRadioShow.value == "最小" ? 'pow_reactive_min_value' : (typeRadioShow.value == "最大" ? 'pow_reactive_max_value' : 'pow_reactive_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemReactiveType], 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemReactiveType], 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemReactiveType], 3));
         }
        break;
       case '视在功率':
+        let itemApparentType = typeRadioShow.value == "最小" ? 'pow_apparent_min_value' : (typeRadioShow.value == "最大" ? 'pow_apparent_max_value' : 'pow_apparent_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemApparentType], 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemApparentType], 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemApparentType], 3));
         }
        break;
       case '功率因素':
+        let itemFactorType = typeRadioShow.value == "最小" ? 'power_factor_min_value' : (typeRadioShow.value == "最大" ? 'power_factor_max_value' : 'power_factor_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor_avg_value, 2));
+          if(!allLineData.value.L1[0]?.[itemFactorType]) {
+            itemFactorType = 'power_factor_avg_value'
+          }
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemFactorType], 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemFactorType], 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemFactorType], 2));
         }
         break;
       case '负载率':
+        let itemLoadLineType = typeRadioShow.value == "最小" ? 'load_rate_min_value' : (typeRadioShow.value == "最大" ? 'load_rate_max_value' : 'load_rate_avg_value')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemLoadLineType], 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemLoadLineType], 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemLoadLineType], 1));
         }
         break;    
       }
@@ -1342,6 +1369,19 @@ const handleQuery = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
+  if(location.value && devKey.value && boxId.value) {
+    boxLoadDetailStore.updateBoxLoadDetail(devKey.value, boxId.value, location.value, roomName.value)
+  } else if(boxLoadDetailStore.boxId != '') {
+    location.value = boxLoadDetailStore.location
+    devKey.value = boxLoadDetailStore.devKey 
+    boxId.value = boxLoadDetailStore.boxId 
+    roomName.value = boxLoadDetailStore.roomName
+    queryParams.id = Number(boxLoadDetailStore.boxId)
+    queryParamsSearch.id = Number(boxLoadDetailStore.boxId) 
+    queryParams.devKey = boxLoadDetailStore.devKey
+    queryParamsSearch.devKey = boxLoadDetailStore.devKey
+    lineChartQueryParams.id = Number(boxLoadDetailStore.boxId) 
+  }
   devKeyList.value = await loadAll();
   await getBoxIdAndLocation();
   await getDetailData();

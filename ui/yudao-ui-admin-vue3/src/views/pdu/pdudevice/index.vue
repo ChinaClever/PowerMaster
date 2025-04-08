@@ -257,7 +257,7 @@
       <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
-          <div class="devKey">{{ item.location != '未绑定' ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" style="margin-left: 10px;">
             <div class="info">
               <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kVA</div>

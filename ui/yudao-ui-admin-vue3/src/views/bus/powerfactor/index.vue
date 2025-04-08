@@ -249,8 +249,8 @@
         <br/>
         <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
         <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
-          <el-table style="height:70vh;" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
-          <el-table-column label="序号" align="center" prop="index" />
+          <el-table style="height:70vh;" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" height="70vh" >
+          <el-table-column label="序号" align="center" prop="index" width="80px" />
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="A相功率因数" align="center" prop="powerFactorAvgValueA" />
           <el-table-column label="B相功率因数" align="center" prop="powerFactorAvgValueB" />
@@ -1320,5 +1320,8 @@ onActivated(() => {
   width: 80%;
   height: 80%;
   margin-top: 100px;
+}
+:deep(.el-table .el-table__header th) {
+  height: 40px;
 }
 </style>
