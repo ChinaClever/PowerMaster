@@ -658,7 +658,7 @@ const { isFromHome } = defineProps({
 })
 
 const handleRoomHome = (id) => {
-  push({path: '/room/home', state: { roomId: id }})
+  push({path: '/room/roommonitor/home', state: { roomId: id }})
 }
 
 /** 搜索按钮操作 */
