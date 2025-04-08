@@ -1133,7 +1133,7 @@ const handleJump = (data) => {
     return
   }
   if (target.type == 1) {
-    push({path: '/aisle/columnHome', state: { id: target.id, roomId: roomId.value }})
+    push({path: '/aisle/aislemonitor/columnHome', state: { id: target.id, roomId: roomId.value }})
   } else {
     if(target.runStatus == 0){
      message.error('未绑定设备无法查看详情!')
