@@ -57,6 +57,15 @@ public class MenuController {
         return success(true);
     }
 
+    @DeleteMapping("/force/delete")
+    @Operation(summary = "强制删除菜单及子菜单")
+    @Parameter(name = "id", description = "菜单编号", required= true, example = "1024")
+//    @PreAuthorize("@ss.hasPermission('system:menu:delete')")
+    public CommonResult<Boolean> forceDeleteMenu(@RequestParam("id") Long id) {
+        menuService.forceDeleteMenu(id);
+        return success(true);
+    }
+
     @GetMapping("/list")
     @Operation(summary = "获取菜单列表", description = "用于【菜单管理】界面")
     @PreAuthorize("@ss.hasPermission('system:menu:query')")
