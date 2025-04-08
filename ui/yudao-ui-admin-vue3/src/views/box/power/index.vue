@@ -1170,7 +1170,7 @@ const toDeatil = (row) =>{
   const busName = row.busName;
   const location = row.location != null ? row.location : '未绑定';
   const roomName = row.roomName != null ? row.roomName : '未绑定';
-  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location,busName,roomName}});
+  push({path: '/bus/busmonitor/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location,busName,roomName}});
 };
 
 const defaultSelected = ref(['line']);

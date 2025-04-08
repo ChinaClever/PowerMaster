@@ -549,7 +549,7 @@ const handleExport = async () => {
 // 跳转详情页
 const toDetails = (busId: number,location: string, devKey: string) => {
 
-  push({path: '/bus/nenghao/ecdistribution/bus', state: {busId,location,devKey}})
+  push({path: '/bus/nenghao/busnenghao/ecdistribution', state: {busId,location,devKey}})
 }
 
 const format = (date) => {

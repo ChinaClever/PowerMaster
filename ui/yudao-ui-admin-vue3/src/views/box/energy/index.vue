@@ -337,7 +337,7 @@ const toDetail = (roomId, id,room,boxName, item) => {
   const devKey = item.devKey;
   const busName = item.busName;
   const roomName = room ? room : '未绑定';
-  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
+  push({path: '/bus/busmonitor/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
 }
 onMounted(async () => {
   devKeyList.value = await loadAll();

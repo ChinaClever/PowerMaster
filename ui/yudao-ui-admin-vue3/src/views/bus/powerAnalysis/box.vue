@@ -543,7 +543,7 @@ const toDetails = (boxId: number, location: string,devkey: string) => {
   const id = boxId
   const devKey = devkey;
   const locationName = location;
-  push({path: '/bus/nenghao/ecdistribution/box', state: {id,devKey,locationName}})
+  push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName}})
 }
 
 

@@ -344,7 +344,7 @@ const changeTimeGranularity = (value) => {
 // 跳转详情
 const toDetail = (row) => {
   console.log('toDetail', row.roomName)
-   push({path: '/bus/busmonitor/busenergydetail', state: { devKey: row.devKey,
+   push({path: '/bus/busmonitor/busmonitor/busenergydetail', state: { devKey: row.devKey,
       roomId: row.roomId,
       id: row.id,
       location: row.location,
