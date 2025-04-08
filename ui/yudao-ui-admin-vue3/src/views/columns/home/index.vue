@@ -1236,7 +1236,7 @@ const sendRoomIdValList = (result) =>{
 
 // 处理跳转
 const handleJump = () => {
-   push({path: '/aisle/topology', state: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId,roomValId:roomDownVal.value.roomId }})
+   push({path: '/aisle/aislemonitor/topology', state: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId,roomValId:roomDownVal.value.roomId }})
 }
 // 处理时pdu还是母线的事件
 const handlePduBar = (type) => {

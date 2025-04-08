@@ -84,4 +84,5 @@ public interface MenuService {
      */
     List<MenuDO> getMenuList(Collection<Long> ids);
 
+    void forceDeleteMenu(Long id);
 }

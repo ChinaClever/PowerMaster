@@ -633,7 +633,7 @@ const getNavList = async() => {
 }
 
 const toDetail = async(item) =>{
-  push({path: '/aisle/columnHome', state: { id: item.id, roomId: item.roomId }})
+  push({path: '/aisle/aislemonitor/columnHome', state: { id: item.id, roomId: item.roomId }})
 }
 
 // const openNewPage = (scope) => {

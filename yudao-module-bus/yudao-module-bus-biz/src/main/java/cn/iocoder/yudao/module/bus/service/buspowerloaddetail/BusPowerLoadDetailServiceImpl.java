@@ -132,60 +132,42 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
             return null;
         }
         String index;
+        String indexTotal;
         switch (reqVO.getGranularity()) {
             case "realtime":
                 index = "bus_hda_line_realtime";
+                indexTotal ="bus_hda_total_realtime";
                 LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
                 startTime = oneHourAgo.format(formatter);
                 break;
             case "hour":
                 index = "bus_hda_line_hour";
+                indexTotal ="bus_hda_total_hour";
                 LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
                 startTime = oneDayAgo.format(formatter);
                 break;
             case "SeventyHours":
                 index = "bus_hda_line_hour";
+                indexTotal ="bus_hda_total_hour";
                 LocalDateTime threeDayAgo = LocalDateTime.now().minusDays(3);
                 startTime = threeDayAgo.format(formatter);
                 break;
             default:
                 index = "bus_hda_line_day";
+                indexTotal ="bus_hda_total_day";
                 LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
                 startTime = oneMonthAgo.format(formatter);
         }
-        String[] heads;
-        if (reqVO.getGranularity().equals("realtime")) {
-            heads = new String[]{"bus_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value",
-                    "cur_value", "load_rate", "vol_line", "create_time"};
-        } else {
-            heads = new String[]{"bus_id", "line_id",
-                    "pow_active_avg_value", "pow_active_max_value", "pow_active_min_value",
-                    "pow_reactive_avg_value", "pow_reactive_max_value", "pow_reactive_min_value",
-                    "power_factor_avg_value", "power_factor_max_value", "power_factor_min_value",
-                    "pow_apparent_avg_value", "pow_apparent_max_value", "pow_apparent_min_value",
-                    "load_rate",
-                    "vol_avg_value", "vol_max_value", "vol_min_value",
-                    "cur_avg_value", "cur_max_value", "cur_min_value",
-                    "vol_line_avg_value", "vol_line_max_value", "vol_line_min_value", "create_time"};
-        }
-
+        Map<String, Object> resultMap = new HashMap<>();
+        List<Object> resultLine1 = new ArrayList<>();
+        List<Object> resultLine2 = new ArrayList<>();
+        List<Object> resultLine3 = new ArrayList<>();
+        List<Object> total = new ArrayList<>();
         // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-        searchSourceBuilder.size(10000);
-        searchSourceBuilder.trackTotalHits(true);
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
-        searchSourceBuilder.fetchSource(heads, null);
-        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                .from(startTime)
-                .to(endTime));
+        SearchResponse searchResponse = getSearchResponse(busId, startTime, endTime, index);
 
-        searchRequest.indices(index);
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        SearchResponse searchResponseTotal = getSearchResponse(busId, startTime, endTime, indexTotal);
+
         // 搜索结果
         SearchHits hits = searchResponse.getHits();
         // 匹配到的总记录数
@@ -193,10 +175,10 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         if (totalHits == 0) {
             return null;
         }
-        Map<String, Object> resultMap = new HashMap<>();
-        List<Object> resultLine1 = new ArrayList<>();
-        List<Object> resultLine2 = new ArrayList<>();
-        List<Object> resultLine3 = new ArrayList<>();
+        searchResponseTotal.getHits().forEach(searchHit -> {
+            Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+            total.add(sourceAsMap);
+        });
         hits.forEach(searchHit -> {
             // 获取文档内容，假设它以 Map 的形式存储
             Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
@@ -215,10 +197,32 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 default:
             }
         });
+        resultMap.put("total", total);
         resultMap.put("L1", resultLine1);
         resultMap.put("L2", resultLine2);
         resultMap.put("L3", resultLine3);
         return resultMap;
+    }
+
+    private SearchResponse getSearchResponse(Long busId, String startTime, String endTime, String index) throws IOException {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
+
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(startTime)
+                .to(endTime));
+
+        searchRequest.indices(index);
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return searchResponse;
     }
 
     @Override
@@ -299,12 +303,13 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                     "cur_value", "load_rate", "create_time"};
         }else {
             heads = new String[]{"box_id", "line_id",
-                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value",
-                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value",
-                    "power_factor_avg_value",
-                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value",
-                    "vol_avg_value","vol_max_value","vol_min_value",
-                    "cur_avg_value","cur_max_value","cur_min_value",
+                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value","pow_active_max_time","pow_active_min_time",
+                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value","pow_reactive_max_time","pow_reactive_min_time",
+                    "power_factor_avg_value","power_factor_max_value","power_factor_min_value","power_factor_max_time","power_factor_min_time",
+                    "load_rate_avg_value","load_rate_max_value","load_rate_min_value","load_rate_max_time","load_rate_min_time",
+                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value","pow_apparent_max_time","pow_apparent_min_time",
+                    "vol_avg_value","vol_max_value","vol_min_value","vol_max_time","vol_min_time",
+                    "cur_avg_value","cur_max_value","cur_min_value","cur_max_time","cur_min_time",
                     "create_time"};
         }
         switch (reqVO.getGranularity()) {

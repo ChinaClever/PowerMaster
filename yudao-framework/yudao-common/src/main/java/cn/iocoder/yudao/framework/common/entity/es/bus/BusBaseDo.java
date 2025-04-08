@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.es.bus;
 
 import cn.hutool.core.date.DateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -22,6 +23,7 @@ public class BusBaseDo {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("create_time")
     private DateTime createTime;
 }

@@ -276,7 +276,7 @@ const goPDU = (devKey,location,cabinetName,path) => {
   }
   var name= location+'-'+cabinetName+'-'+path;
   console.log('跳转', devKey );
-  push({path: '/pdu/pdudisplayscreen', query: { devKey, location: name }});
+  push({path: '/pdu/power/pdudisplayscreen', query: { devKey, location: name }});
 }
 
 const goBus = (devKey,location,cabinetName,path) => {

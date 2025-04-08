@@ -456,7 +456,7 @@ const handleExport = async () => {
 const toDetails = (devKey: string, createTimeMin : string,createTimeMax : string) => {
   const start = createTimeMin
   const end = createTimeMax;
-  push({path: '/bus/nenghao/powerAnalysis/box', state: {devKey,start,end}})
+  push({path: '/bus/nenghao/boxnenghao/powerAnalysis', state: {devKey,start,end}})
 }
 
 

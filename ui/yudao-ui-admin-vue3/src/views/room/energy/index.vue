@@ -200,7 +200,7 @@ const handleCheck = async (row) => {
 
 // 跳转详情
 const toDetail = (roomId, id,location) => {
-  push({path: '/room/roomenergydetail', state: { roomId, id,location }})
+  push({path: '/room/roommonitor/roomenergydetail', state: { roomId, id,location }})
 }
 const getMaxData = async() => {
   let maxEq = await IndexApi.getMaxEq();
