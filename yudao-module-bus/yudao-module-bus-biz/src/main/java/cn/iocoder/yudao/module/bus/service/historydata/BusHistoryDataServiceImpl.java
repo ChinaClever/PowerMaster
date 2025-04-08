@@ -174,20 +174,22 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public Map getHistoryDataTypeMaxValue(String[] boxIds) throws IOException {
         HashMap resultMap = new HashMap<>();
-        String[] indexArr = new String[]{"box_hda_line_realtime", "box_hda_loop_realtime", "box_hda_outlet_realtime"};
-        String[] fieldNameArr = new String[]{"line_id", "loop_id", "outlet_id"};
+        String[] indexArr = new String[]{"box_hda_loop_hour", "box_hda_outlet_hour"};
+        String[] fieldNameArr = new String[]{"loop_id", "outlet_id"};
         for (int i = 0; i < indexArr.length; i++) {
             SearchRequest searchRequest = new SearchRequest(indexArr[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            if (boxIds != null) {
-                // 这里boxIds实际上是devkey 要先查到真正的boxIds
-                boxIds = getBoxIdsbyBoxDevkeys(boxIds);
-                searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
-            }
+//            if (boxIds != null) {
+//                // 这里boxIds实际上是devkey 要先查到真正的boxIds
+//                boxIds = getBoxIdsbyBoxDevkeys(boxIds);
+//                searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
+//            }
             // 添加最大值聚合
             searchSourceBuilder.aggregation(
                     AggregationBuilders.max("max_value").field(fieldNameArr[i])
             );
+
+            searchSourceBuilder.size(0);
             searchRequest.source(searchSourceBuilder);
             // 执行搜索请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -196,7 +198,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
             Integer maxValue = (int) maxAggregation.getValue();
             resultMap.put(fieldNameArr[i] + "_max_value", maxValue);
         }
-
+        resultMap.put("line_id_max_value",3);
         return resultMap;
     }
 

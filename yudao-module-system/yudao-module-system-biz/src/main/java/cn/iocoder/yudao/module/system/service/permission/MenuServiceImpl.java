@@ -2,12 +2,14 @@ package cn.iocoder.yudao.module.system.service.permission;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 import cn.iocoder.yudao.module.system.controller.admin.permission.vo.menu.MenuSaveVO;
 import cn.iocoder.yudao.module.system.controller.admin.permission.vo.menu.MenuListReqVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.permission.MenuDO;
 import cn.iocoder.yudao.module.system.dal.mysql.permission.MenuMapper;
 import cn.iocoder.yudao.module.system.dal.redis.RedisKeyConstants;
 import cn.iocoder.yudao.module.system.enums.permission.MenuTypeEnum;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -140,7 +142,9 @@ public class MenuServiceImpl implements MenuService {
             res=menuMapper.selectIdByParentId(ids.get(i));
             ids.addAll(res);
         }
-        menuMapper.deleteBatchByIds(ids);
+        menuMapper.update(null, new LambdaUpdateWrapper<MenuDO>()
+                .in(MenuDO::getId, ids)
+                .set(BaseDO::getDeleted,1));
     }
 
     /**

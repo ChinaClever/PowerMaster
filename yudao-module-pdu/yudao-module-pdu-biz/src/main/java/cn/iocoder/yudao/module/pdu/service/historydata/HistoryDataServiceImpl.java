@@ -101,7 +101,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if (pduId instanceof Integer) {
                 // 查询位置
                 PduIndex pduIndex = pduIndexMap.get((int) pduId);
-//                PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
+
                 if (pduIndex != null) {
                     map.put("location", pduIndex.getPduKey());
                     map.put("address", location.get(pduIndex.getPduKey()));
