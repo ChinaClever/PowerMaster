@@ -1283,6 +1283,35 @@ const getList = async () => {
     loading.value = false
   }
 }
+
+const getListNoLoading = async () => {
+  // getStatistics;
+  try {
+    const res = await IndexApi.getBalanceStatistics()
+    statusNumber.smallCurrent = res.smallCurrent;
+    statusNumber.lessFifteen = res.lessFifteen;
+    statusNumber.greaterFifteen = res.greaterFifteen;
+    statusNumber.greaterThirty = res.greaterThirty;
+    
+    const data = await IndexApi.getBalancePage(queryParams)
+    var tableIndex = 0;
+    data.list.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      obj.acur = obj.acur?.toFixed(2);
+      obj.bcur = obj.bcur?.toFixed(2);
+      obj.ccur = obj.ccur?.toFixed(2);
+      obj.curUnbalance = isFinite(obj.curUnbalance) ? obj.curUnbalance?.toFixed(2) : 0;
+      obj.avol = obj.avol?.toFixed(1);
+      obj.bvol = obj.bvol?.toFixed(1);
+      obj.cvol = obj.cvol?.toFixed(1);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(2);
+    });
+    list.value = data.list
+    total.value = data.total
+  } finally {
+  }
+}
+
 const getStatistics = async () => {
   const data = await IndexApi.getBalanceStatistics()
     statusNumber.smallCurrent = data.smallCurrent;
@@ -1435,7 +1464,7 @@ onMounted(async () => {
   getList()
   getStatistics()
   getNavList();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1457,7 +1486,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>
