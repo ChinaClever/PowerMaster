@@ -551,7 +551,7 @@ const initChart = () => {
             });
           }
       // 图例切换监听
-      totalRealtimeLegendListener(realtimeChart);
+      totalAndOutletHourAndDayLegendListener(realtimeChart);
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }

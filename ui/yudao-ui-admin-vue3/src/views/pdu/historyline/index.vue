@@ -525,7 +525,7 @@ const initChart = () => {
     }
   }
   // 图例切换监听
-  totalRealtimeLegendListener(realtimeChart);
+  setupLegendListener1(realtimeChart);
   // 每次切换图就要动态生成数据表头
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
@@ -1398,6 +1398,7 @@ onMounted( async () => {
     nowAddress.value = queryAddress
     nowAddressTemp.value = queryAddress
     initChart();
+
   }
 })
 
