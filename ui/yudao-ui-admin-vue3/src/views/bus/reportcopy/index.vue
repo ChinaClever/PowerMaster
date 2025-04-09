@@ -1115,7 +1115,7 @@ const generateDailyReport = (devKey) => {
   
       // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
       console.log('生成日报报告', devKey);
-      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
+      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
     };
 
     const generateMonthlyReport = (devKey) => {
@@ -1130,7 +1130,7 @@ const generateDailyReport = (devKey) => {
   new1.value = getFullTimeByDate(new1.value);
       // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
       console.log('生成月报报告', devKey);
-      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
     };
 // 表格行选择处理
 const handleCurrentChange = (val) => {
