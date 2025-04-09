@@ -723,16 +723,26 @@ const initChart = async () => {
     chartData.value.apparentList[index] = obj?.toFixed(3);
     chartData.value.apparentListMin[index] = chartData.value.apparentListMin[index]?.toFixed(3);
     chartData.value.apparentListMax[index] = chartData.value.apparentListMax[index]?.toFixed(3);
-  });
-  chartData.value.activeList.forEach((obj,index) => {
-    chartData.value.activeList[index] = obj?.toFixed(3);
+    chartData.value.apparentListMinTime[index] = chartData.value.apparentListMinTime[index]?.slice(0, -3);
+    chartData.value.apparentListMaxTime[index] = chartData.value.apparentListMaxTime[index]?.slice(0, -3);
+
+    chartData.value.activeList[index] = chartData.value.activeList[index]?.toFixed(3);
     chartData.value.activeListMin[index] = chartData.value.activeListMin[index]?.toFixed(3);
     chartData.value.activeListMax[index] = chartData.value.activeListMax[index]?.toFixed(3);
-  });
-  chartData.value.reactiveList.forEach((obj,index) => {
-    chartData.value.reactiveList[index] = obj?.toFixed(3);
+    chartData.value.activeListMinTime[index] = chartData.value.activeListMinTime[index]?.slice(0, -3);
+    chartData.value.activeListMaxTime[index] = chartData.value.activeListMaxTime[index]?.slice(0, -3);
+
+    chartData.value.reactiveList[index] = chartData.value.reactiveList[index]?.toFixed(3);
     chartData.value.reactiveListMin[index] = chartData.value.reactiveListMin[index]?.toFixed(3);
     chartData.value.reactiveListMax[index] = chartData.value.reactiveListMax[index]?.toFixed(3);
+    chartData.value.reactiveListMinTime[index] = chartData.value.reactiveListMinTime[index]?.slice(0, -3);
+    chartData.value.reactiveListMaxTime[index] = chartData.value.reactiveListMaxTime[index]?.slice(0, -3);
+
+    chartData.value.factorList[index] = chartData.value.factorList[index]?.toFixed(2);
+    chartData.value.factorListMin[index] = chartData.value.factorListMin[index]?.toFixed(2);
+    chartData.value.factorListMax[index] = chartData.value.factorListMax[index]?.toFixed(2);
+    chartData.value.factorListMinTime[index] = chartData.value.factorListMinTime[index]?.slice(0, -3);
+    chartData.value.factorListMaxTime[index] = chartData.value.factorListMaxTime[index]?.slice(0, -3);
   });
 
   if(queryParams.powGranularity === 'oneHour'){
@@ -746,27 +756,33 @@ const initChart = async () => {
     chartDataF.value.dateTimes = chartDataF.value.dateTimes.map(item => item.slice(0, 16));
   }
 
+  let timeArr = [itemActiveType + 'Time',itemApparentType + 'Time',itemReactiveType + 'Time']
+
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                    var result = params[0].name + '<br>';
-                                    for (var i = 0; i < params.length; i++) {
-                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      //判断是否给鼠标悬停上显示符号
-                                      if (params[i].seriesName === '视在功率') {
-                                        result += ' kVA'; 
-                                      } else if (params[i].seriesName === '有功功率') {
-                                        result += ' kW';
-                                      }else if (params[i].seriesName === '无功功率') {
-                                        result += ' kVar';
-                                      }
-                                      result += '<br>';
-                                    }
-                                    return result;
-                                  }},
+        var result = params[0].name + '<br>';
+        for (var i = 0; i < params.length; i++) {
+          result +=  params[i].marker + params[i].seriesName;
+          if(chartData.value[timeArr[i]].length) {
+            result += '&nbsp&nbsp发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
+          //判断是否给鼠标悬停上显示符号
+          if (params[i].seriesName === '视在功率') {
+            result += ' kVA'; 
+          } else if (params[i].seriesName === '有功功率') {
+            result += ' kW';
+          }else if (params[i].seriesName === '无功功率') {
+            result += ' kVar';
+          }
+          result += '<br>';
+        }
+        return result;
+      }},
       //显示线的按钮
       legend: { data: ['有功功率','视在功率','无功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
@@ -800,19 +816,23 @@ const initChart = async () => {
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                    var result = params[0].name + '<br>';
-                                    for (var i = 0; i < params.length; i++) {
-                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      //判断是否给鼠标悬停上显示符号
-                                      if (params[i].seriesName === '视在功率') {
-                                        result += ' kVA'; 
-                                      } else if (params[i].seriesName === '有功功率') {
-                                        result += ' kW';
-                                      }
-                                      result += '<br>';
-                                    }
-                                    return result;
-                                  }},
+        var result = params[0].name + '<br>';
+        for (var i = 0; i < params.length; i++) {
+          result +=  params[i].marker + params[i].seriesName;
+          if(chartDataF.value.factorListMaxTime.length) {
+            result += '&nbsp&nbsp发生时间:' + chartDataF.value.factorListMaxTime[params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
+          //判断是否给鼠标悬停上显示符号
+          if (params[i].seriesName === '视在功率') {
+            result += ' kVA'; 
+          } else if (params[i].seriesName === '有功功率') {
+            result += ' kW';
+          }
+          result += '<br>';
+        }
+        return result;
+      }},
       //显示线的按钮
       legend: { data: ['功率因素'], selectedMode: 'single'},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
@@ -1080,15 +1100,14 @@ const flashChartData = async () =>{
   chartData.value = await PDUDeviceApi.PDUHis(tempParams);
   chartData.value.apparentList.forEach((obj,index) => {
     chartData.value[`${itemApparentType}`][index] = obj?.toFixed(3);
-  });
-  chartData.value.activeList.forEach((obj,index) => {
-    chartData.value[`${itemActiveType}`][index] = obj?.toFixed(3);
-  });
-  chartData.value.factorList.forEach((obj,index) => {
-    chartData.value[`${itemFactorType}`][index] = obj?.toFixed(2);
-  });
-  chartData.value.reactiveList.forEach((obj,index) => {
-    chartData.value[`${itemReactiveType}`][index] = obj?.toFixed(3);
+    chartData.value[`${itemActiveType}`][index] = chartData.value[`${itemActiveType}`][index]?.toFixed(3);
+    chartData.value[`${itemFactorType}`][index] = chartData.value[`${itemFactorType}`][index]?.toFixed(2);
+    chartData.value[`${itemReactiveType}`][index] = chartData.value[`${itemReactiveType}`][index]?.toFixed(3);
+    
+    chartData.value[`${itemApparentType}Time`][index] = chartData.value[`${itemApparentType}Time`][index]?.slice(0, -3);
+    chartData.value[`${itemActiveType}Time`][index] = chartData.value[`${itemActiveType}Time`][index]?.slice(0, -3);
+    chartData.value[`${itemFactorType}Time`][index] = chartData.value[`${itemFactorType}Time`][index]?.slice(0, -3);
+    chartData.value[`${itemReactiveType}Time`][index] = chartData.value[`${itemReactiveType}Time`][index]?.slice(0, -3);
   });
 
   if(queryParams.powGranularity === 'oneHour'){
@@ -1099,6 +1118,8 @@ const flashChartData = async () =>{
     chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
   }
   
+  let timeArr = [itemActiveType + 'Time',itemApparentType + 'Time',itemReactiveType + 'Time']
+
   // 创建新的图表实例
   chart = echarts.init(document.getElementById('chartContainer'));
   // 设置新的配置对象
@@ -1107,20 +1128,24 @@ const flashChartData = async () =>{
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                    var result = params[0].name + '<br>';
-                                    for (var i = 0; i < params.length; i++) {
-                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      if (params[i].seriesName === '视在功率') {
-                                        result += ' kVA'; 
-                                      } else if (params[i].seriesName === '有功功率') {
-                                        result += ' kW';
-                                      }else if (params[i].seriesName === '无功功率') {
-                                        result += ' kVar';
-                                      }
-                                      result += '<br>';
-                                    }
-                                    return result;
-                                  }},
+        var result = params[0].name + '<br>';
+        for (var i = 0; i < params.length; i++) {
+          result +=  params[i].marker + params[i].seriesName;
+          if(itemApparentType != 'apparentList' && chartData.value[timeArr[i]].length) {
+            result += '&nbsp&nbsp发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
+          if (params[i].seriesName === '视在功率') {
+            result += ' kVA'; 
+          } else if (params[i].seriesName === '有功功率') {
+            result += ' kW';
+          }else if (params[i].seriesName === '无功功率') {
+            result += ' kVar';
+          }
+          result += '<br>';
+        }
+        return result;
+      }},
       legend: { data: ['有功功率','视在功率','无功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -1172,18 +1197,22 @@ const flashChartData = async () =>{
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                    var result = params[0].name + '<br>';
-                                    for (var i = 0; i < params.length; i++) {
-                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      if (params[i].seriesName === '视在功率') {
-                                        result += ' kVA'; 
-                                      } else if (params[i].seriesName === '有功功率') {
-                                        result += ' kW';
-                                      }
-                                      result += '<br>';
-                                    }
-                                    return result;
-                                  }},
+        var result = params[0].name + '<br>';
+        for (var i = 0; i < params.length; i++) {
+          result +=  params[i].marker + params[i].seriesName;
+          if(itemFactorType != 'factorList' && chartDataF.value?.[`${itemFactorType}Time`].length) {
+            result += '&nbsp&nbsp发生时间:' + chartDataF.value[`${itemFactorType}Time`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
+          if (params[i].seriesName === '视在功率') {
+            result += ' kVA'; 
+          } else if (params[i].seriesName === '有功功率') {
+            result += ' kW';
+          }
+          result += '<br>';
+        }
+        return result;
+      }},
       legend: { data: ['功率因素'], selectedMode: 'single'},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -1537,7 +1566,19 @@ const getTestData = async()=>{
 }
 
 watch([() => typeRadioShowCur.value],async () => {
-    lineidBeforeChartUnmount();
+    // lineidBeforeChartUnmount();
+
+    let itemCurTimeType = typeRadioShowCur.value == "最小" ? 'cur_min_time' : (typeRadioShowCur.value == "最大" ? 'cur_max_time' : '')
+    dataTimeCur.value = {
+      L1DataTime: [],
+      L2DataTime: [],
+      L3DataTime: []
+    }
+    if(itemCurTimeType != '') {
+      dataTimeCur.value.L1DataTime = resultCur.value.l.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+      dataTimeCur.value.L2DataTime = resultCur.value.ll.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+      dataTimeCur.value.L3DataTime = resultCur.value.lll.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+    }
 
     processChartData(resultCur.value.l, lChartData);
     processChartData(resultCur.value.ll, llChartData);
@@ -1551,8 +1592,12 @@ watch([() => typeRadioShowCur.value],async () => {
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+        params.forEach((param,i) => {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTimeCur.value[`L${i+1}DataTime`].length && dataTimeCur.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '&nbsp&nbsp发生时间:' + dataTimeCur.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
           if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
             result += 'V';
           } else  {
@@ -1684,6 +1729,18 @@ watch([() => typeRadioShowCur.value],async () => {
 
 watch([() => typeRadioShowVol.value],async () => {
 
+    let itemVolTimeType = typeRadioShowVol.value == "最小" ? 'vol_min_time' : (typeRadioShowVol.value == "最大" ? 'vol_max_time' : '')
+    dataTime.value = {
+      L1DataTime: [],
+      L2DataTime: [],
+      L3DataTime: []
+    }
+    if(itemVolTimeType != '') {
+      dataTime.value.L1DataTime = resultVol.value.l.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+      dataTime.value.L2DataTime = resultVol.value.ll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+      dataTime.value.L3DataTime = resultVol.value.lll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+    }
+
     processChartDataV(resultVol.value.l, lChartDataV);
     processChartDataV(resultVol.value.ll, llChartDataV);
     processChartDataV(resultVol.value.lll, lllChartDataV);
@@ -1696,8 +1753,12 @@ watch([() => typeRadioShowVol.value],async () => {
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+        params.forEach((param,i) => {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTime.value[`L${i+1}DataTime`].length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '&nbsp&nbsp发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
           if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
             result += 'V';
           } else  {
@@ -1828,7 +1889,7 @@ watch([() => typeRadioShowVol.value],async () => {
 })
 
 watch([() => toggleTime.value],async ()=>{
-    lineidBeforeChartUnmount();
+    // lineidBeforeChartUnmount();
 
     await PDUHdaLineHisdata(toggleTime.value)
 
@@ -1840,8 +1901,12 @@ watch([() => toggleTime.value],async ()=>{
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+        params.forEach((param,i) => {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTimeCur.value[`L${i+1}DataTime`].length && dataTimeCur.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '&nbsp&nbsp发生时间:' + dataTimeCur.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
           if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
             result += 'V';
           } else  {
@@ -1982,8 +2047,12 @@ watch([() => toggleTimeV.value],async ()=>{
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+        params.forEach((param,i) => {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTime.value[`L${i+1}DataTime`].length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '&nbsp&nbsp发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
           if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
             result += 'V';
           } else  {
@@ -2117,7 +2186,9 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
   let itemApparentType = value == "最小" ? 'apparentListMin' : (value == "最大" ? 'apparentListMax' : 'apparentList')
   let itemActiveType = value == "最小" ? 'activeListMin' : (value == "最大" ? 'activeListMax' : 'activeList')
   let itemReactiveType = value == "最小" ? 'reactiveListMin' : (value == "最大" ? 'reactiveListMax' : 'reactiveList')
-  console.log(itemApparentType,itemActiveType,itemReactiveType)
+
+  let timeArr = [itemActiveType + 'Time',itemApparentType + 'Time',itemReactiveType + 'Time']
+
     // 创建新的图表实例
     chart = echarts.init(document.getElementById('chartContainer'));
     chart.setOption({})
@@ -2128,21 +2199,25 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
         tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                      var result = params[0].name + '<br>';
-                                      for (var i = 0; i < params.length; i++) {
-                                        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                        if (params[i].seriesName === '视在功率') {
-                                          result += ' kVA'; 
-                                        } else if (params[i].seriesName === '有功功率') {
-                                          result += ' kW';
-                                        }else if (params[i].seriesName === '无功功率') {
-                                          result += ' kVar';
-                                        }
-                                        result += '<br>';
-                                      }
-                                      return result;
-                                    }},
-                                    legend: { data: ['有功功率','视在功率','无功功率']},
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName;
+            if(itemApparentType != 'apparentList' && chartData.value[timeArr[i]].length) {
+              result += '&nbsp&nbsp发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
+            }
+            result += '&nbsp&nbsp' + params[i].value
+            if (params[i].seriesName === '视在功率') {
+              result += ' kVA'; 
+            } else if (params[i].seriesName === '有功功率') {
+              result += ' kW';
+            }else if (params[i].seriesName === '无功功率') {
+              result += ' kVar';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
+        legend: { data: ['有功功率','视在功率','无功功率']},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2195,20 +2270,24 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
         tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                      var result = params[0].name + '<br>';
-                                      for (var i = 0; i < params.length; i++) {
-                                        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                        if (params[i].seriesName === '视在功率') {
-                                          result += ' kVA'; 
-                                        } else if (params[i].seriesName === '有功功率') {
-                                          result += ' kW';
-                                        }else if (params[i].seriesName === '无功功率') {
-                                          result += ' kVar';
-                                        }
-                                        result += '<br>';
-                                      }
-                                      return result;
-                                    }},
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName;
+            if(itemFactorType != 'factorList' && chartDataF.value?.[`${itemFactorType}Time`].length) {
+              result += '&nbsp&nbsp发生时间:' + chartDataF.value[`${itemFactorType}Time`][params[i].dataIndex]
+            }
+            result += '&nbsp&nbsp' + params[i].value
+            if (params[i].seriesName === '视在功率') {
+              result += ' kVA'; 
+            } else if (params[i].seriesName === '有功功率') {
+              result += ' kW';
+            }else if (params[i].seriesName === '无功功率') {
+              result += ' kVar';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
         legend: { data: ['功率因素'], selectedMode: 'single'},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -2271,16 +2350,26 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
       chartData.value.apparentList[index] = obj?.toFixed(3);
       chartData.value.apparentListMin[index] = chartData.value.apparentListMin[index]?.toFixed(3);
       chartData.value.apparentListMax[index] = chartData.value.apparentListMax[index]?.toFixed(3);
-    });
-    chartData.value.activeList.forEach((obj,index) => {
-      chartData.value.activeList[index] = obj?.toFixed(3);
+      chartData.value.apparentListMinTime[index] = chartData.value.apparentListMinTime[index]?.slice(0, -3);
+      chartData.value.apparentListMaxTime[index] = chartData.value.apparentListMaxTime[index]?.slice(0, -3);
+
+      chartData.value.activeList[index] = chartData.value.activeList[index]?.toFixed(3);
       chartData.value.activeListMin[index] = chartData.value.activeListMin[index]?.toFixed(3);
       chartData.value.activeListMax[index] = chartData.value.activeListMax[index]?.toFixed(3);
-    });
-    chartData.value.reactiveList.forEach((obj,index) => {
-      chartData.value.reactiveList[index] = obj?.toFixed(3);
+      chartData.value.activeListMinTime[index] = chartData.value.activeListMinTime[index]?.slice(0, -3);
+      chartData.value.activeListMaxTime[index] = chartData.value.activeListMaxTime[index]?.slice(0, -3);
+
+      chartData.value.reactiveList[index] = chartData.value.reactiveList[index]?.toFixed(3);
       chartData.value.reactiveListMin[index] = chartData.value.reactiveListMin[index]?.toFixed(3);
       chartData.value.reactiveListMax[index] = chartData.value.reactiveListMax[index]?.toFixed(3);
+      chartData.value.reactiveListMinTime[index] = chartData.value.reactiveListMinTime[index]?.slice(0, -3);
+      chartData.value.reactiveListMaxTime[index] = chartData.value.reactiveListMaxTime[index]?.slice(0, -3);
+
+      chartData.value.factorList[index] = chartData.value.factorList[index]?.toFixed(2);
+      chartData.value.factorListMin[index] = chartData.value.factorListMin[index]?.toFixed(2);
+      chartData.value.factorListMax[index] = chartData.value.factorListMax[index]?.toFixed(2);
+      chartData.value.factorListMinTime[index] = chartData.value.factorListMinTime[index]?.slice(0, -3);
+      chartData.value.factorListMaxTime[index] = chartData.value.factorListMaxTime[index]?.slice(0, -3);
     });
 
   if(queryParams.powGranularity === 'oneHour'){
@@ -2290,6 +2379,9 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
   }else if(queryParams.powGranularity === 'seventytwoHour'){
     chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
   }
+
+  let timeArr = [itemActiveType + 'Time',itemApparentType + 'Time',itemReactiveType + 'Time']
+
     // 创建新的图表实例
     chart = echarts.init(document.getElementById('chartContainer'));
 
@@ -2299,21 +2391,25 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
         tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                      var result = params[0].name + '<br>';
-                                      for (var i = 0; i < params.length; i++) {
-                                        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                        if (params[i].seriesName === '视在功率') {
-                                          result += ' kVA'; 
-                                        } else if (params[i].seriesName === '有功功率') {
-                                          result += ' kW';
-                                        }else if (params[i].seriesName === '无功功率') {
-                                          result += ' kVar';
-                                        }
-                                        result += '<br>';
-                                      }
-                                      return result;
-                                    }},
-                                    legend: { data: ['有功功率','视在功率','无功功率']},
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName;
+            if(itemApparentType != 'apparentList' && chartData.value[timeArr[i]].length) {
+              result += '&nbsp&nbsp发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
+            }
+            result += '&nbsp&nbsp' + params[i].value
+            if (params[i].seriesName === '视在功率') {
+              result += ' kVA'; 
+            } else if (params[i].seriesName === '有功功率') {
+              result += ' kW';
+            }else if (params[i].seriesName === '无功功率') {
+              result += ' kVar';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
+        legend: { data: ['有功功率','视在功率','无功功率']},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2370,6 +2466,8 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
       chartDataF.value.factorList[index] = obj?.toFixed(2);
       chartDataF.value.factorListMin[index] = chartDataF.value.factorListMin[index]?.toFixed(2);
       chartDataF.value.factorListMax[index] = chartDataF.value.factorListMax[index]?.toFixed(2);
+      chartDataF.value.factorListMinTime[index] = chartDataF.value.factorListMinTime[index]?.slice(0, -3);
+      chartDataF.value.factorListMaxTime[index] = chartDataF.value.factorListMaxTime[index]?.slice(0, -3);
     });
 
   if(queryParams.powGranularityF === 'oneHour'){
@@ -2388,20 +2486,24 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
         tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                      var result = params[0].name + '<br>';
-                                      for (var i = 0; i < params.length; i++) {
-                                        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                        if (params[i].seriesName === '视在功率') {
-                                          result += ' kVA'; 
-                                        } else if (params[i].seriesName === '有功功率') {
-                                          result += ' kW';
-                                        }else if (params[i].seriesName === '无功功率') {
-                                          result += ' kVar';
-                                        }
-                                        result += '<br>';
-                                      }
-                                      return result;
-                                    }},
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName;
+            if(itemFactorType != 'factorList' && chartDataF.value?.[`${itemFactorType}Time`].length) {
+              result += '&nbsp&nbsp发生时间:' + chartDataF.value[`${itemFactorType}Time`][params[i].dataIndex]
+            }
+            result += '&nbsp&nbsp' + params[i].value
+            if (params[i].seriesName === '视在功率') {
+              result += ' kVA'; 
+            } else if (params[i].seriesName === '有功功率') {
+              result += ' kW';
+            }else if (params[i].seriesName === '无功功率') {
+              result += ' kVar';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
         legend: { data: ['功率因素'], selectedMode: 'single'},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -2482,17 +2584,20 @@ const lllChartData = ref({
 
 const lChartDataV = ref({
   volValueList : [] as number[], //电压
-  curValueList : [] as number[] //电流
+  curValueList : [] as number[], //电流
+  volTimeList: [] as string[]
 });
 
 const llChartDataV = ref({
-  volValueList : [] as number[],
-  curValueList : [] as number[]
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[], //电流
+  volTimeList: [] as string[]
 });
 
 const lllChartDataV = ref({
-  volValueList : [] as number[],
-  curValueList : [] as number[]
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[], //电流
+  volTimeList: [] as string[]
 });
 
 const lineidDateTimes = ref([] as string[])
@@ -2554,6 +2659,17 @@ function processChartDataV(data, chartData) {
   }
 }
 
+const dataTimeCur = ref({
+  L1DataTime: [],
+  L2DataTime: [],
+  L3DataTime: []
+})
+
+const dataTime = ref({
+  L1DataTime: [],
+  L2DataTime: [],
+  L3DataTime: []
+})
 
 //获取最近一个小时的PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async (type) => {
@@ -2589,6 +2705,18 @@ const PDUHdaLineHisdata = async (type) => {
   }
   resultCur.value = result
   //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
+
+  let itemCurTimeType = typeRadioShowCur.value == "最小" ? 'cur_min_time' : (typeRadioShowCur.value == "最大" ? 'cur_max_time' : '')
+  dataTimeCur.value = {
+    L1DataTime: [],
+    L2DataTime: [],
+    L3DataTime: []
+  }
+  if(itemCurTimeType != '') {
+    dataTimeCur.value.L1DataTime = resultCur.value.l.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+    dataTimeCur.value.L2DataTime = resultCur.value.ll.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+    dataTimeCur.value.L3DataTime = resultCur.value.lll.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+  }
 
   processChartData(result.l, lChartData);
   processChartData(result.ll, llChartData);
@@ -2626,6 +2754,19 @@ const PDUHdaLineHisdataV = async (type) => {
   resultVol.value = result
   //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
 
+  let itemVolTimeType = typeRadioShowVol.value == "最小" ? 'vol_min_time' : (typeRadioShowVol.value == "最大" ? 'vol_max_time' : '')
+  dataTime.value = {
+    L1DataTime: [],
+    L2DataTime: [],
+    L3DataTime: []
+  }
+  if(itemVolTimeType != '') {
+    dataTime.value.L1DataTime = resultVol.value.l.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+    dataTime.value.L2DataTime = resultVol.value.ll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+    dataTime.value.L3DataTime = resultVol.value.lll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+  }
+
+
   processChartDataV(result.l, lChartDataV);
   processChartDataV(result.ll, llChartDataV);
   processChartDataV(result.lll, lllChartDataV);
@@ -2644,8 +2785,12 @@ const lineidFlashChartData = async () =>{
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+        params.forEach((param,i) => {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTimeCur.value[`L${i+1}DataTime`].length && dataTimeCur.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '&nbsp&nbsp发生时间:' + dataTimeCur.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
           if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
             result += 'V';
           } else  {
@@ -2784,8 +2929,12 @@ const lineidFlashChartData = async () =>{
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+        params.forEach((param,i) => {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTime.value[`L${i+1}DataTime`].length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '&nbsp&nbsp发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
           if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
             result += 'V';
           } else  {
@@ -2938,7 +3087,7 @@ onBeforeMount(async () =>{
 })
 
 onBeforeUnmount(()=>{
-  if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
+  if(flashListTimer.value.tableDataTimer && flashListTimer.value.abcChartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
     clearInterval(flashListTimer.value.chartTimer)
     clearInterval(flashListTimer.value.abcChartTimer)
@@ -2968,7 +3117,7 @@ onActivated( async () => {
 })
 
 onBeforeRouteLeave(()=>{
-  if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
+  if(flashListTimer.value.tableDataTimer && flashListTimer.value.abcChartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
     clearInterval(flashListTimer.value.chartTimer)
     clearInterval(flashListTimer.value.abcChartTimer)

@@ -117,7 +117,13 @@
         <el-table v-show="switchValue == 1 && visMode == 0 && list.length > 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="所在位置" align="center" prop="location" width="180px">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
         <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="120px" >
           <template #default="scope" >
@@ -167,7 +173,13 @@
       </el-table>
       <el-table v-show="switchValue == 1 && visMode == 1 && list.length > 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="所在位置" align="center" prop="location" width="180px">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
         <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
           <template #default="scope" >

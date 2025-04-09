@@ -178,7 +178,7 @@
               link
               type="primary"
               @click="showDialogCur(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
@@ -222,7 +222,7 @@
             <el-tag type="warning" v-if="item.color == 3 && item.status != 0">{{ statusList[1].name }}</el-tag>
             <el-tag type="danger" v-if="item.color == 4 && item.status != 0">{{ statusList[2].name }}</el-tag>
           </div>
-          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0 && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -355,7 +355,7 @@
             <el-tag type="info"  v-if="item.color === 0">单相设备</el-tag>
             <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0 && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -828,6 +828,34 @@ const getList = async () => {
     total.value = data.total
   } finally {
     loading.value = false
+  }
+}
+
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBalancePage(queryParams)
+     var tableIndex = 0;
+    // var lessFifteen = 0;
+    // var greaterFifteen = 0;
+    // var greaterThirty = 0;
+    // var smallCurrent = 0;
+    data.list.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      
+      obj.acur = obj.acur?.toFixed(2);
+      obj.bcur = obj.bcur?.toFixed(2);
+      obj.ccur = obj.ccur?.toFixed(2);
+      obj.curUnbalance = obj.curUnbalance?.toFixed(0);
+      obj.avol = obj.avol?.toFixed(1);
+      obj.bvol = obj.bvol?.toFixed(1);
+      obj.cvol = obj.cvol?.toFixed(1);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+
+    });
+
+    list.value = data.list
+    total.value = data.total
+  } finally {
   }
 }
 
@@ -1413,7 +1441,7 @@ onMounted(async () => {
   getList();
   getNavList();
   getStatistics();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1435,7 +1463,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>
@@ -2028,10 +2056,6 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
-}
-
-:deep(.el-tag){
-  margin-right:-20px;
 }
 
 :deep(.el-dialog) {
