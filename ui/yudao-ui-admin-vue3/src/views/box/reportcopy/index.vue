@@ -95,6 +95,11 @@
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
       </el-form>
+      <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+        <el-option label="平均" value="平均" />
+        <el-option label="最大" value="最大" />
+        <el-option label="最小" value="最小" />
+      </el-select>
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >
@@ -303,6 +308,8 @@ const visControll = reactive({
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
+
+const typeRadioShow = ref("最大")
 
 // 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
@@ -1271,11 +1278,6 @@ if (devKey != undefined) {
 
 .el-table {
     color: #2c2c2c !important;
-}
-
-:deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
 }
 
 :deep(.master-left .el-card__body) {

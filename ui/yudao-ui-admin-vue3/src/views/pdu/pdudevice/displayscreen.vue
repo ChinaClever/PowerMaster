@@ -772,11 +772,11 @@ const initChart = async () => {
           }
           result += '&nbsp&nbsp' + params[i].value
           //判断是否给鼠标悬停上显示符号
-          if (params[i].seriesName === '视在功率') {
+          if (params[i].seriesName === '总视在功率') {
             result += ' kVA'; 
-          } else if (params[i].seriesName === '有功功率') {
+          } else if (params[i].seriesName === '总有功功率') {
             result += ' kW';
-          }else if (params[i].seriesName === '无功功率') {
+          }else if (params[i].seriesName === '总无功功率') {
             result += ' kVar';
           }
           result += '<br>';
@@ -784,7 +784,7 @@ const initChart = async () => {
         return result;
       }},
       //显示线的按钮
-      legend: { data: ['有功功率','视在功率','无功功率']},
+      legend: { data: ['总有功功率','总视在功率','总无功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -801,9 +801,9 @@ const initChart = async () => {
       yAxis: { type: 'value'},
       //鼠标悬停的显示
       series: [
-          {name: '有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
-          {name: '视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
-          {name: '无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
+          {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
+          {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
+          {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
       ],
     });
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -1135,18 +1135,18 @@ const flashChartData = async () =>{
             result += '&nbsp&nbsp发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
           }
           result += '&nbsp&nbsp' + params[i].value
-          if (params[i].seriesName === '视在功率') {
+          if (params[i].seriesName === '总视在功率') {
             result += ' kVA'; 
-          } else if (params[i].seriesName === '有功功率') {
+          } else if (params[i].seriesName === '总有功功率') {
             result += ' kW';
-          }else if (params[i].seriesName === '无功功率') {
+          }else if (params[i].seriesName === '总无功功率') {
             result += ' kVar';
           }
           result += '<br>';
         }
         return result;
       }},
-      legend: { data: ['有功功率','视在功率','无功功率']},
+      legend: { data: ['总有功功率','总视在功率','总无功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -1162,9 +1162,9 @@ const flashChartData = async () =>{
           },boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
       series: [
-          {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
-          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
-          {name: '无功功率', type: 'line', data: chartData.value.reactiveList , symbol: 'circle', symbolSize: 4},
+          {name: '总有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+          {name: '总视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
+          {name: '总无功功率', type: 'line', data: chartData.value.reactiveList , symbol: 'circle', symbolSize: 4},
       ],
     });
   }
@@ -2206,18 +2206,18 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
               result += '&nbsp&nbsp发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
             }
             result += '&nbsp&nbsp' + params[i].value
-            if (params[i].seriesName === '视在功率') {
+            if (params[i].seriesName === '总视在功率') {
               result += ' kVA'; 
-            } else if (params[i].seriesName === '有功功率') {
+            } else if (params[i].seriesName === '总有功功率') {
               result += ' kW';
-            }else if (params[i].seriesName === '无功功率') {
+            }else if (params[i].seriesName === '总无功功率') {
               result += ' kVar';
             }
             result += '<br>';
           }
           return result;
         }},
-        legend: { data: ['有功功率','视在功率','无功功率']},
+        legend: { data: ['总有功功率','总视在功率','总无功功率']},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2233,9 +2233,9 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
             },boundaryGap: false, data:chartData.value.dateTimes},
         yAxis: { type: 'value'},
         series: [
-        {name: '有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
-        {name: '视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
-        {name: '无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
+        {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
+        {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
+        {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
         ],
       });
     }
@@ -2398,18 +2398,18 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
               result += '&nbsp&nbsp发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
             }
             result += '&nbsp&nbsp' + params[i].value
-            if (params[i].seriesName === '视在功率') {
+            if (params[i].seriesName === '总视在功率') {
               result += ' kVA'; 
-            } else if (params[i].seriesName === '有功功率') {
+            } else if (params[i].seriesName === '总有功功率') {
               result += ' kW';
-            }else if (params[i].seriesName === '无功功率') {
+            }else if (params[i].seriesName === '总无功功率') {
               result += ' kVar';
             }
             result += '<br>';
           }
           return result;
         }},
-        legend: { data: ['有功功率','视在功率','无功功率']},
+        legend: { data: ['总有功功率','总视在功率','总无功功率']},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2425,9 +2425,9 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
             },boundaryGap: false, data:chartData.value.dateTimes},
         yAxis: { type: 'value'},
         series: [
-        {name: '有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
-        {name: '视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
-        {name: '无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
+        {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
+        {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
+        {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
         ],
       });
     }

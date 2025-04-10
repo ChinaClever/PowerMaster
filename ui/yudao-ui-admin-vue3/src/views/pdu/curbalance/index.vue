@@ -130,7 +130,7 @@
               getList();
               switchValue = 99;
             "
-            :type="switchValue == 0 ? 'primary' : ''"
+            :type="switchValue == 99 ? 'primary' : ''"
             ><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button
           >
           <el-button

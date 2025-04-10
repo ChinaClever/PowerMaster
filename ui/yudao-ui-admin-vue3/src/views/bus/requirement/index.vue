@@ -34,7 +34,7 @@
           </div>
           <div >
             <span>{{ flagName }}：</span>
-            <span>{{ statusNumber.cur_max_value }} A</span>
+            <span>{{ statusNumber.cur_max_value }}{{ flagName == '功率' ? ' kW' : ' A' }}</span>
           </div>
         </div>
         <!-- <div class="status">

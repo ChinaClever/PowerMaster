@@ -119,7 +119,13 @@
       <el-table v-if="visMode == 1 && list.length > 0" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location"/>    
+        <el-table-column label="所在位置" align="center" prop="location">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>  
         <el-table-column label="设备名称" align="center" prop="busName"/>  
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
@@ -625,18 +631,18 @@ const BBarOption = ref<EChartsOption>({})
 const ALineOption = ref<EChartsOption>({
   tooltip: {
     trigger: 'axis',
-    // formatter: function (params) {
-    //   let tooltipContent = `记录时间: ${params[0].name}<br/>`;
-    //   // 遍历params数组，构建电压信息
-    //   const phases = ['A相电流', 'B相电流', 'C相电流'];
-    //   params.forEach((item, index) => {
-    //     if (index < phases.length && item.seriesName) {
-    //       tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
-    //     }
-    //   });
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电流', 'B相电流', 'C相电流'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+        }
+      });
       
-    //   return tooltipContent;
-    // }
+      return tooltipContent;
+    }
   },
   legend: { orient: 'horizontal', right: '25'},
   dataZoom:[{type: "inside"}],
@@ -660,17 +666,17 @@ const ALineOption = ref<EChartsOption>({
 const BLineOption = ref<EChartsOption>({
   tooltip: {
     trigger: 'axis',
-    // formatter: function (params) {
-    //   let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
-    //   // 遍历params数组，构建电压信息
-    //   const phases = ['A相电压', 'B相电压', 'C相电压'];
-    //   params.forEach((item, index) => {
-    //     if (index < phases.length && item.seriesName) {
-    //       tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
-    //     }
-    //   });
-    //   return tooltipContent;
-    // }
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电压', 'B相电压', 'C相电压'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+        }
+      });
+      return tooltipContent;
+    }
   },
   legend: { orient: 'horizontal', right: '25'},
   dataZoom:[{type: "inside"}],
@@ -2017,7 +2023,7 @@ onActivated(() => {
   margin-right: 0;
 }
 
-::v-deep .el-table .el-table__header th{
+:deep(.el-table .el-table__header th) {
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
