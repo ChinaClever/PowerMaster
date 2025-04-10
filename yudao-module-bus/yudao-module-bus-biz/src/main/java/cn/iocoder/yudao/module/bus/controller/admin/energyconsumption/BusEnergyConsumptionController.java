@@ -296,7 +296,7 @@ public class BusEnergyConsumptionController {
         return success(map);
     }
 
-    @GetMapping("/box/one-day/")
+    @GetMapping("/box/one-day")
     @Operation(summary = "获得插接箱能耗最近一天插入的数据量")
     public CommonResult<Map<String, Object>> getBoxOneDaySumData(String timeRangeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
         Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData(timeRangeType,oldTime,newTime);

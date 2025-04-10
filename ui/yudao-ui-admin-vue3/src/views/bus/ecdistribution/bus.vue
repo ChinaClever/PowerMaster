@@ -4,15 +4,11 @@
       
       <div class="nav_data">
       <div class="nav_header">       
-          <span v-if="nowAddress">{{nowAddress.value ?nowAddress.value :'暂未绑定设备'}}</span>
+          <span v-if="nowAddress">{{nowAddress!=null&&nowAddress!=''?nowAddress :'暂未绑定设备'}}</span>
           <span v-if="devKey">( {{ devKey }} )</span>
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <!-- <div class="description-item">
-          <span class="label">网络地址 :</span>
-          <span >{{ devKey }} </span>
-        </div> -->
       <div class="description-item">
         <span class="label">总耗电量 :</span>
         <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -481,7 +477,12 @@ const handleClick = async (row) => {
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
     });
+    console.log("nowAddressTemp===",nowAddressTemp.value);
+    console.log("nowAddress===",nowAddress.value)
     handleQuery();
+    console.log("nowAddress=================",nowAddress.value);
+    console.log("nowAddressTemp================",nowAddressTemp.value)
+    // nowAddress.value=nowAddressTemp.value
   }
 }
 
@@ -516,7 +517,7 @@ const handleQuery = async() => {
 const queryLocation = ref(history?.state?.location);// 导航栏的位置信息
 const queryDevkey = ref(history?.state?.devKey); // 导航栏的位置信息
 const queryBusId = ref(history?.state?.busId);
-
+console.log("history.state",history.state)
 /** 初始化 **/ 
 onMounted(async () => {
   getNavList()
@@ -529,9 +530,9 @@ onMounted(async () => {
   queryParams.devkey =queryDevkey.value as string | undefined;
   devKye.value = queryDevkey? queryDevkey : undefined
   if (queryParams.busId != undefined){
-    nowAddress.value = queryLocation;
-    devKey.value = queryDevkey;
-    nowAddressTemp.value = queryLocation;
+    nowAddress.value = queryLocation.value;
+    devKey.value = queryDevkey.value;
+    nowAddressTemp.value = queryLocation.value;
     await getLineChartData();
     initLineChart();
   }

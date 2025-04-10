@@ -322,7 +322,8 @@ const getLineChartData =async () => {
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
-      loading2.value= false
+      loading2.value= false;
+      maxEqDataTimeTemp.value=null;
       ElMessage({
         message: '暂无数据',
         type: 'warning',
