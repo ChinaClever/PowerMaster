@@ -573,10 +573,10 @@ const initChart = () => {
             legend: { 
                       data: ['A路平均温度(℃)', 'A路最高温度(℃)', 'A路最低温度(℃)', 'B路平均温度(℃)', 'B路最高温度(℃)', 'B路最低温度(℃)',
                               'C路平均温度(℃)', 'C路最高温度(℃)', 'C路最低温度(℃)', '中线平均温度(℃)', '中线最高温度(℃)', '中线最低温度(℃)'],
-                      selected: { "A路平均温度(℃)": true, "A路最高温度(℃)": false," A路最低温度(℃)": false, 
-                                  "B路平均温度(℃)": true, "B路最高温度(℃)": false, "B路最低温度(℃)": false,
-                                  "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
-                                  "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,   }
+                      selected: { "A路平均温度(℃)": false, "A路最高温度(℃)": true,"A路最低温度(℃)": false, 
+                                  "B路平均温度(℃)": false, "B路最高温度(℃)": true, "B路最低温度(℃)": false,
+                                  "C路平均温度(℃)": false, "C路最高温度(℃)": true, "C路最低温度(℃)": false, 
+                                  "中线平均温度(℃)": false, "中线最高温度(℃)": true, "中线最低温度(℃)": false,}
             },
             grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
             toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
@@ -668,13 +668,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -746,10 +746,10 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             legend: { 
                       data: ['A路平均温度(℃)', 'A路最高温度(℃)', 'A路最低温度(℃)', 'B路平均温度(℃)', 'B路最高温度(℃)', 'B路最低温度(℃)',
                               'C路平均温度(℃)', 'C路最高温度(℃)', 'C路最低温度(℃)', '中线平均温度(℃)', '中线最高温度(℃)', '中线最低温度(℃)'],
-                      selected: { "A路平均温度(℃)": true, "A路最高温度(℃)": false," A路最低温度(℃)": false, 
-                                  "B路平均温度(℃)": true, "B路最高温度(℃)": false, "B路最低温度(℃)": false,
-                                  "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
-                                  "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,   }
+                      selected: { "A路平均温度(℃)": false, "A路最高温度(℃)": true,"A路最低温度(℃)": false, 
+                                  "B路平均温度(℃)": false, "B路最高温度(℃)": true, "B路最低温度(℃)": false,
+                                  "C路平均温度(℃)": false, "C路最高温度(℃)": true, "C路最低温度(℃)": false, 
+                                  "中线平均温度(℃)": false, "中线最高温度(℃)": true, "中线最低温度(℃)": false,   }
             },
             grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
             toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
