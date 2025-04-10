@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.entity.es.bus.tem;
 
 import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.bus.BusBaseDo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -32,6 +33,7 @@ public class BusTemBaseDo extends BusBaseDo {
     /**
      * 最高A路温度时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("tem_a_max_time")
     private DateTime temAMaxTime;
 
@@ -46,6 +48,7 @@ public class BusTemBaseDo extends BusBaseDo {
     /**
      * 最低A路温度时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("tem_a_min_time")
     private DateTime temAMinTime;
 
@@ -67,6 +70,7 @@ public class BusTemBaseDo extends BusBaseDo {
     /**
      * 最高B路温度时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("tem_b_max_time")
     private DateTime temBMaxTime;
 
@@ -81,6 +85,7 @@ public class BusTemBaseDo extends BusBaseDo {
     /**
      * 最低B路温度时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("tem_b_min_time")
     private DateTime temBMinTime;
 
@@ -101,6 +106,7 @@ public class BusTemBaseDo extends BusBaseDo {
     /**
      * 最高C路温度时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("tem_c_max_time")
     private DateTime temCMaxTime;
 
@@ -115,6 +121,7 @@ public class BusTemBaseDo extends BusBaseDo {
     /**
      * 最低C路温度时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("tem_c_min_time")
     private DateTime temCMinTime;
 
@@ -135,6 +142,7 @@ public class BusTemBaseDo extends BusBaseDo {
     /**
      * 最高中线温度时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("tem_n_max_time")
     private DateTime temNMaxTime;
 
@@ -150,6 +158,7 @@ public class BusTemBaseDo extends BusBaseDo {
      * 最低中线温度时间
      */
     @JsonProperty("tem_n_min_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private DateTime temNMinTime;
 
 }

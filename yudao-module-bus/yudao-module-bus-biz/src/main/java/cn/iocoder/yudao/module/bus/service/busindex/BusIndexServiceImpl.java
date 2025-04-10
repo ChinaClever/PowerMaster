@@ -27,7 +27,6 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCreateTime;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
@@ -2204,46 +2203,13 @@ public class BusIndexServiceImpl implements BusIndexService {
             ids.add(pageReqVO.getBusId());
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            List<String> busTemHour = getData(startTime, endTime, ids, "bus_tem_hour");
-            List<BusTemHourDo> strList = busTemHour.stream()
-                    .map(str -> JsonUtils.parseObject(str, BusTemHourDo.class))
-                    .sorted((a, b) -> {
-                        DateTime timeA = a.getCreateTime();
-                        DateTime timeB = b.getCreateTime();
-                        return timeA.compareTo(timeB); // 升序
-                    })
-                    .collect(Collectors.toList());
+            List<BusTemHourDo> strList = getData(startTime, endTime, ids, "bus_tem_hour", BusTemHourDo.class);
+            strList.sort(Comparator.comparing(BusBaseDo::getCreateTime));
 
-            BusTemDetailRes result = new BusTemDetailRes();
-            result.setTemAvgValueA(new ArrayList<>());
-            result.setTemAvgValueB(new ArrayList<>());
-            result.setTemAvgValueC(new ArrayList<>());
-            result.setTemAvgValueN(new ArrayList<>());
-            result.setTemAvgTime(new ArrayList<>());
 
-            List<BusTemTableRes> tableList = new ArrayList<>();
-            strList.forEach(busTemHourDo -> {
-                BusTemTableRes busTemTableRes = new BusTemTableRes();
-                busTemTableRes.setTemAvgValueA(busTemHourDo.getTemAAvgValue());
-                busTemTableRes.setTemAvgValueB(busTemHourDo.getTemBAvgValue());
-                busTemTableRes.setTemAvgValueC(busTemHourDo.getTemCAvgValue());
-                busTemTableRes.setTemAvgValueN(busTemHourDo.getTemNAvgValue());
-                busTemTableRes.setTemAvgTime(busTemHourDo.getCreateTime().toString("HH:mm"));
-                tableList.add(busTemTableRes);
-                result.getTemAvgValueA().add(busTemHourDo.getTemAAvgValue());
-                result.getTemAvgValueB().add(busTemHourDo.getTemBAvgValue());
-                result.getTemAvgValueC().add(busTemHourDo.getTemCAvgValue());
-                result.getTemAvgValueN().add(busTemHourDo.getTemNAvgValue());
-                result.getTemAvgTime().add(busTemHourDo.getCreateTime().toString("HH:mm"));
-            });
-            tableList.sort((a, b) -> {
-                LocalTime timeA = LocalTime.parse(a.getTemAvgTime());
-                LocalTime timeB = LocalTime.parse(b.getTemAvgTime());
-                return timeA.compareTo(timeB); // 升序
-            });
             HashMap<String, Object> resultMap = new HashMap<>();
-            resultMap.put("chart", result);
-            resultMap.put("table", tableList);
+
+            resultMap.put("table", strList);
             return resultMap;
         } catch (Exception e) {
             log.error("获取数据失败：", e);
@@ -2260,33 +2226,18 @@ public class BusIndexServiceImpl implements BusIndexService {
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             List<BusLineHourDo> strList = getData(startTime, endTime, ids, "bus_hda_line_hour", BusLineHourDo.class);
-//            List<BusLineHourDo> strList = busHdaLineHour.stream()
-//                    .map(str -> JsonUtils.parseObject(str, BusLineHourDo.class))
-//                    .sorted((a, b) -> {
-//                        DateTime timeA = a.getCreateTime();
-//                        DateTime timeB = b.getCreateTime();
-//                        return timeA.compareTo(timeB); // 升序
-//                    })
-//                    .collect(Collectors.toList());
 
             HashMap<String, Object> resultMap = new HashMap<>();
 
             List<BusPFTableRes> tableList = new ArrayList<>();
-            BusPFDetailRes result = new BusPFDetailRes();
-            result.setPowerFactorAvgValueA(new ArrayList<>());
-            result.setPowerFactorAvgValueB(new ArrayList<>());
-            result.setPowerFactorAvgValueC(new ArrayList<>());
-            result.setTime(new ArrayList<>());
-
-            resultMap.put("chart", result);
-            resultMap.put("table", tableList);
+//            List<BusPFTableRes> aList = new ArrayList<>();
+//            List<BusPFTableRes> bList = new ArrayList<>();
+//            List<BusPFTableRes> cList = new ArrayList<>();
 
             if (strList == null || strList.size() == 0) {
                 return resultMap;
             }
-
-            Map<Integer, List<BusLineHourDo>> pfMap = strList.stream().collect(Collectors.groupingBy(busLineHourDo -> busLineHourDo.getLineId()));
-
+//            Map<Integer, List<BusLineHourDo>> pfMap = strList.stream().collect(Collectors.groupingBy(busLineHourDo -> busLineHourDo.getLineId()));
             Map<DateTime, List<BusLineHourDo>> map = strList.stream().collect(Collectors.groupingBy(busLineHourDo -> busLineHourDo.getCreateTime()));
             for (DateTime time : map.keySet()) {
                 BusPFTableRes busPFTableRes = new BusPFTableRes();
@@ -2320,43 +2271,18 @@ public class BusIndexServiceImpl implements BusIndexService {
                         default:
                             break;
                     }
-                    busPFTableRes.setTime(time.toString("yyyy-MM-dd HH:mm:ss"));
-                    tableList.add(busPFTableRes);
                 });
-
-
+                tableList.add(busPFTableRes);
+                busPFTableRes.setTime(time.toString("yyyy-MM-dd HH:mm:ss"));
             }
-
-//            int i = 0;
-//            for (BusLineHourDo busLineHourDo : pfMap.get(1)) {
-//                BusPFTableRes busPFTableRes = new BusPFTableRes();
-//                result.getPowerFactorAvgValueA().add(busLineHourDo.getPowerFactorAvgValue());
-//                result.getTime().add(busLineHourDo.getCreateTime().toString("HH:mm"));
-//                busPFTableRes.setPowerFactorAvgValueA(busLineHourDo.getPowerFactorAvgValue());
-//                busPFTableRes.setTime(busLineHourDo.getCreateTime().toString());
-//                tableList.add(busPFTableRes);
-//                i++;
-//            }
-//            int j = 0;
-//            for (BusLineHourDo busLineHourDo : pfMap.get(2)) {
-//                result.getPowerFactorAvgValueB().add(busLineHourDo.getPowerFactorAvgValue());
-//                if (i == 0 || j >= i) {
-//                    break;
-//                } else if (j < i) {
-//                    tableList.get(j).setPowerFactorAvgValueB(busLineHourDo.getPowerFactorAvgValue());
-//                    j++;
-//                }
-//            }
-//            j = 0;
-//            for (BusLineHourDo busLineHourDo : pfMap.get(3)) {
-//                result.getPowerFactorAvgValueC().add(busLineHourDo.getPowerFactorAvgValue());
-//                if (i == 0 || j >= i) {
-//                    break;
-//                } else if (j < i) {
-//                    tableList.get(j).setPowerFactorAvgValueC(busLineHourDo.getPowerFactorAvgValue());
-//                    j++;
-//                }
-//            }
+            tableList.sort(Comparator.comparing(BusPFTableRes::getTime));
+//            aList.sort(Comparator.comparing(BusPFTableRes::getTime));
+//            bList.sort(Comparator.comparing(BusPFTableRes::getTime));
+//            cList.sort(Comparator.comparing(BusPFTableRes::getTime));
+            resultMap.put("table", tableList);
+//            resultMap.put("a", aList);
+//            resultMap.put("b", bList);
+//            resultMap.put("c", cList);
             return resultMap;
         } catch (Exception e) {
             log.error("获取数据失败：", e);
@@ -2673,14 +2599,11 @@ public class BusIndexServiceImpl implements BusIndexService {
 
             if (busIndexDO != null) {
                 String index;
-                Integer Id = busIndexDO.getId();
-
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     index = "bus_hda_total_hour";
                     if (oldTime.equals(newTime)) {
                         newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                     }
-
                 } else {
                     index = "bus_hda_total_day";
                     oldTime = oldTime.plusDays(1);
@@ -2689,25 +2612,55 @@ public class BusIndexServiceImpl implements BusIndexService {
 
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<String> data = getData(startTime, endTime, Arrays.asList(Id), index);
-                List<BusTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, BusTotalHourDo.class)).collect(Collectors.toList());
-
+                List<BusTotalHourDo> powList = getData(startTime, endTime, Arrays.asList(busIndexDO.getId()), index,BusTotalHourDo.class);
+//                List<BusTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, BusTotalHourDo.class)).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(powList)){
+                    return result;
+                }
+                BusTotalHourDo maxApparentPow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowApparentMaxValue));
+                if (maxApparentPow != null) {
+                    result.put("apparentPowMaxValue", maxApparentPow.getPowApparentMaxValue());
+                    result.put("apparentPowMaxTime", maxApparentPow.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                BusTotalHourDo minApparentPow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowApparentMinValue));
+                if (minApparentPow != null) {
+                    result.put("apparentPowMinValue", minApparentPow.getPowApparentMinValue());
+                    result.put("apparentPowMinTime", minApparentPow.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                BusTotalHourDo maxActivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
+                if (maxActivePow != null) {
+                    result.put("activePowMaxValue", maxActivePow.getPowActiveMaxValue());
+                    result.put("activePowMaxTime", maxActivePow.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                BusTotalHourDo minActivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
+                if (minActivePow != null) {
+                    result.put("activePowMinValue", minActivePow.getPowActiveMinValue());
+                    result.put("activePowMinTime", minActivePow.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                BusTotalHourDo maxReactivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
+                if (maxReactivePow != null) {
+                    result.put("reactivePowMaxValue", maxReactivePow.getPowReactiveMaxValue());
+                    result.put("reactivePowMaxTime", maxReactivePow.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                BusTotalHourDo minReactivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
+                if (minReactivePow != null) {
+                    result.put("reactivePowMinValue", minReactivePow.getPowReactiveMinValue());
+                    result.put("reactivePowMinTime", minReactivePow.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
                 LineSeries totalPFLine = new LineSeries();
-                totalPFLine.setName("总平均功率因素");
+                totalPFLine.setName("总数据");
 
                 totalLineRes.getSeries().add(totalPFLine);
 
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     powList.forEach(hourdo -> {
-                        totalPFLine.getData().add(hourdo.getPowerFactorAvgValue());
-
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
-
+                        totalPFLine.getData().add(hourdo);
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                     });
                 } else {
                     powList.forEach(hourdo -> {
-                        totalPFLine.getData().add(hourdo.getPowerFactorAvgValue());
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                        totalPFLine.getData().add(hourdo);
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                     });
                 }
                 result.put("pfLineRes", totalLineRes);

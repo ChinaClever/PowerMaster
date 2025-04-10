@@ -826,17 +826,17 @@ const getList = async () => {
   temList.value = temData.value.lineRes;
 
 
-    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(1);
-    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(1);
+    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(0);
+    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(0);
 
-    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(1);
-    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(1);
+    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(0);
+    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(0);
 
-    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(1);
-    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(1);
+    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(0);
+    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(0);
 
-    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(1);
-    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(1);
+    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(0);
+    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(0);
     visControll.temVis = true;
 
 

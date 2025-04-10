@@ -97,9 +97,9 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -223,7 +223,7 @@ import  CommonMenu1 from './CommonMenu1.vue'
 /** pdu曲线 */
 defineOptions({ name: 'PDUEnvLine' })
 import { ElMessage } from 'element-plus'
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('') as any// 导航栏的位置信息
@@ -244,12 +244,12 @@ const queryParams = reactive({
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
   nowAddress: undefined as string | undefined,
-  granularity: 'realtime',
+  granularity: 'day',
   // ipAddr: undefined as string | undefined,
   // cascadeAddr: '0',
   cabinetId: undefined as number | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1)
+  timeRange: defaultHourTimeRange(24*30)
 })
 // const route=useRoute()
 const carouselItems = ref([
@@ -480,21 +480,30 @@ const initChart = () => {
     if (chartContainer.value && instance) {
       realtimeChart = echarts.init(chartContainer.value);
       if (realtimeChart) {
-        realtimeChart.setOption({
-          title: { text: ''},
-          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['温度℃','湿度%RH'], selected: { 温度: true, 湿度: false}},
-          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
-          series: [
-            {name: '温度℃', type: 'line', symbol: 'none', data: temValueData.value},
-            {name: '湿度%RH', type: 'line', symbol: 'none', data: humValueData.value},
-          ],
-          dataZoom:[{type: "inside"}],
-        });
-      }
+          realtimeChart.setOption({     
+            title: {text: ''},
+            tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+            legend: { data: ['平均温度', '最高温度', '最低温度','平均湿度', '最大湿度', '最小湿度'],
+                      selected: { 平均温度: true, 最高温度: true, 最低温度: true, 
+                      平均湿度: false, 最大湿度: false, 最小湿度: false, }
+            },
+            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            xAxis: [
+              {type: 'category', boundaryGap: false, data: createTimeData.value}
+            ],
+            yAxis: { type: 'value'},
+            series: [
+              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
+              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
+              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value, lineStyle: {type: 'dashed'}},
+            ],
+            dataZoom:[{type: "inside"}],
+          });
+        }
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }

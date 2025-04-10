@@ -374,7 +374,9 @@ const getList = async () => {
   loading.value = true;
   try {
     // 
+    console.log(queryParams,"=============queryParams==========")
     const data = await EnvDataApi.getEnvDataDetails(queryParams);
+    console.log(data,"=============data==========")
     if (data != null && data.total != 0){
       loading2.value=true
       isHaveData.value = true
@@ -456,23 +458,33 @@ let realtimeChart = null as echarts.ECharts | null;
 const initChart = () => {
   if ( isHaveData.value == true ){
     if (chartContainer.value && instance) {
-      realtimeChart = echarts.init(chartContainer.value);
+      realtimeChart?.dispose();
+      realtimeChart = echarts.init(document.getElementById('chartContainer'));
       if (realtimeChart) {
-        realtimeChart.setOption({
-          title: { text: ''},
-          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['温度','湿度'], selected: { 温度: true, 湿度: false}},
-          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
-          series: [
-            {name: '温度', type: 'line', symbol: 'none', data: temValueData.value},
-            {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value},
-          ],
-          dataZoom:[{type: "inside"}],
-        });
-      }
+          realtimeChart.setOption({     
+            title: {text: ''},
+            tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+            legend: { data: ['平均温度', '最高温度', '最低温度','平均湿度', '最大湿度', '最小湿度'],
+                      selected: { 平均温度: true, 最高温度: true, 最低温度: true, 
+                      平均湿度: false, 最大湿度: false, 最小湿度: false, }
+            },
+            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            xAxis: [
+              {type: 'category', boundaryGap: false, data: createTimeData.value}
+            ],
+            yAxis: { type: 'value'},
+            series: [
+              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
+              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
+              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value, lineStyle: {type: 'dashed'}},
+            ],
+            dataZoom:[{type: "inside"}],
+          });
+        }
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
@@ -570,6 +582,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
       beforeUnmount()
       if ( isHaveData.value == true ){
         // 创建新的图表实例
+        realtimeChart?.dispose();
         realtimeChart = echarts.init(document.getElementById('chartContainer'));
         // 设置新的配置对象
         if (realtimeChart) {
@@ -887,7 +900,7 @@ const handleQuery = () => {
     
 }
 /** 初始化 **/
-onMounted( async () => {
+onBeforeMount( async () => {
   console.log('22231');
   getNavList()
   // 获取路由参数中的 pdu_id
@@ -903,6 +916,7 @@ onMounted( async () => {
   queryParams.pduKey =queryLocation;
   queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : undefined;
   if (queryParams.pduKey != undefined){
+    realtimeChart?.dispose();
     await getList();
     if (queryAddress == null) {
       nowAddress.value = '该设备还未绑定机房';
@@ -911,6 +925,8 @@ onMounted( async () => {
     }
     nowLocation.value = queryLocation
     // detect.value = queryDetectValue == null ? undefined : queryDetectValue
+    console.log(humValueData.value,"==========humValueData")
+    console.log(temValueData.value,"==========temValueData")
     initChart();
   }
 })
