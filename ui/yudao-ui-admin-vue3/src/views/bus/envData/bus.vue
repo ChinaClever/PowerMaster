@@ -449,7 +449,7 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (busId: number, dev_key: string, location: string) => {
   const devKey = dev_key;
-  push({path: '/bus/record/envAnalysis/bus', state: {busId,devKey,location}})
+  push({path: '/bus/record/bus/envAnalysis', state: {busId,devKey,location}})
 }
 
 /** 导出按钮操作 */

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.entity.es.bus.total;
 
 import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.bus.BusBaseDo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -24,6 +25,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最大有功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_active_max_time")
     private DateTime powActiveMaxTime;
 
@@ -36,6 +38,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最小有功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_active_min_time")
     private DateTime powActiveMinTime;
 
@@ -55,6 +58,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最大视在功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_apparent_max_time")
     private DateTime powApparentMaxTime;
 
@@ -68,6 +72,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最小视在功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_apparent_min_time")
     private DateTime powApparentMinTime;
 
@@ -87,6 +92,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最大无功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_reactive_max_time")
     private DateTime powReactiveMaxTime;
 
@@ -100,6 +106,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最小无功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_reactive_min_time")
     private DateTime powReactiveMinTime;
 
@@ -118,6 +125,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最大剩余电流时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("cur_residual_max_time")
     private DateTime curResidualMaxTime;
 
@@ -131,6 +139,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最小剩余电流时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("cur_residual_min_time")
     private DateTime curResidualMinTime;
 
@@ -150,6 +159,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最大零线电流时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("cur_zero_max_time")
     private DateTime curZeroMaxTime;
 
@@ -163,6 +173,7 @@ public class BusTotalBaseDo extends BusBaseDo {
     /**
      * 最小零线电流时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("cur_zero_min_time")
     private DateTime curZeroMinTime;
 

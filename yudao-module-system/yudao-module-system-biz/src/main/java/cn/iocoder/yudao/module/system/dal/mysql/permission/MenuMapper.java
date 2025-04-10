@@ -5,6 +5,8 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.system.controller.admin.permission.vo.menu.MenuListReqVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.permission.MenuDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -28,4 +30,11 @@ public interface MenuMapper extends BaseMapperX<MenuDO> {
     default List<MenuDO> selectListByPermission(String permission) {
         return selectList(MenuDO::getPermission, permission);
     }
+
+    @Select("select id from system_menu where parent_id=${parentId}")
+    List<Long> selectIdByParentId(Long parentId);
+
+    @Update("update system_menu set deleted=1 where id in "+
+    "<foreach collection=\"ids\" item=\"id\" open=\"(\" separator=\",\" close=\")\"> #{id} </foreach>")
+    int deleteBatchByIds(List<Long> ids);
 }

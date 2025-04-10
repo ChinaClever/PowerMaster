@@ -592,7 +592,7 @@ const toDetail = (row) =>{
   const busId = row.busId
   const location = row.location != null ? row.location : devKey;
   const busName = row.busName;
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName,roomName }})
+  push({path: '/bus/busmonitor/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName,roomName }})
 }
 
 

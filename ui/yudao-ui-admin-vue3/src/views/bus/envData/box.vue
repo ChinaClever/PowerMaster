@@ -447,7 +447,7 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (boxId: number, dev_key: string, location: string) => {
   const devKey = dev_key;
-  push({path: '/bus/record/envAnalysis/box', state: {boxId,devKey,location}})
+  push({path: '/bus/record/box/envAnalysis', state: {boxId,devKey,location}})
 }
 
 

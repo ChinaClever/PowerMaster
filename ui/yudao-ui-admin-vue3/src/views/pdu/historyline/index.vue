@@ -496,22 +496,30 @@ const initChart = () => {
     if (chartContainer.value && instance) {
       realtimeChart = echarts.init(chartContainer.value);
       if (realtimeChart) {
-        realtimeChart.setOption({
-          title: { text: ''},
-          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '功率因素'],selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "功率因素": false,} },
-          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
-          series: [
-            {name: '总有功功率(kW)', type: 'line', symbol: 'none', data: activePowData.value},
-            {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: apparentPowData.value},
-            {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
-          ],
-          dataZoom:[{type: "inside"}],
-        });
-      }
+            realtimeChart.setOption({     
+              title: {text: ''},
+              tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+              legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)'],
+                        selected: { "平均有功功率(kW)": false, "最大有功功率(kW)": true, "最小有功功率(kW)": false, 
+                        "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false, }
+              },
+              grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
+              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              xAxis: [
+                {type: 'category', boundaryGap: false, data: createTimeData.value}
+              ],
+              yAxis: { type: 'value'},
+              series: [
+                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: activePowAvgValueData.value, },
+                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: activePowMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: activePowMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: apparentPowAvgValueData.value, },
+                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: apparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: apparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+              ],
+              dataZoom:[{type: "inside"}],
+            });
+          }
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
