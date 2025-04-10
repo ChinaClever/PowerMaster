@@ -164,9 +164,9 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         List<Object> resultLine3 = new ArrayList<>();
         List<Object> total = new ArrayList<>();
         // 搜索源构建对象
-        SearchResponse searchResponse = getSearchResponse(busId, startTime, endTime, index);
+        SearchResponse searchResponse = getSearchResponse("bus_id",busId, startTime, endTime, index);
 
-        SearchResponse searchResponseTotal = getSearchResponse(busId, startTime, endTime, indexTotal);
+        SearchResponse searchResponseTotal = getSearchResponse("bus_id",busId, startTime, endTime, indexTotal);
 
         // 搜索结果
         SearchHits hits = searchResponse.getHits();
@@ -204,14 +204,14 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         return resultMap;
     }
 
-    private SearchResponse getSearchResponse(Long busId, String startTime, String endTime, String index) throws IOException {
+    private SearchResponse getSearchResponse(String keyWord,Long busId, String startTime, String endTime, String index) throws IOException {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
+        searchSourceBuilder.query(QueryBuilders.termQuery(keyWord, busId));
 
         searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                 .from(startTime)
@@ -295,59 +295,38 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
 
         String index;
-        String[] heads;
+        String indexTotal;
         String startTime;
         String endTime = now.format(formatter);
-        if (Objects.equals(reqVO.getGranularity(),"realtime")){
-            heads = new String[]{"box_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value",
-                    "cur_value", "load_rate", "create_time"};
-        }else {
-            heads = new String[]{"box_id", "line_id",
-                    "pow_active_avg_value","pow_active_max_value","pow_active_min_value","pow_active_max_time","pow_active_min_time",
-                    "pow_reactive_avg_value","pow_reactive_max_value","pow_reactive_min_value","pow_reactive_max_time","pow_reactive_min_time",
-                    "power_factor_avg_value","power_factor_max_value","power_factor_min_value","power_factor_max_time","power_factor_min_time",
-                    "load_rate_avg_value","load_rate_max_value","load_rate_min_value","load_rate_max_time","load_rate_min_time",
-                    "pow_apparent_avg_value","pow_apparent_max_value","pow_apparent_min_value","pow_apparent_max_time","pow_apparent_min_time",
-                    "vol_avg_value","vol_max_value","vol_min_value","vol_max_time","vol_min_time",
-                    "cur_avg_value","cur_max_value","cur_min_value","cur_max_time","cur_min_time",
-                    "create_time"};
-        }
+
         switch (reqVO.getGranularity()) {
             case "realtime":
                 index = "box_hda_line_realtime";
+                indexTotal="box_hda_total_realtime";
                 startTime = oneHourAgo.format(formatter);
                 break;
             case "hour":
-                index = "box_hda_line_hour";
+                index = "box_hda_line_hour";indexTotal="box_hda_total_hour";
                 startTime = oneDayAgo.format(formatter);
                 break;
             case "SeventyHours":
-                index = "box_hda_line_hour";
+                index = "box_hda_line_hour";indexTotal="box_hda_total_hour";
                 startTime = threeDaysAgo.format(formatter);
                 break;
             default:
-                index = "box_hda_line_day";
+                index = "box_hda_line_day";indexTotal="box_hda_total_day";
                 startTime = oneMonthAgo.format(formatter);
                 break;
         }
+        Map<String, Object> resultMap = new HashMap<>();
+        List<Object> resultLine1 = new ArrayList<>();
+        List<Object> resultLine2 = new ArrayList<>();
+        List<Object> resultLine3 = new ArrayList<>();
+        List<Object> total = new ArrayList<>();
         // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-        searchSourceBuilder.size(10000);
-        searchSourceBuilder.trackTotalHits(true);
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
+        SearchResponse searchResponse = getSearchResponse("box_id",boxId, startTime, endTime, index);
+        SearchResponse searchResponseTotal = getSearchResponse("box_id",boxId, startTime, endTime, indexTotal);
 
-        searchRequest.indices(index);
-        searchSourceBuilder.fetchSource(heads, null);
-        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                .from(startTime)
-                .to(endTime));
-
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         // 搜索结果
         SearchHits hits = searchResponse.getHits();
         // 匹配到的总记录数
@@ -355,10 +334,12 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         if (totalHits == 0) {
             return null;
         }
-        Map<String, Object> resultMap = new HashMap<>();
-        List<Object> resultLine1 = new ArrayList<>();
-        List<Object> resultLine2 = new ArrayList<>();
-        List<Object> resultLine3 = new ArrayList<>();
+
+        searchResponseTotal.getHits().forEach(searchHit -> {
+            Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+            total.add(sourceAsMap);
+        });
+
         hits.forEach(searchHit -> {
             // 获取文档内容，假设它以 Map 的形式存储
             Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
@@ -377,7 +358,7 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 default:
             }
         });
-
+        resultMap.put("total", total);
         resultMap.put("L1", resultLine1);
         resultMap.put("L2", resultLine2);
         resultMap.put("L3", resultLine3);

@@ -16,37 +16,37 @@ public class BusPFTableRes {
     private Float powerFactorAvgValueC;
 
     @ExcelProperty("A相最大功率因素")
-    private float powerFactorMaxValueA;
+    private Float powerFactorMaxValueA;
     @ExcelProperty("A相最大功率因素时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String powerFactorMaxTimeA;
 
     @ExcelProperty("B相最大功率因素")
-    private float powerFactorMaxValueB;
+    private Float powerFactorMaxValueB;
     @ExcelProperty("B相最大功率因素时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String powerFactorMaxTimeB;
 
     @ExcelProperty("C相最大功率因素")
-    private float powerFactorMaxValueC;
+    private Float powerFactorMaxValueC;
     @ExcelProperty("C相最大功率因素时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String powerFactorMaxTimeC;
 
     @ExcelProperty("A相最小功率因素")
-    private float powerFactorMinValueA;
+    private Float powerFactorMinValueA;
     @ExcelProperty("A相最小功率因素时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String powerFactorMinTimeA;
 
     @ExcelProperty("B相最小功率因素")
-    private float powerFactorMinValueB;
+    private Float powerFactorMinValueB;
     @ExcelProperty("B相最小功率因素时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String powerFactorMinTimeB;
 
     @ExcelProperty("C相最小功率因素")
-    private float powerFactorMinValueC;
+    private Float powerFactorMinValueC;
     @ExcelProperty("C相最小功率因素时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String powerFactorMinTimeC;
