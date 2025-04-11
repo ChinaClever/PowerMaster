@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.system.service.sms;
 
 import cn.hutool.core.map.MapUtil;
-import cn.iocoder.yudao.framework.mybatis.core.enums.SqlConstants;
+import cn.iocoder.yudao.framework.mybatis.core.constants.SqlConstants;
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
 import cn.iocoder.yudao.module.system.api.sms.dto.code.SmsCodeSendReqDTO;
 import cn.iocoder.yudao.module.system.api.sms.dto.code.SmsCodeUseReqDTO;

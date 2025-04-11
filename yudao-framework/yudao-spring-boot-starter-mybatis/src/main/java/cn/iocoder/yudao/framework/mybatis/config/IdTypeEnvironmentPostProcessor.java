@@ -2,7 +2,7 @@ package cn.iocoder.yudao.framework.mybatis.config;
 
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.yudao.framework.common.util.collection.SetUtils;
-import cn.iocoder.yudao.framework.mybatis.core.enums.SqlConstants;
+import cn.iocoder.yudao.framework.mybatis.core.constants.SqlConstants;
 import cn.iocoder.yudao.framework.mybatis.core.util.JdbcUtils;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.annotation.IdType;

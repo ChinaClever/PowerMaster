@@ -53,7 +53,7 @@ public interface MailConfigService {
      * 发送邮件
      * @param record 发送邮件的内容
      */
-    void sendMail(SystemAlarmRecord record);
+    void sendMail(List<SystemAlarmRecord> record);
 
     /**
      * 发送短信
@@ -70,4 +70,6 @@ public interface MailConfigService {
     void batchSave(List<MailConfigSaveReqVO> saveReqVOS);
 
     void deleteMailAll();
+
+    void pushAlarmMessage();
 }

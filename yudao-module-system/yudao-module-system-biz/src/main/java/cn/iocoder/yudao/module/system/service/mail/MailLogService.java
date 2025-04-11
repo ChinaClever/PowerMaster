@@ -47,7 +47,7 @@ public interface MailLogService {
      */
     Long createMailLog(Long userId, Integer userType, String toMail,
                        MailAccountDO account, MailTemplateDO template ,
-                       String templateContent, Map<String, Object> templateParams, Boolean isSend);
+                       String templateContent, Object templateParams, Boolean isSend);
 
     /**
      * 更新邮件发送结果

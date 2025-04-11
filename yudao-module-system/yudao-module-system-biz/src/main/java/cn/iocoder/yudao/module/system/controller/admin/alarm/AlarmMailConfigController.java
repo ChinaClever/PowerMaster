@@ -77,8 +77,8 @@ public class AlarmMailConfigController {
 
     @PostMapping("/sendMail")
     @PermitAll
-    public void sendMail(@RequestBody SystemAlarmRecord record){
-        mailConfigService.sendMail(record);
+    public void sendMail(@RequestBody List<SystemAlarmRecord> records){
+        mailConfigService.sendMail(records);
     }
 
     /**
