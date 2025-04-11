@@ -317,7 +317,7 @@
         <div class="custom-row" style="display: flex; align-items: center;">
           <!-- 位置标签 -->
           <div class="location-tag el-col">
-            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因数详情</span>
             <span>所在位置：{{ location? location:'未绑定'}}</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
@@ -726,11 +726,11 @@ const getDetail = async () => {
     obj.powerFactorMinTimeb = obj.powerFactorMinTimeb ? obj.powerFactorMinTimeb.slice(0,-3) : '';
     obj.powerFactorMinTimec = obj.powerFactorMinTimec ? obj.powerFactorMinTimec.slice(0,-3) : '';
 
-    if(outletNum.value < 3 && obj.powerFactorAvgValuec && obj.powerFactorMaxValuec && obj.powerFactorMinValuec) {
+    if(outletNum.value < 3 && (obj.powerFactorAvgValuec || obj.powerFactorMaxValuec || obj.powerFactorMinValuec)) {
       outletNum.value = 3
-    } else if(outletNum.value < 2 && obj.powerFactorAvgValueb && obj.powerFactorMaxValueb && obj.powerFactorMinValueb) {
+    } else if(outletNum.value < 2 && (obj.powerFactorAvgValueb || obj.powerFactorMaxValueb || obj.powerFactorMinValueb)) {
       outletNum.value = 2
-    } else if(outletNum.value < 1 && obj.powerFactorAvgValue && obj.powerFactorMaxValue && obj.powerFactorMinValue) {
+    } else if(outletNum.value < 1 && (obj.powerFactorAvgValue || obj.powerFactorMaxValue || obj.powerFactorMinValue)) {
       outletNum.value = 1
     } 
     console.log(outletNum.value)

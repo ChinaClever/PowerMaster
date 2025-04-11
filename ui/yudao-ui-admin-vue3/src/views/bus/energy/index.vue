@@ -513,7 +513,7 @@ onBeforeMount(() => {
       align-items: center;
       justify-content: space-between;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 64px 0 0;
       }
       .info {
         line-height: 1.7;
@@ -584,7 +584,7 @@ onBeforeMount(() => {
       align-items: center;
       justify-content: space-between;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 64px 0 0;
       }
       .info {
         line-height: 1.7;
@@ -655,7 +655,7 @@ onBeforeMount(() => {
       align-items: center;
       justify-content: space-between;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 64px 0 0;
       }
       .info {
         line-height: 1.7;

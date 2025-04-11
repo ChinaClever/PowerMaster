@@ -8,7 +8,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <div>
+        <div v-if="!isFromHome">
           <el-form-item label="机房名" prop="devKey">
             <el-input
               v-model="queryParams.roomName"
@@ -19,9 +19,9 @@
             />
           </el-form-item>
           <el-form-item style="margin-left: 10px;">
-            <el-button @click="handleQuery" :size="isFromHome ? 'small' : ''"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery" :size="isFromHome ? 'small' : ''"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-            <el-button @click="activeNames = []" :size="isFromHome ? 'small' : ''"><Icon icon="ep:arrow-up" class="mr-5px" /> 一键收缩</el-button>
+            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button @click="activeNames = []"><Icon icon="ep:arrow-up" class="mr-5px" /> 一键收缩</el-button>
             <el-button
               type="primary"
               plain
@@ -42,14 +42,14 @@
           </el-form-item>
         </div>
       </el-form>
-      <div class="btns">
-        <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
-        <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
-        <el-button v-if="!isFromHome" @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
-        <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-        <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
-        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3" :size="isFromHome ? 'small' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+      <div v-if="!isFromHome" class="btns">
+        <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
+        <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
+        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
+        <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
+        <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+        <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
       </div>
     </div>
     <div v-if="switchValue == 0" style="padding: 20px 0;background-color: #fff">
@@ -650,10 +650,14 @@ const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
 
 
-const { isFromHome } = defineProps({
+const { isFromHome,valueButton } = defineProps({
   isFromHome: {
     type: Boolean,
     default: false,
+  },
+  valueButton: {
+    type: Number,
+    default: 0,
   }
 })
 
@@ -924,6 +928,11 @@ const getAllApi = async () => {
   await getRoomAddrList()
   loading.value = false
 }
+
+watch( ()=> valueButton, (val) => {
+  console.log(valueButton)
+  valueMode.value = val
+})
 
 getAllApi()
 

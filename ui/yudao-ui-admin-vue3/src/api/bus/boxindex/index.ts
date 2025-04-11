@@ -204,6 +204,10 @@ export const IndexApi = {
   getBoxTemDetailExcel: async ( data: any, axiosConfig) => {
     return await request.downloadPost({ url: `/box/index/tem/detailExcel` , data, ...axiosConfig })
   },
+  //插接箱谐波详情导出
+  getBoxHarmonicDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/box/index/harmonic/lineExcel` , data, ...axiosConfig })
+  },
   
   //插接箱功率因素详情导出
   getBoxPFDetailExcel: async ( data: any, axiosConfig) => {

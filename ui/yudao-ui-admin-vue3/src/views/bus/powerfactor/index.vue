@@ -591,11 +591,11 @@ const getPfESList = () => {
       powerFactorValueC: obj[`powerFactor${itemFactorType}ValueC`],
       time: obj.time
     }));
-  } else {
+  } else if(pfTableList.value) {
     pfESList.value = pfTableList.value.map(obj => ({
-      powerFactorValueA: obj.powerFactorAvgValueA,
-      powerFactorValueB: obj.powerFactorAvgValueB,
-      powerFactorValueC: obj.powerFactorAvgValueC,
+      powerFactorValueA: obj?.powerFactorAvgValueA,
+      powerFactorValueB: obj?.powerFactorAvgValueB,
+      powerFactorValueC: obj?.powerFactorAvgValueC,
       time: obj.time
     }));
   }

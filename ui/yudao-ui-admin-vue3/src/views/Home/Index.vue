@@ -10,7 +10,7 @@
               </el-avatar>
               <div>
                 <div class="text-20px">
-                  PowerMater系统安全守护第 {{devInfo.days}} 天
+                  PowerMaster系统安全守护第 {{devInfo.days}} 天
                 </div>
                 <div class="mt-10px text-14px text-gray-500">
                   今日一切正常
@@ -48,11 +48,14 @@
           <div class="h-3 flex justify-between">
             <span>机房状态</span>
             <div class="roomPowerBtns">
-              <el-button @click="push({path: '/room/roommonitor/roompower'})" :type="toggleButton ? 'primary' : ''" size="small">全屏</el-button>
+              <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
+              <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
+              <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>
+              <el-button @click="push({path: '/room/roommonitor/roompower'})" size="small">全屏</el-button>
             </div>
           </div>
         </template>
-        <RoomPower :isFromHome="true" />
+        <RoomPower :isFromHome="true" :valueButton="valueMode" />
       </el-card>
 
       <el-card shadow="never" class="mt-8px">
@@ -222,7 +225,6 @@ const alarmInfo = reactive({}) // 警告信息
 const tableData = ref([]) 
 const prePowBtn = ref(0) // 当前所选的功率
 const toggleTable = ref(false) //设备统计和告警统计的切换
-const toggleButton = ref(false) //全屏按钮的样式切换
 const dialogVisible = ref(false) //全屏弹窗的显示隐藏
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
 const radioBtn = ref('pow')
@@ -554,7 +556,7 @@ const getHomePowData = async() => {
         },
       },
       {
-        name: '功率因素',
+        name: '功率因数',
         data: powInfo.roomDataList.map(item => item.powerFactor),
         type: 'bar',
         label: {

@@ -1132,7 +1132,7 @@ onActivated(() => {
       .icon {
         width: 60px;
         height: 60px;
-        margin: 0 28px;
+        margin: 0 64px 0 0;
         text-align: center;
       }
       .info{
@@ -1210,7 +1210,7 @@ onActivated(() => {
       .icon {
         width: 60px;
         height: 30px;
-        margin: 0 28px;
+        margin: 0 64px 0 0;
         text-align: center;
       }
       .info{
@@ -1288,7 +1288,7 @@ onActivated(() => {
       .icon {
         width: 60px;
         height: 60px;
-        margin: 0 28px;
+        margin: 0 64px 0 0;
         text-align: center;
       }
       .info{

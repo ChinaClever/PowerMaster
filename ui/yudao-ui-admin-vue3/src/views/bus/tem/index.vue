@@ -1179,7 +1179,7 @@ onActivated(() => {
           font-size: 20px;
           width: 60px;
           height: 60px;
-          margin: 0 40px;
+          margin: 0 64px 0 0;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1260,7 +1260,7 @@ onActivated(() => {
           font-size: 20px;
           width: 60px;
           height: 30px;
-          margin: 0 40px;
+          margin: 0 64px 0 0;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1340,7 +1340,7 @@ onActivated(() => {
           font-size: 20px;
           width: 60px;
           height: 30px;
-          margin: 0 40px;
+          margin: 0 64px 0 0;
           text-align: center;
           .text-pf{
             font-size: 16px;
