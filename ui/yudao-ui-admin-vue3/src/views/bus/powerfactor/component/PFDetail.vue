@@ -33,7 +33,11 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) ;
+        result +=  params[i].marker + params[i].seriesName;
+        if(prop.list[params[i].dataIndex]?.powerFactorTime?.[i]) {
+          result += '&nbsp发生时间:' + prop.list[params[i].dataIndex].powerFactorTime[i]
+        }
+        result += '&nbsp&nbsp' + params[i].value
         result += '<br>';
       }
       return result;
@@ -52,11 +56,11 @@ const echartsOption = ref({
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
-  powerFactorA.value = prop.list.powerFactorAvgValueA;
-  powerFactorB.value = prop.list.powerFactorAvgValueB;
-  powerFactorC.value = prop.list.powerFactorAvgValueC;
-  time.value = prop.list.time;
-  if(prop.list.powerFactorAvgValueA?.length > 0){
+  powerFactorA.value = prop.list.map(obj => obj.powerFactorValueA);
+  powerFactorB.value = prop.list.map(obj => obj.powerFactorValueB);
+  powerFactorC.value = prop.list.map(obj => obj.powerFactorValueC);
+  time.value = prop.list.map(obj => obj.time);
+  if(powerFactorA.value?.length > 0){
 
     legendList.value =  ["A相功率因素","B相功率因素","C相功率因素"]
   }else {

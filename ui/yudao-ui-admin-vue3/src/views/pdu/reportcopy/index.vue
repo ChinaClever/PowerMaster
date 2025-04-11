@@ -18,7 +18,8 @@
         :inline="true"
         label-width="120px"
       >      
-        <el-form-item  label="IP地址" prop="ipAddr" >
+      <div>
+        <el-form-item  label="IP地址" prop="ipAddr" label-width="70px" >
           <el-autocomplete
             v-model="queryParams.ipAddr"
             :fetch-suggestions="querySearch"
@@ -37,6 +38,15 @@
             :value-on-clear="0"
               class="!w-100px"
           />
+        </el-form-item>
+      </div>
+      <div>
+        <el-form-item>
+          <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+            <el-option label="平均" value="平均" />
+            <el-option label="最大" value="最大" />
+            <el-option label="最小" value="最小" />
+          </el-select>
         </el-form-item>
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
@@ -97,6 +107,7 @@
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
+      </div>
       </el-form>
     </template>
     <template #Content>
@@ -188,7 +199,7 @@
           </div>
           <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
-              平均功率曲线
+              功率曲线
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
@@ -356,6 +367,8 @@ const visControll = reactive({
   flag: false,
 })
 const serChartContainerWidth = ref(0)
+
+const typeRadioShow = ref("最大")
 
 const loadAll = async () => {
   var data = await PDUDeviceApi.ipList();
@@ -1636,16 +1649,8 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
-:deep(.el-form .el-form-item:nth-child(1)) {
-  margin-left:-3vw;
-}
-
-:deep(.el-form .el-form-item:nth-child(2)) {
-  margin-left:-1vw;
-}
-
-:deep(.el-form .el-form-item:nth-child(3)) {
-  margin-left: 14vw;
+:deep(.el-form--inline .el-form-item) {
+  margin-right: 5px
 }
 
 @media screen and (min-width:2048px) {

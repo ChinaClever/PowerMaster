@@ -39,7 +39,7 @@ const echartsOption = ref({
         if(series.value[i]?.times?.[params[i].dataIndex]) {
           result +=  '发生时间:' + series.value[i].times[params[i].dataIndex].slice(0,-3) + '&nbsp&nbsp'
         }
-        result += params[i].value.toFixed(0) + ' %' + '<br>';
+        result += params[i].value.toFixed(0) + ' kVar' + '<br>';
       }
       return result;
     } 
@@ -70,7 +70,7 @@ watchEffect(() => {
     legendList.value =  series.value?.map(item => item.name)
   }
 
-  time.value = prop.list.time;
+  time.value = prop.list.time.map(item => item.slice(0,-3));
 
 });
 
