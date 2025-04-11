@@ -154,7 +154,7 @@ import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import PDUImage from '@/assets/imgs/PDU.jpg';
@@ -351,7 +351,7 @@ loading.value = true
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束日期的天数多加一天 ，  一天的毫秒数
     const oneDay = 24 * 60 * 60 * 1000;
-    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     

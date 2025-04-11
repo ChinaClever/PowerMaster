@@ -359,8 +359,8 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -408,10 +408,10 @@ const getLists = async () => {
   try {
     if (start.value != "" && start.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(startOfDay(convertDate(start.value)))
+      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value),1000*60*60*24)))
+      selectTimeRange.value = [start.value, end.value];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }else{
       const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))

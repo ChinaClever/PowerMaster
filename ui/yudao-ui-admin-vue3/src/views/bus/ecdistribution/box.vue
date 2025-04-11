@@ -125,7 +125,7 @@ import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/bus/busindex'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
@@ -142,6 +142,9 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
+if(history.state.start!=null&&history.state.end!=null){
+  selectTimeRange.value = [history.state.start,history.state.end]
+}
 const loading = ref(false) 
 const loading2 = ref(false) 
 const queryParams = reactive({
@@ -241,13 +244,13 @@ const shortcuts = [
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(14)
+    // selectTimeRange.value = defaultDayTimeRange(14)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(3)
+    // selectTimeRange.value = defaultMonthTimeRange(3)
   }else{
     queryParams.granularity = 'month'
-    selectTimeRange.value = defaultMonthTimeRange(12)
+    // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
@@ -295,7 +298,7 @@ const getLineChartData =async () => {
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
     const oneDay = 24 * 60 * 60 * 1000;
-    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
 
     const data = await EnergyConsumptionApi.getBoxEQDataDetails(queryParams);
     if (data != null && data.total != 0){
@@ -322,7 +325,8 @@ const getLineChartData =async () => {
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
-      loading2.value= false
+      loading2.value= false;
+      maxEqDataTimeTemp.value=null;
       ElMessage({
         message: '暂无数据',
         type: 'warning',
@@ -385,30 +389,30 @@ function customTooltipFormatter(params: any[]) {
 
 // 处理时间选择不超过xxx范围
 const handleDayPick = () => {
-  if (activeName.value=='weekTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差不超过7天，则重置选择的日期
-    if (diffDays < 7) {
-      selectTimeRange.value = defaultDayTimeRange(7)
-      ElMessage({
-        message: '时间选择不少于7天,已默认选择最近一周',
-        type: 'warning',
-      })
-    }
-  }
-  if (activeName.value=='monthTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差超过30天，则重置选择的日期
-    if (diffDays < 30) {
-      selectTimeRange.value = defaultMonthTimeRange(1)
-      ElMessage({
-        message: '时间选择不少于1个月,已默认选择最近一个月',
-        type: 'warning',
-      })
-    }
-  }
+  // if (activeName.value=='weekTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差不超过7天，则重置选择的日期
+  //   if (diffDays < 7) {
+  //     selectTimeRange.value = defaultDayTimeRange(7)
+  //     ElMessage({
+  //       message: '时间选择不少于7天,已默认选择最近一周',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
+  // if (activeName.value=='monthTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差超过30天，则重置选择的日期
+  //   if (diffDays < 30) {
+  //     selectTimeRange.value = defaultMonthTimeRange(1)
+  //     ElMessage({
+  //       message: '时间选择不少于1个月,已默认选择最近一个月',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
 }
 
 // 禁选未来的日期

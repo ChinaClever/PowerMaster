@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordPageReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordRespVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordSaveReqVO;
+import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.validation.Valid;
@@ -46,5 +47,7 @@ public interface AlarmRecordService {
      * @return
      */
     Map<Object,Object> levelCount();
+
+    SystemAlarmRecord getAlarmRecordById(Integer id);
 
 }

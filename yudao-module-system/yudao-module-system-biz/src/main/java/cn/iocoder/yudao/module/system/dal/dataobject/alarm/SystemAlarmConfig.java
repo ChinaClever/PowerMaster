@@ -26,26 +26,24 @@ public class SystemAlarmConfig implements Serializable {
      */
     private int mailAlarm;
 
-
     /**
      * 告警声音开关
      */
     private int voiceAlarm;
+
     /**
      * 短信告警开关
      */
     private int smsAlarm;
 
-
     /**
      * 更新时间
      */
-//    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
     /**
      * 创建时间
      */
-//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
 

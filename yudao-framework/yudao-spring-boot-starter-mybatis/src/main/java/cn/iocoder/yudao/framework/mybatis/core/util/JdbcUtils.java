@@ -1,9 +1,13 @@
 package cn.iocoder.yudao.framework.mybatis.core.util;
 
+import cn.iocoder.yudao.framework.mybatis.core.object.ColumnInfo;
 import com.baomidou.mybatisplus.annotation.DbType;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JDBC 工具类
@@ -39,4 +43,19 @@ public class JdbcUtils {
         return DbType.getDbType(name);
     }
 
+    // 动态查询表结构（字段名+类型）
+    public static List<ColumnInfo> getTableColumns(String url ,String user , String passwd , String dbName, String tableName) {
+        List<ColumnInfo> columns = new ArrayList<>();
+        try (Connection conn = DriverManager.getConnection(url, user, passwd);
+             ResultSet rs = conn.getMetaData().getColumns(dbName, null, tableName, "%")) {
+            while (rs.next()) {
+                String colName = rs.getString("COLUMN_NAME");
+                int colType = rs.getInt("DATA_TYPE"); // Types.XXX 常量值
+                columns.add(new ColumnInfo(colName, colType));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return columns;
+    }
 }

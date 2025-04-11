@@ -126,7 +126,7 @@ import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/room/roomindex'
-import { formatDate, endOfDay, convertDate, betweenDay,startOfDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, betweenDay,startOfDay, addTime } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import download from '@/utils/download';
 import CommonMenu1 from '@/components/CommonMenu1.vue/CommonMenu1.vue';
@@ -289,9 +289,9 @@ const getLineChartData =async () => {
 loading.value = true
  try {
     // 格式化时间范围 加上23:59:59的时分秒 
-    queryParams.timeRange[0] = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
-    queryParams.timeRange[1] = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data != null && data.total != 0){
@@ -381,6 +381,7 @@ function formatNumber(value, decimalPlaces) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
+  console.log("params==",params)
   var tooltipContent = '';
   params.forEach(function(item) {
     switch( item.seriesName ){

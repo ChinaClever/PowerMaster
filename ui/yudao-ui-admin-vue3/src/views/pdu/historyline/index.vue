@@ -525,7 +525,7 @@ const initChart = () => {
     }
   }
   // 图例切换监听
-  totalRealtimeLegendListener(realtimeChart);
+  setupLegendListener1(realtimeChart);
   // 每次切换图就要动态生成数据表头
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
@@ -1372,7 +1372,7 @@ const handleQuery = () => {
     }
     needFlush.value++;
     console.log('ip：', queryParams.ipAddr)
-    getList();
+    // getList();
   }else{
     ElMessage.error('IP地址格式有误,请重新输入！')
   }
@@ -1398,6 +1398,7 @@ onMounted( async () => {
     nowAddress.value = queryAddress
     nowAddressTemp.value = queryAddress
     initChart();
+
   }
 })
 

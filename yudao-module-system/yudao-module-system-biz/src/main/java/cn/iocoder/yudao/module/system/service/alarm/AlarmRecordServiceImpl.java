@@ -184,4 +184,9 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         }
         return map;
     }
+
+    @Override
+    public SystemAlarmRecord getAlarmRecordById(Integer id) {
+        return alarmRecordMapper.selectById(id);
+    }
 }

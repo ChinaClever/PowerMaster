@@ -70,7 +70,6 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate"
-
           class="!w-350px"
         />
                     <!-- @change="handleDayPick" -->
@@ -551,7 +550,7 @@ const initChart = () => {
             });
           }
       // 图例切换监听
-      totalRealtimeLegendListener(realtimeChart);
+      totalAndOutletHourAndDayLegendListener(realtimeChart);
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
@@ -1655,8 +1654,14 @@ const handleExport1 = async () => {
   const queryBoxId =ref(history?.state?.boxId);
   const queryLocation = ref(history?.state?.location);
   const queryDevKey = ref(history?.state?.dev_key);
+  const start=ref(history?.state?.start)
+  const end=ref(history?.state?.end)
+  console.log("history.state",history?.state)
 /** 初始化 **/
 onMounted( async () => { 
+  if(start.value!=undefined&&end.value!=undefined&&start.value!=''&&end.value!=''){
+    queryParams.timeRange = [start.value, end.value]
+  }
   getNavList()
   // 获取路由参数中的 pdu_id
   queryParams.boxId = queryBoxId;

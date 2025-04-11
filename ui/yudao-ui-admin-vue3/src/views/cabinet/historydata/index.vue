@@ -112,7 +112,7 @@
           <template v-for="column in tableColumns">
             <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.label!='操作'" />
           </template>
-          <el-table-column label="操作" align="center" :width="90">
+          <el-table-column label="操作" align="center" :width="90" fixed="right">
               <template #default="{ row }">
                 <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
               </template>

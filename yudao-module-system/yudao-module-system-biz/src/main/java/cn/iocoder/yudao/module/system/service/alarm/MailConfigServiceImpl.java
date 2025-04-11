@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigPageReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigSaveReqVO;
+import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemMailAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemSmsAlarmConfig;
@@ -23,6 +24,8 @@ import cn.iocoder.yudao.module.system.service.sms.SmsSendService;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -30,10 +33,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import javax.sound.sampled.*;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
@@ -63,6 +63,17 @@ public class MailConfigServiceImpl implements MailConfigService {
     private SysAlarmSmsConfigMapper smsConfigMapper;
     @Resource
     SmsSendService smsSendService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private AlarmRecordService alarmRecordService;
+
+    @Autowired
+    private AlarmConfigService alarmConfigService;
+
+
 
     public static final String TEMPLATE_CODE = "ALARM_MAIL";
 
@@ -113,20 +124,24 @@ public class MailConfigServiceImpl implements MailConfigService {
     }
 
     @Override
-    public void sendMail(SystemAlarmRecord record) {
+    public void sendMail(List<SystemAlarmRecord> records) {
 
         List<SystemMailAlarmConfig> mailAlarmConfigs = alarmMailConfigMapper.selectList(new LambdaQueryWrapperX<SystemMailAlarmConfig>()
                 .eq(SystemMailAlarmConfig::getIsEnable, DisableEnums.ENABLE.getStatus()));
 
         //报警信息
-        Map<String, Object> templateParams = new HashMap<>();
-        templateParams.put("devKey",record.getDevKey());
-        templateParams.put("devName",record.getDevName());
-        templateParams.put("devType", DeviceTypeEnums.getNameByStatus(record.getDevType()));
-        templateParams.put("alarmType", AlarmTypeEnums.getNameByStatus(record.getAlarmType()));
-        templateParams.put("alarmLevel", AlarmLevelEnums.getNameByStatus(record.getAlarmLevel()));
-        templateParams.put("alarmDesc",record.getAlarmDesc());
-        templateParams.put("position",record.getDevPosition());
+        List<Map<String, Object>> templateParams = new ArrayList<>();
+        for (SystemAlarmRecord record : records) {
+            Map<String, Object> templateParam = new HashMap<>();
+            templateParam.put("devKey",record.getDevKey());
+            templateParam.put("devName",record.getDevName());
+            templateParam.put("devType", DeviceTypeEnums.getNameByStatus(record.getDevType()));
+            templateParam.put("alarmType", AlarmTypeEnums.getNameByStatus(record.getAlarmType()));
+            templateParam.put("alarmLevel", AlarmLevelEnums.getNameByStatus(record.getAlarmLevel()));
+            templateParam.put("alarmDesc",record.getAlarmDesc());
+            templateParam.put("position",record.getDevPosition());
+        }
+
 
         if (!CollectionUtils.isEmpty(mailAlarmConfigs)){
             mailAlarmConfigs.forEach(config -> {
@@ -136,21 +151,30 @@ public class MailConfigServiceImpl implements MailConfigService {
 
                 // 校验邮箱模版是否合法
                 MailTemplateDO template = validateMailTemplate(TEMPLATE_CODE);
-                // 校验邮箱账号是否合法
+
                 MailAccountDO account = validateMailAccount(template.getAccountId());
-                validateTemplateParams(template, templateParams);
+                StringBuffer contentBuff = new StringBuffer();
+                for (Map<String, Object> templateParam : templateParams) {
+                    // 校验邮箱账号是否合法
+                    validateTemplateParams(template, templateParam);
+
+                    // 组装发送内容
+                    String content = mailTemplateService.formatMailTemplateContent(template.getContent(), templateParam);
+                    contentBuff.append(content).append("\n");
+                }
+
 
                 // 创建发送日志。如果模板被禁用，则不发送短信，只记录日志
                 Boolean isSend = CommonStatusEnum.ENABLE.getStatus().equals(template.getStatus());
-                String title = mailTemplateService.formatMailTemplateContent(template.getTitle(), templateParams);
-                String content = mailTemplateService.formatMailTemplateContent(template.getContent(), templateParams);
+                String title = mailTemplateService.formatMailTemplateContent(template.getTitle(), templateParams.get(0));
+
 
                 //邮件用户
                 Long sendLogId = mailLogService.createMailLog(template.getAccountId(), 9, mail,
-                        account, template, content, templateParams, isSend);
+                        account, template, contentBuff.toString(), templateParams, isSend);
                 MailSendMessage message = new MailSendMessage()
                         .setLogId(sendLogId).setMail(mail).setAccountId(template.getAccountId())
-                        .setNickname(template.getNickname()).setTitle(title).setContent(content);
+                        .setNickname(template.getNickname()).setTitle(title).setContent(contentBuff.toString());
                 //发送邮件
                 mailSendService.doSendMail(message);
             });
@@ -269,4 +293,52 @@ public class MailConfigServiceImpl implements MailConfigService {
             }
         });
     }
+
+
+    @Override
+    public void pushAlarmMessage() {
+        // 获取告警记录变化的数据
+        String table = "sys_alarm_record";
+        List<Map<String,Object>> insertList = redisTemplate.opsForList().range(table + ":insert", 0, -1);
+        List<Map<String,Object>> updateList = redisTemplate.opsForList().range(table + ":updateNew", 0, -1);
+        // 获取告警配置
+        SystemAlarmConfig config = alarmConfigService.getConfig();
+        int voiceAlarm = config.getVoiceAlarm();
+        int emailAlarm = config.getMailAlarm();
+        int smsAlarm = config.getSmsAlarm();
+        // 告警推送处理
+        if (!insertList.isEmpty() || !updateList.isEmpty()) {
+            // 获取告警记录
+            List<SystemAlarmRecord> list = new ArrayList<>();
+            if (!insertList.isEmpty()) {
+                for (Map<String, Object> map : insertList) {
+                    SystemAlarmRecord record = alarmRecordService.getAlarmRecordById((Integer) map.get("id"));
+                    list.add(record);
+                }
+            }
+            if (!updateList.isEmpty()) {
+                for (Map<String, Object> map : updateList) {
+                    SystemAlarmRecord record = alarmRecordService.getAlarmRecordById((Integer) map.get("id"));
+                    list.add(record);
+                }
+            }
+
+            // 铃声告警
+//            if (voiceAlarm == 1) {
+//                playAudio();
+//            }
+            // 邮件告警
+            if (emailAlarm == 1) {
+                sendMail(list);
+            }
+
+            // 删除缓存
+            List<String> deleteKeys = new ArrayList<>();
+            deleteKeys.add(table + ":insert");
+            deleteKeys.add(table + ":updateNew");
+            deleteKeys.add(table + ":updateOld");
+            redisTemplate.delete(deleteKeys);
+        }
+    }
+
 }

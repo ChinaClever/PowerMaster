@@ -58,7 +58,8 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
           v-model="selectTimeRange"
           type="daterange"
           :shortcuts="shortcuts"
@@ -248,9 +249,9 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化日期范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(selectTimeRange.value[0])
-     
-      const selectedEndTime = formatDate(selectTimeRange.value[1])
+      console.log('11111',selectTimeRange.value)
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
      // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }

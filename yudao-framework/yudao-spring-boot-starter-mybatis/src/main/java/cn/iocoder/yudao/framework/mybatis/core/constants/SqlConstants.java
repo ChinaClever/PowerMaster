@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.framework.mybatis.core.enums;
+package cn.iocoder.yudao.framework.mybatis.core.constants;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 

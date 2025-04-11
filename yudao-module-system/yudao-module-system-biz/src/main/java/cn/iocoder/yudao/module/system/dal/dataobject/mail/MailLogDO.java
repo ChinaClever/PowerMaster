@@ -96,7 +96,7 @@ public class MailLogDO extends BaseDO implements Serializable {
      * 基于 {@link MailTemplateDO#getParams()} 输入后的参数
      */
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> templateParams;
+    private Object templateParams;
 
     // ========= 发送相关字段 =========
     /**

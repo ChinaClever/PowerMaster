@@ -508,7 +508,7 @@ const initChart = () => {
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
     // 图例切换监听
-    setupLegendListener(realtimeChart);
+    setupLegendListener1(realtimeChart);
   }
   // 每次切换图就要动态生成数据表头
   //debugger
