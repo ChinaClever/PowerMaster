@@ -284,7 +284,7 @@ const goBus = (devKey,location,cabinetName,path) => {
     message.error('未绑定B路设备!')
     return;    
   }
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey ,location,cabinetName,roomName:path}})
+  push({path: '/bus/busmonitor/busmonitor/buspowerdetail', state: { devKey ,location,cabinetName,roomName:path}})
 }
 
 const getFullTimeByDate = (date) => {

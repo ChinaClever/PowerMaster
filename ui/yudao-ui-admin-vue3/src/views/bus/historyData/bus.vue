@@ -88,6 +88,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
+          value-format="YYYY-MM-DD HH:mm:ss"
           format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
           type="datetimerange"
@@ -96,7 +97,7 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate" 
-          class="!w-280px"
+          class="!w-350px"
         />
         </el-form-item>
         <!-- <div style="float:right; padding-right:78px"> -->
@@ -120,7 +121,12 @@
         </el-table-column>
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'">
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button type="primary" @click="toDetails(row.bus_id, row.location, row.dev_key)">详情</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot === 'actions'" fixed="right">
             <template #default="{ row }" v-if="column.slot === 'actions'">
               <el-button type="primary" @click="toDetails(row.bus_id, row.location, row.dev_key)">详情</el-button>
             </template>
@@ -155,6 +161,7 @@ import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
 import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
+import { sl } from 'element-plus/es/locale'
 const { push } = useRouter()
 /** 始端箱历史数据 列表 */
 defineOptions({ name: 'BusHistoryData' })
@@ -679,7 +686,11 @@ const handleQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (busId: number, location?: string, dev_key?: string) => {
-  push({path: '/bus/record/bus/historyLine', state: {busId,location,dev_key}})
+  if(selectTimeRange.value != null && selectTimeRange.value?.length == 2){
+    push({path: '/bus/record/bus/historyLine', state: {busId,location,dev_key,"start":selectTimeRange.value[0],"end":selectTimeRange.value[1]}})
+  }else{
+    push({path: '/bus/record/bus/historyLine', state: {busId,location,dev_key}})
+  }
 }
 
 /** 导出按钮操作 */
@@ -742,8 +753,8 @@ onMounted( () => {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  formatDate(startOfMonth),
+  formatDate(now)
 ];
   getNavList()
   getBusNavNewData()

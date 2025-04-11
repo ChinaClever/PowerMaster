@@ -61,7 +61,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.devKey,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.devKey)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -81,7 +81,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.devKey,row.createTimeMin,row.createTimeMax)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.devKey)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -251,7 +251,7 @@ const eqData = ref<number[]>([]);
     });
     rankChart.on('click', function(params) {
       console.log("params==",params)
-      toDetails(list.value[params.dataIndex].devKey,selectTimeRange.value[0],selectTimeRange.value[1]);
+      toDetails(list.value[params.dataIndex].devKey);
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
@@ -453,10 +453,14 @@ const handleExport = async () => {
 
 
 // 跳转详情页
-const toDetails = (devKey: string, createTimeMin : string,createTimeMax : string) => {
-  const start = createTimeMin
-  const end = createTimeMax;
-  push({path: '/bus/nenghao/boxnenghao/powerAnalysis', state: {devKey,start,end}})
+const toDetails = (devKey: string,) => {
+  const start = selectTimeRange.value?.[0];
+  const end = selectTimeRange.value?.[1];
+  if(start!=null&&end!=null&&start!=''&&end!=''){
+    push({path: '/bus/nenghao/boxnenghao/powerAnalysis', state: {devKey,start,end}})
+  }else{
+    push({path: '/bus/nenghao/boxnenghao/powerAnalysis', state: {devKey}})
+  }
 }
 
 
@@ -464,7 +468,6 @@ const toDetails = (devKey: string, createTimeMin : string,createTimeMax : string
 onMounted(async() => {
   getNavList()
   getNavNewData()
-
   const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串

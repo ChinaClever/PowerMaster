@@ -125,7 +125,13 @@
         <el-table v-if="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="设备名称" align="center" prop="boxName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="130px" >
@@ -254,10 +260,12 @@
           </el-button>
           <el-date-picker
             v-model="queryParamsCopy.oldTime"
+            :clearable = "false"
+            :editable = "false"
             value-format="YYYY-MM-DD HH:mm:ss"
             type="date"
             :disabled-date="disabledDate"
-            @change="handleDayPick"
+            @change="handleDayPick()"
             class="!w-160px"
           />
           <el-button 
@@ -571,6 +579,38 @@ const getList = async () => {
   }
 }
 
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBoxHarmonicPage(queryParams)
+    list.value = data.list
+
+    //获取颜色范围
+    //var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    //if(range != null){
+    //  statusList[0].name = '<' + range.rangeOne + '%';
+    //  statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+    //  statusList[2].name = '>' + range.rangeFour + '%';
+    //}
+
+    var tableIndex = 0;
+
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.acurThd == null){
+        return;
+      } 
+      obj.acurThd = obj.acurThd?.toFixed(2);
+      obj.bcurThd = obj.bcurThd?.toFixed(2);
+      obj.ccurThd = obj.ccurThd?.toFixed(2);
+
+    });
+
+    total.value = data.total
+  } finally {
+  }
+}
+
 const getListAll = async () => {
   try {
     const allData = await IndexApi.getBoxIndexStatistics();
@@ -665,6 +705,18 @@ const handleQueryCopy = async () => {
 const handleDayPick = async () => {
 
   if(queryParamsCopy?.oldTime ){
+    var date = new Date(queryParamsCopy.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
+
+    var today = new Date(); // 今天的日期
+    today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+    if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+      clickAdd.value = true
+    } else {
+      clickAdd.value = false
+    }
+
     await getDetail();
   } 
 }
@@ -685,8 +737,6 @@ const addtractOneDay = () => {
 
   var today = new Date(); // 今天的日期
   today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
-
-  console.log(date,today)
 
   if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
     clickAdd.value = true
@@ -717,6 +767,7 @@ const showDialog = async (item) => {
   busName.value = item.busName;
   boxName.value = item.boxName;
   queryParamsCopy.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0))
+  clickAdd.value = true
   dialogVisible.value = true;
   await handleQueryCopy();
 }
@@ -799,7 +850,7 @@ onMounted(async () => {
   getList();
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -821,7 +872,7 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>

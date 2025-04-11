@@ -125,7 +125,7 @@ watchEffect(() => {
     // 如果 item 已经有 markPoint，但你想更新它（比如样式），可以在这里做  
   });  
   series.value?.push(markLine.value)
-  time.value = prop.list.time;
+  time.value = prop.list.time.map(item => item.slice(0,-3));
 
 });
 

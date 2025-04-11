@@ -243,11 +243,11 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(selectTimeRange.value[0])
-      // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(selectTimeRange.value[1])
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(addTime(selectTimeRange.value[0],oneDay))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const selectedEndTime = formatDate(addTime(selectTimeRange.value[1],oneDay))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
   

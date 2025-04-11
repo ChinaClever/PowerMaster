@@ -86,7 +86,7 @@ export const EnergyConsumptionApi = {
 
   // 查询插接箱电能记录导航的一天数据显示
   getBoxNavOneDayData: async (params) => {
-    return await request.get({ url: `/bus/eq-data/box/one-day/` , params})
+    return await request.get({ url: `/bus/eq-data/box/one-day` , params})
   },
 
   // 导出插接箱能耗趋势历史数据 Excel
