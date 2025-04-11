@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.entity.es.bus.line;
 
 import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.bus.BusBaseDo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -30,6 +31,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最大有功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_active_max_time")
     private DateTime powActiveMaxTime;
 
@@ -42,6 +44,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最小有功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_active_min_time")
     private DateTime powActiveMinTime;
 
@@ -61,6 +64,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最大视在功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_apparent_max_time")
     private DateTime powApparentMaxTime;
 
@@ -74,6 +78,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最小视在功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_apparent_min_time")
     private DateTime powApparentMinTime;
 
@@ -93,6 +98,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最大无功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_reactive_max_time")
     private DateTime powReactiveMaxTime;
 
@@ -106,6 +112,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最小无功功率时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("pow_reactive_min_time")
     private DateTime powReactiveMinTime;
 
@@ -124,6 +131,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最大电压时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("vol_max_time")
     private DateTime volMaxTime;
 
@@ -136,6 +144,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最小电压时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("vol_min_time")
     private DateTime volMinTime;
 
@@ -154,6 +163,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最大电流时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("cur_max_time")
     private DateTime curMaxTime;
 
@@ -167,6 +177,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最小电流时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("cur_min_time")
     private DateTime curMinTime;
 
@@ -186,6 +197,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最大线电压时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("vol_line_max_time")
     private DateTime volLineMaxTime;
 
@@ -199,6 +211,7 @@ public class BusLineBaseDo extends BusBaseDo {
     /**
      * 最小线电压时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("vol_line_min_time")
     private DateTime volLineMinTime;
 
@@ -214,5 +227,58 @@ public class BusLineBaseDo extends BusBaseDo {
      */
     @JsonProperty("power_factor_avg_value")
     private float powerFactorAvgValue;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_max_value")
+    private float powerFactorMaxValue;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("power_factor_max_time")
+    private DateTime powerFactorMaxTime;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_min_value")
+    private float powerFactorMinValue;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("power_factor_min_time")
+    private DateTime powerFactorMinTime;
+
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("load_rate_avg_value")
+    private float loadRateAvgValue;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("load_rate_max_time")
+    private DateTime loadRateMaxTime;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("load_rate_max_value")
+    private float loadRateMaxValue;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("load_rate_min_time")
+    private DateTime loadRateMinTime;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("load_rate_min_value")
+    private float loadRateMinValue;
 
 }

@@ -257,7 +257,7 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
         { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '发生时间', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
         { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
@@ -278,7 +278,7 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '发生时间', align: 'center', prop: 'create_time' , formatter: formatTime, width: '200px' , istrue:true},
+        { label: '发生时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
         { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
@@ -300,7 +300,7 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-  { label: '发生时间', align: 'center', prop: 'create_time' , formatter: formatTime, width: '200px' , istrue:true},
+  { label: '发生时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
   { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
@@ -312,10 +312,10 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化日期范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      // const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
 
     }

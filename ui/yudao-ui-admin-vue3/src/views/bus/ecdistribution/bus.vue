@@ -4,15 +4,11 @@
       
       <div class="nav_data">
       <div class="nav_header">       
-          <span v-if="nowAddress">{{nowAddress.value ?nowAddress.value :'暂未绑定设备'}}</span>
-          <span v-if="devKey">( {{ devKye.value }} )</span>
+          <span v-if="nowAddress">{{nowAddress!=null&&nowAddress!=''?nowAddress :'暂未绑定设备'}}</span>
+          <span v-if="devKey">( {{ devKey }} )</span>
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <div class="description-item">
-        <span class="label">网络地址 :</span>
-        <span >{{ devKye.value }} </span>
-      </div>
       <div class="description-item">
         <span class="label">总耗电量 :</span>
         <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -129,7 +125,7 @@ import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/bus/busindex'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
@@ -148,6 +144,9 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
+if(history?.state?.start!=null&&history?.state?.end!=null){
+  selectTimeRange.value = [history?.state?.start,history?.state?.end]
+}
 const loading = ref(false) 
 const loading2 = ref(false)
 const devKye = ref()
@@ -249,13 +248,13 @@ const shortcuts = [
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(14)
+    // selectTimeRange.value = defaultDayTimeRange(14)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(3)
+    // selectTimeRange.value = defaultMonthTimeRange(3)
   }else{
     queryParams.granularity = 'month'
-    selectTimeRange.value = defaultMonthTimeRange(12)
+    // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
@@ -305,7 +304,7 @@ loading.value = true
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
     const oneDay = 24 * 60 * 60 * 1000;
-    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data.list == null){
@@ -431,30 +430,30 @@ function customTooltipFormatter(params: any[]) {
 
 // 处理时间选择不超过xxx范围
 const handleDayPick = () => {
-  if (activeName.value=='weekTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差不超过7天，则重置选择的日期
-    if (diffDays < 7) {
-      selectTimeRange.value = defaultDayTimeRange(7)
-      ElMessage({
-        message: '时间选择不少于7天,已默认选择最近一周',
-        type: 'warning',
-      })
-    }
-  }
-  if (activeName.value=='monthTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差超过30天，则重置选择的日期
-    if (diffDays < 30) {
-      selectTimeRange.value = defaultMonthTimeRange(1)
-      ElMessage({
-        message: '时间选择不少于1个月,已默认选择最近一个月',
-        type: 'warning',
-      })
-    }
-  }
+  // if (activeName.value=='weekTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差不超过7天，则重置选择的日期
+  //   if (diffDays < 7) {
+  //     selectTimeRange.value = defaultDayTimeRange(7)
+  //     ElMessage({
+  //       message: '时间选择不少于7天,已默认选择最近一周',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
+  // if (activeName.value=='monthTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差超过30天，则重置选择的日期
+  //   if (diffDays < 30) {
+  //     selectTimeRange.value = defaultMonthTimeRange(1)
+  //     ElMessage({
+  //       message: '时间选择不少于1个月,已默认选择最近一个月',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
 }
 
 // 禁选未来的日期
@@ -477,10 +476,16 @@ const handleClick = async (row) => {
   if(row.type != null  && row.type == 6){
     queryParams.busId = undefined
     queryParams.devkey = row.unique
+    devKey.value = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
     });
+    console.log("nowAddressTemp===",nowAddressTemp.value);
+    console.log("nowAddress===",nowAddress.value)
     handleQuery();
+    console.log("nowAddress=================",nowAddress.value);
+    console.log("nowAddressTemp================",nowAddressTemp.value)
+    // nowAddress.value=nowAddressTemp.value
   }
 }
 
@@ -515,7 +520,7 @@ const handleQuery = async() => {
 const queryLocation = ref(history?.state?.location);// 导航栏的位置信息
 const queryDevkey = ref(history?.state?.devKey); // 导航栏的位置信息
 const queryBusId = ref(history?.state?.busId);
-
+console.log("history.state",history.state)
 /** 初始化 **/ 
 onMounted(async () => {
   getNavList()
@@ -528,9 +533,9 @@ onMounted(async () => {
   queryParams.devkey =queryDevkey.value as string | undefined;
   devKye.value = queryDevkey? queryDevkey : undefined
   if (queryParams.busId != undefined){
-    nowAddress.value = queryLocation;
-    devKey.value = queryDevkey;
-    nowAddressTemp.value = queryLocation;
+    nowAddress.value = queryLocation.value;
+    devKey.value = queryDevkey.value;
+    nowAddressTemp.value = queryLocation.value;
     await getLineChartData();
     initLineChart();
   }

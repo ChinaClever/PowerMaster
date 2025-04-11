@@ -114,8 +114,27 @@
                            :align="column.align" 
                            :prop="column.prop" 
                            :formatter="column.formatter" 
+                           :min-width="column.width" 
+                           v-if="column.istrue&&column.slot !== 'actions'" 
+                           >
+            <template #default="{ row }">
+              <div v-if="column.slot === 'actions'">
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+              </div>
+              <div v-else-if="column.slot === 'detect'">
+                {{ getCombinedString(row.address?.channel, row.address?.position) }}
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column :key="column.prop" 
+                           :label="column.label" 
+                           :align="column.align" 
+                           :prop="column.prop" 
+                           :formatter="column.formatter" 
                            :width="column.width" 
-                           v-if="column.istrue" 
+                           v-if="column.istrue&&column.slot == 'actions'" 
+                           fixed="right"
                            >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
@@ -347,15 +366,15 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '平均湿度(%RH)', align: 'center', prop: 'hum_avg_value', istrue:false, width: '180px', formatter: formatData},
-        { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:false, width: '180px', formatter: formatData },
-        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false,formatter: formatTime},
+        { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false,formatter: formatTime},
-        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true,formatter: formatTime},
-        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true,formatter: formatTime},
+        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:false, width: '180px', formatter: formatData },
+        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:false,formatter: formatTime},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
       queryParams.pageNo = 1;

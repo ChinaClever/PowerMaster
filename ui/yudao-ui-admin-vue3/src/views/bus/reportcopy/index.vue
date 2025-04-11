@@ -12,6 +12,7 @@
         ref="queryFormRef"
         :inline="true"
         label-width="120px"
+        style="float: left;"
       >      
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
@@ -83,6 +84,11 @@
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
       </el-form>
+      <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+        <el-option label="平均" value="平均" />
+        <el-option label="最大" value="最大" />
+        <el-option label="最小" value="最小" />
+      </el-select>
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >
@@ -192,8 +198,8 @@
       <el-table-column prop="powActiveThree" label="输出位3有功功率" align="center"/>
       <el-table-column label="操作" align="center">
         <template #default="scope">
-          <el-button @click="generateDailyReport(scope.row.devKey)">日报</el-button>
-          <el-button @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
+          <el-button v-if="switchValue == 0" @click="generateDailyReport(scope.row.devKey)">日报</el-button>
+          <el-button v-else-if="switchValue == 1" @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -327,6 +333,8 @@ const visControll = reactive({
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
+
+const typeRadioShow = ref("最大")
 
 interface RadarData{
   index: number;
@@ -1115,7 +1123,7 @@ const generateDailyReport = (devKey) => {
   
       // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
       console.log('生成日报报告', devKey);
-      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
+      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
     };
 
     const generateMonthlyReport = (devKey) => {
@@ -1130,7 +1138,7 @@ const generateDailyReport = (devKey) => {
   new1.value = getFullTimeByDate(new1.value);
       // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
       console.log('生成月报报告', devKey);
-      push('/bus/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
     };
 // 表格行选择处理
 const handleCurrentChange = (val) => {
@@ -1432,15 +1440,16 @@ onMounted( async () =>  {
     color: #2c2c2c !important;
 }
 
-:deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
-}
-
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
 
+:deep(.el-table .el-table__header th) {
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
+}
 
 
 

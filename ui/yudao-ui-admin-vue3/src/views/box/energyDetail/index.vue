@@ -74,7 +74,7 @@
     <div class="bottom">
       <el-card class="card-day" shadow="never">
         <template #header>
-          <CardTitle title="日用电有功功率曲线" />
+          <CardTitle title="日用电最大有功功率曲线" />
         </template>
         <Echart :options="echartsOptionPowTrend" :height="260" />
       </el-card>
@@ -213,6 +213,17 @@ const getActivePowTrend = async() => {
         label: {
           backgroundColor: '#505765'
         }
+      },
+      formatter: function(params) {
+        var result = ''
+
+        if(res.yesterdayList[params[1].dataIndex].activePowMaxTime && res.yesterdayList[params[1].dataIndex].activePowMaxTime != "") {
+          result = `${params[0].seriesName}&nbsp;发生时间:${res.yesterdayList[params[0].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[0].value}kW` + '<br>'
+        }
+        if(res.todayList[params[1].dataIndex].activePowMaxTime && res.todayList[params[1].dataIndex].activePowMaxTime != "") {
+          result += `${params[1].seriesName}&nbsp;发生时间:${res.todayList[params[1].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[1].value}kW`
+        }
+        return result; // 使用 <b> 标签使数值加粗显示
       }
     },
     legend: {
@@ -261,7 +272,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList?.map(item => item?.activePow)
+        data: res.yesterdayList?.map(item => item?.activePowMax)
       },
       {
         name: '当日',
@@ -277,7 +288,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: 'Avg2' }]
         },
-        data: res.todayList?.map(item => item?.activePow)
+        data: res.todayList?.map(item => item?.activePowMax)
       }
     ]
   }

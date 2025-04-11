@@ -95,6 +95,11 @@
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
       </el-form>
+      <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+        <el-option label="平均" value="平均" />
+        <el-option label="最大" value="最大" />
+        <el-option label="最小" value="最小" />
+      </el-select>
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >
@@ -303,6 +308,8 @@ const visControll = reactive({
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
+
+const typeRadioShow = ref("最大")
 
 // 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
@@ -819,17 +826,17 @@ const getList = async () => {
   temList.value = temData.value.lineRes;
 
 
-    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(1);
-    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(1);
+    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(0);
+    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(0);
 
-    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(1);
-    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(1);
+    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(0);
+    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(0);
 
-    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(1);
-    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(1);
+    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(0);
+    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(0);
 
-    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(1);
-    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(1);
+    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(0);
+    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(0);
     visControll.temVis = true;
 
 
@@ -1271,11 +1278,6 @@ if (devKey != undefined) {
 
 .el-table {
     color: #2c2c2c !important;
-}
-
-:deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
 }
 
 :deep(.master-left .el-card__body) {

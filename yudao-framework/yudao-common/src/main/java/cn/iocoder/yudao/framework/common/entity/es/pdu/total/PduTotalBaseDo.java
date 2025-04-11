@@ -129,15 +129,27 @@ public class PduTotalBaseDo {
     private float powerFactorAvgValue;
 
     /**
-     * 平均功率因素
+     * 最大功率因素
      */
     @JsonProperty("power_factor_max_value")
     private float powerFactorMaxValue;
 
     /**
-     * 平均功率因素
+     * 最小功率因素
      */
     @JsonProperty("power_factor_min_value")
     private float powerFactorMinValue;
+
+    /**
+     * 最大功率因素
+     */
+    @JsonProperty("power_factor_max_time")
+    private DateTime powerFactorMaxTime;
+
+    /**
+     * 最小功率因素
+     */
+    @JsonProperty("power_factor_min_time")
+    private DateTime powerFactorMinTime;
 
 }

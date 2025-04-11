@@ -80,7 +80,7 @@
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" style="margin-left:20%;"/>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg"/>
             </div>
             <div class="room">{{item.location}}</div>
             <!-- <div class="name">{{item.boxName}}</div> -->
@@ -89,7 +89,13 @@
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
-          <el-table-column label="位置" min-width="150" align="center" prop="local" />
+          <el-table-column label="所在位置" align="center" prop="location" min-width="150">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.local != scope.row.devKey ? scope.row.local : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>
           <el-table-column label="设备名称" align="center" prop="boxName" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="昨日用能(kW·h)" min-width="80" align="center" prop="yesterdayEq" >
@@ -337,7 +343,7 @@ const toDetail = (roomId, id,room,boxName, item) => {
   const devKey = item.devKey;
   const busName = item.busName;
   const roomName = room ? room : '未绑定';
-  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
+  push({path: '/bus/busmonitor/boxmonitor/boxenergydetail', state: { roomId, id ,roomName,boxName,devKey,busName}})
 }
 onMounted(async () => {
   devKeyList.value = await loadAll();
@@ -487,6 +493,7 @@ onBeforeMount(() => {
       padding-left: 20px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       .count_img {
         margin: 0 35px 0 13px;
       }
@@ -557,6 +564,7 @@ onBeforeMount(() => {
       padding-left: 20px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       .count_img {
         margin: 0 35px 0 13px;
       }
@@ -627,6 +635,7 @@ onBeforeMount(() => {
       padding-left: 20px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       .count_img {
         margin: 0 35px 0 13px;
       }

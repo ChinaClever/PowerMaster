@@ -101,7 +101,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if (pduId instanceof Integer) {
                 // 查询位置
                 PduIndex pduIndex = pduIndexMap.get((int) pduId);
-//                PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
+
                 if (pduIndex != null) {
                     map.put("location", pduIndex.getPduKey());
                     map.put("address", location.get(pduIndex.getPduKey()));
@@ -1000,17 +1000,17 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         String[] key = new String[]{"total", "line", "loop", "outlet"};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
+        indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
         switch (granularity) {
             case "realtime":
-                indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
                 break;
             case "hour":
-                indices = new String[]{"pdu_hda_total_hour", "pdu_hda_line_hour", "pdu_hda_loop_hour", "pdu_hda_outlet_hour"};
+//                indices = new String[]{"pdu_hda_total_hour", "pdu_hda_line_hour", "pdu_hda_loop_hour", "pdu_hda_outlet_hour"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"pdu_hda_total_day", "pdu_hda_line_day", "pdu_hda_loop_day", "pdu_hda_outlet_day"};
+//                indices = new String[]{"pdu_hda_total_day", "pdu_hda_line_day", "pdu_hda_loop_day", "pdu_hda_outlet_day"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
                 break;
             default:

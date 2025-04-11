@@ -313,8 +313,8 @@ const getList = async () => {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
       // 开始时间的天数减一天 ，  一天的毫秒数
-      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
       console.log("selectedStartTime",selectedStartTime)
       console.log("selectedEndTime",selectedEndTime)
       queryParams.timeRange = [selectedStartTime, selectedEndTime];

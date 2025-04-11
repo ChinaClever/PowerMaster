@@ -123,7 +123,13 @@
       >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.location ? scope.row.location : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>
         <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" />
         <el-table-column
@@ -225,18 +231,18 @@
           <div v-if="item.id !== null" class="arrayItem" :style="{backgroundColor: item.status === 2?'red':'' }">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <img class="icon" style="height: 60px;" src="@/assets/imgs/temicon.png" />
             <div class="info">
               <div>
-              <span v-if="item.atem != null">A:{{ item.atem }}°C</span>
-              <span v-if="item.btem != null" style="margin-left: 20px;">B:{{ item.btem }}°C</span>
+                <span v-if="item.atem != null">A:{{ item.atem }}°C</span>
+                <span v-if="item.btem != null" style="margin-left: 30px;">B:{{ item.btem }}°C</span>
               </div>
-            <br/>
+              <br/>
               <div>
-              <span v-if="item.ctem != null">C:{{ item.ctem }}°C</span>
-              <span v-if="item.ntem != null" style="margin-left: 20px;">N:{{ item.ntem }}°C</span>
+                <span v-if="item.ctem != null">C:{{ item.ctem }}°C</span>
+                <span v-if="item.ntem != null" style="margin-left: 30px;">N:{{ item.ntem }}°C</span>
               </div>
             </div>
+            <img class="icon" style="height: 60px;" src="@/assets/imgs/temicon.png" />
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
@@ -278,18 +284,28 @@
           <div class="date-picker-col el-col">
             <el-date-picker
               v-model="queryParams.oldTime"
+              :clearable = "false"
+              :editable = "false"
+              :showNow = "false"
               value-format="YYYY-MM-DD HH:mm:ss"
               type="datetime"
+              :disabled-date="disabledDate"
+              @change="handleDayPick()"
               :picker-options="pickerOptions"
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button :disabled="clickAdd" @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
           <div class="chart-data-buttons el-col" style="margin-right: 50px;">
             <div class="button-group">
+              <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+                <el-option label="平均" value="平均" />
+                <el-option label="最大" value="最大" />
+                <el-option label="最小" value="最小" />
+              </el-select>
               <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
               <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
               <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
@@ -307,27 +323,36 @@
           :show-overflow-tooltip="true"
           style="height:70vh;"
         >
-          <el-table-column label="时间" align="center" prop="temAvgTime" />
+          <el-table-column label="序号" align="center" prop="index" width="60px" />
+          <el-table-column label="时间" align="center" prop="create_time" />
           <el-table-column label="A相温度" align="center" prop="temAvgValueA">
             <template #default="scope">
-              <el-text line-clamp="2"> {{ scope.row.temAvgValueA }}°C </el-text>
+              <el-text line-clamp="2"> {{ typeRadioShow == '最大' ? scope.row.tem_a_max_value : (typeRadioShow == '最小' ? scope.row.tem_a_min_value : scope.row.tem_a_avg_value) }}°C </el-text>
             </template>
           </el-table-column>
+          <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`tem_a${typeRadioShow == '最大' ? '_max_' : '_min_'}time`" />
+
           <el-table-column label="B相温度" align="center" prop="temAvgValueB">
             <template #default="scope">
-              <el-text line-clamp="2"> {{ scope.row.temAvgValueB }}°C </el-text>
+              <el-text line-clamp="2"> {{ typeRadioShow == '最大' ? scope.row.tem_b_max_value : (typeRadioShow == '最小' ? scope.row.tem_b_min_value : scope.row.tem_b_avg_value) }}°C </el-text>
             </template>
           </el-table-column>
+          <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`tem_b${typeRadioShow == '最大' ? '_max_' : '_min_'}time`" />
+
           <el-table-column label="C相温度" align="center" prop="temAvgValueC">
             <template #default="scope">
-              <el-text line-clamp="2"> {{ scope.row.temAvgValueC }}°C </el-text>
+              <el-text line-clamp="2"> {{ typeRadioShow == '最大' ? scope.row.tem_c_max_value : (typeRadioShow == '最小' ? scope.row.tem_c_min_value : scope.row.tem_c_avg_value) }}°C </el-text>
             </template>
           </el-table-column>
+          <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`tem_c${typeRadioShow == '最大' ? '_max_' : '_min_'}time`" />
+
           <el-table-column label="N相温度" align="center" prop="temAvgValueN">
             <template #default="scope">
-              <el-text line-clamp="2"> {{ scope.row.temAvgValueN }}°C </el-text>
+              <el-text line-clamp="2"> {{ typeRadioShow == '最大' ? scope.row.tem_n_max_value : (typeRadioShow == '最小' ? scope.row.tem_n_min_value : scope.row.tem_n_avg_value) }}°C </el-text>
             </template>
           </el-table-column>
+          <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`tem_n${typeRadioShow == '最大' ? '_max_' : '_min_'}time`" />
+
         </el-table>
         </div>
       </el-dialog>
@@ -368,6 +393,10 @@ const leftDataList = ref([])
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
+
+const typeRadioShow = ref("最大")
+
+const clickAdd = ref(true)
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -456,7 +485,9 @@ const openTemDetail = async (row) => {
   location.value = row.location;
   devkey.value = row.devKey;
   await getDetail()
-  detailVis.value = true
+  clickAdd.value = true
+  detailVis.value = true;
+  typeRadioShow.value = '最大'
 }
 
 const disabledDate = (date) => {
@@ -477,6 +508,18 @@ const disabledDate = (date) => {
 
 const handleDayPick = async () => {
   if (queryParams?.oldTime) {
+    var date = new Date(queryParams.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
+
+    var today = new Date(); // 今天的日期
+    today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+    if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+      clickAdd.value = true
+    } else {
+      clickAdd.value = false
+    }
+
     await getDetail()
   }
 }
@@ -486,13 +529,23 @@ const subtractOneDay = () => {
 
   date.setDate(date.getDate() - 1) // 减去一天
 
+  clickAdd.value = false
+
   queryParams.oldTime = date.toISOString().slice(0, 19).replace('T', ' ') // 转换为新的日期字符串
 }
 
 const addtractOneDay = () => {
   var date = new Date(queryParams.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
 
-  date.setDate(date.getDate() + 1) // 减去一天
+  date.setDate(date.getDate() + 1) // 加一天
+
+  var today = new Date(); // 今天的日期
+  today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+  if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+    clickAdd.value = true
+  }
 
   queryParams.oldTime = date.toISOString().slice(0, 19).replace('T', ' ') // 转换为新的日期字符串
 }
@@ -581,26 +634,69 @@ const exportLoading = ref(false) // 导出的加载中
 /** 查询列表 */
 const getDetail = async () => {
   const data = await IndexApi.getBusTemDetail(queryParams)
-  temESList.value = data?.chart
-  temESList.value?.temAvgValueA?.forEach((obj) => {
-    obj = obj?.toFixed(0)
-  })
-  temESList.value?.temAvgValueB?.forEach((obj) => {
-    obj = obj?.toFixed(0)
-  })
-  temESList.value?.temAvgValueC?.forEach((obj) => {
-    obj = obj?.toFixed(0)
-  })
-  temESList.value?.temAvgValueN?.forEach((obj) => {
-    obj = obj?.toFixed(0)
-  })
   temTableList.value = data?.table
-  temTableList.value?.forEach((obj) => {
-    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(0)
-    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(0)
-    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(0)
-    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(0)
-  })
+  temTableList.value?.forEach((obj,index) => {
+    obj.index = index+1
+    obj.tem_a_avg_value = obj?.tem_a_avg_value?.toFixed(0);
+    obj.tem_b_avg_value = obj?.tem_b_avg_value?.toFixed(0);
+    obj.tem_c_avg_value = obj?.tem_c_avg_value?.toFixed(0);
+    obj.tem_n_avg_value = obj?.tem_n_avg_value?.toFixed(0);
+
+    obj.tem_a_max_value = obj?.tem_a_max_value?.toFixed(0);
+    obj.tem_b_max_value = obj?.tem_b_max_value?.toFixed(0);
+    obj.tem_c_max_value = obj?.tem_c_max_value?.toFixed(0);
+    obj.tem_n_max_value = obj?.tem_n_max_value?.toFixed(0);
+
+    obj.tem_a_max_time = obj.tem_a_max_time ? obj.tem_a_max_time.slice(0,-3) : '';
+    obj.tem_b_max_time = obj.tem_b_max_time ? obj.tem_b_max_time.slice(0,-3) : '';
+    obj.tem_c_max_time = obj.tem_c_max_time ? obj.tem_c_max_time.slice(0,-3) : '';
+    obj.tem_n_max_time = obj.tem_n_max_time ? obj.tem_n_max_time.slice(0,-3) : '';
+
+    obj.tem_a_min_value = obj?.tem_a_min_value?.toFixed(0);
+    obj.tem_b_min_value = obj?.tem_b_min_value?.toFixed(0);
+    obj.tem_c_min_value = obj?.tem_c_min_value?.toFixed(0);
+    obj.tem_n_min_value = obj?.tem_n_min_value?.toFixed(0);
+    
+    obj.tem_a_min_time = obj.tem_a_min_time ? obj.tem_a_min_time.slice(0,-3) : '';
+    obj.tem_b_min_time = obj.tem_b_min_time ? obj.tem_b_min_time.slice(0,-3) : '';
+    obj.tem_c_min_time = obj.tem_c_min_time ? obj.tem_c_min_time.slice(0,-3) : '';
+    obj.tem_n_min_time = obj.tem_n_min_time ? obj.tem_n_min_time.slice(0,-3) : '';
+  });
+
+  getTemESList()
+}
+
+watch( ()=>typeRadioShow.value, ()=>{
+  getTemESList()
+})
+
+const getTemESList = () => {
+  let itemTemType = typeRadioShow.value == "最小" ? '_min_' : (typeRadioShow.value == "最大" ? '_max_' : '')
+
+  temESList.value = []
+  if(itemTemType != '') {
+    temESList.value = temTableList.value.map(obj => ({
+      tem_a_value: obj[`tem_a${itemTemType}value`],
+      tem_time: [
+        obj[`tem_a${itemTemType}time`],
+        obj[`tem_b${itemTemType}time`],
+        obj[`tem_c${itemTemType}time`],
+        obj[`tem_n${itemTemType}time`],
+      ],
+      tem_b_value: obj[`tem_b${itemTemType}value`],
+      tem_c_value: obj[`tem_c${itemTemType}value`],
+      tem_n_value: obj[`tem_n${itemTemType}value`],
+      time: obj.create_time
+    }));
+  } else {
+    temESList.value = temTableList.value.map(obj => ({
+      tem_a_value: obj.tem_a_avg_value,
+      tem_b_value: obj.tem_b_avg_value,
+      tem_c_value: obj.tem_c_avg_value,
+      tem_n_value: obj.tem_n_avg_value,
+      time: obj.create_time
+    }));
+  }
 }
 
 const getList = async () => {
@@ -1078,7 +1174,7 @@ onActivated(() => {
       .content {
         display: flex;
         align-items: center;
-        height: 100%;
+        justify-content: space-between;
         .icon {
           font-size: 20px;
           width: 60px;
@@ -1090,9 +1186,8 @@ onActivated(() => {
           }
         }
         .info{
-          margin: 10px;
           font-size: 14px;
-          margin-bottom: 20px;
+          margin-left: 20px;
         }
       }
       .devKey{
@@ -1160,7 +1255,7 @@ onActivated(() => {
       .content {
         display: flex;
         align-items: center;
-        height: 100%;
+        justify-content: space-between;
         .icon {
           font-size: 20px;
           width: 60px;
@@ -1173,7 +1268,7 @@ onActivated(() => {
         }
         .info{
           font-size: 14px;
-          margin-bottom: 20px;
+          margin-left: 20px;
         }
       }
       .devKey{
@@ -1240,7 +1335,7 @@ onActivated(() => {
       .content {
         display: flex;
         align-items: center;
-        height: 100%;
+        justify-content: space-between;
         .icon {
           font-size: 20px;
           width: 60px;
@@ -1253,7 +1348,7 @@ onActivated(() => {
         }
         .info{
           font-size: 14px;
-          margin-bottom: 20px;
+          margin-left: 20px;
         }
       }
       .devKey{
@@ -1373,5 +1468,8 @@ onActivated(() => {
   width: 80%;
   height: 80%;
   margin-top: 100px;
+}
+:deep(.el-table .el-table__header th) {
+  height: 40px;
 }
 </style>

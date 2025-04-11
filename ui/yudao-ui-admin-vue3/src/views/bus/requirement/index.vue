@@ -34,7 +34,7 @@
           </div>
           <div >
             <span>{{ flagName }}：</span>
-            <span>{{ statusNumber.cur_max_value }} A</span>
+            <span>{{ statusNumber.cur_max_value }}{{ flagName == '功率' ? ' kW' : ' A' }}</span>
           </div>
         </div>
         <!-- <div class="status">
@@ -150,7 +150,13 @@
         <el-table v-show="visMode == 0" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px" />
           <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="所在位置" align="center" prop="location" width="218px">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.location ? scope.row.location : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
             <template #default="scope" >
@@ -201,7 +207,13 @@
         </el-table>
         <el-table v-show="visMode == 1" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="所在位置" align="center" prop="location" width="218px">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.location ? scope.row.location : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
             <template #default="scope" >
@@ -283,7 +295,7 @@
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
           <div class="status" style="margin-right:-20px;">

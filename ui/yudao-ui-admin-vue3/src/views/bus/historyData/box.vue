@@ -99,7 +99,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
@@ -107,7 +107,7 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate" 
-          class="!w-280px"
+          class="!w-350px"
         />
         </el-form-item>
         <!-- <div style="float:right; padding-right:78px"> -->
@@ -131,7 +131,12 @@
         </el-table-column>
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'" >
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)">详情</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column fixed="right" :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot === 'actions'" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
               <el-button type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)">详情</el-button>
             </template>
@@ -165,7 +170,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
 import { IndexApi } from '@/api/bus/busindex'
-import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay} from '@/utils/formatTime'
 const { push } = useRouter()
 /** 插接箱历史数据 列表 */
 defineOptions({ name: 'BusHistoryData' })
@@ -780,10 +785,10 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      // const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     const data = await HistoryDataApi.getBoxHistoryDataPage(queryParams)
@@ -883,7 +888,13 @@ const handleQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (boxId: number, location?: string, dev_key?: string) => {
-  push({path: '/bus/record/historyLine/box', state: {boxId,location,dev_key}})
+  const start=selectTimeRange.value?.[0];
+  const end=selectTimeRange.value?.[1];
+  if(start!=null && end!=null&&start!=''&&end!=''){
+    push({path: '/bus/record/box/historyLine', state: {boxId,location,dev_key,start,end}})
+  }else{
+    push({path: '/bus/record/box/historyLine', state: {boxId,location,dev_key}})
+  }
 }
 
 
@@ -976,8 +987,8 @@ onMounted( () => {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  formatDate(startOfMonth),
+  formatDate(now)
 ];
   getNavList()
   getBoxNavNewData()

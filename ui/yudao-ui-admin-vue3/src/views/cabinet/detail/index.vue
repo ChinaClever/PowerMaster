@@ -276,7 +276,7 @@ const goPDU = (devKey,location,cabinetName,path) => {
   }
   var name= location+'-'+cabinetName+'-'+path;
   console.log('跳转', devKey );
-  push({path: '/pdu/pdudisplayscreen', query: { devKey, location: name }});
+  push({path: '/pdu/power/pdudisplayscreen', query: { devKey, location: name }});
 }
 
 const goBus = (devKey,location,cabinetName,path) => {
@@ -284,7 +284,7 @@ const goBus = (devKey,location,cabinetName,path) => {
     message.error('未绑定B路设备!')
     return;    
   }
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey ,location,cabinetName,roomName:path}})
+  push({path: '/bus/busmonitor/busmonitor/buspowerdetail', state: { devKey ,location,cabinetName,roomName:path}})
 }
 
 const getFullTimeByDate = (date) => {

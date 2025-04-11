@@ -95,8 +95,8 @@
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
           <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
@@ -105,7 +105,13 @@
         <el-table v-if="visMode == 1" v-loading="loading" style="margin-top:-10px;height:720px;oveflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location"  width="300px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="300px">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
@@ -178,7 +184,7 @@
               link
               type="primary"
               @click="showDialogCur(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
@@ -222,7 +228,7 @@
             <el-tag type="warning" v-if="item.color == 3 && item.status != 0">{{ statusList[1].name }}</el-tag>
             <el-tag type="danger" v-if="item.color == 4 && item.status != 0">{{ statusList[2].name }}</el-tag>
           </div>
-          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0 && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -355,7 +361,7 @@
             <el-tag type="info"  v-if="item.color === 0">单相设备</el-tag>
             <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0 && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -828,6 +834,34 @@ const getList = async () => {
     total.value = data.total
   } finally {
     loading.value = false
+  }
+}
+
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBalancePage(queryParams)
+     var tableIndex = 0;
+    // var lessFifteen = 0;
+    // var greaterFifteen = 0;
+    // var greaterThirty = 0;
+    // var smallCurrent = 0;
+    data.list.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      
+      obj.acur = obj.acur?.toFixed(2);
+      obj.bcur = obj.bcur?.toFixed(2);
+      obj.ccur = obj.ccur?.toFixed(2);
+      obj.curUnbalance = obj.curUnbalance?.toFixed(0);
+      obj.avol = obj.avol?.toFixed(1);
+      obj.bvol = obj.bvol?.toFixed(1);
+      obj.cvol = obj.cvol?.toFixed(1);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+
+    });
+
+    list.value = data.list
+    total.value = data.total
+  } finally {
   }
 }
 
@@ -1413,7 +1447,7 @@ onMounted(async () => {
   getList();
   getNavList();
   getStatistics();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1435,7 +1469,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>
@@ -2028,10 +2062,6 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
-}
-
-:deep(.el-tag){
-  margin-right:-20px;
 }
 
 :deep(.el-dialog) {

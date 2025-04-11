@@ -88,6 +88,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
+          value-format="YYYY-MM-DD HH:mm:ss"
           format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
           type="datetimerange"
@@ -96,7 +97,7 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate" 
-          class="!w-280px"
+          class="!w-350px"
         />
         </el-form-item>
         <!-- <div style="float:right; padding-right:78px"> -->
@@ -120,7 +121,12 @@
         </el-table-column>
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'">
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button type="primary" @click="toDetails(row.bus_id, row.location, row.dev_key)">详情</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot === 'actions'" fixed="right">
             <template #default="{ row }" v-if="column.slot === 'actions'">
               <el-button type="primary" @click="toDetails(row.bus_id, row.location, row.dev_key)">详情</el-button>
             </template>
@@ -155,6 +161,7 @@ import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
 import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
+import { sl } from 'element-plus/es/locale'
 const { push } = useRouter()
 /** 始端箱历史数据 列表 */
 defineOptions({ name: 'BusHistoryData' })
@@ -336,7 +343,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],["pow_active", "pow_active_max"], ["pow_active", "pow_active_min"]
+          ["pow_reactive", "pow_reactive_max"],["pow_active", "pow_active_max"], ["pow_apparent", "pow_apparent_max"],["cur_residual","cur_residual_max"],["cur_zero","cur_zero_max"]
         ];
         optionsCol.value = [
           { value: "pow_active", label: '有功功率', children: [
@@ -381,33 +388,33 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '160px'},
         { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           
-          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:true, width: '180px', formatter: formatPower},
-          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:false, width: '180px', formatter: formatPower},
+          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均无功功率(kW)', align: 'center', prop: 'pow_reactive_avg_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大无功功率(kW)', align: 'center', prop: 'pow_reactive_max_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大无功功率时间', align: 'center', prop: 'pow_reactive_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大无功功率(kW)', align: 'center', prop: 'pow_reactive_max_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '最大无功功率时间', align: 'center', prop: 'pow_reactive_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小无功功率(kW)', align: 'center', prop: 'pow_reactive_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小无功功率时间', align: 'center', prop: 'pow_reactive_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '180px, formatter: formatPower'},
-          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均剩余电流(A)', align: 'center', prop: 'cur_residual_avg_value', istrue:false, width: '180px, formatter: formatCurrent'},
-          { label: '最大剩余电流(A)', align: 'center', prop: 'cur_residual_max_value', istrue:false, width: '180px', formatter: formatCurrent},
-          { label: '最大剩余电流时间', align: 'center', prop: 'cur_residual_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大剩余电流(A)', align: 'center', prop: 'cur_residual_max_value', istrue:true, width: '180px', formatter: formatCurrent},
+          { label: '最大剩余电流时间', align: 'center', prop: 'cur_residual_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小剩余电流(A)', align: 'center', prop: 'cur_residual_min_value', istrue:false, width: '180px', formatter: formatCurrent},
           { label: '最小剩余电流时间', align: 'center', prop: 'cur_residual_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均零线电流(A)', align: 'center', prop: 'cur_zero_avg_value', istrue:false, width: '180px, formatter: formatCurrent'},
-          { label: '最大零线电流(A)', align: 'center', prop: 'cur_zero_max_value', istrue:false, width: '180px', formatter: formatCurrent},
-          { label: '最大零线电流时间', align: 'center', prop: 'cur_zero_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大零线电流(A)', align: 'center', prop: 'cur_zero_max_value', istrue:true, width: '180px', formatter: formatCurrent},
+          { label: '最大零线电流时间', align: 'center', prop: 'cur_zero_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小零线电流(A)', align: 'center', prop: 'cur_zero_min_value', istrue:false, width: '180px', formatter: formatCurrent},
           { label: '最小零线电流时间', align: 'center', prop: 'cur_zero_min_time', formatter: formatTime, width: '230px', istrue:false},
 
@@ -462,7 +469,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"], ["pow_active", "pow_active_max"], ["pow_active", "pow_active_min"],
+          ["pow_reactive", "pow_reactive_max"], ["pow_active", "pow_active_max"], ["pow_apparent", "pow_apparent_max"],["vol_value","vol_max"],["cur_value","cur_max"],["vol_line_value","vol_line_max"]
         ];
         optionsCol.value = [
           { value: "pow_active", label: '有功功率', children: [
@@ -516,39 +523,39 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
 
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
 
-          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:true, width: '180px', formatter: formatPower},
-          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:false, width: '180px', formatter: formatPower},
+          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均无功功率(kW)', align: 'center', prop: 'pow_reactive_avg_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大无功功率(kW)', align: 'center', prop: 'pow_reactive_max_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大无功功率时间', align: 'center', prop: 'pow_reactive_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大无功功率(kW)', align: 'center', prop: 'pow_reactive_max_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '最大无功功率时间', align: 'center', prop: 'pow_reactive_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小无功功率(kW)', align: 'center', prop: 'pow_reactive_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小无功功率时间', align: 'center', prop: 'pow_reactive_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
   
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
-          { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:false, width: '120px', formatter: formatVoltage},
-          { label: '最大电压时间', align: 'center', prop: 'vol_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:true, width: '120px', formatter: formatVoltage},
+          { label: '最大电压时间', align: 'center', prop: 'vol_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小电压(V)', align: 'center', prop: 'vol_min_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最小电压时间', align: 'center', prop: 'vol_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均电流(A)', align: 'center', prop: 'cur_avg_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:true, width: '140px', formatter: formatCurrent},
+          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小电流(A)', align: 'center', prop: 'cur_min_value', istrue:false, width: '140px', formatter: formatCurrent},
           { label: '最小电流时间', align: 'center', prop: 'cur_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '平均线电压(V)', align: 'center', prop: 'vol_line_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
-          { label: '最大线电压(V)', align: 'center', prop: 'vol_line_max_value', istrue:false, width: '120px', formatter: formatVoltage},
-          { label: '最大线电压时间', align: 'center', prop: 'vol_line_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大线电压(V)', align: 'center', prop: 'vol_line_max_value', istrue:true, width: '120px', formatter: formatVoltage},
+          { label: '最大线电压时间', align: 'center', prop: 'vol_line_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小线电压(V)', align: 'center', prop: 'vol_line_min_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最小线电压时间', align: 'center', prop: 'vol_line_min_time', formatter: formatTime, width: '230px', istrue:false},
 
@@ -679,7 +686,11 @@ const handleQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (busId: number, location?: string, dev_key?: string) => {
-  push({path: '/bus/record/historyLine/bus', state: {busId,location,dev_key}})
+  if(selectTimeRange.value != null && selectTimeRange.value?.length == 2){
+    push({path: '/bus/record/bus/historyLine', state: {busId,location,dev_key,"start":selectTimeRange.value[0],"end":selectTimeRange.value[1]}})
+  }else{
+    push({path: '/bus/record/bus/historyLine', state: {busId,location,dev_key}})
+  }
 }
 
 /** 导出按钮操作 */
@@ -742,8 +753,8 @@ onMounted( () => {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  formatDate(startOfMonth),
+  formatDate(now)
 ];
   getNavList()
   getBusNavNewData()

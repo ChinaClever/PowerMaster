@@ -119,7 +119,13 @@
       <el-table v-if="visMode == 1 && list.length > 0" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location"/>    
+        <el-table-column label="所在位置" align="center" prop="location">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>  
         <el-table-column label="设备名称" align="center" prop="busName"/>  
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
@@ -625,18 +631,18 @@ const BBarOption = ref<EChartsOption>({})
 const ALineOption = ref<EChartsOption>({
   tooltip: {
     trigger: 'axis',
-    // formatter: function (params) {
-    //   let tooltipContent = `记录时间: ${params[0].name}<br/>`;
-    //   // 遍历params数组，构建电压信息
-    //   const phases = ['A相电流', 'B相电流', 'C相电流'];
-    //   params.forEach((item, index) => {
-    //     if (index < phases.length && item.seriesName) {
-    //       tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
-    //     }
-    //   });
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电流', 'B相电流', 'C相电流'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+        }
+      });
       
-    //   return tooltipContent;
-    // }
+      return tooltipContent;
+    }
   },
   legend: { orient: 'horizontal', right: '25'},
   dataZoom:[{type: "inside"}],
@@ -660,17 +666,17 @@ const ALineOption = ref<EChartsOption>({
 const BLineOption = ref<EChartsOption>({
   tooltip: {
     trigger: 'axis',
-    // formatter: function (params) {
-    //   let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
-    //   // 遍历params数组，构建电压信息
-    //   const phases = ['A相电压', 'B相电压', 'C相电压'];
-    //   params.forEach((item, index) => {
-    //     if (index < phases.length && item.seriesName) {
-    //       tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
-    //     }
-    //   });
-    //   return tooltipContent;
-    // }
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电压', 'B相电压', 'C相电压'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+        }
+      });
+      return tooltipContent;
+    }
   },
   legend: { orient: 'horizontal', right: '25'},
   dataZoom:[{type: "inside"}],
@@ -1283,6 +1289,35 @@ const getList = async () => {
     loading.value = false
   }
 }
+
+const getListNoLoading = async () => {
+  // getStatistics;
+  try {
+    const res = await IndexApi.getBalanceStatistics()
+    statusNumber.smallCurrent = res.smallCurrent;
+    statusNumber.lessFifteen = res.lessFifteen;
+    statusNumber.greaterFifteen = res.greaterFifteen;
+    statusNumber.greaterThirty = res.greaterThirty;
+    
+    const data = await IndexApi.getBalancePage(queryParams)
+    var tableIndex = 0;
+    data.list.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      obj.acur = obj.acur?.toFixed(2);
+      obj.bcur = obj.bcur?.toFixed(2);
+      obj.ccur = obj.ccur?.toFixed(2);
+      obj.curUnbalance = isFinite(obj.curUnbalance) ? obj.curUnbalance?.toFixed(2) : 0;
+      obj.avol = obj.avol?.toFixed(1);
+      obj.bvol = obj.bvol?.toFixed(1);
+      obj.cvol = obj.cvol?.toFixed(1);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(2);
+    });
+    list.value = data.list
+    total.value = data.total
+  } finally {
+  }
+}
+
 const getStatistics = async () => {
   const data = await IndexApi.getBalanceStatistics()
     statusNumber.smallCurrent = data.smallCurrent;
@@ -1435,7 +1470,7 @@ onMounted(async () => {
   getList()
   getStatistics()
   getNavList();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1457,7 +1492,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>
@@ -1988,7 +2023,7 @@ onActivated(() => {
   margin-right: 0;
 }
 
-::v-deep .el-table .el-table__header th{
+:deep(.el-table .el-table__header th) {
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;

@@ -153,7 +153,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
@@ -337,7 +337,7 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -371,8 +371,8 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(convertDate(end.value) ))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value),oneDay)))
+      selectTimeRange.value = [start.value, end.value];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     queryParams.devkeys = [devKey.value];
@@ -543,7 +543,11 @@ const toDetails = (boxId: number, location: string,devkey: string) => {
   const id = boxId
   const devKey = devkey;
   const locationName = location;
-  push({path: '/bus/nenghao/ecdistribution/box', state: {id,devKey,locationName}})
+  if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
+    push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName,"start":selectTimeRange.value[0],"end":selectTimeRange.value[1]}})
+  }else{
+    push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName}})
+  }
 }
 
 
@@ -555,13 +559,12 @@ const devKey =  ref(history?.state?.devKey);
 onMounted(() => {
   getNavList()
   getNavNewData()
-
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  if (start.value != null){
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (start.value != null&&end.value != null&&start.value != ''&&end.value != ''){
   getList1();
   }else{
+      selectTimeRange.value = [dayjs(startOfMonth).format("YYYY-MM-DD"), dayjs(now).format("YYYY-MM-DD")];
       getList();
   }
 });

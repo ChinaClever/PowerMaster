@@ -115,14 +115,15 @@
   <el-row >
     <el-col :span="17">
     <el-radio-group v-model="typeRadio">
+      <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =0"/>
       <el-radio-button label="电流" value="电流" @click="switchChartContainer =0"/>
       <el-radio-button label="电压" value="电压" @click="switchChartContainer =0"/>
+      <el-radio-button label="功率" value="功率" @click="switchChartContainer =0"/>
       <el-radio-button label="有效电能" value="有效电能" @click="getEqLineChartData()"/>
       <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer =0"/>
       <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer =0"/>
       <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =0"/>
       <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =0"/>
-      <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =0"/>
     </el-radio-group>
   </el-col>
   <el-col :span="7">
@@ -165,7 +166,7 @@ const location = ref(history?.state?.location)
 const roomName = ref(history?.state?.roomName)
 const boxId = ref(history?.state?.boxId)
 const instance = getCurrentInstance();
-const typeRadio = ref('电流')
+const typeRadio = ref('负载率')
 const timeRadio = ref('近一小时')
 const isHourDisabled = ref(false)
 const isDayAndMonthDisabled = ref(false)
@@ -417,6 +418,12 @@ const L1Data = ref<number[]>([]);
 const L2Data = ref<number[]>([]);
 const L3Data = ref<number[]>([]);
 
+const dataTime = ref({
+  L1DataTime: [],
+  L2DataTime: [],
+  L3DataTime: []
+})
+
 const chartContainer2 = ref<HTMLElement | null>(null);
 const chartContainer3 = ref<HTMLElement | null>(null);
 let myChart2 = null as echarts.ECharts | null; 
@@ -428,27 +435,31 @@ const initChart2 = () => {
       {
         title: { text: ''},
         tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                    var result = params[0].name + '<br>';
-                                    for (var i = 0; i < params.length; i++) {
-                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      //判断是否给鼠标悬停上显示符号
-                                      if(typeRadio.value === '电流') {
-                                        result += ' A';
-                                      }else if (typeRadio.value === '电压') {
-                                        result += ' V';
-                                      }else if (typeRadio.value === '有功功率') {
-                                        result += ' kW';
-                                      }else if (typeRadio.value === '无功功率') {
-                                        result += ' kVar';
-                                      }else if(typeRadio.value === '视在功率') {
-                                        result += ' kVA'; 
-                                      }else if (typeRadio.value === '负载率') {
-                                        result += '%';
-                                      }
-                                      result += '<br>';
-                                    }
-                                    return result;
-                                  }},
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName;
+            if(dataTime.value.L1DataTime.length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+              result += '发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
+            }
+            result += '&nbsp&nbsp' + params[i].value
+            //判断是否给鼠标悬停上显示符号
+            if(typeRadio.value === '电流') {
+              result += ' A';
+            }else if (typeRadio.value === '电压') {
+              result += ' V';
+            }else if (typeRadio.value === '有功功率' || (typeRadio.value === '功率' && i == 1)) {
+              result += ' kW';
+            }else if (typeRadio.value === '无功功率' || (typeRadio.value === '功率' && i == 2)) {
+              result += ' kVar';
+            }else if (typeRadio.value === '视在功率' || (typeRadio.value === '功率' && i == 0)) {
+              result += ' kVA'; 
+            }else if (typeRadio.value === '负载率') {
+              result += '%';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
         legend: { orient: 'horizontal', right: '25'},
         dataZoom:[{type: "inside"}],
         grid: {
@@ -484,9 +495,9 @@ const initChart2 = () => {
           }
         },
         series: [
-          {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
-          {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-          {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+          {name: typeRadio.value === '功率' ? '总视在功率' : 'L1', type: 'line', symbol: 'none', data: L1Data.value },
+          {name: typeRadio.value === '功率' ? '总有功功率' : 'L2', type: 'line', symbol: 'none', data: L2Data.value},
+          {name: typeRadio.value === '功率' ? '总无功功率' : 'L3', type: 'line', symbol: 'none', data: L3Data.value},
         ],
       }
     );
@@ -642,29 +653,33 @@ watch( ()=>typeRadio.value, async(value)=>{
   // 更新数据后重新渲染图表
   myChart2?.setOption({
       tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                  var result = params[0].name + '<br>';
-                                  for (var i = 0; i < params.length; i++) {
-                                    result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                    //判断是否给鼠标悬停上显示符号
-                                    if(typeRadio.value === '电流') {
-                                      result += ' A';
-                                    }else if (typeRadio.value === '电压') {
-                                      result += ' V';
-                                    }else if (typeRadio.value === '有功功率') {
-                                      result += ' kW';
-                                    }else if (typeRadio.value === '无功功率') {
-                                      result += ' kVar';
-                                    }else if(typeRadio.value === '视在功率') {
-                                      result += ' kVA'; 
-                                    }else if (typeRadio.value === '负载率') {
-                                      result += '%';
-                                    }else if (typeRadio.value === '有效电能') {
-                                      result += ' kWh';
-                                    }
-                                    result += '<br>';
-                                  }
-                                  return result;
-                                }},
+        var result = params[0].name + '<br>';
+        for (var i = 0; i < params.length; i++) {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTime.value.L1DataTime.length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
+          //判断是否给鼠标悬停上显示符号
+          if(typeRadio.value === '电流') {
+            result += ' A';
+          }else if (typeRadio.value === '电压') {
+            result += ' V';
+          }else if (typeRadio.value === '有功功率' || (typeRadio.value === '功率' && i == 1)) {
+            result += ' kW';
+          }else if (typeRadio.value === '无功功率' || (typeRadio.value === '功率' && i == 2)) {
+            result += ' kVar';
+          }else if (typeRadio.value === '视在功率' || (typeRadio.value === '功率' && i == 0)) {
+            result += ' kVA'; 
+          }else if (typeRadio.value === '负载率') {
+            result += '%';
+          }else if (typeRadio.value === '有效电能') {
+            result += ' kWh';
+          }
+          result += '<br>';
+        }
+        return result;
+      }},
       yAxis: { 
         type: 'value',
         axisLabel: {
@@ -697,9 +712,9 @@ watch( ()=>typeRadio.value, async(value)=>{
           bottom: '10%', // 设置下侧边距
         },
       series: [
-        {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
-        {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-        {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+        {name: typeRadio.value === '功率' ? '总视在功率' : 'L1', type: 'line', symbol: 'none', data: L1Data.value},
+        {name: typeRadio.value === '功率' ? '总有功功率' : 'L2', type: 'line', symbol: 'none', data: L2Data.value},
+        {name: typeRadio.value === '功率' ? '总无功功率' : 'L3', type: 'line', symbol: 'none', data: L3Data.value},
       ],
     });
 });
@@ -735,29 +750,33 @@ watch( ()=>timeRadio.value, async(value)=>{
     myChart2?.setOption({
     title: { text: ''},
     tooltip: { trigger: 'axis' ,formatter: function(params) {
-                          var result = params[0].name + '<br>';
-                          for (var i = 0; i < params.length; i++) {
-                            result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                            //判断是否给鼠标悬停上显示符号
-                            if(typeRadio.value === '电流') {
-                              result += ' A';
-                            }else if (typeRadio.value === '电压') {
-                              result += ' V';
-                            }else if (typeRadio.value === '有功功率') {
-                              result += ' kW';
-                            }else if (typeRadio.value === '无功功率') {
-                              result += ' kVar';
-                            }else if(typeRadio.value === '视在功率') {
-                              result += ' kVA'; 
-                            }else if (typeRadio.value === '负载率') {
-                              result += '%';
-                            }else if (typeRadio.value === '有效电能') {
-                              result += ' kWh';
-                            }
-                            result += '<br>';
-                          }
-                          return result;
-                        }},
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName;
+        if(dataTime.value.L1DataTime.length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+          result += '发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
+        }
+        result += '&nbsp&nbsp' + params[i].value
+        //判断是否给鼠标悬停上显示符号
+        if(typeRadio.value === '电流') {
+          result += ' A';
+        }else if (typeRadio.value === '电压') {
+          result += ' V';
+        }else if (typeRadio.value === '有功功率' || (typeRadio.value === '功率' && i == 1)) {
+          result += ' kW';
+        }else if (typeRadio.value === '无功功率' || (typeRadio.value === '功率' && i == 2)) {
+          result += ' kVar';
+        }else if (typeRadio.value === '视在功率' || (typeRadio.value === '功率' && i == 0)) {
+          result += ' kVA'; 
+        }else if (typeRadio.value === '负载率') {
+          result += '%';
+        }else if (typeRadio.value === '有效电能') {
+          result += ' kWh';
+        }
+        result += '<br>';
+      }
+      return result;
+    }},
     legend: { orient: 'horizontal', right: '25'},
     dataZoom:[{type: "inside"}],
     xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -793,9 +812,9 @@ watch( ()=>timeRadio.value, async(value)=>{
           bottom: '10%', // 设置下侧边距
         },
     series: [
-      {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
-      {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-      {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+      {name: typeRadio.value === '功率' ? '总视在功率' : 'L1', type: 'line', symbol: 'none', data: L1Data.value},
+      {name: typeRadio.value === '功率' ? '总有功功率' : 'L2', type: 'line', symbol: 'none', data: L2Data.value},
+      {name: typeRadio.value === '功率' ? '总无功功率' : 'L3', type: 'line', symbol: 'none', data: L3Data.value},
     ],
   }, true);
   }
@@ -971,29 +990,33 @@ const flashChartData = async () =>{
   });
   myChart2?.setOption({
       tooltip: { trigger: 'axis' ,formatter: function(params) {
-                                  var result = params[0].name + '<br>';
-                                  for (var i = 0; i < params.length; i++) {
-                                    result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                    //判断是否给鼠标悬停上显示符号
-                                    if(typeRadio.value === '电流') {
-                                      result += ' A';
-                                    }else if (typeRadio.value === '电压') {
-                                      result += ' V';
-                                    }else if (typeRadio.value === '有功功率') {
-                                      result += ' kW';
-                                    }else if (typeRadio.value === '无功功率') {
-                                      result += ' kVar';
-                                    }else if(typeRadio.value === '视在功率') {
-                                      result += ' kVA'; 
-                                    }else if (typeRadio.value === '负载率') {
-                                      result += '%';
-                                    }else if (typeRadio.value === '有效电能') {
-                                      result += ' kWh';
-                                    }
-                                    result += '<br>';
-                                  }
-                                  return result;
-                                }},
+        var result = params[0].name + '<br>';
+        for (var i = 0; i < params.length; i++) {
+          result +=  params[i].marker + params[i].seriesName;
+          if(dataTime.value.L1DataTime.length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
+            result += '发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
+          }
+          result += '&nbsp&nbsp' + params[i].value
+          //判断是否给鼠标悬停上显示符号
+          if(typeRadio.value === '电流') {
+            result += ' A';
+          }else if (typeRadio.value === '电压') {
+            result += ' V';
+          }else if (typeRadio.value === '有功功率' || (typeRadio.value === '功率' && i == 1)) {
+            result += ' kW';
+          }else if (typeRadio.value === '无功功率' || (typeRadio.value === '功率' && i == 2)) {
+            result += ' kVar';
+          }else if (typeRadio.value === '视在功率' || (typeRadio.value === '功率' && i == 0)) {
+            result += ' kVA'; 
+          }else if (typeRadio.value === '负载率') {
+            result += '%';
+          }else if (typeRadio.value === '有效电能') {
+            result += ' kWh';
+          }
+          result += '<br>';
+        }
+        return result;
+      }},
       yAxis: { 
         type: 'value',
         axisLabel: {
@@ -1026,9 +1049,9 @@ const flashChartData = async () =>{
           bottom: '10%', // 设置下侧边距
         },
       series: [
-        {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
-        {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-        {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+        {name: typeRadio.value === '功率' ? '总视在功率' : 'L1', type: 'line', symbol: 'none', data: L1Data.value},
+        {name: typeRadio.value === '功率' ? '总有功功率' : 'L2', type: 'line', symbol: 'none', data: L2Data.value},
+        {name: typeRadio.value === '功率' ? '总无功功率' : 'L3', type: 'line', symbol: 'none', data: L3Data.value},
       ],
     });
   myChart3?.setOption({
@@ -1147,6 +1170,11 @@ const getEqLineChartData = async () => {
 }
 
 function initData (){
+  dataTime.value = {
+    L1DataTime: [],
+    L2DataTime: [],
+    L3DataTime: []
+  }
   if(timeRadio.value == '近一小时'){
     switch (typeRadio.value){
       case '电流':
@@ -1161,6 +1189,13 @@ function initData (){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_value, 1));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_value, 1));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_value, 1));
+        }
+        break;
+      case '功率':
+        if(allLineData.value != null){
+        L1Data.value = allLineData.value.total.map((item) => item.pow_apparent.toFixed(3));
+        L2Data.value = allLineData.value.total.map((item) => item.pow_active.toFixed(3));
+        L3Data.value = allLineData.value.total.map((item) => item.pow_reactive.toFixed(3));
         }
         break;
       case '有效电能':
@@ -1208,18 +1243,46 @@ function initData (){
     switch (typeRadio.value){
       case '电流':
         let itemCurType = typeRadioShow.value == "最小" ? 'cur_min_value' : (typeRadioShow.value == "最大" ? 'cur_max_value' : 'cur_avg_value')
+        let itemCurTimeType = typeRadioShow.value == "最小" ? 'cur_min_time' : (typeRadioShow.value == "最大" ? 'cur_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemCurType], 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemCurType], 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemCurType], 2));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemCurType], 2));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemCurType], 2));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemCurType], 2));
+
+          if(itemCurTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+          }
         }
         break;
       case '电压':
         let itemVolType = typeRadioShow.value == "最小" ? 'vol_min_value' : (typeRadioShow.value == "最大" ? 'vol_max_value' : 'vol_avg_value')
+        let itemVolTimeType = typeRadioShow.value == "最小" ? 'vol_min_time' : (typeRadioShow.value == "最大" ? 'vol_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemVolType], 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemVolType], 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemVolType], 1));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemVolType], 1));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemVolType], 1));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemVolType], 1));
+
+          if(itemVolTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+          }
+        }
+        break;
+      case '功率':
+        let itemPowType = typeRadioShow.value == "最小" ? '_min_' : (typeRadioShow.value == "最大" ? '_max_' : '_avg_')
+        if(allLineData.value != null){
+          L1Data.value = allLineData.value.total.map((item) => item[`pow_apparent${itemPowType}value`].toFixed(3));
+          L2Data.value = allLineData.value.total.map((item) => item[`pow_active${itemPowType}value`].toFixed(3));
+          L3Data.value = allLineData.value.total.map((item) => item[`pow_reactive${itemPowType}value`].toFixed(3));
+
+          if(itemPowType != '_avg_') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[`pow_apparent${itemPowType}time`] ? item[`pow_apparent${itemPowType}time`].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[`pow_active${itemPowType}time`] ? item[`pow_active${itemPowType}time`].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[`pow_reactive${itemPowType}time`] ? item[`pow_reactive${itemPowType}time`].slice(0, -3) : '');
+          }
         }
         break;
       case '有效电能':
@@ -1230,64 +1293,124 @@ function initData (){
         break;
       case '有功功率':
         let itemActiveType = typeRadioShow.value == "最小" ? 'pow_active_min_value' : (typeRadioShow.value == "最大" ? 'pow_active_max_value' : 'pow_active_avg_value')
+        let itemActiveTimeType = typeRadioShow.value == "最小" ? 'pow_active_min_time' : (typeRadioShow.value == "最大" ? 'pow_active_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemActiveType], 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemActiveType], 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemActiveType], 3));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemActiveType], 3));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemActiveType], 3));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemActiveType], 3));
+
+          if(itemActiveTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemActiveTimeType] ? item[itemActiveTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemActiveTimeType] ? item[itemActiveTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemActiveTimeType] ? item[itemActiveTimeType].slice(0, -3) : '');
+          }
         }
         break;              
       case '无功功率':
         let itemReactiveType = typeRadioShow.value == "最小" ? 'pow_reactive_min_value' : (typeRadioShow.value == "最大" ? 'pow_reactive_max_value' : 'pow_reactive_avg_value')
+        let itemReactiveTimeType = typeRadioShow.value == "最小" ? 'pow_reactive_min_time' : (typeRadioShow.value == "最大" ? 'pow_reactive_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemReactiveType], 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemReactiveType], 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemReactiveType], 3));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemReactiveType], 3));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemReactiveType], 3));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemReactiveType], 3));
+
+          if(itemReactiveTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemReactiveTimeType] ? item[itemReactiveTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemReactiveTimeType] ? item[itemReactiveTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemReactiveTimeType] ? item[itemReactiveTimeType].slice(0, -3) : '');
+          }
         }
        break;
       case '视在功率':
         let itemApparentType = typeRadioShow.value == "最小" ? 'pow_apparent_min_value' : (typeRadioShow.value == "最大" ? 'pow_apparent_max_value' : 'pow_apparent_avg_value')
+        let itemApparentTimeType = typeRadioShow.value == "最小" ? 'pow_apparent_min_time' : (typeRadioShow.value == "最大" ? 'pow_apparent_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemApparentType], 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemApparentType], 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemApparentType], 3));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemApparentType], 3));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemApparentType], 3));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemApparentType], 3));
+
+          if(itemApparentTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemApparentTimeType] ? item[itemApparentTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemApparentTimeType] ? item[itemApparentTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemApparentTimeType] ? item[itemApparentTimeType].slice(0, -3) : '');
+          }
         }
        break;
       case '功率因素':
         let itemFactorType = typeRadioShow.value == "最小" ? 'power_factor_min_value' : (typeRadioShow.value == "最大" ? 'power_factor_max_value' : 'power_factor_avg_value')
+        let itemFactorTimeType = typeRadioShow.value == "最小" ? 'power_factor_min_time' : (typeRadioShow.value == "最大" ? 'power_factor_max_time' : '')
         if(allLineData.value != null){
-          if(!allLineData.value.L1[0]?.[itemFactorType]) {
-            itemFactorType = 'power_factor_avg_value'
+          L1Data.value = allLineData.value.L1.map((item) => item[itemFactorType] ? formatNumber(item[itemFactorType], 2) : '0');
+          L2Data.value = allLineData.value.L2.map((item) => item[itemFactorType] ? formatNumber(item[itemFactorType], 2) : '0');
+          L3Data.value = allLineData.value.L3.map((item) => item[itemFactorType] ? formatNumber(item[itemFactorType], 2) : '0');
+
+          if(itemFactorTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemFactorTimeType] ? item[itemFactorTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemFactorTimeType] ? item[itemFactorTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemFactorTimeType] ? item[itemFactorTimeType].slice(0, -3) : '');
           }
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemFactorType], 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemFactorType], 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemFactorType], 2));
         }
         break;
       case '负载率':
         let itemLoadLineType = typeRadioShow.value == "最小" ? 'load_rate_min_value' : (typeRadioShow.value == "最大" ? 'load_rate_max_value' : 'load_rate_avg_value')
+        let itemLoadLineTimeType = typeRadioShow.value == "最小" ? 'load_rate_min_time' : (typeRadioShow.value == "最大" ? 'load_rate_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemLoadLineType], 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemLoadLineType], 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemLoadLineType], 1));
+          L1Data.value = allLineData.value.L1.map((item) => item[itemLoadLineType] ? formatNumber(item[itemLoadLineType], 1) : '0');
+          L2Data.value = allLineData.value.L2.map((item) => item[itemLoadLineType] ? formatNumber(item[itemLoadLineType], 1) : '0');
+          L3Data.value = allLineData.value.L3.map((item) => item[itemLoadLineType] ? formatNumber(item[itemLoadLineType], 1) : '0');
+
+          if(itemLoadLineTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemLoadLineTimeType] ? item[itemLoadLineTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemLoadLineTimeType] ? item[itemLoadLineTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemLoadLineTimeType] ? item[itemLoadLineTimeType].slice(0, -3) : '');
+          }
         }
         break;    
       }
   }else{
-        switch (typeRadio.value){
+    switch (typeRadio.value){
       case '电流':
         let itemCurType = typeRadioShow.value == "最小" ? 'cur_min_value' : (typeRadioShow.value == "最大" ? 'cur_max_value' : 'cur_avg_value')
+        let itemCurTimeType = typeRadioShow.value == "最小" ? 'cur_min_time' : (typeRadioShow.value == "最大" ? 'cur_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemCurType], 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemCurType], 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemCurType], 2));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemCurType], 2));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemCurType], 2));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemCurType], 2));
+
+          if(itemCurTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemCurTimeType] ? item[itemCurTimeType].slice(0, -3) : '');
+          }
         }
         break;
       case '电压':
         let itemVolType = typeRadioShow.value == "最小" ? 'vol_min_value' : (typeRadioShow.value == "最大" ? 'vol_max_value' : 'vol_avg_value')
+        let itemVolTimeType = typeRadioShow.value == "最小" ? 'vol_min_time' : (typeRadioShow.value == "最大" ? 'vol_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemVolType], 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemVolType], 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemVolType], 1));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemVolType], 1));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemVolType], 1));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemVolType], 1));
+
+          if(itemVolTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+          }
+        }
+        break;
+      case '功率':
+        let itemPowType = typeRadioShow.value == "最小" ? '_min_' : (typeRadioShow.value == "最大" ? '_max_' : '_avg_')
+        if(allLineData.value != null){
+          L1Data.value = allLineData.value.total.map((item) => item[`pow_apparent${itemPowType}value`].toFixed(3));
+          L2Data.value = allLineData.value.total.map((item) => item[`pow_active${itemPowType}value`].toFixed(3));
+          L3Data.value = allLineData.value.total.map((item) => item[`pow_reactive${itemPowType}value`].toFixed(3));
+
+          if(itemPowType != '_avg_') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[`pow_apparent${itemPowType}time`] ? item[`pow_apparent${itemPowType}time`].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[`pow_active${itemPowType}time`] ? item[`pow_active${itemPowType}time`].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[`pow_reactive${itemPowType}time`] ? item[`pow_reactive${itemPowType}time`].slice(0, -3) : '');
+          }
         }
         break;
       case '有效电能':
@@ -1297,45 +1420,77 @@ function initData (){
         break;
       case '有功功率':
         let itemActiveType = typeRadioShow.value == "最小" ? 'pow_active_min_value' : (typeRadioShow.value == "最大" ? 'pow_active_max_value' : 'pow_active_avg_value')
+        let itemActiveTimeType = typeRadioShow.value == "最小" ? 'pow_active_min_time' : (typeRadioShow.value == "最大" ? 'pow_active_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemActiveType], 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemActiveType], 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemActiveType], 3));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemActiveType], 3));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemActiveType], 3));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemActiveType], 3));
+
+          if(itemActiveTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemActiveTimeType] ? item[itemActiveTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemActiveTimeType] ? item[itemActiveTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemActiveTimeType] ? item[itemActiveTimeType].slice(0, -3) : '');
+          }
         }
         break;              
       case '无功功率':
         let itemReactiveType = typeRadioShow.value == "最小" ? 'pow_reactive_min_value' : (typeRadioShow.value == "最大" ? 'pow_reactive_max_value' : 'pow_reactive_avg_value')
+        let itemReactiveTimeType = typeRadioShow.value == "最小" ? 'pow_reactive_min_time' : (typeRadioShow.value == "最大" ? 'pow_reactive_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemReactiveType], 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemReactiveType], 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemReactiveType], 3));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemReactiveType], 3));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemReactiveType], 3));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemReactiveType], 3));
+
+          if(itemReactiveTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemReactiveTimeType] ? item[itemReactiveTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemReactiveTimeType] ? item[itemReactiveTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemReactiveTimeType] ? item[itemReactiveTimeType].slice(0, -3) : '');
+          }
         }
        break;
       case '视在功率':
         let itemApparentType = typeRadioShow.value == "最小" ? 'pow_apparent_min_value' : (typeRadioShow.value == "最大" ? 'pow_apparent_max_value' : 'pow_apparent_avg_value')
+        let itemApparentTimeType = typeRadioShow.value == "最小" ? 'pow_apparent_min_time' : (typeRadioShow.value == "最大" ? 'pow_apparent_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemApparentType], 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemApparentType], 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemApparentType], 3));
+          L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemApparentType], 3));
+          L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemApparentType], 3));
+          L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemApparentType], 3));
+
+          if(itemApparentTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemApparentTimeType] ? item[itemApparentTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemApparentTimeType] ? item[itemApparentTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemApparentTimeType] ? item[itemApparentTimeType].slice(0, -3) : '');
+          }
         }
        break;
       case '功率因素':
         let itemFactorType = typeRadioShow.value == "最小" ? 'power_factor_min_value' : (typeRadioShow.value == "最大" ? 'power_factor_max_value' : 'power_factor_avg_value')
+        let itemFactorTimeType = typeRadioShow.value == "最小" ? 'power_factor_min_time' : (typeRadioShow.value == "最大" ? 'power_factor_max_time' : '')
         if(allLineData.value != null){
-          if(!allLineData.value.L1[0]?.[itemFactorType]) {
-            itemFactorType = 'power_factor_avg_value'
+          L1Data.value = allLineData.value.L1.map((item) => item[itemFactorType] ? formatNumber(item[itemFactorType], 2) : '0');
+          L2Data.value = allLineData.value.L2.map((item) => item[itemFactorType] ? formatNumber(item[itemFactorType], 2) : '0');
+          L3Data.value = allLineData.value.L3.map((item) => item[itemFactorType] ? formatNumber(item[itemFactorType], 2) : '0');
+
+          if(itemFactorTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemFactorTimeType] ? item[itemFactorTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemFactorTimeType] ? item[itemFactorTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemFactorTimeType] ? item[itemFactorTimeType].slice(0, -3) : '');
           }
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemFactorType], 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemFactorType], 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemFactorType], 2));
         }
         break;
       case '负载率':
         let itemLoadLineType = typeRadioShow.value == "最小" ? 'load_rate_min_value' : (typeRadioShow.value == "最大" ? 'load_rate_max_value' : 'load_rate_avg_value')
+        let itemLoadLineTimeType = typeRadioShow.value == "最小" ? 'load_rate_min_time' : (typeRadioShow.value == "最大" ? 'load_rate_max_time' : '')
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item[itemLoadLineType], 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item[itemLoadLineType], 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item[itemLoadLineType], 1));
+          L1Data.value = allLineData.value.L1.map((item) => item[itemLoadLineType] ? formatNumber(item[itemLoadLineType], 1) : '0');
+          L2Data.value = allLineData.value.L2.map((item) => item[itemLoadLineType] ? formatNumber(item[itemLoadLineType], 1) : '0');
+          L3Data.value = allLineData.value.L3.map((item) => item[itemLoadLineType] ? formatNumber(item[itemLoadLineType], 1) : '0');
+
+          if(itemLoadLineTimeType != '') {
+            dataTime.value.L1DataTime = allLineData.value.L1.map((item) => item[itemLoadLineTimeType] ? item[itemLoadLineTimeType].slice(0, -3) : '');
+            dataTime.value.L2DataTime = allLineData.value.L2.map((item) => item[itemLoadLineTimeType] ? item[itemLoadLineTimeType].slice(0, -3) : '');
+            dataTime.value.L3DataTime = allLineData.value.L3.map((item) => item[itemLoadLineTimeType] ? item[itemLoadLineTimeType].slice(0, -3) : '');
+          }
         }
         break;    
       }
