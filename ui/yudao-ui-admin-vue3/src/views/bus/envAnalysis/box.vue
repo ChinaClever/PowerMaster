@@ -1108,8 +1108,14 @@ const handleQuery = () => {
   const queryDevKey = ref(history?.state?.devKey);
   const queryboxId = ref(history?.state?.boxId);
   const queryLocation = ref(history?.state?.location);
+  const start=ref(history?.state?.start)
+  const end=ref(history?.state?.end)
+  console.log("history.state",history.state)
 /** 初始化 **/
 onMounted( async () => {
+  if(start.value!=undefined&&end.value!=undefined&&start.value!=''&&end.value!=''){
+    queryParams.timeRange = [start.value, end.value]
+  }
   getNavList()
   // 获取路由参数中的 pdu_id
   queryParams.devkey = queryDevKey;

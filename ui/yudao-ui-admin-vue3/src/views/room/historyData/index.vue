@@ -96,7 +96,7 @@
               </template> -->
             </el-table-column>
           </template>
-          <el-table-column label="操作" align="center" width="90">
+          <el-table-column label="操作" align="center" width="90" fixed="right">
             <template #default="{ row }">
                 <el-button type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
               </template>

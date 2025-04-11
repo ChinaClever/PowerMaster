@@ -114,8 +114,27 @@
                            :align="column.align" 
                            :prop="column.prop" 
                            :formatter="column.formatter" 
+                           :min-width="column.width" 
+                           v-if="column.istrue&&column.slot !== 'actions'" 
+                           >
+            <template #default="{ row }">
+              <div v-if="column.slot === 'actions'">
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+              </div>
+              <div v-else-if="column.slot === 'detect'">
+                {{ getCombinedString(row.address?.channel, row.address?.position) }}
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column :key="column.prop" 
+                           :label="column.label" 
+                           :align="column.align" 
+                           :prop="column.prop" 
+                           :formatter="column.formatter" 
                            :width="column.width" 
-                           v-if="column.istrue" 
+                           v-if="column.istrue&&column.slot == 'actions'" 
+                           fixed="right"
                            >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">

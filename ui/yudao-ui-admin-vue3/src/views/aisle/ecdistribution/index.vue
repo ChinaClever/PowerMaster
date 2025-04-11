@@ -295,9 +295,9 @@ const getLineChartData =async () => {
 loading.value = true
  try {
     // 格式化时间范围 加上23:59:59的时分秒 
-    queryParams.timeRange[0] = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
-    queryParams.timeRange[1] = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data != null && data.total != 0){

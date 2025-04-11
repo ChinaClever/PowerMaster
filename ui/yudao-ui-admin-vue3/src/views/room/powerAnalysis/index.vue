@@ -319,9 +319,9 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -350,7 +350,8 @@ const getList1 = async () => {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
+      console.log("end.value",(end.value))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value),1000*60*60*24)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     	console.log('入参', queryParams);
@@ -498,8 +499,8 @@ onMounted(() => {
   getNavList()
   getNavNewData()
 
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
+  start.value = useRoute().query.startTime as string;
+  end.value = useRoute().query.endTime as string;
   id.value = useRoute().query.roomId as unknown as number;
   if (start.value != null){
   	console.log('详情页', start);

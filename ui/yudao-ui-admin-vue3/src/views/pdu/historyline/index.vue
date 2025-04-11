@@ -1372,7 +1372,7 @@ const handleQuery = () => {
     }
     needFlush.value++;
     console.log('ip：', queryParams.ipAddr)
-    getList();
+    // getList();
   }else{
     ElMessage.error('IP地址格式有误,请重新输入！')
   }

@@ -1394,14 +1394,19 @@ const handleQuery = () => {
   const queryBusId =ref(history?.state?.busId);
   const queryLocation = ref(history?.state?.location);
   const queryDevKey = ref(history?.state?.dev_key);
+  const start=ref(history?.state?.start)
+  const end=ref(history?.state?.end)
 
 /** 初始化 **/
 onMounted( async () => { 
+  console.log("start",start.value)
+  if(start.value!=undefined&&end.value!=undefined&&start.value!=''&&end.value!=''){
+    queryParams.timeRange = [start.value, end.value]
+  }
   getNavList()
   // 获取路由参数中的 pdu_id
   queryParams.busId = queryBusId;
   if (queryParams.busId != undefined){
-    
       nowAddressTemp.value = queryLocation.value?queryLocation.value:'未绑定'
       nowLocationTemp.value = queryDevKey.value
     await getList(); 
