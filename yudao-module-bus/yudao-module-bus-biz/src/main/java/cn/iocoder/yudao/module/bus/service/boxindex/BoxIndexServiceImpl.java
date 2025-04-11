@@ -29,6 +29,8 @@ import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.AisleBoxResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetBoxResVO;
+import cn.iocoder.yudao.framework.excel.core.handler.SpringHttpUtils;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BusConstants;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
@@ -1869,7 +1871,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            List<BoxTemHourDo> strList = getData(startTime, endTime, pageReqVO.getBoxId(), "box_tem_hour",BoxTemHourDo.class);
+            List<BoxTemHourDo> strList = getData(startTime, endTime, pageReqVO.getBoxId(), "box_tem_hour", BoxTemHourDo.class);
             strList.sort(Comparator.comparing(BoxTemHourDo::getCreateTime));
 
             HashMap<String, Object> resultMap = new HashMap<>();
@@ -1954,7 +1956,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 pageReqVO.setNewTime(LocalDateTime.now());
             }
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            List<BoxPFDetail> strList = getData(startTime, endTime, pageReqVO.getBoxId(), "box_hda_outlet_hour",BoxPFDetail.class);
+            List<BoxPFDetail> strList = getData(startTime, endTime, pageReqVO.getBoxId(), "box_hda_outlet_hour", BoxPFDetail.class);
             if (CollectionUtils.isEmpty(strList)) {
                 return map;
             }
@@ -1968,7 +1970,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 BoxPFDetailTotalResVO resVO = new BoxPFDetailTotalResVO();
                 resVO.setCreateTime(key);
                 for (BoxPFDetail detail : list) {
-                    switch (detail.getOutletId()){
+                    switch (detail.getOutletId()) {
                         case 1:
                             resVO.setPowerFactorAvgValue(detail.getPowerFactorAvgValue());
                             resVO.setPowerFactorMaxValue(detail.getPowerFactorMaxValue());
@@ -1996,7 +1998,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
                 resVOList.add(resVO);
             }
-            map.put("time",  strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
+            map.put("time", strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
             resVOList.sort(Comparator.comparing(BoxPFDetailTotalResVO::getCreateTime));
             map.put("table", resVOList);
             return map;
@@ -2015,28 +2017,39 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(o));
         Map<String, List> map = new HashMap<>();
-        List<BoxPFDetail> strList = new ArrayList<>();
+
 
         String time = jsonObject.getString("sys_time");
         JSONObject outItem = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
+        if (Objects.isNull(outItem)){
+            return map;
+        }
         List<BigDecimal> powerFactor = outItem.getList("power_factor", BigDecimal.class);
+        if (CollectionUtils.isEmpty(powerFactor)){
+            return map;
+        }
+
+        List<BoxPFDetailTotalResVO> resVOList = new ArrayList<>();
+        BoxPFDetailTotalResVO resVO = new BoxPFDetailTotalResVO();
+        resVO.setCreateTime(time);
+        resVOList.add(resVO);
         for (int i = 0; i < powerFactor.size(); i++) {
-            BoxPFDetail detail = new BoxPFDetail();
-            detail.setOutletId(i + 1);
-            detail.setPowerFactorAvgValue(powerFactor.get(i));
-            detail.setCreateTime(time);
-            strList.add(detail);
-            List list = new ArrayList();
-            list.add(detail.getPowerFactorAvgValue());
-            map.put(String.valueOf(detail.getOutletId()), list);
+            switch (i) {
+                case 0:
+                    resVO.setPowerFactorAvgValue(powerFactor.get(i));
+                    break;
+                case 1:
+                    resVO.setPowerFactorAvgValueb(powerFactor.get(i));
+                    break;
+                case 2:
+                    resVO.setPowerFactorAvgValuec(powerFactor.get(i));
+                    break;
+                default:
+                    break;
+            }
         }
-        Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
-        for (String key : pfMap.keySet()) {
-            List<BoxPFDetail> list = pfMap.get(key);
-            map.put(key, list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
-        }
-        map.put("time", strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
-        map.put("table", strList);
+        map.put("time", resVOList.stream().map(BoxPFDetailTotalResVO::getCreateTime).distinct().collect(Collectors.toList()));
+        map.put("table", resVOList);
         return map;
     }
 
@@ -2228,10 +2241,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 List<BoxIndex> searchList = boxIndexCopyMapper.selectList(queryWrapperX);
                 idList = searchList.stream().map(BoxIndex::getId).collect(Collectors.toList());
             }
-
-//            if (CollectionUtils.isEmpty(searchList)) {
-//                return new PageResult<>(new ArrayList<>(), 0L);
-//            }
             if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -2962,7 +2971,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return null;
     }
 
-    private List getData(String startTime, String endTime, Integer id, String index,Class cls) throws IOException {
+    private List getData(String startTime, String endTime, Integer id, String index, Class cls) throws IOException {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -2983,7 +2992,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
                     if (str.length() > 2) {
-                        list.add(JsonUtils.parseObject(str,cls));
+                        list.add(JsonUtils.parseObject(str, cls));
                     }
                 }
             }
@@ -4044,11 +4053,29 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else {
                 joiner.add(iter);
             }
-
             vo.setLocaltion(joiner.toString());
             map.put(iter, vo);
         }
         return map;
+    }
+
+    @Override
+    public void getHarmonicLineExcel(BoxIndexPageReqVO pageReqVO) throws IOException {
+        BoxHarmonicLineResVO result = getHarmonicLine(pageReqVO);
+        List<String> time = result.getTime();
+        List<Float> lineOne = result.getLineOne();
+        List<Float> linetwe = result.getLinetwe();
+        List<Float> linethree = result.getLinethree();
+        List<BoxHarmonicLineDetailResVO> list = new ArrayList<>();
+        for (int i = 0; i < time.size(); i++) {
+            BoxHarmonicLineDetailResVO resVO = new BoxHarmonicLineDetailResVO();
+            resVO.setTime(time.get(i));
+            resVO.setLineOne(lineOne.get(i));
+            resVO.setLinetwe(linetwe.get(i));
+            resVO.setLinethree(linethree.get(i));
+            list.add(resVO);
+        }
+        ExcelUtils.write(SpringHttpUtils.getResponse(), "插接箱谐波监测详情.xlsx", "数据", BoxHarmonicLineDetailResVO.class, list);
     }
 
     public Map<String, String> getPositionByKeys(List<String> keys) {

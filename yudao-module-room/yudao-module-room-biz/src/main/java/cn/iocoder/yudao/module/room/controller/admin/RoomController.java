@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import cn.iocoder.yudao.framework.common.util.ThreadPoolConfig;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
@@ -82,7 +83,9 @@ public class RoomController {
     public CommonResult<Integer> newSaveRoom(@RequestBody RoomSavesVo vo) {
         Integer i = roomService.newSaveRoom(vo);
         if (i > 0) {
-            HttpUtil.get(adder);
+            ThreadPoolConfig.getTHreadPool().execute(() -> {
+                HttpUtil.get(adder);
+            });
         }
         return success(i);
     }
