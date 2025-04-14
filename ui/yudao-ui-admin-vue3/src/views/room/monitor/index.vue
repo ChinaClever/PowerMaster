@@ -537,12 +537,12 @@
         </div>
         <div v-else class="double-formitem">
           <el-form-item label="宽度" label-width="90">
-            <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
+            <el-input type="number" v-model="rowColInfo.width" :min="1" :max="60" placeholder="请输入">
               <template #append>m</template>
             </el-input>
           </el-form-item>
           <el-form-item label="长度" label-width="90">
-            <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
+            <el-input type="number" v-model="rowColInfo.length" :min="1" :max="60" placeholder="请输入">
               <template #append>m</template>
             </el-input>
           </el-form-item>
@@ -552,7 +552,7 @@
           <el-text>容量</el-text>
         </div>
         <el-form-item label="机房总电力容量" label-width="160">
-          <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入">
+          <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
             <template #append>kVA</template>
           </el-input>
         </el-form-item>
@@ -604,6 +604,7 @@ import * as echarts from 'echarts';
 import { formatTime } from '@/utils'
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { MachineHomeApi } from '@/api/cabinet/home'
+import { number } from 'vue-types';
 
 const activeNames = ref()
 const valueMode = ref(0)
@@ -621,8 +622,8 @@ const rowColInfo = reactive({
   row: 14, // 行
   col: 18, // 列
   insertType: 0, //新建类型 砖数 面积
-  width: 0, //宽度
-  length: 0, //长度
+  width: 1, //宽度
+  length: 1, //长度
   powerCapacity:0, //电力容量
   airPower: null, //空调额定功率
   displayType: 0, //0负载率 1PUE
@@ -782,6 +783,9 @@ const resetForm = () => {
     addr: '未区分', //楼层
     row: 14, // 行
     col: 18, // 列,
+    insertType: 0, //新建类型 砖数 面积
+    width: 1, //宽度
+    length: 1, //长度
     powerCapacity:0,
     airPower:null,
     displayType: 0, //0负载率 1PUE
@@ -799,6 +803,9 @@ const submitSetting = async() => {
   if(rowColInfo.roomName == '') {
     message.error('机房名称不能为空,请输入!')
     return
+  } else if(rowColInfo.powerCapacity === "") {
+    message.error('机房电力容量不能为空,请输入!')
+    return
   }
   const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
   if(resSelect != null){
@@ -815,6 +822,21 @@ const submitSetting = async() => {
     rowColInfo.displayType = 1
    }
 
+    if(rowColInfo.insertType == 0) {
+      rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
+      rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
+    } else {
+      rowColInfo.row = Math.ceil(rowColInfo.width/0.6)
+      rowColInfo.col = Math.ceil(rowColInfo.length/0.6)
+    }
+
+    if(rowColInfo.width <= 0 || rowColInfo.length <= 0) {
+      message.error('机房面积有误,请重新输入!')
+      return
+    }
+    console.log(rowColInfo)
+    return
+
    try {
     const res = await MachineRoomApi.saveRoomDetail({
       id: roomFlagId,
@@ -822,6 +844,9 @@ const submitSetting = async() => {
       addr: rowColInfo.addr,
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
+      insertType: rowColInfo.insertType, //新建类型 砖数 面积
+      width: rowColInfo.width, //宽度
+      length: rowColInfo.length, //长度
       powerCapacity:rowColInfo.powerCapacity, 
       airPower:rowColInfo.airPower, 
       displayType: rowColInfo.displayType, 
