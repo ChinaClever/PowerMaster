@@ -304,6 +304,10 @@ import TemValue from './component/TemValue.vue'
 import { IndexApi } from '@/api/bus/boxindex'
 import { CabinetApi } from '@/api/cabinet/detail'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 const flashListTimer = ref();
 
@@ -313,13 +317,13 @@ const peakDemandTime = ref('');
 const resultData = ref() as any;
 const loadRateList = ref() as any;
 const selectedOption = ref('current')
-const roomName = ref(history?.state?.roomName);
-const location = ref(history?.state?.location);
-const busName = ref(history?.state?.busName);
-const devKey = ref(history?.state?.devKey);
-const boxName = ref(history?.state?.boxName);
-const id = ref(history?.state?.id);
-const roomId = ref(history?.state?.roomId);
+const roomName = ref(query.roomName);
+const location = ref(query.location);
+const busName = ref(query.busName);
+const devKey = ref(query.devKey);
+const boxName = ref(query.boxName);
+const id = ref(query.id);
+const roomId = ref(query.roomId);
 const type = ref(history?.state.type);
 const visContro = ref({
   gaugeVis : false,
@@ -344,13 +348,13 @@ const getFullTimeByDate = (date) => {
       (second > 9 ? second : ("0" + second));
 }
 const queryParamsSearch = reactive({
-  devKey : history?.state?.devKey as string | undefined,
+  devKey : query.devKey as string | undefined,
 })
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: history?.state?.devKey,
-  busId : history?.state?.busId,
+  devKey: query.devKey,
+  busId : query.busId,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,

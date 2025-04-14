@@ -1,5 +1,5 @@
 <template>
-  <div :style="isFromHome ? `height: 50vh;overflow: auto` : ``">
+  <div ref="scrollableContainer" :style="props.isFromHome ? `height: 50vh;overflow: auto` : ``" @scroll="handleScroll">
     <div style="display: flex;align-items: center;justify-content: space-between">
       <el-form
         class="-mb-15px"
@@ -8,7 +8,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <div>
+        <div v-if="!props.isFromHome">
           <el-form-item label="机房名" prop="devKey">
             <el-input
               v-model="queryParams.roomName"
@@ -19,9 +19,10 @@
             />
           </el-form-item>
           <el-form-item style="margin-left: 10px;">
-            <el-button @click="handleQuery" :size="isFromHome ? 'small' : ''"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery" :size="isFromHome ? 'small' : ''"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-            <el-button @click="activeNames = []" :size="isFromHome ? 'small' : ''"><Icon icon="ep:arrow-up" class="mr-5px" /> 一键收缩</el-button>
+            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button v-if="activeNames.length == 0" @click="openAllCollapse"><Icon icon="ep:arrow-down" class="mr-5px" /> 一键展开</el-button>
+            <el-button v-else @click="activeNames = [];console.log(activeNames)"><Icon icon="ep:arrow-up" class="mr-5px" /> 一键收缩</el-button>
             <el-button
               type="primary"
               plain
@@ -42,14 +43,14 @@
           </el-form-item>
         </div>
       </el-form>
-      <div class="btns">
-        <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
-        <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
-        <el-button v-if="!isFromHome" @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
-        <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-        <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''" :size="isFromHome ? 'small' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
-        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3" :size="isFromHome ? 'small' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+      <div v-if="!props.isFromHome" class="btns">
+        <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
+        <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
+        <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
+        <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
+        <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+        <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
       </div>
     </div>
     <div v-if="switchValue == 0" style="padding: 20px 0;background-color: #fff">
@@ -57,7 +58,7 @@
         <el-row>
           <template v-if="roomShowType">
             <el-col>
-              <div ref="scrollableContainer" class="arrayContainer">
+              <div class="arrayContainer">
                 <div 
                   class="arrayItem"
                   v-for="(item, index) in addrAllRoomList[0]"
@@ -81,7 +82,7 @@
                     </div>
                   </el-card>
                   <div style="position: absolute;bottom: 0;right: 0">
-                    <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''" >详情</button>
+                    <button class="detail" @click="handleRoomHome(item.id)" :style="props.isFromHome ? 'width:25px;height:20px;font-size:11px' : ''" >详情</button>
                   </div>
                 </div>
               </div>
@@ -93,7 +94,7 @@
         <el-row>
           <template v-if="roomShowType">
             <el-col>
-              <div ref="scrollableContainer" class="arrayContainer">
+              <div class="arrayContainer">
                 <div 
                   class="arrayItem"
                   v-for="(item, index) in addrAllRoomList[0]"
@@ -130,7 +131,7 @@
                       <div style="width: 33%;text-align:center"><el-text>{{item.humAvgBlack ? item.humAvgBlack.toFixed(0) : '0'}}%</el-text></div>
                     </div>
                     <div style="position: absolute;bottom: 0;right: 0">
-                      <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
+                      <button class="detail" @click="handleRoomHome(item.id)" :style="props.isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
                     </div>
                   </el-card>
                 </div>
@@ -148,7 +149,7 @@
                 :md="24"
                 :sm="24"
                 :xs="24">
-                <div ref="scrollableContainer" class="arrayContainer">
+                <div class="arrayContainer">
                   <Echart :options="powOptionsData[0]" :height="400" :width="1702"/>
                 </div>
               </el-col>
@@ -162,7 +163,7 @@
             <el-row>
               <template v-if="roomShowType">
                 <el-col>
-                  <div ref="scrollableContainer" class="arrayContainer">
+                  <div class="arrayContainer">
                     <div 
                       class="arrayItem"
                       v-for="(item, index) in addrAllRoomList[i+1]"
@@ -186,7 +187,7 @@
                         </div>
                       </el-card>
                       <div style="position: absolute;bottom: 0;right: 0">
-                        <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
+                        <button class="detail" @click="handleRoomHome(item.id)" :style="props.isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
                       </div>
                     </div>
                   </div>
@@ -198,7 +199,7 @@
             <el-row>
               <template v-if="roomShowType">
                 <el-col>
-                  <div ref="scrollableContainer" class="arrayContainer" @scroll="handleScroll">
+                  <div class="arrayContainer">
                     <div 
                       class="arrayItem"
                       v-for="(item, index) in addrAllRoomList[i+1]"
@@ -235,7 +236,7 @@
                           <div style="width: 33%;text-align:center"><el-text>{{item.humAvgBlack ? item.humAvgBlack.toFixed(0) : '0'}}%</el-text></div>
                         </div>
                         <div style="position: absolute;bottom: 0;right: 0">
-                          <button class="detail" @click="handleRoomHome(item.id)" :style="isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
+                          <button class="detail" @click="handleRoomHome(item.id)" :style="props.isFromHome ? 'width:25px;height:20px;font-size:11px' : ''">详情</button>
                         </div>
                       </el-card>
                     </div>
@@ -517,10 +518,16 @@
             </el-select>
           </el-form-item>
         </div>
-        <div style="margin-bottom: 10px">
-          <el-text>地砖（地砖按60CM*60CM）</el-text>
+        <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
+          <div>
+            <el-text>地砖（地砖按60CM*60CM）</el-text>
+          </div>
+          <el-radio-group v-model="rowColInfo.insertType">
+            <el-radio :label="0" size="small">砖数</el-radio>
+            <el-radio :label="1" size="small">面积</el-radio>
+          </el-radio-group>
         </div>
-        <div class="double-formitem">
+        <div v-if="rowColInfo.insertType == 0" class="double-formitem">
           <el-form-item label="行数" label-width="90">
             <el-input-number v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
           </el-form-item>
@@ -528,20 +535,32 @@
             <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
           </el-form-item>
         </div>
+        <div v-else class="double-formitem">
+          <el-form-item label="宽度" label-width="90">
+            <el-input type="number" v-model="rowColInfo.width" :min="1" :max="60" placeholder="请输入">
+              <template #append>m</template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="长度" label-width="90">
+            <el-input type="number" v-model="rowColInfo.length" :min="1" :max="60" placeholder="请输入">
+              <template #append>m</template>
+            </el-input>
+          </el-form-item>
+        </div>
         
         <div style="margin-bottom: 5px">
           <el-text>容量</el-text>
         </div>
         <el-form-item label="机房总电力容量" label-width="160">
-          <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入">
+          <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
             <template #append>kVA</template>
           </el-input>
         </el-form-item>
-        <el-form-item label="非IT设备总额定功率" label-width="160">
+        <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
           </el-input>
-        </el-form-item>
+        </el-form-item> -->
 
         <div class="double-formitem">
           <el-form-item label="显示选择" label-width="90" style="padding-top: 15px">
@@ -549,7 +568,7 @@
           </el-form-item>
           <el-radio-group v-model="radio" size="large" style="margin-left: 15px;">
             <el-radio-button label="负载率" value="负载率"/>
-            <el-radio-button label="PUE" value="PUE"/>
+            <!-- <el-radio-button label="PUE" value="PUE"/> -->
           </el-radio-group>
         </div>
 
@@ -585,6 +604,7 @@ import * as echarts from 'echarts';
 import { formatTime } from '@/utils'
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { MachineHomeApi } from '@/api/cabinet/home'
+import { number } from 'vue-types';
 
 const activeNames = ref()
 const valueMode = ref(0)
@@ -595,11 +615,15 @@ const isAddRoom = ref(false) // 是否为添加机房模式
 const deletedList = ref<any>([]) //已删除的
 const roomId = ref(0) // 房间id
 const radio = ref("负载率")
+const radioInsertType = ref('"0"')
 const rowColInfo = reactive({
   roomName: '', // 机房名
   addr: '未区分', //楼层
   row: 14, // 行
   col: 18, // 列
+  insertType: 0, //新建类型 砖数 面积
+  width: 1, //宽度
+  length: 1, //长度
   powerCapacity:0, //电力容量
   airPower: null, //空调额定功率
   displayType: 0, //0负载率 1PUE
@@ -649,11 +673,14 @@ const addrList = ref([
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
 
-
-const { isFromHome } = defineProps({
+const props = defineProps({
   isFromHome: {
     type: Boolean,
     default: false,
+  },
+  valueButton: {
+    type: Number,
+    default: 0,
   }
 })
 
@@ -756,6 +783,9 @@ const resetForm = () => {
     addr: '未区分', //楼层
     row: 14, // 行
     col: 18, // 列,
+    insertType: 0, //新建类型 砖数 面积
+    width: 1, //宽度
+    length: 1, //长度
     powerCapacity:0,
     airPower:null,
     displayType: 0, //0负载率 1PUE
@@ -773,6 +803,9 @@ const submitSetting = async() => {
   if(rowColInfo.roomName == '') {
     message.error('机房名称不能为空,请输入!')
     return
+  } else if(rowColInfo.powerCapacity === "") {
+    message.error('机房电力容量不能为空,请输入!')
+    return
   }
   const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
   if(resSelect != null){
@@ -789,6 +822,21 @@ const submitSetting = async() => {
     rowColInfo.displayType = 1
    }
 
+    if(rowColInfo.insertType == 0) {
+      rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
+      rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
+    } else {
+      rowColInfo.row = Math.ceil(rowColInfo.width/0.6)
+      rowColInfo.col = Math.ceil(rowColInfo.length/0.6)
+    }
+
+    if(rowColInfo.width <= 0 || rowColInfo.length <= 0) {
+      message.error('机房面积有误,请重新输入!')
+      return
+    }
+    console.log(rowColInfo)
+    return
+
    try {
     const res = await MachineRoomApi.saveRoomDetail({
       id: roomFlagId,
@@ -796,6 +844,9 @@ const submitSetting = async() => {
       addr: rowColInfo.addr,
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
+      insertType: rowColInfo.insertType, //新建类型 砖数 面积
+      width: rowColInfo.width, //宽度
+      length: rowColInfo.length, //长度
       powerCapacity:rowColInfo.powerCapacity, 
       airPower:rowColInfo.airPower, 
       displayType: rowColInfo.displayType, 
@@ -922,19 +973,120 @@ const getAddrAllRoomList = async(query,index) => {
 
 const getAllApi = async () => {
   await getRoomAddrList()
+  activeNames.value = []
+  roomAddrList.value.forEach(async (item,index) => {
+    await getAddrAllRoomList({addr: item},index)
+    activeNames.value.push(index)
+  })
   loading.value = false
 }
+
+const openAllCollapse = () => {
+  activeNames.value = []
+  roomAddrList.value.forEach(async (item,index) => {
+    activeNames.value.push(index)
+  })
+}
+
+const scrollableContainer = ref(null); // 挂载到机房状态
+ 
+let scrollInterval; // 机房状态的定时器
+let scrollTimeout; // 用于检测滚动是否停止的延迟定时器
+let isScrollingManually = false; // 标记是否正在手动滚动
+
+const startScrolling = () => {
+  // 检查是否已经有一个定时器在运行
+  if (scrollInterval || isScrollingManually) return;
+ 
+  scrollInterval = setInterval(() => {
+    // 机房状态的滚动逻辑
+    scrollContainer('scrollableContainer');
+  }, 1000);
+};
+ 
+const scrollContainer = (containerName) => {
+  let containerRef, interval;
+  if (containerName === 'scrollableContainer') {
+    containerRef = scrollableContainer;
+    interval = scrollInterval;
+  }
+
+  // 检查 containerRef.value 是否存在，用来解决控制台报错
+  if (!containerRef?.value) {
+    return; // 可以返回一个特定的值或对象来表示错误
+  }
+ 
+  const { scrollTop, clientHeight, scrollHeight } = containerRef.value;
+  const scrollStep = 10; // 滚动步长
+  const scrollTolerance = -10; // 停止前的容忍范围
+ 
+  if (scrollTop + clientHeight >= scrollHeight) {
+    // 滚动到顶部
+    containerRef.value.scrollTop = 0;
+  } else if (scrollTop + scrollStep + scrollTolerance >= scrollHeight - clientHeight) {
+    // 接近底部时停止定时器
+    clearInterval(interval);
+    if (containerName === 'scrollableContainer') {
+      scrollInterval = null;
+    }
+  } else {
+    // 继续滚动
+    containerRef.value.scrollTop += scrollStep;
+  }
+};
+ 
+const stopScrolling = () => {
+  clearInterval(scrollInterval);
+  scrollInterval = null;
+};
+
+const handleScroll = (event, containerName) => {
+  // 停止自动滚动
+  isScrollingManually = true;
+  stopScrolling();
+ 
+  // 设置延迟来判断滚动是否停止
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    // 如果在延迟期间没有新的滚动事件，则恢复自动滚动
+    isScrollingManually = false;
+    startScrolling();
+  }, 1000); // 延迟时间，单位毫秒，可以根据需要调整
+};
+
+watch( ()=> props.valueButton, (val) => {
+  console.log(props.valueButton)
+  valueMode.value = val
+})
 
 getAllApi()
 
 onMounted(() => {
   flashListTimer.value = setInterval((getRoomAddrList), 5000);
+  if(props.isFromHome) {
+    // 添加滚动事件监听器
+    if (scrollableContainer.value) {
+      scrollableContainer.value.addEventListener('scroll', (event) => handleScroll(event, 'scrollableContainer'));
+    }
+
+    // 初始启动自动滚动
+    startScrolling();
+  }
 })
 
 onBeforeUnmount(() => {
   if(flashListTimer.value){
     clearInterval(flashListTimer.value)
     flashListTimer.value = null;
+  }
+  if(props.isFromHome) {
+    // 移除滚动事件监听器
+    if (scrollableContainer.value) {
+      scrollableContainer.value.removeEventListener('scroll', (event) => handleScroll(event, 'scrollableContainer'));
+    }
+
+    // 确保在组件卸载时清除定时器
+    stopScrolling();
   }
 })
 

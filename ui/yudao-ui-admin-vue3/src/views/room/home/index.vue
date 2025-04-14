@@ -92,7 +92,7 @@
       <el-card shadow="never" style="">
         <template #header>
           <div style="font-weight: bold">环境</div>
-          <el-link @click="updateChart(); toggleTable = !toggleTable" type="primary" style="margin-left:12vw;">{{toggleTable?'湿度':'温度'}}</el-link>
+          <el-link @click="updateChart(); toggleTable = !toggleTable" type="primary" style="margin-left:12vw;">{{toggleTable?'温度':'湿度'}}</el-link>
         </template>
         <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:32.8vh;"></div>
         <!--<div>当前平均温度：{{envInfo.temAvg}}°C</div>

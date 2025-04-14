@@ -253,7 +253,7 @@
       <el-card style="margin: 10px;">
         <el-row>
           <el-col >
-            <span style="width: 100%">功率因素趋势图</span>
+            <span style="width: 100%">功率因数趋势图</span>
           </el-col>
           <el-col >
             <div style="float:right;margin-top: 0;">
@@ -359,7 +359,7 @@
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="功率因素" align="center" prop="pow_value" v-if="controlVis.circleTableCol.power_factor" >
+            <el-table-column label="功率因数" align="center" prop="pow_value" v-if="controlVis.circleTableCol.power_factor" >
               <template #default="scope">
                 <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powerColor }">
                   {{ scope.row.power_factor }}
@@ -402,7 +402,7 @@
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="功率因素" align="center" prop="pow_value" v-if="controlVis.outPutTableCol.power_factor" >
+            <el-table-column label="功率因数" align="center" prop="pow_value" v-if="controlVis.outPutTableCol.power_factor" >
               <template #default="scope">
                 <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powerColor }">
                   {{ scope.row.power_factor }}
@@ -743,6 +743,27 @@ const initChart = async () => {
     chartData.value.factorListMax[index] = chartData.value.factorListMax[index]?.toFixed(2);
     chartData.value.factorListMinTime[index] = chartData.value.factorListMinTime[index]?.slice(0, -3);
     chartData.value.factorListMaxTime[index] = chartData.value.factorListMaxTime[index]?.slice(0, -3);
+
+    if(chartData.value.size == 3) {
+      chartData.value.factorLista[index] = chartData.value.factorLista[index]?.toFixed(2);
+      chartData.value.factorListMina[index] = chartData.value.factorListMina[index]?.toFixed(2);
+      chartData.value.factorListMaxa[index] = chartData.value.factorListMaxa[index]?.toFixed(2);
+      chartData.value.factorListMinTimea[index] = chartData.value.factorListMinTimea[index]?.slice(0, -3);
+      chartData.value.factorListMaxTimea[index] = chartData.value.factorListMaxTimea[index]?.slice(0, -3);
+    
+      chartData.value.factorListb[index] = chartData.value.factorListb[index]?.toFixed(2);
+      chartData.value.factorListMinb[index] = chartData.value.factorListMinb[index]?.toFixed(2);
+      chartData.value.factorListMaxb[index] = chartData.value.factorListMaxb[index]?.toFixed(2);
+      chartData.value.factorListMinTimeb[index] = chartData.value.factorListMinTimeb[index]?.slice(0, -3);
+      chartData.value.factorListMaxTimeb[index] = chartData.value.factorListMaxTimeb[index]?.slice(0, -3);
+
+      chartData.value.factorListc[index] = chartData.value.factorListc[index]?.toFixed(2);
+      chartData.value.factorListMinc[index] = chartData.value.factorListMinc[index]?.toFixed(2);
+      chartData.value.factorListMaxc[index] = chartData.value.factorListMaxc[index]?.toFixed(2);
+      chartData.value.factorListMinTimec[index] = chartData.value.factorListMinTimec[index]?.slice(0, -3);
+      chartData.value.factorListMaxTimec[index] = chartData.value.factorListMaxTimec[index]?.slice(0, -3);
+    }
+    
   });
 
   if(queryParams.powGranularity === 'oneHour'){
@@ -811,49 +832,63 @@ const initChart = async () => {
   }
 
   if (chartContainerF.value && instance) {
+    let legendList
+    let seriesList
+    if(chartDataF.value.size == 3) {
+      legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+      seriesList = [
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
+        {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
+        {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
+        {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+      ]
+    } else {
+      legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+      seriesList = [
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+      ]
+    }
+
     chartF = echarts.init(chartContainerF.value);
     chartF.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: ''},
-      tooltip: { trigger: 'axis' ,formatter: function(params) {
-        var result = params[0].name + '<br>';
-        for (var i = 0; i < params.length; i++) {
-          result +=  params[i].marker + params[i].seriesName;
-          if(chartDataF.value.factorListMaxTime.length) {
-            result += '&nbsp&nbsp发生时间:' + chartDataF.value.factorListMaxTime[params[i].dataIndex]
-          }
-          result += '&nbsp&nbsp' + params[i].value
-          //判断是否给鼠标悬停上显示符号
-          if (params[i].seriesName === '视在功率') {
-            result += ' kVA'; 
-          } else if (params[i].seriesName === '有功功率') {
-            result += ' kW';
-          }
-          result += '<br>';
-        }
-        return result;
-      }},
-      //显示线的按钮
-      legend: { data: ['功率因素'], selectedMode: 'single'},
-      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category', axisLabel: { formatter: 
-            function (value) {
-              if(toggleTime.value == "oneHour"){
-                // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
-                return value.substring(11, 19);
-              } else if(toggleTime.value == "twentyfourHour" ||toggleTime.value == "seventytwoHour"){
-                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
-                return value.substring(5, 19);
-              } 
+        // 这里设置 Echarts 的配置项和数据
+        title: { text: ''},
+        tooltip: { trigger: 'axis' ,formatter: function(params) {
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName;
+            if(itemFactorType != 'factorList' && chartDataF.value?.[`${itemFactorType}Time`].length) {
+              result += '&nbsp&nbsp发生时间:' + chartDataF.value[`${itemFactorType}Time`][params[i].dataIndex]
             }
-          },boundaryGap: false, data:chartDataF.value.dateTimes},
-      yAxis: { type: 'value'},
-      //鼠标悬停的显示
-      series: [
-          {name: '功率因素', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4,itemStyle: { color: '#fac858' }},
-      ],
-    });
+            result += '&nbsp&nbsp' + params[i].value
+            if (params[i].seriesName === '视在功率') {
+              result += ' kVA'; 
+            } else if (params[i].seriesName === '有功功率') {
+              result += ' kW';
+            }else if (params[i].seriesName === '无功功率') {
+              result += ' kVar';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
+        legend: { data: legendList},
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        xAxis: {type: 'category', axisLabel: { formatter: 
+              function (value) {
+                if(queryParams.powGranularityF == "oneHour"){
+                  // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                  return value.substring(11, 19);
+                } else if(queryParams.powGranularityF == "twentyfourHour" || queryParams.powGranularityF == "seventytwoHour"){
+                  // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                  return value.substring(5, 19);
+                }
+              }
+            },boundaryGap: false, data:chartDataF.value.dateTimes},
+        yAxis: { type: 'value'},
+        series: seriesList,
+      });
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.chartF = chartF;
   }
@@ -1193,45 +1228,62 @@ const flashChartData = async () =>{
   chartF = echarts.init(document.getElementById('chartContainerF'));
   // 设置新的配置对象
   if (chartF) {
+    let legendList
+    let seriesList
+    if(chartDataF.value.size == 3) {
+      legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+      seriesList = [
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
+        {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
+        {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
+        {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+      ]
+    } else {
+      legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+      seriesList = [
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+      ]
+    }
+
     chartF.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: ''},
-      tooltip: { trigger: 'axis' ,formatter: function(params) {
-        var result = params[0].name + '<br>';
-        for (var i = 0; i < params.length; i++) {
-          result +=  params[i].marker + params[i].seriesName;
-          if(itemFactorType != 'factorList' && chartDataF.value?.[`${itemFactorType}Time`].length) {
-            result += '&nbsp&nbsp发生时间:' + chartDataF.value[`${itemFactorType}Time`][params[i].dataIndex]
-          }
-          result += '&nbsp&nbsp' + params[i].value
-          if (params[i].seriesName === '视在功率') {
-            result += ' kVA'; 
-          } else if (params[i].seriesName === '有功功率') {
-            result += ' kW';
-          }
-          result += '<br>';
-        }
-        return result;
-      }},
-      legend: { data: ['功率因素'], selectedMode: 'single'},
-      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category', axisLabel: { formatter: 
-            function (value) {
-              if(queryParams.powGranularityF == "oneHour"){
-                // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
-                return value.substring(11, 19);
-              } else if(queryParams.powGranularityF == "twentyfourHour" || queryParams.powGranularityF == "seventytwoHour"){
-                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
-                return value.substring(5, 19);
-              }
+        // 这里设置 Echarts 的配置项和数据
+        title: { text: ''},
+        tooltip: { trigger: 'axis' ,formatter: function(params) {
+          var result = params[0].name + '<br>';
+          for (var i = 0; i < params.length; i++) {
+            result +=  params[i].marker + params[i].seriesName;
+            if(itemFactorType != 'factorList' && chartDataF.value?.[`${itemFactorType}Time`].length) {
+              result += '&nbsp&nbsp发生时间:' + chartDataF.value[`${itemFactorType}Time`][params[i].dataIndex]
             }
-          },boundaryGap: false, data:chartDataF.value.dateTimes},
-      yAxis: { type: 'value'},
-      series: [
-      {name: '功率因素', type: 'line', data: chartDataF.value.factorList , symbol: 'circle', symbolSize: 4,itemStyle: { color: '#fac858' }},
-      ],
-    });
+            result += '&nbsp&nbsp' + params[i].value
+            if (params[i].seriesName === '视在功率') {
+              result += ' kVA'; 
+            } else if (params[i].seriesName === '有功功率') {
+              result += ' kW';
+            }else if (params[i].seriesName === '无功功率') {
+              result += ' kVar';
+            }
+            result += '<br>';
+          }
+          return result;
+        }},
+        legend: { data: legendList},
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        xAxis: {type: 'category', axisLabel: { formatter: 
+              function (value) {
+                if(queryParams.powGranularityF == "oneHour"){
+                  // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                  return value.substring(11, 19);
+                } else if(queryParams.powGranularityF == "twentyfourHour" || queryParams.powGranularityF == "seventytwoHour"){
+                  // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                  return value.substring(5, 19);
+                }
+              }
+            },boundaryGap: false, data:chartDataF.value.dateTimes},
+        yAxis: { type: 'value'},
+        series: seriesList,
+      });
   }
 
 
@@ -2266,6 +2318,23 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
 
     // 设置新的配置对象
     if (chartF) {
+      let legendList
+      let seriesList
+      if(chartDataF.value.size == 3) {
+        legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+        seriesList = [
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
+          {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
+          {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
+          {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+        ]
+      } else {
+        legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+        seriesList = [
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+        ]
+      }
+
       chartF.setOption({
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
@@ -2288,7 +2357,7 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
           }
           return result;
         }},
-        legend: { data: ['功率因素'], selectedMode: 'single'},
+        legend: { data: legendList},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2303,9 +2372,7 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
               }
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
-        series: [
-        {name: '功率因素', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4,itemStyle: { color: '#fac858' }},
-        ],
+        series: seriesList,
       });
     }
 
@@ -2364,12 +2431,6 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
       chartData.value.reactiveListMax[index] = chartData.value.reactiveListMax[index]?.toFixed(3);
       chartData.value.reactiveListMinTime[index] = chartData.value.reactiveListMinTime[index]?.slice(0, -3);
       chartData.value.reactiveListMaxTime[index] = chartData.value.reactiveListMaxTime[index]?.slice(0, -3);
-
-      chartData.value.factorList[index] = chartData.value.factorList[index]?.toFixed(2);
-      chartData.value.factorListMin[index] = chartData.value.factorListMin[index]?.toFixed(2);
-      chartData.value.factorListMax[index] = chartData.value.factorListMax[index]?.toFixed(2);
-      chartData.value.factorListMinTime[index] = chartData.value.factorListMinTime[index]?.slice(0, -3);
-      chartData.value.factorListMaxTime[index] = chartData.value.factorListMaxTime[index]?.slice(0, -3);
     });
 
   if(queryParams.powGranularity === 'oneHour'){
@@ -2468,6 +2529,26 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
       chartDataF.value.factorListMax[index] = chartDataF.value.factorListMax[index]?.toFixed(2);
       chartDataF.value.factorListMinTime[index] = chartDataF.value.factorListMinTime[index]?.slice(0, -3);
       chartDataF.value.factorListMaxTime[index] = chartDataF.value.factorListMaxTime[index]?.slice(0, -3);
+
+      if(chartDataF.value.size == 3) {
+        chartDataF.value.factorLista[index] = chartDataF.value.factorLista[index]?.toFixed(2);
+        chartDataF.value.factorListMina[index] = chartDataF.value.factorListMina[index]?.toFixed(2);
+        chartDataF.value.factorListMaxa[index] = chartDataF.value.factorListMaxa[index]?.toFixed(2);
+        chartDataF.value.factorListMinTimea[index] = chartDataF.value.factorListMinTimea[index]?.slice(0, -3);
+        chartDataF.value.factorListMaxTimea[index] = chartDataF.value.factorListMaxTimea[index]?.slice(0, -3);
+        
+        chartDataF.value.factorListb[index] = chartDataF.value.factorListb[index]?.toFixed(2);
+        chartDataF.value.factorListMinb[index] = chartDataF.value.factorListMinb[index]?.toFixed(2);
+        chartDataF.value.factorListMaxb[index] = chartDataF.value.factorListMaxb[index]?.toFixed(2);
+        chartDataF.value.factorListMinTimeb[index] = chartDataF.value.factorListMinTimeb[index]?.slice(0, -3);
+        chartDataF.value.factorListMaxTimeb[index] = chartDataF.value.factorListMaxTimeb[index]?.slice(0, -3);
+
+        chartDataF.value.factorListc[index] = chartDataF.value.factorListc[index]?.toFixed(2);
+        chartDataF.value.factorListMinc[index] = chartDataF.value.factorListMinc[index]?.toFixed(2);
+        chartDataF.value.factorListMaxc[index] = chartDataF.value.factorListMaxc[index]?.toFixed(2);
+        chartDataF.value.factorListMinTimec[index] = chartDataF.value.factorListMinTimec[index]?.slice(0, -3);
+        chartDataF.value.factorListMaxTimec[index] = chartDataF.value.factorListMaxTimec[index]?.slice(0, -3);
+      }
     });
 
   if(queryParams.powGranularityF === 'oneHour'){
@@ -2482,6 +2563,23 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
 
     // 设置新的配置对象
     if (chartF) {
+      let legendList
+      let seriesList
+      if(chartDataF.value.size == 3) {
+        legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+        seriesList = [
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
+          {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
+          {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
+          {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+        ]
+      } else {
+        legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
+        seriesList = [
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+        ]
+      }
+
       chartF.setOption({
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
@@ -2504,7 +2602,7 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
           }
           return result;
         }},
-        legend: { data: ['功率因素'], selectedMode: 'single'},
+        legend: { data: legendList},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2519,9 +2617,7 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
               }
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
-        series: [
-        {name: '功率因素', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4,itemStyle: { color: '#fac858' }},
-        ],
+        series: seriesList,
       });
     }
 

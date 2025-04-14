@@ -208,7 +208,7 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
+      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" >
         <el-row style="position: absolute;top: 20px; left: 20%; vertical-align: middle;">
           <span style="vertical-align:middle; position: relative;top: 5px; right: 120px;">机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</span>
           <span style="position: relative;left: 220px;">
@@ -257,7 +257,7 @@
         </el-row>
         <br/>
         <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
-        <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+        <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" style="width: 100%;height:58vh;overflow-y:auto;" >
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="总功率因素" align="center" prop="factorTotalAvgValue" />
           <el-table-column label="A路功率因素" align="center" prop="factorAAvgValue" />

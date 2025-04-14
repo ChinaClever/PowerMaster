@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.framework.mybatis.core.query;
 
 import cn.hutool.core.lang.Assert;
-import cn.iocoder.yudao.framework.mybatis.core.enums.SqlConstants;
+import cn.iocoder.yudao.framework.mybatis.core.constants.SqlConstants;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ArrayUtils;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;

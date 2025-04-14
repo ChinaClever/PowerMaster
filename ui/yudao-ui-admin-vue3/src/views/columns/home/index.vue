@@ -1035,7 +1035,7 @@ const getMainData = async() => {
   mainInfo.powApparentTotal = mainInfo.powApparentTotal ? mainInfo.powApparentTotal.toFixed(0) : 0
   mainInfo.powActiveTotal = mainInfo.powActiveTotal ? mainInfo.powActiveTotal.toFixed(0) : 0
 
-  mainInfo.curAList.forEach((item,index) => {
+  mainInfo?.curAList?.forEach((item,index) => {
     mainInfo.curAList[index] = mainInfo.curAList[index].toFixed(2)
     mainInfo.curBList[index] = mainInfo.curBList[index].toFixed(2)
     mainInfo.volAList[index] = mainInfo.volAList[index].toFixed(1)
@@ -1352,7 +1352,7 @@ onMounted(() => {
       z-index: 99;
     }
     .CabEchart {
-      flex: 1;
+      // flex: 1;
       margin-bottom: 0;
       z-index: 999;
     }

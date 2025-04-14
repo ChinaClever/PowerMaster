@@ -274,7 +274,12 @@
           >
             &gt;
           </el-button>
+          <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+          <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
           <el-button @click="handleQueryCopy"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+            <i class="el-icon-download"></i> 导出
+          </el-button>
         </el-form-item>
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
@@ -284,7 +289,18 @@
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <div class="custom-content-container">
-            <HarmonicLine v-if="abcLineShow === true" width="70vw" height="58vh" :list="abcLineData"/>
+            <HarmonicLine v-if="switchChartOrTable == 0" width="75vw" height="58vh" :list="abcLineData"/>
+            <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+              <el-table :data="tableData" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;">
+                <el-table-column label="时间" align="center" prop="time" />
+                <el-table-column label="A相电流谐波" align="center" prop="lineOne" />
+
+                <el-table-column label="B相电流谐波" align="center" prop="linetwe" />
+
+                <el-table-column label="C相电流谐波" align="center" prop="linethree" />
+
+              </el-table>
+            </div>
           </div>
         </div>
       </el-dialog>
@@ -338,6 +354,7 @@ const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
+const switchChartOrTable = ref(0);
 const valueMode = ref(0)
 
 const allData = ref();
@@ -647,6 +664,7 @@ const seriesAndTimeArr = ref() as any;
 const lineVis = ref(false);
 const harmonicLine = ref([]) as any;
 
+const tableData = ref([])
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -666,7 +684,6 @@ const disabledDate = (date) => {
 }
 
 const abcLineData = ref({});
-const abcLineShow = ref(false);
 
 const getDetail = async () => {
 
@@ -683,7 +700,14 @@ const getDetail = async () => {
 
   const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
   abcLineData.value = lineData;
-  abcLineShow.value = true;
+
+  tableData.value = abcLineData.value.lineOne.map((item, index) => ({
+      time: abcLineData.value.time[index],
+      lineOne: item,
+      linetwe: abcLineData.value.linetwe[index],
+      linethree: abcLineData.value.linethree[index]
+    }));
+
   //seriesAndTimeArr.value = lineData;
   //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
   //  const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
@@ -827,6 +851,27 @@ const handleDelete = async (id: number) => {
     // 刷新列表
     // await getList()
   } catch {}
+}
+
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm();
+    // 发起导出
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getBoxHarmonicDetailExcel(queryParamsCopy, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '谐波详细.xlsx');
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error);
+  } finally {
+    exportLoading.value = false;
+  }
 }
 
 /** 导出按钮操作 */

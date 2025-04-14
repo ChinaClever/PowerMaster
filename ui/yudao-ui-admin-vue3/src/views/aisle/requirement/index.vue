@@ -82,6 +82,7 @@
         </el-form-item>
         <el-form-item style="position: absolute; left: 720px;">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
         </el-form-item>
         <el-form-item style="position: absolute; left: 725px; vertical-align: center;">
           <el-date-picker
@@ -633,8 +634,12 @@ const handleQuery = () => {
   
 }
 /** 重置按钮操作 */
-function resetQuery() {
-  document.getElementById("latest24h")?.click();
+const resetQuery = () => {
+  queryParams.name = undefined
+  if(queryParams.timeType != 0 && queryParams.oldTime == null ){
+    return;
+  }
+  getList()
 }
 
 /** 添加/修改操作 */

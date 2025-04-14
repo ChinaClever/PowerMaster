@@ -144,15 +144,19 @@ import { IndexApi } from '@/api/bus/busindex'
 import { ElTree } from 'element-plus'
 import HarmonicRealTime from './component/HarmonicRealTime.vue'
 import HarmonicLine from './component/HarmonicLine.vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const location = ref(history?.state?.location);
-const busName = ref(history?.state?.busName);
-const devKey = ref(history?.state?.devKey);
-const roomName = ref(history?.state?.roomName);
+const location = ref(query.location);
+const busName = ref(query.busName);
+const devKey = ref(query.devKey);
+const roomName = ref(query.roomName);
 const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();
@@ -398,8 +402,8 @@ const queryParams = reactive({
   pageSize: 10,
   harmonicType : 0,
   harmonicArr:[1],
-  devKey : history?.state?.devKey,
-  busId: history?.state?.busId,
+  devKey : query.devKey,
+  busId: query.busId,
   outputNumber : 10,
   createTime: undefined,
   timeArr:[],

@@ -134,11 +134,11 @@
                     </div>
                     <div class="tipInDialog">
                       <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_active_percent,60),40)+'%'}">
-                        <div style="white-space: nowrap;">{{balanceObj.a_active_power ? balanceObj.a_active_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">{{balanceObj.a_active_power ? balanceObj.a_active_power: '0.000'}}kW</div>
                         <div style="white-space: nowrap;">A路有功功率</div>
                       </span>
                       <span class="rightTip" :style="{width:0.8*Math.max(Math.min((100 - balanceObj.pow_active_percent),60),40)+'%'}">
-                        <div style="white-space: nowrap;">{{balanceObj.b_active_power ? balanceObj.b_active_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">{{balanceObj.b_active_power ? balanceObj.b_active_power: '0.000'}}kW</div>
                         <div style="white-space: nowrap;">B路有功功率</div>
                       </span>
                     </div>
@@ -206,11 +206,11 @@
                     </div>
                     <div class="tipInDialog">
                       <span class="leftTip" :style="{width: 0.8*Math.max(Math.min(balanceObj.pow_reactive_percent,60),40)+'%'}">
-                        <div style="white-space: nowrap;">{{balanceObj.a_reactive_power ? balanceObj.a_reactive_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">{{balanceObj.a_reactive_power ? balanceObj.a_reactive_power: '0.000'}}kVar</div>
                         <div style="white-space: nowrap;">A路无功功率</div>
                       </span>
                       <span class="rightTip" :style="{width:0.8*Math.max(Math.min((100 - balanceObj.pow_reactive_percent),60),40)+'%'}">
-                        <div style="white-space: nowrap;">{{balanceObj.b_reactive_power ? balanceObj.b_reactive_power: '0.000'}}kVA</div>
+                        <div style="white-space: nowrap;">{{balanceObj.b_reactive_power ? balanceObj.b_reactive_power: '0.000'}}kVar</div>
                         <div style="white-space: nowrap;">B路无功功率</div>
                       </span>
                     </div>

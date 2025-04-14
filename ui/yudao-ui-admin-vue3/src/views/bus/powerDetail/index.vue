@@ -160,6 +160,10 @@ import PowReactiveLine from './component/PowReactiveLine.vue';
 import PowActiveLine from './component/PowActiveLine.vue';
 import { IndexApi } from '@/api/bus/busindex';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 const peakDemand = ref(0);
 const peakDemandTime = ref('');
@@ -168,10 +172,10 @@ const loadRateList = ref() as any;
 const powActiveList = ref() as any;
 const powReactiveList = ref() as any;
 const selectedOption = ref('current');
-const location = ref(history?.state?.location);
-const busName = ref(history?.state?.busName);
-const roomName = ref(history?.state?.roomName);
-const devKey = ref(history?.state?.devKey);
+const location = ref(query.location);
+const busName = ref(query.busName);
+const roomName = ref(query.roomName);
+const devKey = ref(query.devKey);
 
 const typeRadioShow = ref("最大")
 const dataArr = ref([])
@@ -201,13 +205,13 @@ const getFullTimeByDate = (date) => {
       (second > 9 ? second : ("0" + second));
 }
 const queryParamsSearch = reactive({
-  devKey : history?.state?.devKey as string | undefined,
+  devKey : query.devKey as string | undefined,
 })
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: history?.state?.devKey,
-  busId : history?.state?.busId,
+  devKey: query.devKey,
+  busId : query.busId,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,

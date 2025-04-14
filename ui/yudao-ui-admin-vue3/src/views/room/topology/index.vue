@@ -60,7 +60,7 @@
                     @end.prevent="onEnd"
                   >
                     <template #item="{ element }">
-                      <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)" >
+                      <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)" :style="{backgroundColor: element.cabinetName ? statusInfo[element.runStatus].color : '#effaff',color: '#fff'}" >
                         <template v-if="element.name">
                           <el-tooltip effect="light">
                             <template #content>
@@ -88,7 +88,7 @@
                       </div>
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
-                          <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: item.cabinetName ? statusInfo[item.runStatus].color : '#effaff'}" v-for="(item, i) in element.cabinetList" :key="i">
+                          <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: item.cabinetName ? statusInfo[item.runStatus].color : '#effaff',color: '#fff'}" v-for="(item, i) in element.cabinetList" :key="i">
                             <template v-if="item.id > 0">
                               <el-tooltip effect="light">
                                 <template #content>
