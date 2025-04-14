@@ -104,12 +104,16 @@ import { IndexApi } from '@/api/bus/boxindex'
 import { BoxEnergyApi } from '@/api/bus/boxenergy'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import 'echarts/lib/component/dataZoom';
+import { useRoute } from 'vue-router'
 
-const roomName = ref(history?.state?.roomName);
+const route = useRoute();
+const query = route.query;
+
+const roomName = ref(query.roomName);
 console.log('roomName',roomName)
-const boxName = ref(history?.state?.boxName );
-const busName = ref(history?.state?.busName );
-const devKey = ref(history?.state?.devKey );
+const boxName = ref(query.boxName );
+const busName = ref(query.busName );
+const devKey = ref(query.devKey );
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
@@ -120,9 +124,9 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  busId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1,
-  devKey : history?.state?.devKey as string | undefined
+  busId: query.id || 1,
+  cabinetroomId: query.roomId || 1,
+  devKey : query.devKey as string | undefined
 })
 const EleChain = reactive({
   todayEq: '',

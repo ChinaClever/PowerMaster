@@ -618,7 +618,7 @@ const toDetail = (row) =>{
   const location = row.location;
   const busName = row.busName;
   const roomName = row.roomName;
-  push({path: '/bus/busmonitor/busmonitor/busharmonicdetail', state: { devKey, busId , location , busName,roomName}});
+  push({path: '/bus/busmonitor/busmonitor/busharmonicdetail', query: { devKey, busId , location , busName,roomName}});
 }
 
 const showDialogCur = () => {

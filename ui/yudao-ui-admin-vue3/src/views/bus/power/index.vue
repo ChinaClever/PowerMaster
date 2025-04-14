@@ -877,7 +877,7 @@ const toDeatil = (row) =>{
   const busId = row.busId;
   const location = row.location != null ? row.location : row.devKey
   const busName = row.busName;
-  push({path: '/bus/busmonitor/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
+  push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey, busId , location , busName, roomName }})
 }
 
 //const filterData = () => {
