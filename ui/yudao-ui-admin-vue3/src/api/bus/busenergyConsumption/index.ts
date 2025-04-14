@@ -37,8 +37,8 @@ export const EnergyConsumptionApi = {
     return await request.downloadPost({ url: `/bus/eq-data/bus/export-excel`, data, ...axiosConfig })
   },
     // 导出插接箱能耗排名历史数据 Excel
-    exportBusDetailsPageData: async (params, axiosConfig) => {
-      return await request.download({ url: `/bus/eq-data/bus/details-export-excel`, params, ...axiosConfig })
+    exportBusDetailsPageData: async (data, axiosConfig) => {
+      return await request.downloadPost({ url: `/bus/eq-data/bus/details-export-excel`, data, ...axiosConfig })
     },
   // 导出始端箱电费统计历史数据 Excel
   exportBillPageData: async (data, axiosConfig) => {
@@ -99,8 +99,8 @@ export const EnergyConsumptionApi = {
     },
 
   // 导出插接箱电费统计历史数据 Excel
-  exportBoxBillPageData: async (data, axiosConfig) => {
-    return await request.downloadPost({ url: `/bus/eq-data/box/bill-export-excel`, data, ...axiosConfig })
+  exportBoxBillPageData: async (params, axiosConfig) => {
+    return await request.download({ url: `/bus/eq-data/box/bill-export-excel`, params, ...axiosConfig })
   },
 
   // 导出插接箱电能记录历史数据 Excel

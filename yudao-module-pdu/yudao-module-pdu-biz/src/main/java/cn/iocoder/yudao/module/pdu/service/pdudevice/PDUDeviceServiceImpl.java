@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.PduBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
@@ -458,7 +459,16 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public Map getHistoryDataByDevKey(String devKey, String type) {
+        Object obj = redisTemplate.opsForValue().get("packet:pdu:" + devKey);
+        Integer size = 1;
+        if (Objects.nonNull(obj)) {
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+            JSONObject lineItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list");
+            List<Double> curList = lineItemList.getJSONArray("cur_value").toList(Double.class);
+            size = curList.size();
+        }
         HashMap result = new HashMap<>();
+        result.put("size", size);
         List<String> dateTimes = new ArrayList<>();
         List<Double> apparentList = new ArrayList<>();//视在功率
         List<Double> activeList = new ArrayList<>();//有功功率
@@ -486,115 +496,205 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         List<String> reactiveListMinTime = new ArrayList<>();
 
         PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
-        if (pduIndex != null) {
-            Integer id = pduIndex.getId();
-            // 构建查询请求
-            SearchRequest searchRequest = null;
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime pastTime = null;
-            if ("oneHour".equals(type)) {
-                pastTime = now.minusHours(1);
-                pastTime = pastTime.minusMinutes(1);
-                searchRequest = new SearchRequest("pdu_hda_total_realtime");
-            } else if ("twentyfourHour".equals(type)) {
-                pastTime = now.minusHours(25);
-                searchRequest = new SearchRequest("pdu_hda_total_hour");
-            } else if ("seventytwoHour".equals(type)) {
-                pastTime = now.minusHours(73);
-                searchRequest = new SearchRequest("pdu_hda_total_hour");
-            }
-            // 构建查询请求
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", id));
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(formatter.format(pastTime))
-                    .to(formatter.format(now)));
-            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-            searchSourceBuilder.size(10000); // 设置返回的最大结果数
-            searchRequest.source(searchSourceBuilder);
-            // 执行查询请求
-            try {
-                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-                if (searchResponse != null) {
-                    SearchHits hits = searchResponse.getHits();
-                    for (SearchHit hit : hits) {
-                        String str = hit.getSourceAsString();
-                        switch (type) {
-                            case "oneHour":
-                                PduHdaTotalRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
-                                apparentList.add(Double.valueOf(pduHdaTotalRealtimeDo.getApparentPow()));
-                                activeList.add(Double.valueOf(pduHdaTotalRealtimeDo.getActivePow()));
-                                factorList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowerFactor()));
-                                reactiveList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowReactive()));
-                                dateTimes.add(pduHdaTotalRealtimeDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            case "twentyfourHour":
-                            case "seventytwoHour":
-                                PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
-                                apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowAvgValue()));
-                                activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowAvgValue()));
-                                reactiveList.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveAvgValue()));
-                                factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
-
-                                apparentListMax.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMaxValue()));
-                                activeListMax.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMaxValue()));
-                                reactiveListMax.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveMaxValue()));
-                                factorListMax.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorMaxValue()));
-
-                                apparentListMaxTime.add(pduHdaTotalHourDo.getApparentPowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                activeListMaxTime.add(pduHdaTotalHourDo.getActivePowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                reactiveListMaxTime.add(pduHdaTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMaxTime.add(pduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-
-                                apparentListMin.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMinValue()));
-                                activeListMin.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMinValue()));
-                                reactiveListMin.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveMinValue()));
-                                factorListMin.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorMinValue()));
-                                apparentListMinTime.add(pduHdaTotalHourDo.getApparentPowMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                activeListMinTime.add(pduHdaTotalHourDo.getActivePowMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                reactiveListMinTime.add(pduHdaTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMinTime.add(pduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                dateTimes.add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            default:
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-//            List<Double> reactiveList = calculateReactivePower(apparentList, activeList);
-            result.put("reactiveList", reactiveList);
-            result.put("apparentList", apparentList);
-            result.put("activeList", activeList);
-            result.put("factorList", factorList);
-
-            result.put("reactiveListMax", reactiveListMax);
-            result.put("apparentListMax", apparentListMax);
-            result.put("activeListMax", activeListMax);
-            result.put("factorListMax", factorListMax);
-
-            result.put("reactiveListMin", reactiveListMin);
-            result.put("apparentListMin", apparentListMin);
-            result.put("activeListMin", activeListMin);
-            result.put("factorListMin", factorListMin);
-
-            result.put("reactiveListMaxTime", reactiveListMaxTime);
-            result.put("apparentListMaxTime", apparentListMaxTime);
-            result.put("activeListMaxTime", activeListMaxTime);
-            result.put("factorListMaxTime", factorListMaxTime);
-
-            result.put("reactiveListMinTime", reactiveListMinTime);
-            result.put("apparentListMinTime", apparentListMinTime);
-            result.put("activeListMinTime", activeListMinTime);
-            result.put("factorListMinTime", factorListMinTime);
-
-            result.put("dateTimes", dateTimes);
-            return result;
-        } else {
+        if (pduIndex == null) {
             return result;
         }
+        Integer id = pduIndex.getId();
+        // 构建查询请求
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String index = null;
+        String indexLine = null;
+        String startTime = null;
+        String endTime = formatter.format(now);
+        String[] heads = new String[]{};
+        switch (type) {
+            case "oneHour":
+                index = "pdu_hda_total_realtime";
+                startTime = formatter.format(now.minusHours(1));
+                indexLine = "pdu_hda_line_realtime";
+                heads = new String[]{"pdu_id", "line_id", "power_factor", "create_time"};
+                break;
+            case "twentyfourHour":
+                index = "pdu_hda_total_hour";
+                startTime = formatter.format(now.minusHours(25));
+                indexLine = "pdu_hda_line_hour";
+                heads = new String[]{"pdu_id", "line_id", "power_factor_avg_value", "power_factor_max_value", "power_factor_max_time",
+                        "power_factor_min_value", "power_factor_min_time", "create_time"};
+                break;
+            case "seventytwoHour":
+                index = "pdu_hda_total_hour";
+                startTime = formatter.format(now.minusHours(73));
+                indexLine = "pdu_hda_line_hour";
+                heads = new String[]{"pdu_id", "line_id", "power_factor_avg_value", "power_factor_max_value", "power_factor_max_time",
+                        "power_factor_min_value", "power_factor_min_time", "create_time"};
+                break;
+        }
+        SearchResponse searchResponse = getData(startTime, endTime, id, index);
+
+        if (searchResponse == null) {
+            return result;
+        }
+        SearchHits hits = searchResponse.getHits();
+        Long totalHits = hits.getTotalHits().value;
+        if (totalHits == 0) {
+            return result;
+        }
+        for (SearchHit hit : hits) {
+            String str = hit.getSourceAsString();
+            switch (type) {
+                case "oneHour":
+                    PduHdaTotalRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
+                    apparentList.add(Double.valueOf(pduHdaTotalRealtimeDo.getApparentPow()));
+                    activeList.add(Double.valueOf(pduHdaTotalRealtimeDo.getActivePow()));
+                    factorList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowerFactor()));
+                    reactiveList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowReactive()));
+                    dateTimes.add(pduHdaTotalRealtimeDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    break;
+                case "twentyfourHour":
+                case "seventytwoHour":
+                    PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
+                    apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowAvgValue()));
+                    activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowAvgValue()));
+                    reactiveList.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveAvgValue()));
+                    factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
+
+                    apparentListMax.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMaxValue()));
+                    activeListMax.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMaxValue()));
+                    reactiveListMax.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveMaxValue()));
+                    factorListMax.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorMaxValue()));
+
+                    apparentListMaxTime.add(pduHdaTotalHourDo.getApparentPowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    activeListMaxTime.add(pduHdaTotalHourDo.getActivePowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    reactiveListMaxTime.add(pduHdaTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    factorListMaxTime.add(pduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                    apparentListMin.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMinValue()));
+                    activeListMin.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMinValue()));
+                    reactiveListMin.add(Double.valueOf(pduHdaTotalHourDo.getPowReactiveMinValue()));
+                    factorListMin.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorMinValue()));
+                    apparentListMinTime.add(pduHdaTotalHourDo.getApparentPowMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    activeListMinTime.add(pduHdaTotalHourDo.getActivePowMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    reactiveListMinTime.add(pduHdaTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    factorListMinTime.add(pduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    dateTimes.add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    break;
+                default:
+            }
+        }
+        result.put("reactiveList", reactiveList);
+        result.put("apparentList", apparentList);
+        result.put("activeList", activeList);
+        result.put("factorList", factorList);
+        result.put("reactiveListMax", reactiveListMax);
+        result.put("apparentListMax", apparentListMax);
+        result.put("activeListMax", activeListMax);
+        result.put("factorListMax", factorListMax);
+        result.put("reactiveListMin", reactiveListMin);
+        result.put("apparentListMin", apparentListMin);
+        result.put("activeListMin", activeListMin);
+        result.put("factorListMin", factorListMin);
+        result.put("reactiveListMaxTime", reactiveListMaxTime);
+        result.put("apparentListMaxTime", apparentListMaxTime);
+        result.put("activeListMaxTime", activeListMaxTime);
+        result.put("factorListMaxTime", factorListMaxTime);
+        result.put("reactiveListMinTime", reactiveListMinTime);
+        result.put("apparentListMinTime", apparentListMinTime);
+        result.put("activeListMinTime", activeListMinTime);
+        result.put("factorListMinTime", factorListMinTime);
+        result.put("dateTimes", dateTimes);
+        if (size > 1) {
+            List<Double> factorLista = new ArrayList<>();
+            List<Double> factorListb = new ArrayList<>();
+            List<Double> factorListc = new ArrayList<>();
+            List<Double> factorListMaxa = new ArrayList<>();
+            List<Double> factorListMaxb = new ArrayList<>();
+            List<Double> factorListMaxc = new ArrayList<>();
+            List<String> factorListMaxTimea = new ArrayList<>();
+            List<String> factorListMaxTimeb = new ArrayList<>();
+            List<String> factorListMaxTimec = new ArrayList<>();
+
+            List<Double> factorListMina = new ArrayList<>();
+            List<Double> factorListMinb = new ArrayList<>();
+            List<Double> factorListMinc = new ArrayList<>();
+            List<String> factorListMinTimea = new ArrayList<>();
+            List<String> factorListMinTimeb = new ArrayList<>();
+            List<String> factorListMinTimec = new ArrayList<>();
+
+            List<String> list = getData(startTime, endTime, id, heads, indexLine);
+            Map timeListMap = new HashMap<>();
+            if (Objects.equals("oneHour", type)) {
+                timeListMap = list.stream().map(str -> JsonUtils.parseObject(str, PduHdaLineRealtimeDo.class))
+                        .collect(Collectors.groupingBy(i ->i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")));
+                for (String time : dateTimes) {
+                    List<PduHdaLineRealtimeDo> dos = (List<PduHdaLineRealtimeDo>) timeListMap.get(time);
+                    dos.forEach(iter -> {
+                        switch (iter.getLineId()) {
+                            case 1:
+                                factorLista.add(Double.valueOf(iter.getPowerFactor()));
+                                break;
+                            case 2:
+                                factorListb.add(Double.valueOf(iter.getPowerFactor()));
+                                break;
+                            case 3:
+                                factorListc.add(Double.valueOf(iter.getPowerFactor()));
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+                }
+            } else {
+                timeListMap = list.stream().map(str -> JsonUtils.parseObject(str, PduHdaLineHourDo.class))
+                        .collect(Collectors.groupingBy(i ->i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")));
+                for (String time : dateTimes) {
+                    List<PduHdaLineHourDo> dos = (List<PduHdaLineHourDo>) timeListMap.get(time);
+                    dos.forEach(iter -> {
+                        switch (iter.getLineId()) {
+                            case 1:
+                                factorLista.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                factorListMaxa.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                factorListMaxTimea.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                factorListMina.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                factorListMinTimea.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            case 2:
+                                factorListb.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                factorListMaxb.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                factorListMaxTimeb.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                factorListMinb.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                factorListMinTimeb.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            case 3:
+                                factorListc.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                factorListMaxc.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                factorListMaxTimec.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                factorListMinc.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                factorListMinTimec.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+                }
+            }
+            result.put("factorLista", factorLista);
+            result.put("factorListb", factorListb);
+            result.put("factorListc", factorListc);
+            result.put("factorListMaxa", factorListMaxa);
+            result.put("factorListMaxb", factorListMaxb);
+            result.put("factorListMaxc", factorListMaxc);
+            result.put("factorListMaxTimea", factorListMaxTimea);
+            result.put("factorListMaxTimeb", factorListMaxTimeb);
+            result.put("factorListMaxTimec", factorListMaxTimec);
+            result.put("factorListMina", factorListMina);
+            result.put("factorListMinb", factorListMinb);
+            result.put("factorListMinc", factorListMinc);
+            result.put("factorListMinTimea", factorListMinTimea);
+            result.put("factorListMinTimeb", factorListMinTimeb);
+            result.put("factorListMinTimec", factorListMinTimec);
+        }
+        return result;
     }
 
     public static List<Double> calculateReactivePower(List<Double> apparentList, List<Double> activeList) {
@@ -1991,32 +2091,94 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
 
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
-                .must(QueryBuilders.termsQuery("pdu_id", ids))));
-        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(2000);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termsQuery("pdu_id", ids))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(2000);
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
+            return list;
+        } catch (Exception e) {
+            log.error("查询es数据失败" + e);
         }
-        return list;
-
+        return null;
     }
+
+    private SearchResponse getData(String startTime, String endTime, Integer id, String index) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termQuery("pdu_id", id))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
+            // 执行ES请求
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            return searchResponse;
+        } catch (Exception e) {
+            log.error("查询es数据失败" + e);
+        }
+        return null;
+    }
+
+    private List<String> getData(String startTime, String endTime, Integer id, String[] heads, String index) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.fetchSource(heads, null);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termQuery("pdu_id", id))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
+            // 执行ES请求
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("查询es数据失败" + e);
+        }
+        return null;
+    }
+
 
     public MaxCurAndOtherData getMaxCurMaxValue(String startTime, String endTime, String index, int flaValue) throws IOException {
         // 创建搜索请求

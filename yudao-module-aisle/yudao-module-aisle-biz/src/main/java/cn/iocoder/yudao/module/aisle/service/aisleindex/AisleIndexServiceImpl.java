@@ -767,13 +767,13 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (Objects.equals(reqVO.getFlag(), 0)) {
                 Integer lindId = (Integer) map.get("line_id");
                 switch (lindId) {
-                    case 1:
+                    case 0:
                         resultLine1.add(map);
                         break;
-                    case 2:
+                    case 1:
                         resultLine2.add(map);
                         break;
-                    case 3:
+                    case 2:
                         resultLine3.add(map);
                         break;
                     default:
