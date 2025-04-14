@@ -554,15 +554,15 @@ let realtimeChart = null as echarts.ECharts | null;
 const initChart = () => {
   if ( isHaveData.value == true ){
     if (chartContainer.value && instance) {
-      realtimeChart = echarts.init(chartContainer.value);
+      realtimeChart = echarts.init(document.getElementById('chartContainer'));
       if (realtimeChart) {
-            realtimeChart.setOption({     
+        realtimeChart.setOption({     
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
-                                '平均零线电流(A)', '最大零线电流(A)', '最小零线电流(A)'],
+                                '平均零相电流(A)', '最大零相电流(A)', '最小零相电流(A)'],
                         selected: { "平均有功功率(kW)": false, "最大有功功率(kW)": true, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": true, "最小无功功率(kVar)": false, 
-                        "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false, "平均零线电流(A)": false, "最大零线电流(A)": false, "最小零线电流(A)": false,}
+                        "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false, "平均零相电流(A)": false, "最大零相电流(A)": false, "最小零相电流(A)": false,}
               },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '20px'},
@@ -580,15 +580,15 @@ const initChart = () => {
                 { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
                 { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
                 { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均零线电流(A)', type: 'line', symbol: 'none', data: curZeroAvgValueData.value, },
-                { name: '最大零线电流(A)', type: 'line', symbol: 'none', data: curZeroMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小零线电流(A)', type: 'line', symbol: 'none', data: curZeroMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均零相电流(A)', type: 'line', symbol: 'none', data: curZeroAvgValueData.value, },
+                { name: '最大零相电流(A)', type: 'line', symbol: 'none', data: curZeroMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小零相电流(A)', type: 'line', symbol: 'none', data: curZeroMinValueData.value, lineStyle: {type: 'dashed'}},
               ],
               dataZoom:[{type: "inside"}],
             });
           }
            // 图例切换监听
-           totalHourAndDayLegendListener(realtimeChart);
+           totalHourAndDayLegendListener(realtimeChart)
            // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
@@ -1036,6 +1036,7 @@ function customTooltipFormatter(params: any[]) {
 
 // 总数据小时、天 图例切换函数
 function totalHourAndDayLegendListener(realtimeChart) {
+  console.log('totalHourAndDayLegendListener');
   realtimeChart?.on('legendselectchanged', function (params) {
     var legendName = params.name;
     var optionsToUpdate = {};
