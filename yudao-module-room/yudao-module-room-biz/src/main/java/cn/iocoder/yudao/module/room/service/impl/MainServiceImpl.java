@@ -160,6 +160,7 @@ public class MainServiceImpl implements MainService {
                     monthTotal.updateAndGet(v -> new Double((double) (v + monthEqMap.getOrDefault(roomIndex.getId(), 0.0))));
                 });
             }
+            roomEqList.sort(Comparator.comparing(EqDataDTO.RoomEq::getTodayEq).reversed());
             result.setRoomEqList(roomEqList);
             result.setLastWeekEqTotal(weekTotal.get());
             result.setLastMonthEqTotal(monthTotal.get());
