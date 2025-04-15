@@ -12,8 +12,8 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
  *
  * @author clever
  */
-@TableName("bus_statis_config")
-@KeySequence("bus_statis_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
+@TableName("bus_cron_config")
+@KeySequence("bus_cron_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @ToString(callSuper = true)
 @Builder
