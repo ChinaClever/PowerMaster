@@ -86,9 +86,8 @@ public class AdminInitServiceImpl implements AdminInitService {
             //初始化 bus 数据
             busIndexDoMapper.initBusData();
             boxIndexMapper.initBoxData();
-
-
             return true;
+
         } catch (Exception e) {
             throw new RuntimeException("初始化失败: " + e.getMessage());
         }
