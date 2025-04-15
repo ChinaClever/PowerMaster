@@ -91,7 +91,7 @@ public class BoxIndexController {
     }
     @PostMapping("/line/max")
     @Operation(summary = "获得始端箱需量最大")
-    public CommonResult<LineBoxMaxResVO> getBoxLineMax(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+    public CommonResult<LineBoxMaxResVO> getBoxLineMax(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getBoxLineMax(pageReqVO));
     }
     @Operation(summary = "插接箱需量ES数据图表")
