@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,4 +13,7 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface CabinetPduMapper extends BaseMapper<CabinetPdu> {
+
+    @Delete("DELETE FROM cabinet_pdu")
+    void initCabinePduData();
 }

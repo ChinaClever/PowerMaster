@@ -45,6 +45,7 @@ export default {
     createSuccess: '新增成功',
     updateSuccess: '修改成功',
     delMessage: '是否删除所选中数据？',
+    initMessage:'系统初始化前,请关闭采集程序和计算程序!',
     delDataMessage: '是否删除数据？',
     delNoData: '请选择需要删除的数据',
     delSuccess: '删除成功',

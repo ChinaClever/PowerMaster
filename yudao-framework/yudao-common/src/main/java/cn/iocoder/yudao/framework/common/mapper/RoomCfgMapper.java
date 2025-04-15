@@ -3,6 +3,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,4 +20,7 @@ public interface RoomCfgMapper extends BaseMapper<RoomCfg> {
     void updateByRoomCfg(@Param("vo") RoomSavesVo vo);
 
     void restoreByRoomCfg(@Param("roomId")int id);
+
+    @Delete("DELETE FROM room_cfg")
+    void initRoomCfgData();
 }

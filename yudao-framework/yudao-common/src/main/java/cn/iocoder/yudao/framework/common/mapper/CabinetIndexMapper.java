@@ -6,10 +6,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.vo.*;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.SelectKey;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 import java.util.Map;
@@ -51,4 +48,7 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     List<CabinetPduResVO> selectCabinetPduList(@Param("pduKey") List<String> pduKey);
 
     List<CabinetPduResVO> selectCabinetPduByPduKey(String pduKey);
+
+    @Delete("DELETE FROM cabinet_index")
+    void initCabinetData();
 }
