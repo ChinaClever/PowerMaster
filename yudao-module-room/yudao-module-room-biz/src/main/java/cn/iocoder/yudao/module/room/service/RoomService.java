@@ -13,6 +13,7 @@ import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -133,4 +134,6 @@ public interface RoomService {
     Integer newSelectRoomByName(String name);
 
     void getRoomListRedis(List<RoomIndexAddrResVO> bean);
+
+    Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName);
 }

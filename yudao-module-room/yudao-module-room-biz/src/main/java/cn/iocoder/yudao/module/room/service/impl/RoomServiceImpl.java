@@ -1994,6 +1994,33 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
+    @Override
+    public Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName) {
+        LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(StringUtils.isNotEmpty(addr),RoomIndex::getAddr,addr)
+                .eq(StringUtils.isNotEmpty(roomName),RoomIndex::getRoomName,roomName)
+                .eq(RoomIndex::getIsDelete,0).orderByAsc(RoomIndex::getAddr);
+        List<RoomIndex> list = roomIndexMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(list)){
+            return null;
+        }
+        List<RoomIndexAddrResVO> bean = BeanUtils.toBean(list, RoomIndexAddrResVO.class);
+        getRoomListRedis(bean);
+        Map<String, List<RoomIndexAddrResVO>> collect = bean.stream().collect(Collectors.groupingBy(RoomIndexAddrResVO::getAddr));
+
+        Map<String, List<RoomIndexAddrResVO>> sortedMap = collect.entrySet().stream()
+                .sorted(Map.Entry.<String, List<RoomIndexAddrResVO>>comparingByKey().reversed())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        // 处理键冲突
+                        (oldValue, newValue) -> oldValue,
+                        () -> new TreeMap<>()
+                ));
+//        TreeMap<String, List<RoomIndexAddrResVO>> sortedMap = new TreeMap<>(collect);
+        return sortedMap;
+    }
+
     private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {
         indices.forEach(iter -> {
             Object objAisle = aisleMap.get(iter.getId());
