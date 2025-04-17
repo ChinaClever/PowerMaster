@@ -16,7 +16,11 @@
             <span>名称：</span>
             <span>{{ statusNumber.busName  }}</span>
           </div>
-          <div >
+          <div v-if="visMode == 2">
+            <span>输出位：</span>
+            <span>{{ statusNumber.lineName }}</span>
+          </div>
+          <div v-else>
             <span>相位：</span>
             <span>{{ statusNumber.lineName }}</span>
           </div>
@@ -24,7 +28,11 @@
             <span>时间：</span>
             <span>{{ statusNumber.create_time }}</span>
           </div>
-          <div >
+          <div v-if="visMode == 2">
+            <span>{{ flagName }}：</span>
+            <span>{{ statusNumber.powApparentMaxValue }}kVA</span>
+          </div>
+          <div v-else>
             <span>{{ flagName }}：</span>
             <span>{{ statusNumber.cur_max_value }}{{ flagName == '功率' ? ' kW' : ' A' }}</span>
           </div>
@@ -105,8 +113,9 @@
           </el-form-item>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="visModeShow(0)" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
-          <el-button @click="visModeShow(1)" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
+          <el-button @click="visModeShow(2)" :type="visMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />输出位功率</el-button>
+          <el-button @click="visModeShow(0)" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />相电流</el-button>
+          <el-button @click="visModeShow(1)" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />相功率</el-button>
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
@@ -125,30 +134,30 @@
           </template>
         </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
-        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="120px" >
+        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxValue" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}
+              {{ scope.row.l1MaxValue }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
-        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="120px" >
+        <el-table-column label="发生时间" align="center" prop="l1MaxValueTime" />
+        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxValue" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l2MaxCur }}
+              {{ scope.row.l2MaxValue }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
-        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="120px" >
+        <el-table-column label="发生时间" align="center" prop="l2MaxValueTime" />
+        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxValue" width="120px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l3MaxCur }}
+              {{ scope.row.l3MaxValue }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
+        <el-table-column label="发生时间" align="center" prop="l3MaxValueTime" />
 
         <el-table-column label="操作" align="center" width="135px">
           <template #default="scope">
@@ -181,30 +190,30 @@
           </template>
         </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
-        <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
+        <el-table-column label="A相最大功率(kW)" align="center" prop="l1MaxValue" width="110px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}
+              {{ scope.row.l1MaxValue }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
-        <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
+        <el-table-column label="发生时间" align="center" prop="l1MaxValueTime" />
+        <el-table-column label="B相最大功率(kW)" align="center" prop="l2MaxValue" width="110px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l2MaxPow }}
+              {{ scope.row.l2MaxValue }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
-        <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
+        <el-table-column label="发生时间" align="center" prop="l2MaxValueTime" />
+        <el-table-column label="C相最大功率(kW)" align="center" prop="l3MaxValue" width="110px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l3MaxPow }}
+              {{ scope.row.l3MaxValue }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
+        <el-table-column label="发生时间" align="center" prop="l3MaxValueTime" />
         <el-table-column label="操作" align="center" width="135px">
           <template #default="scope">
             <el-button
@@ -227,17 +236,111 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-table v-show="switchValue == 1 && visMode == 2 && list.length > 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="180px">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="180px" />
+        <el-table-column label="输出位1最大视在功率(kVA)" align="center" prop="l1MaxValueb" width="110px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxValueb }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l1MaxValueTimeb" />
+        <el-table-column label="输出位2最大视在功率(kVA)" align="center" prop="l2MaxValueb" width="110px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l2MaxValueb }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l2MaxValueTimeb" />
+        <el-table-column label="输出位3最大视在功率(kVA)" align="center" prop="l3MaxValueb" width="110px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l3MaxValueb }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l3MaxValueTimeb" />
+        <el-table-column label="操作" align="center" width="135px">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="queryParams.lineType = 1;openDetail(scope.row)"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.boxId)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div  v-show="switchValue == 0 && visMode == 2 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content" style="width: 100%">
+            <div class="info" style="margin-left:10px;width: 100%">
+              <div style="width: 100%;display: flex">
+                <div style="width: 20%"></div>
+                <div style="width: 40%">视在功率</div>
+                <div style="width: 40%">有功功率</div>
+              </div>
+              <div style="width: 100%;display: flex">
+                <div style="width: 20%">输出位1</div>
+                <div style="width: 40%">{{item.l1MaxValueb}}kVA</div>
+                <div style="width: 40%">{{item.l1MaxValue}}kW</div>
+              </div>
+              <div v-if="item.l2MaxValueb && item.l2MaxValue" style="width: 100%;display: flex">
+                <div style="width: 20%">输出位2</div>
+                <div style="width: 40%">{{item.l2MaxValueb}}kVA</div>
+                <div style="width: 40%">{{item.l2MaxValue}}kW</div>
+              </div>
+              <div v-if="item.l3MaxValueb && item.l3MaxValue" style="width: 100%;display: flex">
+                <div style="width: 20%">输出位3</div>
+                <div style="width: 40%">{{item.l3MaxValueb}}kVA</div>
+                <div style="width: 40%">{{item.l3MaxValue}}kW</div>
+              </div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
+          <div class="status" style="margin-right:-10px;">
+            <el-tag>输出位功率</el-tag>
+          </div>           
+          <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
+        </div>
+      </div>
+
       <div  v-show="switchValue == 0 && visMode == 1 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info" style="margin-left:10px;font-size: 15px;">
-              <div >A相：{{item.l1MaxPow}}kW</div>
-              <div >B相：{{item.l2MaxPow}}kW</div>
-              <div >C相：{{ item.l3MaxPow }}kW</div>
+              <div >A相：{{item.l1MaxValue}}kW</div>
+              <div >B相：{{item.l2MaxValue}}kW</div>
+              <div >C相：{{ item.l3MaxValue }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxValue,L2:item.l2MaxValue,L3:item.l3MaxValue}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
           <div class="status" style="margin-right:-20px;">
@@ -254,12 +357,12 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info" style="margin-left:10px;font-size: 15px;">
-              <div >A相：{{item.l1MaxCur}}A</div>
-              <div >B相：{{item.l2MaxCur}}A</div>
-              <div >C相：{{ item.l3MaxCur }}A</div>
+              <div >A相：{{item.l1MaxValue}}A</div>
+              <div >B相：{{item.l2MaxValue}}A</div>
+              <div >C相：{{ item.l3MaxValue }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxValue,L2:item.l2MaxValue,L3:item.l3MaxValue}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
           <div class="status" style="margin-right:-20px;">
@@ -290,7 +393,7 @@
             <span style="margin-right:10px;">结果所在位置：{{ location }}</span>
             <span>时间段: {{ queryParams.oldTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ queryParams.newTime }}</span>
           </div>
-          <div style="display: flex; gap: 10px;margin-right:30px;"> <!-- 子div用于包含按钮，并设置按钮之间的间距 -->
+          <div v-if="visMode != 2" style="display: flex; gap: 10px;margin-right:30px;"> <!-- 子div用于包含按钮，并设置按钮之间的间距 -->
             <el-button
               @click="switchChartOrTable = 0"
               :type="switchChartOrTable == 0 ? 'primary' : ''"
@@ -344,7 +447,7 @@ const startTime = ref() as any;
 const endTime = ref() as any;
 const location = ref();
 const roomName = ref();
-const visMode = ref(0);
+const visMode = ref(2);
 const requirementLine = ref([]) as any;
 const detailVis = ref(false);
 const now = ref()
@@ -429,11 +532,20 @@ const statusList = reactive([
 
 
 const visModeShow = (flag) => {
-  if(flag == 0){
-    visMode.value =0;
+  if(flag == 0) {
+    visMode.value = 0;
+    queryParams.boxType = 1
+    getList()
     getListAll(flag);
-  }else{
+  } else if(flag == 1) {
     visMode.value =1;
+    queryParams.boxType = 2
+    getList()
+    getListAll(flag);
+  } else if(flag == 2) {
+    visMode.value =2;
+    queryParams.boxType = 3
+    getList()
     getListAll(flag);
   }
 }
@@ -603,6 +715,7 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
+  boxType: 3,
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
 }) as any
@@ -620,18 +733,31 @@ const getList = async () => {
     var tableIndex = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      obj.l1MaxCur = obj.l1MaxCur?.toFixed(2);
-      obj.l1MaxVol = obj.l1MaxVol?.toFixed(2);
-      obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
-      obj.l2MaxCur = obj.l2MaxCur?.toFixed(2);
-      obj.l2MaxVol = obj.l2MaxVol?.toFixed(2);
-      obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
-      obj.l3MaxCur = obj.l3MaxCur?.toFixed(2);
-      obj.l3MaxVol = obj.l3MaxVol?.toFixed(2);
-      obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
-      obj.l1MaxCurTime = obj.l1MaxCurTime?.slice(0,16);
-      obj.l2MaxCurTime = obj.l2MaxCurTime?.slice(0,16);
-      obj.l3MaxCurTime = obj.l3MaxCurTime?.slice(0,16);
+      if(visMode.value == 0) {
+        obj.l1MaxValue = obj.l1MaxValue?.toFixed(2);
+        obj.l2MaxValue = obj.l2MaxValue?.toFixed(2);
+        obj.l3MaxValue = obj.l3MaxValue?.toFixed(2);
+      } else if(visMode.value == 1) {
+        obj.l1MaxValue = obj.l1MaxValue?.toFixed(3);
+        obj.l2MaxValue = obj.l2MaxValue?.toFixed(3);
+        obj.l3MaxValue = obj.l3MaxValue?.toFixed(3);
+      } else if(visMode.value == 2) {
+        obj.l1MaxValue = obj.l1MaxValue?.toFixed(3);
+        obj.l2MaxValue = obj.l2MaxValue?.toFixed(3);
+        obj.l3MaxValue = obj.l3MaxValue?.toFixed(3);
+
+        obj.l1MaxValueb = obj.l1MaxValueb?.toFixed(3);
+        obj.l2MaxValueb = obj.l2MaxValueb?.toFixed(3);
+        obj.l3MaxValueb = obj.l3MaxValueb?.toFixed(3);
+
+        obj.l1MaxValueTimeb = obj.l1MaxValueTimeb?.slice(0,16);
+        obj.l2MaxValueTimeb = obj.l2MaxValueTimeb?.slice(0,16);
+        obj.l3MaxValueTimeb = obj.l3MaxValueTimeb?.slice(0,16);
+      }
+      
+      obj.l1MaxValueTime = obj.l1MaxValueTime?.slice(0,16);
+      obj.l2MaxValueTime = obj.l2MaxValueTime?.slice(0,16);
+      obj.l3MaxValueTime = obj.l3MaxValueTime?.slice(0,16);
     });
 
     total.value = data.total

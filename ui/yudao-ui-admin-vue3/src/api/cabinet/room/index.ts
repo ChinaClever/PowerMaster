@@ -94,6 +94,11 @@ getRoomAddrList: async (params: any) => {
 //获取楼层的所有机房
 getAddrAllRoomList: async (params: any) => {
   return await request.post({ url: `/room/roomList`, params })
+},
+
+//获取所有机房
+getRoomAddrListAll: async (params: any) => {
+  return await request.get({ url: `/room/getRoomAddrListAll`, params })
 }
 
 
