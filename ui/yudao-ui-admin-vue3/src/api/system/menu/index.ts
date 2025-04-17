@@ -47,3 +47,10 @@ export const updateMenu = (data: MenuVO) => {
 export const deleteMenu = (id: number) => {
   return request.delete({ url: '/system/menu/delete?id=' + id })
 }
+
+
+//系统初始化
+export const getSystemInit = () => {
+  return request.post({ url: '/system/init' })
+}
+

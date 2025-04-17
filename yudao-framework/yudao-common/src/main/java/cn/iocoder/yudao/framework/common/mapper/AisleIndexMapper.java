@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndexVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,4 +24,7 @@ public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
 
     //柜列删除
     Integer roomAisleDeleteById(@Param("aisleId") int id);
+
+    @Delete("DELETE FROM aisle_index")
+    void initaisleData();
 }

@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.vo.RackStatisticsResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,4 +25,7 @@ public interface RackIndexDoMapper extends BaseMapper<RackIndex> {
     List<RackIndexRoomVO> selectQueryPage(@Param("ipArray") String[] ipArray);
 
     RackStatisticsResVO getRackStatistics();
+
+    @Delete("DELETE FROM rack_index")
+    void initrackData();
 }

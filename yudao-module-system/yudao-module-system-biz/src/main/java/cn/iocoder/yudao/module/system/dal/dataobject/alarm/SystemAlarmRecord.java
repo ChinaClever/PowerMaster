@@ -15,7 +15,7 @@ import java.util.Date;
  * @date 2024/6/12 10:21
  */
 @Data
-@TableName(value = "sys_alarm_record")
+@TableName(value = "alarm_log_record")
 public class SystemAlarmRecord implements Serializable {
 
 

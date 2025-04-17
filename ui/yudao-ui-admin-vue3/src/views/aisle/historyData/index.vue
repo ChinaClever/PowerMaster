@@ -23,7 +23,7 @@
         </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">总数据 :</span>
+            <span class="label">最近数据 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
           <div style="text-align: center">

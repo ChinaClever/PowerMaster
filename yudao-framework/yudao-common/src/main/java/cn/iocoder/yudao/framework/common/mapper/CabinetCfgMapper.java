@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -56,4 +57,7 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
     void updateBatchByCabinetId(@Param("cabinetList") List<CabinetVo> cabinetList);
 
     List<RoomCabinetDTO> roomCabinetListByIds(@Param("roomIds") List<Integer> roomIds);
+
+    @Delete("DELETE FROM cabinet_cfg")
+    void initCabineCfgData();
 }

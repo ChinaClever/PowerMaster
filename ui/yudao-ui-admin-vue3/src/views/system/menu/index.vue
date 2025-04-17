@@ -44,6 +44,12 @@
           <Icon class="mr-5px" icon="ep:refresh" />
           重置
         </el-button>
+
+        <el-button plain type="danger" @click="systemInit">
+          <Icon class="mr-5px" icon="ep:refresh" />
+          初始化
+        </el-button>
+
         <el-button
           v-hasPermi="['system:menu:create']"
           plain
@@ -195,6 +201,13 @@ const refreshMenu = async () => {
   } catch {}
 }
 
+const systemInit = async () =>{
+  await message.initConfirm();
+  await MenuApi.getSystemInit();
+  message.success("初始化成功!");
+}
+
+
 /** 删除按钮操作 */
 const handleDelete = async (id: number) => {
   try {
@@ -207,6 +220,7 @@ const handleDelete = async (id: number) => {
     await getList()
   } catch {}
 }
+
 
 /** 初始化 **/
 onMounted(() => {

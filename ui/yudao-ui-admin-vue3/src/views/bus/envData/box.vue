@@ -11,6 +11,10 @@
             </el-descriptions>
           </div> -->
           <div class="descriptions-container" style="font-size: 14px;">
+            <div ><span>全部始端箱新增环境记录</span>
+            
+            </div>
+            <div class="line" style="margin-top: 10px;"></div>
             <div class="description-item">
                 <span class="label">最近一周 :</span>
                 <span class="value">{{ lastWeekTotalData }}条</span>
@@ -23,9 +27,7 @@
                 <span class="label">最近一小时 :</span>
                 <span class="value">{{ lastHourTotalData }}条</span>
             </div>
-            <div ><span>全部始端箱新增环境记录</span>
-              <div class="line" style="margin-top: 10px;"></div>
-            </div>
+            <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
     </template>
