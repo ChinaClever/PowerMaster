@@ -139,4 +139,19 @@
             </foreach>
         </where>
     </select>
+    <select id="deviceStatistics" resultType="cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO">
+        select
+        count(id) as busNum,
+        count(case when run_status != 0 then 1 end) as busOnLine,
+        count(case when run_status = 2 then 1 end) as busInform,
+        count(case when run_status = 0 then 1 end) as busOffLine
+        from bus_index
+        <where>
+            is_deleted = 0
+            and bus_key in
+            <foreach collection="busKeys" item="key" separator="," open="(" close=")">
+                #{key}
+            </foreach>
+        </where>
+    </select>
 </mapper>

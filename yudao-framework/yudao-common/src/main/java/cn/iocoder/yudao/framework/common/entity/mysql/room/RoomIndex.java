@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -69,18 +70,30 @@ public class RoomIndex implements Serializable {
     @Schema(description = "空调额定功率", example = "0")
     private float airPower;
 
+    @Schema(description = "面积类型：0-地砖 1-面积")
+    private Boolean areaFlag;
+
 
     /**
      * 机房x长度(单位机柜)
      */
     @JsonProperty(value="xLength")
+    @TableField(value = "x_length")
     private int xLength;
 
     /**
      * 机房Y长度(单位机柜)
      */
     @JsonProperty(value="yLength")
+    @TableField(value = "y_length")
     private int yLength;
+
+    @TableField(value = "area_x_length")
+    private BigDecimal areaxLength;
+
+    @TableField(value = "area_y_length")
+    private BigDecimal areayLength;
+
     /**
      * 更新时间
      */

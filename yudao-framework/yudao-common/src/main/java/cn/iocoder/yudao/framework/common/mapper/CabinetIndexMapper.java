@@ -3,6 +3,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.vo.*;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -51,4 +52,10 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
 
     @Delete("DELETE FROM cabinet_index")
     void initCabinetData();
+
+    DeviceStatisticsVO deviceStatistics(Integer roomId);
+
+    List<CabinetPdu> getFindCabinetPduList(Integer roomId);
+
+    List<CabinetPdu> getFindCabinetBoxList(Integer roomId);
 }

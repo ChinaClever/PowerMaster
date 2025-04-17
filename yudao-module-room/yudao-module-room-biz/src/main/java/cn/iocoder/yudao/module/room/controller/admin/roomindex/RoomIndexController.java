@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomIndexChartDetailDTO;
@@ -135,8 +136,8 @@ public class RoomIndexController {
      */
     @Operation(summary = "机房用能趋势")
     @GetMapping("/eleTrend")
-    public CommonResult<List<RoomEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
-        List<RoomEqTrendDTO> dto = indexService.eqTrend(id, type);
+    public CommonResult<List<RoomEqTrendVO>> eleTrend(@Param("id") int id, @Param("type") String type) {
+        List<RoomEqTrendVO> dto = indexService.eqTrend(id, type);
         return success(dto);
     }
 
@@ -196,4 +197,10 @@ public class RoomIndexController {
         return success(indexService.getChartDetail(detailDTO));
     }
 
+    @Operation(summary = "机房设备数据")
+    @GetMapping("/deviceStatistics")
+    public CommonResult<DeviceStatisticsVO> deviceStatistics(@RequestParam(value = "roomId", required = true) @Parameter(description = "机房id") Integer roomId) {
+        DeviceStatisticsVO vo = indexService.deviceStatistics(roomId);
+        return success(vo);
+    }
 }

@@ -1288,7 +1288,6 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             if (type.equals(DAY)) {
                 list.addAll(dayTrend(id));
             }
-
             //当周
             if (type.equals(WEEK)) {
                 list.addAll(weekTrend(id));
