@@ -133,7 +133,7 @@ public interface BoxIndexService {
 
     Map getAvgBoxHdaLineForm(BoxIndexPageReqVO pageReqVO) throws IOException;
 
-    LineBoxMaxResVO getBoxLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
+    LineBoxMaxResVO getBoxLineMax(BoxIndexPageReqVO pageReqVO) throws IOException;
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
 

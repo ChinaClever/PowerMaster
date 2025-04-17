@@ -14,7 +14,7 @@ import java.io.Serializable;
  * @date 2024/4/17 14:05
  */
 @Data
-@TableName(value = "pdu_statis_config")
+@TableName(value = "pdu_cron_config")
 public class PduStatisConfig  implements Serializable {
     private static final long serialVersionUID = 1L;
 

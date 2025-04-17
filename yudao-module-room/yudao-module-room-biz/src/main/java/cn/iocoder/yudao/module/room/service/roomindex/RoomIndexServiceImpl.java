@@ -28,6 +28,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -607,11 +608,15 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 RoomActivePowTrendDTO dto = new RoomActivePowTrendDTO();
                 dto.setDateTime(oldDay);
                 dto.setActivePow("0");
+                dto.setActivePowMax("0");
+                dto.setActivePowMin("0");
                 yesterdayList.add(dto);
                 RoomActivePowTrendDTO dto1 = new RoomActivePowTrendDTO();
                 String nowDay = LocalDateTimeUtil.format(LocalDateTime.of(now, LocalTime.of(i, 0, 0)), "yyyy-MM-dd HH:mm");
                 dto1.setDateTime(nowDay);
                 dto1.setActivePow("");
+                dto1.setActivePowMax("");
+                dto1.setActivePowMin("");
                 todayList.add(dto1);
             }
             //获取昨日数据
@@ -622,7 +627,11 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
                 RoomActivePowTrendDTO dto = yesterdayMap.get(dateTime);
                 if (Objects.nonNull(dto)) {
-                    dto.setActivePow(String.valueOf(hourDo.getActiveTotalAvgValue()));
+                    dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalAvgValue(), 3)));
+                    dto.setActivePowMax(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalMaxValue(), 3)));
+                    dto.setActivePowMin(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalMinValue(), 3)));
+                    dto.setActivePowMaxTime(hourDo.getActiveTotalMaxTime());
+                    dto.setActivePowMinTime(hourDo.getActiveTotalMinTime());
                 }
             });
             startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
@@ -635,18 +644,23 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH:mm");
                 RoomActivePowTrendDTO dto = todayListMap.get(dateTime);
                 if (Objects.nonNull(dto)) {
-                    dto.setActivePow(String.valueOf(hourDo.getActiveTotalAvgValue()));
+//                    dto.setActivePow(String.valueOf(hourDo.getActiveTotalMaxValue()));
+                    dto.setActivePow(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalAvgValue(), 3)));
+                    dto.setActivePowMax(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalMaxValue(), 3)));
+                    dto.setActivePowMin(String.valueOf(BigDemicalUtil.setScale(hourDo.getActiveTotalMinValue(), 3)));
+                    dto.setActivePowMaxTime(hourDo.getActiveTotalMaxTime());
+                    dto.setActivePowMinTime(hourDo.getActiveTotalMinTime());
                 }
             });
             powDTO.setYesterdayList(yesterdayList);
             powDTO.setTodayList(todayList);
             //获取峰值
-            RoomActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePow)).orElse(new RoomActivePowTrendDTO());
-            RoomActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePow)).orElse(new RoomActivePowTrendDTO());
-            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
-            powDTO.setTodayMaxTime(todayMax.getDateTime());
-            powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
+            RoomActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePowMax)).orElse(new RoomActivePowTrendDTO());
+            RoomActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePowMax)).orElse(new RoomActivePowTrendDTO());
+            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePowMax()));
+            powDTO.setTodayMaxTime(DateFormatUtils.format(todayMax.getActivePowMaxTime(),"yyyy-MM-dd HH:mm"));
+            powDTO.setYesterdayMaxTime(DateFormatUtils.format(yesterdayMax.getActivePowMaxTime(),"yyyy-MM-dd HH:mm"));
+            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePowMax()));
             return powDTO;
         } catch (Exception e) {
             log.error("获取数据失败： ", e);

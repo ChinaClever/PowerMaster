@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
@@ -243,5 +244,12 @@ public class RoomController {
                                                                     @RequestParam(value = "roomName", required = false) @Parameter(description = "机房名称") String roomName) {
         List<RoomIndexAddrResVO> roomIndexAddrResVO = roomService.getRoomList(addr, roomName);
         return success(roomIndexAddrResVO);
+    }
+
+    @Operation(summary = "机房监测All")
+    @GetMapping("/getRoomAddrListAll")
+    public CommonResult<Map<String,List<RoomIndexAddrResVO>>> getRoomAddrListAll(@RequestParam(value = "addr", required = false) @Parameter(description = "地址（楼层）") String addr,
+                                                                                 @RequestParam(value = "roomName", required = false) @Parameter(description = "机房名称") String roomName) {
+        return success(roomService.getRoomAddrListAll(addr, roomName));
     }
 }

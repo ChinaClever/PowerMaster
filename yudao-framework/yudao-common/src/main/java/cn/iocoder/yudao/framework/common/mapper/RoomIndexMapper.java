@@ -9,6 +9,7 @@ import cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -35,4 +36,7 @@ public interface RoomIndexMapper extends BaseMapper<RoomIndex> {
     RoomIndexCfgVO findRoomIndexCfg(@Param("id")int id);
 
     Integer selectRoomByName(@Param("name") String name);
+
+    @Delete("DELETE FROM room_index")
+    void initRoomData();
 }

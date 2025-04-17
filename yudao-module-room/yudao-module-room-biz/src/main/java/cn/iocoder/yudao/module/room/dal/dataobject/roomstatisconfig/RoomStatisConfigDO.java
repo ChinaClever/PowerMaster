@@ -12,8 +12,8 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
  *
  * @author clever
  */
-@TableName("room_statis_config")
-@KeySequence("room_statis_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
+@TableName("room_cron_config")
+@KeySequence("room_cron_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @ToString(callSuper = true)
 @Builder

@@ -77,9 +77,18 @@
             <el-col :xl="6" :lg="6" :md="24" :sm="24" :xs="24">
               <el-card shadow="hover">
                 <el-skeleton :loading="loading" animated>
-                  <div class="w-full h-210px flex" style="flex-direction: column; align-items: center;justify-content: center;">
+                  <!-- <div class="w-full h-210px flex" style="flex-direction: column; align-items: center;justify-content: center;">
                     <div>总用电量</div>
                     <div>{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(2) : '0.00'}}kW·h</div>
+                  </div> -->
+                  <div class="w-full h-210px flex" style="flex-direction: column; align-items: center;justify-content: center;position: relative;">
+                    <el-progress type="dashboard" :percentage="eqInfo[powBtns[prePowBtn].totalParam]/eqInfo[oldPowList[prePowBtn]]*100" width="200">
+                      <span v-if="eqInfo[powBtns[prePowBtn].totalParam] > 1000" class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? (eqInfo[powBtns[prePowBtn].totalParam]/1000).toFixed(2) : '0.00'}}</span>
+                      <span v-else class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(2) : '0.00'}}</span>
+                      <span class="percentage-label">总用电量</span>
+                      <!-- <span class="percentage-unit">kW·h</span> -->
+                    </el-progress>
+                    <div style="position: absolute;right: 0;top:0;font-size: 12px">单位:{{eqInfo[powBtns[prePowBtn].totalParam]>1000 ? 'MW·h' : 'kW·h'}}</div>
                   </div>
                 </el-skeleton>
               </el-card>
@@ -101,23 +110,18 @@
       <el-card shadow="never" class="mb-8px">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>实时功率</span>
+            <span>告警统计</span>
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
           <el-row class="flex justify-between">
             <el-col :span="10" class="flex justify-center">
-              <el-progress type="circle" :percentage="100">
-                <template #default>
-                  <div class="percentage-value text-28px mt-12px">1.5</div>
-                  <div class="percentage-label text-12px mt-12px">PUE</div>
-                </template>
-              </el-progress>
+              <Echart :height="130" :width="130" :options="alarmChartOptions" />
             </el-col>
             <el-col :span="12" class="flex flex-col justify-evenly">
-              <div>总有功功率：{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
-              <div>总无功功率：{{powInfo.totalPowReactive ? powInfo.totalPowReactive.toFixed(3) : '0.000'}}kVar</div>
-              <div>总视在功率：{{powInfo.totalPowApparent ? powInfo.totalPowApparent.toFixed(3) : '0.000'}}kVA</div>
+              <div><span class="bullet" style="background-color:#C8603A;"></span>未处理告警数目：{{alarmInfo.untreated}}</div>
+              <div><span class="bullet" style="background-color:#E5B849;"></span>已挂起告警数目：{{alarmInfo.hung}}</div>
+              <div><span class="bullet" style="background-color:#AD3762;"></span>已确认告警数目：{{alarmInfo.confirm}}</div>
             </el-col>
           </el-row>
         </el-skeleton>
@@ -125,23 +129,23 @@
       <el-card shadow="never" class="mb-8px">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>告警统计</span>
+            <span>实时功率</span>
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
           <el-row class="flex justify-between">
             <el-col :span="10" class="flex justify-center">
-              <el-progress type="circle" :percentage="100">
-                <template #default>
-                  <div class="percentage-value text-28px mt-12px">{{alarmInfo.total}}</div>
-                  <div class="percentage-label text-12px mt-12px">告警数量</div>
-                </template>
-              </el-progress>
+              <Echart :height="130" :width="130" :options="powChartOptions" />
             </el-col>
-            <el-col :span="12" class="flex flex-col justify-evenly">
-              <div>未处理告警数目：{{alarmInfo.untreated}}</div>
-              <div>已挂起告警数目：{{alarmInfo.hung}}</div>
-              <div>已确认告警数目：{{alarmInfo.confirm}}</div>
+            <el-col v-if="powInfo.totalPowActive > 1000 || powInfo.totalPowReactive > 1000 || powInfo.totalPowApparent > 1000" :span="12" class="flex flex-col justify-evenly">
+              <div><span class="bullet" style="background-color:#E5B849;"></span>总有功功率：{{powInfo.totalPowActive ? (powInfo.totalPowActive/1000).toFixed(1) : '0.0'}}MW</div>
+              <div><span class="bullet" style="background-color:#C8603A;"></span>总无功功率：{{powInfo.totalPowReactive ? (powInfo.totalPowReactive/1000).toFixed(1) : '0.0'}}MVar</div>
+              <div><span class="bullet" style="background-color:#AD3762;"></span>总视在功率：{{powInfo.totalPowApparent ? (powInfo.totalPowApparent/1000).toFixed(1) : '0.0'}}MVA</div>
+            </el-col>
+            <el-col v-else :span="12" class="flex flex-col justify-evenly">
+              <div><span class="bullet" style="background-color:#E5B849;"></span>总有功功率：{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(1) : '0.0'}}kW</div>
+              <div><span class="bullet" style="background-color:#C8603A;"></span>总无功功率：{{powInfo.totalPowReactive ? powInfo.totalPowReactive.toFixed(1) : '0.0'}}kVar</div>
+              <div><span class="bullet" style="background-color:#AD3762;"></span>总视在功率：{{powInfo.totalPowApparent ? powInfo.totalPowApparent.toFixed(1) : '0.0'}}kVA</div>
             </el-col>
           </el-row>
         </el-skeleton>
@@ -154,14 +158,7 @@
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
-          <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
-            <el-table :data="tableData" style="width: 100%" border class="text-12px">
-              <el-table-column prop="name" label=""  class="name-column"/>
-              <el-table-column prop="all" label="总数" class="numeric-column"/>
-              <el-table-column prop="on" label="在线" class="numeric-column"/>
-              <el-table-column prop="off" label="离线" class="numeric-column"/>
-            </el-table>
-          </div>
+            <Echart :height="200" :options="numChartOptions" />
         </el-skeleton>
       </el-card>
       <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===true">
@@ -219,7 +216,6 @@ const powOptionsData = reactive<EChartsOption>({}) as EChartsOption
 const powOptionsDataOne = reactive<EChartsOption>({}) as EChartsOption
 const devInfo = reactive({}) // 设备信息
 const powInfo = reactive({}) // 功率数据信息
-const powCopyInfo = reactive({})
 const eqInfo = reactive<any>({}) // 用能信息
 const alarmInfo = reactive({}) // 警告信息
 const tableData = ref([]) 
@@ -257,6 +253,101 @@ const powBtns = [ // 功率 当天/当月等切换
     totalParam: 'lastMonthEqTotal',
   },
 ]
+const oldPowList = ['yesterdayEqTotal','oldYesterdayEqTotal','oldLastWeekEqTotal','oldLastMonthEqTotal']
+const powChartOptions = ref({
+  tooltip: {
+    trigger: 'item',
+    formatter: function (param) {
+      let result = ''
+      result += param.name + ':' + param.value;
+      if (param.name === '总视在功率') {
+        result += 'kVA';
+      } else if(param.name === '总有功功率') {
+        result += 'kW'
+      } else if(param.name === '总无功功率') {
+        result += 'kVar'
+      }
+      
+      return result.trimEnd(); // 去除末尾多余的换行符
+    },
+    confine: true
+  },
+  series: [
+    {
+      type: 'pie',
+      radius: ['50%', '90%'],
+      label: {
+        show: false,
+      },
+      data: [
+        { value: 0, name: '总有功功率', itemStyle: { color: '#E5B849' } },
+        { value: 0, name: '总无功功率', itemStyle: { color: '#C8603A' } },
+        { value: 0, name: '总视在功率', itemStyle: { color: '#AD3762' } },
+      ]
+    }
+  ]
+});
+
+const alarmChartOptions = ref({
+  tooltip: {
+    trigger: 'item',
+    formatter: '{b} : {c}',
+    confine: true
+  },
+  series: [
+    {
+      type: 'pie',
+      radius: '90%',
+      label: {
+        show: true,
+        position: 'inside', // 将标签显示在饼图内部
+        formatter: (params) => {
+          return `${params.value}`;
+        },
+        fontSize: 14,
+        color: '#fff',
+        fontWeight: 'bold'
+      },
+      data: [
+        { value: 0, name: '已确认', itemStyle: { color: '#E5B849' } },
+        { value: 0, name: '未处理', itemStyle: { color: '#C8603A' } },
+        { value: 0, name: '已挂起', itemStyle: { color: '#AD3762' } },
+      ]
+    }
+  ]
+});
+
+const numChartOptions = ref({
+  title: { text: ''},
+  tooltip: { trigger: 'item',
+    formatter: '{b} : {c}',
+    confine: true},
+  grid: {
+    bottom: 20
+  },
+  legend: {
+    data: ['PDU', '始端箱','插接箱'], // 图例项
+  },
+  xAxis: {
+    type: 'category',nameLocation: 'end',
+    data:['总数','在线','离线']
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: [
+    {
+      name: '平均温度',
+      type: 'bar',
+      data: [40,20,30],
+    },
+    {
+      name: '最高温度',
+      type: 'bar',
+      data: [10,30,20],
+    }
+  ]
+})
 
 // 获取机房主页面曲线数据
 const getRoomEchartData = async() => {
@@ -470,187 +561,21 @@ const getHomeDevData = async() => {
 const getHomePowData = async() => {
   const res =  await MachineHomeApi.getHomePowData({})
   Object.assign(powInfo, res)
-  Object.assign(powCopyInfo, res)
-
-  // const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
-  //   ...item, // 复制对象的所有属性
-  //   name: item.name + '1' // 修改name属性，在后面加上'*'号
-  // }))
-
-  powInfo.roomDataList = [...powInfo.roomDataList] //添加了模拟数据
-
-
+  powChartOptions.value.series = [
+    {
+      type: 'pie',
+      radius: ['50%', '90%'],
+      label: {
+        show: false,
+      },
+      data: [
+        { value: powInfo.totalPowActive, name: '总有功功率', itemStyle: { color: '#E5B849' } },
+        { value: powInfo.totalPowReactive, name: '总无功功率', itemStyle: { color: '#C8603A' } },
+        { value: powInfo.totalPowApparent, name: '总视在功率', itemStyle: { color: '#AD3762' } },
+      ]
+    }
+  ]
   
-  Object.assign(powOptionsData, {
-    grid: {
-      left: 50,
-      right: 20,
-      bottom: 20
-    },
-    legend: {
-      right: 10,
-      selectedMode: 'single'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      },
-      formatter: function (params) {
-        console.log('params', params)
-        let result = '';
-        params.forEach(function (item) {
-          // item 是每一个系列的数据
-          const seriesName = item.seriesName; // 系列名称
-          const value = item.value; // 数据值
-          const marker = item.marker; // 标志图形
-          let unit = ''
-          if (seriesName == '有功功率') {
-            unit = 'kW'
-          } else if (seriesName == '无功功率') {
-            unit = 'kVar'
-          } else if (seriesName == '视在功率') {
-            unit = 'kVA'
-          }
-          result += `${marker}${seriesName}: ${value}${unit}<br/>`;
-        });
-        return result;
-      }
-    },
-    xAxis: {
-      type: 'category',
-      data: powInfo.roomDataList.map(item => item.roomName)
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        name: '有功功率',
-        data: powInfo.roomDataList.map(item => item.powActive),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}kW', // 显示数据值
-        },
-      },
-      {
-        name: '无功功率',
-        data: powInfo.roomDataList.map(item => item.powReactive),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}kVar', // 显示数据值
-        },
-      },
-      {
-        name: '视在功率',
-        data: powInfo.roomDataList.map(item => item.powApparent),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}kVA', // 显示数据值
-        },
-      },
-      {
-        name: '功率因数',
-        data: powInfo.roomDataList.map(item => item.powerFactor),
-        type: 'bar',
-        label: {
-          show: true,
-          position: 'top', // 顶部显示
-          formatter: '{c}', // 显示数据值
-        },
-      },
-    ]
-  })
-  // Object.assign(powOptionsDataOne, {
-  //   grid: {
-  //     left: 50,
-  //     right: 20,
-  //     bottom: 20
-  //   },
-  //   legend: {
-  //     right: 10,
-  //     selectedMode: 'single'
-  //   },
-  //   tooltip: {
-  //     trigger: 'axis',
-  //     axisPointer: {
-  //       type: 'shadow'
-  //     },
-  //     formatter: function (params) {
-  //       console.log('params', params)
-  //       let result = '';
-  //       params.forEach(function (item) {
-  //         // item 是每一个系列的数据
-  //         const seriesName = item.seriesName; // 系列名称
-  //         const value = item.value; // 数据值
-  //         const marker = item.marker; // 标志图形
-  //         let unit = ''
-  //         if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
-  //           unit = '℃'
-  //         }
-  //         result += `${marker}${seriesName}: ${value}${unit}<br/>`;
-  //       });
-  //       return result;
-  //     }
-  //   },
-  //   xAxis: {
-  //     type: 'category',
-  //     data: powInfo.roomDataList.map(item => item.name)
-  //   },
-  //   yAxis: {
-  //     type: 'value',
-  //   },
-    
-
-  //   series: [
-  //     {
-  //       name: '最低温度',
-  //       data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
-  //       type: 'bar',
-  //       label: {
-  //         show: true,
-  //         position: 'top', // 顶部显示
-  //         formatter: '{c}℃', // 显示数据值
-  //       },
-  //     },
-  //     {
-  //       name: '平均温度',
-  //       data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
-  //       type: 'bar',
-  //       label: {
-  //         show: true,
-  //         position: 'top', // 顶部显示
-  //         formatter: '{c}℃', // 显示数据值
-  //       },
-  //     },
-  //     {
-  //       name: '最高温度',
-  //       data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
-  //       type: 'bar',
-  //       label: {
-  //         show: true,
-  //         position: 'top', // 顶部显示
-  //         formatter: '{c}℃', // 显示数据值
-  //       },
-  //     },
-  //     {
-  //       name: '目前温度',
-  //       data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
-  //       type: 'bar',
-  //       label: {
-  //         show: true,
-  //         position: 'top', // 顶部显示
-  //         formatter: '{c}℃', // 显示数据值
-  //       },
-  //     },
-  //   ]
-  // })
   console.log('获取主页面功率数据', res)
 }
 // 获取主页面用能
@@ -676,7 +601,8 @@ const getHomeEqData = async() => {
     grid: {
       left: 30,
       right: 20,
-      bottom: 20
+      bottom: 20,
+      containLabel: true
     },
     tooltip: {
       trigger: 'axis',
@@ -716,6 +642,7 @@ const getHomeEqData = async() => {
         name: '当天',
         data: res.roomEqList ? res.roomEqList.map(item => item.todayEq ? item.todayEq.toFixed(2) : '0.00') : [],
         type: 'bar',
+        barWidth: 30, // 固定柱宽为 30 像素
         label: {
           show: true,
           position: 'top', // 顶部显示
@@ -730,6 +657,27 @@ const getHomeEqData = async() => {
 const getHomeAlarmData = async() => {
   const res =  await MachineHomeApi.getHomeAlarmData({})
   Object.assign(alarmInfo, res)
+  alarmChartOptions.value.series = [
+    {
+      type: 'pie',
+      radius: '90%',
+      label: {
+        show: true,
+        position: 'inside', // 将标签显示在饼图内部
+        formatter: (params) => {
+          return `${params.value}`;
+        },
+        fontSize: 14,
+        color: '#fff',
+        fontWeight: 'bold'
+      },
+      data: [
+        { value: alarmInfo.confirm, name: '已确认', itemStyle: { color: '#E5B849' } },
+        { value: alarmInfo.untreated, name: '未处理', itemStyle: { color: '#C8603A' } },
+        { value: alarmInfo.hung, name: '已挂起', itemStyle: { color: '#AD3762' } },
+      ]
+    }
+  ]
   console.log('获取未处理告警数量', res)
 }
 
@@ -739,6 +687,7 @@ const switchPowBtn = (index) => {
     name: powBtns[index].name,
     data: eqInfo.roomEqList ? eqInfo.roomEqList.map(item => item[powBtns[index].param] ? item[powBtns[index].param].toFixed(2) : '0.00') : [],
     type: 'bar',
+    barWidth: 30, // 固定柱宽为 30 像素
     label: {
       show: true,
       position: 'top', // 顶部显示
@@ -753,7 +702,7 @@ const switchPowBtn = (index) => {
 const getAllApi = async () => {
   await Promise.all([
     getHomeDevData(),
-    // getHomePowData(),
+    getHomePowData(),
     getHomeEqData(),
     getHomeAlarmData()
   ])
@@ -763,7 +712,7 @@ const getAllApi = async () => {
 getAllApi()
 
 const computedEnInfo = computed(() => {
-  if(eqInfo.roomEqList.length > 12){
+  if(eqInfo.roomEqList?.length > 12){
     return {
       overflowX:'auto',
     }
@@ -771,9 +720,9 @@ const computedEnInfo = computed(() => {
 })
 
 const computedEnInfoWidth = computed(() => {
-  let num = Math.floor(eqInfo.roomEqList.length / 12) + 1
+  let num = Math.floor(eqInfo.roomEqList.length / 10) + 1
   num = num * 20 + 45
-  if(eqInfo.roomEqList.length > 12){
+  if(eqInfo.roomEqList.length > 10){
     return {
       width:num+'vw',
     }
@@ -1024,6 +973,14 @@ onUnmounted(() => {
   }
 }
 
+.bullet {
+  display: inline-block;
+  margin-right: 5px;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+}
+
 .centerCope {
   height: 70vh;
   width: 100%;
@@ -1045,6 +1002,21 @@ onUnmounted(() => {
   padding: 5px;
 }
 
+.percentage-value {
+  display: block;
+  margin-top: 10px;
+  font-size: 25px;
+}
+.percentage-label {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+}
+.percentage-unit {
+  display: block;
+  font-size: 10px;
+}
+
 :deep(.CabEchart) {
   width: 100%;
   height: 100%;
@@ -1054,6 +1026,10 @@ onUnmounted(() => {
     box-sizing: border-box;
     padding: 5 20px;
   }
+}
+
+:deep(.el-card__body) {
+  padding: 15px;
 }
 
 </style>

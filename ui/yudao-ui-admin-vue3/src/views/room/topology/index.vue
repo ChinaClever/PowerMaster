@@ -172,11 +172,11 @@
             <template #append>kVA</template>
           </el-input>
         </el-form-item>
-        <el-form-item label="非IT设备总额定功率" label-width="160">
+        <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
           </el-input>
-        </el-form-item>
+        </el-form-item> -->
 
         <div class="double-formitem">
           <el-form-item label="显示选择" label-width="90" style="padding-top: 15px">
@@ -184,7 +184,7 @@
           </el-form-item>
           <el-radio-group v-model="radio" size="large" style="margin-left: 15px;">
             <el-radio-button label="负载率" value="负载率"/>
-            <el-radio-button label="PUE" value="PUE"/>
+            <!-- <el-radio-button label="PUE" value="PUE"/> -->
           </el-radio-group>
         </div>
 
@@ -906,7 +906,7 @@ const openSetting = () => {
     col: updateCfgInfo.value.x_length,
     powerCapacity:updateCfgInfo.value.powerCapacity,
     addr: updateCfgInfo.value.addr,
-    airPower:updateCfgInfo.value.airPower,
+    airPower:updateCfgInfo.value.airPower ? updateCfgInfo.value.airPower : 0,
     displayType: updateCfgInfo.value.displayType ? 1 : 0, //0负载率 1PUE
     displayFlag: updateCfgInfo.value.displayFlag ? 1 : 0,
     eleAlarmDay: updateCfgInfo.value.eleAlarmDay,

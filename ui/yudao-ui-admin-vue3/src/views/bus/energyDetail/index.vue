@@ -126,11 +126,15 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { BusEnergyApi } from '@/api/bus/busenergy'
 import 'echarts/lib/component/dataZoom';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
+import { useRoute } from 'vue-router'
 
-const location = ref(history?.state?.local)
-const busName = ref(history?.state?.busName)
-const devKey = ref(history?.state?.devKey)
-const roomName = ref(history?.state?.roomName)
+const route = useRoute();
+const query = route.query;
+
+const location = ref(query.local)
+const busName = ref(query.busName)
+const devKey = ref(query.devKey)
+const roomName = ref(query.roomName)
 
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
@@ -142,13 +146,13 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  busId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1,
-  devKey : history?.state?.devKey as string | undefined,
+  busId: query.id || 1,
+  cabinetroomId: query.roomId || 1,
+  devKey : query.devKey as string | undefined,
 })
 const queryParamsSearch = reactive({
-  id: history?.state?.busId as number | undefined,
-  devKey : history?.state?.devKey as string | undefined,
+  id: query.busId as number | undefined,
+  devKey : query.devKey as string | undefined,
 })
 const EleChain = reactive({
   todayEq: '',

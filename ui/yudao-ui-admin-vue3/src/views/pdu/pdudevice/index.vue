@@ -257,54 +257,54 @@
       <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
-          <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
-          <div class="content" style="margin-left: 10px;">
-            <div class="info">
-              <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kVA</div>
-              <div >有功功率：{{ formatEQ(item.pow,3) }}kW</div>
-              <div >无功功率：{{ formatEQ(item.reactivePow,3) }}kVar</div>
+            <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
+            <div class="content" style="margin-left: 10px;">
+              <div class="info">
+                <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kVA</div>
+                <div >有功功率：{{ formatEQ(item.pow,3) }}kW</div>
+                <div >无功功率：{{ formatEQ(item.reactivePow,3) }}kVar</div>
+              </div>
+              <div class="icon">
+                <div v-if="item.pf != null">
+                  {{item.pf}}<br/>
+                  <span class="text-pf">PF</span>
+                </div>                    
+              </div>
+              <!-- <div class="info">
+                
+                <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
+                <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div> -->
+                <!-- <div >网络地址：{{ item.devKey }}</div> -->
+                <!-- <div>AB路占比：{{item.fzb}}</div> -->
+              <!-- </div> -->
             </div>
-            <div class="icon">
-              <div v-if="item.pf != null">
-                {{item.pf}}<br/>
-                <span class="text-pf">PF</span>
-              </div>                    
+            <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+            <div class="status">
+              <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
+              <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
+              <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
+
+              <el-popover
+                placement="top-start"
+                title="告警内容"
+                :width="1000"
+                trigger="hover"
+                :content="item.pduAlarm"
+                v-if="item.status == 2"
+              >
+                <template #reference>
+                  <el-tag type="danger">告警</el-tag>
+                </template>
+              </el-popover>
+
+              <el-tag type="danger" v-if="item.status == 4">故障</el-tag>
+              <el-tag type="info" v-if="item.status == 5">离线</el-tag>
             </div>
-            <!-- <div class="info">
-              
-              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
-              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div> -->
-              <!-- <div >网络地址：{{ item.devKey }}</div> -->
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            <!-- </div> -->
+            <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
           </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status">
-            <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
-            <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
-            <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
-
-            <el-popover
-              placement="top-start"
-              title="告警内容"
-              :width="1000"
-              trigger="hover"
-              :content="item.pduAlarm"
-              v-if="item.status == 2"
-            >
-              <template #reference>
-                <el-tag type="danger">告警</el-tag>
-              </template>
-            </el-popover>
-
-            <el-tag type="danger" v-if="item.status == 4">故障</el-tag>
-            <el-tag type="info" v-if="item.status == 5">离线</el-tag>
+          <div v-else class="arrayItem">
+            
           </div>
-          <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-        </div>
-        <div v-else class="arrayItem">
-          
-        </div>
         </template>      
       </div>
         <Pagination
@@ -446,6 +446,7 @@ const handleCheck = async (row) => {
   const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
+    console.log(item)
     if (item.type == 4) {
       pduKeys.push(item.unique)
       haveCabinet = true;
@@ -453,9 +454,15 @@ const handleCheck = async (row) => {
   })
   if(haveCabinet){
     queryParams.pduKeyList = pduKeys
+    if(row[0].name == '未绑定') {
+      queryParams.status = [0,1,2,3,4]
+    } else {
+      queryParams.status = []
+    }
     queryDeletedPageParams.pduKeyList = pduKeys
   }else{
     queryParams.pduKeyList = null;
+    queryParams.status = []
     queryDeletedPageParams.pduKeyList = null;
   }
  if(switchValue.value ==2){
