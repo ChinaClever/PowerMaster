@@ -15,7 +15,7 @@ export const MachineHomeApi = {
   },
   // 获取未处理告警数量
   getHomeAlarmData: async (params: any) => {
-    return await request.get({ url: `/system/alarm/record/level/count`, params })
+    return await request.get({ url: `/alarm/log-record/level/count`, params })
   }, 
 
 }

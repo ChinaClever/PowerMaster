@@ -226,7 +226,7 @@ getBalanceStatistics: async () => {
 
   //获得告警记录分页
   getRecordPage: async (data: any) => {
-    return await request.post({ url: `/system/alarm/record/page`, data})
+    return await request.post({ url: `/alarm/log-record/page`, data})
   },
 
   //获得始端箱设备统计

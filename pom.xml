@@ -25,6 +25,7 @@
         <module>yudao-module-bus</module>
         <module>yudao-module-aisle</module>
         <module>yudao-module-room</module>
+        <module>yudao-module-alarm</module>
     </modules>
 
     <name>${project.artifactId}</name>
