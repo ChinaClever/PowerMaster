@@ -1,12 +1,10 @@
 package cn.iocoder.yudao.module.system.service.init;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.module.alarm.dal.mysql.cfgmail.AlarmCfgMailMapper;
 import cn.iocoder.yudao.module.alarm.dal.mysql.cfgprompt.AlarmCfgPromptMapper;
 import cn.iocoder.yudao.module.alarm.dal.mysql.cfgsms.AlarmCfgSmsMapper;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
-import cn.iocoder.yudao.module.system.service.user.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
