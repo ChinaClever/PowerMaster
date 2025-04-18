@@ -23,7 +23,4 @@ public interface AlarmCfgPromptMapper extends BaseMapperX<AlarmCfgPromptDO> {
                 .betweenIfPresent(AlarmCfgPromptDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(AlarmCfgPromptDO::getId));
     }
-
-    @Delete("DELETE FROM alarm_cfg_prompt")
-    void initCfgPromptData();
 }

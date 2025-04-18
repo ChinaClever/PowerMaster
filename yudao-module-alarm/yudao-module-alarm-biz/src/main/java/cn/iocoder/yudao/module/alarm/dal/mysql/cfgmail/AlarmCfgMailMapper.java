@@ -24,7 +24,4 @@ public interface AlarmCfgMailMapper extends BaseMapperX<AlarmCfgMailDO> {
                 .betweenIfPresent(AlarmCfgMailDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(AlarmCfgMailDO::getId));
     }
-
-    @Delete("DELETE FROM alarm_cfg_mail")
-    void initCfgMailData();
 }
