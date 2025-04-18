@@ -25,7 +25,4 @@ public interface AlarmCfgSmsMapper extends BaseMapperX<AlarmCfgSmsDO> {
                 .betweenIfPresent(AlarmCfgSmsDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(AlarmCfgSmsDO::getId));
     }
-
-    @Delete("DELETE FROM alarm_cfg_sms")
-    void initCfgSmsData();
 }

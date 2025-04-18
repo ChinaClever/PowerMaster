@@ -32,7 +32,4 @@ public interface AlarmLogRecordMapper extends BaseMapperX<AlarmLogRecordDO> {
                 .orderByDesc(AlarmLogRecordDO::getId));
     }
 
-
-    @Delete("DELETE FROM alarm_log_record")
-    void initLogRecordData();
 }

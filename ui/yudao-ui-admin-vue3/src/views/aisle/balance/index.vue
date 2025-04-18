@@ -316,6 +316,11 @@ import ALine from '@/views/rack/reportcopy/component/ALine.vue';
 import { textShadow } from 'html2canvas/dist/types/css/property-descriptors/text-shadow';
 import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
 import { text } from 'stream/consumers';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
+
 const { push } = useRouter() // 路由跳转
 const router = useRouter() // 路由跳转
 const tableLoading = ref(false) // 
@@ -326,6 +331,7 @@ const showDetailDialog = ref(false)
 const apow = ref(null)
 const bpow = ref(null)
 const detailLoading = ref(false)
+const openDetailFlag=ref("0")
 const pageSizeArr=ref([24,36,48]);
 const ABarOption = ref<EChartsOption>({
       title: {
@@ -522,6 +528,26 @@ const toDetail = async (item) => {
   console.log('跳转详情', item);
   detailLoading.value = true
   showDetailDialog.value = true;
+  if(!item?.powActiveA) {
+    const res = await IndexApi.getAisleBalancePage({id: item.id})
+    if (res.list) {
+      tableData.value = res.list
+      tableData.value.forEach(obj => {
+        obj.rateA = obj?.rateA?.toFixed(0);
+        obj.rateB = obj?.rateB?.toFixed(0);
+        obj.powApparentTotal = obj?.powApparentTotal?.toFixed(3);
+        obj.powActiveTotal = obj?.powActiveTotal?.toFixed(3);
+        obj.powReactiveTotal = obj?.powReactiveTotal?.toFixed(3);
+        obj.powApparentA = obj?.powApparentA?.toFixed(3);
+        obj.powActiveA = obj?.powActiveA?.toFixed(3);
+        obj.powReactiveA = obj?.powReactiveA?.toFixed(3);
+        obj.powApparentB = obj?.powApparentB?.toFixed(3);
+        obj.powActiveB = obj?.powActiveB?.toFixed(3);
+        obj.powReactiveB = obj?.powReactiveB?.toFixed(3);
+      });
+      item = tableData.value[0]
+    }
+  }
   balanceObj.a_reactive_power=item.powReactiveA;
   balanceObj.b_reactive_power=item.powReactiveB;
   balanceObj.a_apparent_power=item.powApparentA;
@@ -604,6 +630,13 @@ const handleCheck = async (row) => {
   getTableData(true)
 }
 
+watch(openDetailFlag,(val) => {
+  console.log(val)
+  if(val == "1") {
+    toDetail({id: query.id})
+  }
+})
+
 // 处理对话框关闭
 const handleClose = () => {
   showDetailDialog.value = false;
@@ -636,6 +669,7 @@ const handleClose = () => {
 onBeforeMount( () => {
   getNavList()
   getTableData()
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 function handleSizeChange(val) {
@@ -932,7 +966,8 @@ function headerCellStyle() {
 }
 :deep(.el-dialog) {
   width: 80%;
-  margin-top: 50px;
+  margin-top: 1%;
+  margin-bottom: 0;
   background-color: #f1f1f1;
 }
 .tipInDialog{

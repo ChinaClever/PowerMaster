@@ -1,17 +1,12 @@
 package cn.iocoder.yudao.module.system.service.init;
 
 import cn.iocoder.yudao.framework.common.mapper.*;
-import cn.iocoder.yudao.module.alarm.dal.mysql.cfgmail.AlarmCfgMailMapper;
-import cn.iocoder.yudao.module.alarm.dal.mysql.cfgprompt.AlarmCfgPromptMapper;
-import cn.iocoder.yudao.module.alarm.dal.mysql.cfgsms.AlarmCfgSmsMapper;
-import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
 
 /**
  * @author luowei
@@ -55,21 +50,21 @@ public class AdminInitServiceImpl implements AdminInitService {
     private BoxIndexMapper boxIndexMapper;
 
     @Autowired
-    private AlarmLogRecordMapper alarmLogRecordMapper;
+    private AlarmLogRecordDoMapper alarmLogRecordDoMapper;
     @Autowired
-    private AlarmCfgPromptMapper alarmCfgPromptMapper;
+    private AlarmCfgPromptDoMapper alarmCfgPromptDoMapper;
     @Autowired
-    private AlarmCfgMailMapper alarmCfgMailMapper;
+    private AlarmCfgMailDoMapper alarmCfgMailDoMapper;
     @Autowired
-    private AlarmCfgSmsMapper alarmCfgSmsMapper;
+    private AlarmCfgSmsDoMapper alarmCfgSmsDoMapper;
     @Override
     public Boolean systemInit() {
         try {
             //初始化 alarm 数据
-            alarmLogRecordMapper.initLogRecordData();
-            alarmCfgPromptMapper.initCfgPromptData();
-            alarmCfgMailMapper.initCfgMailData();
-            alarmCfgSmsMapper.initCfgSmsData();
+            alarmLogRecordDoMapper.initLogRecordData();
+            alarmCfgPromptDoMapper.initCfgPromptData();
+            alarmCfgMailDoMapper.initCfgMailData();
+            alarmCfgSmsDoMapper.initCfgSmsData();
 
             //初始化 room 数据
             roomIndexMapper.initRoomData();

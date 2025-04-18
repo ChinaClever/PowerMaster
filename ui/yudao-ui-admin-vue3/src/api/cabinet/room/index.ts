@@ -99,8 +99,11 @@ getAddrAllRoomList: async (params: any) => {
 //获取所有机房
 getRoomAddrListAll: async (params: any) => {
   return await request.get({ url: `/room/getRoomAddrListAll`, params })
+},
+
+//获取机房设备数量
+getMachineNum: async (params: any) => {
+  return await request.get({ url: `/room/index/deviceStatistics`, params })
 }
-
-
 
 }

@@ -73,17 +73,7 @@
                       <span class="text-15px">{{ item.roomName || '' }}</span>
                     </div>
                     <div style="display: flex;justify-content: space-between;align-items: center;padding: 0 0 15px 10px;">
-                      <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column;">
-                        <el-progress type="circle" :percentage="item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0" width="100">
-                          <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '26px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
-                          <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
-                        </el-progress>
-                        <!-- <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '24px' : '34px'}">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : '0%')}}</div>
-                        <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '14px' : '22px'}">{{item.displayType ? "PUE" : "负载率"}}</div> -->
-                      </div>
-                      <div v-else>
-                        <Echart :height="100" :width="100" :options="addrAllPowChartOptions[0][index]" />
-                      </div>
+                      
                       <div v-if="item.powApparent >= 1000 || item.powActive >= 1000 || item.powReactive >= 1000" style="display: flex;flex-direction: column;height: 100px;justify-content:space-between">
                         <div><span class="bullet" style="background-color:#E5B849;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">视在功率：{{item.powApparent ? (item.powApparent/1000).toFixed(1) : '0.0'}}MVA</el-text></div>
                         <div><span class="bullet" style="background-color:#C8603A;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">有功功率：{{item.powActive ? (item.powActive/1000).toFixed(1) : '0.0'}}MW</el-text></div>
@@ -93,6 +83,17 @@
                         <div><span class="bullet" style="background-color:#E5B849;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">视在功率：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}kVA</el-text></div>
                         <div><span class="bullet" style="background-color:#C8603A;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">有功功率：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}kW</el-text></div>
                         <div><span class="bullet" style="background-color:#AD3762;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">无功功率：{{item.powReactive ? item.powReactive.toFixed(1) : '0.0'}}kVAr</el-text></div>
+                      </div>
+                      <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column;">
+                        <el-progress type="circle" :percentage="item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0" width="100">
+                          <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '24px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
+                          <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
+                        </el-progress>
+                        <!-- <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '24px' : '34px'}">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : '0%')}}</div>
+                        <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '14px' : '22px'}">{{item.displayType ? "PUE" : "负载率"}}</div> -->
+                      </div>
+                      <div v-else>
+                        <Echart :height="100" :width="100" :options="addrAllPowChartOptions[0][index]" />
                       </div>
                       <div></div>
                     </div>
@@ -199,17 +200,6 @@
                           <span class="text-15px">{{ item.roomName || '' }}</span>
                         </div>
                         <div style="display: flex;justify-content: space-between;align-items: center;padding: 0 0 15px 10px;">
-                          <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column">
-                            <el-progress type="circle" :percentage="item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0" width="100">
-                              <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '26px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
-                              <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
-                            </el-progress>
-                            <!-- <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '24px' : '34px'}">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0)}}</div>
-                            <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '14px' : '22px'}">{{item.displayType ? "PUE" : "负载率"}}</div> -->
-                          </div>
-                          <div v-else>
-                            <Echart :height="100" :width="100" :options="addrAllPowChartOptions[i+1][index]" />
-                          </div>
                           <div v-if="item.powApparent >= 1000 || item.powActive >= 1000 || item.powReactive >= 1000" style="display: flex;flex-direction: column;height: 100px;justify-content:space-between">
                             <div><span class="bullet" style="background-color:#E5B849;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">视在功率：{{item.powApparent ? (item.powApparent/1000).toFixed(1) : '0.0'}}MVA</el-text></div>
                             <div><span class="bullet" style="background-color:#C8603A;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">有功功率：{{item.powActive ? (item.powActive/1000).toFixed(1) : '0.0'}}MW</el-text></div>
@@ -219,6 +209,17 @@
                             <div><span class="bullet" style="background-color:#E5B849;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">视在功率：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}kVA</el-text></div>
                             <div><span class="bullet" style="background-color:#C8603A;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">有功功率：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}kW</el-text></div>
                             <div><span class="bullet" style="background-color:#AD3762;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">无功功率：{{item.powReactive ? item.powReactive.toFixed(1) : '0.0'}}kVAr</el-text></div>
+                          </div>
+                          <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column">
+                            <el-progress type="circle" :percentage="item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0" width="100">
+                              <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '24px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
+                              <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
+                            </el-progress>
+                            <!-- <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '24px' : '34px'}">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0)}}</div>
+                            <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '14px' : '22px'}">{{item.displayType ? "PUE" : "负载率"}}</div> -->
+                          </div>
+                          <div v-else>
+                            <Echart :height="100" :width="100" :options="addrAllPowChartOptions[i+1][index]" />
                           </div>
                           <div></div>
                         </div>
@@ -814,11 +815,12 @@ const openSetting = (item) => {
 }
 
 const handleRoomHome = (id) => {
-  push({path: '/room/roommonitor/home', state: { roomId: id }})
+  console.log(id)
+  push({path: '/room/roommonitor/home', query: { roomId: id }})
 }
 
 const toDetail = (e) => {
-  push({path: '/room/roommonitor/home', state: { roomId: e.id }})
+  push({path: '/room/roommonitor/home', query: { roomId: e.id }})
 }
 
 /** 搜索按钮操作 */
@@ -878,14 +880,14 @@ const handleDelete = (id) => {
     const res = await MachineRoomApi.deleteRoom({id})
     console.log('handleDelete', res)
     message.success('删除成功')
-    addrAllRoomList.value.forEach((item,index) => {
+    for(let index = 0;index < addrAllRoomList.value.length;index++) {
       let deleteIndex = addrAllRoomList.value[index].findIndex(ele => ele.id == id)
       if(deleteIndex != -1) {
         addrAllRoomList.value[index].splice(deleteIndex,1)
         addrAllPowChartOptions.value[index].splice(deleteIndex,1)
-        return
+        break
       }
-    })
+    }
     // getRoomAddrList()
   })
 }
@@ -964,9 +966,11 @@ const submitSetting = async() => {
       messageRoomFlag = "修改成功！";
    }
 
-   if(radio.value === "PUE") {
-    rowColInfo.displayType = 1
-   }
+  if(radio.value === "PUE") {
+  rowColInfo.displayType = 1
+  } else {
+    rowColInfo.displayType = 0
+  }
   console.log(rowColInfo)
     if(rowColInfo.width <= 0 || rowColInfo.length <= 0 || rowColInfo.width > 60 || rowColInfo.length > 60) {
       message.error('机房面积有误或过大,请重新输入!')
@@ -1066,8 +1070,7 @@ const getAddrAllRoomList = (roomList,index) => {
           }
           
           return result.trimEnd(); // 去除末尾多余的换行符
-        },
-        confine: true
+        }
       },
       series: [
         {

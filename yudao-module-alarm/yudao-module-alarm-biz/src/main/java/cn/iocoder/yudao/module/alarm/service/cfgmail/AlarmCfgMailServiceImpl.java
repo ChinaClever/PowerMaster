@@ -70,6 +70,10 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
 
     public static final String TEMPLATE_CODE = "ALARM_MAIL";
 
+    public AlarmCfgMailServiceImpl(MailAccountService mailAccountService) {
+        this.mailAccountService = mailAccountService;
+    }
+
     @Override
     public Integer saveCfgMail(AlarmCfgMailSaveReqVO saveReqVO) {
 
