@@ -10,6 +10,8 @@ import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgprompt.AlarmCfgPromptDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.dal.mysql.cfgprompt.AlarmCfgPromptMapper;
+
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -74,6 +76,15 @@ public class AlarmCfgPromptServiceImpl implements AlarmCfgPromptService {
     @Override
     public PageResult<AlarmCfgPromptDO> getCfgPromptPage(AlarmCfgPromptPageReqVO pageReqVO) {
         return cfgPromptMapper.selectPage(pageReqVO);
+    }
+
+    @Override
+    public void initAlarmPrompt() {
+        AlarmCfgPromptDO voice = new AlarmCfgPromptDO(1, 0, 1);
+        AlarmCfgPromptDO mail = new AlarmCfgPromptDO(2, 0, 2);
+        AlarmCfgPromptDO sms = new AlarmCfgPromptDO(3, 0, 3);
+        AlarmCfgPromptDO mq = new AlarmCfgPromptDO(4, 0, 4);
+        cfgPromptMapper.insertBatch(Arrays.asList(voice, mail, sms, mq));
     }
 
 }
