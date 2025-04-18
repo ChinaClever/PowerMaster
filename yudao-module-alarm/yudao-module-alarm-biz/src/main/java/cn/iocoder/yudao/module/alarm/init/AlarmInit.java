@@ -1,9 +1,9 @@
 package cn.iocoder.yudao.module.alarm.init;
 
-import cn.iocoder.yudao.module.alarm.monitor.constants.DBTable;
+import cn.iocoder.yudao.module.alarm.constants.DBTable;
 import cn.iocoder.yudao.framework.common.util.ListenerThreadPoolConfig;
 import cn.iocoder.yudao.module.alarm.monitor.MySQLTableMonitor;
-import cn.iocoder.yudao.module.alarm.monitor.constants.BinLogConstants;
+import cn.iocoder.yudao.module.alarm.constants.BinLogConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

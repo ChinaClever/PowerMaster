@@ -276,6 +276,7 @@ const toHandle = (type) => {
           type: 'success', // 0 未处理 1 挂起 2确认 3结束
           message: '成功',
         })
+        getTableData(false)
       })
     })
 }
