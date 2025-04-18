@@ -3,11 +3,10 @@ package cn.iocoder.yudao.module.alarm.service.logrecord;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
+import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +44,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private PDUDeviceService pduDeviceService;
+    private PduDeviceApi pduDeviceApi;
 
     @Override
     public Integer saveLogRecord(AlarmLogRecordSaveReqVO createReqVO) {
@@ -104,9 +103,13 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     @Override
     public PageResult<AlarmLogRecordRespVO> getLogRecordPage(AlarmLogRecordPageReqVO pageReqVO) {
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Integer alarmLevel = AlarmLevelEnums.getStatusByName(pageReqVO.getLikeName());
+        Integer alarmType = AlarmTypeEnums.getStatusByName(pageReqVO.getLikeName());
         Page<AlarmLogRecordDO> recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
                 .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
-                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()), wrapper -> wrapper
+                .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                .eqIfPresent(AlarmLogRecordDO::getAlarmType, alarmType)
+                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
                         .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
                         .or()
                         .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
@@ -203,7 +206,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
                     // 告警位置
-                    Map<String, String> positionMap = pduDeviceService.setLocation(Arrays.asList(pduIndexDoNew.getPduKey()));
+                    Map<String, String> positionMap = pduDeviceApi.getPositionByKeys(Arrays.asList(pduIndexDoNew.getPduKey()));
                     alarmRecord.setAlarmPosition(positionMap.get(pduIndexDoNew.getPduKey()));
                     // 告警描述、告警开始时间
                     JSONObject pduJson = (JSONObject) ops.get(REDIS_KEY_PDU + pduIndexDoNew.getPduKey());
@@ -224,7 +227,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
-                            .set(AlarmLogRecordDO::getFinishReason,"正常上线")
+                            .set(AlarmLogRecordDO::getFinishReason,"状态恢复正常")
                             .eq(AlarmLogRecordDO::getAlarmKey, pduIndexDoNew.getPduKey())
                             .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
                 }

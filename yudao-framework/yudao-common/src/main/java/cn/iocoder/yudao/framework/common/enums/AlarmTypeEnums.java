@@ -42,5 +42,15 @@ public enum AlarmTypeEnums {
         return null;
     }
 
+    public static Integer getStatusByName(String name) {
+        AlarmTypeEnums[] enums = AlarmTypeEnums.values();
+        for (AlarmTypeEnums indexEnum : enums){
+            if (indexEnum.getName().equals(name)){
+                return indexEnum.getType();
+            }
+        }
+        return null;
+    }
+
 
 }

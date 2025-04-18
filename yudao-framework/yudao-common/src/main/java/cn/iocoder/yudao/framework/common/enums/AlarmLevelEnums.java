@@ -36,4 +36,14 @@ public enum AlarmLevelEnums {
         return null;
     }
 
+    public static Integer getStatusByName(String name) {
+        AlarmLevelEnums[] enums = AlarmLevelEnums.values();
+        for (AlarmLevelEnums indexEnum : enums){
+            if (indexEnum.getName().equals(name)){
+                return indexEnum.getStatus();
+            }
+        }
+        return null;
+    }
+
 }
