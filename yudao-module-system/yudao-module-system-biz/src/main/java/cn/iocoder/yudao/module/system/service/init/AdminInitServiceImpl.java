@@ -2,6 +2,10 @@ package cn.iocoder.yudao.module.system.service.init;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.module.alarm.dal.mysql.cfgmail.AlarmCfgMailMapper;
+import cn.iocoder.yudao.module.alarm.dal.mysql.cfgprompt.AlarmCfgPromptMapper;
+import cn.iocoder.yudao.module.alarm.dal.mysql.cfgsms.AlarmCfgSmsMapper;
+import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
 import cn.iocoder.yudao.module.system.service.user.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,30 +41,38 @@ public class AdminInitServiceImpl implements AdminInitService {
     private AisleBoxMapper aisleBoxMapper;
     @Autowired
     private AisleCfgMapper aisleCfgMapper;
-
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
     @Autowired
     private CabinetCfgMapper cabinetCfgMapper;
-
     @Autowired
     private CabinetPduMapper cabinetPduMapper;
-
     @Autowired
     private CabinetBoxMapper cabinetBoxMapper;
-
     @Autowired
     private RackIndexDoMapper rackIndexDoMapper;
-
     @Autowired
     private BusIndexDoMapper busIndexDoMapper;
-
     @Autowired
     private BoxIndexMapper boxIndexMapper;
 
+    @Autowired
+    private AlarmLogRecordMapper alarmLogRecordMapper;
+    @Autowired
+    private AlarmCfgPromptMapper alarmCfgPromptMapper;
+    @Autowired
+    private AlarmCfgMailMapper alarmCfgMailMapper;
+    @Autowired
+    private AlarmCfgSmsMapper alarmCfgSmsMapper;
     @Override
     public Boolean systemInit() {
         try {
+            //初始化 alarm 数据
+            alarmLogRecordMapper.initLogRecordData();
+            alarmCfgPromptMapper.initCfgPromptData();
+            alarmCfgMailMapper.initCfgMailData();
+            alarmCfgSmsMapper.initCfgSmsData();
+
             //初始化 room 数据
             roomIndexMapper.initRoomData();
             roomCfgMapper.initRoomCfgData();

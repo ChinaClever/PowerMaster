@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.*;
 
@@ -31,4 +32,7 @@ public interface AlarmLogRecordMapper extends BaseMapperX<AlarmLogRecordDO> {
                 .orderByDesc(AlarmLogRecordDO::getId));
     }
 
+
+    @Delete("DELETE FROM alarm_log_record")
+    void initLogRecordData();
 }

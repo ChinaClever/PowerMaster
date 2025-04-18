@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgmail.AlarmCfgMailDO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.alarm.controller.admin.cfgmail.vo.*;
 
@@ -24,4 +25,6 @@ public interface AlarmCfgMailMapper extends BaseMapperX<AlarmCfgMailDO> {
                 .orderByDesc(AlarmCfgMailDO::getId));
     }
 
+    @Delete("DELETE FROM alarm_cfg_mail")
+    void initCfgMailData();
 }

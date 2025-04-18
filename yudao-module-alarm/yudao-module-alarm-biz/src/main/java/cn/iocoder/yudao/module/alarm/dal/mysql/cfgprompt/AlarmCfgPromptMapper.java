@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgprompt.AlarmCfgPromptDO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.alarm.controller.admin.cfgprompt.vo.*;
 
@@ -23,4 +24,6 @@ public interface AlarmCfgPromptMapper extends BaseMapperX<AlarmCfgPromptDO> {
                 .orderByDesc(AlarmCfgPromptDO::getId));
     }
 
+    @Delete("DELETE FROM alarm_cfg_prompt")
+    void initCfgPromptData();
 }
