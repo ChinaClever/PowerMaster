@@ -103,7 +103,7 @@ public class MySQLTableMonitor {
 
                         switch (binLogConstants.getTable()) {
                             case DBTable.PDU_INDEX:
-                                alarmLogRecordService.insertAlarmRecordWhenPduAlarm(oldMaps,newMaps);
+                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
                                 break;
                             default:
                                 log.info("监听到表结构变化，但未匹配到对应的表，忽略处理");

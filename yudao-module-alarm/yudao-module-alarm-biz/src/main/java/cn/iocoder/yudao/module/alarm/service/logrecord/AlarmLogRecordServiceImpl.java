@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -175,7 +176,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     }
 
     @Override
-    public void insertAlarmRecordWhenPduAlarm (List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+    public void insertOrUpdateAlarmRecordWhenPduAlarm (List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
         ValueOperations ops = redisTemplate.opsForValue();
         if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
             List<PduIndexDo> pduIndexDoListOld = BeanUtils.toBean(oldMaps, PduIndexDo.class);
@@ -197,6 +198,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
+                    } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.OFF_LINE.getStatus())) {
+                        alarmRecord.setAlarmType(AlarmTypeEnums.PDU_OFF_LINE.getType());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
                     // 告警位置
                     Map<String, String> positionMap = pduDeviceService.setLocation(Arrays.asList(pduIndexDoNew.getPduKey()));
@@ -216,6 +220,13 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         }
                     }
                     logRecordMapper.insert(alarmRecord);
+                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && DeviceAlarmStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
+                    int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
+                            .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
+                            .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
+                            .set(AlarmLogRecordDO::getFinishReason,"正常上线")
+                            .eq(AlarmLogRecordDO::getAlarmKey, pduIndexDoNew.getPduKey())
+                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
                 }
             }
         }
