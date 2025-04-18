@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Schema(description = "管理后台 - 机房查询 Request VO")
@@ -34,6 +35,9 @@ public class RoomQueryVo {
     @Schema(description = "空调额定功率", example = "0")
     private float airPower;
 
+    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
+    private int isDelete;
+
     /**
      * 机房x长度(单位机柜)
      */
@@ -48,6 +52,14 @@ public class RoomQueryVo {
     @JsonProperty(value="yLength")
     private int yLength;
 
+    @Schema(description = "面积类型：0-地砖 1-面积")
+    private Boolean areaFlag;
+
+    @Schema(description = "面积长度")
+    private BigDecimal areaxLength;
+
+    @Schema(description = "面积宽")
+    private BigDecimal areayLength;
     /**
      * 日用能告警开关
      */

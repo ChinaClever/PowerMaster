@@ -288,4 +288,46 @@
             and (cp.pdu_key_a  =#{pduKey} or cp.pdu_key_b  =#{pduKey})
         </where>
     </select>
+    <select id="deviceStatistics" resultType="cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO">
+        SELECT
+        sum(case when load_status = 0 then 1 else 0 end) as cabUnused,
+        sum(case when load_status > 0 then 1 else 0 end) as cabUse,
+        count(id) as cabNum
+        FROM cabinet_index
+        <where>
+            is_deleted = 0 and is_disabled = 0 and room_id = #{roomId}
+        </where>
+    </select>
+    <select id="getFindCabinetPduList"
+            resultType="cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu">
+        select
+        cp.cabinet_id,
+        cp.create_time,
+        cp.id,
+        cp.pdu_key_a,
+        cp.pdu_key_b,
+        cp.update_time
+        from cabinet_pdu cp  left join cabinet_index ci on ci.id = cp.cabinet_id
+        <where>
+            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.room_id = #{roomId}
+        </where>
+    </select>
+    <select id="getFindCabinetBoxList"
+            resultType="cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu">
+        select
+        cb.box_index_a,
+        cb.box_index_b,
+        cb.box_key_a,
+        cb.box_key_b,
+        cb.cabinet_id,
+        cb.create_time,
+        cb.id,
+        cb.outlet_id_a,
+        cb.outlet_id_b,
+        cb.update_time
+        from cabinet_box cb left join cabinet_index ci on ci.id = cb.cabinet_id
+        <where>
+            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.room_id = #{roomId}
+        </where>
+    </select>
 </mapper>

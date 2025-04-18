@@ -11,7 +11,7 @@ import lombok.Data;
  */
 @Schema(description = "管理后台 - 始端箱用能趋势 Response VO")
 @Data
-public class RoomEqTrendDTO {
+public class RoomEqTrendVO {
 
 
     /**

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
+import cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO;
 import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Delete;
@@ -26,4 +27,6 @@ public interface PduIndexDoMapper extends BaseMapper<PduIndexDo> {
     //初始化
     @Delete("DELETE FROM pdu_index")
     void initPduData();
+
+    DeviceStatisticsVO deviceStatistics(@Param("pduKeya") List<String> pduKeya);
 }

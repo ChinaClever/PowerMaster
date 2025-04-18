@@ -4,6 +4,8 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetEnvResVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
@@ -13,17 +15,20 @@ import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -31,6 +36,10 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
+import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.CABINET_ID;
+import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.KEYWORD;
 
 
 /**
@@ -299,6 +308,74 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         return roomIndexList.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
                 .collect(Collectors.toMap(AisleIndex::getId, roomIndex -> roomIndex));
     }
-//        Map<String, DataMenu> collect = list1.stream().filter(item -> ObjectUtils.isNotEmpty(item.getDictionaryValue()))
-//                .collect(Collectors.toMap(DataMenu::getDictionaryValue, x -> x, (oldVal, newVal) -> newVal));
+
+    @Override
+    public PageResult<CabinetEnvResVO> getHistoryDataPageEnv(CabinetHistoryDataPageReqVO pageReqVO) {
+        String index = null;
+        switch (pageReqVO.getGranularity()){
+            case "realtime":index="cabinet_env_realtime";
+                break;
+            case "hour":index ="cabinet_env_hour";
+                break;
+            case "day":index ="cabinet_env_day";
+                break;
+            default:
+        }
+        String startTime = pageReqVO.getTimeRange()[0];
+        String endTime = pageReqVO.getTimeRange()[1];
+        List<CabinetEnvResVO> list = new ArrayList<>();
+        SearchResponse searchResponse = getDataEs(startTime, endTime, pageReqVO.getCabinetIds(), index,pageReqVO.getPageNo(),pageReqVO.getPageSize());
+        if (searchResponse != null){
+            searchResponse.getHits().forEach(hit -> {
+                Map<String, Object> map = hit.getSourceAsMap();
+                CabinetEnvResVO resVO = new CabinetEnvResVO();
+                resVO.setId((Integer) map.get("cabinet_id"));
+                resVO.setCreateTime((String) map.get("create_time"));
+                Map<String, Object> sensorList = (Map<String, Object>) map.get("sensor_list");
+                List black = (List) sensorList.get("black");
+                List front = (List) sensorList.get("front");
+                resVO.setFront(front);
+                resVO.setBlack(black);
+                list.add(resVO);
+            });
+        }
+        return new PageResult<>(list,searchResponse.getHits().getTotalHits().value);
+    }
+
+
+    private SearchResponse getDataEs(String startTime, String endTime, String[] ids, String index,Integer pageNo, Integer pageSize) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            if (Objects.nonNull(pageNo) && Objects.nonNull(pageSize)) {
+                int pageIndex = (pageNo - 1) * pageSize;
+                builder.from(pageIndex);
+                // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+                if (pageIndex + pageSize > 10000) {
+                    builder.size(10000 - pageIndex);
+                } else {
+                    builder.size(pageSize);
+                }
+                builder.trackTotalHits(true);
+            }
+            //获取需要处理的数据
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            boolQueryBuilder.must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
+            if (ObjectUtils.isNotEmpty(ids)) {
+                boolQueryBuilder.must(QueryBuilders.termsQuery(CABINET_ID, ids));
+            }
+            builder.query(QueryBuilders.constantScoreQuery(boolQueryBuilder));
+            // 设置搜索条件
+            searchRequest.source(builder);
+
+
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            return searchResponse;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

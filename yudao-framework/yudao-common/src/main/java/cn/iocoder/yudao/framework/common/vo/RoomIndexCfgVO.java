@@ -1,10 +1,13 @@
 package cn.iocoder.yudao.framework.common.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 @Data
 public class RoomIndexCfgVO {
@@ -58,7 +61,8 @@ public class RoomIndexCfgVO {
     @Schema(description = "空调额定功率", example = "0")
     private float airPower;
 
-
+    @Schema(description = "面积类型：0-地砖 1-面积")
+    private Boolean areaFlag;
     /**
      * 机房x长度(单位机柜)
      */
@@ -70,6 +74,14 @@ public class RoomIndexCfgVO {
      */
     @JsonProperty(value="yLength")
     private int yLength;
+
+    @Schema(description = "面积长度")
+    @TableField(value = "area_x_length")
+    private BigDecimal areaxLength;
+
+    @Schema(description = "面积宽")
+    @TableField(value = "area_y_length")
+    private BigDecimal areayLength;
 
     /**
      * 日用能告警开关
