@@ -1,7 +1,7 @@
 <template>
  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="柜列电力分析" :showCheckbox="false">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
       <div class="nav_data">
         <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -35,7 +35,7 @@
 
         <div class="nav_header" style="font-size: 14px;">
           <span v-if="nowAddress">{{nowAddress}}</span>
-          <br/>
+          <!-- <br/> -->
       </div>
       
         <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
@@ -47,7 +47,7 @@
             <span class="label">发生时间 :</span>
             <span class="value">{{ maxActivePowDataTimeTemp }}</span>
           </div>
-          <br/>
+          <!-- <br/> -->
           <div  class="description-item">
             <span class="label">最小值 :</span>
             <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
@@ -114,6 +114,14 @@
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
          </el-form-item>
+
+         <el-form-item>
+          <el-button-group>
+            <el-button @click="changeTime('pre')"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
+            <el-button @click="changeTime('next')">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
+          </el-button-group>
+         </el-form-item>
+
          <el-form-item style="position: absolute; right: 0;">
           <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
              <Icon icon="ep:download" class="mr-5px" /> 导出
@@ -220,7 +228,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/aisle/historydata'
@@ -242,6 +250,8 @@ const tableData = ref<Array<{ }>>([]) // 列表数据
 const headerData = ref<any[]>([])
 const needFlush = ref(0) // 是否需要刷新图表
 const paramType = ref('total')
+const next=ref("下一月");
+const pre=ref("上一月");
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -252,8 +262,8 @@ const queryParams = reactive({
   timeRange: defaultHourTimeRange(24*30) as any,
 })
 const route=useRoute()
-if(route.query.start!=null&&route.query.end!=null){
-  queryParams.timeRange = [route.query.start, route.query.end] as any
+if(history.state.start!=null&&history.state.end!=null){
+  queryParams.timeRange = [history.state.start, history.state.end] as any
 }
 const loading = ref(false) // 列表的加载中
 // const carouselItems = ref([
@@ -438,104 +448,222 @@ loading.value = true
     let data = await HistoryDataApi.getHistoryDataDetails(queryParams);
     if (data != null && data.total != 0){
       isHaveData.value = true
+      // 总、A、B路实时数据 有功视在
+      totalActivePowData.value = data.list.map((item) => formatNumber(item.active_total, 3));
+      aActivePowData.value = data.list.map((item) => formatNumber(item.active_a, 3));
+      bActivePowData.value = data.list.map((item) => formatNumber(item.active_b, 3));
+      totalApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_total, 3)); 
+      aApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_a, 3));
+      bApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_b, 3));
+      // 总、A、B路实时数据 无功 功率因素
+      totalReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_total, 3));
+      aReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_a, 3));
+      bReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_b, 3));
+      factorTotalData.value = data.list.map((item) => formatNumber(item.factor_total, 2));
+      factorAData.value = data.list.map((item) => formatNumber(item.factor_a, 2));
+      factorBData.value = data.list.map((item) => formatNumber(item.factor_b, 2));
+
+      if (activeName.value === 'dayExtremumTabPane'){
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      }else{
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
+      }
+      totalActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_total_avg_value, 3));
+      totalActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_total_max_value, 3));
+      totalActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_total_max_time, 'YYYY-MM-DD HH:mm'));
+      totalActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_total_min_value, 3));
+      totalActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_total_min_time, 'YYYY-MM-DD HH:mm'));
+
+      aActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_a_avg_value, 3));
+      aActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_a_max_value, 3));
+      aActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_a_max_time, 'YYYY-MM-DD HH:mm'));
+      aActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_a_min_value, 3));
+      aActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_a_min_time, 'YYYY-MM-DD HH:mm'));
+      
+      bActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_b_avg_value, 3));
+      bActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_b_max_value, 3));
+      bActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_b_max_time, 'YYYY-MM-DD HH:mm'));
+      bActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_b_min_value, 3));
+      bActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_b_min_time, 'YYYY-MM-DD HH:mm'));
+
+      totalReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_total_avg_value, 3));
+      totalReactivePowMaxValueData.value = data.list.map((item) => formatNumber(item.reactive_total_max_value, 3));
+      totalReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_total_max_time, 'YYYY-MM-DD HH:mm'));
+      totalReactivePowMinValueData.value = data.list.map((item) => formatNumber(item.reactive_total_min_value, 3));
+      totalReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_total_min_time, 'YYYY-MM-DD HH:mm'));
+
+      aReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_a_avg_value, 3));
+      bReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_b_avg_value, 3));
+
+      totalApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_total_avg_value, 3));
+      totalApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_total_max_value, 3));
+      totalApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_total_max_time, 'YYYY-MM-DD HH:mm'));
+      totalApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_total_min_value, 3));
+      totalApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_total_min_time, 'YYYY-MM-DD HH:mm'));
+
+      aApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_a_avg_value, 3));
+      aApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_a_max_value, 3));
+      aApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
+      aApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_a_min_value, 3));
+      aApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
+
+      bApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_b_avg_value, 3));
+      bApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_b_max_value, 3));
+      bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_b_max_time, 'YYYY-MM-DD HH:mm'));
+      bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
+      bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_b_min_time, 'YYYY-MM-DD HH:mm'));
+
+      factorTotalAvgValueData.value = data.list.map((item) => formatNumber(item.factor_total_avg_value, 2));
+      factorAAvgValueData.value = data.list.map((item) => formatNumber(item.factor_a_avg_value, 2));
+      factorBAvgValueData.value = data.list.map((item) => formatNumber(item.factor_b_avg_value, 2));
+
+      // 侧边栏数据计算
+      if(activeName.value === 'realtimeTabPane'){
+        if(paramType.value=='total'){
+          maxActivePowDataTemp.value = Math.max(...totalActivePowData.value);
+          minActivePowDataTemp.value = Math.min(...totalActivePowData.value);
+          totalActivePowData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(paramType.value=='a'){
+          maxActivePowDataTemp.value = Math.max(...aActivePowData.value);
+          minActivePowDataTemp.value = Math.min(...aActivePowData.value);
+          aActivePowData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(paramType.value=='b'){
+          maxActivePowDataTemp.value = Math.max(...bActivePowData.value);
+          minActivePowDataTemp.value = Math.min(...bActivePowData.value);
+          bActivePowData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }
+      }else{
+        if(paramType.value=='total'){
+          maxActivePowDataTemp.value = Math.max(...totalActivePowMaxValueData.value);
+          minActivePowDataTemp.value = Math.min(...totalActivePowMaxValueData.value);
+          totalActivePowMaxValueData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(paramType.value=='a'){
+          maxActivePowDataTemp.value = Math.max(...aActivePowMaxValueData.value);
+          minActivePowDataTemp.value = Math.min(...aActivePowMaxValueData.value);
+          aActivePowMaxValueData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(paramType.value=='b'){
+          maxActivePowDataTemp.value = Math.max(...bActivePowMaxValueData.value);
+          minActivePowDataTemp.value = Math.min(...bActivePowMaxValueData.value);
+          bActivePowMaxValueData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }
+      }
     }else{
-      if(data==null){
-        data={}
-      }
-      if(data.list == null){
-        data.list = [];
-      }
+      totalActivePowData.value = [];
+      aActivePowData.value = [];
+      bActivePowData.value = [];
+      totalApparentPowData.value = []; 
+      aApparentPowData.value = [];
+      bApparentPowData.value = [];
+      // 总、A、B路实时数据 无功 功率因素
+      totalReactivePowData.value = [];
+      aReactivePowData.value = [];
+      bReactivePowData.value = [];
+      factorTotalData.value = [];
+      factorAData.value = [];
+      factorBData.value = [];
+      createTimeData.value = [];
+      totalActivePowAvgValueData.value = [];
+      totalActivePowMaxValueData.value = [];
+      totalActivePowMaxTimeData.value = [];
+      totalActivePowMinValueData.value = [];
+      totalActivePowMinTimeData.value = [];
+
+      aActivePowAvgValueData.value = [];
+      aActivePowMaxValueData.value = [];
+      aActivePowMaxTimeData.value = [];
+      aActivePowMinValueData.value =[];
+      aActivePowMinTimeData.value = [];
+      
+      bActivePowAvgValueData.value = [];
+      bActivePowMaxValueData.value = [];
+      bActivePowMaxTimeData.value = [];
+      bActivePowMinValueData.value = [];
+      bActivePowMinTimeData.value = [];
+
+      totalReactivePowAvgValueData.value = [];
+      totalReactivePowMaxValueData.value = [];
+      totalReactivePowMaxTimeData.value = [];
+      totalReactivePowMinValueData.value = [];
+      totalReactivePowMinTimeData.value = [];
+
+      aReactivePowAvgValueData.value = [];
+      bReactivePowAvgValueData.value = [];
+
+      totalApparentPowAvgValueData.value = [];
+      totalApparentPowMaxValueData.value = [];
+      totalApparentPowMaxTimeData.value = [];
+      totalApparentPowMinValueData.value = [];
+      totalApparentPowMinTimeData.value = [];
+
+      aApparentPowAvgValueData.value = [];
+      aApparentPowMaxValueData.value = [];
+      aApparentPowMaxTimeData.value = [];
+      aApparentPowMinValueData.value = [];
+      aApparentPowMinTimeData.value = [];
+
+      bApparentPowAvgValueData.value = [];
+      bApparentPowMaxValueData.value = [];
+      bApparentPowMaxTimeData.value = [];
+      bApparentPowMinValueData.value = [];
+      bApparentPowMinTimeData.value = [];
+
+      factorTotalAvgValueData.value = [];
+      factorAAvgValueData.value = [];
+      factorBAvgValueData.value = [];
+
+      // 侧边栏数据计算
+      maxActivePowDataTemp.value = null;
+      minActivePowDataTemp.value = null;
+      maxActivePowDataTimeTemp.value = null
+      minActivePowDataTimeTemp.value = null
       isHaveData.value = false;
       ElMessage({
         message: '暂无数据',
         type: 'warning',
       });
     }
-    // 总、A、B路实时数据 有功视在
-    totalActivePowData.value = data.list.map((item) => formatNumber(item.active_total, 3));
-    aActivePowData.value = data.list.map((item) => formatNumber(item.active_a, 3));
-    bActivePowData.value = data.list.map((item) => formatNumber(item.active_b, 3));
-    totalApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_total, 3)); 
-    aApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_a, 3));
-    bApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_b, 3));
-    // 总、A、B路实时数据 无功 功率因素
-    totalReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_total, 3));
-    aReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_a, 3));
-    bReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_b, 3));
-    factorTotalData.value = data.list.map((item) => formatNumber(item.factor_total, 2));
-    factorAData.value = data.list.map((item) => formatNumber(item.factor_a, 2));
-    factorBData.value = data.list.map((item) => formatNumber(item.factor_b, 2));
-
-    if (activeName.value === 'dayExtremumTabPane'){
-      createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-    }else{
-      createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
-    }
-    totalActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_total_avg_value, 3));
-    totalActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_total_max_value, 3));
-    totalActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_total_max_time, 'YYYY-MM-DD HH:mm'));
-    totalActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_total_min_value, 3));
-    totalActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_total_min_time, 'YYYY-MM-DD HH:mm'));
-
-    aActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_a_avg_value, 3));
-    aActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_a_max_value, 3));
-    aActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_a_max_time, 'YYYY-MM-DD HH:mm'));
-    aActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_a_min_value, 3));
-    aActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_a_min_time, 'YYYY-MM-DD HH:mm'));
-    
-    bActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_b_avg_value, 3));
-    bActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_b_max_value, 3));
-    bActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_b_max_time, 'YYYY-MM-DD HH:mm'));
-    bActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_b_min_value, 3));
-    bActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_b_min_time, 'YYYY-MM-DD HH:mm'));
-
-    totalReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_total_avg_value, 3));
-    totalReactivePowMaxValueData.value = data.list.map((item) => formatNumber(item.reactive_total_max_value, 3));
-    totalReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_total_max_time, 'YYYY-MM-DD HH:mm'));
-    totalReactivePowMinValueData.value = data.list.map((item) => formatNumber(item.reactive_total_min_value, 3));
-    totalReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_total_min_time, 'YYYY-MM-DD HH:mm'));
-
-    aReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_a_avg_value, 3));
-    bReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_b_avg_value, 3));
-
-    totalApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_total_avg_value, 3));
-    totalApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_total_max_value, 3));
-    totalApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_total_max_time, 'YYYY-MM-DD HH:mm'));
-    totalApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_total_min_value, 3));
-    totalApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_total_min_time, 'YYYY-MM-DD HH:mm'));
-
-    aApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_a_avg_value, 3));
-    aApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_a_max_value, 3));
-    aApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
-    aApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_a_min_value, 3));
-    aApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
-
-    bApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_b_avg_value, 3));
-    bApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_b_max_value, 3));
-    bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
-    bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
-    bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
-
-    factorTotalAvgValueData.value = data.list.map((item) => formatNumber(item.factor_total_avg_value, 2));
-    factorAAvgValueData.value = data.list.map((item) => formatNumber(item.factor_a_avg_value, 2));
-    factorBAvgValueData.value = data.list.map((item) => formatNumber(item.factor_b_avg_value, 2));
-
-    // 侧边栏数据计算
-    if(totalActivePowData.value!=null&&totalActivePowData.value.length>0){
-      maxActivePowDataTemp.value = Math.max(...totalActivePowData.value);
-      minActivePowDataTemp.value = Math.min(...totalActivePowData.value);
-      totalActivePowData.value.forEach(function(num, index) {
-        if (num == maxActivePowDataTemp.value){
-          maxActivePowDataTimeTemp.value = createTimeData.value[index]
-        }
-        if (num == minActivePowDataTemp.value){
-          minActivePowDataTimeTemp.value = createTimeData.value[index]
-        }
-      });
-    }else{
-      maxActivePowDataTimeTemp.value=null;
-    }
-    
     // 图表显示的位置变化
     nowAddress.value = nowAddressTemp.value
  } finally {
@@ -549,6 +677,8 @@ let realtimeChart = null as echarts.ECharts | null;
 const initChart = () => {
   if ( isHaveData.value == true ){
     if (chartContainer.value && instance) {
+      realtimeChart?.off("legendselectchanged");
+      realtimeChart?.dispose();
       realtimeChart = echarts.init(chartContainer.value);
       if (realtimeChart) {
         if (activeName.value == 'realtimeTabPane'){
@@ -642,17 +772,63 @@ window.addEventListener('resize', function() {
     realtimeChart?.resize(); 
 });
 
+let lastRaw=null;
+let lastHour=null;
+let lastDate=null;
+function calculateTime(date1,date2){
+  try{
+    const dateLeft=date1.replace(" ", "T")
+    const dateRight=date2.replace(" ", "T")
+    return new Date(dateLeft).getTime() - new Date(dateRight).getTime()
+  }catch(e){
+    return 1000*60*60*24*32;
+  }
+}
 // 监听切换原始数据、极值数据tab
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="realtimeTabPane"){
+    lastRaw=queryParams.timeRange;
+  }else if(oldActiveName=="hourExtremumTabPane"){
+    lastHour=queryParams.timeRange;
+  }else{
+    lastDate=queryParams.timeRange;
+  }
 
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
+    next.value="下一天";
+    pre.value="上一天";
+    if(lastRaw!=null){
+      queryParams.timeRange=lastRaw;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24){
+        queryParams.timeRange=[preTime(queryParams.timeRange[1],1000*60*60*24),queryParams.timeRange[1]]
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
+    next.value="下一周";
+    pre.value="上一周";
+    if(lastHour!=null){
+      queryParams.timeRange=lastHour;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24*7){
+        queryParams.timeRange = [preTime(queryParams.timeRange[1],1000*60*60*24*7),queryParams.timeRange[1]];
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
+    next.value="下一月";
+    pre.value="上一月";
+    if(lastDate!=null){
+      queryParams.timeRange=lastDate;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>calculateTime(queryParams.timeRange[1],preMonth(queryParams.timeRange[1]))){
+        queryParams.timeRange = [preMonth(queryParams.timeRange[1]),queryParams.timeRange[1]]
+      }
+    }
     // queryParams.timeRange = defaultMonthTimeRange(1)
   }
   needFlush.value ++;
@@ -666,6 +842,40 @@ watch(()=>paramType.value,async(abortotal)=>{
 watch(() => paramType.value , (newValues) => {
   const newParamType = newValues;
   if(activeName.value == 'realtimeTabPane'){
+    if(newParamType=='total'){
+      maxActivePowDataTemp.value = Math.max(...totalActivePowData.value);
+      minActivePowDataTemp.value = Math.min(...totalActivePowData.value);
+      totalActivePowData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+    }else if(newParamType=='a'){
+      maxActivePowDataTemp.value = Math.max(...aActivePowData.value);
+      minActivePowDataTemp.value = Math.min(...aActivePowData.value);
+      aActivePowData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+    }else if(newParamType=='b'){
+      maxActivePowDataTemp.value = Math.max(...bActivePowData.value);
+      minActivePowDataTemp.value = Math.min(...bActivePowData.value);
+      bActivePowData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+    }
     if ( newParamType == 'total'){
       realtimeChart?.setOption({
         legend: { data: ['总有功功率', '总视在功率','总无功功率','总功率因素'],
@@ -704,6 +914,41 @@ watch(() => paramType.value , (newValues) => {
       })
     }
   }else{
+    if(newParamType=='total'){
+      maxActivePowDataTemp.value = Math.max(...totalActivePowMaxValueData.value);
+      minActivePowDataTemp.value = Math.min(...totalActivePowMaxValueData.value);
+      totalActivePowMaxValueData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+    }else if(newParamType=='a'){
+      maxActivePowDataTemp.value = Math.max(...aActivePowMaxValueData.value);
+      minActivePowDataTemp.value = Math.min(...aActivePowMaxValueData.value);
+      aActivePowMaxValueData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+    }else if(newParamType=='b'){
+      maxActivePowDataTemp.value = Math.max(...bActivePowMaxValueData.value);
+      minActivePowDataTemp.value = Math.min(...bActivePowMaxValueData.value);
+      bActivePowMaxValueData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+    }
+    realtimeChart?.off("legendselectchanged")
     realtimeChart?.dispose();
     realtimeChart = echarts.init(document.getElementById('chartContainer'));
     if ( newParamType == 'total'){
@@ -834,6 +1079,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
       // 参数类型变回总
       paramType.value = 'total'
       // 创建新的图表实例
+      realtimeChart?.off("legendselectchanged");
+      realtimeChart?.dispose();
       realtimeChart = echarts.init(document.getElementById('chartContainer'));
       // 设置新的配置对象
       if (realtimeChart) {
@@ -896,6 +1143,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
     if ( isHaveData.value == true ){
       // 参数类型变回总
       // 创建新的图表实例
+      realtimeChart?.off("legendselectchanged");
+      realtimeChart?.dispose();
       realtimeChart = echarts.init(document.getElementById('chartContainer'));
       // 设置新的配置对象
       if (realtimeChart) {
@@ -1114,6 +1363,50 @@ function defaultHourTimeRange(hour: number){
   ]
 }
 
+function preTime(date,time){
+  return dayjs(new Date(new Date(date.replace(" ", "T")).getTime()-time)).format('YYYY-MM-DD HH:mm:ss')
+}
+function nextMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 11){
+  pre.setMonth(0)
+  pre.setFullYear(pre.getFullYear() +1)
+ }else{
+  pre.setMonth(pre.getMonth() +1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function preMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 0){
+  pre.setMonth(11)
+  pre.setFullYear(pre.getFullYear() - 1)
+ }else{
+  pre.setMonth(pre.getMonth() - 1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function changeTime(to){
+  if(to=="next"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24),preTime(queryParams.timeRange[1],-1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24*7),preTime(queryParams.timeRange[1],-1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[nextMonth(queryParams.timeRange[0]),nextMonth(queryParams.timeRange[1])]
+    }
+  }else if(to="pre"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24),preTime(queryParams.timeRange[1],1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24*7),preTime(queryParams.timeRange[1],1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[preMonth(queryParams.timeRange[0]),preMonth(queryParams.timeRange[1])]
+    }
+  }
+  handleQuery();
+}
+
 // 默认查询的时间范围，单位：月
 function defaultMonthTimeRange(month) {
   // 获取当前日期
@@ -1217,8 +1510,8 @@ const getNavList = async() => {
 onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryAisleId = useRoute().query.aisleId as string | undefined;
-  const queryLocation = useRoute().query.location as string;
+  const queryAisleId = history.state.aisleId as string | undefined;
+  const queryLocation = history.state.location as string;
   queryParams.aisleId = queryAisleId ? parseInt(queryAisleId, 10) : undefined;
   if (queryParams.aisleId != undefined){
     nowAddress.value = queryLocation

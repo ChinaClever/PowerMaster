@@ -10,7 +10,7 @@
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
           <div v-if="showNavTree" >
-            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
+            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" :defaultCheckedKeys="defaultCheckedKeys"/>
           </div>
         </div>
         <div v-if="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
@@ -75,6 +75,11 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
+    required: false
+  },
+  defaultCheckedKeys:{
+    type: Array,
+    default: () => [],
     required: false
   }
 })

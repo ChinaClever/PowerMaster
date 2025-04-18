@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房电费统计">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
