@@ -46,4 +46,19 @@
             </foreach>
         </where>
     </select>
+    <select id="deviceStatistics" resultType="cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO">
+        select
+        count(id) as pduNum,
+        count(case when run_status = 3 then 1 end) as pduInform,
+        count(case when run_status != 5 then 1 end) as pduOnLine,
+        count(case when run_status = 5 then 1 end) as pduOffLine
+        from pdu_index
+        <where>
+            is_deleted = 0
+            and pdu_key in
+            <foreach collection="pduKeya" item="key" separator="," open="(" close=")">
+                #{key}
+            </foreach>
+        </where>
+    </select>
 </mapper>

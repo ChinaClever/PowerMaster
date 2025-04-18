@@ -135,6 +135,6 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/line/max`,data})
   },
   getRecordPage: async (data: any) => {
-    return await request.post({ url: `/system/alarm/record/page`, data})
+    return await request.post({ url: `/alarm/log-record/page`, data})
   },
 }

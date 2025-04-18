@@ -27,9 +27,19 @@ public class EqDataDTO {
     private Double lastWeekEqTotal;
 
     /**
+     * 上上周电量
+     */
+    private Double oldLastWeekEqTotal;
+
+    /**
      * 上月电量
      */
     private Double lastMonthEqTotal;
+
+    /**
+     * 上上月电量
+     */
+    private Double oldLastMonthEqTotal;
 
     /**
      * 今日电量
@@ -40,6 +50,11 @@ public class EqDataDTO {
      * 昨日用能
      */
     private Double yesterdayEqTotal;
+
+    /**
+     * 前天
+     */
+    private Double oldYesterdayEqTotal;
 
 
     @Data

@@ -29,7 +29,8 @@ public class RoomPowerAnalysisResVO {
     @ExcelProperty(value ="记录时间")
     private String create_time;
 
-    @NumberFormat("0.000")
+//    @NumberFormat("0.000")
+    @NumberFormat("#.###")
     @ExcelProperty("总有功功率")
     private Double active_total;
 

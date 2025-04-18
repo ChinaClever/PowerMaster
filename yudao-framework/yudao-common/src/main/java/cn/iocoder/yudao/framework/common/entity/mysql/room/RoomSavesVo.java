@@ -2,10 +2,12 @@ package cn.iocoder.yudao.framework.common.entity.mysql.room;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -64,46 +66,59 @@ public class RoomSavesVo {
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private Integer isDeleted;
+    private int isDelete;
 
+    @Schema(description = "面积类型：0-地砖 1-面积")
+    private Boolean areaFlag;
 
     /**
      * 机房x长度(单位机柜)
      */
     @Schema(description = "x长度", example = "0")
-    @JsonProperty(value="xLength")
+    @JsonProperty(value = "xLength")
     private int xLength;
 
     /**
      * 机房Y长度(单位机柜)
      */
     @Schema(description = "y长度", example = "0")
-    @JsonProperty(value="yLength")
+    @JsonProperty(value = "yLength")
     private int yLength;
 
+
+    @Schema(description = "面积长度")
+    private BigDecimal areaxLength;
+
+    @Schema(description = "面积宽")
+    private BigDecimal areayLength;
+
     @Schema(description = "柜列列表", example = "[]")
-    private List<AisleSaveVo>  aisleList;
+    private List<AisleSaveVo> aisleList;
 
     @Schema(description = "机柜列表", example = "[]")
-    private List<CabinetVo>  cabinetList;
+    private List<CabinetVo> cabinetList;
 
     /**
      * 日用能告警开关
      */
-    private  int eleAlarmDay;
+    @Schema(description = "日用能告警开关")
+    private int eleAlarmDay;
 
     /**
      * 月用能告警开关
      */
-    private  int eleAlarmMonth;
+    @Schema(description = "月用能告警开关")
+    private int eleAlarmMonth;
 
     /**
      * 日用能限制
      */
+    @Schema(description = "日用能限制")
     private double eleLimitDay;
 
     /**
      * 月用能限制
      */
+    @Schema(description = "月用能限制")
     private double eleLimitMonth;
 }

@@ -1,0 +1,349 @@
+package cn.iocoder.yudao.module.alarm.service.cfgmail;
+
+import cn.hutool.core.util.StrUtil;
+import cn.iocoder.yudao.framework.common.enums.*;
+import cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgprompt.AlarmCfgPromptDO;
+import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
+import cn.iocoder.yudao.module.alarm.service.cfgprompt.AlarmCfgPromptService;
+import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
+import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailAccountDO;
+import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailTemplateDO;
+import cn.iocoder.yudao.module.system.mq.message.mail.MailSendMessage;
+import cn.iocoder.yudao.module.system.service.mail.MailAccountService;
+import cn.iocoder.yudao.module.system.service.mail.MailLogService;
+import cn.iocoder.yudao.module.system.service.mail.MailSendService;
+import cn.iocoder.yudao.module.system.service.mail.MailTemplateService;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.google.common.annotations.VisibleForTesting;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+import javax.annotation.Resource;
+import javax.sound.sampled.*;
+import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
+import cn.iocoder.yudao.module.alarm.controller.admin.cfgmail.vo.*;
+import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgmail.AlarmCfgMailDO;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.module.alarm.dal.mysql.cfgmail.AlarmCfgMailMapper;
+import java.io.InputStream;
+import java.util.*;
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.MAIL_SEND_TEMPLATE_PARAM_MISS;
+
+
+/**
+ * 告警邮件接收人配置 Service 实现类
+ *
+ * @author 芋道源码
+ */
+@Service
+@Validated
+@Slf4j
+public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
+
+    @Resource
+    private AlarmCfgMailMapper cfgMailMapper;
+
+    @Resource
+    private MailAccountService mailAccountService;
+    @Resource
+    private MailTemplateService mailTemplateService;
+    @Resource
+    private MailSendService mailSendService;
+    @Resource
+    private MailLogService mailLogService;
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private AlarmCfgPromptService alarmCfgPromptService;
+
+    @Autowired
+    private AlarmLogRecordService alarmLogRecordService;
+
+
+    public static final String TEMPLATE_CODE = "ALARM_MAIL";
+
+    public AlarmCfgMailServiceImpl(MailAccountService mailAccountService) {
+        this.mailAccountService = mailAccountService;
+    }
+
+    @Override
+    public Integer saveCfgMail(AlarmCfgMailSaveReqVO saveReqVO) {
+
+        AlarmCfgMailDO cfgMail = BeanUtils.toBean(saveReqVO, AlarmCfgMailDO.class);
+        if (Objects.nonNull(saveReqVO.getId())) {
+            // 修改
+            cfgMailMapper.updateById(cfgMail);
+        } else {
+            // 插入
+            cfgMailMapper.insert(cfgMail);
+        }
+        // 返回
+        return cfgMail.getId();
+    }
+
+    @Override
+    public void batchSave(List<AlarmCfgMailSaveReqVO> saveReqVOS) {
+        if (!CollectionUtils.isEmpty(saveReqVOS)) {
+            List<AlarmCfgMailDO> list = BeanUtils.toBean(saveReqVOS, AlarmCfgMailDO.class);
+            cfgMailMapper.insertBatch(list);
+        }
+    }
+
+
+    @Override
+    public void updateCfgMail(AlarmCfgMailSaveReqVO updateReqVO) {
+        // 校验存在
+        validateCfgMailExists(updateReqVO.getId());
+        // 更新
+        AlarmCfgMailDO updateObj = BeanUtils.toBean(updateReqVO, AlarmCfgMailDO.class);
+        cfgMailMapper.updateById(updateObj);
+    }
+
+    @Override
+    public void deleteCfgMail(Integer id) {
+        // 校验存在
+        validateCfgMailExists(id);
+        // 删除
+        cfgMailMapper.deleteById(id);
+    }
+
+    @Override
+    public void deleteMailAll() {
+        cfgMailMapper.delete(null);
+    }
+
+
+    private void validateCfgMailExists(Integer id) {
+        if (cfgMailMapper.selectById(id) == null) {
+            throw new RuntimeException("数据不存在");
+        }
+    }
+
+    @Override
+    public AlarmCfgMailDO getCfgMail(Integer id) {
+        return cfgMailMapper.selectById(id);
+    }
+
+    @Override
+    public PageResult<AlarmCfgMailDO> getCfgMailPage(AlarmCfgMailPageReqVO pageReqVO) {
+        return cfgMailMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<AlarmCfgMailDO>()
+                .likeIfPresent(AlarmCfgMailDO::getMailAddr, pageReqVO.getMailAddr())
+                .eqIfPresent(AlarmCfgMailDO::getIsEnable , pageReqVO.getIsEnable()));
+    }
+
+    @Override
+    public List<AlarmCfgMailDO> getMailConfig() {
+        return cfgMailMapper.selectList(new LambdaUpdateWrapper<>());
+    }
+
+    @Override
+    public void sendMail(List<AlarmLogRecordDO> records) {
+
+        List<AlarmCfgMailDO> mailAlarmConfigs = cfgMailMapper.selectList(new LambdaQueryWrapperX<AlarmCfgMailDO>()
+                .eq(AlarmCfgMailDO::getIsEnable, DisableEnums.ENABLE.getStatus()));
+
+        //报警信息
+        List<Map<String, Object>> templateParams = new ArrayList<>();
+        for (AlarmLogRecordDO record : records) {
+            Map<String, Object> templateParam = new HashMap<>();
+            templateParam.put("position",record.getAlarmPosition());
+            templateParam.put("alarmType", AlarmTypeEnums.getNameByStatus(record.getAlarmType()));
+            templateParam.put("alarmLevel", AlarmLevelEnums.getNameByStatus(record.getAlarmLevel()));
+            templateParam.put("alarmDesc",record.getAlarmDesc());
+        }
+
+
+        if (!CollectionUtils.isEmpty(mailAlarmConfigs)){
+            mailAlarmConfigs.forEach(config -> {
+                String mail = config.getMailAddr();
+                // 校验邮箱是否存在
+                mail = validateMail(mail);
+
+                // 校验邮箱模版是否合法
+                MailTemplateDO template = validateMailTemplate(TEMPLATE_CODE);
+
+                MailAccountDO account = validateMailAccount(template.getAccountId());
+                StringBuffer contentBuff = new StringBuffer();
+                for (Map<String, Object> templateParam : templateParams) {
+                    // 校验邮箱账号是否合法
+                    validateTemplateParams(template, templateParam);
+
+                    // 组装发送内容
+                    String content = mailTemplateService.formatMailTemplateContent(template.getContent(), templateParam);
+                    contentBuff.append(content).append("\n");
+                }
+
+
+                // 创建发送日志。如果模板被禁用，则不发送短信，只记录日志
+                Boolean isSend = CommonStatusEnum.ENABLE.getStatus().equals(template.getStatus());
+                String title = mailTemplateService.formatMailTemplateContent(template.getTitle(), templateParams.get(0));
+
+
+                //邮件用户
+                Long sendLogId = mailLogService.createMailLog(template.getAccountId(), 9, mail,
+                        account, template, contentBuff.toString(), templateParams, isSend);
+                MailSendMessage message = new MailSendMessage()
+                        .setLogId(sendLogId).setMail(mail).setAccountId(template.getAccountId())
+                        .setNickname(template.getNickname()).setTitle(title).setContent(contentBuff.toString());
+                //发送邮件
+                mailSendService.doSendMail(message);
+            });
+        }
+    }
+
+
+    @Override
+    public void playAudio() {
+
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("ALARM.WAV");
+
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(inputStream);
+            AudioFormat format = audioInputStream.getFormat();
+            if (!AudioSystem.isLineSupported(new DataLine.Info(Clip.class, format))) {
+                log.info("Line not supported for this audio format.");
+            } else {
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioInputStream);
+
+                // 获取音频格式
+                AudioFormat audioFormat = audioInputStream.getFormat();
+                // 获取帧长度（如果可用）
+                long frameLength = audioInputStream.getFrameLength();
+
+                // 如果音频流没有指定帧长度，则需要找到音频文件的总字节数
+                if (frameLength == AudioSystem.NOT_SPECIFIED) {
+                    frameLength = audioInputStream.getFrameLength() * audioFormat.getFrameSize();
+                }
+
+                // 计算总播放时间（秒）
+                float frameRate = audioFormat.getFrameRate();
+                // 秒
+                float totalSeconds = frameLength / frameRate;
+
+                clip.start();
+                //开始后睡眠播放时间秒
+                Thread.sleep((long) (totalSeconds * 1000L));
+                //关闭
+                clip.close();
+            }
+        }catch (Exception e){
+            log.error("播放异常：",e);
+        }
+
+    }
+
+
+    @Override
+    public void pushAlarmMessage() {
+        // 获取告警记录变化的数据
+        String table = "sys_alarm_record";
+        List<Map<String,Object>> insertList = redisTemplate.opsForList().range(table + ":insert", 0, -1);
+        List<Map<String,Object>> updateList = redisTemplate.opsForList().range(table + ":updateNew", 0, -1);
+        // 获取告警配置
+        List<AlarmCfgPromptDO> cfgPromptList = alarmCfgPromptService.getCfgPromptList();
+        int voiceAlarm = 0;
+        int emailAlarm = 0;
+        int smsAlarm = 0;
+        for (AlarmCfgPromptDO alarmCfgPromptDO : cfgPromptList) {
+            if (AlarmPromptType.VOICE_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
+                voiceAlarm = alarmCfgPromptDO.getIsEnable();
+            } else if (AlarmPromptType.EMAIL_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
+                emailAlarm = alarmCfgPromptDO.getIsEnable();
+            } else if (AlarmPromptType.SMS_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
+                smsAlarm = alarmCfgPromptDO.getIsEnable();
+            }
+        }
+
+        // 告警推送处理
+        if (insertList != null || updateList != null) {
+            // 获取告警记录
+            List<AlarmLogRecordDO> list = new ArrayList<>();
+            if (insertList != null) {
+                for (Map<String, Object> map : insertList) {
+                    AlarmLogRecordDO record = alarmLogRecordService.getAlarmRecordById((Integer) map.get("id"));
+                    list.add(record);
+                }
+            }
+            if (updateList != null) {
+                for (Map<String, Object> map : updateList) {
+                    AlarmLogRecordDO record = alarmLogRecordService.getAlarmRecordById((Integer) map.get("id"));
+                    list.add(record);
+                }
+            }
+
+            // 铃声告警
+//            if (voiceAlarm == 1) {
+//                playAudio();
+//            }
+            // 邮件告警
+            if (emailAlarm == 1) {
+                sendMail(list);
+            }
+
+            // 删除缓存
+            List<String> deleteKeys = new ArrayList<>();
+            deleteKeys.add(table + ":insert");
+            deleteKeys.add(table + ":updateNew");
+            deleteKeys.add(table + ":updateOld");
+            redisTemplate.delete(deleteKeys);
+        }
+    }
+
+
+    @VisibleForTesting
+    MailTemplateDO validateMailTemplate(String templateCode) {
+        // 获得邮件模板。考虑到效率，从缓存中获取
+        MailTemplateDO template = mailTemplateService.getMailTemplateByCodeFromCache(templateCode);
+        // 邮件模板不存在
+        if (template == null) {
+            throw exception(MAIL_TEMPLATE_NOT_EXISTS);
+        }
+        return template;
+    }
+
+    @VisibleForTesting
+    MailAccountDO validateMailAccount(Long accountId) {
+        // 获得邮箱账号。考虑到效率，从缓存中获取
+        MailAccountDO account = mailAccountService.getMailAccountFromCache(accountId);
+        // 邮箱账号不存在
+        if (account == null) {
+            throw exception(MAIL_ACCOUNT_NOT_EXISTS);
+        }
+        return account;
+    }
+
+    @VisibleForTesting
+    String validateMail(String mail) {
+        if (StrUtil.isEmpty(mail)) {
+            throw exception(MAIL_SEND_MAIL_NOT_EXISTS);
+        }
+        return mail;
+    }
+
+    /**
+     * 校验邮件参数是否确实
+     *
+     * @param template 邮箱模板
+     * @param templateParams 参数列表
+     */
+    @VisibleForTesting
+    void validateTemplateParams(MailTemplateDO template, Map<String, Object> templateParams) {
+        template.getParams().forEach(key -> {
+            Object value = templateParams.get(key);
+            if (value == null) {
+                throw ServiceExceptionUtil.exception(MAIL_SEND_TEMPLATE_PARAM_MISS, key);
+            }
+        });
+    }
+
+
+}

@@ -8,13 +8,18 @@ import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomIndexChartDetailDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
@@ -47,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -89,6 +95,26 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
     @Autowired
     private RoomIndexMapper roomIndexMapper;
+
+    @Autowired
+    private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private PduIndexDoMapper pduIndexDoMapper;
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
+
+    @Autowired
+    private BusIndexDoMapper busIndexDoMapper;
+
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
+
+    @Autowired
+    private AisleBarMapper aisleBarMapper;
+
+    @Autowired
+    private AisleBoxMapper aisleBoxMapper;
 
     @Override
     public Integer createIndex(RoomIndexSaveReqVO createReqVO) {
@@ -658,8 +684,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             RoomActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePowMax)).orElse(new RoomActivePowTrendDTO());
             RoomActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePowMax)).orElse(new RoomActivePowTrendDTO());
             powDTO.setTodayMax(Float.valueOf(todayMax.getActivePowMax()));
-            powDTO.setTodayMaxTime(DateFormatUtils.format(todayMax.getActivePowMaxTime(),"yyyy-MM-dd HH:mm"));
-            powDTO.setYesterdayMaxTime(DateFormatUtils.format(yesterdayMax.getActivePowMaxTime(),"yyyy-MM-dd HH:mm"));
+            powDTO.setTodayMaxTime(DateFormatUtils.format(todayMax.getActivePowMaxTime(), "yyyy-MM-dd HH:mm"));
+            powDTO.setYesterdayMaxTime(DateFormatUtils.format(yesterdayMax.getActivePowMaxTime(), "yyyy-MM-dd HH:mm"));
             powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePowMax()));
             return powDTO;
         } catch (Exception e) {
@@ -669,8 +695,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     }
 
     @Override
-    public List<RoomEqTrendDTO> eqTrend(int id, String type) {
-        List<RoomEqTrendDTO> list = new ArrayList<>();
+    public List<RoomEqTrendVO> eqTrend(int id, String type) {
+        List<RoomEqTrendVO> list = new ArrayList<>();
         try {
             //当日
             if (type.equals(DAY)) {
@@ -698,15 +724,11 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         RoomEleChainDTO chainDTO = new RoomEleChainDTO();
         try {
 
-
             getDayChain(id, chainDTO);
-
 
             getWeekChain(id, chainDTO);
 
-
             getMonthChain(id, chainDTO);
-
 
         } catch (Exception e) {
             log.error("获取数据异常：", e);
@@ -921,20 +943,18 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         LocalDate yesterday = LocalDate.now();
 
         // 昨天的起始时间（00:00:00）
-        String start =LocalDateTimeUtil.format( yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+        String start = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         String end = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
-
         extractedMaxEq("room_eq_total_day", start, end, result, 0);
+
         // 获取上周的开始时间（周一）
         start = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         end = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
-
         extractedMaxEq("room_eq_total_week", start, end, result, 1);
 
         start = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
         end = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
-        extractedMaxEq("room_eq_total_month", start,
-                end, result, 2);
+        extractedMaxEq("room_eq_total_month", start, end, result, 2);
         return result;
     }
 
@@ -957,7 +977,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
                 if (Objects.equals(dto.getFlag(), 0)) {
                     index = "room_ele_total_realtime";
-                    heads = new String[]{"room_id", "ele_a", "ele_b","ele_total", "create_time"};
+                    heads = new String[]{"room_id", "ele_a", "ele_b", "ele_total", "create_time"};
                 }
                 if (Objects.equals(dto.getFlag(), 1)) {
                     index = "room_hda_pue_realtime";
@@ -970,9 +990,15 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
                 if (Objects.equals(dto.getFlag(), 2)) {
                     index = "room_hda_pow_hour";
-                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
-                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
-                            "create_time", "aisle_id"};
+                    heads = new String[]{"apparent_total_avg_value", "apparent_total_max_value", "apparent_total_max_time",
+                            "apparent_total_min_time", "apparent_total_min_value", "apparent_a_avg_value", "apparent_b_avg_value",
+                            "active_total_avg_value", "active_total_max_time", "active_total_max_value",
+                            "active_total_min_time", "active_total_min_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_total_max_time", "reactive_total_max_value", "reactive_total_min_time",
+                            "reactive_total_min_value", "reactive_a_avg_value", "reactive_b_avg_value",
+                            "factor_total_avg_value", "factor_total_max_time", "factor_total_max_value", "factor_total_min_time",
+                            "factor_total_min_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "room_id"};
                 }
                 if (Objects.equals(dto.getFlag(), 0)) {
                     index = "room_ele_total_realtime";
@@ -980,7 +1006,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
                 if (Objects.equals(dto.getFlag(), 1)) {
                     index = "room_hda_pue_hour";
-                    heads = new String[]{"room_id", "room_pue_avg_value", "load_rate_avg_value", "create_time"};
+                    heads = new String[]{"room_id", "room_pue_avg_value", "room_pue_max_time", "room_pue_max_value",
+                            "room_pue_min_time", "room_pue_min_value", "load_rate_avg_value", "load_rate_max_time",
+                            "load_rate_max_value", "load_rate_min_time", "load_rate_min_value", "create_time"};
                 }
                 startTime = oneDayAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -989,9 +1017,15 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
                 if (Objects.equals(dto.getFlag(), 2)) {
                     index = "room_hda_pow_hour";
-                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
-                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
-                            "create_time", "aisle_id"};
+                    heads = new String[]{"apparent_total_avg_value", "apparent_total_max_value", "apparent_total_max_time",
+                            "apparent_total_min_time", "apparent_total_min_value", "apparent_a_avg_value", "apparent_b_avg_value",
+                            "active_total_avg_value", "active_total_max_time", "active_total_max_value",
+                            "active_total_min_time", "active_total_min_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_total_max_time", "reactive_total_max_value", "reactive_total_min_time",
+                            "reactive_total_min_value", "reactive_a_avg_value", "reactive_b_avg_value",
+                            "factor_total_avg_value", "factor_total_max_time", "factor_total_max_value", "factor_total_min_time",
+                            "factor_total_min_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "room_id"};
                 }
                 if (Objects.equals(dto.getFlag(), 0)) {
                     index = "room_ele_total_realtime";
@@ -999,7 +1033,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
                 if (Objects.equals(dto.getFlag(), 1)) {
                     index = "room_hda_pue_hour";
-                    heads = new String[]{"room_id", "room_pue_avg_value", "load_rate_avg_value", "create_time"};
+                    heads = new String[]{"room_id", "room_pue_avg_value", "room_pue_max_time", "room_pue_max_value",
+                            "room_pue_min_time", "room_pue_min_value", "load_rate_avg_value", "load_rate_max_time",
+                            "load_rate_max_value", "load_rate_min_time", "load_rate_min_value", "create_time"};
                 }
                 startTime = threeDaysAgo.format(formatter);
                 endTime = now.format(formatter);
@@ -1008,9 +1044,15 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
                 if (Objects.equals(dto.getFlag(), 2)) {
                     index = "room_hda_pow_day";
-                    heads = new String[]{"apparent_total_avg_value", "apparent_a_avg_value", "apparent_b_avg_value", "active_total_avg_value", "active_a_avg_value", "active_b_avg_value",
-                            "reactive_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "factor_total_avg_value", "factor_a_avg_value", "factor_b_avg_value",
-                            "create_time", "aisle_id"};
+                    heads = new String[]{"apparent_total_avg_value", "apparent_total_max_value", "apparent_total_max_time",
+                            "apparent_total_min_time", "apparent_total_min_value", "apparent_a_avg_value", "apparent_b_avg_value",
+                            "active_total_avg_value", "active_total_max_time", "active_total_max_value",
+                            "active_total_min_time", "active_total_min_value", "active_a_avg_value", "active_b_avg_value",
+                            "reactive_total_avg_value", "reactive_total_max_time", "reactive_total_max_value", "reactive_total_min_time",
+                            "reactive_total_min_value", "reactive_a_avg_value", "reactive_b_avg_value",
+                            "factor_total_avg_value", "factor_total_max_time", "factor_total_max_value", "factor_total_min_time",
+                            "factor_total_min_value", "factor_a_avg_value", "factor_b_avg_value",
+                            "create_time", "room_id"};
                 }
                 if (Objects.equals(dto.getFlag(), 0)) {
                     index = "room_eq_total_day";
@@ -1018,16 +1060,75 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
                 if (Objects.equals(dto.getFlag(), 1)) {
                     index = "room_hda_pue_day";
-                    heads = new String[]{"room_id", "room_pue_avg_value", "load_rate_avg_value", "create_time"};
+                    heads = new String[]{"room_id", "room_pue_avg_value", "room_pue_max_time", "room_pue_max_value",
+                            "room_pue_min_time", "room_pue_min_value", "load_rate_avg_value", "load_rate_max_time",
+                            "load_rate_max_value", "load_rate_min_time", "load_rate_min_value", "create_time"};
                 }
                 startTime = oneMonthAgo.format(formatter);
                 endTime = now.format(formatter);
                 break;
         }
-
         List<Map<String, Object>> dataMap = getDataMap(startTime, endTime, dto.getRoomId(), index, heads);
-
         return dataMap;
+    }
+
+    @Override
+    public DeviceStatisticsVO deviceStatistics(Integer roomId) {
+        DeviceStatisticsVO vo = cabinetIndexMapper.deviceStatistics(roomId);
+        List<String> boxKeys = new ArrayList<>();
+        List<String> busKeys = new ArrayList<>();
+
+        List<AisleIndex> aisleIndices = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().eq(AisleIndex::getRoomId, roomId).eq(AisleIndex::getIsDelete, 0));
+        if (!CollectionUtils.isEmpty(aisleIndices)) {
+            List<Integer> aisleIds = aisleIndices.stream().map(AisleIndex::getId).distinct().collect(Collectors.toList());
+            List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>().in(AisleBar::getAisleId, aisleIds));
+            if (!CollectionUtils.isEmpty(aisleBars)) {
+                busKeys.addAll(aisleBars.stream().map(AisleBar::getBusKey).collect(Collectors.toList()));
+            }
+            List<AisleBox> aisleBoxes = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getAisleId, aisleIds));
+            if (!CollectionUtils.isEmpty(aisleBoxes)) {
+                busKeys.addAll(aisleBoxes.stream().map(AisleBox::getBusKey).collect(Collectors.toList()));
+                boxKeys.addAll(aisleBoxes.stream().map(AisleBox::getBoxKey).collect(Collectors.toList()));
+            }
+        }
+
+        List<CabinetPdu> cabinetPdu = cabinetIndexMapper.getFindCabinetPduList(roomId);
+        if (!CollectionUtils.isEmpty(cabinetPdu)) {
+            List<String> pduKeya = cabinetPdu.stream().map(CabinetPdu::getPduKeyA).distinct().collect(Collectors.toList());
+            List<String> pduKeyb = cabinetPdu.stream().map(CabinetPdu::getPduKeyB).distinct().collect(Collectors.toList());
+            pduKeya.addAll(pduKeyb);
+            if (!CollectionUtils.isEmpty(pduKeya)) {
+                DeviceStatisticsVO pdu = pduIndexDoMapper.deviceStatistics(pduKeya);
+                vo.setPduNum(pdu.getPduNum());
+                vo.setPduOffLine(pdu.getPduOffLine());
+                vo.setPduInform(pdu.getPduInform());
+                vo.setPduOnLine(pdu.getPduOnLine());
+            }
+        }
+        List<CabinetPdu> cabinetBox = cabinetIndexMapper.getFindCabinetBoxList(roomId);
+        if (!CollectionUtils.isEmpty(cabinetBox)) {
+            boxKeys.addAll(cabinetBox.stream().map(CabinetPdu::getPduKeyA).distinct().collect(Collectors.toList()));
+            boxKeys.addAll(cabinetBox.stream().map(CabinetPdu::getPduKeyB).distinct().collect(Collectors.toList()));
+        }
+        if (!CollectionUtils.isEmpty(boxKeys)) {
+            boxKeys=boxKeys.stream().distinct().collect(Collectors.toList());
+            DeviceStatisticsVO box = boxIndexMapper.deviceStatistics(boxKeys);
+            vo.setBoxNum(box.getBoxNum());
+            vo.setBoxInform(box.getBoxInform());
+            vo.setBoxOffLine(box.getBoxOffLine());
+            vo.setBoxOnLine(box.getBoxOnLine());
+        }
+        if (!CollectionUtils.isEmpty(busKeys)) {
+            busKeys=busKeys.stream().distinct().collect(Collectors.toList());
+            DeviceStatisticsVO bus = busIndexDoMapper.deviceStatistics(busKeys);
+            vo.setBarNum(bus.getBusNum());
+            vo.setBusNum(bus.getBusNum());
+            vo.setBusInform(bus.getBusInform());
+            vo.setBusOffLine(bus.getBusOffLine());
+            vo.setBusOnLine(bus.getBusOnLine());
+        }
+
+        return vo;
     }
 
     private void extractedMaxEq(String indexEs, String startTime, String endTime, List<RoomMaxEqResVO> result, Integer type) {
@@ -1039,7 +1140,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
-                    .gte(startTime).lte(endTime))
+                            .gte(startTime).lte(endTime))
                     .must(QueryBuilders.rangeQuery("eq_value").gt(0))));
             builder.sort("eq_value", SortOrder.DESC);
             // 设置搜索条件
@@ -1080,8 +1181,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
      * @param id
      * @return
      */
-    private List<RoomEqTrendDTO> dayTrend(int id) throws IOException {
-        List<RoomEqTrendDTO> trendDTOList = new ArrayList<>();
+    private List<RoomEqTrendVO> dayTrend(int id) throws IOException {
+        List<RoomEqTrendVO> trendDTOList = new ArrayList<>();
 
         //今日
         String startTime = "";
@@ -1110,7 +1211,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             }
 
         });
-        Map<String, RoomEqTrendDTO> map = new HashMap<>();
+        Map<String, RoomEqTrendVO> map = new HashMap<>();
         //昨日数据处理
         for (int i = 0; i < yesterdayList.size() - 1; i++) {
 
@@ -1124,10 +1225,10 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             //避免负数
             double eq = (thisDo.getEleTotal() - reDo.getEleTotal()) < 0 ? 0 : thisDo.getEleTotal() - reDo.getEleTotal();
 
-            RoomEqTrendDTO roomEqTrendDTO = new RoomEqTrendDTO();
-            roomEqTrendDTO.setLastEq(eq);
-            roomEqTrendDTO.setDateTime(dateTime);
-            map.put(dateTime, roomEqTrendDTO);
+            RoomEqTrendVO roomEqTrendVO = new RoomEqTrendVO();
+            roomEqTrendVO.setLastEq(eq);
+            roomEqTrendVO.setDateTime(dateTime);
+            map.put(dateTime, roomEqTrendVO);
 
         }
         //今日数据处理
@@ -1144,18 +1245,18 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             //避免负数
             double eq = (thisDo.getEleTotal() - reDo.getEleTotal()) < 0 ? 0 : thisDo.getEleTotal() - reDo.getEleTotal();
 
-            RoomEqTrendDTO roomEqTrendDTO = map.get(dateTime);
-            if (Objects.isNull(roomEqTrendDTO)) {
-                roomEqTrendDTO = new RoomEqTrendDTO();
+            RoomEqTrendVO roomEqTrendVO = map.get(dateTime);
+            if (Objects.isNull(roomEqTrendVO)) {
+                roomEqTrendVO = new RoomEqTrendVO();
             }
-            roomEqTrendDTO.setEq(eq);
-            roomEqTrendDTO.setDateTime(dateTime);
-            map.put(dateTime, roomEqTrendDTO);
+            roomEqTrendVO.setEq(eq);
+            roomEqTrendVO.setDateTime(dateTime);
+            map.put(dateTime, roomEqTrendVO);
         }
 
         map.keySet().forEach(key -> trendDTOList.add(map.get(key)));
 
-        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendDTO::getDateTime)).collect(Collectors.toList());
+        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendVO::getDateTime)).collect(Collectors.toList());
 
 
     }
@@ -1166,8 +1267,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
      * @param id
      * @return
      */
-    private List<RoomEqTrendDTO> weekTrend(int id) throws IOException {
-        List<RoomEqTrendDTO> trendDTOList = new ArrayList<>();
+    private List<RoomEqTrendVO> weekTrend(int id) throws IOException {
+        List<RoomEqTrendVO> trendDTOList = new ArrayList<>();
 
         //本周
         String startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
@@ -1195,7 +1296,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             weekMap.put(dateTime, realtimeDo);
 
         });
-        Map<Integer, RoomEqTrendDTO> data = new HashMap<>();
+        Map<Integer, RoomEqTrendVO> data = new HashMap<>();
         //本周数据
         thisWeek.keySet().forEach(key -> {
 
@@ -1203,7 +1304,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
             RoomEqTotalDayDo realtimeDo = weekMap.get(date);
 
-            RoomEqTrendDTO trendDTO = new RoomEqTrendDTO();
+            RoomEqTrendVO trendDTO = new RoomEqTrendVO();
             trendDTO.setEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
             trendDTO.setDateTime(String.valueOf(key));
             data.put(key, trendDTO);
@@ -1219,9 +1320,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
             RoomEqTotalDayDo realtimeDo = weekMap.get(date);
 
-            RoomEqTrendDTO trendDTO = data.get(key);
+            RoomEqTrendVO trendDTO = data.get(key);
             if (Objects.isNull(trendDTO)) {
-                trendDTO = new RoomEqTrendDTO();
+                trendDTO = new RoomEqTrendVO();
             }
             trendDTO.setLastEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
             trendDTO.setDateTime(String.valueOf(key));
@@ -1232,7 +1333,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
         data.keySet().forEach(key -> trendDTOList.add(data.get(key)));
 
-        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendDTO::getDateTime)).collect(Collectors.toList());
+        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendVO::getDateTime)).collect(Collectors.toList());
 
 
     }
@@ -1244,8 +1345,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
      * @param id
      * @return
      */
-    private List<RoomEqTrendDTO> monthTrend(int id) throws IOException {
-        List<RoomEqTrendDTO> trendDTOList = new ArrayList<>();
+    private List<RoomEqTrendVO> monthTrend(int id) throws IOException {
+        List<RoomEqTrendVO> trendDTOList = new ArrayList<>();
 
         //本月
         String startTime = "";
@@ -1270,7 +1371,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             monthMap.put(dateTime, realtimeDo);
 
         });
-        Map<String, RoomEqTrendDTO> data = new HashMap<>();
+        Map<String, RoomEqTrendVO> data = new HashMap<>();
 
         Map<String, String> thisMonth = getThisMonth();
         //本月数据
@@ -1280,12 +1381,10 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
             RoomEqTotalDayDo realtimeDo = monthMap.get(date);
 
-            RoomEqTrendDTO trendDTO = new RoomEqTrendDTO();
+            RoomEqTrendVO trendDTO = new RoomEqTrendVO();
             trendDTO.setEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
             trendDTO.setDateTime(String.valueOf(key));
             data.put(key, trendDTO);
-
-
         });
 
         Map<String, String> lastMonth = getLastMonth();
@@ -1296,9 +1395,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
             RoomEqTotalDayDo realtimeDo = monthMap.get(date);
 
-            RoomEqTrendDTO trendDTO = data.get(key);
+            RoomEqTrendVO trendDTO = data.get(key);
             if (Objects.isNull(trendDTO)) {
-                trendDTO = new RoomEqTrendDTO();
+                trendDTO = new RoomEqTrendVO();
             }
             trendDTO.setLastEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
             trendDTO.setDateTime(String.valueOf(key));
@@ -1309,7 +1408,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
 
         data.keySet().forEach(key -> trendDTOList.add(data.get(key)));
 
-        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendDTO::getDateTime)).collect(Collectors.toList());
+        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendVO::getDateTime)).collect(Collectors.toList());
 
 
     }
@@ -1651,7 +1750,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
      * @return
      * @throws IOException
      */
-    private List<String> getData(String startTime, String endTime, int id, String index){
+    private List<String> getData(String startTime, String endTime, int id, String index) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -1677,20 +1776,20 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
             }
             return list;
-        }catch (Exception e){
-            log.error("获取es数据失败"+e);
+        } catch (Exception e) {
+            log.error("获取es数据失败" + e);
         }
         return null;
     }
 
 
-    private List<Map<String,Object>> getDataMap(String startTime, String endTime, int id, String index,String[] heads){
+    private List<Map<String, Object>> getDataMap(String startTime, String endTime, int id, String index, String[] heads) {
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
-            builder.fetchSource(heads,null);
+            builder.fetchSource(heads, null);
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
                     .must(QueryBuilders.termQuery(ROOM_ID, id))));
@@ -1699,7 +1798,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             searchRequest.source(builder);
             builder.size(2000);
 
-            List<Map<String,Object>> list = new ArrayList<>();
+            List<Map<String, Object>> list = new ArrayList<>();
             // 执行ES请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             if (searchResponse != null) {
@@ -1710,8 +1809,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
             }
             return list;
-        }catch (Exception e){
-            log.error("获取es数据失败"+e);
+        } catch (Exception e) {
+            log.error("获取es数据失败" + e);
         }
         return null;
     }

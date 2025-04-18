@@ -2,14 +2,14 @@
   <Dialog v-model="dialogVisible" :title="dialogTitle" width="80%">
     <el-table :data="tableData" style="width: 100%">
       <el-table-column prop="id" label="编号" width="135" align="center" />
-      <el-table-column v-if="formType == 'mail'" prop="mail" label="邮箱" min-width="120" align="center">
+      <el-table-column v-if="formType == 'mail'" prop="mailAddr" label="邮箱" min-width="120" align="center">
         <template #default="scope">
-          <el-input :disabled="scope.row.id != editId"  v-model="scope.row.mail" />
+          <el-input :disabled="scope.row.id != editId"  v-model="scope.row.mailAddr" />
         </template>
       </el-table-column>
-      <el-table-column v-if="formType == 'phone'" prop="phone" label="手机号" min-width="120" align="center">
+      <el-table-column v-if="formType == 'phone'" prop="phoneNumber" label="手机号" min-width="120" align="center">
         <template #default="scope">
-          <el-input :disabled="scope.row.id != editId"  v-model="scope.row.phone" />
+          <el-input :disabled="scope.row.id != editId"  v-model="scope.row.phoneNumber" />
         </template>
       </el-table-column>
       <el-table-column prop="isEnable" label="是否可用" min-width="100" align="center" >
@@ -83,13 +83,13 @@ const open = async (type: string) => {
     if (type == 'mail') {
       tableData.value.push({
         ...baseParam,
-        mail: '',
+        mailAddr: '',
         mailDesc: ''
       })
     } else {
       tableData.value.push({
         ...baseParam,
-        phone: '',
+        phoneNumber: '',
         smsDesc: ''
       })
     }
@@ -107,7 +107,7 @@ const handleEdit = (row) => {
 
 const handleAdd = (row) => {
   console.log('handleAdd', row)
-  if((formType.value == 'mail' && !row.mail) || (formType.value == 'phone' && !row.phone)) {
+  if((formType.value == 'mail' && !row.mailAddr) || (formType.value == 'phone' && !row.phoneNumber)) {
     message.error(`请填写${formType.value == 'mail' ? '邮箱' : '手机号'}`)
     return
   }
@@ -116,12 +116,12 @@ const handleAdd = (row) => {
     if (formType.value == 'mail') {
       tableData.value.push({
         ...baseParam,
-        mail: ''
+        mailAddr: ''
       })
     } else {
       tableData.value.push({
         ...baseParam,
-        phone: ''
+        phoneNumber: ''
       })
     }
     row.id = new Date().getTime() + '(临时编号)'
@@ -148,7 +148,7 @@ const submitForm = async () => {
     if(formType.value == 'mail') {
       res = await AlarmApi.saveMailConfig(tableData.value.map(item =>{
         const result = {
-          mail: item.mail,
+          mailAddr: item.mailAddr,
           isEnable: item.isEnable,
           mailDesc: item.mailDesc,
         } as any
@@ -158,7 +158,7 @@ const submitForm = async () => {
     } else {
       res = await AlarmApi.savePhoneConfig(tableData.value.map(item =>{
         const result = {
-          phone: item.phone,
+          phoneNumber: item.phoneNumber,
           isEnable: item.isEnable,
           smsDesc: item.smsDesc,
         } as any

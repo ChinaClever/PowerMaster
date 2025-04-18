@@ -5,12 +5,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 import javax.validation.*;
 
+import cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomIndexChartDetailDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
 import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
  * 机房索引 Service 接口
@@ -69,7 +69,7 @@ public interface RoomIndexService {
 
     RoomActivePowDTO getActivePow(RoomPowVo vo);
 
-    List<RoomEqTrendDTO> eqTrend(int id, String type);
+    List<RoomEqTrendVO> eqTrend(int id, String type);
 
     RoomEleChainDTO getEleChain(int id);
 
@@ -82,4 +82,6 @@ public interface RoomIndexService {
     List<RoomMaxEqResVO> getMaxEq();
 
     List<Map<String, Object>> getChartDetail(RoomIndexChartDetailDTO detailDTO);
+
+    DeviceStatisticsVO deviceStatistics(Integer roomId);
 }

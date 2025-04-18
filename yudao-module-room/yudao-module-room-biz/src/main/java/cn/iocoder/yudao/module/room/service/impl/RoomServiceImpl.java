@@ -39,13 +39,13 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO;
 import cn.iocoder.yudao.module.aisle.api.AisleApi;
+import cn.iocoder.yudao.module.alarm.api.alarm.AlarmRecordApi;
 import cn.iocoder.yudao.module.cabinet.api.CabinetApi;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
 import cn.iocoder.yudao.module.room.vo.RoomMainResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
-import cn.iocoder.yudao.module.system.api.alarm.AlarmRecordApi;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -174,10 +174,7 @@ public class RoomServiceImpl implements RoomService {
             RoomIndex index = new RoomIndex();
             index.setRoomName(roomSaveVo.getRoomName());
             index.setPowerCapacity(roomSaveVo.getPowerCapacity());
-//            index.setEleAlarmDay(roomSaveVo.getEleAlarmDay());
-//            index.setEleLimitDay(roomSaveVo.getEleLimitDay());
-//            index.setEleAlarmMonth(roomSaveVo.getEleAlarmMonth());
-//            index.setEleLimitMonth(roomSaveVo.getEleLimitMonth());
+            index.setAreaFlag(roomSaveVo.getAreaFlag());
             index.setYLength(roomSaveVo.getYLength());
             index.setXLength(roomSaveVo.getXLength());
             if (Objects.nonNull(roomSaveVo.getId())) {
@@ -931,8 +928,8 @@ public class RoomServiceImpl implements RoomService {
                     continue;
                 }
                 JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
-                vo.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"), 2));
-                vo.setRoomPue(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_pue"), 2));
+//                dataDTO.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"), 2));
+//                dataDTO.setRoomPue(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_pue"), 2));
                 JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
                 JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
                 JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
@@ -1289,6 +1286,8 @@ public class RoomServiceImpl implements RoomService {
     private static void roomDetailRedis(Object object, RoomMainResVO vo) {
         if (Objects.nonNull(object)) {
             JSONObject data = JSON.parseObject(JSON.toJSONString(object));
+            vo.setRoomLoadFactor(BigDemicalUtil.setScale(data.getBigDecimal("room_load_factor"), 2));
+            vo.setRoomPue(BigDemicalUtil.setScale(data.getBigDecimal("room_pue"), 2));
             JSONObject roomData = data.containsKey(ROOM_POWER) ? data.getJSONObject(ROOM_POWER) : new JSONObject();
             if (roomData.containsKey(TOTAL_DATA)) {
                 JSONObject totalData = roomData.getJSONObject(TOTAL_DATA);
@@ -1318,17 +1317,9 @@ public class RoomServiceImpl implements RoomService {
         RoomEqDataDTO eqDataDTO = new RoomEqDataDTO();
         eqDataDTO.setId(id);
         try {
-
-
             getDayChain(id, eqDataDTO);
-
-
             getWeekChain(id, eqDataDTO);
-
-
             getMonthChain(id, eqDataDTO);
-
-
         } catch (Exception e) {
             log.error("获取数据异常：", e);
         }
@@ -1925,7 +1916,8 @@ public class RoomServiceImpl implements RoomService {
             }
             JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
             JSONObject roomPower = jsonObject.getJSONObject("room_power");
-
+            i.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"), 2));
+            i.setRoomPue(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_pue"), 2));
             if (Objects.isNull(roomPower) || roomPower.size() == 0) {
                 continue;
             }
@@ -2008,17 +2000,17 @@ public class RoomServiceImpl implements RoomService {
         getRoomListRedis(bean);
         Map<String, List<RoomIndexAddrResVO>> collect = bean.stream().collect(Collectors.groupingBy(RoomIndexAddrResVO::getAddr));
 
-        Map<String, List<RoomIndexAddrResVO>> sortedMap = collect.entrySet().stream()
-                .sorted(Map.Entry.<String, List<RoomIndexAddrResVO>>comparingByKey().reversed())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        // 处理键冲突
-                        (oldValue, newValue) -> oldValue,
-                        () -> new TreeMap<>()
-                ));
+//        Map<String, List<RoomIndexAddrResVO>> sortedMap = collect.entrySet().stream()
+//                .sorted(Map.Entry.<String, List<RoomIndexAddrResVO>>comparingByKey().reversed())
+//                .collect(Collectors.toMap(
+//                        Map.Entry::getKey,
+//                        Map.Entry::getValue,
+//                        // 处理键冲突
+//                        (oldValue, newValue) -> oldValue,
+//                        () -> new TreeMap<>()
+//                ));
 //        TreeMap<String, List<RoomIndexAddrResVO>> sortedMap = new TreeMap<>(collect);
-        return sortedMap;
+        return collect;
     }
 
     private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {
@@ -2484,7 +2476,7 @@ public class RoomServiceImpl implements RoomService {
         double thisMonthEq = getDayEq(startTime, endTime, id);
         eqDataDTO.setThisMonthEq(thisMonthEq);
         //上月
-        List<String> list = getData(startTime, endTime, id, AISLE_EQ_TOTAL_MONTH);
+        List<String> list = getData(startTime, endTime, id, ROOM_EQ_TOTAL_MONTH);
 
         Map<String, Double> eqMap = new HashMap<>();
 
@@ -2492,7 +2484,6 @@ public class RoomServiceImpl implements RoomService {
             RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
             String dateTime = DateUtil.formatDate(monthDo.getCreateTime());
             eqMap.put(dateTime, monthDo.getEqValue());
-
         });
 
         //上月

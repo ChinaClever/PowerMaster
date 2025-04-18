@@ -1256,8 +1256,7 @@ const getTableData = async(reset = false) => {
     const res = await AlarmApi.getAlarmRecord({
       pageNo: 1,
       pageSize: 10,
-      a: 1,
-      status: preStatus.value,
+      alarmStatus: preStatus.value,
       likeName: queryParams.search
     })
     console.log('res', res)

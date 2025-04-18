@@ -2,8 +2,6 @@ package cn.iocoder.yudao.module.system.controller.admin.upgrade;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordPageReqVO;
-import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordRespVO;
 import cn.iocoder.yudao.module.system.controller.admin.upgrade.vo.FileRecordPageReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.upgrade.vo.UpgradeFileRespVO;
 import cn.iocoder.yudao.module.system.controller.admin.upgrade.vo.UpgradeRecordPageReqVO;

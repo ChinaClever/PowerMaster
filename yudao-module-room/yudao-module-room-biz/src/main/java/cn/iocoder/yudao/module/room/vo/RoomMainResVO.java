@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.room.vo;
 
-import cn.iocoder.yudao.framework.common.dto.room.RoomCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO;
+import cn.iocoder.yudao.framework.common.dto.room.RoomCabinetDTO;
 import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -49,7 +49,8 @@ public class RoomMainResVO {
     @Schema(description = "电力容量", example = "0")
     private float powerCapacity;
 
-
+    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
+    private int isDelete;
     /**
      * 空调额定功率
      */
@@ -69,6 +70,12 @@ public class RoomMainResVO {
     @Schema(description = "机房Y长度")
     @JsonProperty(value = "y_length")
     private int yLength;
+
+    @Schema(description = "面积长度")
+    private BigDecimal areaxLength;
+
+    @Schema(description = "面积宽")
+    private BigDecimal areayLength;
 
     /**
      * 日用能告警开关
@@ -113,7 +120,6 @@ public class RoomMainResVO {
      */
     @Schema(description = "无功功率")
     private float powReactive;
-
 
 
     /**

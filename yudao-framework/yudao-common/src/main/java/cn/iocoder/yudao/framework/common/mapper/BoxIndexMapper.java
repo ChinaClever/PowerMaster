@@ -3,6 +3,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.vo.BoxName;
+import cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO;
 import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Delete;
@@ -29,4 +30,6 @@ public interface BoxIndexMapper extends BaseMapper<BoxIndex> {
 
     @Delete("DELETE FROM box_index")
     void initBoxData();
+
+    DeviceStatisticsVO deviceStatistics(@Param("boxKeys") List<String> boxKeys);
 }

@@ -2,10 +2,8 @@ package cn.iocoder.yudao.module.room.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
-import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
+import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.iocoder.yudao.framework.common.entity.es.room.ele.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
@@ -25,6 +23,8 @@ import cn.iocoder.yudao.module.room.enums.DeviceAlarmStatusEnum;
 import cn.iocoder.yudao.module.room.service.MainService;
 import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
@@ -44,18 +44,25 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
+import static cn.iocoder.yudao.module.room.service.roomindex.RoomIndexServiceImpl.HOUR_FORMAT;
 
 /**
  * @author luowei
@@ -102,46 +109,64 @@ public class MainServiceImpl implements MainService {
             AtomicReference<Double> yesTotal = new AtomicReference<>((double) 0);
             AtomicReference<Double> weekTotal = new AtomicReference<>((double) 0);
             AtomicReference<Double> monthTotal = new AtomicReference<>((double) 0);
-
+            LocalDate now = LocalDate.now();
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 List<Integer> ids = roomIndexList.stream().map(RoomIndex::getId).collect(Collectors.toList());
 
                 //今日
-                String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                String startTime =LocalDateTimeUtil.format(now.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
                 String endTime = DateUtil.formatDateTime(DateTime.now());
 
                 Map<Integer, Double> todayEq = getDayEq(startTime, endTime, ids);
                 //昨日
-                List<String> yesList = getData(startTime, endTime, ids, ROOM_EQ_TOTAL_DAY);
+                startTime=  LocalDateTimeUtil.format(now.atTime(LocalTime.MIN).minusDays(1), "yyyy-MM-dd HH:mm:ss");
+                List<RoomEqTotalDayDo> yesList = getData(startTime, endTime, ids, ROOM_EQ_TOTAL_DAY, RoomEqTotalDayDo.class);
                 Map<Integer, Double> yesEqMap = new HashMap<>();
-                if (Objects.nonNull(yesList)) {
-                    yesList.forEach(str -> {
-                        RoomEqTotalDayDo dayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
+                if (!CollectionUtils.isEmpty(yesList)) {
+                    Map<String, List<RoomEqTotalDayDo>> yesMap = yesList.stream().collect(Collectors.groupingBy(iter -> iter.getCreateTime().toString(HOUR_FORMAT)));
+                    List<RoomEqTotalDayDo> yes = yesMap.get(LocalDateTimeUtil.format(LocalDate.now(), HOUR_FORMAT));
+                    yes.forEach(dayDo -> {
                         yesEqMap.put(dayDo.getRoomId(), dayDo.getEqValue());
                     });
+                    List<RoomEqTotalDayDo> old = yesMap.get(LocalDateTimeUtil.format(now.atTime(LocalTime.MIN).minusDays(1), "yyyy-MM-dd"));
+                    if (!CollectionUtils.isEmpty(old)){
+                        double sum = old.stream().mapToDouble(RoomEqBaseDo::getEqValue).sum();
+                        result.setOldYesterdayEqTotal(sum);
+                    }
                 }
                 //上周
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-
-                List<String> weekList = getData(startTime, endTime, ids, ROOM_EQ_TOTAL_WEEK);
+                startTime =   LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN).minusWeeks(1), "yyyy-MM-dd HH:mm:ss");
+                List<RoomEqTotalWeekDo> weekList = getData(startTime, endTime, ids, ROOM_EQ_TOTAL_WEEK, RoomEqTotalWeekDo.class);
                 Map<Integer, Double> weekEqMap = new HashMap<>();
-                if (Objects.nonNull(weekList)) {
-                    weekList.forEach(str -> {
-                        RoomEqTotalWeekDo weekDo = JsonUtils.parseObject(str, RoomEqTotalWeekDo.class);
+                if (!CollectionUtils.isEmpty(weekList)) {
+                    Map<String, List<RoomEqTotalWeekDo>> weekMap = weekList.stream().collect(Collectors.groupingBy(iter -> iter.getCreateTime().toString(HOUR_FORMAT)));
+                    String weekDay = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)), "yyyy-MM-dd");
+                    List<RoomEqTotalWeekDo> week = weekMap.get(weekDay);
+                    week.forEach(weekDo -> {
                         weekEqMap.put(weekDo.getRoomId(), weekDo.getEqValue());
-
                     });
+                    List<RoomEqTotalWeekDo> old = weekMap.get(LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1), "yyyy-MM-dd"));
+                    if (!CollectionUtils.isEmpty(old)){
+                        double sum = old.stream().mapToDouble(RoomEqBaseDo::getEqValue).sum();
+                        result.setOldLastWeekEqTotal(sum);
+                    }
                 }
                 //上月
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-                List<String> list = getData(startTime, endTime, ids, AISLE_EQ_TOTAL_MONTH);
+                startTime =  LocalDateTimeUtil.format(now.withDayOfMonth(1).minusMonths(1), "yyyy-MM-dd HH:mm:ss");
+                List<RoomEqTotalMonthDo> list = getData(startTime, endTime, ids, AISLE_EQ_TOTAL_MONTH,RoomEqTotalMonthDo.class);
                 Map<Integer, Double> monthEqMap = new HashMap<>();
-                if (Objects.nonNull(list)) {
-                    list.forEach(str -> {
-                        RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
+                if (!CollectionUtils.isEmpty(list)) {
+                    Map<String, List<RoomEqTotalMonthDo>> monthMap = list.stream().collect(Collectors.groupingBy(iter -> iter.getCreateTime().toString(HOUR_FORMAT)));
+                    String monthDay = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd");
+                    List<RoomEqTotalMonthDo> month = monthMap.get(monthDay);
+                    month.forEach(monthDo -> {
                         monthEqMap.put(monthDo.getRoomId(), monthDo.getEqValue());
-
                     });
+                    List<RoomEqTotalMonthDo> old = monthMap.get(LocalDateTimeUtil.format(now.withDayOfMonth(1).minusMonths(1), "yyyy-MM-dd"));
+                    if (!CollectionUtils.isEmpty(old)){
+                        double sum = old.stream().mapToDouble(RoomEqBaseDo::getEqValue).sum();
+                        result.setOldLastMonthEqTotal(sum);
+                    }
                 }
                 roomIndexList.forEach(roomIndex -> {
                     EqDataDTO eqDataDTO = new EqDataDTO();
@@ -175,9 +200,7 @@ public class MainServiceImpl implements MainService {
 
     @Override
     public DevDataDTO getMainDevData() {
-
         DevDataDTO devDataDTO = new DevDataDTO();
-
         //pdu数量
         List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
                 .eq(PduIndexDo::getIsDeleted, DelEnums.NO_DEL.getStatus()));
@@ -226,7 +249,6 @@ public class MainServiceImpl implements MainService {
                     .distinct().count();
             devDataDTO.setCabUnused(grey);
             devDataDTO.setCabUse(cabinetIndexList.size() - grey);
-
         }
 
         //计算系统运行时长
@@ -258,9 +280,9 @@ public class MainServiceImpl implements MainService {
     public PowDataDTO getMainPowData() {
         PowDataDTO powDataDTO = new PowDataDTO();
 
-        AtomicReference<Float> totalPowActive = new AtomicReference<>((float) 0);
-        AtomicReference<Float> totalPowApparent = new AtomicReference<>((float) 0);
-        AtomicReference<Float> totalPowReactive = new AtomicReference<>((float) 0);
+//        AtomicReference<Float> totalPowActive = new AtomicReference<>((float) 0);
+//        AtomicReference<Float> totalPowApparent = new AtomicReference<>((float) 0);
+//        AtomicReference<Float> totalPowReactive = new AtomicReference<>((float) 0);
 
         //获取所有机房
         List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
@@ -269,17 +291,47 @@ public class MainServiceImpl implements MainService {
         if (!CollectionUtils.isEmpty(roomIndexList)) {
             List<RoomIndexAddrResVO> bean = BeanUtils.toBean(roomIndexList, RoomIndexAddrResVO.class);
             roomService.getRoomListRedis(bean);
-            powDataDTO.setRoomDataList(bean);
-
+//            powDataDTO.setRoomDataList(bean);
+            ValueOperations ops = redisTemplate.opsForValue();
+            List<String> keys = bean.stream().map(i -> REDIS_KEY_ROOM + i.getId()).distinct().collect(Collectors.toList());
+            List list = ops.multiGet(keys);
+            Map<Integer, Object> roomMap = (Map<Integer, Object>) list.stream().filter(i -> Objects.nonNull(i)).collect(Collectors
+                    .toMap(i -> JSON.parseObject(JSONObject.toJSONString(i)).getInteger("room_key"), Function.identity()));
+            for (RoomIndexAddrResVO i : bean) {
+                i.setFlagType(true);
+                Object obj = roomMap.get(i.getId());
+                if (Objects.isNull(obj)) {
+                    continue;
+                }
+                JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
+                JSONObject roomPower = jsonObject.getJSONObject("room_power");
+                i.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"), 2));
+                if (Objects.isNull(roomPower) || roomPower.size() == 0) {
+                    continue;
+                }
+                JSONObject totalData = roomPower.getJSONObject("total_data");
+                if (Objects.nonNull(totalData)) {
+                    Double powActive = totalData.getDouble("pow_active");
+                    Double eleActive = totalData.getDouble("ele_active");
+                    Double powApparent = totalData.getDouble("pow_apparent");
+                    Double powReactive = totalData.getDouble("pow_reactive");
+                    Double powerFactor = totalData.getDouble("power_factor");
+                    i.setEleActive(eleActive);
+                    i.setPowActive(powActive);
+                    i.setPowApparent(powApparent);
+                    i.setPowerFactor(powerFactor);
+                    i.setPowReactive(powReactive);
+                }
+            }
             double powActive = bean.stream().filter(i -> Objects.nonNull(i.getPowActive())).mapToDouble(RoomIndexAddrResVO::getPowActive).sum();
             double powApparent = bean.stream().filter(i -> Objects.nonNull(i.getPowApparent())).mapToDouble(RoomIndexAddrResVO::getPowApparent).sum();
             double powReactive = bean.stream().filter(i -> Objects.nonNull(i.getPowReactive())).mapToDouble(RoomIndexAddrResVO::getPowReactive).sum();
             double powerFactor = bean.stream().filter(i -> Objects.nonNull(i.getPowerFactor())).mapToDouble(RoomIndexAddrResVO::getPowerFactor).sum();
 
-            powDataDTO.setTotalPowActive(BigDemicalUtil.setScale(powActive,3));
-            powDataDTO.setTotalPowApparent(BigDemicalUtil.setScale(powApparent,3));
-            powDataDTO.setTotalPowReactive(BigDemicalUtil.setScale(powReactive,3));
-            powDataDTO.setTotalPowerFactor(BigDemicalUtil.setScale(powerFactor,2));
+            powDataDTO.setTotalPowActive(BigDemicalUtil.setScale(powActive, 3));
+            powDataDTO.setTotalPowApparent(BigDemicalUtil.setScale(powApparent, 3));
+            powDataDTO.setTotalPowReactive(BigDemicalUtil.setScale(powReactive, 3));
+            powDataDTO.setTotalPowerFactor(BigDemicalUtil.setScale(powerFactor, 2));
         }
 
 
@@ -428,6 +480,41 @@ public class MainServiceImpl implements MainService {
         } catch (Exception e) {
             log.error("获取数据异常：", e);
             return null;
+        }
+    }
+
+    private List getData(String startTime, String endTime, List<Integer> ids, String index, Class cls) throws IOException {
+        List list = new ArrayList<>();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery(ROOM_ID, ids))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
+
+
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    if (str.length() > 2) {
+                        list.add(JsonUtils.parseObject(str, cls));
+                    }
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("获取数据异常：", e);
+            return list;
         }
     }
 
