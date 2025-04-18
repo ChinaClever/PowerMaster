@@ -15,7 +15,7 @@
         @click="handleClick(item)"
       >
         <Icon :size="18" icon="ep:bell-filled" style="margin-right: 8px;" />
-        {{ item.devPosition + "的" + item.devName + "设备在" + item.startTime + "发生" + item.alarmTypeDesc }}
+        {{ item.alarmPosition + "在" + formatDate(item.startTime, 'YYYY-MM-DD HH:mm:ss') + "发生" + item.alarmTypeDesc }}
       </div>
     </div>
   </div>
@@ -23,6 +23,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { formatDate } from '@/utils/formatTime'
 
 const props = defineProps({
   notices: {

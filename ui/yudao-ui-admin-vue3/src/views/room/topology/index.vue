@@ -75,9 +75,9 @@
                               前门温度：{{element.temFront}}°C<br/>
                               后门温度：{{element.temBlack}}°C<br/><br/>
                               A路设备：{{element.cabinetkeya}}<br/>
-                              A路功率：{{element.apow}}<br/>
+                              A路功率：{{element.powActivea}}kW<br/>
                               B路设备：{{element.cabinetkeyb}}<br/>
-                              B路功率：{{element.bpow}}<br/><br/>
+                              B路功率：{{element.powActiveb}}kW<br/><br/>
                               已用空间：{{element.usedSpace}}U<br/>
                               未用空间：{{element.freeSpace}}U<br/>
                             </template>
@@ -106,9 +106,9 @@
                                   前门温度：{{item.temFront}}°C<br/>
                                   后门温度：{{item.temBlack}}°C<br/><br/>
                                   A路设备：{{item.cabinetkeya}}<br/>
-                                  A路功率：{{item.apow}}<br/>
+                                  A路功率：{{item.powActivea}}kW<br/>
                                   B路设备：{{item.cabinetkeyb}}<br/>
-                                  B路功率：{{item.bpow}}<br/><br/>
+                                  B路功率：{{item.powActiveb}}kW<br/><br/>
                                   已用空间：{{item.usedSpace}}U<br/>
                                   未用空间：{{item.freeSpace}}U<br/>
                                 </template>
@@ -1227,9 +1227,11 @@ const handleRightClick = (e) => {
   const lndexY = currentId.split('-')[0]
   if (!currentId) return
   console.log(tableData.value,tableData.value[lndexY][formParam.value[lndexX]],lndexY,formParam.value[lndexX])
-  menuOptions.value[1].value = tableData.value[lndexY][formParam.value[lndexX]][0].id
-  menuOptions.value[1].label = "柜列：" + tableData.value[lndexY][formParam.value[lndexX]][0].name
+  
   if(e.target.dataset.index >= 0) {
+    menuOptions.value[1].value = tableData.value[lndexY][formParam.value[lndexX]][0].id
+    menuOptions.value[1].label = "柜列：" + tableData.value[lndexY][formParam.value[lndexX]][0].name
+
     menuOptions.value[2] = menuOptionsCopy.value[2]
     menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].id
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetName
@@ -1290,7 +1292,9 @@ const handleMenu = (value) => {
   } else if(value[1] == '柜列用能') {
     push({path: '/aisle/aislemonitor/aisleenergydetail', query: { roomId: roomId.value, id: value[0],location: rowColInfo.roomName }})
   } else if(value[1] == '柜列需量') {
-    push({path: '/aisle/aislemonitor/aislerequirement', query: { openDetailFlag: 1, id: value[0],location: rowColInfo.roomName }})
+    push({path: '/aisle/aislemonitor/aislerequirement', query: { openDetailFlag: 1, id: value[0],location: rowColInfo.roomName + "-" + tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name }})
+  } else if(value[1] == '柜列供电平衡') {
+    push({path: '/aisle/aislemonitor/aislebalance', query: { openDetailFlag: 1, id: value[0]}})
   }
 }
 

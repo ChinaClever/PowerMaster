@@ -154,7 +154,7 @@
       <el-card shadow="never" class="mb-8px" v-if="toggleTable===false">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>设备统计/告警统计</span>
+            <span>设备/告警</span>
             <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
           </div>
         </template>
@@ -171,10 +171,18 @@
         </template>
         <el-skeleton :loading="loading" animated>
           <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
-            <el-table :data="tableData" style="width: 100%" border class="text-12px">
-              <el-table-column prop="error" label="告警内容"  />
-              <el-table-column prop="box" label="告警设备" />
-              <el-table-column prop="time" label="告警时间" />
+            <el-table :data="alarmData" style="width: 100%" border class="text-12px" tooltip-formatter="tableRowFormatter">
+              <el-table-column prop="alarmTypeDesc" label="告警类型">
+                <template #default="{ row }">
+                  <el-tooltip 
+                    :content="`${row.alarmDesc}`" 
+                    placement="top"
+                  >
+                    <span class="hover-text">{{ row.alarmTypeDesc }}</span>
+                  </el-tooltip>
+                </template>
+              </el-table-column>
+              <el-table-column prop="alarmPosition" label="所在区域" />
             </el-table>
           </div>
         </el-skeleton>
@@ -227,6 +235,7 @@ const alarmData = ref([])
 const prePowBtn = ref(0) // 当前所选的功率
 const toggleTable = ref(false) //设备统计和告警统计的切换
 const dialogVisible = ref(false) //全屏弹窗的显示隐藏
+const visible = ref(false)
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
 const radioBtn = ref('pow')
 const echartInfo = reactive<any>({}) //配置图表的数据系列
@@ -331,16 +340,11 @@ const numChartOptions = ref({
     left: 50
   },
   legend: {
-    data: ['PDU', '始端箱','插接箱'], // 图例项
-    selected: {
-      'PDU': true,
-      '始端箱': false,
-      '插接箱': false
-    }
+    data: ['PDU', '始端箱','插接箱'] // 图例项
   },
   xAxis: {
     type: 'category',nameLocation: 'end',
-    data:['总数','在线','离线']
+    data:['总数','在线','离线','告警']
   },
   yAxis: {
     type: 'value'
@@ -349,17 +353,17 @@ const numChartOptions = ref({
     {
       name: 'PDU',
       type: 'bar',
-      data: [40,20,30],
+      data: [40,20,30,20],
     },
     {
       name: '始端箱',
       type: 'bar',
-      data: [10,30,20],
+      data: [10,30,20,20],
     },
     {
       name: '插接箱',
       type: 'bar',
-      data: [10,30,20],
+      data: [10,30,20,20],
     }
   ]
 })
@@ -474,17 +478,17 @@ const getHomeDevData = async() => {
     {
       name: 'PDU',
       type: 'bar',
-      data: [res.pduNum,res.pduOnLine,res.pduOffLine],
+      data: [res.pduNum,res.pduOnLine,res.pduOffLine,1000],
     },
     {
       name: '始端箱',
       type: 'bar',
-      data: [res.busNum,res.busOnLine,res.busOffLine],
+      data: [res.busNum,res.busOnLine,res.busOffLine,res.busInform],
     },
     {
       name: '插接箱',
       type: 'bar',
-      data: [res.boxNum,res.boxOnLine,res.boxOffLine],
+      data: [res.boxNum,res.boxOnLine,res.boxOffLine,res.boxInform],
     }
   ]
 
@@ -788,8 +792,7 @@ const getHomeAlarmData = async() => {
   const res2 = await AlarmApi.getAlarmRecord({
     pageNo: 1,
     pageSize: 30,
-    a: 0,
-    status: [0]
+    alarmStatus: [0]
   })
   if (res2.list) {
     alarmData.value = res2.list
