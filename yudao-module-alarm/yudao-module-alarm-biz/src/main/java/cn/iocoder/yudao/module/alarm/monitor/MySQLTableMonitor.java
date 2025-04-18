@@ -1,9 +1,9 @@
 package cn.iocoder.yudao.module.alarm.monitor;
 
-import cn.iocoder.yudao.module.alarm.monitor.constants.BinLogConstants;
+import cn.iocoder.yudao.module.alarm.constants.BinLogConstants;
 import cn.iocoder.yudao.framework.mybatis.core.object.ColumnInfo;
 import cn.iocoder.yudao.framework.mybatis.core.util.JdbcUtils;
-import cn.iocoder.yudao.module.alarm.monitor.constants.DBTable;
+import cn.iocoder.yudao.module.alarm.constants.DBTable;
 import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
 import com.alibaba.druid.util.StringUtils;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;

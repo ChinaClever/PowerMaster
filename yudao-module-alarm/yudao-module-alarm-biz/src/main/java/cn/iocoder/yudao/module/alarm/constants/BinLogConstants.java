@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.alarm.monitor.constants;
+package cn.iocoder.yudao.module.alarm.constants;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

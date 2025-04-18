@@ -103,9 +103,13 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     @Override
     public PageResult<AlarmLogRecordRespVO> getLogRecordPage(AlarmLogRecordPageReqVO pageReqVO) {
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Integer alarmLevel = AlarmLevelEnums.getStatusByName(pageReqVO.getLikeName());
+        Integer alarmType = AlarmTypeEnums.getStatusByName(pageReqVO.getLikeName());
         Page<AlarmLogRecordDO> recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
                 .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
-                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()), wrapper -> wrapper
+                .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                .eqIfPresent(AlarmLogRecordDO::getAlarmType, alarmType)
+                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
                         .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
                         .or()
                         .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
