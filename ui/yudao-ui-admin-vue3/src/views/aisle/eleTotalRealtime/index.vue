@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列实时能耗">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/>
         <div class="nav_data">
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
@@ -28,6 +28,7 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
+            :clearable="false"
           />
           </el-form-item>
 
@@ -59,7 +60,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -215,6 +216,8 @@ let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
 const initChart = () => {
   if (rankChartContainer.value && instance) {
+    rankChart?.off("click");
+    rankChart?.dispose();
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各柜列耗电量'},
@@ -224,7 +227,7 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }},
       ],
     });
     rankChart.on('click', function(params) {
@@ -430,8 +433,10 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
-  push('/aisle/aisleenergyconsumption/powerAnalysis?start='+createTimeMin+
-  '&end='+createTimeMax+'&id='+ id+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:''));
+  push({path:"/aisle/aisleenergyconsumption/powerAnalysis",state:{start:createTimeMin,end:createTimeMax,id,startTime:(selectTimeRange.value!=null?selectTimeRange.value[0]:"")
+    ,endTime:(selectTimeRange.value!=null?selectTimeRange.value[1]:'')}})
+  // push('/aisle/aisleenergyconsumption/powerAnalysis?start='+createTimeMin+
+  // '&end='+createTimeMax+'&id='+ id+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:''));
 }
 
 /** 初始化 **/

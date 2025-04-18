@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列电力数据">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -22,15 +22,11 @@
           </el-descriptions>
         </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
-          <div class="description-item">
-            <span class="label">总数据 :</span>
-            <span class="value">{{ navTotalData }}条</span>
-          </div>
-          <div style="text-align: center">
-            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部柜列最近一分钟新增记录</span></div>
-              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部柜列最近一小时新增记录</span></div>
-              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部柜列最近一天新增记录</span></div>
-                <div class="line" style="margin-top: 10px;"></div>
+          <div style="margin-left: 10px;">
+            <div>最近一分钟:{{ minTotal }}条</div>
+            <div>最近一小时:{{ hourTotal }}条</div>
+            <div>最近一天:{{ dayTotal }}条</div>
+            <div class="line" style="margin-top: 10px;"></div>
           </div>
           </div>
       </div>
@@ -154,6 +150,9 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const pageSizeArr = ref([15,30,50,100])
+const minTotal=ref()
+const hourTotal=ref()
+const dayTotal=ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -280,9 +279,9 @@ const cascaderChange = (selectedCol) => {
 }
 
 // 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
-const granularityChange = () => {
-   getNavNewData()
-}
+// const granularityChange = () => {
+//    getNavNewData()
+// }
 
 watch(() => queryParams.granularity, (newValues) => { 
     const newGranularity = newValues;
@@ -573,13 +572,29 @@ const getNavList = async() => {
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await HistoryDataApi.getNavNewData(queryParams.granularity)
-  navTotalData.value = res.total
+  let promiseArr = []
+  promiseArr.push(HistoryDataApi.getNavNewData("realtime"));
+  promiseArr.push(HistoryDataApi.getNavNewData("hour"));
+  promiseArr.push(HistoryDataApi.getNavNewData("day"));
+  Promise.all(promiseArr).then((res) => {
+    minTotal.value=res[0].total;
+    hourTotal.value=res[1].total;
+    dayTotal.value=res[2].total;
+  }).catch(()=>{
+    minTotal.value=0;
+    hourTotal.value=0;
+    dayTotal.value=0;
+  })
 }
 
 /** 详情操作*/
 const toDetails = (aisleId: number, location:string) => {
-  push('/aisle/aislerecord/historyLine?aisleId='+aisleId+'&location='+location+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?('&start='+queryParams.timeRange[0]+'&end='+queryParams.timeRange[1]):''));
+  if(queryParams.timeRange!=null&&queryParams.timeRange.length==2){
+    push({path:"/aisle/aislerecord/historyLine",state:{aisleId,location,start:queryParams.timeRange[0],end:queryParams.timeRange[1]}})
+  }else{
+    push({path:"/aisle/aislerecord/historyLine",state:{aisleId,location}})
+  }
+  // push('/aisle/aislerecord/historyLine?aisleId='+aisleId+'&location='+location+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?('&start='+queryParams.timeRange[0]+'&end='+queryParams.timeRange[1]):''));
 }
 
 /** 导出按钮操作 */
@@ -615,13 +630,14 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getList()
-  intervalId=setInterval(() => {
+  intervalId.value=setInterval(() => {
     getList(false)
-    getNavNewData()
   }, 60000)
 })
-onBeforeMount(() => {
+onBeforeUnmount(() => {
+  console.log("intervalId.value",intervalId.value);
   if(intervalId.value!=null){
+    console.log("clearInterval");
     clearInterval(intervalId.value);
     intervalId.value=null;
   }

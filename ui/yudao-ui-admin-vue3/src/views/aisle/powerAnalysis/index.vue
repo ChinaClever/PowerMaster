@@ -1,7 +1,7 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列能耗趋势" :defaultCheckedKeys="defaultCheckedKeys">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/> 
         <div class="nav_data">
           <!-- <div class="carousel-container"> -->
             <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -161,6 +161,7 @@ import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/
 import { IndexApi } from '@/api/aisle/aisleindex'
 import * as echarts from 'echarts';
 import router from '@/router'
+import { start } from 'nprogress'
 const message = useMessage() // 消息弹窗
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
@@ -176,15 +177,19 @@ const list = ref<Array<{ }>>([]) as any;
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 let now=new Date();
-const selectTimeRange = ref([useRoute().query.startTime!=null&&useRoute().query.startTime!=''?useRoute().query.startTime:dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),
-useRoute().query.endTime!=null&&useRoute().query.startTime!=''?useRoute().query.endTime:dayjs(now).format("YYYY-MM-DD")])
+const selectTimeRange = ref([history.state.startTime!=null&&history.state.startTime!=''?history.state.startTime:dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),
+history.state.endTime!=null&&history.state.startTime!=''?history.state.endTime:dayjs(now).format("YYYY-MM-DD")])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  aisleIds:useRoute().query.id!=null?[useRoute().query.id]:[] as number[]
+  aisleIds:history.state.id!=null?[history.state.id]:[] as number[]
 })
+const defaultCheckedKeys = ref([])
+if(history.state.id!=null){
+  defaultCheckedKeys.value=[history.state.id]
+}
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
@@ -259,6 +264,8 @@ let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
 const initChart = () => {
   if (rankChartContainer.value && instance) {
+    rankChart?.off("click");
+    rankChart?.dispose();
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各柜列耗电量'},
@@ -268,7 +275,7 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }},
       ],
     });
     rankChart.on('click', function(params) {
@@ -492,7 +499,12 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (aisleId: number, location: string) => {
-  push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?('&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]):''));
+  if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
+      push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location,start:selectTimeRange.value[0],end:selectTimeRange.value[1]}})
+  }else{
+    push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location}})
+  }
+  // push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?('&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]):''));
 }
 // const start = ref('')
 // const end = ref('')
@@ -501,9 +513,9 @@ const id =  ref(0)
 onMounted(() => {
   getNavList()
   getNavNewData()
-  // start.value = useRoute().query.start as string;
-  // end.value = useRoute().query.end as string;
-  id.value = useRoute().query.id as unknown as number;
+  // start.value = history.state.start as string;
+  // end.value = history.state.end as string;
+  id.value = history.state.id as unknown as number;
   // if (start.value != null){
   // 	console.log('详情页', start);
 	// console.log('详情页1', id);

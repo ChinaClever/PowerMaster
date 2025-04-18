@@ -27,7 +27,7 @@ public class RealtimeEQPageRespVO {
     private Double ele_b;
 
     @NumberFormat("0.0")
-    @ExcelProperty("电能 (kWh)")
+    @ExcelProperty("总电能 (kWh)")
     private Double ele_total;
 
 }

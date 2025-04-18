@@ -18,6 +18,8 @@
         :lazy="lazy"
         :load="load"
         node-key="id"
+        :current-node-key="currentKey"
+        :highlight-current="hightCurrent"
         :default-checked-keys="checkKeys"
         :default-expanded-keys="expandKeys"
         @node-click="handleNodeClick"
@@ -34,7 +36,7 @@ import { ElTree } from 'element-plus';
 import * as DeptApi from '@/api/system/dept';
 import { defineProps } from 'vue';
 import type Node from 'element-plus/es/components/tree/src/model/node';
-import { string } from 'vue-types';
+import { number, string } from 'vue-types';
 import { ar, da } from 'element-plus/es/locale';
 import { c } from 'vite/dist/node/types.d-aGj9QkWt';
 import { add } from '@jsplumb/browser-ui';
@@ -63,15 +65,38 @@ const props = defineProps({
     type: String,
     default: "请输入",
     required: false
+  },
+  defaultCheckedKeys: {
+    type:Array,
+    default: () => [],
+    required: false
+  },
+  hightCurrent: {
+    type: Boolean,
+    default: false,
+    required: false
+  },
+  currentKey: {
+    type: number,
+    default: null,
+    required: false
   }
 })
+// nextTick(() => {
+//   console.log('props.currentKey===', props.currentKey)
+//   treeRef.value?.$nextTick(()=>{
+//     treeRef.value?.setCurrentKey(props.currentKey)
+//   })
+// })
 
 const defaultProps = {
   children: 'children',
   label: 'name'
 }
 
-const checkKeys = ref<number[]>([])
+
+
+const checkKeys = ref(props.defaultCheckedKeys)
 const deptName = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const showList = ref<any[]>([])

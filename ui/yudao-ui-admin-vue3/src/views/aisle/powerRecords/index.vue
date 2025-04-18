@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列电能记录">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -18,11 +18,19 @@
 
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">总电能 :</span>
-            <span class="value">{{ navTotalData }}条</span>
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
           <div>
-            <span>全部柜列最近一天新增记录</span>
+            <span>全部柜列新增电费统计</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
@@ -98,6 +106,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
 import { IndexApi } from '@/api/aisle/aisleindex'
+import { get } from 'http'
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
@@ -279,10 +288,21 @@ const handleQuery = () => {
   getList()
 }
 
+const lastDayTotalData = ref(null)
+const lastWeekTotalData = ref(null)
+const lastMonthTotalData = ref(null)
+const getNavNewData = async () => {
+  const res = await EnergyConsumptionApi.getNavNewData({})
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
+  lastMonthTotalData.value = res.month
+}
+
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData()
+  // getNavOneDayData()
+  getNavNewData()
   getList();
 })
 </script>
@@ -320,7 +340,7 @@ onMounted(() => {
 
 .label {
   text-align: left;
-  margin-right: 20px; /* 控制冒号后的间距 */
+  /* margin-right: 20px; 控制冒号后的间距 */
 }
 
 .value {

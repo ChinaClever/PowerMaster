@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房电力数据">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
         <div class="carousel-container">
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -11,11 +11,9 @@
           </el-carousel> -->
         </div>
         <div class="nav_header">
-          <br/>
-          <span v-if="queryParams.granularity == 'realtime' ">全部机房最近一分钟新增记录</span>
-          <span v-if="queryParams.granularity == 'hour' ">全部机房最近一小时新增记录</span>
-          <span v-if="queryParams.granularity == 'day' ">全部机房最近一天新增记录</span>
-                     <span class="value">{{ navTotalData }} 条</span>
+          <div>最近一分钟:{{ minTotal }}条</div>
+          <div>最近一小时:{{ hourTotal }}条</div>
+          <div>最近一天:{{ dayTotal }}条</div>
         </div>
       </div>
     </template>
@@ -144,6 +142,9 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const pageSizeArr = ref([15,30,50,100])
+const minTotal=ref()
+const hourTotal=ref()
+const dayTotal=ref()
 let now=new Date()
 const queryParams = reactive({
   pageNo: 1,
@@ -271,9 +272,9 @@ const cascaderChange = (selectedCol) => {
 }
 
 // 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
-const granularityChange = () => {
-   getNavNewData()
-}
+// const granularityChange = () => {
+//    getNavNewData()
+// }
 
 watch(() => queryParams.granularity, (newValues) => { 
     const newGranularity = newValues;
@@ -553,13 +554,26 @@ const getNavList = async() => {
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await HistoryDataApi.getNavNewData(queryParams.granularity)
-  navTotalData.value = res.total
+  let promiseArr = []
+  promiseArr.push(HistoryDataApi.getNavNewData("realtime"));
+  promiseArr.push(HistoryDataApi.getNavNewData("hour"));
+  promiseArr.push(HistoryDataApi.getNavNewData("day"));
+  Promise.all(promiseArr).then((res) => {
+    minTotal.value=res[0].total;
+    hourTotal.value=res[1].total;
+    dayTotal.value=res[2].total;
+  }).catch(()=>{
+    minTotal.value=0;
+    hourTotal.value=0;
+    dayTotal.value=0;
+  })
 }
 
 /** 详情操作*/
 const toDetails = (roomId: number, location:string) => {
-  push('/room/record/historyLine?roomId='+roomId+'&location='+location+"&start="+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?queryParams.timeRange[0]:'')+"&end="+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?queryParams.timeRange[1]:''));
+  push({path:"/room/record/historyLine",state:{roomId,location,start:(queryParams.timeRange!=null&&queryParams.timeRange.length==2?queryParams.timeRange[0]:''),
+  end:(queryParams.timeRange!=null&&queryParams.timeRange.length==2?queryParams.timeRange[1]:'')}});
+  // push('/room/record/historyLine?roomId='+roomId+'&location='+location+"&start="+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?queryParams.timeRange[0]:'')+"&end="+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?queryParams.timeRange[1]:''));
 }
 
 /** 导出按钮操作 */
@@ -589,9 +603,7 @@ onMounted(() => {
   getNavNewData()
   getList()
   intervalId.value=setInterval(() => {
-    if(queryParams.timeRange==null||queryParams.timeRange.length!=2){
-      getList(false)
-    }
+    getList(false)
   }, 60000)
 })
 onBeforeUnmount(() => {
@@ -615,11 +627,12 @@ function headCellStyle(){
   color: #606266
 }
  .nav_header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    /* display: flex; */
+    /* flex-direction: column;
+    align-items: center; */
     font-size: 14px;
-    font-weight: bold;
+    /* font-weight: bold; */
+    margin-left: 10px;
   }
   .nav_data{
   padding-left: 7px;

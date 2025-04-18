@@ -183,17 +183,15 @@ public class AisleHistoryDataServiceImpl implements AisleHistoryDataService {
         String[] key = new String[]{"total"};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
+        indices = new String[]{"aisle_hda_pow_realtime"};
         switch (granularity){
             case "realtime":
-                indices = new String[]{"aisle_hda_pow_realtime"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1)};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusSeconds(100)};
                 break;
             case "hour":
-                indices = new String[]{"aisle_hda_pow_hour"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"aisle_hda_pow_day"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
                 break;
             default:
