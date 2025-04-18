@@ -127,6 +127,7 @@ const moveToCurrentTag = async () => {
   for (const v of unref(visitedViews)) {
     if (v.path === unref(currentRoute).path) {
       moveToTarget(v)
+      console.log(v)
       if (v.fullPath !== unref(currentRoute).fullPath) {
         tagsViewStore.updateVisitedView(unref(currentRoute))
       }

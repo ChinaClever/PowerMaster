@@ -118,8 +118,12 @@ import { AisleEnergyApi } from '@/api/aisle/aisleenergy'
 import { IndexApi } from '@/api/aisle/aisleindex';
 import 'echarts/lib/component/dataZoom';
 import { c } from 'vite/dist/node/types.d-aGj9QkWt';
+import { useRoute } from 'vue-router'
 
-const location = ref(history?.state?.location )
+const route = useRoute();
+const query = route.query;
+
+const location = ref(Number(query.location) )
 const roomList = ref([]) // 左侧导航栏树结构列表
 const AllMachineList=ref(null);
 const machineList = ref([]) // 左侧导航栏树结构列表
@@ -131,8 +135,8 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  aisle: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1
+  aisle: Number(query.id) || 1,
+  cabinetroomId: Number(query.roomId) || 1
 })
 const EleChain = reactive({
   todayEq: '',

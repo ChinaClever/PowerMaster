@@ -223,7 +223,10 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 import Environment from './component/Environment.vue'
 import EnvironmentCopy from './component/EnvironmentCopy.vue'
 import { formatDate} from '@/utils/formatTime';
+import { useRoute } from 'vue-router'
 
+const route = useRoute();
+const query = route.query;
 
 const format = (percentage) => ( ``)  //用来自定义进度条的内容
 const toggleTable = ref(true)
@@ -231,8 +234,8 @@ const toggleTable = ref(true)
 const {push} = useRouter()
 const containerInfo = reactive({
   width: 0,
-  cabinetColumnId: history?.state?.id,
-  cabinetroomId: history?.state?.roomId,
+  cabinetColumnId: Number(query.id),
+  cabinetroomId: Number(query.roomId),
 })
 console.log('containerInfo', containerInfo)
 const scaleVal = ref(1)
@@ -249,7 +252,7 @@ const isLoadRateDisabled = ref(false);
 const switchChartContainer = ref(0);
 
 const lineChartQueryParams = reactive({
-  id: history?.state?.id as number | undefined,
+  id: Number(query.id) as number | undefined,
   granularity: 'realtime',
   flag: 0
 })
@@ -1236,7 +1239,7 @@ const sendRoomIdValList = (result) =>{
 
 // 处理跳转
 const handleJump = () => {
-   push({path: '/aisle/aislemonitor/topology', state: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId,roomValId:roomDownVal.value.roomId }})
+   push({path: '/aisle/aislemonitor/topology', query: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId,roomValId:roomDownVal.value.roomId }})
 }
 // 处理时pdu还是母线的事件
 const handlePduBar = (type) => {

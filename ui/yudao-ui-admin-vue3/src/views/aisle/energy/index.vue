@@ -246,7 +246,7 @@ const handleCheck = async (row) => {
 
 // 跳转详情
 const toDetail = (roomId, id,location) => {
-  push({path: '/aisle/aislemonitor/aisleenergydetail', state: { roomId, id,location }})
+  push({path: '/aisle/aislemonitor/aisleenergydetail', query: { roomId, id,location }})
 }
 
 onBeforeMount(() => {

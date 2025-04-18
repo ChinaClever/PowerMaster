@@ -363,6 +363,10 @@ import RequirementLine from './component/RequirementLine.vue'
 import { dayjs, ElTree } from 'element-plus'
 import { time } from 'console'
 import { is } from '@/utils/is'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 
 /** PDU设备 列表 */
@@ -381,6 +385,7 @@ const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const maxA=ref("")
 const maxB=ref("")
+const openDetailFlag=ref("0")
 // const statusNumber = reactive({
 //   normal : 0,
 //   warn : 0,
@@ -458,6 +463,13 @@ const treeRef = ref<InstanceType<typeof ElTree>>()
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
+})
+
+watch(openDetailFlag,(val) => {
+  console.log(val)
+  if(val == "1") {
+    openDetail({id: query.id,location: query.location})
+  }
 })
 
 const message = useMessage() // 消息弹窗
@@ -688,6 +700,7 @@ onMounted(async () => {
   getList()
   getNavList();
   showMax();
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 async function showMax(){
   const res = await IndexApi.getMaxApparentPower(queryParams);

@@ -323,6 +323,11 @@ import InitialBox from './component/InitialBox.vue'
 import PluginBox from './component/PluginBox.vue'
 import BoxForm from './component/BoxForm.vue'
 import { EChartsOption } from 'echarts'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
+
 const message = useMessage()
 const { push } = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
@@ -332,9 +337,9 @@ const tempList:any = ref([])
 const detailVis = ref(false)
 const switchChartOrTable = ref(0)
 const queryParams = reactive({
-  cabinetColumnId: history?.state?.id,
-  cabinetroomId: history?.state?.roomId,
-  roomDownValId:history?.state?.roomValId
+  cabinetColumnId: Number(query.id),
+  cabinetroomId: Number(query.roomId),
+  roomDownValId:Number(query.roomValId)
 })
 const statusList = reactive([
   [{
@@ -2184,7 +2189,8 @@ const handleNavList = (cabinetroomId) => {
 watch(() => queryParams.cabinetroomId, (val) => {
   if (val) {
     const targetRoom = roomList.value.find(item => item.roomId == val)
-    machineList.value = targetRoom.aisleList || []
+    console.log(targetRoom)
+    machineList.value = targetRoom?.aisleList || []
     if (!machineList.value.find(item => item.id == queryParams.cabinetColumnId)) {
       queryParams.cabinetColumnId = machineList.value[0].id
     }
