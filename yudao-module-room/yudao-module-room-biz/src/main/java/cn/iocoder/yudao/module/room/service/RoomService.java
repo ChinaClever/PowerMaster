@@ -136,4 +136,6 @@ public interface RoomService {
     void getRoomListRedis(List<RoomIndexAddrResVO> bean);
 
     Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName);
+
+    Boolean findAreaById(Integer xLength, Integer yLength, Integer id);
 }

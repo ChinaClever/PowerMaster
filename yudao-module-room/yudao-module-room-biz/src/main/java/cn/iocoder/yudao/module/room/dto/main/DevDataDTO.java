@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.room.dto.main;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -27,6 +28,11 @@ public class DevDataDTO {
     private int pduOnLine;
 
     /**
+     * 告警
+     */
+    @Schema(description = "pdu告警")
+    private Integer pduInform;
+    /**
      * 母线数量
      */
     private int barNum;
@@ -39,6 +45,12 @@ public class DevDataDTO {
      * 始端箱离线数
      */
     private int busOffLine;
+
+    /**
+     * 告警
+     */
+    @Schema(description = "bus告警")
+    private Integer busInform;
 
     /**
      * 始端箱在线数
@@ -54,7 +66,11 @@ public class DevDataDTO {
      * 插接箱离线数
      */
     private int boxOffLine;
-
+    /**
+     * 告警
+     */
+    @Schema(description = "box告警")
+    private Integer boxInform;
     /**
      * 插接箱在线数
      */

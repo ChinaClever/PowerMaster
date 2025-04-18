@@ -566,8 +566,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 res.setLocation(roomIndexDO.getRoomName());
                 result.add(res);
             });
-            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-            String endTime = DateUtil.formatDateTime(DateTime.now());
+            LocalDate now = LocalDate.now();
+           String startTime = LocalDateTimeUtil.format(now.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+            String endTime = LocalDateTimeUtil.format(now.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
             List<String> yesterdayList = getData(startTime, endTime, ids, "room_eq_total_day");
             Map<Integer, Double> yesterdayMap = new HashMap<>();
             if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)) {
@@ -578,8 +579,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             }
 
             //上周
-            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-            endTime = DateUtil.formatDateTime(DateTime.now());
+            startTime = LocalDateTimeUtil.format(now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+            endTime = LocalDateTimeUtil.format(now.plusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
             List<String> weekList = getData(startTime, endTime, ids, "room_eq_total_week");
             Map<Integer, Double> weekMap = new HashMap<>();
             if (!org.springframework.util.CollectionUtils.isEmpty(weekList)) {
@@ -590,8 +591,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             }
 
             //上月
-            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-            endTime = DateUtil.formatDateTime(DateTime.now());
+            startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
+            endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
             List<String> monthList = getData(startTime, endTime, ids, "room_eq_total_month");
             Map<Integer, Double> monthMap = new HashMap<>();
             if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
@@ -821,13 +822,11 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         String startTime = null;
         String endTime = null;
         LocalDate now = LocalDate.now();
-        //todo bug
-        LocalDate yesterday = LocalDate.now();
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
                 indices = "room_eq_total_day";
-                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(now.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 break;
             case "lastWeek":
                 indices = "room_eq_total_week";
@@ -864,8 +863,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 List<Integer> ids = list.stream().map(RoomEqTotalDayDo::getRoomId).collect(Collectors.toList());
                 List<RoomIndexDO> roomIndexDOS = roomIndexCopyMapper.selectList(new LambdaUpdateWrapper<RoomIndexDO>().in(RoomIndexDO::getId, ids));
                 Map<Integer, RoomIndexDO> collect = roomIndexDOS.stream().collect(Collectors.toMap(RoomIndexDO::getId, x -> x));
-                startTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
-                endTime = LocalDateTimeUtil.format(yesterday.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
+                startTime = LocalDateTimeUtil.format(now.atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(now.atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
                 List<String> yesterdayList = getData(startTime, endTime, ids, "room_eq_total_day");
                 Map<Integer, Double> yesterdayMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)) {
@@ -890,7 +889,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 //上月
                 startTime = LocalDateTimeUtil.format(now.withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(now.plusMonths(1).withDayOfMonth(1), "yyyy-MM-dd HH:mm:ss");
-                List<String> monthList = getData(startTime, endTime, ids, "aisle_eq_total_month");
+                List<String> monthList = getData(startTime, endTime, ids, "room_eq_total_month");
                 Map<Integer, Double> monthMap = new HashMap<>();
                 if (!org.springframework.util.CollectionUtils.isEmpty(monthList)) {
                     monthList.forEach(str -> {

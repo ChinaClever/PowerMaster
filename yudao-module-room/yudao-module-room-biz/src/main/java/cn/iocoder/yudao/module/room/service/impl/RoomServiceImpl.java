@@ -737,11 +737,10 @@ public class RoomServiceImpl implements RoomService {
                         if (envData.containsKey(TEM_VALUE)) {
                             JSONObject temData = envData.getJSONObject(TEM_VALUE);
 
-                            double[] front = temData.getObject("front", double[].class);
-                            double[] black = temData.getObject("black", double[].class);
-                            double maxF = Arrays.stream(front).max().getAsDouble();
-                            double maxB = Arrays.stream(black).max().getAsDouble();
-                            cabinetDTO.setTem(Math.max(maxB, maxF));
+                            List<BigDecimal> front = temData.getList("front", BigDecimal.class);
+                            List<BigDecimal> black = temData.getList("black", BigDecimal.class);
+                            cabinetDTO.setTemFront(Collections.max(front).doubleValue());
+                            cabinetDTO.setTemBlack(Collections.max(black).doubleValue());
                         }
                         cabinetDTOList.add(cabinetDTO);
                     }
@@ -836,11 +835,15 @@ public class RoomServiceImpl implements RoomService {
                                     if (envData.containsKey(TEM_VALUE)) {
                                         JSONObject temData = envData.getJSONObject(TEM_VALUE);
 
-                                        double[] front = temData.getObject("front", double[].class);
-                                        double[] black = temData.getObject("black", double[].class);
-                                        double maxF = Arrays.stream(front).max().getAsDouble();
-                                        double maxB = Arrays.stream(black).max().getAsDouble();
-                                        cabinetDTO.setTem(Math.max(maxB, maxF));
+                                        List<BigDecimal> front = temData.getList("front", BigDecimal.class);
+                                        List<BigDecimal> black = temData.getList("black", BigDecimal.class);
+                                        cabinetDTO.setTemFront(Collections.max(front).doubleValue());
+                                        cabinetDTO.setTemBlack(Collections.max(black).doubleValue());
+//                                        double[] front = temData.getObject("front", double[].class);
+//                                        double[] black = temData.getObject("black", double[].class);
+//                                        double maxF = Arrays.stream(front).max().getAsDouble();
+//                                        double maxB = Arrays.stream(black).max().getAsDouble();
+//                                        cabinetDTO.setTem(Math.max(maxB, maxF));
                                     }
                                     cabinetDTOList.add(cabinetDTO);
                                 }
@@ -892,20 +895,18 @@ public class RoomServiceImpl implements RoomService {
             vo.setCabinetList(cabinetDTOList);
         }
 
-        List<Integer> cabinetIds = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
-
         //柜列
         List<AisleDataDTO> aisleIndexList = aisleIndexMapper.selectRoomAisleList(id);
-        List<Integer> aisleIds = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
-
-        ThreadPoolTaskExecutor tHreadPool = ThreadPoolConfig.getTHreadPool();
-        Future<Object> future = tHreadPool.submit(() -> {
-            //部门
-            Map<String, EquipmentStatisticsResVO> map = equipmentStatisticsMethod(cabinetIds, aisleIds);
-            return map;
-        });
-        Map<String, EquipmentStatisticsResVO> map = (Map<String, EquipmentStatisticsResVO>) future.get();
-        vo.setMap(map);
+//        List<Integer> cabinetIds = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
+//        List<Integer> aisleIds = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
+//        ThreadPoolTaskExecutor tHreadPool = ThreadPoolConfig.getTHreadPool();
+//        Future<Object> future = tHreadPool.submit(() -> {
+//            //部门
+//            Map<String, EquipmentStatisticsResVO> map = equipmentStatisticsMethod(cabinetIds, aisleIds);
+//            return map;
+//        });
+//        Map<String, EquipmentStatisticsResVO> map = (Map<String, EquipmentStatisticsResVO>) future.get();
+//        vo.setMap(map);
         if (!CollectionUtils.isEmpty(aisleIndexList)) {
             List<Integer> ids = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
             List<RoomCabinetDTO> cabinetDTOList1 = cabinetCfgMapper.roomCabinetList(id, ids);
@@ -1100,7 +1101,7 @@ public class RoomServiceImpl implements RoomService {
         Map<Integer, CabinetPdu> pduMap = new HashMap<>();
         Map<Integer, CabinetBox> boxMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(pduId)) {
-            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, pduId));
+            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, pduId));
             pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
         }
         if (!CollectionUtils.isEmpty(boxId)) {
@@ -1154,11 +1155,17 @@ public class RoomServiceImpl implements RoomService {
                     iter.setPowerFactor(total.getFloatValue(POWER_FACTOR));
                 }
                 if (Objects.nonNull(aPath)) {
+                    iter.setPowActivea(aPath.getFloatValue("pow_active"));
+                    iter.setPowApparenta(aPath.getFloatValue("pow_apparent"));
+                    iter.setPowReactivea(aPath.getFloatValue("pow_reactive"));
                     //a的视在功率
                     BigDecimal aPow = aPath.getBigDecimal("pow_apparent");
                     iter.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, iter.getPowApparent()), 100));
                 }
                 if (Objects.nonNull(bPath)) {
+                    iter.setPowActivea(bPath.getFloatValue("pow_active"));
+                    iter.setPowApparenta(bPath.getFloatValue("pow_apparent"));
+                    iter.setPowReactivea(bPath.getFloatValue("pow_reactive"));
                     //a的视在功率
                     BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
                     iter.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, iter.getPowApparent()), 100));
@@ -1171,7 +1178,9 @@ public class RoomServiceImpl implements RoomService {
                     if (Objects.nonNull(temValue)) {
                         List<BigDecimal> front = temValue.getList("front", BigDecimal.class);
                         List<BigDecimal> black = temValue.getList("black", BigDecimal.class);
-                        iter.setTem(Math.max(Collections.max(front).doubleValue(), Collections.max(black).doubleValue()));
+//                        iter.setTem(Math.max(Collections.max(front).doubleValue(), Collections.max(black).doubleValue()));
+                        iter.setTemFront(Collections.max(front).doubleValue());
+                        iter.setTemBlack(Collections.max(black).doubleValue());
                         temAvgBlacks.addAll(black);
                         temAvgFronts.addAll(front);
                         temMaxFronts.add(Collections.max(front));
@@ -1197,7 +1206,7 @@ public class RoomServiceImpl implements RoomService {
         Map<Integer, CabinetPdu> pduMap = new HashMap<>();
         Map<Integer, CabinetBox> boxMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(pduId)) {
-            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, pduId));
+            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, pduId));
             pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
         }
         if (!CollectionUtils.isEmpty(boxId)) {
@@ -1259,11 +1268,17 @@ public class RoomServiceImpl implements RoomService {
                     iter.setPowerFactor(total.getFloatValue(POWER_FACTOR));
                 }
                 if (Objects.nonNull(aPath)) {
+                    iter.setPowActivea(aPath.getFloatValue("pow_active"));
+                    iter.setPowApparenta(aPath.getFloatValue("pow_apparent"));
+                    iter.setPowReactivea(aPath.getFloatValue("pow_reactive"));
                     //a的视在功率
                     BigDecimal aPow = aPath.getBigDecimal("pow_apparent");
                     iter.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, iter.getPowApparent()), 100));
                 }
                 if (Objects.nonNull(bPath)) {
+                    iter.setPowActiveb(bPath.getFloatValue("pow_active"));
+                    iter.setPowApparentb(bPath.getFloatValue("pow_apparent"));
+                    iter.setPowReactiveb(bPath.getFloatValue("pow_reactive"));
                     //a的视在功率
                     BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
                     iter.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, iter.getPowApparent()), 100));
@@ -1276,7 +1291,9 @@ public class RoomServiceImpl implements RoomService {
                     if (Objects.nonNull(temValue)) {
                         List<BigDecimal> front = temValue.getList("front", BigDecimal.class);
                         List<BigDecimal> black = temValue.getList("black", BigDecimal.class);
-                        iter.setTem(Math.max(Collections.max(front).doubleValue(), Collections.max(black).doubleValue()));
+                        iter.setTemFront(Collections.max(front).doubleValue());
+                        iter.setTemBlack(Collections.max(black).doubleValue());
+//                        iter.setTem(Math.max(Collections.max(front).doubleValue(), Collections.max(black).doubleValue()));
                     }
                 }
             }
@@ -2011,6 +2028,13 @@ public class RoomServiceImpl implements RoomService {
 //                ));
 //        TreeMap<String, List<RoomIndexAddrResVO>> sortedMap = new TreeMap<>(collect);
         return collect;
+    }
+
+    @Override
+    public Boolean findAreaById(Integer xLength, Integer yLength, Integer id) {
+        int count = aisleIndexMapper.findAreaById(xLength,yLength,id);
+        int cabinetCount = cabinetIndexMapper.findAreaById(xLength,yLength,id);
+        return count+cabinetCount>0;
     }
 
     private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {

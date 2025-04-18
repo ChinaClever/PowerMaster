@@ -37,6 +37,11 @@
         WHERE
         ai.room_id = #{id} and  ai.is_delete = '0'
     </select>
+    <select id="findAreaById" resultType="java.lang.Integer">
+        select count(id) from aisle_index  where  room_id =3391 and
+        (y_coordinate+1 >#{yLength} and  x_coordinate+aisle_length-1 >#{xLength} and direction ='x') or
+        ( direction ='y' and y_coordinate + aisle_length-1 >#{yLength} and x_coordinate > #{xLength} )
+    </select>
 
     <update id="roomAisleDeleteById">
         update aisle_index ai set ai.is_delete = 1 where ai.id = #{aisleId}

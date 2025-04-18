@@ -209,6 +209,11 @@ public class MainServiceImpl implements MainService {
             int offLine = (int) pduIndexDos.stream()
                     .filter(pduIndexDo -> pduIndexDo.getRunStatus() == DeviceAlarmStatusEnum.OFF_LINE.getStatus())
                     .distinct().count();
+
+            int alarm = (int) pduIndexDos.stream()
+                    .filter(pduIndexDo -> pduIndexDo.getRunStatus() == DeviceAlarmStatusEnum.ALARM.getStatus())
+                    .distinct().count();
+            devDataDTO.setPduInform(alarm);
             devDataDTO.setPduOnLine(pduIndexDos.size() - offLine);
             devDataDTO.setPduOffLine(offLine);
         }
@@ -220,10 +225,14 @@ public class MainServiceImpl implements MainService {
             devDataDTO.setBusNum(busIndexList.size());
 
             int offLine = (int) busIndexList.stream()
-                    .filter(busIndex -> busIndex.getRunStatus() == DeviceAlarmStatusEnum.OFF_LINE.getStatus())
+                    .filter(busIndex -> busIndex.getRunStatus() == BusTypeEnum.OFF_LINE.getStatus())
+                    .distinct().count();
+            int inform = (int) busIndexList.stream()
+                    .filter(busIndex -> busIndex.getRunStatus() == BusTypeEnum.ALARM.getStatus())
                     .distinct().count();
             devDataDTO.setBusOnLine(busIndexList.size() - offLine);
             devDataDTO.setBusOffLine(offLine);
+            devDataDTO.setBusInform(inform);
         }
         List<BoxIndex> boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
                 .eq(BoxIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
@@ -233,8 +242,13 @@ public class MainServiceImpl implements MainService {
             int offLine = (int) boxIndexList.stream()
                     .filter(boxIndex -> boxIndex.getRunStatus() == BusTypeEnum.OFF_LINE.getStatus())
                     .distinct().count();
+
+            int inform = (int) boxIndexList.stream()
+                    .filter(boxIndex -> boxIndex.getRunStatus() == BusTypeEnum.ALARM.getStatus())
+                    .distinct().count();
             devDataDTO.setBoxOnLine(boxIndexList.size() - offLine);
             devDataDTO.setBoxOffLine(offLine);
+            devDataDTO.setBoxInform(inform);
         }
 
         //机柜

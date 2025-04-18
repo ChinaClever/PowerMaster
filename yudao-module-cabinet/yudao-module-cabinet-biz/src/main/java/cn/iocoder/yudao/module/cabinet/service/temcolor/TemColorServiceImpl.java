@@ -87,16 +87,25 @@ public class TemColorServiceImpl implements TemColorService {
             temColorDOOne.setMin(0);
             temColorDOOne.setMax(17);
             temColorDOOne.setColor("#0059FF");
+            temColorDOOne.setHotMin(0);
+            temColorDOOne.setHotMax(30);
+            temColorDOOne.setHotColor("#3F5B7E");
             temColorDOS.add(temColorDOOne);
             temColorDOTwo.setId(2L);
             temColorDOTwo.setMin(18);
             temColorDOTwo.setMax(27);
             temColorDOTwo.setColor("#20FC03");
+            temColorDOTwo.setHotMin(30);
+            temColorDOTwo.setHotMax(70);
+            temColorDOTwo.setHotColor("##232023");
             temColorDOS.add(temColorDOTwo);
             temColorDOThree.setId(3L);
             temColorDOThree.setMin(28);
             temColorDOThree.setMax(45);
             temColorDOThree.setColor("#FF005E");
+            temColorDOThree.setHotMin(70);
+            temColorDOThree.setHotMax(100);
+            temColorDOThree.setHotColor("#873F3F");
             temColorDOS.add(temColorDOThree);
             if (CollectionUtil.isEmpty(temColorMapper.selectList())){
                 temColorMapper.insertBatch(temColorDOS);

@@ -142,8 +142,14 @@ public class RoomCabinetDTO {
     /**
      * 温度
      */
-    @Schema(description = "温度")
-    private double tem;
+    @Schema(description = "前门温度")
+    private double temFront;
+
+    /**
+     * 温度
+     */
+    @Schema(description = "后门温度")
+    private double temBlack;
 
     /**
      * 负载率
@@ -160,7 +166,6 @@ public class RoomCabinetDTO {
     /**
      * 昨日电量
      */
-
     @Schema(description = "昨日电量", example = "1")
     private Double yesterdayEq;
 
@@ -170,6 +175,44 @@ public class RoomCabinetDTO {
 
     @Schema(description = "B比例", example = "1.00")
     private BigDecimal bPow;
+
+    /**
+     * 有功功率
+     */
+    @Schema(description = "有功功率")
+    private float powActivea;
+
+
+    /**
+     * 无功功率
+     */
+    @Schema(description = "无功功率")
+    private float powReactivea;
+
+    /**
+     * 视在功率
+     */
+    @Schema(description = "视在功率")
+    private float powApparenta;
+
+    /**
+     * 有功功率
+     */
+    @Schema(description = "有功功率")
+    private float powActiveb;
+
+
+    /**
+     * 无功功率
+     */
+    @Schema(description = "无功功率")
+    private float powReactiveb;
+
+    /**
+     * 视在功率
+     */
+    @Schema(description = "视在功率")
+    private float powApparentb;
 
     @Schema(description = "位置")
     private Integer index;
