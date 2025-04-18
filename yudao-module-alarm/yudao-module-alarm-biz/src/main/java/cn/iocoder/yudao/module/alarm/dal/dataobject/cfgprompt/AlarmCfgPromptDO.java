@@ -20,6 +20,12 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @AllArgsConstructor
 public class AlarmCfgPromptDO implements Serializable {
 
+    public AlarmCfgPromptDO(Integer id, Integer isEnable, Integer promptType) {
+        this.id = id;
+        this.isEnable = isEnable;
+        this.promptType = promptType;
+    }
+
     private static final long serialVersionUID = 1L;
     /**
      * 主键id

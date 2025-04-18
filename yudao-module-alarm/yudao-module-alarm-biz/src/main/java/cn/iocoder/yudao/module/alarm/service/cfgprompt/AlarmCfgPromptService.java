@@ -58,4 +58,10 @@ public interface AlarmCfgPromptService {
      */
     PageResult<AlarmCfgPromptDO> getCfgPromptPage(AlarmCfgPromptPageReqVO pageReqVO);
 
+    /**
+     * 初始化告警配置
+     *
+     */
+    void initAlarmPrompt();
+
 }
