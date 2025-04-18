@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.alarm.monitor;
 import cn.iocoder.yudao.module.alarm.monitor.constants.BinLogConstants;
 import cn.iocoder.yudao.framework.mybatis.core.object.ColumnInfo;
 import cn.iocoder.yudao.framework.mybatis.core.util.JdbcUtils;
+import cn.iocoder.yudao.module.alarm.monitor.constants.DBTable;
+import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
 import com.alibaba.druid.util.StringUtils;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.EventData;
@@ -25,6 +27,9 @@ public class MySQLTableMonitor {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private AlarmLogRecordService alarmLogRecordService;
 
     // 缓存表结构：表ID -> 字段列表（字段名+类型）
     private static Map<String, List<ColumnInfo>> tableSchemaCache = new HashMap<>();
@@ -77,8 +82,8 @@ public class MySQLTableMonitor {
                             mapList.add(rowData);
                             log.info("[INSERT] 数据内容：" + rowData);
                         }
-                        redisTemplate.opsForList().rightPushAll(binLogConstants.getTable() + ":insert", mapList);
                     }
+
                 } else if (data instanceof UpdateRowsEventData) {
                     // 更新事件
                     UpdateRowsEventData updateData = (UpdateRowsEventData) data;
@@ -95,8 +100,14 @@ public class MySQLTableMonitor {
                             log.info("[UPDATE] 旧数据：" + oldData);
                             log.info("[UPDATE] 新数据：" + newData);
                         }
-                        redisTemplate.opsForList().rightPushAll(binLogConstants.getTable() + ":updateNew", newMaps);
-                        redisTemplate.opsForList().rightPushAll(binLogConstants.getTable() + ":updateOld", oldMaps);
+
+                        switch (binLogConstants.getTable()) {
+                            case DBTable.PDU_INDEX:
+                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
+                                break;
+                            default:
+                                log.info("监听到表结构变化，但未匹配到对应的表，忽略处理");
+                        }
                     }
                 }
             });
@@ -136,7 +147,10 @@ public class MySQLTableMonitor {
         for (int i = 0; i < row.length; i++) {
             String columnName = columns.get(i).getName();
             Object value = convertValue(row[i], columns.get(i).getType());
-            result.put(columnName, value);
+            // 过滤is_deleted字段
+            if (!"is_deleted".equals(columnName)) {
+                result.put(columnName, value);
+            }
         }
         return result;
     }

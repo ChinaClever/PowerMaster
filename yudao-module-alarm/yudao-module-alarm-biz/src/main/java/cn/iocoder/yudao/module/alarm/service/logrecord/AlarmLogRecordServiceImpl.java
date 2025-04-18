@@ -3,15 +3,22 @@ package cn.iocoder.yudao.module.alarm.service.logrecord;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.*;
@@ -19,6 +26,7 @@ import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
 
 /**
  * 系统告警记录 Service 实现类
@@ -27,6 +35,7 @@ import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
  */
 @Service
 @Validated
+@Slf4j
 public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Autowired
@@ -34,6 +43,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private PDUDeviceService pduDeviceService;
 
     @Override
     public Integer saveLogRecord(AlarmLogRecordSaveReqVO createReqVO) {
@@ -164,10 +176,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     }
 
     @Override
-    public void insertAlarmRecordWhenPduAlarm() {
-        List<Map<String, Object>> oldMaps = redisTemplate.opsForList().range( "pdu_index:updateOld", 0, -1);
-        List<Map<String, Object>> newMaps = redisTemplate.opsForList().range( "pdu_index:updateNew", 0, -1);
-        if (CollectionUtils.isEmpty(oldMaps) || CollectionUtils.isEmpty(newMaps)) {
+    public void insertOrUpdateAlarmRecordWhenPduAlarm (List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        ValueOperations ops = redisTemplate.opsForValue();
+        if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
             List<PduIndexDo> pduIndexDoListOld = BeanUtils.toBean(oldMaps, PduIndexDo.class);
             List<PduIndexDo> pduIndexDoListNew = BeanUtils.toBean(newMaps, PduIndexDo.class);
             for (int i = 0; i < pduIndexDoListOld.size(); i++) {
@@ -179,16 +190,48 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 alarmCodeList.add(DeviceAlarmStatusEnum.OFF_LINE.getStatus());
                 if (alarmCodeList.contains(pduIndexDoNew.getRunStatus()) && !pduIndexDoOld.getRunStatus().equals(pduIndexDoNew.getRunStatus())) {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
+                    alarmRecord.setAlarmKey(pduIndexDoNew.getPduKey());
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                     if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.EARLY_WARNING.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_WARNING.getType());
-                        alarmRecord.setAlarmDesc(AlarmTypeEnums.PDU_WARNING.getName());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
                     } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_ALARM.getType());
-                        alarmRecord.setAlarmDesc(AlarmTypeEnums.PDU_ALARM.getName());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
+                    } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.OFF_LINE.getStatus())) {
+                        alarmRecord.setAlarmType(AlarmTypeEnums.PDU_OFF_LINE.getType());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
+                    // 告警位置
+                    Map<String, String> positionMap = pduDeviceService.setLocation(Arrays.asList(pduIndexDoNew.getPduKey()));
+                    alarmRecord.setAlarmPosition(positionMap.get(pduIndexDoNew.getPduKey()));
+                    // 告警描述、告警开始时间
+                    JSONObject pduJson = (JSONObject) ops.get(REDIS_KEY_PDU + pduIndexDoNew.getPduKey());
+                    if (pduJson != null) {
+                        String pdu_alarm = pduJson.get("pdu_alarm")==null?"":pduJson.get("pdu_alarm").toString();
+                        alarmRecord.setAlarmDesc(pdu_alarm);
+                        Object datetime = pduJson.get("datetime");
+                        if (datetime != null) {
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            LocalDateTime startTime = LocalDateTime.parse(datetime.toString(), formatter);
+                            alarmRecord.setStartTime(startTime);
+                        } else {
+                            alarmRecord.setStartTime(LocalDateTime.now());
+                        }
+                    }
+                    logRecordMapper.insert(alarmRecord);
+                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && DeviceAlarmStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
+                    int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
+                            .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
+                            .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
+                            .set(AlarmLogRecordDO::getFinishReason,"正常上线")
+                            .eq(AlarmLogRecordDO::getAlarmKey, pduIndexDoNew.getPduKey())
+                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
                 }
             }
         }
+
     }
+
+
 }

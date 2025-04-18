@@ -79,5 +79,5 @@ public interface AlarmLogRecordService {
      * 当pdu报警时，插入告警记录
      *
      */
-    void insertAlarmRecordWhenPduAlarm();
+    void insertOrUpdateAlarmRecordWhenPduAlarm( List<Map<String, Object>> oldMaps , List<Map<String, Object>> newMaps);
 }
