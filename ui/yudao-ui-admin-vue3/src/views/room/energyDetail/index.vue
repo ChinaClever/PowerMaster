@@ -98,7 +98,6 @@
 // import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts'
 import { IndexApi } from '@/api/room/roomindex/index'
-import { AisleEnergyApi } from '@/api/aisle/aisleenergy'
 import 'echarts/lib/component/dataZoom';
 import Index from '@/components/RouterSearch/index.vue';
 
@@ -252,7 +251,7 @@ const getMachineEleChain = async() => {
 const getMachineEleTrend = async(type) => {
   try {
     EleTrendLoading.value = true
-    const res = await AisleEnergyApi.getEleTrend({ id: queryParams.roomId, type })
+    const res = await IndexApi.getEleTrend({ id: queryParams.roomId, type })
     echarsOptionEleTrend.value ={
       tooltip: {
         trigger: 'axis',
@@ -261,7 +260,11 @@ const getMachineEleTrend = async(type) => {
         },
         formatter: function(params) {
           console.log('params', params)
-          return `${params[0].seriesName}：${params[0].value}kW·h` + '<br>' + `${params[1].seriesName}：${params[1].value}kW·h`; // 使用 <b> 标签使数值加粗显示
+          let result = `${params[0].seriesName}：${params[0].value}kW·h`
+          for (var i = 1; i < params.length; i++) {
+            result += '<br>' + `${params[i].seriesName}：${params[i].value}kW·h`
+          }
+          return result; // 使用 <b> 标签使数值加粗显示
         }
       },
       legend: {

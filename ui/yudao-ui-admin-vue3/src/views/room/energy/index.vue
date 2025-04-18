@@ -56,22 +56,24 @@
     <template #Content>
       <div v-loading="tableLoading">
         <div class="dataShow" v-show="tableData.length>0">
-          <el-table v-show="switchValue == 1" :data="tableData" stripe :border="true" :header-cell-style="headerCellStyle">
-            <el-table-column label="序号" width="100px" align="center">
-              <template #default="scope">
-                {{ scope.$index + (queryParams.pageNo - 1) * queryParams.pageSize + 1 }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="location" label="位置" align="center" />
-            <el-table-column prop="yesterdayEq" label="昨日用能(kW·h)" align="center" />
-            <el-table-column prop="lastWeekEq" label="上周用能(kW·h)" align="center" />
-            <el-table-column prop="lastMonthEq" label="上月用能(kW·h)" align="center" />
-            <el-table-column label="详情" align="center" width="100px">
-              <template #default="s">
-                <el-button type="primary" @click="toDetail(s.row.roomId,s.row.id,s.row.location)">详情</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+          <div v-show="switchValue == 1" style="height: 700px;overflow: auto;">
+            <el-table :data="tableData" stripe :border="true" :header-cell-style="headerCellStyle">
+              <el-table-column label="序号" width="100px" align="center">
+                <template #default="scope">
+                  {{ scope.$index + (queryParams.pageNo - 1) * queryParams.pageSize + 1 }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="location" label="位置" align="center" />
+              <el-table-column prop="yesterdayEq" label="昨日用能(kW·h)" align="center" />
+              <el-table-column prop="lastWeekEq" label="上周用能(kW·h)" align="center" />
+              <el-table-column prop="lastMonthEq" label="上月用能(kW·h)" align="center" />
+              <el-table-column label="详情" align="center" width="100px">
+                <template #default="s">
+                  <el-button type="primary" @click="toDetail(s.row.roomId,s.row.id,s.row.location)">详情</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
           <div v-show="switchValue == 0 && tableData?.length" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
@@ -379,7 +381,7 @@ handleNavTree();
   }
 }
 .matrixContainer {
-  height: calc(100vh - 320px);
+  height: 700px;
   overflow: auto;
   display: flex;
   flex-wrap: wrap;
@@ -432,9 +434,7 @@ handleNavTree();
   }
 }
 .dataShow{
-  display: inline-block;
   width: 100%;
-  height: calc(100vh - 220px);
 }
 
 </style>

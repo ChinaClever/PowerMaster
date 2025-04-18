@@ -932,7 +932,8 @@ function headerCellStyle() {
 }
 :deep(.el-dialog) {
   width: 80%;
-  margin-top: 50px;
+  margin-top: 1%;
+  margin-bottom: 0;
   background-color: #f1f1f1;
 }
 .tipInDialog{
