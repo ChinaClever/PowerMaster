@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房电能记录">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
         <div class="carousel-container">
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -11,13 +11,27 @@
           </el-carousel> -->
         </div>
         <div class="nav_content">
-          <div class="nav_content1" >
+          <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>
+          </div>
+          <!-- <div class="nav_content1" >
             <span class="label">全部机房最近一天新增记录</span>
           </div>
            <div class="description-item">
             <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }} 条</span>
-          </div> 
+          </div>  -->
           <!-- <el-descriptions title="全部机房最近一天新增记录" direction="vertical" :column="1" width="80px" border >
             <el-descriptions-item label="电能" >{{ navTotalData }}条</el-descriptions-item>
           </el-descriptions> -->
@@ -108,6 +122,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import { IndexApi } from '@/api/room/roomindex'
+import { last } from 'lodash-es'
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
@@ -118,6 +133,9 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
+const lastDayTotalData=ref()
+const lastWeekTotalData=ref()
+const lastMonthTotalData=ref()
 let now=new Date()
 const queryParams = reactive({
   pageNo: 1,
@@ -316,9 +334,11 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
-  navTotalData.value = res.total
+const getNavData = async() => {
+  const res = await EnergyConsumptionApi.getNavNewData({})
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
+  lastMonthTotalData.value = res.month
 }
 
 /** 搜索按钮操作 */
@@ -330,7 +350,7 @@ const handleQuery = () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData()
+  getNavData()
   getList();
 })
 

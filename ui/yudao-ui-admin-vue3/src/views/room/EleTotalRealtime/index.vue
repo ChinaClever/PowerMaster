@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房实时能耗">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/>
         <div class="nav_data">
 <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
@@ -28,6 +28,7 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
+            :clearable="false"
           />
           </el-form-item>
 
@@ -64,7 +65,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -91,13 +92,13 @@
         </el-table-column>
       </template>
         <!-- 超过一万条数据提示信息 -->
-          <template v-if="shouldShowDataExceedMessage" #append>
-            <tr>
-              <td colspan="列数" style="text-align: center; padding: 12px 0;">
-                <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
-              </td>
-            </tr>
-          </template>
+        <template v-if="shouldShowDataExceedMessage" #append>
+          <tr>
+            <td colspan="列数" style="text-align: center; padding: 12px 0;">
+              <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
+            </td>
+          </tr>
+        </template>
       </el-table>
       <!-- 分页 -->
       <Pagination
@@ -125,6 +126,7 @@ import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
 import { RoomEnergyApi } from '@/api/room/roomenergy'
 import { time } from 'console'
+import { on } from 'events'
 const message = useMessage() // 消息弹窗
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
@@ -276,7 +278,6 @@ const getList = async () => {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-
       const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
@@ -303,6 +304,8 @@ const getList = async () => {
       total.value = data.total
     }
   } finally {
+    rankChart?.off("click")
+    rankChart?.dispose();
     initChart();
     loading.value = false
   }
@@ -468,15 +471,20 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (roomId: number, createTimeMin : string,createTimeMax : string) => {
-    push('/room/energyConsumption/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
-  '&end='+createTimeMax+'&roomId='+ roomId+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:""));
+  //   push('/room/energyConsumption/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
+  // '&end='+createTimeMax+'&roomId='+ roomId+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:""));
+  push({path:"/room/energyConsumption/powerAnalysis",state:{type:"total",granularity:"day",
+  start:createTimeMin,end:createTimeMax,roomId,startTime:(selectTimeRange.value!=null?selectTimeRange.value[0]:""),endTime:(selectTimeRange.value!=null?selectTimeRange.value[1]:"")}})
 }
-
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavNewData()
+  // getNavNewData()
   // getList();
+});
+onBeforeUnmount(() => {
+  rankChart?.off("click");
+  rankChart?.dispose();
 });
 let now = new Date()
 selectTimeRange.value = [dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")]
@@ -484,7 +492,6 @@ getList();
 </script>
 
 <style scoped>
-
 .realTotal{
   float: right;
   padding-top: 20px;
