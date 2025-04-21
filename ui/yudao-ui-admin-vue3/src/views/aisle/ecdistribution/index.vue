@@ -1,40 +1,38 @@
 <template>
   <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="柜列能耗排名" :showCheckbox="false">
     <template #NavInfo>
-      <br/>    <br/> 
       <div class="nav_data">
         <div class="nav_header">      
           <span v-if="nowAddress">{{nowAddress}}</span>
         </div>
-        <br/> 
         <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <div class="description-item" >
+        <!-- <div class="description-item" v-show="selectTimeRange[0]!=null">
           <span class="label">开始日期 :</span>
           <span >{{selectTimeRange[0]}}</span>
         </div>
-        <div class="description-item" >
+        <div class="description-item" v-show="selectTimeRange[1]!=null">
           <span class="label">结束日期 :</span>
           <span >{{selectTimeRange[1]}}</span>
-        </div>
-        <div class="description-item">
+        </div> -->
+        <div class="description-item" v-show="totalEqData!=null">
           <span class="label">总耗电量 :</span>
           <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
         </div>
-        <div class="description-item">
+        <div class="description-item" v-show="maxEqDataTemp!=null">
           <span class="label">最大耗电量 :</span>
           <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="maxEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
+        <div v-if="maxEqDataTimeTemp" class="description-item" v-show="maxEqDataTimeTemp!=null">
+          <span class="label">记录时间 :</span>
           <span class="value">{{ maxEqDataTimeTemp }}</span>
         </div>
 
-        <div class="description-item">
+        <div class="description-item" v-show="minEqDataTemp!=null">
           <span class="label">最小耗电量 :</span>
           <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="minEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
+        <div v-if="minEqDataTimeTemp" class="description-item" v-show="minEqDataTimeTemp!=null">
+          <span class="label">记录时间 :</span>
           <span class="value">{{ minEqDataTimeTemp }}</span>
         </div>
         <div class="line" style="margin-top: 10px;"></div>
@@ -104,11 +102,11 @@
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
                   <el-table-column prop="startEleData" label="数值"/>   
-                  <el-table-column prop="startTimeData" label="发生时间"/>
+                  <el-table-column prop="startTimeData" label="开始时间"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
                   <el-table-column prop="endEleData" label="数值"/>   
-                  <el-table-column prop="endTimeData" label="发生时间"/>
+                  <el-table-column prop="endTimeData" label="结束时间"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
                   <el-table-column :prop="item.name" label="数值"/>   
@@ -124,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/aisle/aisleindex'
@@ -145,9 +143,10 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(7)) as any
-const route=useRoute()
-if(route.query.start!=null&&route.query.end!=null){
-  selectTimeRange.value=[route.query.start,route.query.end]
+let lastDate=null;
+let lastWeekOrMonth=null;
+if(history.state.start!=null&&history.state.end!=null){
+  selectTimeRange.value=[history.state.start,history.state.end]
 }
 const loading = ref(false) 
 const loading2 = ref(false) 
@@ -244,16 +243,40 @@ const shortcuts = [
   },
 ]
 
+function defaultYear(){
+  const preYear=new Date();
+  preYear.setFullYear(preYear.getFullYear()-1)
+  return [dayjs(preYear).format("YYYY-MM-DD HH:mm:ss"),dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")]
+}
+
 // 监听切换日周月tab切换
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="dayTabPane"){
+    lastDate=selectTimeRange.value;
+  }else{
+    lastWeekOrMonth=selectTimeRange.value;
+  }
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
+    if(lastDate!=null){
+      selectTimeRange.value=lastDate;
+    }
     // selectTimeRange.value = defaultDayTimeRange(7)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
     // selectTimeRange.value = defaultMonthTimeRange(1)
   }else{
     queryParams.granularity = 'month'
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
     // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
@@ -314,17 +337,31 @@ loading.value = true
       minEqDataTemp.value = Math.min(...eqData.value);
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = startTimeData.value[index]
+          maxEqDataTimeTemp.value = createTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
-          minEqDataTimeTemp.value = startTimeData.value[index]
+          minEqDataTimeTemp.value = createTimeData.value[index]
         }
         totalEqData.value += Number(num);
       });
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
-      loading2.value=false
+      loading2.value=true
+      totalEqData.value = null;
+      startEleData.value = [];
+      startTimeData.value = [];
+      endEleData.value = [];
+      endTimeData.value = [];
+      eqData.value = [];
+      createTimeData.value = [];
+
+      maxEqDataTemp.value = null;
+      minEqDataTemp.value = null;
+      maxEqDataTimeTemp.value = null
+      minEqDataTimeTemp.value = null
+      // 图表显示的位置变化
+      nowAddress.value = nowAddressTemp.value
       ElMessage({
         message: '暂无数据',
         type: 'warning',
@@ -343,6 +380,7 @@ const initLineChart = () => {
     lineChart.dispose(); // 销毁之前的实例
   }
   if (chartContainer.value && instance) {
+    lineChart?.dispose();
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
       title: { text: '耗电量趋势图', top: -4},
@@ -350,7 +388,7 @@ const initLineChart = () => {
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
       series: [{name: '耗电量', type: 'line', data: eqData.value}],
       dataZoom:[{type: "inside"}],
@@ -373,15 +411,14 @@ function formatNumber(value, decimalPlaces) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
+  console.log("params==",params)
   var tooltipContent = '';
-  params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '耗电量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
-        break;
-    }
-  });
-  tooltipContent += '<br/>'+'时间: ' + params[0].name;
+  tooltipContent += params[0].marker + ' ' +'记录时间: ' + params[0].name;
+  tooltipContent += "&nbsp;&nbsp;&nbsp;&nbsp;" + params[0].seriesName + ': ' + params[0].value + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'开始时间: ' + tableData.value[params[0].dataIndex].startTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;开始电能: ' + tableData.value[params[0].dataIndex].startEleData + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'结束时间: ' + tableData.value[params[0].dataIndex].endTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;结束电能: ' + tableData.value[params[0].dataIndex].endEleData + ' kWh';
   return tooltipContent;
 }
 
@@ -499,8 +536,8 @@ const handleQuery = async() => {
 onMounted(async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryAisleId = useRoute().query.aisleId as string | undefined;
-  const queryLocation = useRoute().query.location as string;
+  const queryAisleId = history.state.aisleId as string | undefined;
+  const queryLocation = history.state.location as string;
   queryParams.aisleId = queryAisleId ? parseInt(queryAisleId, 10) : undefined;
   if (queryParams.aisleId != undefined){
     await getLineChartData();

@@ -31,9 +31,7 @@ public class OutLetsPageRespVO {
     private String end_time;
     @NumberFormat("0.0")
     @ExcelProperty({"耗电量","耗电量(kWh)"})
-    private Double bill_value;
+    private Double eq_value;
     @ExcelProperty({"耗电量","记录时间"})
     private String create_time;
-
-
 }

@@ -27,4 +27,6 @@ public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
 
     @Delete("DELETE FROM aisle_index")
     void initaisleData();
+
+    Integer findAreaById(@Param("xLength") Integer xLength, @Param("yLength") Integer yLength, @Param("roomId") Integer roomId);
 }

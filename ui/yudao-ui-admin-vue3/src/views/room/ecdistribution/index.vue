@@ -1,31 +1,30 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机房能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机房能耗排名" :showCheckbox="false" :hightCurrent="true" :currentKey="currentKey" ref="commonMenu1">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
       <div class="nav_header">      
-          <span>{{nowAddress}}</span>
-          <span>{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span>
-        </div>
+        <span>{{nowAddress}}</span>
+      </div>
       <div class="nav_content">
-       <div class="description-item">
+       <div class="description-item" v-if="totalEqData!=null">
           <span class="label">总耗电量 :</span>
           <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
         </div>
-        <div class="description-item">
+        <div class="description-item show" v-if="maxEqDataTemp!=null" style="white-space: nowrap;">
           <span class="label">最大耗电量 :</span>
-          <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
+          <span style="white-space: nowrap;">{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="maxEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
+        <div v-if="maxEqDataTimeTemp!=null" class="description-item">
+          <span class="label">记录时间 :</span>
           <span class="value">{{ maxEqDataTimeTemp }}</span>
         </div>
-        <div class="description-item">
+        <div class="description-item" v-if="minEqDataTemp!=null">
           <span class="label">最小耗电量 :</span>
           <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="minEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
+        <div v-if="minEqDataTimeTemp!=null" class="description-item">
+          <span class="label">记录时间 :</span>
           <span class="value">{{ minEqDataTimeTemp }}</span>
         </div>
       </div>
@@ -122,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/room/roomindex'
@@ -141,10 +140,13 @@ const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
+const currentKey=ref()
 const route=useRoute()
+let lastdate=null;
+let lastWeekOrMonth=null;
 const selectTimeRange : any= ref(defaultDayTimeRange(7))
-if(route.query.start!=null&&route.query.end!=null&&route.query.start!=''&&route.query.end!=''){
-  selectTimeRange.value=[route.query.start as string,route.query.end as string]
+if(history.state.start!=null&&history.state.end!=null&&history.state.start!=''&&history.state.end!=''){
+  selectTimeRange.value=[history.state.start as string,history.state.end as string]
 }
 const loading = ref(false) 
 const message = useMessage() // 消息弹窗
@@ -238,17 +240,38 @@ const shortcuts = [
   },
 ]
 
+function defaultYear(){
+  const preYear=new Date();
+  preYear.setFullYear(preYear.getFullYear()-1)
+  return [dayjs(preYear).format("YYYY-MM-DD HH:mm:ss"),dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")]
+}
 // 监听切换日周月tab切换
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="dayTabPane"){
+    lastdate=selectTimeRange.value;
+  }else{
+    lastWeekOrMonth=selectTimeRange.value;
+  }
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
     // selectTimeRange.value = defaultDayTimeRange(7)
+    if(lastdate!=null){
+      selectTimeRange.value=lastdate;
+    }
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    // selectTimeRange.value = defaultMonthTimeRange(1)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }else{
     queryParams.granularity = 'month'
-    // selectTimeRange.value = defaultMonthTimeRange(12)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }
   handleQuery();
 });
@@ -279,10 +302,10 @@ const endEleData = ref<number[]>([]);
 const endTimeData = ref<string[]>([]);
 const eqData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
-const totalEqData = ref(0);
-const maxEqDataTemp = ref(0);// 最大耗电量 
+const totalEqData = ref();
+const maxEqDataTemp = ref();// 最大耗电量 
 const maxEqDataTimeTemp = ref();// 最大耗电量的发生时间 
-const minEqDataTemp = ref(0);// 最小耗电量 
+const minEqDataTemp = ref();// 最小耗电量 
 const minEqDataTimeTemp = ref();// 最小耗电量的发生时间 
 // 获取折线图数据
 const getLineChartData =async () => {
@@ -308,10 +331,10 @@ loading.value = true
       
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = startTimeData.value[index]
+          maxEqDataTimeTemp.value = createTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
-          minEqDataTimeTemp.value = startTimeData.value[index]
+          minEqDataTimeTemp.value = createTimeData.value[index]
         }
         totalEqData.value += Number(num);
              console.log(index)
@@ -324,18 +347,18 @@ loading.value = true
         message: '暂无数据',
         type: 'warning',
       });
-      totalEqData.value = 0;
+      totalEqData.value = null;
       data.list = [];
-      startEleData.value = data.list.map((item) => formatNumber(item.start_ele, 1));
-      startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
-      endEleData.value = data.list.map((item) => formatNumber(item.end_ele, 1));
-      endTimeData.value = data.list.map((item) => formatDate(item.end_time, 'YYYY-MM-DD'));
-      eqData.value = data.list.map((item) => formatNumber(item.eq_value, 1));
-      createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-      maxEqDataTemp.value = "0.0";
-      minEqDataTemp.value = "0.0";
-      maxEqDataTimeTemp.value = "无数据"
-      minEqDataTimeTemp.value = "无数据"
+      startEleData.value = [];
+      startTimeData.value = [];
+      endEleData.value = [];
+      endTimeData.value = [];
+      eqData.value = [];
+      createTimeData.value = [];
+      maxEqDataTemp.value = null;
+      minEqDataTemp.value = null;
+      maxEqDataTimeTemp.value = null
+      minEqDataTimeTemp.value = null
       nowAddress.value = nowAddressTemp.value
     }
  } finally {
@@ -347,9 +370,8 @@ loading.value = true
 const chartContainer = ref<HTMLElement | null>(null);
 let lineChart = null as echarts.ECharts | null; 
 const initLineChart = () => {
-  if (lineChart) {
-    lineChart.dispose(); // 销毁之前的实例
-  }
+  lineChart?.dispose();
+  lineChart=null;
   if (chartContainer.value && instance) {
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
@@ -358,7 +380,7 @@ const initLineChart = () => {
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
       series: [{name: '耗电量', type: 'line', data: eqData.value}],
       dataZoom:[{type: "inside"}],
@@ -383,14 +405,12 @@ function formatNumber(value, decimalPlaces) {
 function customTooltipFormatter(params: any[]) {
   console.log("params==",params)
   var tooltipContent = '';
-  params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '耗电量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
-        break;
-    }
-  });
-  tooltipContent += '<br/>'+'时间: ' + params[0].name;
+  tooltipContent += params[0].marker + ' ' +'记录时间: ' + params[0].name;
+  tooltipContent += "&nbsp;&nbsp;&nbsp;&nbsp;" + params[0].seriesName + ': ' + params[0].value + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'开始时间: ' + tableData.value[params[0].dataIndex].startTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;开始电能: ' + tableData.value[params[0].dataIndex].startEleData + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'结束时间: ' + tableData.value[params[0].dataIndex].endTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;结束电能: ' + tableData.value[params[0].dataIndex].endEleData + ' kWh';
   return tooltipContent;
 }
 
@@ -463,11 +483,17 @@ const handleQuery = async() => {
   // initRankChart();
 }
 
+
+if(history.state.roomId!=null){
+  currentKey.value = history.state.roomId
+}
+
 /** 初始化 **/ 
 onMounted(async () => {
   getNavList()
-  const queryRoomId = useRoute().query.roomId as string | undefined;
-  const queryLocation = useRoute().query.location as string;
+  const queryRoomId = history.state.roomId as string | undefined;
+  console.log("queryRoomId==",queryRoomId)
+  const queryLocation = history.state.location as string;
   queryParams.roomId = queryRoomId ? parseInt(queryRoomId, 10) : undefined;
   if (queryParams.roomId != undefined){
     await getLineChartData();
@@ -475,6 +501,10 @@ onMounted(async () => {
     nowAddressTemp.value = queryLocation;
     initLineChart();
   }
+})
+onBeforeUnmount(() => {
+  lineChart?.dispose();
+  lineChart = null;
 })
 //导出Excel
 const handleExport1 = async () => {
@@ -499,7 +529,6 @@ const handleExport1 = async () => {
     exportLoading.value = false
   }
 }
-
 </script>
 
 <style scoped>
@@ -507,8 +536,7 @@ const handleExport1 = async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
-    padding-top: 20px;
+    font-size: 14px;
   }
 .nav_data{
   padding-left: 5px;
@@ -516,6 +544,7 @@ const handleExport1 = async () => {
 }
 .nav_content span{
   font-size: 14px;
+  margin-left: 10px;
 }
 .carousel-container {
   width: 100%;

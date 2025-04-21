@@ -3,24 +3,24 @@
     <!-- 左大侧 -->
     <div class="master-left">
       <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
+        <div v-show="!isCloseNav" class="nav-left">
           <!-- 左侧标题栏 -->
           <div class="navBar">{{navTitle}}</div>
           <!-- 信息展示模式 -->
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
-          <div v-if="showNavTree" >
-            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
+          <div v-show="showNavTree" >
+            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" :defaultCheckedKeys="defaultCheckedKeys"/>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
+        <div v-show="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
           <Icon icon="ep:arrow-left" />收起
         </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:arrow-up" v-if="!switchNav" style="" />
-          <Icon icon="ep:arrow-down" v-if="switchNav" />{{!switchNav ? '收缩' : '扩展'}}
+        <div v-show="!isCloseNav" class="reduce" @click.prevent="handleSwitchNav">
+          <Icon icon="ep:arrow-up" v-show="!switchNav" style="" />
+          <Icon icon="ep:arrow-down" v-show="switchNav" />{{!switchNav ? '收缩' : '扩展'}}
         </div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
+        <div v-show="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
       </ContentWrap>
     </div>
     <!-- 右大侧 -->
@@ -75,6 +75,11 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
+    required: false
+  },
+  defaultCheckedKeys:{
+    type: Array,
+    default: () => [],
     required: false
   }
 })

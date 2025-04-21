@@ -26,6 +26,7 @@ import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.framework.common.vo.RackIndexResVO;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.service.ICabinetEnvSensorService;
@@ -1124,31 +1125,37 @@ public class CabinetServiceImpl implements CabinetService {
                         env.setIceAverageTem(temAverage.getBigDecimal(0));
                         env.setHotAverageTem(temAverage.getBigDecimal(1));
                     }
-
-                    String iceTopTemColor = temColorService.findColor(env.getIceTopTem());
-                    String iceMidTemColor = temColorService.findColor(env.getIceMidTem());
-                    String iceBomTemColor = temColorService.findColor(env.getIceBomTem());
-                    String iceAverageTemColor = temColorService.findColor(env.getIceAverageTem());
-
-                    String hotTopTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(), new BigDecimal("15")));
-                    String hotMidTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(), new BigDecimal("15")));
-                    String hotBomTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(), new BigDecimal("15")));
-                    String hotAverageTemColor = temColorService.findColor(BigDemicalUtil.safeSubtract(env.getHotTopTem(), new BigDecimal("15")));
-
-                    env.setIceAverageTemColor(iceAverageTemColor);
-                    env.setHotAverageTemColor(hotAverageTemColor);
-                    env.setIceTopTemColor(iceTopTemColor);
-                    env.setIceMidTemColor(iceMidTemColor);
-                    env.setIceBomTemColor(iceBomTemColor);
-                    env.setHotTopTemColor(hotTopTemColor);
-                    env.setHotMidTemColor(hotMidTemColor);
-                    env.setHotBomTemColor(hotBomTemColor);
-
+                    List<TemColorDO> temColorDOList = temColorService.getTemColorAll();
+                    if (!CollectionUtils.isEmpty(temColorDOList)) {
+                        env.setIceAverageTemColor(findTemColorForValue(temColorDOList, env.getIceAverageTem().doubleValue(), false));
+                        env.setHotAverageTemColor(findTemColorForValue(temColorDOList, env.getHotAverageTem().doubleValue(), true));
+                        env.setIceTopTemColor(findTemColorForValue(temColorDOList, env.getIceTopTem().doubleValue(), false));
+                        env.setIceMidTemColor(findTemColorForValue(temColorDOList, env.getIceMidTem().doubleValue(), false));
+                        env.setIceBomTemColor(findTemColorForValue(temColorDOList, env.getIceBomTem().doubleValue(), false));
+                        env.setHotTopTemColor(findTemColorForValue(temColorDOList, env.getHotTopTem().doubleValue(), true));
+                        env.setHotMidTemColor(findTemColorForValue(temColorDOList, env.getHotMidTem().doubleValue(), true));
+                        env.setHotBomTemColor(findTemColorForValue(temColorDOList, env.getHotBomTem().doubleValue(), true));
+                    }
                 }
             }
             pageResult.setList(res).setTotal(envPage.getTotal());
         }
         return pageResult;
+    }
+
+    public String findTemColorForValue(List<TemColorDO> temColorDOList, double value,Boolean hot) {
+        for (TemColorDO temColorDO : temColorDOList) {
+            if (hot){
+                if (value >= temColorDO.getHotMin() && value <= temColorDO.getHotMax()) {
+                    return temColorDO.getHotColor();
+                }
+            }else {
+                if (value >= temColorDO.getMin() && value <= temColorDO.getMax()) {
+                    return temColorDO.getColor();
+                }
+            }
+        }
+        return null; // 如果没有找到匹配的范围，返回 null 或者抛出异常
     }
 
     @Override

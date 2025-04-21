@@ -91,6 +91,14 @@ public class RoomController {
         return success(i);
     }
 
+    @Operation(summary = "机房编辑x与y")
+    @GetMapping("/findAreaById")
+    public CommonResult<Boolean> findAreaById(@RequestParam(value = "xLength") @Parameter(description = "x") Integer xLength,
+                                                     @RequestParam(value = "yLength") @Parameter(description = "y") Integer yLength,
+                                              @RequestParam(value = "id") @Parameter(description = "机房id") Integer id) {
+        Boolean i = roomService.findAreaById(xLength,yLength,id);
+        return success(i);
+    }
 
     @Operation(summary = "机房新增根据名称异步查询")
     @GetMapping("/newSelectRoomByName")

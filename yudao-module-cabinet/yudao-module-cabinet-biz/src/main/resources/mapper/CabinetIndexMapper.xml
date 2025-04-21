@@ -330,4 +330,12 @@
             ci.is_deleted = 0 and ci.is_disabled = 0 and ci.room_id = #{roomId}
         </where>
     </select>
+    <select id="findAreaById" resultType="java.lang.Integer">
+        select count(1) from cabinet_index ci
+        left join cabinet_cfg cc on ci.id = cc.cabinet_id
+        where
+        room_id = #{roomId}
+        and x_coordinate+1 > #{xLength}
+        and y_coordinate+1 > #{yLength}
+    </select>
 </mapper>
