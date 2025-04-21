@@ -135,7 +135,8 @@
         <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
           <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
             <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div>
-            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addMachine">新增</div>
+            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addAisle">新增柜列</div>
+            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addCabinet('add')">新增机柜</div>
             <!-- <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div> -->
@@ -260,6 +261,7 @@
       />
       <div style="height:30px"></div>
   </el-dialog>
+  <MachineForm ref="machineFormCabinet" @success="saveMachine" :roomName="rowColInfo.roomName" />
 <!-- </div> -->
 </template>
 
@@ -270,6 +272,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { CabinetApi } from '@/api/cabinet/info'
 import { Console } from "console";
+import MachineForm from './component/MachineForm.vue';
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
@@ -489,6 +492,7 @@ const editEnable = ref(false);
 const dragCursor = ref();
 const tableHeight = ref(0);
 const machineForm = ref();
+const machineFormCabinet = ref();
 const startX = ref(0);
 const startY = ref(0);
 const scrollLeft = ref(0);
@@ -1404,7 +1408,12 @@ const onSelectStart = (e) => {
 }
 
 // 增加机柜弹框
-const addMachine = () => {
+const addCabinet = (type: string) => {
+  machineFormCabinet.value.open(type)
+}
+
+// 增加柜列弹框
+const addAisle = () => {
   if(!operateMenu.value.maxlndexX && !operateMenu.value.maxlndexY) {
     message.warning("当前位置空间不足，请选择其他位置")
     operateMenu.value.show = false
@@ -1819,17 +1828,20 @@ onUnmounted(() => {
     box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
     z-index: 999;
     .menu_item {
-      width: 70px;
+      width: 140px;
       height: 30px;
       padding: 20px 10px;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
+      font-size: 14px;
+      color: #606266;
     }
     .menu_item:hover {
       background-color: rgb(231, 245, 255);
       color: rgb(82, 177, 255);
+      cursor: pointer;
     }
   }
   .dragTd {

@@ -1049,6 +1049,12 @@ onUnmounted(() => {
     margin-left: 10px;
   }
 
+  .scrollable-container-one{
+    height: 21.5vh;
+    width: 20vw;
+    overflow-y: auto;
+  }
+
   .name-column {
     width: 150px;
   }
