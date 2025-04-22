@@ -94,8 +94,6 @@ const defaultProps = {
   label: 'name'
 }
 
-
-
 const checkKeys = ref(props.defaultCheckedKeys)
 const deptName = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()

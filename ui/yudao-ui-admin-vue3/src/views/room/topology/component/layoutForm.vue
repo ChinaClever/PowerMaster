@@ -9,10 +9,7 @@
       center
     >
       <el-form-item label="类型" prop="type">
-        <el-select v-model="formData.type" placeholder="请选择活动区域">
-          <el-option label="机柜列" :value="1" />
-          <el-option label="机柜" :value="2" :disabled="!operateInfo.maxlndexX" />
-        </el-select>
+        <el-input model-value="机柜列" disabled />
       </el-form-item>
       <el-form-item label="名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入" />
