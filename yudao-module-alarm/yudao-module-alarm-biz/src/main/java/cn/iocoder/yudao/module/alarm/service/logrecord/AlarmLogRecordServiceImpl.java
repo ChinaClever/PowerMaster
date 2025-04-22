@@ -205,20 +205,20 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 PduIndexDo pduIndexDoOld = pduIndexDoListOld.get(i);
                 PduIndexDo pduIndexDoNew = pduIndexDoListNew.get(i);
                 List<Integer> alarmCodeList = new ArrayList<>();
-                alarmCodeList.add(PDUStatusEnum.EARLY_WARNING.getStatus());
-                alarmCodeList.add(PDUStatusEnum.ALARM.getStatus());
-                alarmCodeList.add(PDUStatusEnum.OFF_LINE.getStatus());
+                alarmCodeList.add(PduStatusEnum.EARLY_WARNING.getStatus());
+                alarmCodeList.add(PduStatusEnum.ALARM.getStatus());
+                alarmCodeList.add(PduStatusEnum.OFF_LINE.getStatus());
                 if (alarmCodeList.contains(pduIndexDoNew.getRunStatus()) && !pduIndexDoOld.getRunStatus().equals(pduIndexDoNew.getRunStatus())) {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
                     alarmRecord.setAlarmKey(pduIndexDoNew.getPduKey());
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
-                    if (pduIndexDoNew.getRunStatus().equals(PDUStatusEnum.EARLY_WARNING.getStatus())) {
+                    if (pduIndexDoNew.getRunStatus().equals(PduStatusEnum.EARLY_WARNING.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_WARNING.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
-                    } else if (pduIndexDoNew.getRunStatus().equals(PDUStatusEnum.ALARM.getStatus())) {
+                    } else if (pduIndexDoNew.getRunStatus().equals(PduStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
-                    } else if (pduIndexDoNew.getRunStatus().equals(PDUStatusEnum.OFF_LINE.getStatus())) {
+                    } else if (pduIndexDoNew.getRunStatus().equals(PduStatusEnum.OFF_LINE.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_OFF_LINE.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
@@ -247,7 +247,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         alarmRecord.setCabinetId(cabinetIndex.getId());
                     }
                     logRecordMapper.insert(alarmRecord);
-                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && PDUStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
+                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && PduStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
@@ -277,10 +277,10 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
                     alarmRecord.setAlarmKey(busIndexNew.getBusKey());
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
-                    if (busIndexNew.getRunStatus().equals(PDUStatusEnum.ALARM.getStatus())) {
+                    if (busIndexNew.getRunStatus().equals(PduStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.BUS_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
-                    } else if (busIndexNew.getRunStatus().equals(PDUStatusEnum.OFF_LINE.getStatus())) {
+                    } else if (busIndexNew.getRunStatus().equals(PduStatusEnum.OFF_LINE.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.BUS_OFF_LINE.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
@@ -308,7 +308,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         alarmRecord.setAisleId(aisleIndex.getId());
                     }
                     logRecordMapper.insert(alarmRecord);
-                } else if (alarmCodeList.contains(busIndexOld.getRunStatus()) && PDUStatusEnum.NORMAL.getStatus().equals(busIndexNew.getRunStatus())) {
+                } else if (alarmCodeList.contains(busIndexOld.getRunStatus()) && BusTypeEnum.NORMAL.getStatus().equals(busIndexNew.getRunStatus())) {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
