@@ -49,7 +49,7 @@
       <div v-if="!props.isFromHome" class="btns">
         <el-button v-if="!editRoom" @click="editRoom = true"><Icon icon="ep:grid" style="margin-right: 4px" />编辑机房</el-button>        
         <el-button v-else @click="editRoom = false"><Icon icon="ep:grid" style="margin-right: 4px" />取消编辑</el-button>        
-        <el-button @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
+        <el-button v-if="editRoom" @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
         <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
         <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
@@ -1035,20 +1035,21 @@ watch(() => rowColInfo.areaFlag, (val) => {
 //获取机房楼层
 const getRoomAddrList = async() => {
   const res =  await MachineRoomApi.getRoomAddrListAll({})
-  roomAddrList.value = Object.keys(res) 
+  if(res) {
+    roomAddrList.value = Object.keys(res) 
     .filter(key => addrList.value.includes(key)) 
     .sort((a, b) => addrList.value.indexOf(a) - addrList.value.indexOf(b));
 
-  roomAddrList.value.forEach((item,index) => {
-    if(queryParams.roomName) {
-      getAddrAllRoomList(res[item].filter(item => 
-        item.roomName.toLowerCase().includes(queryParams.roomName.toLowerCase())
-      ),index)
-    } else {
-      getAddrAllRoomList(res[item],index)
-    }
-    
-  })
+    roomAddrList.value.forEach((item,index) => {
+      if(queryParams.roomName) {
+        getAddrAllRoomList(res[item].filter(item => 
+          item.roomName.toLowerCase().includes(queryParams.roomName.toLowerCase())
+        ),index)
+      } else {
+        getAddrAllRoomList(res[item],index)
+      }
+    })
+  }
 }
 
 const getAddrAllRoomList = (roomList,index) => {

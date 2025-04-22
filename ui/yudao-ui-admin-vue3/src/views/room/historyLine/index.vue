@@ -1277,8 +1277,8 @@ const updateTableData = () => {
     rowData['bApparentPowMaxTimeData'] = bApparentPowMaxTimeData.value[i];
     rowData['bApparentPowMinTimeData'] = bApparentPowMinTimeData.value[i];
 
-    rowData['totalReactivePowMaxTimeData'] = totalActivePowMaxTimeData.value[i];
-    rowData['totalReactivePowMinTimeData'] = totalActivePowMinTimeData.value[i];
+    rowData['totalReactivePowMaxTimeData'] = totalReactivePowMaxTimeData.value[i];
+    rowData['totalReactivePowMinTimeData'] = totalReactivePowMinTimeData.value[i];
     for (const item of headerData.value) {
       rowData[item.name] = item.data[i];
     }
@@ -1441,17 +1441,256 @@ function formatNumber(value, decimalPlaces) {
 
 /** 搜索按钮操作 */
 const handleQuery = async() => {
-  let temp:any=null;
-  if(paramType.value!="total"){
-    temp=paramType.value;
-    paramType.value="total";
-  }
+  // let temp:any=null;
+  // if(paramType.value!="total"){
+  //   temp=paramType.value;
+  //   paramType.value="total";
+  // }
   await getList();
-  // await getRankChartData();
-  initChart();
-  if(temp!=null){
-    paramType.value=temp
+  tableLoading.value = true;
+  try{
+    const newParamType = paramType.value;
+  if(activeName.value == 'realtimeTabPane'){
+    // console.log('realtimeTabPane======================')
+    if(isHaveData.value){
+      if(newParamType=='total'){
+          maxActivePowDataTemp.value = Math.max(...totalActivePowData.value);
+          minActivePowDataTemp.value = Math.min(...totalActivePowData.value);
+          totalActivePowData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(newParamType=='a'){
+          maxActivePowDataTemp.value = Math.max(...aActivePowData.value);
+          minActivePowDataTemp.value = Math.min(...aActivePowData.value);
+          aActivePowData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(newParamType=='b'){
+          maxActivePowDataTemp.value = Math.max(...bActivePowData.value);
+          minActivePowDataTemp.value = Math.min(...bActivePowData.value);
+          bActivePowData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }
+    }else{
+      maxActivePowDataTimeTemp.value=null;
+      minActivePowDataTimeTemp.value=null;
+      minActivePowDataTemp.value=null;
+      maxActivePowDataTemp.value=null;
+    }
+    if ( newParamType == 'total'){
+      realtimeChart?.setOption({
+        legend: { data: ['总有功功率', '总视在功率','总无功功率','总功率因素'] 
+          ,selected:{"总有功功率":true,"总视在功率":true,"总无功功率":true,"总功率因素":false}
+        },
+        series: [
+          {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
+          {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
+          {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value},
+          {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value},
+        ],
+      })
+    }else if( newParamType == 'a' ){
+      realtimeChart?.setOption({
+        legend: { data: ['A路有功功率', 'A路视在功率', 'A路无功功率', 'A路功率因素'],
+          selected:{"A路有功功率":true,"A路视在功率":true,"A路无功功率":true,"A路功率因素":false}
+         },
+        series: [
+          {name: 'A路有功功率', type: 'line', symbol: 'none', data: aActivePowData.value},
+          {name: 'A路视在功率', type: 'line', symbol: 'none', data: aApparentPowData.value},
+          {name: 'A路无功功率', type: 'line', symbol: 'none', data: aReactivePowData.value},
+          {name: 'A路功率因素', type: 'line', symbol: 'none', data: factorAData.value},
+        ],
+      })
+    }else{
+      realtimeChart?.setOption({
+        legend: { data: ['B路有功功率', 'B路视在功率', 'B路无功功率', 'B路功率因素'],
+          selected:{"B路有功功率":true,"B路视在功率":true,"B路无功功率":true,"B路功率因素":false}
+         },
+        series: [
+          {name: 'B路有功功率', type: 'line', symbol: 'none', data: bActivePowData.value},
+          {name: 'B路视在功率', type: 'line', symbol: 'none', data: bApparentPowData.value},
+          {name: 'B路无功功率', type: 'line', symbol: 'none', data: bReactivePowData.value},
+          {name: 'B路功率因素', type: 'line', symbol: 'none', data: factorBData.value},
+        ],
+      })
+    }
+  }else{
+    if(isHaveData.value){
+      if(newParamType=='total'){
+          maxActivePowDataTemp.value = Math.max(...totalActivePowMaxValueData.value);
+          minActivePowDataTemp.value = Math.min(...totalActivePowMaxValueData.value);
+          totalActivePowMaxValueData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(newParamType=='a'){
+          maxActivePowDataTemp.value = Math.max(...aActivePowMaxValueData.value);
+          minActivePowDataTemp.value = Math.min(...aActivePowMaxValueData.value);
+          aActivePowMaxValueData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }else if(newParamType=='b'){
+          maxActivePowDataTemp.value = Math.max(...bActivePowMaxValueData.value);
+          minActivePowDataTemp.value = Math.min(...bActivePowMaxValueData.value);
+          bActivePowMaxValueData.value.forEach(function(num, index) {
+            if (num == maxActivePowDataTemp.value){
+              maxActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+            if (num == minActivePowDataTemp.value){
+              minActivePowDataTimeTemp.value = createTimeData.value[index]
+            }
+          });
+        }
+    }else{
+      maxActivePowDataTimeTemp.value=null;
+      minActivePowDataTimeTemp.value=null;
+      minActivePowDataTemp.value=null;
+      maxActivePowDataTemp.value=null;
+    }
+    realtimeChart?.off("legendselectchanged")
+    realtimeChart?.dispose();
+    realtimeChart = echarts.init(document.getElementById('chartContainer'));
+    if ( newParamType == 'total'){
+      realtimeChart.setOption( {
+          title: {text: ''},
+          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+          legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
+                          , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
+                selected:  { 总平均有功功率: false, 总最大有功功率: true, 总最小有功功率: false, 总平均视在功率: false, 总最大视在功率: true, 总最小视在功率: false
+                          , 总平均无功功率: false, 总最大无功功率: true, 总最小无功功率: false, 总平均功率因素: false}},
+          grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
+          toolbox: {feature: { restore:{}, saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+          yAxis: { type: 'value'},
+          series: [
+            { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
+            { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
+            { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+            { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value},
+            { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
+            { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+
+            { name: '总平均无功功率',type: 'line',data:  totalReactivePowAvgValueData.value},
+            { name: '总最大无功功率', type: 'line', data: totalReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
+            { name: '总最小无功功率',type: 'line',data:  totalReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+            { name: '总平均功率因素',type: 'line',data:  factorTotalAvgValueData.value},
+          ],
+          dataZoom:[{type: "inside"}],
+        });
+    }else if( newParamType == 'a' ){
+      realtimeChart.setOption( {
+          title: {text: ''},
+          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+          legend: { data: ['A路平均有功功率', 'A路最大有功功率', 'A路最小有功功率','A路平均视在功率', 'A路最大视在功率', 'A路最小视在功率'
+                , 'A路平均无功功率', 'A路平均功率因素'],
+              selected: { A路平均有功功率: false, A路最大有功功率: true, A路最小有功功率: false, A路平均视在功率: false, A路最大视在功率: true, A路最小视在功率: false
+                    , A路平均无功功率: false, A路平均功率因素: false}},
+          grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
+          toolbox: {feature: { restore:{}, saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+          yAxis: { type: 'value'},
+          series: [
+          { name: 'A路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
+          { name: 'A路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
+          { name: 'A路最小有功功率', type: 'line', data: aActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'A路平均视在功率', type: 'line', data: aApparentPowAvgValueData.value},
+          { name: 'A路最大视在功率', type: 'line', data: aApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'A路最小视在功率', type: 'line', data: aApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'A路平均无功功率',type: 'line',data:  aReactivePowAvgValueData.value},
+          { name: 'A路平均功率因素',type: 'line',data:  factorAAvgValueData.value},
+          ],
+          dataZoom:[{type: "inside"}],
+        });
+    }else{
+      realtimeChart.setOption( {
+          title: {text: ''},
+          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+          legend: { data: ['B路平均有功功率', 'B路最大有功功率', 'B路最小有功功率','B路平均视在功率', 'B路最大视在功率', 'B路最小视在功率'
+                    , 'B路平均无功功率', 'B路平均功率因素'],
+              selected: { B路平均有功功率: false, B路最大有功功率: true, B路最小有功功率: false, B路平均视在功率: false, B路最大视在功率: true, B路最小视在功率: false
+              , B路平均无功功率: false, B路平均功率因素: false}},
+          grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
+          toolbox: {feature: { restore:{}, saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+          yAxis: { type: 'value'},
+          series: [
+          { name: 'B路平均有功功率', type: 'line', data: bActivePowAvgValueData.value},
+          { name: 'B路最大有功功率', type: 'line', data: bActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
+          { name: 'B路最小有功功率', type: 'line', data: bActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'B路平均视在功率', type: 'line', data: bApparentPowAvgValueData.value},
+          { name: 'B路最大视在功率', type: 'line', data: bApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'B路最小视在功率', type: 'line', data: bApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+          { name: 'B路平均无功功率',type: 'line',data:  bReactivePowAvgValueData.value},
+          { name: 'B路平均功率因素',type: 'line',data:  factorBAvgValueData.value},
+          ],
+          dataZoom:[{type: "inside"}],
+        });
+    }
   }
+  // 监听图例点击事件
+  realtimeChart?.on('legendselectchanged', function (params) {
+        console.log(params.name)
+        const selectedSeries = params.selected;
+        const option = realtimeChart.getOption();
+        console.log(option)
+        if(params.name.includes ('功率因素')&& selectedSeries[params.name] == true){
+          // console.log("总功率因素")
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (!item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        if(!params.name.includes('功率因素')&& selectedSeries[params.name] == true){
+          // option.legend[0].selected['总功率因素'] = false;
+          option.legend[0].data.forEach(function(item, index) {
+            // console.log(item)
+            if (item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        realtimeChart.setOption(option);
+      });
+  // 每次切换图就要动态生成数据表头
+  headerData.value = realtimeChart?.getOption()?.series as any[];
+  console.log("headerData",headerData.value)
+  updateTableData();
+  }finally {
+    tableLoading.value = false;
+  }
+  // await getRankChartData();
+  // initChart();
+  // if(temp!=null){
+  //   paramType.value=temp
+  // }
+  
   // initRankChart();
   // tableLoading.value = true;
   // try{
