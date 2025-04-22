@@ -11,6 +11,7 @@ import com.github.shyiko.mysql.binlog.event.EventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.WriteRowsEventData;
+import de.danielbechler.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -33,10 +34,11 @@ public class MySQLTableMonitor {
 
     // 缓存表结构：表ID -> 字段列表（字段名+类型）
     private static Map<String, List<ColumnInfo>> tableSchemaCache = new HashMap<>();
+    private static Map<String, String> tableIdToName = new HashMap<>();
 
     public void tableListener(BinLogConstants binLogConstants) throws Exception {
 
-        if (StringUtils.isEmpty(binLogConstants.getTable())) {
+        if (Collections.isEmpty(binLogConstants.getTableList())) {
             throw new RuntimeException("缺少请求参数");
         }
 
@@ -58,7 +60,7 @@ public class MySQLTableMonitor {
                 EventData data = event.getData();
                 if (data instanceof TableMapEventData) {
                     TableMapEventData tableMap = (TableMapEventData) data;
-                    if (binLogConstants.getDb().equals(tableMap.getDatabase()) && binLogConstants.getTable().equals(tableMap.getTable())) {
+                    if (binLogConstants.getDb().equals(tableMap.getDatabase()) && binLogConstants.getTableList().contains(tableMap.getTable())) {
                         if (redisTemplate.opsForValue().get(tableMap.getTable()) != null) {
                             tableSchemaCache = (Map<String, List<ColumnInfo>>) redisTemplate.opsForValue().get(tableMap.getTable());
                         } else {
@@ -67,6 +69,9 @@ public class MySQLTableMonitor {
                             columns = JdbcUtils.getTableColumns(connectionUrl,binLogConstants.getUsername(),binLogConstants.getPasswd(),tableMap.getDatabase(), tableMap.getTable());
                             tableSchemaCache.put(tableMap.getTableId()+"", columns);
                             redisTemplate.opsForValue().set(tableMap.getTable(), tableSchemaCache);
+                        }
+                        if (tableIdToName.size() == 0 || tableIdToName.get(tableMap.getTableId()+"") == null) {
+                            tableIdToName.put(tableMap.getTableId()+"", tableMap.getTable());
                         }
                     }
                 // 步骤2：处理数据变更事件
@@ -95,18 +100,23 @@ public class MySQLTableMonitor {
                         for (Map.Entry<Serializable[], Serializable[]> row : updateData.getRows()) {
                             Map<String, Object> oldData = parseRowData(row.getKey(), columns);
                             Map<String, Object> newData = parseRowData(row.getValue(), columns);
-                            oldMaps.add(oldData);
-                            newMaps.add(newData);
-                            log.info("[UPDATE] 旧数据：" + oldData);
-                            log.info("[UPDATE] 新数据：" + newData);
-                        }
-
-                        switch (binLogConstants.getTable()) {
-                            case DBTable.PDU_INDEX:
-                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
-                                break;
-                            default:
-                                log.info("监听到表结构变化，但未匹配到对应的表，忽略处理");
+                            if (!oldData.get("run_status").equals(newData.get("run_status"))) {
+                                oldMaps.add(oldData);
+                                newMaps.add(newData);
+                                log.info("[UPDATE] 旧数据：" + oldData);
+                                log.info("[UPDATE] 新数据：" + newData);
+                                String tableName = tableIdToName.get(tableId + "");
+                                switch (tableName) {
+                                    case DBTable.PDU_INDEX:
+                                        alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
+                                        break;
+                                    case DBTable.BUS_INDEX:
+                                        alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
+                                        break;
+                                    default:
+                                        log.info("监听到表结构变化，但未匹配到对应的表，忽略处理 ");
+                                }
+                            }
                         }
                     }
                 }
