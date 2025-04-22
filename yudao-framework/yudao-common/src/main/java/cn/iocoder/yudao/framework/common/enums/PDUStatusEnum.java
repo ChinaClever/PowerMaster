@@ -8,7 +8,7 @@ import lombok.Getter;
  * @Description: 设备告警状态
  */
 @Getter
-public enum DeviceAlarmStatusEnum {
+public enum PDUStatusEnum {
 
     /**
      * 设备正常
@@ -44,7 +44,7 @@ public enum DeviceAlarmStatusEnum {
      */
     private final String desc;
 
-    DeviceAlarmStatusEnum(Integer status, String desc) {
+    PDUStatusEnum(Integer status, String desc) {
         this.status = status;
         this.desc = desc;
     }

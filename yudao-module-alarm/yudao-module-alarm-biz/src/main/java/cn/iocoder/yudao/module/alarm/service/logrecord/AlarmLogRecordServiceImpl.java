@@ -195,20 +195,20 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 PduIndexDo pduIndexDoOld = pduIndexDoListOld.get(i);
                 PduIndexDo pduIndexDoNew = pduIndexDoListNew.get(i);
                 List<Integer> alarmCodeList = new ArrayList<>();
-                alarmCodeList.add(DeviceAlarmStatusEnum.EARLY_WARNING.getStatus());
-                alarmCodeList.add(DeviceAlarmStatusEnum.ALARM.getStatus());
-                alarmCodeList.add(DeviceAlarmStatusEnum.OFF_LINE.getStatus());
+                alarmCodeList.add(PDUStatusEnum.EARLY_WARNING.getStatus());
+                alarmCodeList.add(PDUStatusEnum.ALARM.getStatus());
+                alarmCodeList.add(PDUStatusEnum.OFF_LINE.getStatus());
                 if (alarmCodeList.contains(pduIndexDoNew.getRunStatus()) && !pduIndexDoOld.getRunStatus().equals(pduIndexDoNew.getRunStatus())) {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
                     alarmRecord.setAlarmKey(pduIndexDoNew.getPduKey());
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
-                    if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.EARLY_WARNING.getStatus())) {
+                    if (pduIndexDoNew.getRunStatus().equals(PDUStatusEnum.EARLY_WARNING.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_WARNING.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
-                    } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.ALARM.getStatus())) {
+                    } else if (pduIndexDoNew.getRunStatus().equals(PDUStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
-                    } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.OFF_LINE.getStatus())) {
+                    } else if (pduIndexDoNew.getRunStatus().equals(PDUStatusEnum.OFF_LINE.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_OFF_LINE.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
@@ -230,7 +230,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         }
                     }
                     logRecordMapper.insert(alarmRecord);
-                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && DeviceAlarmStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
+                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && PDUStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
@@ -254,17 +254,16 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 BusIndex busIndexOld = busIndexListOld.get(i);
                 BusIndex busIndexNew = busIndexListNew.get(i);
                 List<Integer> alarmCodeList = new ArrayList<>();
-                alarmCodeList.add(DeviceAlarmStatusEnum.EARLY_WARNING.getStatus());
-                alarmCodeList.add(DeviceAlarmStatusEnum.ALARM.getStatus());
-                alarmCodeList.add(DeviceAlarmStatusEnum.OFF_LINE.getStatus());
+                alarmCodeList.add(BusTypeEnum.OFF_LINE.getStatus());
+                alarmCodeList.add(BusTypeEnum.ALARM.getStatus());
                 if (alarmCodeList.contains(busIndexNew.getRunStatus()) && !busIndexOld.getRunStatus().equals(busIndexNew.getRunStatus())) {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
                     alarmRecord.setAlarmKey(busIndexNew.getBusKey());
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
-                    if (busIndexNew.getRunStatus().equals(DeviceAlarmStatusEnum.ALARM.getStatus())) {
+                    if (busIndexNew.getRunStatus().equals(PDUStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.BUS_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
-                    } else if (busIndexNew.getRunStatus().equals(DeviceAlarmStatusEnum.OFF_LINE.getStatus())) {
+                    } else if (busIndexNew.getRunStatus().equals(PDUStatusEnum.OFF_LINE.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.BUS_OFF_LINE.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
@@ -272,11 +271,11 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     String location = getLocationByBusId(busIndexNew);
                     alarmRecord.setAlarmPosition(location);
                     // 告警描述、告警开始时间
-                    JSONObject pduJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_BUS + busIndexNew.getBusKey());
-                    if (pduJson != null) {
-                        String bus_alarm = pduJson.get("dev_alarm")==null?"":pduJson.get("dev_alarm").toString();
+                    JSONObject busJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_BUS + busIndexNew.getBusKey());
+                    if (busJson != null) {
+                        String bus_alarm = busJson.get("dev_alarm")==null?"":busJson.get("dev_alarm").toString();
                         alarmRecord.setAlarmDesc(bus_alarm);
-                        Object datetime = pduJson.get("datetime");
+                        Object datetime = busJson.get("datetime");
                         if (datetime != null) {
                             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                             LocalDateTime startTime = LocalDateTime.parse(datetime.toString(), formatter);
@@ -286,7 +285,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         }
                     }
                     logRecordMapper.insert(alarmRecord);
-                } else if (alarmCodeList.contains(busIndexOld.getRunStatus()) && DeviceAlarmStatusEnum.NORMAL.getStatus().equals(busIndexNew.getRunStatus())) {
+                } else if (alarmCodeList.contains(busIndexOld.getRunStatus()) && PDUStatusEnum.NORMAL.getStatus().equals(busIndexNew.getRunStatus())) {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
