@@ -6,10 +6,12 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
+import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
 import com.alibaba.fastjson2.JSON;
@@ -277,10 +279,10 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
                     alarmRecord.setAlarmKey(busIndexNew.getBusKey());
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
-                    if (busIndexNew.getRunStatus().equals(PduStatusEnum.ALARM.getStatus())) {
+                    if (busIndexNew.getRunStatus().equals(BusTypeEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.BUS_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
-                    } else if (busIndexNew.getRunStatus().equals(PduStatusEnum.OFF_LINE.getStatus())) {
+                    } else if (busIndexNew.getRunStatus().equals(BusTypeEnum.OFF_LINE.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.BUS_OFF_LINE.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
@@ -322,7 +324,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     }
 
     public String getLocationByBusId (BusIndex busIndex) {
-        String location = "未绑定";
+        String location = busIndex.getBusKey();
         //设备位置
         AisleBar aisleBar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>().eq(AisleBar::getBusKey, busIndex.getBusKey()));
         if (aisleBar != null) {
