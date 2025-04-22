@@ -42,6 +42,16 @@
         (y_coordinate+1 >#{yLength} and  x_coordinate+aisle_length-1 >#{xLength} and direction ='x') or
         ( direction ='y' and y_coordinate + aisle_length-1 >#{yLength} and x_coordinate > #{xLength} )
     </select>
+    <select id="selectByBusKey" resultType="cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex">
+        SELECT
+        *
+        FROM
+        `aisle_bar` ab
+        LEFT JOIN aisle_index ai ON ab.aisle_id = ai.id
+        <where>
+            ab.bus_key = #{busKey}
+        </where>
+    </select>
 
     <update id="roomAisleDeleteById">
         update aisle_index ai set ai.is_delete = 1 where ai.id = #{aisleId}

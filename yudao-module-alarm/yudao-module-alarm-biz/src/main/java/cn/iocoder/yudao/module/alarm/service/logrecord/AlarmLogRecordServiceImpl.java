@@ -2,10 +2,14 @@ package cn.iocoder.yudao.module.alarm.service.logrecord;
 
 import cn.iocoder.yudao.framework.common.constant.FieldConstant;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
 import com.alibaba.fastjson2.JSON;
@@ -52,6 +56,12 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Autowired
     private AisleBarMapper aisleBarMapper;
+
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
+
+    @Autowired
+    private CabinetIndexMapper cabinetIndexMapper;
 
     @Override
     public Integer saveLogRecord(AlarmLogRecordSaveReqVO createReqVO) {
@@ -229,6 +239,13 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             alarmRecord.setStartTime(LocalDateTime.now());
                         }
                     }
+                    // 级联关系id
+                    CabinetIndex cabinetIndex = cabinetIndexMapper.selectByPduKey(pduIndexDoNew.getPduKey());
+                    if (cabinetIndex != null) {
+                        alarmRecord.setRoomId(cabinetIndex.getRoomId());
+                        alarmRecord.setAisleId(cabinetIndex.getAisleId());
+                        alarmRecord.setCabinetId(cabinetIndex.getId());
+                    }
                     logRecordMapper.insert(alarmRecord);
                 } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && PDUStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
@@ -283,6 +300,12 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         } else {
                             alarmRecord.setStartTime(LocalDateTime.now());
                         }
+                    }
+                    // 机房id
+                    AisleIndex aisleIndex = aisleIndexMapper.selectByBusKey(busIndexNew.getBusKey());
+                    if (aisleIndex != null) {
+                        alarmRecord.setRoomId(aisleIndex.getRoomId());
+                        alarmRecord.setAisleId(aisleIndex.getId());
                     }
                     logRecordMapper.insert(alarmRecord);
                 } else if (alarmCodeList.contains(busIndexOld.getRunStatus()) && PDUStatusEnum.NORMAL.getStatus().equals(busIndexNew.getRunStatus())) {
