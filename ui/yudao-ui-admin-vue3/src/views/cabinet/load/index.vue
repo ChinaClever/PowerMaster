@@ -120,33 +120,81 @@
           </template>
         </el-table-column>
       </el-table>
-      <div v-show="(switchValue == 0 || switchValue == 1 || switchValue == 3) && listPage.length > 0"  class="loadContainer">
-        <div class="loadItem" v-for="load in listPage" :key="load.key">
-          <div class="content">
-            <div class="info" v-if="switchValue == 0">
-              <div>总视在功率：{{formatNumber(load.apparentTotal,3) || '0.000'}}KVA</div>
-              <div>A路视在功率：{{formatNumber(load.powApparenta,3) || '0.000'}}KVA</div>
-              <div>B路视在功率：{{formatNumber(load.powApparentb,3) || '0.000'}}KVA</div>
-              <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
+     
+
+
+   
+      
+
+      <div v-show="(switchValue == 0 || switchValue == 1 || switchValue == 3) && listPage.length > 0" class="arrayContainer">
+
+          <div class="arrayItem" v-for="load in listPage" :key="load.key">
+          <div class="devKey">{{ load.location != null ? load.location : load.devKey }}</div>
+          <div v-if="load.apparentTotal != null && load.apparentTotal != 0" class="content">
+            <div class="info" >
+              <div v-if="load.apparentTotal != null">
+                <el-text>
+                  总视在功率：{{formatNumber(load.apparentTotal,3) || '0.000'}}kVA
+                </el-text>
+              </div>
+              <div v-if="load.activeTotal != null">
+                <el-text>
+                  总有功功率：{{formatNumber(load.activeTotal,3)|| '0.000'}}kW
+                </el-text>
+              </div>
+              <div v-if="load.powReactiveTotal != null">
+                <el-text>
+                  总无功功率：{{formatNumber(load.powReactiveTotal,3)|| '0.000'}}kVar
+                </el-text>
+              </div>
+             
             </div>
-            <div class="info" v-else-if="switchValue == 1">
-              <div>总有功功率：{{formatNumber(load.activeTotal,3)|| '0.000'}}kW</div>
-              <div>A路有功功率：{{formatNumber(load.powActivea,3)|| '0.000'}}kW</div>
-              <div>B路有功功率：{{formatNumber(load.powActiveb,3)|| '0.000'}}kW</div>
-              <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
-            </div>
-            <div class="info" v-else-if="switchValue == 3">
-              <div>总无功功率：{{formatNumber(load.powReactiveTotal,3)|| '0.000'}}kVar</div>
-              <div>A路无功功率：{{formatNumber(load.powReactivea,3)|| '0.000'}}kVar</div>
-              <div>B路无功功率：{{formatNumber(load.powReactiveb,3)|| '0.000'}}kVar</div>
-              <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
-            </div>
+            <!-- <div v-if="load.powReactiveTotal != null" style="display: flex;flex-direction: column;">
+              <div style="text-align: center;font-size: 24px;">{{load.powReactiveTotal ? load.powReactiveTotal : 0}}</div> 
+              <div style="text-align: center;font-size: 10px;">总功率因数</div>
+            </div> -->
             <div class="waterPoloBox">
               <LiquidBall  :precent="load.loadFactor || 0"/>
             </div>
-            <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
-          <div class="room">{{load.roomName+'-'+load.cabinetName}}</div>
+         
+         
+           <div style="display:flex;height:10vh;justify-content: center;align-item:center;margin-bottom: -3vh;margin-top: 1vh">
+            <!-- <Environment v-if="valueMode == 0 && item.curAList" class="chart" width="100%" height="100%" :load-factor="{first: item.curAList?.[2] ? item.curAList[2].toFixed(0) : 0,second: item.curAList?.[1] ? item.curAList[1].toFixed(0) : 0,third: item.curAList?.[0] ? item.curAList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A'],color: ['#AD3762','#C8603A','#E5B849']}" style="margin-right:-15px;"/>  -->
+            <!-- <Environment v-else-if="valueMode == 1 && item.volAList" class="chart" width="100%" height="100%" :load-factor="{first: item.volAList?.[2] ? item.volAList[2].toFixed(0) : 0,second: item.volAList?.[1] ? item.volAList[1].toFixed(0) : 0,third: item.volAList?.[0] ? item.volAList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V'],color: ['#45C0C9','#119CB5','#075F71']}" style="margin-right:-15px;"/>  -->
+            <Environment  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactivea ? Number(load.powReactivea).toFixed(0) : 0,second: load.powActivea ? Number(load.powActivea).toFixed(0) : 0,third: load.powApparenta ? Number(load.powApparenta).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}" style="margin-right:-15px;"/>
+
+           
+            <EnvironmentCopy  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactiveb ? Number(load.powReactiveb).toFixed(0) : 0,second: load.powActiveb ? Number(load.powActiveb).toFixed(0) : 0,third: load.powApparentb ? Number(load.powApparentb).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}"/>
+
+            </div>
+          <div style="display:flex;justify-content: space-around;padding: 5px 0;">
+            <div>A路</div>
+            <div>B路</div>
+          </div>
+
+            
+
+          <div  style="position: absolute;bottom: 0;right: 0">
+            <button class="detail" v-if="load.loadStatus !== 5 && load.loadStatus !== null" @click.prevent="toMachineDetail(load)">详情</button>
+          </div>
+          <!-- <div style="display: inline-block;
+            width: 50%;
+            height: 50%;
+            margin-right:-15px;"
+          >
+           
+            <EnvironmentCopy  class="chart" width="100%" height="100%" :load-factor="item"/>
+          </div>
+          <div  style="display: inline-block;
+                         width: 50%;
+            height: 50%;
+            margin-right:-15px;">
+
+            <EnvironmentCopy  class="chart" width="100%" height="100%" :load-factor="item"/>
+          </div> -->
+
+    
           <div class="status-container">
             <el-tag class="status" type="info" v-if="load.loadStatus == 0">{{statusList[0].name}}</el-tag>
             <el-tag class="status" type="success" v-else-if="load.loadStatus == 1">{{statusList[1].name.slice(3,10)}}</el-tag>
@@ -155,10 +203,8 @@
             <el-tag class="status" type="danger"  v-else-if="load.loadStatus == 4">{{statusList[4].name.slice(3,10)}}</el-tag>
             <el-tag class="status" type="info"  v-else-if="load.loadStatus == 5">离线</el-tag>
           </div>
-          <div class="detail-container">
-            <button class="detail" v-if="load.loadStatus !== 5 && load.loadStatus !== null" @click.prevent="toMachineDetail(load)">详情</button>
-          </div>
         </div>
+
       </div>
       <Pagination
         :total="queryParams.pageTotal"
@@ -179,6 +225,8 @@ import { EChartsOption } from 'echarts';
 import 'echarts-liquidfill';
 import { CabinetApi } from '@/api/cabinet/info';
 import LiquidBall from './compoent/LiquidBall.vue';
+import Environment from '@/views/aisle/power/component/Environment.vue'
+import EnvironmentCopy from '@/views/aisle/power/component/EnvironmentCopy.vue'
 
 const { push } = useRouter();
 const loading = ref(false);
