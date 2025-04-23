@@ -61,4 +61,6 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     List<CabinetPdu> getFindCabinetBoxList(Integer roomId);
 
     Integer findAreaById(@Param("xLength") Integer xLength, @Param("yLength") Integer yLength, @Param("roomId") Integer roomId);
+
+    CabinetIndex selectByPduKey(String pduKey);
 }

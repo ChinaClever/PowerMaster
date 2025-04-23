@@ -338,4 +338,15 @@
         and x_coordinate+1 > #{xLength}
         and y_coordinate+1 > #{yLength}
     </select>
+    <select id="selectByPduKey"  resultType="cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex">
+        SELECT
+        *
+        FROM
+        cabinet_index ci
+        LEFT JOIN cabinet_pdu cp ON ci.id = cp.cabinet_id
+        <where>
+            cp.pdu_key_a = #{pduKey}
+            OR cp.pdu_key_b = #{pduKey}
+        </where>
+    </select>
 </mapper>

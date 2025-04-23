@@ -350,3 +350,4 @@ mybatis-plus:
 logging:
   level:
     com.simons.cn.springbootdemo.dao.system: debug
+    com.github.shyiko.mysql.binlog.BinaryLogClient: WARN
