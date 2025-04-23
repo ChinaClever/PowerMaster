@@ -1,5 +1,5 @@
 <template>
-  <el-dialog id="machine-dialog" v-model="dialogVisible" :title="dialogTitle" width="60%" top="9vh">
+  <Dialog id="machine-dialog" v-model="dialogVisible" :title="dialogTitle" width="60%" top="9vh">
     <div class="formContainer">
       <el-form
         ref="machineForm"
@@ -14,7 +14,9 @@
           <div class="collapse-container">
             <div class="collapseItem">
               <el-form-item label="机房：" prop="roomId">
-              <el-input :model-value="roomName" disabled />
+              <el-select :model-value="roomId" placeholder="请选择" disabled>
+                <el-option v-for="room in roomList" :key="room.id" :label="room.roomName" :value="room.id" />
+              </el-select>
               </el-form-item>
               <el-form-item label="机柜名称：" prop="cabinetName">
               <el-input v-model="machineFormData.cabinetName" placeholder="请输入" />
@@ -191,18 +193,18 @@
             <el-input disabled :value="sensorType[sensorFormData.type]" />
           </el-form-item>
           <el-form-item label="PDU" prop="pathPdu">
-            <el-select v-model="sensorFormData.pathPdu" placeholder="请选择">
+            <el-select v-model="sensorFormData.pathPdu" placeholder="请选择" @change="sensorFormData.sensorId = null">
               <el-option label="A路" value="A" />
               <el-option label="B路" value="B" />
             </el-select>
           </el-form-item>
           <el-form-item label="传感器id" prop="sensorId">
             <el-select v-model="sensorFormData.sensorId " placeholder="请选择">
-              <template v-if="sensorFormData.type == 1 && leftRight[0] == 0">
-                <el-option v-for="id in sensorLeftIds" :key="id" :label="id" :value="id" />
+              <template v-if="sensorFormData.type == 1 && sensorFormData.pathPdu == 'A'">
+                <el-option v-for="id in sensorAIds" :key="id" :label="id" :value="id" />
               </template>
-              <template v-else-if="sensorFormData.type == 1 && leftRight[0] == 1">
-                <el-option v-for="id in sensorRightIds" :key="id" :label="id" :value="id" />
+              <template v-else-if="sensorFormData.type == 1 && sensorFormData.pathPdu == 'B'">
+                <el-option v-for="id in sensorBIds" :key="id" :label="id" :value="id" />
               </template>
               <el-option v-else v-for="id in 2" :key="id" :label="id" :value="id" />
             </el-select>
@@ -214,7 +216,7 @@
       <el-button :disabled="sensorLoading" type="primary" @click="submitSensorForm">确 定</el-button>
     </template>
     </Dialog>
-  </el-dialog>
+  </Dialog>
 </template>
 <script lang="ts" setup>
 import { FormRules } from 'element-plus'
@@ -222,10 +224,13 @@ import { CabinetApi } from '@/api/cabinet/info'
 import TopologyEdit from './TopologyEdit.vue'
 import { clear } from 'console'
 
-const {roomName} = defineProps({
-  roomName: {
-    type: String
+const {roomId,roomList} = defineProps({
+  roomId: {
+    type: Number
   },
+  roomList: {
+    type: Array
+  }
 })
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -251,8 +256,8 @@ const sensorPositon = {
   2: '(中)', 
   3: '(下)', 
 }
-const sensorLeftIds = ref([1, 2, 3, 4])
-const sensorRightIds = ref([1, 2, 3, 4])
+const sensorAIds = ref([1, 2, 3, 4])
+const sensorBIds = ref([1, 2, 3, 4])
 const leftRight = ref([0, 0])
 const sensorListLeft = reactive([
   {
@@ -351,7 +356,7 @@ const sensorListRight = reactive([
 const machineFormData = ref({
   roomId: '',
   cabinetName: '',
-  type: '',
+  type: 'IT机柜',
   cabinetHeight: 42, //U
   powCapacity: 8, // kVA
   company: '',
@@ -398,19 +403,22 @@ const sensorFormRules = reactive<FormRules>({
 })
 const activeNames = ref(['1'])
 
-watch(sensorListLeft, (val) => {
-  const usedFilter = val.filter(item => item.type == 1 && item.sensorId)
-  const list = usedFilter.map(item => item.sensorId)
-  if (list.length == 0) return
-  sensorLeftIds.value = sensorLeftIds.value.filter(item => !list.includes(item))
-})
+const getSemsorIds = (val1,val2) => {
+  const usedFilterA = [...val1.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "A"),...val2.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "A")]
+  const usedFilterB = [...val1.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "B"),...val2.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "B")]
 
-watch(sensorListRight, (val) => {
-  const usedFilter = val.filter(item => item.type == 1 && item.sensorId)
-  const list = usedFilter.map(item => item.sensorId)
-  if (list.length == 0) return
-  sensorRightIds.value = sensorRightIds.value.filter(item => !list.includes(item))
-})
+  const listA = usedFilterA.map(item => item.sensorId)
+  const listB = usedFilterB.map(item => item.sensorId)
+
+  if(listA.length != 0) {
+    sensorAIds.value = sensorAIds.value.filter(item => !listA.includes(item))
+  }
+  if(listB.length != 0) {
+    sensorBIds.value = sensorBIds.value.filter(item => !listB.includes(item))
+  }
+
+  console.log(listA,listB,sensorAIds.value,sensorBIds.value)
+}
 
 const handleSensorEdit = (data, i, index) => {
   console.log('handleSensorEdit', data)
@@ -422,6 +430,13 @@ const handleSensorEdit = (data, i, index) => {
 const handleSensorDelete = (i, index) => {
   console.log('handleSensorDelete',i, index)
   if (i == 0) {
+    if(sensorListLeft[index].pathPdu == "A") {
+      sensorAIds.value.push(sensorListLeft[index].sensorId)
+      sensorAIds.value.sort((a, b) => a - b)
+    } else if(sensorListLeft[index].pathPdu == "B") {
+      sensorBIds.value.push(sensorListLeft[index].sensorId)
+      sensorBIds.value.sort((a, b) => a - b)
+    }
     Object.assign(sensorListLeft[index], {
       ...sensorListLeft[index],
       sensorId: null,
@@ -429,6 +444,13 @@ const handleSensorDelete = (i, index) => {
       //id:null,
     })
   } else {
+    if(sensorListRight[index].pathPdu == "A") {
+      sensorAIds.value.push(sensorListRight[index].sensorId)
+      sensorAIds.value.sort((a, b) => a - b)
+    } else if(sensorListRight[index].pathPdu == "B") {
+      sensorBIds.value.push(sensorListRight[index].sensorId)
+      sensorBIds.value.sort((a, b) => a - b)
+    }
     Object.assign(sensorListRight[index], {
       ...sensorListLeft[index],
       sensorId: null,
@@ -453,6 +475,8 @@ const clearData = () =>{
       id:null,
     })
   }
+  sensorAIds.value = [1,2,3,4]
+  sensorBIds.value = [1,2,3,4]
 }
 
 const submitSensorForm = async(data) => {
@@ -462,6 +486,11 @@ const submitSensorForm = async(data) => {
   if (!valid) return
   const index = leftRight.value[1]
   console.log('submitSensorForm', sensorFormData, leftRight.value[0], index)
+  if(sensorFormData.pathPdu == "A") {
+    sensorAIds.value = sensorAIds.value.filter(item => item != sensorFormData.sensorId)
+  } else if(sensorFormData.pathPdu == "B") {
+    sensorBIds.value = sensorBIds.value.filter(item => item != sensorFormData.sensorId)
+  }
   if (leftRight.value[0] == 0) {
     Object.assign(sensorListLeft[index], sensorFormData)
   } else {
@@ -478,15 +507,17 @@ const toggleFull = () => {
 }
 const machineForm = ref() // 机柜表单 Ref
 const sensorForm = ref() // 传感器表单 Ref
+const operateInfo = ref<any>({})
 // const deptList = ref<Tree[]>([]) // 树形结构
 // const postList = ref([] as PostApi.PostVO[]) // 岗位列表
 
 /** 打开弹窗 */
-const open = async (type: string, data, roomList) => {
+const open = async (type: string, data, info) => {
   dialogVisible.value = true;
   clearData();
   dialogTitle.value = type == 'edit' ? '编辑': '添加';
   formType.value = type;
+  operateInfo.value = info
   resetForm();
   
   // sensorListLeft.forEach(item => {
@@ -514,6 +545,7 @@ const open = async (type: string, data, roomList) => {
         }
       }
     })
+    getSemsorIds(sensorListLeft,sensorListRight)
   }
   //for(let i = 0; i < sensorListLeft.length; i++){
   //  sensorListLeft[i].pathPdu = '';
@@ -524,7 +556,7 @@ const open = async (type: string, data, roomList) => {
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
-    type: '',
+    type: 'IT机柜',
     cabinetHeight: 42,
     powCapacity: 8,
     company: '',
@@ -547,6 +579,7 @@ const open = async (type: string, data, roomList) => {
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
   }
+  machineFormData.value.roomId = roomId
   // 修改时，设置数据
   // if (id) {
   //   formLoading.value = true
@@ -578,6 +611,8 @@ const submitForm = async () => {
     console.log('roomName', machineFormData.value)
     const res = await CabinetApi.saveCabinetInfo({
       ...machineFormData.value,
+      xCoordinate: Number(operateInfo.value.lndexX)+1,
+      yCoordinate: Number(operateInfo.value.lndexY)+1
     })
     console.log('res', res, machineFormData.value)
     //console.log('sensorListLeft111', sensorListLeft, sensorListRight);
@@ -603,7 +638,7 @@ const resetForm = () => {
   machineFormData.value = {
     cabinetName: '',
     roomId: '',
-    type: '',
+    type: 'IT机柜',
     cabinetHeight: 42,
     powCapacity: 8,
     company: '',
