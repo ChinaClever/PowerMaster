@@ -1,19 +1,11 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="柜列能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="柜列能耗排名" :showCheckbox="false" :hightCurrent="true" :currentKey="currentKey" :highlightTypes="[2]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
       <div class="nav_data">
         <div class="nav_header">      
           <span v-if="nowAddress">{{nowAddress}}</span>
         </div>
         <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <!-- <div class="description-item" v-show="selectTimeRange[0]!=null">
-          <span class="label">开始日期 :</span>
-          <span >{{selectTimeRange[0]}}</span>
-        </div>
-        <div class="description-item" v-show="selectTimeRange[1]!=null">
-          <span class="label">结束日期 :</span>
-          <span >{{selectTimeRange[1]}}</span>
-        </div> -->
         <div class="description-item" v-show="totalEqData!=null">
           <span class="label">总耗电量 :</span>
           <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -22,7 +14,7 @@
           <span class="label">最大耗电量 :</span>
           <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="maxEqDataTimeTemp" class="description-item" v-show="maxEqDataTimeTemp!=null">
+        <div  class="description-item" v-show="maxEqDataTimeTemp">
           <span class="label">记录时间 :</span>
           <span class="value">{{ maxEqDataTimeTemp }}</span>
         </div>
@@ -31,7 +23,7 @@
           <span class="label">最小耗电量 :</span>
           <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="minEqDataTimeTemp" class="description-item" v-show="minEqDataTimeTemp!=null">
+        <div class="description-item" v-show="minEqDataTimeTemp">
           <span class="label">记录时间 :</span>
           <span class="value">{{ minEqDataTimeTemp }}</span>
         </div>
@@ -100,16 +92,16 @@
                 </template>  
               </el-table-column>
               <template v-for="item in headerData" :key="item.name">
-                <el-table-column  label="开始电能">
-                  <el-table-column prop="startEleData" label="数值"/>   
-                  <el-table-column prop="startTimeData" label="开始时间"/>
+                <el-table-column  label="开始电能(kWh)">
+                  <el-table-column prop="startEleData" label="电能值"/>   
+                  <el-table-column prop="startTimeData" label="日期"/>
                 </el-table-column>
-                <el-table-column  label="结束电能">
-                  <el-table-column prop="endEleData" label="数值"/>   
-                  <el-table-column prop="endTimeData" label="结束时间"/>
+                <el-table-column  label="结束电能(kWh)">
+                  <el-table-column prop="endEleData" label="电能值"/>   
+                  <el-table-column prop="endTimeData" label="日期"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column :prop="item.name" label="电量值"/>   
                   <el-table-column prop="create_time" label="记录时间"/>
                 </el-table-column>
               </template>
@@ -129,7 +121,7 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 import download from '@/utils/download'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
-import CommonMenu1 from './CommonMenu1.vue';
+// import CommonMenu1 from './CommonMenu1.vue';
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'ECDistribution' })
 
@@ -424,30 +416,30 @@ function customTooltipFormatter(params: any[]) {
 
 // 处理时间选择不超过xxx范围
 const handleDayPick = () => {
-  if (activeName.value=='weekTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差不超过7天，则重置选择的日期
-    if (diffDays < 7) {
-      selectTimeRange.value = defaultDayTimeRange(7)
-      ElMessage({
-        message: '时间选择不少于7天,已默认选择最近一周',
-        type: 'warning',
-      })
-    }
-  }
-  if (activeName.value=='monthTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差超过30天，则重置选择的日期
-    if (diffDays < 30) {
-      selectTimeRange.value = defaultMonthTimeRange(1)
-      ElMessage({
-        message: '时间选择不少于1个月,已默认选择最近一个月',
-        type: 'warning',
-      })
-    }
-  }
+  // if (activeName.value=='weekTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差不超过7天，则重置选择的日期
+  //   if (diffDays < 7) {
+  //     selectTimeRange.value = defaultDayTimeRange(7)
+  //     ElMessage({
+  //       message: '时间选择不少于7天,已默认选择最近一周',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
+  // if (activeName.value=='monthTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差超过30天，则重置选择的日期
+  //   if (diffDays < 30) {
+  //     selectTimeRange.value = defaultMonthTimeRange(1)
+  //     ElMessage({
+  //       message: '时间选择不少于1个月,已默认选择最近一个月',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
 }
 
 // 禁选未来的日期
@@ -518,10 +510,48 @@ const handleExport1 = async () => {
   }
 }
 
+const defaultExpandedKeys = ref([])
+if(history.state.aisleId!=null){
+  defaultExpandedKeys.value.push(history.state.aisleId)
+}
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getAisleMenu()
+  setNavList(res)
+  setDefaultExpandedKeys(res)
+  // console.log("res===",res);
+  console.log("defaultExpandedKeys=============================================",defaultExpandedKeys.value)
   navList.value = res
+  console.log("navList.value==",navList.value);
+}
+function setDefaultExpandedKeys(list):boolean {
+  if(list==null||list.length==0) return false;
+   for(let item of list){
+    if(defaultExpandedKeys.value.includes(item.id)) {
+      return true;
+    }
+    if(item.children!=null&&item.children.length>0){
+      if(setDefaultExpandedKeys(item.children)==true){
+        defaultExpandedKeys.value.push(item.id)
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+let tempId=-1;
+function setNavList(list) {
+  if(list==null||list.length==0) return;
+  list.forEach(item => {
+    if(item.type!=2){
+      item.id=tempId--;
+    }
+    if(item.children!=null&&item.children.length>0){
+      setNavList(item.children);
+    }
+  });
 }
 
 /** 搜索按钮操作 */
@@ -531,10 +561,15 @@ const handleQuery = async() => {
   initLineChart();
   // initRankChart();
 }
+const currentKey=ref()
+if(history.state.aisleId!=null){
+  currentKey.value=history.state.aisleId
+  console.log("currentKey.value==",currentKey.value)
+}
 
+getNavList()
 /** 初始化 **/ 
 onMounted(async () => {
-  getNavList()
   // 获取路由参数中的 pdu_id
   const queryAisleId = history.state.aisleId as string | undefined;
   const queryLocation = history.state.location as string;
@@ -558,8 +593,8 @@ onMounted(async () => {
     padding-top: 28px;
   }
 .nav_data{
-  padding-left: 20px;
-  width: 170px;
+  padding-left: 10px;
+  width: 95%;
 }
 .nav_content span{
   font-size: 18px;
@@ -577,6 +612,7 @@ onMounted(async () => {
 .description-item {
   /* display: flex; */
   align-items: center;
+  /* width: 100%; */
 }
 
 .label {
