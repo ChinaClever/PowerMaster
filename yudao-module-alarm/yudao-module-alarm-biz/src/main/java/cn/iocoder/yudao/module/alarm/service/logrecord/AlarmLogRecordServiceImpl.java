@@ -199,8 +199,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Override
     public void insertOrUpdateAlarmRecordWhenPduAlarm (List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
-        ValueOperations ops = redisTemplate.opsForValue();
         if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            ValueOperations ops = redisTemplate.opsForValue();
             List<PduIndexDo> pduIndexDoListOld = BeanUtils.toBean(oldMaps, PduIndexDo.class);
             List<PduIndexDo> pduIndexDoListNew = BeanUtils.toBean(newMaps, PduIndexDo.class);
             for (int i = 0; i < pduIndexDoListOld.size(); i++) {
@@ -265,8 +265,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Override
     public void insertOrUpdateAlarmRecordWhenBusAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
-        ValueOperations ops = redisTemplate.opsForValue();
         if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            ValueOperations ops = redisTemplate.opsForValue();
             List<BusIndex> busIndexListOld = BeanUtils.toBean(oldMaps, BusIndex.class);
             List<BusIndex> busIndexListNew = BeanUtils.toBean(newMaps, BusIndex.class);
             for (int i = 0; i < busIndexListOld.size(); i++) {

@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.alarm.constants.BinLogConstants;
 import cn.iocoder.yudao.framework.mybatis.core.object.ColumnInfo;
 import cn.iocoder.yudao.framework.mybatis.core.util.JdbcUtils;
 import cn.iocoder.yudao.module.alarm.constants.DBTable;
+import cn.iocoder.yudao.module.alarm.service.cfgmail.AlarmCfgMailService;
 import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
 import com.alibaba.druid.util.StringUtils;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
@@ -32,6 +33,9 @@ public class MySQLTableMonitor {
     @Autowired
     private AlarmLogRecordService alarmLogRecordService;
 
+    @Autowired
+    private AlarmCfgMailService alarmCfgMailService;
+
     // 缓存表结构：表ID -> 字段列表（字段名+类型）
     private static Map<String, List<ColumnInfo>> tableSchemaCache = new HashMap<>();
     private static Map<String, String> tableIdToName = new HashMap<>();
@@ -56,6 +60,7 @@ public class MySQLTableMonitor {
             // 步骤1：监听表结构映射事件
             client.registerEventListener(event -> {
                 long tableId = -1;
+                String tableName = "";
                 List<ColumnInfo> columns = null;
                 EventData data = event.getData();
                 if (data instanceof TableMapEventData) {
@@ -80,13 +85,15 @@ public class MySQLTableMonitor {
                     WriteRowsEventData writeData = (WriteRowsEventData) data;
                     tableId = writeData.getTableId();
                     columns = tableSchemaCache.get(tableId+"");
-                    if (columns != null) {
+                    tableName = tableIdToName.get(tableId+"");
+                    if (columns != null && DBTable.ALARM_LOG_RECORD.equals(tableName)) {
                         List<Map<String, Object>> mapList = new ArrayList<>();
                         for (Serializable[] row : writeData.getRows()) {
                             Map<String, Object> rowData = parseRowData(row, columns);
                             mapList.add(rowData);
                             log.info("[INSERT] 数据内容：" + rowData);
                         }
+//                        alarmCfgMailService.pushAlarmMessage(mapList);
                     }
 
                 } else if (data instanceof UpdateRowsEventData) {
@@ -94,7 +101,8 @@ public class MySQLTableMonitor {
                     UpdateRowsEventData updateData = (UpdateRowsEventData) data;
                     tableId = updateData.getTableId();
                     columns = tableSchemaCache.get(tableId+"");
-                    if (columns != null) {
+                    tableName = tableIdToName.get(tableId+"");
+                    if (columns != null && (DBTable.PDU_INDEX.equals(tableName) || DBTable.BUS_INDEX.equals(tableName))) {
                         List<Map<String, Object>> newMaps = new ArrayList<>();
                         List<Map<String, Object>> oldMaps = new ArrayList<>();
                         for (Map.Entry<Serializable[], Serializable[]> row : updateData.getRows()) {
@@ -105,18 +113,17 @@ public class MySQLTableMonitor {
                                 newMaps.add(newData);
                                 log.info("[UPDATE] 旧数据：" + oldData);
                                 log.info("[UPDATE] 新数据：" + newData);
-                                String tableName = tableIdToName.get(tableId + "");
-                                switch (tableName) {
-                                    case DBTable.PDU_INDEX:
-                                        alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
-                                        break;
-                                    case DBTable.BUS_INDEX:
-                                        alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
-                                        break;
-                                    default:
-                                        log.info("监听到表结构变化，但未匹配到对应的表，忽略处理 ");
-                                }
                             }
+                        }
+                        switch (tableName) {
+                            case DBTable.PDU_INDEX:
+                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
+                                break;
+                            case DBTable.BUS_INDEX:
+                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
+                                break;
+                            default:
+                                break;
                         }
                     }
                 }

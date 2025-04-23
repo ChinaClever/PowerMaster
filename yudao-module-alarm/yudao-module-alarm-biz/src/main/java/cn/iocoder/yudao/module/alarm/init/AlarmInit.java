@@ -45,7 +45,7 @@ public class AlarmInit {
 
     public void ListenPduIndexTableChange(){
         ListenerThreadPoolConfig.getThreadPool().execute(() -> {
-            binLogConstants.setTableList(Arrays.asList(DBTable.PDU_INDEX, DBTable.BUS_INDEX));
+            binLogConstants.setTableList(Arrays.asList(DBTable.PDU_INDEX, DBTable.BUS_INDEX, DBTable.ALARM_LOG_RECORD));
             try {
                 log.info("开始监听数据库表结构变化");
                 mySQLTableMonitor.tableListener(binLogConstants);
