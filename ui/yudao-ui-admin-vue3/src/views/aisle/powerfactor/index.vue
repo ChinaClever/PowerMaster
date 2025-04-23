@@ -281,6 +281,10 @@ import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 import Bar from "./Bar.vue"
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -309,6 +313,7 @@ const loadAll = async () => {
   });
   return objectArray;
 }
+const openDetailFlag=ref("0")
 
 const querySearch = (queryString: string, cb: any) => {
 
@@ -412,6 +417,13 @@ const treeRef = ref<InstanceType<typeof ElTree>>()
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
+})
+
+watch(openDetailFlag,(val) => {
+  if(val == "1") {
+    console.log({id: query.id,location: query.location})
+    openPFDetail({id: query.id,location: query.location})
+  }
 })
 
 
@@ -739,6 +751,7 @@ onBeforeUnmount(()=>{
     clearInterval(flashListTimer.value)
     flashListTimer.value = null;
   }
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 onBeforeRouteLeave(()=>{
