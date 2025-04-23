@@ -432,7 +432,7 @@ public class CabinetServiceImpl implements CabinetService {
     public CommonResult saveCabinet(CabinetVo vo) throws Exception {
         try {
             //判断pdu是否已经关联其他机柜
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
+            if (vo.getPduBox().equals(PduBoxFlagEnums.PDU.getValue())) {
                 List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
@@ -487,7 +487,7 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                         .eq(CabinetIndex::getRoomId, vo.getRoomId()));
                 if (Objects.nonNull(index)) {
-                    if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus() || index.getIsDisabled() == DisableFlagEnums.DISABLE.getStatus()) {
+                    if (index.getIsDeleted().equals(DelFlagEnums.DELETE.getStatus()) || index.getIsDisabled().equals(DisableFlagEnums.DISABLE.getStatus())) {
                         //index 索引表
                         //修改
                         cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -517,7 +517,7 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
             //机柜与PDU/插接箱的关联
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
+            if (vo.getPduBox().equals(PduBoxFlagEnums.PDU.getValue())) {
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
                     //删除
@@ -540,7 +540,7 @@ public class CabinetServiceImpl implements CabinetService {
                         cabinetPduMapper.insert(convertPdu(vo, pdu));
                     }
                 }
-            } else if (vo.getPduBox() == PduBoxFlagEnums.BUS.getValue()) {
+            } else if (vo.getPduBox().equals(PduBoxFlagEnums.BUS.getValue())) {
 
                 if (Objects.isNull(vo.getBoxOutletIdA()) && Objects.isNull(vo.getBoxOutletIdB())) {
                     //删除
