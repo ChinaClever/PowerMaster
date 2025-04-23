@@ -15,7 +15,8 @@
       </div>
       <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px'">
         <div style="display: flex;justify-content: flex-end;margin-right:3px;width: 100%;align-items: center;">
-          <el-button size="small" @click="tableScaleValue = 0.2;tableScaleWidth = 500;tableScaleHeight = 500" circle ><Icon icon="ep:refresh-right" /></el-button>
+          <el-button v-if="isFromHome" size="small" @click="tableScaleValue = 0.2;tableScaleWidth = 500;tableScaleHeight = 500" circle ><Icon icon="ep:refresh-right" /></el-button>
+          <el-button v-else size="small" @click="tableScaleValue = 1;tableScaleWidth = 100;tableScaleHeight = 100" circle ><Icon icon="ep:refresh-right" /></el-button>
           <el-button size="small" @click="tableScale(false)" circle ><Icon icon="ep:minus" /></el-button>
           <el-button size="small" @click="tableScale(true)" circle ><Icon icon="ep:plus" /></el-button>
         </div>
@@ -532,9 +533,9 @@ const dragTable = ref() // 可移动编辑表格
 const dragTableViewEle = ref()
 const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
-const tableScaleValue = ref(0.2)
-const tableScaleWidth = ref(500)
-const tableScaleHeight = ref(500)
+const tableScaleValue = ref(isFromHome ? 0.2 : 1)
+const tableScaleWidth = ref(isFromHome ? 500 : 100)
+const tableScaleHeight = ref(isFromHome ? 500 : 100)
 const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
