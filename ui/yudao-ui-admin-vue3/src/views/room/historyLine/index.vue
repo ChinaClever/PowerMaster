@@ -5,13 +5,6 @@
       <div class="nav_data">
         <div v-if="nowAddress" style="display: flex;justify-content: center;"><span>{{nowAddress}}</span></div>
         <div class="nav_header">
-          <!-- <br/> -->
-          <!-- <template v-if="nowAddress && queryParams.timeRange != null">
-            <span>{{queryParams.timeRange[0]}}</span>
-            <span>至</span>
-            <span>{{queryParams.timeRange[1]}}</span>
-          </template> -->
-          <!-- <br/> -->
            <div  class="description-item" v-if="maxActivePowDataTemp!=null">
             <span class="label">最大值 :</span>
             <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
@@ -20,7 +13,6 @@
             <span class="label">发生时间 :</span>
             <span class="value">{{ formatDate(maxActivePowDataTimeTemp, 'YYYY-MM-DD') }}</span>
           </div>
-          <!-- <br/> -->
           <div  class="description-item" v-if="minActivePowDataTemp!=null">
             <span class="label">最小值 :</span>
             <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
@@ -484,7 +476,7 @@ loading.value = true
       bApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_b_max_value, 3));
       bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_b_max_time));
       bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
-      bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time));
+      bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_b_min_time));
 
       factorTotalAvgValueData.value = data.list.map((item) => formatNumber(item.factor_total_avg_value, 2));
       factorAAvgValueData.value = data.list.map((item) => formatNumber(item.factor_a_avg_value, 2));
@@ -1493,8 +1485,18 @@ const handleQuery = async() => {
       minActivePowDataTemp.value=null;
       maxActivePowDataTemp.value=null;
     }
+    realtimeChart?.off("legendselectchanged")
+    realtimeChart?.dispose();
+    realtimeChart = echarts.init(document.getElementById('chartContainer'));
     if ( newParamType == 'total'){
       realtimeChart?.setOption({
+        title: { text: ''},
+        tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: { restore:{}, saveAsImage: {}}},
+        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { type: 'value'},
+        dataZoom:[{type: "inside"}],
         legend: { data: ['总有功功率', '总视在功率','总无功功率','总功率因素'] 
           ,selected:{"总有功功率":true,"总视在功率":true,"总无功功率":true,"总功率因素":false}
         },
@@ -1507,6 +1509,13 @@ const handleQuery = async() => {
       })
     }else if( newParamType == 'a' ){
       realtimeChart?.setOption({
+        title: { text: ''},
+        tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: { restore:{}, saveAsImage: {}}},
+        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { type: 'value'},
+        dataZoom:[{type: "inside"}],
         legend: { data: ['A路有功功率', 'A路视在功率', 'A路无功功率', 'A路功率因素'],
           selected:{"A路有功功率":true,"A路视在功率":true,"A路无功功率":true,"A路功率因素":false}
          },
@@ -1519,6 +1528,13 @@ const handleQuery = async() => {
       })
     }else{
       realtimeChart?.setOption({
+        title: { text: ''},
+        tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: { restore:{}, saveAsImage: {}}},
+        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { type: 'value'},
+        dataZoom:[{type: "inside"}],
         legend: { data: ['B路有功功率', 'B路视在功率', 'B路无功功率', 'B路功率因素'],
           selected:{"B路有功功率":true,"B路视在功率":true,"B路无功功率":true,"B路功率因素":false}
          },
@@ -1980,7 +1996,7 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data =  await HistoryDataApi.getHistoryDataDetailsExcel(queryParams, axiosConfig)
+    const data =  await HistoryDataApi.getHistoryDataDetailsExcel({...queryParams,abtotal:paramType.value}, axiosConfig)
     await download.excel(data, '机房趋势分析.xlsx')
   } catch (error) {
     // 处理异常
