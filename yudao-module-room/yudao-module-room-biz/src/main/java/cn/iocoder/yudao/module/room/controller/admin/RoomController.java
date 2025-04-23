@@ -210,6 +210,13 @@ public class RoomController {
         return success(roomService.roomAisleSave(vo));
     }
 
+    @Operation(summary = "柜列添加验证")
+    @PostMapping("/findAddAisleVerify")
+    public CommonResult<Boolean> findAddAisleVerify(@RequestBody AisleSaveVo vo) {
+        Boolean i = roomService.findAddAisleVerify(vo);
+        return success(i);
+    }
+
 
     @Operation(summary = "柜类删除")
     @GetMapping("/roomAisleDelete")

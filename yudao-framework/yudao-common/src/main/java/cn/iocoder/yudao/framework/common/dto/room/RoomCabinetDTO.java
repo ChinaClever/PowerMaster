@@ -1,10 +1,14 @@
 package cn.iocoder.yudao.framework.common.dto.room;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author luowei
@@ -152,6 +156,19 @@ public class RoomCabinetDTO {
     private double temBlack;
 
     /**
+     * 湿度
+     */
+    @Schema(description = "前门湿度")
+    private double humFront;
+
+    /**
+     * 湿度
+     */
+    @Schema(description = "后门湿度")
+    private double humBlack;
+
+
+    /**
      * 负载率
      */
     @Schema(description = "负载率")
@@ -216,4 +233,10 @@ public class RoomCabinetDTO {
 
     @Schema(description = "位置")
     private Integer index;
+
+    private List<RackIndex> rackIndices;
+
+    private CabinetPdu cabinetPdus;
+
+    private CabinetBox cabinetBoxes;
 }
