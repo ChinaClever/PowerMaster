@@ -32,7 +32,7 @@ const crudSchemas = reactive<CrudSchema[]>([
     isSearch: true
   },
   {
-    label: '密码',
+    label: '授权码',
     field: 'password',
     isTable: false
   },
