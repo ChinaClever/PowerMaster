@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,6 +122,136 @@ public class AisleHistoryDataServiceImpl implements AisleHistoryDataService {
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        mapList.forEach(map -> {
+            if(((Map)map).get("active_a_avg_value")!=null){
+                ((Map)map).put("active_a_avg_value", new BigDecimal((Double) ((Map)map).get("active_a_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_a_max_value")!=null){
+                ((Map)map).put("active_a_max_value", new BigDecimal((Double) ((Map)map).get("active_a_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_a_min_value")!=null){
+                ((Map)map).put("active_a_min_value", new BigDecimal((Double) ((Map)map).get("active_a_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("active_b_avg_value")!=null){
+                ((Map)map).put("active_b_avg_value", new BigDecimal((Double) ((Map)map).get("active_b_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_b_max_value")!=null){
+                ((Map)map).put("active_b_max_value", new BigDecimal((Double) ((Map)map).get("active_b_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_b_min_value")!=null){
+                ((Map)map).put("active_b_min_value", new BigDecimal((Double) ((Map)map).get("active_b_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("active_total_avg_value")!=null){
+                ((Map)map).put("active_total_avg_value", new BigDecimal((Double) ((Map)map).get("active_total_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_total_max_value")!=null){
+                ((Map)map).put("active_total_max_value", new BigDecimal((Double) ((Map)map).get("active_total_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_total_min_value")!=null){
+                ((Map)map).put("active_total_min_value", new BigDecimal((Double) ((Map)map).get("active_total_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+
+            if(((Map)map).get("apparent_a_avg_value")!=null){
+                ((Map)map).put("apparent_a_avg_value", new BigDecimal((Double) ((Map)map).get("apparent_a_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_a_max_value")!=null){
+                ((Map)map).put("apparent_a_max_value", new BigDecimal((Double) ((Map)map).get("apparent_a_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_a_min_value")!=null){
+                ((Map)map).put("apparent_a_min_value", new BigDecimal((Double) ((Map)map).get("apparent_a_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("apparent_b_avg_value")!=null){
+                ((Map)map).put("apparent_b_avg_value", new BigDecimal((Double) ((Map)map).get("apparent_b_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_b_max_value")!=null){
+                ((Map)map).put("apparent_b_max_value", new BigDecimal((Double) ((Map)map).get("apparent_b_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_b_min_value")!=null){
+                ((Map)map).put("apparent_b_min_value", new BigDecimal((Double) ((Map)map).get("apparent_b_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("apparent_total_avg_value")!=null){
+                ((Map)map).put("apparent_total_avg_value", new BigDecimal((Double) ((Map)map).get("apparent_total_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_total_max_value")!=null){
+                ((Map)map).put("apparent_total_max_value", new BigDecimal((Double) ((Map)map).get("apparent_total_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_total_min_value")!=null){
+                ((Map)map).put("apparent_total_min_value", new BigDecimal((Double) ((Map)map).get("apparent_total_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_a_avg_value")!=null){
+                ((Map)map).put("reactive_a_avg_value", new BigDecimal((Double) ((Map)map).get("reactive_a_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_b_avg_value")!=null){
+                ((Map)map).put("reactive_b_avg_value", new BigDecimal((Double) ((Map)map).get("reactive_b_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_total_avg_value")!=null){
+                ((Map)map).put("reactive_total_avg_value", new BigDecimal((Double) ((Map)map).get("reactive_total_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_total_max_value")!=null){
+                ((Map)map).put("reactive_total_max_value", new BigDecimal((Double) ((Map)map).get("reactive_total_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_total_min_value")!=null){
+                ((Map)map).put("reactive_total_min_value", new BigDecimal((Double) ((Map)map).get("reactive_total_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("factor_a_avg_value")!=null){
+                ((Map)map).put("factor_a_avg_value", new BigDecimal((Double) ((Map)map).get("factor_a_avg_value")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_b_avg_value")!=null){
+                ((Map)map).put("factor_b_avg_value", new BigDecimal((Double) ((Map)map).get("factor_b_avg_value")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_total_avg_value")!=null){
+                ((Map)map).put("factor_total_avg_value", new BigDecimal((Double) ((Map)map).get("factor_total_avg_value")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("active_a")!=null){
+                ((Map)map).put("active_a", new BigDecimal((Double) ((Map)map).get("active_a")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_b")!=null){
+                ((Map)map).put("active_b", new BigDecimal((Double) ((Map)map).get("active_b")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_total")!=null){
+                ((Map)map).put("active_total", new BigDecimal((Double) ((Map)map).get("active_total")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("apparent_a")!=null){
+                ((Map)map).put("apparent_a", new BigDecimal((Double) ((Map)map).get("apparent_a")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_b")!=null){
+                ((Map)map).put("apparent_b", new BigDecimal((Double) ((Map)map).get("apparent_b")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_total")!=null){
+                ((Map)map).put("apparent_total", new BigDecimal((Double) ((Map)map).get("apparent_total")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_a")!=null){
+                ((Map)map).put("reactive_a", new BigDecimal((Double) ((Map)map).get("reactive_a")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_b")!=null){
+                ((Map)map).put("reactive_b", new BigDecimal((Double) ((Map)map).get("reactive_b")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_total")!=null){
+                ((Map)map).put("reactive_total", new BigDecimal((Double) ((Map)map).get("reactive_total")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("factor_a")!=null){
+                ((Map)map).put("factor_a", new BigDecimal((Double) ((Map)map).get("factor_a")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_b")!=null){
+                ((Map)map).put("factor_b", new BigDecimal((Double) ((Map)map).get("factor_b")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_total")!=null){
+                ((Map)map).put("factor_total", new BigDecimal((Double) ((Map)map).get("factor_total")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -167,6 +298,136 @@ public class AisleHistoryDataServiceImpl implements AisleHistoryDataService {
         List<Object> resultList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        resultList.stream().forEach(map -> {
+            if(((Map)map).get("active_a_avg_value")!=null){
+                ((Map)map).put("active_a_avg_value", new BigDecimal((Double) ((Map)map).get("active_a_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_a_max_value")!=null){
+                ((Map)map).put("active_a_max_value", new BigDecimal((Double) ((Map)map).get("active_a_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_a_min_value")!=null){
+                ((Map)map).put("active_a_min_value", new BigDecimal((Double) ((Map)map).get("active_a_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("active_b_avg_value")!=null){
+                ((Map)map).put("active_b_avg_value", new BigDecimal((Double) ((Map)map).get("active_b_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_b_max_value")!=null){
+                ((Map)map).put("active_b_max_value", new BigDecimal((Double) ((Map)map).get("active_b_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_b_min_value")!=null){
+                ((Map)map).put("active_b_min_value", new BigDecimal((Double) ((Map)map).get("active_b_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("active_total_avg_value")!=null){
+                ((Map)map).put("active_total_avg_value", new BigDecimal((Double) ((Map)map).get("active_total_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_total_max_value")!=null){
+                ((Map)map).put("active_total_max_value", new BigDecimal((Double) ((Map)map).get("active_total_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_total_min_value")!=null){
+                ((Map)map).put("active_total_min_value", new BigDecimal((Double) ((Map)map).get("active_total_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+
+            if(((Map)map).get("apparent_a_avg_value")!=null){
+                ((Map)map).put("apparent_a_avg_value", new BigDecimal((Double) ((Map)map).get("apparent_a_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_a_max_value")!=null){
+                ((Map)map).put("apparent_a_max_value", new BigDecimal((Double) ((Map)map).get("apparent_a_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_a_min_value")!=null){
+                ((Map)map).put("apparent_a_min_value", new BigDecimal((Double) ((Map)map).get("apparent_a_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("apparent_b_avg_value")!=null){
+                ((Map)map).put("apparent_b_avg_value", new BigDecimal((Double) ((Map)map).get("apparent_b_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_b_max_value")!=null){
+                ((Map)map).put("apparent_b_max_value", new BigDecimal((Double) ((Map)map).get("apparent_b_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_b_min_value")!=null){
+                ((Map)map).put("apparent_b_min_value", new BigDecimal((Double) ((Map)map).get("apparent_b_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("apparent_total_avg_value")!=null){
+                ((Map)map).put("apparent_total_avg_value", new BigDecimal((Double) ((Map)map).get("apparent_total_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_total_max_value")!=null){
+                ((Map)map).put("apparent_total_max_value", new BigDecimal((Double) ((Map)map).get("apparent_total_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_total_min_value")!=null){
+                ((Map)map).put("apparent_total_min_value", new BigDecimal((Double) ((Map)map).get("apparent_total_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_a_avg_value")!=null){
+                ((Map)map).put("reactive_a_avg_value", new BigDecimal((Double) ((Map)map).get("reactive_a_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_b_avg_value")!=null){
+                ((Map)map).put("reactive_b_avg_value", new BigDecimal((Double) ((Map)map).get("reactive_b_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_total_avg_value")!=null){
+                ((Map)map).put("reactive_total_avg_value", new BigDecimal((Double) ((Map)map).get("reactive_total_avg_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_total_max_value")!=null){
+                ((Map)map).put("reactive_total_max_value", new BigDecimal((Double) ((Map)map).get("reactive_total_max_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_total_min_value")!=null){
+                ((Map)map).put("reactive_total_min_value", new BigDecimal((Double) ((Map)map).get("reactive_total_min_value")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("factor_a_avg_value")!=null){
+                ((Map)map).put("factor_a_avg_value", new BigDecimal((Double) ((Map)map).get("factor_a_avg_value")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_b_avg_value")!=null){
+                ((Map)map).put("factor_b_avg_value", new BigDecimal((Double) ((Map)map).get("factor_b_avg_value")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_total_avg_value")!=null){
+                ((Map)map).put("factor_total_avg_value", new BigDecimal((Double) ((Map)map).get("factor_total_avg_value")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("active_a")!=null){
+                ((Map)map).put("active_a", new BigDecimal((Double) ((Map)map).get("active_a")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_b")!=null){
+                ((Map)map).put("active_b", new BigDecimal((Double) ((Map)map).get("active_b")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("active_total")!=null){
+                ((Map)map).put("active_total", new BigDecimal((Double) ((Map)map).get("active_total")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("apparent_a")!=null){
+                ((Map)map).put("apparent_a", new BigDecimal((Double) ((Map)map).get("apparent_a")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_b")!=null){
+                ((Map)map).put("apparent_b", new BigDecimal((Double) ((Map)map).get("apparent_b")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("apparent_total")!=null){
+                ((Map)map).put("apparent_total", new BigDecimal((Double) ((Map)map).get("apparent_total")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("reactive_a")!=null){
+                ((Map)map).put("reactive_a", new BigDecimal((Double) ((Map)map).get("reactive_a")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_b")!=null){
+                ((Map)map).put("reactive_b", new BigDecimal((Double) ((Map)map).get("reactive_b")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("reactive_total")!=null){
+                ((Map)map).put("reactive_total", new BigDecimal((Double) ((Map)map).get("reactive_total")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+
+            if(((Map)map).get("factor_a")!=null){
+                ((Map)map).put("factor_a", new BigDecimal((Double) ((Map)map).get("factor_a")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_b")!=null){
+                ((Map)map).put("factor_b", new BigDecimal((Double) ((Map)map).get("factor_b")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(((Map)map).get("factor_total")!=null){
+                ((Map)map).put("factor_total", new BigDecimal((Double) ((Map)map).get("factor_total")).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
