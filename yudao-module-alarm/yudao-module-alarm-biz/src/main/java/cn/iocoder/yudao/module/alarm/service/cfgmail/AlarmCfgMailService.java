@@ -6,8 +6,8 @@ import cn.iocoder.yudao.module.alarm.controller.admin.cfgmail.vo.*;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgmail.AlarmCfgMailDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
-
 import java.util.List;
+import java.util.Map;
 
 /**
  * 告警邮件接收人配置 Service 接口
@@ -77,7 +77,7 @@ public interface AlarmCfgMailService {
      * 发送邮件
      * @param records 发送邮件的内容
      */
-    void sendMail(List<AlarmLogRecordDO> records);
+    void sendAlarmMail(List<AlarmLogRecordDO> records);
 
     /**
      * 播放声音
@@ -85,5 +85,5 @@ public interface AlarmCfgMailService {
     void playAudio();
 
 
-    void pushAlarmMessage();
+    void pushAlarmMessage(List<Map<String, Object>> mapList);
 }

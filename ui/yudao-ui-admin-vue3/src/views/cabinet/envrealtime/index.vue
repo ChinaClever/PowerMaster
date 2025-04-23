@@ -185,19 +185,19 @@
             <div  class="tem">
                 <div><span>冷</span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                     {{ item.iceAverageTem === null ? '--' : item.iceAverageTem }}℃  
+                     {{ item.iceMaxTem === null ? '--' : item.iceMaxTem }}℃  
                 </span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                     {{ item.iceAverageHum === null ? '--' : item.iceAverageHum }}% 
+                     {{ item.iceMaxHum === null ? '--' : item.iceMaxHum }}% 
                 </span></div>
             </div>
             <div  class="tem">
                 <div><span>热</span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }">
-                    {{ item.hotAverageTem === null ? '--' : item.hotAverageTem }}℃  
+                    {{ item.hotMaxTem === null ? '--' : item.hotMaxTem }}℃  
                 </span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }">
-                    {{ item.hotAverageHum === null ? '--' : item.hotAverageHum }}% 
+                    {{ item.hotMaxHum === null ? '--' : item.hotMaxHum }}% 
                 </span></div>
             </div>
           </div>
@@ -217,19 +217,19 @@
             <div  class="tem">
                 <div><span>冷</span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                   {{ item.iceAverageTem === null ? '--' : item.iceAverageTem }}℃  
+                   {{ item.iceMaxTem === null ? '--' : item.iceMaxTem }}℃  
                  </span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                   {{ item.iceAverageHum === null ? '--' : item.iceAverageHum }}% 
+                   {{ item.iceMaxHum === null ? '--' : item.iceMaxHum }}% 
                 </span></div>
             </div>
             <div  class="tem">
                 <div><span>热</span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }">
-                   {{ item.hotAverageTem === null ? '--' : item.hotAverageTem }}℃  
+                   {{ item.hotMaxTem === null ? '--' : item.hotMaxTem }}℃  
                 </span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }"> 
-                   {{ item.hotAverageHum === null ? '--' : item.hotAverageHum }}% 
+                   {{ item.hotMaxHum === null ? '--' : item.hotMaxHum }}% 
                 </span></div>
             </div>
           </div>

@@ -46,6 +46,18 @@ public class AlarmLogRecordDO implements Serializable {
      */
     private String alarmPosition;
     /**
+     * 机房id
+     */
+    private Integer roomId;
+    /**
+     * 柜列id
+     */
+    private Integer aisleId;
+    /**
+     * 机柜id
+     */
+    private Integer cabinetId;
+    /**
      * 告警级别 1 一级  2 二级
      */
     private Integer alarmLevel;

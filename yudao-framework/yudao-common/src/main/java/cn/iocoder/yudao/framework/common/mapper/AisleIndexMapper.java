@@ -29,4 +29,6 @@ public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
     void initaisleData();
 
     Integer findAreaById(@Param("xLength") Integer xLength, @Param("yLength") Integer yLength, @Param("roomId") Integer roomId);
+
+    AisleIndex selectByBusKey(String busKey);
 }

@@ -351,7 +351,7 @@ const machineFormData = ref({
   aisleId: '',
   index: '',
   cabinetName: '',
-  type: '',
+  type: 'IT机柜',
   cabinetHeight: 42, //U
   powCapacity: 8, // kAV
   company: '',
@@ -498,7 +498,7 @@ const open = async (type: string, data, machineColInfo) => {
     roomName: '',
     aisleId: '',
     index: '',
-    type: '',
+    type: 'IT机柜',
     cabinetHeight: 42,
     powCapacity: 8,
     company: '',
@@ -599,7 +599,7 @@ const resetForm = () => {
     cabinetName: '',
     roomId: '',
     roomName: '',
-    type: '',
+    type: 'IT机柜',
     cabinetHeight: 42,
     powCapacity: 8,
     company: '',
