@@ -199,7 +199,7 @@
                               <div v-if="chosenBtn == 2" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
                               <div v-if="chosenBtn == 3" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
                               <div v-if="chosenBtn == 4" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
-                              <div v-if="chosenBtn == 5" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0000'}}<br/><div style="font-size: 10px;margin-top: -10px">kWh</div></div>
+                              <div v-if="chosenBtn == 5" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">kWh</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -343,7 +343,7 @@
                                   <div v-if="chosenBtn == 2" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
                                   <div v-if="chosenBtn == 3" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
                                   <div v-if="chosenBtn == 4" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
-                                  <div v-if="chosenBtn == 5" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0000'}}<br/><div style="font-size: 10px;margin-top: -10px">kWh</div></div>
+                                  <div v-if="chosenBtn == 5" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">kWh</div></div>
                                 </el-tooltip>
                               </template>
                             </div>
