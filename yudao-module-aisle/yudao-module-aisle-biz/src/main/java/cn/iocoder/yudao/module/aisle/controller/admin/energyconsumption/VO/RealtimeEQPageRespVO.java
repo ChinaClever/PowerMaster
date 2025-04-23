@@ -25,16 +25,16 @@ public class RealtimeEQPageRespVO {
 
     @ExcelProperty("记录日期")
     private String create_time;
-    @NumberFormat("0.0")
 
+    @NumberFormat("0.0")
     @ExcelProperty("A路电能 (kWh)")
     private Double ele_a;
-    @NumberFormat("0.0")
 
+    @NumberFormat("0.0")
     @ExcelProperty("B路电能 (kWh)")
     private Double ele_b;
-    @NumberFormat("0.0")
 
+    @NumberFormat("0.0")
     @ExcelProperty("电能 (kWh)")
     private Double ele_total;
 
