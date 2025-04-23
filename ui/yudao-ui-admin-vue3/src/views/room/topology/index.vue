@@ -15,7 +15,7 @@
       </div>
       <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px'">
         <div style="display: flex;justify-content: flex-end;margin-right:3px;width: 100%;align-items: center;">
-          <el-button size="small" @click="tableScaleValue = 1;tableScaleWidth = 100;tableScaleHeight = 100" circle ><Icon icon="ep:refresh-right" /></el-button>
+          <el-button size="small" @click="tableScaleValue = 0.2;tableScaleWidth = 500;tableScaleHeight = 500" circle ><Icon icon="ep:refresh-right" /></el-button>
           <el-button size="small" @click="tableScale(false)" circle ><Icon icon="ep:minus" /></el-button>
           <el-button size="small" @click="tableScale(true)" circle ><Icon icon="ep:plus" /></el-button>
         </div>
@@ -1172,7 +1172,7 @@ const tableScale = (flag) => {
   } else {
     tableScaleValue.value -= 0.2
   }
-  tableScaleValue.value = Math.max(0.4, tableScaleValue.value);
+  tableScaleValue.value = Math.max(0.1, tableScaleValue.value);
   tableScaleWidth.value = 1/tableScaleValue.value*100
   tableScaleHeight.value = 1/tableScaleValue.value*100
 }
