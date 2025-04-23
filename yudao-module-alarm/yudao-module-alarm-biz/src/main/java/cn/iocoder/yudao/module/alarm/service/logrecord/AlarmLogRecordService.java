@@ -76,8 +76,14 @@ public interface AlarmLogRecordService {
     AlarmLogRecordDO getAlarmRecordById(Integer id);
 
     /**
-     * 当pdu报警时，插入告警记录
+     * 当pdu报警时，插入/修改告警记录
      *
      */
     void insertOrUpdateAlarmRecordWhenPduAlarm( List<Map<String, Object>> oldMaps , List<Map<String, Object>> newMaps);
+
+    /**
+     * 当bus报警时，插入告警记录
+     *
+     */
+    void insertOrUpdateAlarmRecordWhenBusAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
 }

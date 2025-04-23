@@ -98,7 +98,7 @@ public class PduDeviceApiImpl implements PduDeviceApi{
                 }
             }
             if (StringUtils.isEmpty(localtion)) {
-                locationMap.put(pduIndex, "未绑定");
+                locationMap.put(pduIndex, pduIndex);
             } else {
                 locationMap.put(pduIndex, localtion);
             }

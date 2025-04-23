@@ -949,22 +949,22 @@ const submitSetting = async() => {
     return
   }
 
-    if(roomFlag.value == 1){
-      const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
-      if(resSelect != null){
-        message.error('该机房名称已存在,请重新输入!');
-        rowColInfo.roomName = '';
-        return
-      }
+  if(roomFlag.value == 1){
+    const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
+    if(resSelect != null){
+      message.error('该机房名称已存在,请重新输入!');
+      rowColInfo.roomName = '';
+      return
     }
-   
+  }
+  
 
-   let roomFlagId:any = null;
-   let messageRoomFlag = "保存成功！";
-   if(roomFlag.value == 2){
-      roomFlagId = roomId.value; 
-      messageRoomFlag = "修改成功！";
-   }
+  let roomFlagId:any = null;
+  let messageRoomFlag = "保存成功！";
+  if(roomFlag.value == 2){
+    roomFlagId = roomId.value; 
+    messageRoomFlag = "修改成功！";
+  }
 
   if(radio.value === "PUE") {
   rowColInfo.displayType = 1
@@ -988,6 +988,14 @@ const submitSetting = async() => {
     }
 
     console.log(rowColInfo,roomFlagId)
+
+  if(roomFlag.value == 2) {
+    const resFind = await MachineRoomApi.findAreaById({xLength: rowColInfo.col,yLength: rowColInfo.row,id: roomFlagId});
+    if(resFind) {
+      message.error('减少的行数或列数中有机柜或柜列,请重新设置行数或列数!')
+      return
+    }
+  }
 
    try {
     const res = await MachineRoomApi.saveRoomDetail({

@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.alarm.service.cfgmail;
 
 import cn.hutool.core.util.StrUtil;
+import cn.iocoder.yudao.framework.common.constant.MailTemplateConstants;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -31,6 +32,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.dal.mysql.cfgmail.AlarmCfgMailMapper;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
@@ -67,8 +69,6 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
     @Autowired
     private AlarmLogRecordService alarmLogRecordService;
 
-
-    public static final String TEMPLATE_CODE = "ALARM_MAIL";
 
     public AlarmCfgMailServiceImpl(MailAccountService mailAccountService) {
         this.mailAccountService = mailAccountService;
@@ -145,7 +145,7 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
     }
 
     @Override
-    public void sendMail(List<AlarmLogRecordDO> records) {
+    public void sendAlarmMail(List<AlarmLogRecordDO> records) {
 
         List<AlarmCfgMailDO> mailAlarmConfigs = cfgMailMapper.selectList(new LambdaQueryWrapperX<AlarmCfgMailDO>()
                 .eq(AlarmCfgMailDO::getIsEnable, DisableEnums.ENABLE.getStatus()));
@@ -154,21 +154,24 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
         List<Map<String, Object>> templateParams = new ArrayList<>();
         for (AlarmLogRecordDO record : records) {
             Map<String, Object> templateParam = new HashMap<>();
+            record = alarmLogRecordService.getLogRecord(record.getId());
             templateParam.put("position",record.getAlarmPosition());
             templateParam.put("alarmType", AlarmTypeEnums.getNameByStatus(record.getAlarmType()));
             templateParam.put("alarmLevel", AlarmLevelEnums.getNameByStatus(record.getAlarmLevel()));
             templateParam.put("alarmDesc",record.getAlarmDesc());
+            templateParam.put("startTime", record.getStartTime().toString());
+            templateParams.add(templateParam);
         }
 
 
         if (!CollectionUtils.isEmpty(mailAlarmConfigs)){
-            mailAlarmConfigs.forEach(config -> {
+            for (AlarmCfgMailDO config : mailAlarmConfigs) {
                 String mail = config.getMailAddr();
                 // 校验邮箱是否存在
                 mail = validateMail(mail);
 
                 // 校验邮箱模版是否合法
-                MailTemplateDO template = validateMailTemplate(TEMPLATE_CODE);
+                MailTemplateDO template = validateMailTemplate(MailTemplateConstants.ALARM_MAIL);
 
                 MailAccountDO account = validateMailAccount(template.getAccountId());
                 StringBuffer contentBuff = new StringBuffer();
@@ -189,13 +192,13 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
 
                 //邮件用户
                 Long sendLogId = mailLogService.createMailLog(template.getAccountId(), 9, mail,
-                        account, template, contentBuff.toString(), templateParams, isSend);
+                        account, template, contentBuff.toString(), templateParams.get(0), isSend);
                 MailSendMessage message = new MailSendMessage()
                         .setLogId(sendLogId).setMail(mail).setAccountId(template.getAccountId())
                         .setNickname(template.getNickname()).setTitle(title).setContent(contentBuff.toString());
                 //发送邮件
                 mailSendService.doSendMail(message);
-            });
+            };
         }
     }
 
@@ -243,58 +246,35 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
 
 
     @Override
-    public void pushAlarmMessage() {
-        // 获取告警记录变化的数据
-        String table = "sys_alarm_record";
-        List<Map<String,Object>> insertList = redisTemplate.opsForList().range(table + ":insert", 0, -1);
-        List<Map<String,Object>> updateList = redisTemplate.opsForList().range(table + ":updateNew", 0, -1);
-        // 获取告警配置
-        List<AlarmCfgPromptDO> cfgPromptList = alarmCfgPromptService.getCfgPromptList();
-        int voiceAlarm = 0;
-        int emailAlarm = 0;
-        int smsAlarm = 0;
-        for (AlarmCfgPromptDO alarmCfgPromptDO : cfgPromptList) {
-            if (AlarmPromptType.VOICE_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
-                voiceAlarm = alarmCfgPromptDO.getIsEnable();
-            } else if (AlarmPromptType.EMAIL_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
-                emailAlarm = alarmCfgPromptDO.getIsEnable();
-            } else if (AlarmPromptType.SMS_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
-                smsAlarm = alarmCfgPromptDO.getIsEnable();
-            }
-        }
+    public void pushAlarmMessage(List<Map<String, Object>> mapList) {
+        if (!CollectionUtils.isEmpty(mapList)) {
+            // 获取告警记录变化的数据
+            List<AlarmLogRecordDO> list = BeanUtils.toBean(mapList, AlarmLogRecordDO.class);
 
-        // 告警推送处理
-        if (insertList != null || updateList != null) {
-            // 获取告警记录
-            List<AlarmLogRecordDO> list = new ArrayList<>();
-            if (insertList != null) {
-                for (Map<String, Object> map : insertList) {
-                    AlarmLogRecordDO record = alarmLogRecordService.getAlarmRecordById((Integer) map.get("id"));
-                    list.add(record);
-                }
-            }
-            if (updateList != null) {
-                for (Map<String, Object> map : updateList) {
-                    AlarmLogRecordDO record = alarmLogRecordService.getAlarmRecordById((Integer) map.get("id"));
-                    list.add(record);
+            // 获取告警配置
+            List<AlarmCfgPromptDO> cfgPromptList = alarmCfgPromptService.getCfgPromptList();
+            int voiceAlarm = 0;
+            int emailAlarm = 0;
+            int smsAlarm = 0;
+            for (AlarmCfgPromptDO alarmCfgPromptDO : cfgPromptList) {
+                if (AlarmPromptType.VOICE_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
+                    voiceAlarm = alarmCfgPromptDO.getIsEnable();
+                } else if (AlarmPromptType.EMAIL_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
+                    emailAlarm = alarmCfgPromptDO.getIsEnable();
+                } else if (AlarmPromptType.SMS_ALARM.getCode().equals(alarmCfgPromptDO.getPromptType())) {
+                    smsAlarm = alarmCfgPromptDO.getIsEnable();
                 }
             }
 
+            //告警推送
             // 铃声告警
-//            if (voiceAlarm == 1) {
-//                playAudio();
-//            }
+            //if (voiceAlarm == 1) {
+            //    playAudio();
+            //}
             // 邮件告警
             if (emailAlarm == 1) {
-                sendMail(list);
+                sendAlarmMail(list);
             }
-
-            // 删除缓存
-            List<String> deleteKeys = new ArrayList<>();
-            deleteKeys.add(table + ":insert");
-            deleteKeys.add(table + ":updateNew");
-            deleteKeys.add(table + ":updateOld");
-            redisTemplate.delete(deleteKeys);
         }
     }
 

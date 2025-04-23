@@ -97,7 +97,7 @@ public class AlarmCfgMailController {
     @PostMapping("/sendMail")
     @PermitAll
     public void sendMail(@RequestBody List<AlarmLogRecordDO> records){
-        cfgMailService.sendMail(records);
+        cfgMailService.sendAlarmMail(records);
     }
 
     /**

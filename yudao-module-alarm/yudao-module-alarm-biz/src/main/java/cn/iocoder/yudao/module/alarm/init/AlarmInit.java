@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -31,7 +32,7 @@ public class AlarmInit {
         // 初始化告警配置
         initAlarmPrompt();
 
-        // 开始监听pdu_index表结构变化
+        // 监听pdu_index表结构变化
         ListenPduIndexTableChange();
     }
 
@@ -44,12 +45,12 @@ public class AlarmInit {
 
     public void ListenPduIndexTableChange(){
         ListenerThreadPoolConfig.getThreadPool().execute(() -> {
-            binLogConstants.setTable(DBTable.PDU_INDEX);
+            binLogConstants.setTableList(Arrays.asList(DBTable.PDU_INDEX, DBTable.BUS_INDEX, DBTable.ALARM_LOG_RECORD));
             try {
-                log.info("开始监听pdu_index表结构变化");
+                log.info("开始监听数据库表结构变化");
                 mySQLTableMonitor.tableListener(binLogConstants);
             } catch (Exception e) {
-                log.error("监听pdu异常",e);
+                log.error("监听数据库表结构异常",e);
             }
         });
     }
