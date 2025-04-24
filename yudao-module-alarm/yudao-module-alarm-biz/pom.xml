@@ -69,6 +69,11 @@
             <artifactId>yudao-module-pdu-api</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
 </project>
