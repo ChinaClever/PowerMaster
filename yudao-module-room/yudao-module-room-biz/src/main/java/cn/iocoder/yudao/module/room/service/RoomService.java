@@ -138,4 +138,6 @@ public interface RoomService {
     Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName);
 
     Boolean findAreaById(Integer xLength, Integer yLength, Integer id);
+
+    Boolean findAddAisleVerify(AisleSaveVo vo);
 }

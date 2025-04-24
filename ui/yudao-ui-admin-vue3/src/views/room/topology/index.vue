@@ -822,16 +822,24 @@ const menuOptionsCopy = ref([
         label: '机柜编辑',
       },
       {
-        value: '柜列编辑',
-        label: '柜列编辑',
+        value: '机柜解绑',
+        label: '机柜解绑',
+      },
+      {
+        value: '机柜删除',
+        label: '机柜删除'
       },
       {
         value: '柜列移动',
         label: '柜列移动',
       },
       {
-        value: '删除',
-        label: '删除'
+        value: '柜列编辑',
+        label: '柜列编辑',
+      },
+      {
+        value: '柜列删除',
+        label: '柜列删除'
       }
     ]
   },
@@ -856,8 +864,8 @@ const menuOptionsCopy = ref([
         label: '柜列供电平衡',
       },
       {
-        value: '柜列功率因素',
-        label: '柜列功率因素',
+        value: '柜列功率因数',
+        label: '柜列功率因数',
       }
     ]
   },
@@ -1385,7 +1393,7 @@ const handleRightClick = (e) => {
   menuOptions.value[0] = JSON.parse(JSON.stringify(menuOptionsCopy.value[0]));
 
   if(cabinetIndex >= 0) {
-    menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].id
+    menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
 
     menuOptions.value[1] = menuOptionsCopy.value[1]
     menuOptions.value[1].value = tableData.value[lndexY][formParam.value[lndexX]][0].id
@@ -1411,14 +1419,14 @@ const handleRightClick = (e) => {
     }
     if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].id) {
       menuOptions.value.splice(2,1)
-      menuOptions.value[0]?.children?.splice(0,1)
+      menuOptions.value[0]?.children?.splice(0,3)
       console.log(menuOptionsCopy.value[0])
     }
     if(!tableData.value[lndexY][formParam.value[lndexX]][0].id) {
       menuOptions.value.splice(1,1)
     }
   } else if(tableData.value[lndexY][formParam.value[lndexX]][0]?.type == 2) {
-    menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0].id
+    menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0]
 
     menuOptions.value[2] = menuOptionsCopy.value[2]
     menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].id
@@ -1443,7 +1451,7 @@ const handleRightClick = (e) => {
       console.log(menuOptionsCopy.value[0])
     }
     menuOptions.value.splice(1,1)
-    menuOptions.value[0]?.children?.splice(1,1)
+    menuOptions.value[0]?.children?.splice(3,3)
   } else {
     menuOptions.value.splice(1,4)
   }
@@ -1485,24 +1493,112 @@ const handleRightClick = (e) => {
 const handleMenu = (value) => {
   //console.log(value)
   operateMenu.value.show = false
-  if(value[1] == '柜列配电') {
-    //console.log({ id: value[0], roomId: roomId.value })
-    push({path: '/aisle/aislemonitor/columnHome', query: { id: value[0], roomId: roomId.value }})
-  } else if(value[1] == '柜列用能') {
-    push({path: '/aisle/aislemonitor/aisleenergydetail', query: { roomId: roomId.value, id: value[0],location: rowColInfo.roomName }})
-  } else if(value[1] == '柜列需量') {
-    push({path: '/aisle/aislemonitor/aislerequirement', query: { openDetailFlag: 1, id: value[0],location: rowColInfo.roomName + "-" + tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name }})
-  } else if(value[1] == '柜列供电平衡') {
-    push({path: '/aisle/aislemonitor/aislebalance', query: { openDetailFlag: 1, id: value[0]}})
-  } else if(value[0] == '拖拽视图') {
-    dragTableView()
-  } else if(value[1] == '机柜编辑') {
-    addCabinet('edit',value[0])
-  } else if(value[1] == '柜列编辑') {
-    editMachine()
-  } else if(value[1] == '删除') {
-    deleteMachine()
+  switch (value[1]) {
+    case '柜列配电':
+      push({ 
+        path: '/aisle/aislemonitor/columnHome', 
+        query: { id: value[0], roomId: roomId.value } 
+      });
+      break;
+    
+    case '柜列用能':
+      push({ 
+        path: '/aisle/aislemonitor/aisleenergydetail', 
+        query: { roomId: roomId.value, id: value[0], location: rowColInfo.roomName } 
+      });
+      break;
+    
+    case '柜列需量':
+      push({ 
+        path: '/aisle/aislemonitor/aislerequirement', 
+        query: { 
+          openDetailFlag: 1, 
+          id: value[0], 
+          location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
+        } 
+      });
+      break;
+    
+    case '柜列供电平衡':
+      push({ 
+        path: '/aisle/aislemonitor/aislebalance', 
+        query: { openDetailFlag: 1, id: value[0] } 
+      });
+      break;
+
+    case '柜列功率因数':
+      push({ 
+        path: '/aisle/aislemonitor/aislepowerfactor', 
+        query: { 
+          openDetailFlag: 1, 
+          id: value[0], 
+          location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
+        } 
+      });
+      break;
+    
+    case '拖拽视图':
+      dragTableView();
+      break;
+    
+    case '机柜编辑':
+      addCabinet('edit', value[0].id);
+      break;
+    
+    case '机柜删除':
+      deleteCabinet(value[0], false);
+      break;
+    
+    case '机柜解绑':
+      deleteCabinet(value[0], true);
+      break;
+    
+    case '柜列编辑':
+      editMachine();
+      break;
+    
+    case '柜列删除':
+      deleteMachine();
+      break;
+    
+    default:
+      console.warn('未知操作类型:', value[1]);
+      break;
   }
+}
+
+const deleteCabinet = (cabItem,flag) => {
+  console.log(cabItem)
+  return
+  ElMessageBox.confirm('确认删除吗？', '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    if(cabItem.cabinetBoxes) {
+      console.log("aaaaaa---cabItem",cabItem)
+      await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 2
+      })
+    } else if(cabItem.cabinetPdus) {
+      await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 1
+      })
+    } else if(cabItem.rackIndices) {
+      await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 3
+      })
+    } else {
+      await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 4
+      })
+    }
+    getRoomInfoNoLoading()
+  })
 }
 
 // 判断是否展示添加菜单项

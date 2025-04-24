@@ -894,19 +894,8 @@ public class RoomServiceImpl implements RoomService {
             roomCabinetDetail1(cabinetDTOList, ops, humAvgFronts, humAvgBlacks, humMaxFronts, humMaxBlacks, temMaxFronts, temMaxBlacks, temAvgFronts, temAvgBlacks);
             vo.setCabinetList(cabinetDTOList);
         }
-
         //柜列
         List<AisleDataDTO> aisleIndexList = aisleIndexMapper.selectRoomAisleList(id);
-//        List<Integer> cabinetIds = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
-//        List<Integer> aisleIds = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
-//        ThreadPoolTaskExecutor tHreadPool = ThreadPoolConfig.getTHreadPool();
-//        Future<Object> future = tHreadPool.submit(() -> {
-//            //部门
-//            Map<String, EquipmentStatisticsResVO> map = equipmentStatisticsMethod(cabinetIds, aisleIds);
-//            return map;
-//        });
-//        Map<String, EquipmentStatisticsResVO> map = (Map<String, EquipmentStatisticsResVO>) future.get();
-//        vo.setMap(map);
         if (!CollectionUtils.isEmpty(aisleIndexList)) {
             List<Integer> ids = aisleIndexList.stream().map(AisleDataDTO::getId).collect(Collectors.toList());
             List<RoomCabinetDTO> cabinetDTOList1 = cabinetCfgMapper.roomCabinetList(id, ids);
@@ -1092,14 +1081,18 @@ public class RoomServiceImpl implements RoomService {
         return roomIndexMapper.selectRoomByName(name);
     }
 
+
+
     public void roomCabinetDetail1(List<RoomCabinetDTO> cabinetDTOList, ValueOperations ops, List<BigDecimal> humAvgFronts,
                                    List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks,
                                    List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts,
                                    List<BigDecimal> temAvgBlacks) {
         List<Integer> pduId = cabinetDTOList.stream().filter(i -> Objects.equals(i.getPduBox(), 0)).map(RoomCabinetDTO::getId).collect(Collectors.toList());
         List<Integer> boxId = cabinetDTOList.stream().filter(i -> Objects.equals(i.getPduBox(), 1)).map(RoomCabinetDTO::getId).collect(Collectors.toList());
+
         Map<Integer, CabinetPdu> pduMap = new HashMap<>();
         Map<Integer, CabinetBox> boxMap = new HashMap<>();
+        Map<Integer, List<RackIndex>> rackMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(pduId)) {
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, pduId));
             pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
@@ -1108,8 +1101,12 @@ public class RoomServiceImpl implements RoomService {
             List<CabinetBox> cabinetBoxs = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>().in(CabinetBox::getCabinetId, boxId));
             boxMap = cabinetBoxs.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
         }
-
         List<Integer> ids = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
+        List<RackIndex> rackIndices = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, ids).eq(RackIndex::getIsDelete,0));
+        if (!CollectionUtils.isEmpty(rackIndices)) {
+            rackMap = rackIndices.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
+        }
+
 
         String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         String endTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
@@ -1123,80 +1120,7 @@ public class RoomServiceImpl implements RoomService {
         Map<String, Object> cabinetMap = (Map<String, Object>) cabinetRedis.stream().filter(i -> Objects.nonNull(i)).collect(
                 Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getString("cabinet_key"), Function.identity()));
         for (RoomCabinetDTO iter : cabinetDTOList) {
-            if (Objects.equals(iter.getPduBox(), 0)) {
-                CabinetPdu cabinetPdu = pduMap.get(iter.getId());
-                if (Objects.nonNull(cabinetPdu)) {
-                    iter.setCabinetkeya(cabinetPdu.getPduKeyA());
-                    iter.setCabinetkeyb(cabinetPdu.getPduKeyB());
-                }
-            } else {
-                CabinetBox cabinetBox = boxMap.get(iter.getId());
-                if (Objects.nonNull(cabinetBox)) {
-                    iter.setCabinetkeya(cabinetBox.getBoxKeyA());
-                    iter.setCabinetkeyb(cabinetBox.getBoxKeyB());
-                }
-            }
-            List<CabinetEqBaseDo> dos = eqMap.get(iter.getId());
-            if (!CollectionUtils.isEmpty(dos)) {
-                CabinetEqBaseDo cabinetEqBaseDo = dos.get(0);
-                iter.setYesterdayEq(cabinetEqBaseDo.getEqValue());
-            }
-            String cabKey = iter.getRoomId() + SPLIT_KEY + iter.getId();
-            Object obj = cabinetMap.get(cabKey);
-            if (Objects.nonNull(obj)) {
-                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
-                JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
-                JSONObject aPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
-                JSONObject bPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
-                if (Objects.nonNull(total)) {
-                    iter.setPowActive(total.getFloatValue("pow_active"));
-                    iter.setPowApparent(total.getFloatValue("pow_apparent"));
-                    iter.setPowReactive(total.getFloatValue("pow_reactive"));
-                    iter.setPowerFactor(total.getFloatValue(POWER_FACTOR));
-                }
-                if (Objects.nonNull(aPath)) {
-                    iter.setPowActivea(aPath.getFloatValue("pow_active"));
-                    iter.setPowApparenta(aPath.getFloatValue("pow_apparent"));
-                    iter.setPowReactivea(aPath.getFloatValue("pow_reactive"));
-                    //a的视在功率
-                    BigDecimal aPow = aPath.getBigDecimal("pow_apparent");
-                    iter.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, iter.getPowApparent()), 100));
-                }
-                if (Objects.nonNull(bPath)) {
-                    iter.setPowActivea(bPath.getFloatValue("pow_active"));
-                    iter.setPowApparenta(bPath.getFloatValue("pow_apparent"));
-                    iter.setPowReactivea(bPath.getFloatValue("pow_reactive"));
-                    //a的视在功率
-                    BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
-                    iter.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, iter.getPowApparent()), 100));
-                }
-                iter.setLoadRate(jsonObject.getFloatValue("load_factor"));
-
-                JSONObject cabinetEnv = jsonObject.getJSONObject("cabinet_env");
-                if (cabinetEnv != null) {
-                    JSONObject temValue = cabinetEnv.getJSONArray("tem_value").getJSONObject(0);
-                    if (Objects.nonNull(temValue)) {
-                        List<BigDecimal> front = temValue.getList("front", BigDecimal.class);
-                        List<BigDecimal> black = temValue.getList("black", BigDecimal.class);
-//                        iter.setTem(Math.max(Collections.max(front).doubleValue(), Collections.max(black).doubleValue()));
-                        iter.setTemFront(Collections.max(front).doubleValue());
-                        iter.setTemBlack(Collections.max(black).doubleValue());
-                        temAvgBlacks.addAll(black);
-                        temAvgFronts.addAll(front);
-                        temMaxFronts.add(Collections.max(front));
-                        temMaxBlacks.add(Collections.max(black));
-                    }
-                    JSONObject humValue = cabinetEnv.getJSONArray("hum_value").getJSONObject(0);
-                    if (Objects.nonNull(humValue)) {
-                        List<BigDecimal> front = humValue.getList("front", BigDecimal.class);
-                        List<BigDecimal> black = humValue.getList("black", BigDecimal.class);
-                        humAvgFronts.addAll(front);
-                        humAvgBlacks.addAll(black);
-                        humMaxFronts.add(Collections.max(front));
-                        humMaxBlacks.add(Collections.max(black));
-                    }
-                }
-            }
+            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap);
         }
     }
 
@@ -1205,6 +1129,7 @@ public class RoomServiceImpl implements RoomService {
         List<Integer> boxId = cabinetDTOList.stream().filter(i -> Objects.equals(i.getPduBox(), 1)).map(RoomCabinetDTO::getId).collect(Collectors.toList());
         Map<Integer, CabinetPdu> pduMap = new HashMap<>();
         Map<Integer, CabinetBox> boxMap = new HashMap<>();
+        Map<Integer, List<RackIndex>> rackMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(pduId)) {
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, pduId));
             pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
@@ -1215,7 +1140,10 @@ public class RoomServiceImpl implements RoomService {
         }
 
         List<Integer> ids = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
-
+        List<RackIndex> rackIndices = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, ids).eq(RackIndex::getIsDelete,0));
+        if (!CollectionUtils.isEmpty(rackIndices)) {
+            rackMap = rackIndices.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
+        }
         String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         String endTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
         List<CabinetEqBaseDo> list = getDataKey(startTime, endTime, ids, CABINET_EQ_TOTAL_DAY, "cabinet_id", CabinetEqBaseDo.class);
@@ -1236,65 +1164,81 @@ public class RoomServiceImpl implements RoomService {
                 //纵向
                 iter.setIndex(iter.getYCoordinate() - dataDTO.getYCoordinate() + 1);
             }
-            if (Objects.equals(iter.getPduBox(), 0)) {
-                CabinetPdu cabinetPdu = pduMap.get(iter.getId());
-                if (Objects.nonNull(cabinetPdu)) {
-                    iter.setCabinetkeya(cabinetPdu.getPduKeyA());
-                    iter.setCabinetkeyb(cabinetPdu.getPduKeyB());
-                }
-            } else {
-                CabinetBox cabinetBox = boxMap.get(iter.getId());
-                if (Objects.nonNull(cabinetBox)) {
-                    iter.setCabinetkeya(cabinetBox.getBoxKeyA());
-                    iter.setCabinetkeyb(cabinetBox.getBoxKeyB());
-                }
-            }
-            List<CabinetEqBaseDo> dos = eqMap.get(iter.getId());
-            if (!CollectionUtils.isEmpty(dos)) {
-                CabinetEqBaseDo cabinetEqBaseDo = dos.get(0);
-                iter.setYesterdayEq(cabinetEqBaseDo.getEqValue());
-            }
-            String cabKey = iter.getRoomId() + SPLIT_KEY + iter.getId();
-            Object obj = cabinetMap.get(cabKey);
-            if (Objects.nonNull(obj)) {
-                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
-                JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
-                JSONObject aPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
-                JSONObject bPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
-                if (Objects.nonNull(total)) {
-                    iter.setPowActive(total.getFloatValue("pow_active"));
-                    iter.setPowApparent(total.getFloatValue("pow_apparent"));
-                    iter.setPowReactive(total.getFloatValue("pow_reactive"));
-                    iter.setPowerFactor(total.getFloatValue(POWER_FACTOR));
-                }
-                if (Objects.nonNull(aPath)) {
-                    iter.setPowActivea(aPath.getFloatValue("pow_active"));
-                    iter.setPowApparenta(aPath.getFloatValue("pow_apparent"));
-                    iter.setPowReactivea(aPath.getFloatValue("pow_reactive"));
-                    //a的视在功率
-                    BigDecimal aPow = aPath.getBigDecimal("pow_apparent");
-                    iter.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, iter.getPowApparent()), 100));
-                }
-                if (Objects.nonNull(bPath)) {
-                    iter.setPowActiveb(bPath.getFloatValue("pow_active"));
-                    iter.setPowApparentb(bPath.getFloatValue("pow_apparent"));
-                    iter.setPowReactiveb(bPath.getFloatValue("pow_reactive"));
-                    //a的视在功率
-                    BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
-                    iter.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, iter.getPowApparent()), 100));
-                }
-                iter.setLoadRate(jsonObject.getFloatValue("load_factor"));
+            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap);
+        }
+    }
 
-                JSONObject cabinetEnv = jsonObject.getJSONObject("cabinet_env");
-                if (cabinetEnv != null) {
-                    JSONObject temValue = cabinetEnv.getJSONArray("tem_value").getJSONObject(0);
-                    if (Objects.nonNull(temValue)) {
-                        List<BigDecimal> front = temValue.getList("front", BigDecimal.class);
-                        List<BigDecimal> black = temValue.getList("black", BigDecimal.class);
-                        iter.setTemFront(Collections.max(front).doubleValue());
-                        iter.setTemBlack(Collections.max(black).doubleValue());
-//                        iter.setTem(Math.max(Collections.max(front).doubleValue(), Collections.max(black).doubleValue()));
-                    }
+    private static void extractedCabinetCommon(RoomCabinetDTO iter, Map<Integer, List<RackIndex>> rackMap, Map<Integer, CabinetPdu> pduMap, Map<Integer, CabinetBox> boxMap, Map<Integer, List<CabinetEqBaseDo>> eqMap, Map<String, Object> cabinetMap) {
+        List<RackIndex> rackIndices1 = rackMap.get(iter.getId());
+        if (!CollectionUtils.isEmpty(rackIndices1)) {
+            iter.setRackIndices(rackIndices1);
+        }
+        if (Objects.equals(iter.getPduBox(), 0)) {
+            CabinetPdu cabinetPdu = pduMap.get(iter.getId());
+            if (Objects.nonNull(cabinetPdu)) {
+                iter.setCabinetkeya(cabinetPdu.getPduKeyA());
+                iter.setCabinetkeyb(cabinetPdu.getPduKeyB());
+                iter.setCabinetPdus(cabinetPdu);
+            }
+        } else {
+            CabinetBox cabinetBox = boxMap.get(iter.getId());
+            if (Objects.nonNull(cabinetBox)) {
+                iter.setCabinetkeya(cabinetBox.getBoxKeyA());
+                iter.setCabinetkeyb(cabinetBox.getBoxKeyB());
+                iter.setCabinetBoxes(cabinetBox);
+            }
+        }
+        List<CabinetEqBaseDo> dos = eqMap.get(iter.getId());
+        if (!CollectionUtils.isEmpty(dos)) {
+            CabinetEqBaseDo cabinetEqBaseDo = dos.get(0);
+            iter.setYesterdayEq(cabinetEqBaseDo.getEqValue());
+        }
+        String cabKey = iter.getRoomId() + SPLIT_KEY + iter.getId();
+        Object obj = cabinetMap.get(cabKey);
+        if (Objects.nonNull(obj)) {
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+            JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
+            JSONObject aPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
+            JSONObject bPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
+            if (Objects.nonNull(total)) {
+                iter.setPowActive(total.getFloatValue("pow_active"));
+                iter.setPowApparent(total.getFloatValue("pow_apparent"));
+                iter.setPowReactive(total.getFloatValue("pow_reactive"));
+                iter.setPowerFactor(total.getFloatValue(POWER_FACTOR));
+            }
+            if (Objects.nonNull(aPath)) {
+                iter.setPowActivea(aPath.getFloatValue("pow_active"));
+                iter.setPowApparenta(aPath.getFloatValue("pow_apparent"));
+                iter.setPowReactivea(aPath.getFloatValue("pow_reactive"));
+                //a的视在功率
+                BigDecimal aPow = aPath.getBigDecimal("pow_apparent");
+                iter.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, iter.getPowApparent()), 100));
+            }
+            if (Objects.nonNull(bPath)) {
+                iter.setPowActiveb(bPath.getFloatValue("pow_active"));
+                iter.setPowApparentb(bPath.getFloatValue("pow_apparent"));
+                iter.setPowReactiveb(bPath.getFloatValue("pow_reactive"));
+                //a的视在功率
+                BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
+                iter.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, iter.getPowApparent()), 100));
+            }
+            iter.setLoadRate(jsonObject.getFloatValue("load_factor"));
+
+            JSONObject cabinetEnv = jsonObject.getJSONObject("cabinet_env");
+            if (cabinetEnv != null) {
+                JSONObject temValue = cabinetEnv.getJSONArray("tem_value").getJSONObject(0);
+                if (Objects.nonNull(temValue)) {
+                    List<BigDecimal> front = temValue.getList("front", BigDecimal.class);
+                    List<BigDecimal> black = temValue.getList("black", BigDecimal.class);
+                    iter.setTemFront(Collections.max(front).doubleValue());
+                    iter.setTemBlack(Collections.max(black).doubleValue());
+                }
+                JSONObject humValue = cabinetEnv.getJSONArray("hum_value").getJSONObject(0);
+                if (Objects.nonNull(humValue)) {
+                    List<BigDecimal> front = humValue.getList("front", BigDecimal.class);
+                    List<BigDecimal> black = humValue.getList("black", BigDecimal.class);
+                    iter.setHumFront(Collections.max(front).doubleValue());
+                    iter.setHumBlack(Collections.max(black).doubleValue());
                 }
             }
         }
@@ -1716,6 +1660,10 @@ public class RoomServiceImpl implements RoomService {
                     int updateById = aisleIndexMapper.updateById(index);
                     if (updateById > 0) {
                         aisleCfgMapper.updateByAisleCfg(vo);
+                        if (Objects.equals(aisleIndex.getXCoordinate(),index.getXCoordinate())||
+                                Objects.equals(aisleIndex.getYCoordinate(),index.getYCoordinate())){
+
+                        }
                     }
                 }
             } else {
@@ -2034,6 +1982,32 @@ public class RoomServiceImpl implements RoomService {
     public Boolean findAreaById(Integer xLength, Integer yLength, Integer id) {
         int count = aisleIndexMapper.findAreaById(xLength,yLength,id);
         int cabinetCount = cabinetIndexMapper.findAreaById(xLength,yLength,id);
+        return count+cabinetCount>0;
+    }
+
+    @Override
+    public Boolean findAddAisleVerify(AisleSaveVo vo) {
+        if (Objects.nonNull(vo.getAisleName())){
+            long count = aisleIndexMapper.selectCount(new LambdaQueryWrapper<AisleIndex>()
+                    .eq(AisleIndex::getAisleName, vo.getAisleName())
+                    .eq(AisleIndex::getIsDelete, 0));
+
+            if (count>0l){
+                BusinessAssert.error(7013,"柜列名称重复");
+            }
+        }
+        int count;
+        int cabinetCount;
+        if (Objects.equals(vo.getDirection(),"x")){
+            count = aisleIndexMapper.findAddAisleVerifyx(vo);
+        }else {
+            count = aisleIndexMapper.findAddAisleVerifyy(vo);
+        }
+        if (Objects.equals(vo.getDirection(),"x")){
+            cabinetCount = cabinetIndexMapper.findAddAisleVerifyx(vo);
+        }else {
+            cabinetCount = cabinetIndexMapper.findAddAisleVerifyy(vo);
+        }
         return count+cabinetCount>0;
     }
 
