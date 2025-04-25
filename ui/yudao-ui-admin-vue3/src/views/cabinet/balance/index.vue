@@ -181,13 +181,18 @@ import { CabinetApi } from '@/api/cabinet/info';
 import { PDUDeviceApi } from '@/api/pdu/pdudevice';
 import curUnblance from './component/curUnblance.vue';
 import volUnblance from './component/volUnblance.vue';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 const cabinetId = ref();
 
+const openDetailFlag=ref("0")
 const { push } = useRouter(); // 路由跳转
 const router = useRouter(); // 路由跳转
 const tableLoading = ref(false); // 
-const isFirst = ref(history?.state?.isFirst ? history?.state?.isFirst : true); // 是否第一次调用getTableData函数
+const isFirst = ref(true); // 是否第一次调用getTableData函数
 const navList = ref([]); // 左侧导航栏树结构列表
 const tableData = ref([]);
 const tableCopyData = ref([]);
@@ -622,9 +627,16 @@ const handleCheck = (row) => {
   getTableData(true)
 }
 
+watch(openDetailFlag,(val) => {
+  if(val == "1") {
+    showDialog({id: query.id})
+  }
+})
+
 onBeforeMount(() => {
   getNavList()
   getTableData()
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 </script>
 
