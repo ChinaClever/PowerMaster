@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
@@ -15,12 +14,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -30,11 +29,13 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,9 +61,9 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -74,16 +75,16 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] cabinetIds = pageReqVO.getCabinetIds();
-        if (cabinetIds != null){
+        if (cabinetIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("cabinet_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("cabinet_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("cabinet_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -114,9 +115,9 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -128,16 +129,16 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] cabinetIds = pageReqVO.getCabinetIds();
-        if (cabinetIds != null){
+        if (cabinetIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("cabinet_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("cabinet_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("cabinet_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -160,7 +161,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
     @Override
     public PageResult<Object> getEQDataDetails(CabinetEnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer cabinetId = reqVO.getCabinetId();
-        if (Objects.equals(cabinetId, null)){
+        if (Objects.equals(cabinetId, null)) {
             return null;
         }
         // 搜索源构建对象
@@ -168,18 +169,18 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity()) ){
+        if ("day".equals(reqVO.getGranularity())) {
             searchRequest.indices("cabinet_eq_total_day");
-        }else if ("week".equals(reqVO.getGranularity()) ){
+        } else if ("week".equals(reqVO.getGranularity())) {
             searchRequest.indices("cabinet_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("cabinet_eq_total_month");
         }
         searchSourceBuilder.query(QueryBuilders.termQuery("cabinet_id", cabinetId));
@@ -208,9 +209,9 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -223,7 +224,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] cabinetIds = pageReqVO.getCabinetIds();
-        if (cabinetIds != null){
+        if (cabinetIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
         }
         searchRequest.indices("cabinet_ele_total_realtime");
@@ -315,7 +316,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
     @Override
     public PageResult<Object> getSubBillDetails(CabinetEnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer cabinetId = reqVO.getCabinetId();
-        if (Objects.equals(cabinetId, null)){
+        if (Objects.equals(cabinetId, null)) {
             return null;
         }
         // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
@@ -367,7 +368,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++) {
+        for (int i = 0; i < mapList.size(); i++) {
             mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 10));
             mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 10));
             mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 10));
@@ -385,7 +386,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++) {
+        for (int i = 0; i < mapList.size(); i++) {
             mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 10));
             mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 10));
             mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 10));
@@ -403,7 +404,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++) {
+        for (int i = 0; i < mapList.size(); i++) {
             mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
         }
         return list;
@@ -428,24 +429,37 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
             records = cabIndexMapper.selectList(queryWrapper);
         }
         List<Integer> roomIds = records.stream().map(IndexDO::getRoomId).distinct().collect(Collectors.toList());
-        Map<Integer , RoomIndex> mapRoom = cabinetHistoryDataService.getRoomById(roomIds);
+        Map<Integer, RoomIndex> mapRoom = cabinetHistoryDataService.getRoomById(roomIds);
         List<Integer> aisleIds = records.stream().map(IndexDO::getAisleId).distinct().collect(Collectors.toList());
-        Map<Integer , AisleIndex> mapAisle = cabinetHistoryDataService.getAisleByIds(aisleIds);
+        List<AisleIndex> aisleByIds = cabinetHistoryDataService.getAisleByIds(aisleIds);
+        Map<Integer, AisleIndex> mapAisle = new HashMap<>();
+        Map<Integer, RoomIndex> mapAisleRoom = new HashMap<>();
+        if (!CollectionUtils.isEmpty(aisleByIds)) {
+            List<Integer> aisleRoomIds = aisleByIds.stream().map(AisleIndex::getRoomId).distinct().collect(Collectors.toList());
+            mapAisleRoom = cabinetHistoryDataService.getRoomById(aisleRoomIds);
+            mapAisle = aisleByIds.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                    .collect(Collectors.toMap(AisleIndex::getId, Function.identity()));
+        }
+
         for (IndexDO record : records) {
             CabinetEleTotalRealtimeResVO resVO = new CabinetEleTotalRealtimeResVO();
-            String roomName = mapRoom.get(record.getRoomId()).getRoomName();
-            String aisleName = null;
-            //TODO
-            try {
-                aisleName = mapAisle.get(record.getAisleId()).getAisleName();
-            }catch (Exception e){
-                log.info("aisleId为0");
+            String roomName =null;
+            AisleIndex aisleIndex = mapAisle.get(record.getAisleId());
+            String aisleName =null;
+            if (Objects.nonNull(aisleIndex)) {
+                aisleName = aisleIndex.getAisleName();
+                if (Objects.equals(record.getRoomId(), 0)) {
+                    roomName = mapAisleRoom.get(aisleIndex.getRoomId()).getRoomName();
+                }
+            }
+            if (!Objects.equals(record.getRoomId(), 0)) {
+                roomName = mapRoom.get(record.getRoomId()).getRoomName();
             }
             String localtion = null;
-            if(record.getAisleId() != 0){
+            if (record.getAisleId() != 0) {
                 localtion = roomName + "-" + aisleName + "-" + record.getCabinetName();
-            }else {
-                localtion = roomName + "-"  + record.getCabinetName() ;
+            } else {
+                localtion = roomName + "-" + record.getCabinetName();
             }
             resVO.setId(record.getId()).setLocation(localtion);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
