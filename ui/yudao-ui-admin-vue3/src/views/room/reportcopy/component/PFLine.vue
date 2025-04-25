@@ -35,7 +35,7 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) ;
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp'+'发生时间:'+params[0].name +' &nbsp&nbsp&nbsp'+ + params[i].value.toFixed(2) ;
         result += '<br>';
       }
       return result;

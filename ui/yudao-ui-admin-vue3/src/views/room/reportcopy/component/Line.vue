@@ -23,6 +23,12 @@ const series = ref()
 const time = ref()
 const legendList = ref()
 
+// 获取当前日期的年月日
+// const currentDate = ref('')
+// const today = new Date()
+// currentDate.value = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
+
+
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
@@ -35,13 +41,13 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
+        result +=  params[i].marker + params[i].seriesName + ' &nbsp&nbsp&nbsp' ;
         if (params[i].seriesName.includes("视在功率")) {
-          result += params[i].value.toFixed(3) +  ' kVA'; 
+          result +='发生时间:'+params[0].name +' &nbsp&nbsp&nbsp'+params[i].value.toFixed(3) +  ' kVA'; 
         } else if (params[i].seriesName.includes("有功功率")) {
-          result += params[i].value.toFixed(3) + ' kW';
+          result +='发生时间:'+params[0].name +' &nbsp&nbsp&nbsp'+ params[i].value.toFixed(3) + ' kW';
         } else if (params[i].seriesName.includes("无功功率")) {
-          result += params[i].value.toFixed(3) + ' kVar';
+          result += '发生时间:'+params[0].name +' &nbsp&nbsp&nbsp'+params[i].value.toFixed(3) + ' kVar';
         }
         result += '<br>';
       }
@@ -58,7 +64,7 @@ watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   series.value = prop.list.series;
-  if(  series.value != null && series.value?.length > 0){
+  if(series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
 
