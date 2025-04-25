@@ -41,7 +41,7 @@ export const useRenderLayout = () => {
       <>
         <div
           class={[
-            'absolute top-0 left-0 h-full layout-border__right',
+            'absolute top-0 left-0 h-full layout-border__right font-700',
             { '!fixed z-3000': mobile.value }
           ]}
         >

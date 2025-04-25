@@ -142,8 +142,8 @@ public class RoomController {
 
     @Operation(summary = "新的机房数据详情")
     @GetMapping("/data/newDetail")
-    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id) throws ExecutionException, InterruptedException {
-        RoomMainResVO dto = roomService.getDatanewDetail(id);
+    public CommonResult<RoomMainResVO> getDataNewDetail(@Param("id") int id) throws ExecutionException, InterruptedException {
+        RoomMainResVO dto = roomService.getDataNewDetail(id);
         return success(dto);
     }
 
@@ -208,6 +208,13 @@ public class RoomController {
     @PostMapping("/roomAisleSave")
     public CommonResult<Integer> roomAisleSave(@RequestBody AisleSaveVo vo) {
         return success(roomService.roomAisleSave(vo));
+    }
+
+    @Operation(summary = "柜列添加验证")
+    @PostMapping("/findAddAisleVerify")
+    public CommonResult<Boolean> findAddAisleVerify(@RequestBody AisleSaveVo vo) {
+        Boolean i = roomService.findAddAisleVerify(vo);
+        return success(i);
     }
 
 

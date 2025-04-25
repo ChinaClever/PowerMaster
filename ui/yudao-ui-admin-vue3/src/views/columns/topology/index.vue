@@ -1141,7 +1141,7 @@ const handleJump = (data) => {
     return
   }
   if(chosenBtn.value == 0) {
-    push({path: '/cabinet/cab/cabinetPowerLoadDetail', state: {cabinet: target.id,roomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName}})
+    push({path: '/cabinet/cab/cabinetPowerLoadDetail', query: {cabinet: target.id,roomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName}})
   } else if(chosenBtn.value == 1) {
     push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
   } else if(chosenBtn.value == 2) {
@@ -1154,11 +1154,11 @@ const handleJump = (data) => {
   } else if(chosenBtn.value == 7) {
      push({path: '/cabinet/cab/balance', state: {cabinetIds: target.id,isFirst: false}})
   } else if(chosenBtn.value == 8) {
-    push({path: '/cabinet/cab/cabinetenvdetail', state: { id: target.id }})
+    push({path: '/cabinet/cab/cabinetenvdetail', query: { id: target.id }})
   } else if(chosenBtn.value == 9) {
     push({path: '/cabinet/cab/screen', state: { id: target.id,roomId: target.roomId }})
   } else if(chosenBtn.value == 10) {
-    push({path: '/cabinet/cab/energyDetail', state: { cabinetId: target.id,cabinetroomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName }})
+    push({path: '/cabinet/cab/energyDetail', query: { cabinetId: target.id,cabinetroomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName }})
   }
 }
 // 处理菜单点击事件

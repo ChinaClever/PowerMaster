@@ -518,7 +518,7 @@ const toMachineDetail = (row) => {
   const cabinetName = row.cabinetName;
   const roomName = row.roomName;
   const pduBox = row.pduBox;
-  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet, pduBox}})
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', query: {roomName, roomId ,cabinetName, cabinet, pduBox}})
 }
 
 onBeforeMount(() => {

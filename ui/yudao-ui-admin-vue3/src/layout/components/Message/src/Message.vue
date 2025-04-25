@@ -54,7 +54,7 @@ onMounted(() => {
 <template>
   <div class="message">
     <el-badge :value="unreadCount" :max="1000000" >
-      <Icon :size="18" class="cursor-pointer" :icon="unreadCount ? 'ep:bell-filled' : 'ep:bell'" @click="getList" :color="unreadCount ? 'red' : ''" />
+      <Icon :size="18" class="cursor-pointer" icon="ep:bell" @click="getList" />
     </el-badge>
     <!-- <ElPopover :width="400" placement="bottom" trigger="click">
       <template #reference>
@@ -135,6 +135,7 @@ onMounted(() => {
   }
 }
 :deep(.el-badge__content) {
-  scale: 0.8;
+  scale: 0.9;
+  background-color: #d42023;
 }
 </style>

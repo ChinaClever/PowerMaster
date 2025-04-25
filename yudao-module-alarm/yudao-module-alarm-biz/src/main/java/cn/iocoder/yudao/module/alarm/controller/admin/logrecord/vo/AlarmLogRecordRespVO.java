@@ -67,4 +67,7 @@ public class AlarmLogRecordRespVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @Schema(description = "机房id")
+    private Integer roomId;
+
 }
