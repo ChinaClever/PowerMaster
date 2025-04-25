@@ -205,8 +205,6 @@
             <!-- <Environment v-if="valueMode == 0 && item.curAList" class="chart" width="100%" height="100%" :load-factor="{first: item.curAList?.[2] ? item.curAList[2].toFixed(0) : 0,second: item.curAList?.[1] ? item.curAList[1].toFixed(0) : 0,third: item.curAList?.[0] ? item.curAList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A'],color: ['#AD3762','#C8603A','#E5B849']}" style="margin-right:-15px;"/>  -->
             <!-- <Environment v-else-if="valueMode == 1 && item.volAList" class="chart" width="100%" height="100%" :load-factor="{first: item.volAList?.[2] ? item.volAList[2].toFixed(0) : 0,second: item.volAList?.[1] ? item.volAList[1].toFixed(0) : 0,third: item.volAList?.[0] ? item.volAList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V'],color: ['#45C0C9','#119CB5','#075F71']}" style="margin-right:-15px;"/>  -->
             <Environment  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactivea ? Number(load.powReactivea).toFixed(0) : 0,second: load.powActivea ? Number(load.powActivea).toFixed(0) : 0,third: load.powApparenta ? Number(load.powApparenta).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}" style="margin-right:-15px;"/>
-
-           
             <EnvironmentCopy  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactiveb ? Number(load.powReactiveb).toFixed(0) : 0,second: load.powActiveb ? Number(load.powActiveb).toFixed(0) : 0,third: load.powApparentb ? Number(load.powApparentb).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}"/>
 
             </div>
@@ -560,6 +558,7 @@ onBeforeRouteLeave(()=>{
     box-sizing: border-box;
     background-color: #eef4fc;
     border: 5px solid #fff;
+    
     padding-top: 36px;
     position: relative;
     .content {
@@ -913,19 +912,20 @@ onBeforeRouteLeave(()=>{
       left: 8px;
       top: 8px;
     }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    // .status {
+    //   width: 40px;
+    //   height: 20px;
+    //   font-size: 12px;
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
-    }
+    //   // color: #fff;
+    //   color:#000;
+    //   position: absolute;
+    //   right: 38px;
+    //   top: 8px;
+    // }
     .detail {
       width: 40px;
       height: 25px;
