@@ -57,6 +57,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -784,7 +785,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             for (SearchHit hit : hits) {
                 resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(resVO.getCreateTimeMax())) {
-                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    resVO.setEleActiveEnd(new BigDecimal((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue() );
                 }
             }
             SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
@@ -802,7 +803,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             for (SearchHit hit : hits2) {
                 resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(resVO.getCreateTimeMin())) {
-                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    resVO.setEleActiveStart(new BigDecimal((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
                     double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
                     resVO.setEleActive(sub);
                     if (sub < 0) {

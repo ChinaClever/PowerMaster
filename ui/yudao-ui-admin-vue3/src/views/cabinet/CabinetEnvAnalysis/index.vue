@@ -540,10 +540,11 @@ const updateTableData = () => {
 const beforeUnmount = () => {
   realtimeChart?.dispose();
 };
-// 折线图随着窗口大小改变
-window.addEventListener('resize', function() {
+function resize() {
   realtimeChart?.resize(); 
-});
+}
+// 折线图随着窗口大小改变
+window.addEventListener('resize', resize);
 
 // 监听切换原始数据、极值数据tab
 watch( ()=>activeName.value, async(newActiveName)=>{
@@ -949,7 +950,10 @@ onMounted( async () => {
 })
 
 
-
+onBeforeUnmount(()=>{
+  realtimeChart?.dispose();
+  window.removeEventListener('resize', resize);
+})
 </script>
 
 <style scoped>

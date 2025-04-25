@@ -13,6 +13,11 @@ export const HistoryDataApi = {
     return await request.get({ url: `/cabinet/history-data/details`, params })
   },
 
+  //查询机柜历史环境数据
+  getHistoryEnvData: async (data: any) => {
+    return await request.post({ url: `/cabinet/history-data/pageEnv`, data })
+  },
+
   // 导出机柜历史数据 Excel
   exportHistoryData: async (params, axiosConfig) => {
     return await request.download({ url: `/cabinet/history-data/export-excel`, params, ...axiosConfig })
@@ -22,8 +27,9 @@ export const HistoryDataApi = {
   getNavNewData: async (granularity: string) => {
     return await request.get({ url: `/cabinet/history-data/new-data/`+granularity})
   },
-    // 导出机柜历史数据 Excel
-    exportHistorydetailsPageData: async (params, axiosConfig) => {
-      return await request.download({ url: `/cabinet/history-data/details-export-excel`, params, ...axiosConfig })
-    },
+  // 导出机柜历史数据 Excel
+  exportHistorydetailsPageData: async (params, axiosConfig) => {
+    return await request.download({ url: `/cabinet/history-data/details-export-excel`, params, ...axiosConfig })
+  },
+  
 }

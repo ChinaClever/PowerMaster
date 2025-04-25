@@ -279,7 +279,7 @@ const initChart = () => {
     rankChart.setOption({
       title: { text: '各柜列耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-      barMaxWidth: '30px',
+      barMaxWidth: '50px',
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
@@ -296,10 +296,10 @@ const initChart = () => {
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
-
-window.addEventListener('resize', function() {
+function resize() {
   rankChart?.resize(); 
-});
+}
+window.addEventListener('resize', resize);
 
 function startOfMonth(date: Date): Date {
   return dayjs(new Date(date.getFullYear(), date.getMonth(), 1)).format("YYYY-MM-DD HH:mm:ss");
@@ -600,6 +600,11 @@ onMounted(() => {
   //     getList();
   // }
   getList();
+});
+onBeforeUnmount(() => {
+  rankChart?.off("click");
+  rankChart?.dispose();
+  window.removeEventListener("resize", resize);
 });
 </script>
 

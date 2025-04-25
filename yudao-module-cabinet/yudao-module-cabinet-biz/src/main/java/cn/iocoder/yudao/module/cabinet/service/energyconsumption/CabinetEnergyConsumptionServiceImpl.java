@@ -69,7 +69,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("start_time.keyword")
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
