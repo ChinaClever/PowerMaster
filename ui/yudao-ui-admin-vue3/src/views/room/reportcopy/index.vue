@@ -126,6 +126,24 @@
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
+
+        <!-- 时间选择器2025422 -->
+        <el-col :span="12">
+              <div style="display: flex;align-items: center;justify-content: space-around">
+                <el-select v-model="typeRadioShow" placeholder="请选择" :style="{width: '100px'}">
+                  <el-option label="最大" value="最大" />
+                  <el-option label="平均" value="平均" />
+                  <el-option label="最小" value="最小" />
+                </el-select>
+                <!-- <el-radio-group v-model="timeRadio">
+                  <el-radio-button label="近一小时" value="近一小时" :disabled="isHourDisabled" />
+                  <el-radio-button label="近一天" value="近一天" />
+                  <el-radio-button label="近三天" value="近三天" />
+                  <el-radio-button label="近一月" value="近一月" />
+                </el-radio-group> -->
+              </div>
+            </el-col>
+     <!-- 时间选择器2025422 -->
       </el-form>
     </template>
     <template #Content>
@@ -264,6 +282,7 @@ import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 
 
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -271,6 +290,7 @@ const location = ref() as any;
 const pfLineList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
+const diyTotalLineList = ref() as any;
 const aLineList = ref() as any;
 const bLineList = ref() as any;
 const idList = ref() as any;
@@ -320,6 +340,12 @@ const createFilter = (query: string | number) => {
   };
 };
 
+
+// 2025422
+const typeRadioShow = ref("最大")
+// const timeRadio = ref('近一小时');
+// const isHourDisabled = ref(false);
+// 2025422
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -415,7 +441,8 @@ const queryParams = reactive({
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
   timeType: 1,
-  cascadeAddr : 0
+  cascadeAddr : 0,
+  dataType : 1
 }) as any
 
 const serverRoomArr =  ref([]) as any
@@ -516,6 +543,7 @@ interface PowData {
   BactivePowMinValue : number;
   BactivePowMinTime : string;
 }
+
 const powData = ref<PowData>({
   apparentPowAvgValue : [],
   activePowAvgValue: [],
@@ -576,7 +604,7 @@ const getList = async () => {
   await handleConsumeQuery();
   await handlePowQuery();
   await handleDetailQuery();
-  await handlePFLineQuery();
+  // await handlePFLineQuery();
 
   visControll.visAllReport = true;
   loading.value = false
@@ -595,17 +623,45 @@ const handlePFLineQuery = async () => {
 }
 
 
+watch(
+  () => totalLineList.value?.series,
+  (newSeries) => {
+   
+    if (newSeries?.[0]?.data) {
+
+    }
+
+  },
+  
+  { deep: true, immediate: true } // immediate: true 表示初始化时立即执行
+);
+
 const handlePowQuery = async () => {
+ 
   powData.value = await IndexApi.getPowData(queryParams);
   totalLineList.value = powData.value.totalLineRes;
   aLineList.value = powData.value.aLineRes;
   bLineList.value = powData.value.bLineRes;
+  pfLineList.value = powData.value.pfLineRes;
+  
+
+  if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
+    visControll.pfVis = true;
+  }else {
+    visControll.pfVis = false;
+  }
+
 
   if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
     powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
     powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
     powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
     powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+
+
+
+
+
     visControll.powVis = true;
   }else{
     visControll.powVis = false;
@@ -683,6 +739,19 @@ watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
+// 2025422
+watch( ()=>typeRadioShow.value, async()=>{
+  console.log("切换数值类型"+typeRadioShow.value);
+  if(typeRadioShow.value =="最大"){
+    queryParams.dataType = 1
+  }else if(typeRadioShow.value =="平均") {
+    queryParams.dataType = 0
+  }else if(typeRadioShow.value =="最小"){
+    queryParams.dataType = -1
+  }
+  handlePowQuery()
+})
+
 
 // const message = useMessage() // 消息弹窗
 // const { t } = useI18n() // 国际化
@@ -743,6 +812,12 @@ const handleQuery = async () => {
 //     exportLoading.value = false
 //   }
 // }
+
+
+
+
+
+
 
 /** 初始化 **/
 onMounted( async () =>  {
@@ -953,6 +1028,7 @@ onMounted( async () =>  {
       text-align: center;
       box-sizing: border-box;
       background-color: #3b8bf5;
+      // background-color: #C8603A;
     }
     .right {
       text-align: center;

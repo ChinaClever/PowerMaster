@@ -25,7 +25,7 @@ const legendList = ref()
 
 // 设置饼图的选项
 const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
+  dataZoom:[{ type:"inside"}],  
   tooltip: { trigger: 'axis',
     formatter: function(params) {
       var result = params[0].name + '<br>';
@@ -39,6 +39,7 @@ const echartsOption = ref({
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: { type: 'value' , name : "kWh"},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+  // color: ['#C8603A'],
   series: series,
 })
 
