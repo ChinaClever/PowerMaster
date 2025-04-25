@@ -741,7 +741,6 @@ watch(filterText, (val) => {
 
 // 2025422
 watch( ()=>typeRadioShow.value, async()=>{
-  console.log("切换数值类型"+typeRadioShow.value);
   if(typeRadioShow.value =="最大"){
     queryParams.dataType = 1
   }else if(typeRadioShow.value =="平均") {
@@ -1027,12 +1026,12 @@ onMounted( async () =>  {
     .left {
       text-align: center;
       box-sizing: border-box;
-      background-color: #3b8bf5;
-      // background-color: #C8603A;
+      // background-color: #3b8bf5;
+      background-color: #E5B849;
     }
     .right {
       text-align: center;
-      background-color:  #f86f13;
+      background-color:  #C8603A;
     }
   }
 }

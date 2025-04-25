@@ -40,13 +40,16 @@ const echartsOption = ref({
   yAxis: { type: 'value' , name : "kWh"},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   // color: ['#C8603A'],
+  
   series: series,
+  
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   series.value = prop.list.series;
+  series.value[0].itemStyle = {color: '#C8603A'}
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }

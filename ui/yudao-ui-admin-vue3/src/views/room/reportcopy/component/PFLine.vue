@@ -4,6 +4,7 @@
 
 <script lang="ts" setup>
 import 'echarts'
+import { color } from 'echarts'
 const prop = defineProps({
   list: {
     type: Object,
@@ -26,6 +27,7 @@ const legendList = ref()
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
+  color:['#E5B849','#C8603A','#AD3762'],
   legend: { data: legendList,
     type: 'scroll', // 设置为 'single' 或 'multiple'
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
