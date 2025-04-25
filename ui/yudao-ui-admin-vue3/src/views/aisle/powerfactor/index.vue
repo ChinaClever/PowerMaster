@@ -512,8 +512,8 @@ const getList = async () => {
       } 
 
       obj.pfTotal = obj.pfTotal?.toFixed(2);
-      obj.pfA = obj.pfA?.toFixed(2);
-      obj.pfB = obj.pfB?.toFixed(2);
+      obj.pfA = obj?.pfA?.toFixed(2);
+      obj.pfB = obj?.pfB?.toFixed(2);
 
     });
 
@@ -744,6 +744,7 @@ onMounted(async () => {
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 onBeforeUnmount(()=>{
@@ -751,7 +752,6 @@ onBeforeUnmount(()=>{
     clearInterval(flashListTimer.value)
     flashListTimer.value = null;
   }
-  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 onBeforeRouteLeave(()=>{

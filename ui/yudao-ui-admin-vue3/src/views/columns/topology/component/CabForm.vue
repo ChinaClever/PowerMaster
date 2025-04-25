@@ -573,8 +573,10 @@ const submitForm = async () => {
     
     console.log(boxListA_Index,boxListB_Index)
 
-    machineFormData.value.casIdA = boxListA_Index != -1 ? boxListA.value[boxListA_Index].casAddr : 0
-    machineFormData.value.casIdB = boxListB_Index != -1 ? boxListB.value[boxListB_Index].casAddr : 0
+    if(machineFormData.value.pduBox && boxListA_Index != -1 && boxListB_Index != -1) {
+      machineFormData.value.casIdA = boxListA_Index != -1 ? boxListA.value[boxListA_Index].casAddr : 0
+      machineFormData.value.casIdB = boxListB_Index != -1 ? boxListB.value[boxListB_Index].casAddr : 0
+    }
 
     console.log('roomName', {...machineFormData.value})
     const res = await CabinetApi.saveCabinetInfo({
@@ -599,6 +601,8 @@ const resetForm = () => {
     cabinetName: '',
     roomId: '',
     roomName: '',
+    aisleId: '',
+    index: '',
     type: 'IT机柜',
     cabinetHeight: 42,
     powCapacity: 8,

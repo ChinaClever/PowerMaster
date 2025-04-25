@@ -287,7 +287,7 @@ const tableLoading = ref(false);
 
 const toCabinetEnvDetail = (row) =>{
   const id = row.id
-  push({path: '/cabinet/cab/cabinetenvdetail', state: {  id }})
+  push({path: '/cabinet/cab/cabinetenvdetail', query: {  id }})
   // push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
 }
 
