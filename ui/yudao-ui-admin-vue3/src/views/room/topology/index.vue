@@ -488,6 +488,50 @@
       />
       <div style="height:30px"></div>
   </el-dialog>
+  <el-dialog v-model="detailVis" style="width: 80%;height: 80%;margin-top: 100px;">
+    <div class="custom-row" style="display: flex; align-items: center;">
+      <!-- 位置标签 -->
+      <div class="location-tag el-col">
+        <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+        <span>所在位置：{{ rowColInfo.roomName?rowColInfo.roomName:'未绑定' }}</span>
+        <span> 机柜名称：{{ queryParamsPF.cabinetName?queryParamsPF.cabinetName:'未绑定' }}</span>
+      </div>
+
+      <!-- 日期选择器 -->
+      <div class="date-picker-col el-col">
+        <el-date-picker
+          v-model="queryParamsPF.startTime"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          type="datetime"
+          :picker-options="pickerOptions"
+          placeholder="选择日期时间"
+        />
+        <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
+        <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+      </div>
+
+      <!-- 图表/数据切换按钮组 -->
+      <div class="chart-data-buttons el-col" style="margin-right: 50px;">
+        <div class="button-group">
+          <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+          <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
+          <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+            <i class="el-icon-download"></i> 导出
+          </el-button>
+        </div>
+      </div>
+    </div>
+    <br/>
+    <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
+    <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+      <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
+      <el-table-column label="时间" align="center" prop="create_time" />
+      <el-table-column label="总功率因素" align="center" prop="factor_total_avg_value" />
+      <el-table-column label="A路功率因素" align="center" prop="factor_a_avg_value" />
+      <el-table-column label="B路功率因素" align="center" prop="factor_b_avg_value" />
+    </el-table>
+    </div>
+  </el-dialog>
   <MachineForm ref="machineFormCabinet" @success="saveMachine" :roomList="roomList" :roomId="roomId" />
 <!-- </div> -->
 </template>
@@ -501,6 +545,8 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/cabinet/index'
 import { Console } from "console";
 import MachineForm from './component/MachineForm.vue';
+import download from '@/utils/download'
+import PFDetail from './component/PFDetail.vue'
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
@@ -526,6 +572,7 @@ const {containerInfo, isFromHome} = defineProps({
   }
 })
 let timer = null as any // 定时器
+const switchChartOrTable = ref(0)
 const isAddRoom = ref(false) // 是否为添加机房模式 
 const roomId = ref(0) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
@@ -898,8 +945,8 @@ const menuOptionsCopy = ref([
         label: '机柜供电平衡',
       },
       {
-        value: '机柜功率因素',
-        label: '机柜功率因素',
+        value: '机柜功率因数',
+        label: '机柜功率因数',
       }
     ]
   },
@@ -1013,6 +1060,8 @@ const getRoomInfo = async() => {
           id: item.id,
           name: item.aisleName,
           direction: item.direction == 'x' ? 1 : 2,
+          barA: item.barA,
+          barB: item.barB,
           type: 1,
           amount: item.cabinetList.length,
           cabinetList: item.cabinetList,
@@ -1046,7 +1095,7 @@ const getRoomInfo = async() => {
     tableData.value = data;
     //console.log("tableData.value",tableData.value)
     getRoomStatus(result)
-    handleCssScale()
+    // handleCssScale()
   } finally {
     loading.value = false
     // updateScale()
@@ -1054,7 +1103,6 @@ const getRoomInfo = async() => {
 }
 
 const getRoomInfoNoLoading = async() => {
-  resetForm();
   try {
     const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
     const res = result;
@@ -1116,6 +1164,8 @@ const getRoomInfoNoLoading = async() => {
           id: item.id,
           name: item.aisleName,
           direction: item.direction == 'x' ? 1 : 2,
+          barA: item.barA,
+          barB: item.barB,
           type: 1,
           amount: item.cabinetList.length,
           cabinetList: item.cabinetList,
@@ -1149,7 +1199,7 @@ const getRoomInfoNoLoading = async() => {
     tableData.value = data;
     //console.log("tableData.value",tableData.value)
     getRoomStatus(result)
-    handleCssScale()
+    // handleCssScale()
   } finally {
   }
 }
@@ -1382,9 +1432,9 @@ const handleRightClick = (e) => {
   const rect = container.getBoundingClientRect()
   const offsetX = e.clientX - Math.ceil(rect.left) + 1
   const offsetY = e.clientY - Math.ceil(rect.top) + 1
-  const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  ((e.target.parentNode.parentNode.id ? e.target.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.id :  e.target.parentNode.parentNode.parentNode.parentNode.id))))
-  console.log('handleRightClick', e.target,e.target.classList,e.target.dataset.index, currentId, offsetX, offsetY)
-  const cabinetIndex = e.target.dataset.index ? e.target.dataset.index : (e.target.parentNode.dataset.index ? e.target.parentNode.dataset.index :  ((e.target.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.dataset.index :  e.target.parentNode.parentNode.parentNode.parentNode.dataset.index))))
+  const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  ((e.target.parentNode.parentNode.id ? e.target.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.parentNode.id :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.id)))))
+  console.log('handleRightClick', e.target,e.target.classList,e.target.parentNode.parentNode.parentNode.parentNode.parentNode,e.target.dataset.index, currentId, offsetX, offsetY)
+  const cabinetIndex = e.target.dataset.index ? e.target.dataset.index : (e.target.parentNode.dataset.index ? e.target.parentNode.dataset.index :  ((e.target.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.parentNode.dataset.index :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.index)))))
   const lndexX = currentId.split('-')[1]
   const lndexY = currentId.split('-')[0]
   if (!currentId) return
@@ -1400,7 +1450,7 @@ const handleRightClick = (e) => {
     menuOptions.value[1].label = "柜列：" + tableData.value[lndexY][formParam.value[lndexX]][0].name
 
     menuOptions.value[2] = menuOptionsCopy.value[2]
-    menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].id
+    menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetName
 
     menuOptions.value[3] = menuOptionsCopy.value[3]
@@ -1421,6 +1471,8 @@ const handleRightClick = (e) => {
       menuOptions.value.splice(2,1)
       menuOptions.value[0]?.children?.splice(0,3)
       console.log(menuOptionsCopy.value[0])
+    } else if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].rackIndices) {
+      menuOptions.value[0]?.children?.splice(1,1)
     }
     if(!tableData.value[lndexY][formParam.value[lndexX]][0].id) {
       menuOptions.value.splice(1,1)
@@ -1429,7 +1481,7 @@ const handleRightClick = (e) => {
     menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0]
 
     menuOptions.value[2] = menuOptionsCopy.value[2]
-    menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].id
+    menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0]
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].name
 
     menuOptions.value[3] = menuOptionsCopy.value[3]
@@ -1452,6 +1504,9 @@ const handleRightClick = (e) => {
     }
     menuOptions.value.splice(1,1)
     menuOptions.value[0]?.children?.splice(3,3)
+    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus && !tableData.value[lndexY][formParam.value[lndexX]][0].rackIndices) {
+      menuOptions.value[0]?.children?.splice(1,1)
+    }
   } else {
     menuOptions.value.splice(1,4)
   }
@@ -1536,13 +1591,76 @@ const handleMenu = (value) => {
         } 
       });
       break;
+
+    case '机柜负荷':
+      push({ 
+        path: '/cabinet/cab/cabinetPowerLoadDetail', 
+        query: { 
+          cabinet: value[0].id, 
+          roomId: value[0].roomId,
+          roomName: rowColInfo.roomName,
+          cabinetName: value[0].cabinetName
+        } 
+      });
+      break;
+
+    case '机柜配电':
+      push({ 
+        path: '/cabinet/cab/detail', 
+        state: { 
+          id: value[0].id, 
+          roomId: value[0].roomId,
+          type: 'hour',
+          location: rowColInfo.roomName,
+          cabinetName: value[0].cabinetName
+        } 
+      });
+      break;
+
+    case '机柜温度':
+      push({ 
+        path: '/cabinet/cab/cabinetenvdetail', 
+        query: { 
+          id: value[0].id
+        } 
+      });
+      break;
+
+    case '机柜用能':
+      push({ 
+        path: '/cabinet/cab/energyDetail', 
+        query: { 
+          cabinetId: value[0].id,
+          cabinetroomId: value[0].roomId,
+          roomName: rowColInfo.roomName,
+          cabinetName: value[0].cabinetName
+        } 
+      });
+      break;
+
+    case '机柜供电平衡':
+      push({ 
+        path: '/cabinet/cab/balance', 
+        query: { 
+          openDetailFlag: 1, 
+          id: value[0].id
+        } 
+      });
+      break;
+
+    case '机柜功率因数':
+      openPFDetail({
+        id: value[0].id,
+        cabinetName: value[0].cabinetName
+      })
+      break;
     
     case '拖拽视图':
       dragTableView();
       break;
     
     case '机柜编辑':
-      addCabinet('edit', value[0].id);
+      addCabinet('edit', value[0]);
       break;
     
     case '机柜删除':
@@ -1568,34 +1686,43 @@ const handleMenu = (value) => {
 }
 
 const deleteCabinet = (cabItem,flag) => {
-  console.log(cabItem)
-  return
-  ElMessageBox.confirm('确认删除吗？', '提示', {
+  if(!flag && (cabItem.cabinetBoxes || cabItem.cabinetPdus || cabItem.rackIndices)) {
+    message.warning(`该机柜已绑定，无法删除，请先删除绑定关系`)
+    return
+  }
+  let messageTooltip = flag ? '确认解绑吗？' : '确认删除吗？'
+  ElMessageBox.confirm(messageTooltip, '提示', {
     confirmButtonText: '确 认',
     cancelButtonText: '取 消',
     type: 'warning'
   }).then(async () => {
+    let cabinetRes = null
     if(cabItem.cabinetBoxes) {
       console.log("aaaaaa---cabItem",cabItem)
-      await CabinetApi.deleteCabinetInfo({
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
         id: cabItem.id,
         type: 2
       })
     } else if(cabItem.cabinetPdus) {
-      await CabinetApi.deleteCabinetInfo({
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
         id: cabItem.id,
         type: 1
       })
     } else if(cabItem.rackIndices) {
-      await CabinetApi.deleteCabinetInfo({
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
         id: cabItem.id,
         type: 3
       })
-    } else {
-      await CabinetApi.deleteCabinetInfo({
+    } else if(!flag) {
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
         id: cabItem.id,
         type: 4
       })
+    }
+    if(cabinetRes) {
+      message.success(flag ? '解绑成功' : '删除成功')
+    } else {
+      message.success(flag ? '解绑失败' : '删除失败')
     }
     getRoomInfoNoLoading()
   })
@@ -1657,20 +1784,37 @@ const onEnd = ({from, to}) => {
   }
 }
 const moveMachine = async (data,x,y) => {
-  const res = await MachineRoomApi.saveRoomAisle({
-      id:data.id,
+  let res
+  if(data.type == 1) {
+    res = await MachineRoomApi.saveRoomAisle({
+        id:data.id,
+        roomId: roomId.value,
+        aisleName:data.name,
+        aisleLength:data.amount,
+        xCoordinate:x,
+        yCoordinate:y,
+        direction:data.direction == 1 ? 'x' : 'y',
+        powerCapacity:data.powerCapacity,
+        eleAlarmDay:data.eleAlarmDay,
+        eleAlarmMonth:data.eleAlarmMonth,
+        eleLimitDay:data.eleLimitDay,
+        eleLimitMonth:data.eleLimitMonth
+    }) 
+  } else {
+    res = await MachineRoomApi.saveRoomCabinet({
+      id: data.id,
       roomId: roomId.value,
-      aisleName:data.name,
-      aisleLength:data.amount,
+      cabinetName: data.name,
+      cabinetHeight: data.cabinetHeight,
       xCoordinate:x,
       yCoordinate:y,
-      direction:data.direction == 1 ? 'x' : 'y',
       powerCapacity:data.powerCapacity,
-      eleAlarmDay:data.eleAlarmDay,
-      eleAlarmMonth:data.eleAlarmMonth,
-      eleLimitDay:data.eleLimitDay,
-      eleLimitMonth:data.eleLimitMonth
-  }) 
+      eleAlarmDay: data.eleAlarmDay,
+      eleLimitDay: data.eleLimitDay,
+      eleAlarmMonth: data.eleAlarmMonth,
+      eleLimitMonth: data.eleLimitMonth
+    })
+  }
   if(res) {
     message.success("移动成功")
   } else {
@@ -1732,13 +1876,13 @@ const onSelectStart = (e) => {
 }
 
 // 增加/编辑机柜弹框
-const addCabinet = async (type: string, id?: string) => {
+const addCabinet = async (type: string, cabItem?: object) => {
   if (type == 'add') {
-    machineFormCabinet.value.open(type, null,operateMenu.value)
-  } else if (type == 'edit' && id) {
+    machineFormCabinet.value.open(type, null,operateMenu.value,null)
+  } else if (type == 'edit' && cabItem) {
     try {
-      const res = await CabinetApi.getCabinetInfoItem({id})
-      machineFormCabinet.value.open(type, res,operateMenu.value)
+      console.log(cabItem)
+      machineFormCabinet.value.open(type, cabItem,operateMenu.value,tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0])
     } finally {
     }
   }
@@ -1911,23 +2055,125 @@ const handleChange = async(data) => {
       }
   }
   // else{
-  //     const cabinetRes = await MachineRoomApi.saveRoomCabinet({
-  //         id:aisleFlagId
-  //         roomId: roomId.value,
-  //         cabinetName: data.name,
-  //         cabinetHeight: data.cabinetHeight,
-  //         xCoordinate:X+1,
-  //         yCoordinate:+Y+1,
-  //         powerCapacity:data.powerCapacity,
-  //         eleAlarmDay: data.eleAlarmDay,
-  //         eleLimitDay: data.eleLimitDay,
-  //         eleAlarmMonth: data.eleAlarmMonth,
-  //         eleLimitMonth: data.eleLimitMonth
-  //     })
-  //     if(cabinetRes != null || cabinetRes != "") {
-  //       message.success(messageAisleFlag);
-  //     }
+      // const cabinetRes = await MachineRoomApi.saveRoomCabinet({
+      //     id:aisleFlagId
+      //     roomId: roomId.value,
+      //     cabinetName: data.name,
+      //     cabinetHeight: data.cabinetHeight,
+      //     xCoordinate:X+1,
+      //     yCoordinate:+Y+1,
+      //     powerCapacity:data.powerCapacity,
+      //     eleAlarmDay: data.eleAlarmDay,
+      //     eleLimitDay: data.eleLimitDay,
+      //     eleAlarmMonth: data.eleAlarmMonth,
+      //     eleLimitMonth: data.eleLimitMonth
+      // })
+      // if(cabinetRes != null || cabinetRes != "") {
+      //   message.success(messageAisleFlag);
+      // }
   // }
+}
+
+const queryParamsPF = reactive({
+  pageNo: 1,
+  pageSize: 24,
+  cabinetIds : [],
+})as any
+const pfESList = ref({}) as any
+const pfTableList = ref([]) as any
+const exportLoading = ref(false) // 导出的加载中
+const detailVis = ref(false)
+
+const openPFDetail = async (row) =>{
+  queryParamsPF.cabinetName = row.cabinetName
+  queryParamsPF.cabinetIds = [row.id];
+  queryParamsPF.startTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
+  console.log('row',row);
+  await getDetail();
+  detailVis.value = true;
+}
+
+/** 查询列表 */
+const getDetail = async () => {
+  const data = await IndexApi.getCabinetPFDetail(queryParamsPF);
+  console.log('数据',data);
+  pfESList.value = data?.chart;
+  pfESList.value?.powerFactorAvgValueTotal?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+  pfESList.value?.powerFactorAvgValueA?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+  pfESList.value?.powerFactorAvgValueB?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+
+  pfTableList.value = data?.table;
+  pfTableList.value?.forEach((obj) => {
+    obj.factor_total_avg_value = obj?.factor_total_avg_value?.toFixed(2);
+    obj.factor_a_avg_value = obj?.factor_a_avg_value?.toFixed(2);
+    obj.factor_b_avg_value = obj?.factor_b_avg_value?.toFixed(2);
+  });
+}
+
+const subtractOneDay = () => {
+  var date = new Date(queryParamsPF.startTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() - 1); // 减去一天
+
+  queryParamsPF.startTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const addtractOneDay = () => {
+  var date = new Date(queryParamsPF.startTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() + 1); // 减去一天
+
+  queryParamsPF.startTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const handleDayPick = async () => {
+
+  if(queryParamsPF?.startTime ){
+    await getDetail();
+    
+  } 
+}
+
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm();
+    // 发起导出
+    queryParamsPF.pageNo = 1;
+    exportLoading.value = true;
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getCabinetPFDetailExcel(queryParamsPF, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '功率因数详细.xlsx');
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error);
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
 }
 
 const getCabinetColorAll = async () => {
@@ -2289,6 +2535,13 @@ onUnmounted(() => {
   & > div {
     flex: 1;
   }
+}
+.custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  margin-top:-50px;
 }
 
 :deep(.el-card__body) {

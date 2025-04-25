@@ -165,6 +165,10 @@ import CurrentPower from './component/CurrentPower.vue';
 import PowerFactor from './component/PowerFactor.vue';
 import loadRateTu from './component/loadRateTu.vue';
 import { CabinetApi } from '@/api/cabinet/detail';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 const visContro = ref({
   curVis:false,
@@ -180,9 +184,9 @@ const queryFormRef = ref(); // 搜索的表单
 const input = ref('');
 // const value1 = ref('')
 const hasData = ref(true);
-const roomName = ref(history?.state?.roomName);
-const cabinetName = ref(history?.state?.cabinetName);
-const pduBox = ref(history?.state?.pduBox);
+const roomName = ref(query.roomName);
+const cabinetName = ref(query.cabinetName);
+const pduBox = ref(query.pduBox);
 
 const instance = getCurrentInstance();
 const typeRadio = ref('负载率');
@@ -194,19 +198,19 @@ const isLoadRateDisabled = ref(false);
 const switchChartContainer = ref(7);
 let intervalId: number | null = null; // 定时器
 const queryParams = reactive({
-  id: history?.state?.cabinet as number | undefined,
-  roomId: history?.state?.roomId as number | undefined,
-  cabinet_key : history?.state?.cabinet_key as string | undefined,
-  cabinet_name: history?.state?.cabinet_name as string | undefined,
+  id: Number(query.cabinet) as number | undefined,
+  roomId: Number(query.roomId) as number | undefined,
+  cabinet_key : query.cabinet_key as string | undefined,
+  cabinet_name: query.cabinet_name as string | undefined,
   type: 1,
   granularity: "SeventyHours"
 })
 const queryParamsSearch = reactive({
-  id: history?.state?.busId as number | undefined,
-  devKey : history?.state?.devKey as string | undefined,
+  id: Number(query.busId) as number | undefined,
+  devKey : query.devKey as string | undefined,
 })
 const lineChartQueryParams = reactive({
-  id: history?.state?.busId as number | undefined,
+  id: Number(query.busId) as number | undefined,
   granularity: 'realtime',
 })
 
@@ -453,8 +457,8 @@ const getDetailData =async () => {
  try {
     const data = await CabinetApi.getCabinetDetailData({
       type: 0,
-      id: history?.state.cabinet,
-      roomId: history?.state.roomId,
+      id: Number(query.cabinet),
+      roomId: Number(query.roomId),
     });
     if (data != null){
       hasData.value = true
@@ -744,8 +748,8 @@ watch( ()=>timeRadio.value, async(value)=>{
 // 获取折线图数据
 const getCVLineChartData =async () => {
   const data = await CabinetApi.getCabinetLineChartDetailData({
-    id: history?.state.cabinet,
-    roomId: history?.state.roomId,
+    id: Number(query.cabinet),
+    roomId: Number(query.roomId),
     type: switchType.value,
     granularity: lineChartQueryParams.granularity,
     //granularity: "SeventyHours"
