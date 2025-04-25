@@ -49,6 +49,9 @@
         <where>
             is_delete = 0
             and room_id = #{vo.roomId}
+            <if test="vo.id != null">
+                and id != #{vo.id}
+            </if>
             <if test="vo.direction !=null ">
                 and (((#{vo.xCoordinate}+#{vo.aisleLength})>x_coordinate+aisle_length - 1
                 and ((y_coordinate BETWEEN #{vo.yCoordinate}  and #{vo.yCoordinate}+1)
@@ -77,6 +80,9 @@
         <where>
             is_delete = 0
             and room_id = #{vo.roomId}
+            <if test="vo.id != null">
+                and id != #{vo.id}
+            </if>
             <if test="vo.direction !=null ">
                 and (((#{vo.yCoordinate}+#{vo.aisleLength})>y_coordinate+aisle_length - 1
                 and ((x_coordinate BETWEEN #{vo.xCoordinate}  and #{vo.xCoordinate}+1)
