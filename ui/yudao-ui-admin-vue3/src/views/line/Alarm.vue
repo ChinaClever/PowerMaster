@@ -137,7 +137,7 @@ const showCheckbox = computed(() => {
   return !preStatus.value.includes(3);
 });
 
-const selectedIds = ref<string[]>([]);
+const selectedIds = ref<number[]>([]);
 
 const handleSelectionChange = (val: any[]) => {
   selectedIds.value = val.map(item => item.id);};
