@@ -142,8 +142,8 @@ public class RoomController {
 
     @Operation(summary = "新的机房数据详情")
     @GetMapping("/data/newDetail")
-    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id) throws ExecutionException, InterruptedException {
-        RoomMainResVO dto = roomService.getDatanewDetail(id);
+    public CommonResult<RoomMainResVO> getDataNewDetail(@Param("id") int id) throws ExecutionException, InterruptedException {
+        RoomMainResVO dto = roomService.getDataNewDetail(id);
         return success(dto);
     }
 

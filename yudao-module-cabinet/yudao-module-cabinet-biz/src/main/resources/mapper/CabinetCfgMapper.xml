@@ -103,6 +103,7 @@
         ci.power_capacity as powCapacity,
         ci.pdu_box as pduBox,
         ci.cabinet_height as cabinetHeight,
+        ci.cabinet_type as cabinetType,
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
         cf.ele_alarm_day as eleAlarmDay,
