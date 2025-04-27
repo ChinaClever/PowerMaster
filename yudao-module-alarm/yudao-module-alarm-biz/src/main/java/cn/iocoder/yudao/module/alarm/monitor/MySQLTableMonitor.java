@@ -65,7 +65,7 @@ public class MySQLTableMonitor {
                 if (data instanceof TableMapEventData) {
                     TableMapEventData tableMap = (TableMapEventData) data;
                     if (binLogConstants.getDb().equals(tableMap.getDatabase()) && binLogConstants.getTableList().contains(tableMap.getTable())) {
-                        if (redisTemplate.opsForValue().get(tableMap.getTable()) != null) {
+                        if (redisTemplate.opsForValue().get("table:" + tableMap.getTable()) != null) {
                             tableSchemaCache = (Map<String, List<ColumnInfo>>) redisTemplate.opsForValue().get("table:" + tableMap.getTable());
                         } else {
                             // 查询表结构并缓存
