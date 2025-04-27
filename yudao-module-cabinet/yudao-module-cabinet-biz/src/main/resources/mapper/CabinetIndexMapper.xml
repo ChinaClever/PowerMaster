@@ -95,7 +95,7 @@
                 and coldmax_tem between #{req.startNum} and #{req.endNum}
             </if>
             <if test="req.switchValue ==1 and  req.startNum !=null and req.startNum != ''">
-                and  heatmax_tem between #{req.startNum} and #{req.endNum}
+                and heatmax_tem between #{req.startNum} and #{req.endNum}
             </if>
             <if test="req.pduBox !=null">
                 and ci.pdu_box = #{req.pduBox}
@@ -123,10 +123,14 @@
             resultType="cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO">
         select
         count(id) as total,
-        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 0 and 29.99  then 1 else 0 end) as thirty,
-        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 30 and 49.99  then 1 else 0 end) as fifty,
-        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 50 and 99.99  then 1 else 0 end) as ninetyNine,
-        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 100 and 100  then 1 else 0 end) as oneHundred
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 0 and 29.99 then 1 else 0 end) as
+        thirty,
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 30 and 49.99 then 1 else 0 end) as
+        fifty,
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 50 and 99.99 then 1 else 0 end) as
+        ninetyNine,
+        SUM(case when round(100-(cabinet_use_height/cabinet_height)*100,2) BETWEEN 100 and 100 then 1 else 0 end) as
+        oneHundred
         from cabinet_index
         where is_disabled = 0 and is_deleted = 0
     </select>
@@ -141,7 +145,8 @@
         ci.aisle_id as aisleId
         from cabinet_index ci left join cabinet_pdu cp on ci.id = cp.cabinet_id
         <where>
-            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0 and (cp.pdu_key_a is not null or cp.pdu_key_b is not null)
+            ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0 and (cp.pdu_key_a is not null or cp.pdu_key_b is
+            not null)
         </where>
     </select>
     <select id="selectCabinetBox" resultType="cn.iocoder.yudao.framework.common.vo.CabinetIndexBoxResVO">
@@ -285,7 +290,7 @@
         from cabinet_index ci left join cabinet_pdu cp on ci.id = cp.cabinet_id
         <where>
             ci.is_deleted = 0 and ci.is_disabled = 0 and ci.pdu_box = 0
-            and (cp.pdu_key_a  =#{pduKey} or cp.pdu_key_b  =#{pduKey})
+            and (cp.pdu_key_a =#{pduKey} or cp.pdu_key_b =#{pduKey})
         </where>
     </select>
     <select id="deviceStatistics" resultType="cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO">
@@ -307,7 +312,7 @@
         cp.pdu_key_a,
         cp.pdu_key_b,
         cp.update_time
-        from cabinet_pdu cp  left join cabinet_index ci on ci.id = cp.cabinet_id
+        from cabinet_pdu cp left join cabinet_index ci on ci.id = cp.cabinet_id
         <where>
             ci.is_deleted = 0 and ci.is_disabled = 0 and ci.room_id = #{roomId}
         </where>
@@ -334,9 +339,9 @@
         select count(1) from cabinet_index ci
         left join cabinet_cfg cc on ci.id = cc.cabinet_id
         where
-        room_id = #{roomId}
-        and x_coordinate+1 > #{xLength}
-        and y_coordinate+1 > #{yLength}
+        room_id = #{roomId} and aisle_id = 0
+        and (x_coordinate > #{xLength}
+        or y_coordinate+1 > #{yLength})
     </select>
     <select id="selectByPduKey"  resultType="cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex">
         SELECT
@@ -349,4 +354,39 @@
             OR cp.pdu_key_b = #{pduKey}
         </where>
     </select>
+    <select id="findAddAisleVerify" resultType="java.lang.Integer">
+        select count(1) from cabinet_index ci
+        left join cabinet_cfg cc on ci.id = cc.cabinet_id
+        <where>
+            room_id = #{roomId} and aisle_id = 0 and is_deleted =0
+            <if test="direction == 'x'">
+                and x_coordinate > #{xCoordinate}+#{aisleLength}
+                and (y_coordinate = #{yCoordinate} or y_coordinate+1 > #{yCoordinate})
+            </if>
+            <if test="direction == 'y'">
+                and y_coordinate+1 > #{yCoordinate}+#{aisleLength}
+                and (x_coordinate = #{xCoordinate} or x_coordinate+1 > #{xCoordinate})
+            </if>
+        </where>
+    </select>
+    <select id="findAddAisleVerifyx" resultType="java.lang.Integer">
+        select count(1) from cabinet_index ci
+        left join cabinet_cfg cc on ci.id = cc.cabinet_id
+        <where>
+            room_id = #{roomId} and aisle_id = 0 and is_deleted =0
+            and  x_coordinate  between #{xCoordinate} and  #{xCoordinate}+#{aisleLength}
+            and y_coordinate BETWEEN #{yCoordinate}  and #{yCoordinate}+1
+        </where>
+    </select>
+
+    <select id="findAddAisleVerifyy" resultType="java.lang.Integer">
+        select count(1) from cabinet_index ci
+        left join cabinet_cfg cc on ci.id = cc.cabinet_id
+        <where>
+            room_id = #{roomId} and aisle_id = 0 and is_deleted =0
+            and   y_coordinate between #{yCoordinate} and #{yCoordinate} + #{aisleLength}
+            and x_coordinate BETWEEN #{xCoordinate}  and #{xCoordinate}+1
+        </where>
+    </select>
+
 </mapper>
