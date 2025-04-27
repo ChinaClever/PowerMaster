@@ -47,8 +47,5 @@ public class AlarmLogRecordPageReqVO extends PageParam {
 
     private String likeName;
 
-    @Schema(description = "机房id")
-    private Integer roomId;
-
 
 }

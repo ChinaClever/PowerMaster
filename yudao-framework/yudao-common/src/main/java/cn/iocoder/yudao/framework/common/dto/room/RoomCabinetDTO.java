@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.dto.room;
 
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetEnvSensorDTO;
+import cn.iocoder.yudao.framework.common.entity.mysql.alarm.AlarmLogRecord;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
@@ -306,4 +307,6 @@ public class RoomCabinetDTO {
 
     @Schema(description = "环境数据")
     private List<CabinetEnvSensorDTO> sensorList;
+
+    private List<AlarmLogRecord> alarmLogRecords;
 }

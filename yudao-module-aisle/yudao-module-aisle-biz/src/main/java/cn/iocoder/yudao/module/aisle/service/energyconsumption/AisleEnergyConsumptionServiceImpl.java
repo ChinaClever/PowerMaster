@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -66,7 +65,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("start_time.keyword")
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
@@ -90,20 +89,6 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-        mapList.forEach(map->{
-            if(map.get("start_ele")!=null){
-                map.put("start_ele", new BigDecimal((Double) map.get("start_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("end_ele")!=null){
-                map.put("end_ele", new BigDecimal((Double) map.get("end_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("start_ele")!=null&&map.get("end_ele")!=null){
-                BigDecimal subtract = new BigDecimal((Double) map.get("end_ele")).subtract(new BigDecimal((Double) map.get("start_ele")));
-                if(subtract.compareTo(BigDecimal.ZERO)==1){
-                    map.put("eq_value", subtract.setScale(1,BigDecimal.ROUND_HALF_UP).doubleValue());
-                }
-            }
-        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -158,20 +143,6 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-        mapList.forEach(map->{
-            if(map.get("start_ele")!=null){
-                map.put("start_ele", new BigDecimal((Double) map.get("start_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("end_ele")!=null){
-                map.put("end_ele", new BigDecimal((Double) map.get("end_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("start_ele")!=null&&map.get("end_ele")!=null){
-                BigDecimal subtract = new BigDecimal((Double) map.get("end_ele")).subtract(new BigDecimal((Double) map.get("start_ele")));
-                if(subtract.compareTo(BigDecimal.ZERO)==1){
-                    map.put("eq_value", subtract.setScale(1,BigDecimal.ROUND_HALF_UP).doubleValue());
-                }
-            }
-        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -212,30 +183,14 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         // 搜索结果
-        List<Map> resultList = new ArrayList<>();
+        List<Object> resultList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
-        resultList.forEach(map -> {
-            if(map.get("start_ele")!=null){
-                map.put("start_ele", new BigDecimal((Double) map.get("start_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("end_ele")!=null){
-                map.put("end_ele", new BigDecimal((Double) map.get("end_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("start_ele")!=null&&map.get("end_ele")!=null){
-                BigDecimal subtract = new BigDecimal((Double) map.get("end_ele")).subtract(new BigDecimal((Double) map.get("start_ele")));
-                if(subtract.compareTo(BigDecimal.ZERO)==1){
-                    map.put("eq_value", subtract.setScale(1,BigDecimal.ROUND_HALF_UP).doubleValue());
-                }
-            }
-        });
-        List<Object> list = new ArrayList<>(resultList.size());
-        resultList.forEach(map -> list.add(map));
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(list)
+        pageResult.setList(resultList)
                 .setTotal(totalHits);
         return pageResult;
     }
@@ -275,18 +230,6 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-        mapList.forEach(map -> {
-            if(map.get("ele_a")!=null){
-                map.put("ele_a", new BigDecimal((Double) map.get("ele_a")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("ele_b")!=null){
-                map.put("ele_b", new BigDecimal((Double) map.get("ele_b")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("ele_a")!=null&&map.get("ele_b")!=null){
-                BigDecimal subtract = new BigDecimal((Double) map.get("ele_a")).add(new BigDecimal((Double) map.get("ele_b")));
-                map.put("ele_total", subtract.setScale(1,BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -531,7 +474,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
             for (SearchHit hit : hits) {
                 resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(resVO.getCreateTimeMax())) {
-                    resVO.setEleActiveEnd(new BigDecimal((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue() );
+                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
                 }
             }
             SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
@@ -549,7 +492,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
             for (SearchHit hit : hits2) {
                 resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(resVO.getCreateTimeMin())) {
-                    resVO.setEleActiveStart(new BigDecimal((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
+                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
                     double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
                     resVO.setEleActive(sub);
                     if (sub < 0) {

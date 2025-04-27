@@ -25,7 +25,7 @@ const legendList = ref()
 
 // 设置饼图的选项
 const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],  
+  dataZoom:[{ type:"inside"}],
   tooltip: { trigger: 'axis',
     formatter: function(params) {
       var result = params[0].name + '<br>';
@@ -82,14 +82,12 @@ const echartsOption = ref({
   // color: ['#C8603A'],
   
   series: series,
-  
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   series.value = prop.list.series;
-  series.value[0].itemStyle = {color: '#C8603A'}
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }

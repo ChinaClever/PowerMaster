@@ -9,39 +9,34 @@
         </div> -->
         <div class="status">
           <div class="box">
-            <div class="value"><span class="number">{{statusNumber.LoadRateZero}}</span>个</div>
             <div class="top">
               <div class="tag empty"></div>空载
             </div>
-            
+            <div class="value"><span class="number">{{statusNumber.LoadRateZero}}</span>个</div>
           </div>
           <div class="box">
-            <div class="value"><span class="number">{{statusNumber.lessThirty}}</span>个</div>
             <div class="top">
               <div class="tag"></div>&lt;30%
             </div>
-            
+            <div class="value"><span class="number">{{statusNumber.lessThirty}}</span>个</div>
           </div>
           <div class="box">
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
             <div class="top">
               <div class="tag normal"></div>30%~60%
             </div>
-            
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
           <div class="box">
-            <div class="value"><span class="number">{{statusNumber.greaterSixty}}</span>个</div>
             <div class="top" style="margin-left:-10px;">
               <div class="tag warn"></div>60%~90%
             </div>
-           
+            <div class="value"><span class="number">{{statusNumber.greaterSixty}}</span>个</div>
           </div>
           <div class="box">
-            <div class="value"><span class="number">{{statusNumber.greaterNinety}}</span>个</div>
             <div class="top">
               <div class="tag error"></div>&gt;90%
             </div>
-            
+            <div class="value"><span class="number">{{statusNumber.greaterNinety}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
@@ -87,9 +82,9 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />图表模式</el-button>
-          <!-- <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />有功功率</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(3)" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />无功功率</el-button> -->
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;handleSwitchModal(0)" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />视在功率</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />有功功率</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(3)" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />无功功率</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;handleSwitchModal(2)" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
@@ -125,36 +120,34 @@
           </template>
         </el-table-column>
       </el-table>
-      
-
-      <!-- <div v-show="(switchValue == 0 || switchValue == 1 || switchValue == 3) && listPage.length > 0"  class="loadContainer">
+      <div v-show="(switchValue == 0 || switchValue == 1 || switchValue == 3) && listPage.length > 0"  class="loadContainer">
         <div class="loadItem" v-for="load in listPage" :key="load.key">
           <div class="content">
             <div class="info" v-if="switchValue == 0">
               <div>总视在功率：{{formatNumber(load.apparentTotal,3) || '0.000'}}KVA</div>
               <div>A路视在功率：{{formatNumber(load.powApparenta,3) || '0.000'}}KVA</div>
-              <div>B路视在功率：{{formatNumber(load.powApparentb,3) || '0.000'}}KVA</div> -->
+              <div>B路视在功率：{{formatNumber(load.powApparentb,3) || '0.000'}}KVA</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
-            <!-- </div>
+            </div>
             <div class="info" v-else-if="switchValue == 1">
               <div>总有功功率：{{formatNumber(load.activeTotal,3)|| '0.000'}}kW</div>
               <div>A路有功功率：{{formatNumber(load.powActivea,3)|| '0.000'}}kW</div>
-              <div>B路有功功率：{{formatNumber(load.powActiveb,3)|| '0.000'}}kW</div> -->
+              <div>B路有功功率：{{formatNumber(load.powActiveb,3)|| '0.000'}}kW</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
-            <!-- </div>
+            </div>
             <div class="info" v-else-if="switchValue == 3">
               <div>总无功功率：{{formatNumber(load.powReactiveTotal,3)|| '0.000'}}kVar</div>
               <div>A路无功功率：{{formatNumber(load.powReactivea,3)|| '0.000'}}kVar</div>
-              <div>B路无功功率：{{formatNumber(load.powReactiveb,3)|| '0.000'}}kVar</div> -->
+              <div>B路无功功率：{{formatNumber(load.powReactiveb,3)|| '0.000'}}kVar</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
-            <!-- </div>
+            </div>
             <div class="waterPoloBox">
               <LiquidBall  :precent="load.loadFactor || 0"/>
-            </div> -->
+            </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-          <!-- </div>
-          <div class="room">{{load.roomName+'-'+load.cabinetName}}</div> -->
-          <!-- <div class="status-container">
+          </div>
+          <div class="room">{{load.roomName+'-'+load.cabinetName}}</div>
+          <div class="status-container">
             <el-tag class="status" type="info" v-if="load.loadStatus == 0">{{statusList[0].name}}</el-tag>
             <el-tag class="status" type="success" v-else-if="load.loadStatus == 1">{{statusList[1].name.slice(3,10)}}</el-tag>
             <el-tag class="status" type="primary" v-else-if="load.loadStatus == 2">{{statusList[2].name.slice(7,11)}}</el-tag>
@@ -245,9 +238,6 @@
           </div>
         </div>
       </div>
-
-
-
       <Pagination
         :total="queryParams.pageTotal"
         v-model:page="queryParams.pageNo"
@@ -267,19 +257,6 @@ import { EChartsOption } from 'echarts';
 import 'echarts-liquidfill';
 import { CabinetApi } from '@/api/cabinet/info';
 import LiquidBall from './compoent/LiquidBall.vue';
-import Environment from '@/views/aisle/power/component/Environment.vue'
-import EnvironmentCopy from '@/views/aisle/power/component/EnvironmentCopy.vue'
-import { ElTree } from 'element-plus'
-
-const valueMode = ref(2)
-
-// 数据转化
-const getSafeNumber = (value) => {
-  const num = Number(value);
-  return isNaN(num) ? 0 : num;
-};
-
-
 
 const { push } = useRouter();
 const loading = ref(false);
@@ -518,7 +495,7 @@ const toMachineDetail = (row) => {
   const cabinetName = row.cabinetName;
   const roomName = row.roomName;
   const pduBox = row.pduBox;
-  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', query: {roomName, roomId ,cabinetName, cabinet, pduBox}})
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet, pduBox}})
 }
 
 
@@ -562,7 +539,6 @@ onBeforeRouteLeave(()=>{
     box-sizing: border-box;
     background-color: #eef4fc;
     border: 5px solid #fff;
-    
     padding-top: 36px;
     position: relative;
     .content {
@@ -834,8 +810,6 @@ onBeforeRouteLeave(()=>{
   margin-bottom: 8px;
 }
 
-
-
 .detail-container{
   position: absolute;
   right: 5px;
@@ -876,77 +850,6 @@ onBeforeRouteLeave(()=>{
     color: #7bc25a;
   }
 }
-
-
-.arrayContainer {
-  width:100%;
-  height: 720px;
-  overflow: hidden;
-  overflow-y: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  margin-top: -10px;
-  .arrayItem {
-    width: 25%;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 40px;
-    position: relative;
-    .content {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      .icon {
-        width: 74px;
-        height: 30px;
-        font-size: large;
-        text-align: center;
-      }
-    }
-    .devKey{
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    // .status {
-    //   width: 40px;
-    //   height: 20px;
-    //   font-size: 12px;
-    //   display: flex;
-    //   align-items: center;
-    //   justify-content: center;
-
-    //   // color: #fff;
-    //   color:#000;
-    //   position: absolute;
-    //   right: 38px;
-    //   top: 8px;
-    // }
-    .detail {
-      width: 40px;
-      height: 25px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      margin-right: 8px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      z-index: 10
-    }
-  }
-}
-
 
 .el-form {
   display: flex;

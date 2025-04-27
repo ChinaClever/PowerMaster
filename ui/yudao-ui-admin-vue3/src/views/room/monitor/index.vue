@@ -68,10 +68,9 @@
                   :key="`card-${index}`"
                 >
                   <el-card shadow="hover">
-                    <div class="flex items-center h-21px mb-2 justify-between">
+                    <div class="flex items-center h-21px mb-2">
                       <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                      <div class="text-15px">{{ item.roomName || '' }}</div>
-                      <div><el-tag v-if="item.alarmCount > 0" type="danger">告警</el-tag></div>
+                      <span class="text-15px">{{ item.roomName || '' }}</span>
                     </div>
                     <div style="display: flex;justify-content: space-between;align-items: center;padding: 0 0 15px 10px;">
                       
@@ -86,7 +85,7 @@
                         <div><span class="bullet" style="background-color:#AD3762;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">无功功率：{{item.powReactive ? item.powReactive.toFixed(1) : '0.0'}}kVAr</el-text></div>
                       </div>
                       <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column;">
-                        <el-progress type="dashboard" :percentage="item.roomLoadFactor ? Math.min(item.roomLoadFactor,100).toFixed(0) : 0" width="100" stroke-width="12" :color="item.roomLoadFactor>90 ? `rgba(173, 55, 98, ${item.roomLoadFactor/100})` : (item.roomLoadFactor>=60 ? `rgba(200, 96, 58, ${(item.roomLoadFactor+10)/100})` : `rgba(229, 184, 73, ${(item.roomLoadFactor+40)/100})`)">
+                        <el-progress type="circle" :percentage="item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0" width="100">
                           <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '24px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
                           <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
                         </el-progress>
@@ -142,11 +141,11 @@
                       <div style="width: 33%;text-align:center"><el-text>{{item.temAvgFront ? item.temAvgFront.toFixed(1) : '0.0'}}&deg;C</el-text></div>
                       <div style="width: 33%;text-align:center"><el-text>{{item.temAvgBlack ? item.temAvgBlack.toFixed(1) : '0.0'}}&deg;C</el-text></div>
                     </div>
-                    <!-- <div class="mt-14px flex justify-around text-12px text-gray-400">
+                    <div class="mt-14px flex justify-around text-12px text-gray-400">
                       <div style="width: 33%;text-align:center"><el-text>最高湿度：</el-text></div>
                       <div style="width: 33%;text-align:center"><el-text>{{item.humMaxFront ? item.humMaxFront.toFixed(0) : '0'}}%</el-text></div>
                       <div style="width: 33%;text-align:center"><el-text>{{item.humMaxBlack ? item.humMaxBlack.toFixed(0) : '0'}}%</el-text></div>
-                    </div> -->
+                    </div>
                     <div class="mt-14px flex justify-around text-12px text-gray-400">
                       <div style="width: 33%;text-align:center"><el-text>平均湿度：</el-text></div>
                       <div style="width: 33%;text-align:center"><el-text>{{item.humAvgFront ? item.humAvgFront.toFixed(0) : '0'}}%</el-text></div>
@@ -175,7 +174,6 @@
                 :sm="24"
                 :xs="24">
                 <div class="arrayContainer" :style="props.isFromHome ? 'padding: 0' : ''">
-                  <!-- <div ref="powChartContainer" id="powChartContainer" style="width: 1702px;height: 400px;"></div> -->
                   <Echart :options="powOptionsData[0]" :height="400" :width="1702"/>
                 </div>
               </el-col>
@@ -197,10 +195,9 @@
                       :key="`card-${index}`"
                     >
                       <el-card shadow="hover">
-                        <div class="flex items-center h-21px mb-2 justify-between">
+                        <div class="flex items-center h-21px mb-2">
                           <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                          <div class="text-15px">{{ item.roomName || '' }}</div>
-                          <div><el-tag v-if="item.alarmCount > 0" type="danger">告警</el-tag></div>
+                          <span class="text-15px">{{ item.roomName || '' }}</span>
                         </div>
                         <div style="display: flex;justify-content: space-between;align-items: center;padding: 0 0 15px 10px;">
                           <div v-if="item.powApparent >= 1000 || item.powActive >= 1000 || item.powReactive >= 1000" style="display: flex;flex-direction: column;height: 100px;justify-content:space-between">
@@ -214,7 +211,7 @@
                             <div><span class="bullet" style="background-color:#AD3762;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">无功功率：{{item.powReactive ? item.powReactive.toFixed(1) : '0.0'}}kVAr</el-text></div>
                           </div>
                           <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column">
-                            <el-progress type="dashboard" :percentage="item.roomLoadFactor ? Math.min(item.roomLoadFactor,100).toFixed(0) : 0" width="100" stroke-width="12" :color="item.roomLoadFactor>90 ? `rgba(173, 55, 98, ${item.roomLoadFactor/100})` : (item.roomLoadFactor>=60 ? `rgba(200, 96, 58, ${(item.roomLoadFactor+10)/100})` : `rgba(229, 184, 73, ${(item.roomLoadFactor+40)/100})`)">
+                            <el-progress type="circle" :percentage="item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0" width="100">
                               <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '24px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
                               <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
                             </el-progress>
@@ -270,11 +267,11 @@
                           <div style="width: 33%;text-align:center"><el-text>{{item.temAvgFront ? item.temAvgFront.toFixed(1) : '0.0'}}&deg;C</el-text></div>
                           <div style="width: 33%;text-align:center"><el-text>{{item.temAvgBlack ? item.temAvgBlack.toFixed(1) : '0.0'}}&deg;C</el-text></div>
                         </div>
-                        <!-- <div class="mt-14px flex justify-around text-12px text-gray-400">
+                        <div class="mt-14px flex justify-around text-12px text-gray-400">
                           <div style="width: 33%;text-align:center"><el-text>最高湿度：</el-text></div>
                           <div style="width: 33%;text-align:center"><el-text>{{item.humMaxFront ? item.humMaxFront.toFixed(0) : '0'}}%</el-text></div>
                           <div style="width: 33%;text-align:center"><el-text>{{item.humMaxBlack ? item.humMaxBlack.toFixed(0) : '0'}}%</el-text></div>
-                        </div> -->
+                        </div>
                         <div class="mt-14px flex justify-around text-12px text-gray-400">
                           <div style="width: 33%;text-align:center"><el-text>平均湿度：</el-text></div>
                           <div style="width: 33%;text-align:center"><el-text>{{item.humAvgFront ? item.humAvgFront.toFixed(0) : '0'}}%</el-text></div>
@@ -688,9 +685,6 @@ import { DataZoomComponent } from 'echarts/components';
 
 use([DataZoomComponent]); // 提前注册
 
-const currentLegendSelected = ref({})
-const powChartContainer = ref([]);
-let powChart = []; 
 const activeNames = ref()
 const valueMode = ref(0)
 const switchValue = ref(0)
@@ -759,6 +753,27 @@ const addrList = ref([
   '十楼',
 ]) // 楼层
 
+const powChartOptions = ref({
+  tooltip: {
+    trigger: 'item',
+    formatter: '{b} : {c}',
+    confine: true
+  },
+  series: [
+    {
+      type: 'pie',
+      radius: ['55%', '90%'],
+      label: {
+        show: false,
+      },
+      data: [
+        { value: 10, name: '视在功率', itemStyle: { color: '#E5B849' } },
+        { value: 20, name: '有功功率', itemStyle: { color: '#C8603A' } },
+        { value: 30, name: '无功功率', itemStyle: { color: '#AD3762' } },
+      ]
+    }
+  ]
+});
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
@@ -1082,217 +1097,98 @@ const getAddrAllRoomList = (roomList,index) => {
       ]
     }
   })
-  // initPowChart(index)
-  if(loading.value) {
-    powOptionsData.value[index] = {}
-    Object.assign(powOptionsData.value[index], {
-      grid: {
-        left: 50,
-        right: 20,
-        bottom: 20
-      },
-      legend: {
-        right: 10,
-        selectedMode: 'single'
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },
-        formatter: function (params) {
-          // console.log('params', params)
-          let result = '';
-          params.forEach(function (item) {
-            // item 是每一个系列的数据
-            const seriesName = item.seriesName; // 系列名称
-            const value = item.value; // 数据值
-            const marker = item.marker; // 标志图形
-            let unit = ''
-            if (seriesName == '有功功率') {
-              unit = 'kW'
-            } else if (seriesName == '无功功率') {
-              unit = 'kVar'
-            } else if (seriesName == '视在功率') {
-              unit = 'kVA'
-            }
-            result += `${marker}${seriesName}: ${value}${unit}<br/>`;
-          });
-          return result;
-        }
-      },
-      xAxis: {
-        type: 'category',
-        data: addrAllRoomList.value[index].map(item => item.roomName)
-      },
-      yAxis: {
-        type: 'value',
-      },
-      series: [
-        {
-          name: '视在功率',
-          data: addrAllRoomList.value[index].map(item => item.powApparent ? item.powApparent : 0),
-          type: 'bar',
-          barWidth: 30, // 固定柱宽为 30 像素
-          label: {
-            show: true,
-            position: 'top', // 顶部显示
-            formatter: '{c}kVA', // 显示数据值
-          },
-          itemStyle: { color: '#AD3762' }
-        },
-        {
-          name: '有功功率',
-          data: addrAllRoomList.value[index].map(item => item.powActive ? item.powActive : 0),
-          type: 'bar',
-          barWidth: 30, // 固定柱宽为 30 像素
-          label: {
-            show: true,
-            position: 'top', // 顶部显示
-            formatter: '{c}kW', // 显示数据值
-          },
-          itemStyle: { color: '#E5B849' }
-        },
-        {
-          name: '无功功率',
-          data: addrAllRoomList.value[index].map(item => item.powReactive ? item.powReactive : 0),
-          type: 'bar',
-          barWidth: 30, // 固定柱宽为 30 像素
-          label: {
-            show: true,
-            position: 'top', // 顶部显示
-            formatter: '{c}kVar', // 显示数据值
-          },
-          itemStyle: { color: '#C8603A' }
-        },
-        {
-          name: '功率因素',
-          data: addrAllRoomList.value[index].map(item => item.powerFactor ? item.powerFactor : 0),
-          type: 'bar',
-          barWidth: 30, // 固定柱宽为 30 像素
-          label: {
-            show: true,
-            position: 'top', // 顶部显示
-            formatter: '{c}', // 显示数据值
-          },
-        },
-      ]
-    })
-  }
-  // else {
-  //   powOptionsData.value[index].series[0].data = addrAllRoomList.value[index].map(item => item.powApparent ? item.powApparent : 0)
-  //   powOptionsData.value[index].series[1].data = addrAllRoomList.value[index].map(item => item.powActive ? item.powActive : 0)
-  //   powOptionsData.value[index].series[2].data = addrAllRoomList.value[index].map(item => item.powReactive ? item.powReactive : 0)
-  //   powOptionsData.value[index].series[3].data = addrAllRoomList.value[index].map(item => item.powerFactor ? item.powerFactor : 0)
-  // }
   
-}
-
-const legendSelectChanged = (params) => {
-  console.log(params)
-  currentLegendSelected.value = params.selected
-  // if(powChartContainer[index].value) {
-  //   if (!powChart) {
-  //     powChart[index] = echarts.init(powChartContainer[index].value);
-  //   }
-  //   console.log(powChart[index])
-  //   powChart[index].setOption(
-  //         {
-  //       grid: {
-  //         left: 50,
-  //         right: 20,
-  //         bottom: 20
-  //       },
-  //       legend: {
-  //         right: 10,
-  //         selectedMode: 'single',
-  //         selected: currentLegendSelected
-  //       },
-  //       tooltip: {
-  //         trigger: 'axis',
-  //         axisPointer: {
-  //           type: 'shadow'
-  //         },
-  //         formatter: function (params) {
-  //           console.log('params', params)
-  //           let result = '';
-  //           params.forEach(function (item) {
-  //             // item 是每一个系列的数据
-  //             const seriesName = item.seriesName; // 系列名称
-  //             const value = item.value; // 数据值
-  //             const marker = item.marker; // 标志图形
-  //             let unit = ''
-  //             if (seriesName == '有功功率') {
-  //               unit = 'kW'
-  //             } else if (seriesName == '无功功率') {
-  //               unit = 'kVar'
-  //             } else if (seriesName == '视在功率') {
-  //               unit = 'kVA'
-  //             }
-  //             result += `${marker}${seriesName}: ${value}${unit}<br/>`;
-  //           });
-  //           return result;
-  //         }
-  //       },
-  //       xAxis: {
-  //         type: 'category',
-  //         data: addrAllRoomList.value[index].map(item => item.roomName)
-  //       },
-  //       yAxis: {
-  //         type: 'value',
-  //       },
-  //       series: [
-  //         {
-  //           name: '视在功率',
-  //           data: addrAllRoomList.value[index].map(item => item.powApparent ? item.powApparent : 0),
-  //           type: 'bar',
-  //           barWidth: 30, // 固定柱宽为 30 像素
-  //           label: {
-  //             show: true,
-  //             position: 'top', // 顶部显示
-  //             formatter: '{c}kVA', // 显示数据值
-  //           },
-  //           itemStyle: { color: '#AD3762' }
-  //         },
-  //         {
-  //           name: '有功功率',
-  //           data: addrAllRoomList.value[index].map(item => item.powActive ? item.powActive : 0),
-  //           type: 'bar',
-  //           barWidth: 30, // 固定柱宽为 30 像素
-  //           label: {
-  //             show: true,
-  //             position: 'top', // 顶部显示
-  //             formatter: '{c}kW', // 显示数据值
-  //           },
-  //           itemStyle: { color: '#E5B849' }
-  //         },
-  //         {
-  //           name: '无功功率',
-  //           data: addrAllRoomList.value[index].map(item => item.powReactive ? item.powReactive : 0),
-  //           type: 'bar',
-  //           barWidth: 30, // 固定柱宽为 30 像素
-  //           label: {
-  //             show: true,
-  //             position: 'top', // 顶部显示
-  //             formatter: '{c}kVar', // 显示数据值
-  //           },
-  //           itemStyle: { color: '#C8603A' }
-  //         },
-  //         {
-  //           name: '功率因素',
-  //           data: addrAllRoomList.value[index].map(item => item.powerFactor ? item.powerFactor : 0),
-  //           type: 'bar',
-  //           barWidth: 30, // 固定柱宽为 30 像素
-  //           label: {
-  //             show: true,
-  //             position: 'top', // 顶部显示
-  //             formatter: '{c}', // 显示数据值
-  //           },
-  //         },
-  //       ]
-  //     }
-  //   )
-  // }
+  powOptionsData.value[index] = {}
+  Object.assign(powOptionsData.value[index], {
+    grid: {
+      left: 50,
+      right: 20,
+      bottom: 20
+    },
+    legend: {
+      right: 10,
+      selectedMode: 'single'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      },
+      formatter: function (params) {
+        console.log('params', params)
+        let result = '';
+        params.forEach(function (item) {
+          // item 是每一个系列的数据
+          const seriesName = item.seriesName; // 系列名称
+          const value = item.value; // 数据值
+          const marker = item.marker; // 标志图形
+          let unit = ''
+          if (seriesName == '有功功率') {
+            unit = 'kW'
+          } else if (seriesName == '无功功率') {
+            unit = 'kVar'
+          } else if (seriesName == '视在功率') {
+            unit = 'kVA'
+          }
+          result += `${marker}${seriesName}: ${value}${unit}<br/>`;
+        });
+        return result;
+      }
+    },
+    xAxis: {
+      type: 'category',
+      data: addrAllRoomList.value[index].map(item => item.roomName)
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series: [
+      {
+        name: '视在功率',
+        data: addrAllRoomList.value[index].map(item => item.powApparent ? item.powApparent : 0),
+        type: 'bar',
+        barWidth: 30, // 固定柱宽为 30 像素
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}kVA', // 显示数据值
+        },
+      },
+      {
+        name: '有功功率',
+        data: addrAllRoomList.value[index].map(item => item.powActive ? item.powActive : 0),
+        type: 'bar',
+        barWidth: 30, // 固定柱宽为 30 像素
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}kW', // 显示数据值
+        },
+      },
+      {
+        name: '无功功率',
+        data: addrAllRoomList.value[index].map(item => item.powReactive ? item.powReactive : 0),
+        type: 'bar',
+        barWidth: 30, // 固定柱宽为 30 像素
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}kVar', // 显示数据值
+        },
+      },
+      {
+        name: '功率因素',
+        data: addrAllRoomList.value[index].map(item => item.powerFactor ? item.powerFactor : 0),
+        type: 'bar',
+        barWidth: 30, // 固定柱宽为 30 像素
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}', // 显示数据值
+        },
+      },
+    ]
+  })
 }
 
 const getAllApi = async () => {
@@ -1507,22 +1403,11 @@ const handleChange = async (val: CollapseModelValue) => {
   }
 }
 
-.percentage-value {
-  display: block;
-  margin-top: 36px;
-  font-size: 14px;
-}
-.percentage-label {
-  display: block;
-  margin-top: 10px;
-  font-size: 10px;
-}
-
 :deep(.el-collapse-item__header) {
   padding: 0 20px;
 }
 :deep(.el-card) {
-  background-color: #fff;
+  background-color: #eef4fc;
 }
 :deep .el-input-group__append {
   padding: 0 10px; /* 设置为所需的字体大小 */

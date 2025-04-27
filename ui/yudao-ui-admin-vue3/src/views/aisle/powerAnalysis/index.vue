@@ -1,8 +1,22 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列能耗趋势" :defaultCheckedKeys="defaultCheckedKeys" :defaultExpandedKeys="defaultExpandedKeys">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列能耗趋势" :defaultCheckedKeys="defaultCheckedKeys">
     <template #NavInfo>
     <br/> 
         <div class="nav_data">
+          <!-- <div class="carousel-container"> -->
+            <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+              </el-carousel-item>
+            </el-carousel> -->
+          <!-- </div>
+          <div class="nav_content">
+          <el-descriptions title="" direction="vertical" :column="1" border >
+              <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
+            </el-descriptions>
+          </div> -->
           <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">最近一天 :</span>
@@ -43,23 +57,11 @@
             </el-select>
           </el-form-item>
 
-         <el-form-item label="时间段" prop="timeRange" v-if="queryParams.granularity !== 'month'">
+         <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
             value-format="YYYY-MM-DD"
-            v-model="selectTimeRangeHaveDay"
+            v-model="selectTimeRange"
             type="daterange"
-            :shortcuts="shortcuts"
-            range-separator="-"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            :disabled-date="disabledDate"
-          />
-          </el-form-item>
-          <el-form-item label="时间段" prop="timeRange" v-else>
-            <el-date-picker
-            value-format="YYYY-MM"
-            v-model="selectTimeRangeNoDay"
-            type="monthrange"
             :shortcuts="shortcuts"
             range-separator="-"
             start-placeholder="开始日期"
@@ -175,18 +177,8 @@ const list = ref<Array<{ }>>([]) as any;
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 let now=new Date();
-const selectTimeRangeHaveDay = ref()
-const selectTimeRangeNoDay = ref()
-// const selectTimeRange = ref([history.state.startTime!=null&&history.state.startTime!=''?history.state.startTime:dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),
-// history.state.endTime!=null&&history.state.startTime!=''?history.state.endTime:dayjs(now).format("YYYY-MM-DD")])
-if(history.state.startTime!=null&&history.state.startTime!=""&&history.state.endTime!=null&&history.state.endTime!=""){
-  console.log("有值")
-  selectTimeRangeHaveDay.value = [history.state.startTime, history.state.endTime]
-}else{
-  console.log("无值")
-  let now = new Date();
-  selectTimeRangeHaveDay.value=[dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")]
-}
+const selectTimeRange = ref([history.state.startTime!=null&&history.state.startTime!=''?history.state.startTime:dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),
+history.state.endTime!=null&&history.state.startTime!=''?history.state.endTime:dayjs(now).format("YYYY-MM-DD")])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -195,7 +187,6 @@ const queryParams = reactive({
   aisleIds:history.state.id!=null?[history.state.id]:[] as number[]
 })
 const defaultCheckedKeys = ref([])
-
 if(history.state.id!=null){
   defaultCheckedKeys.value=[history.state.id]
 }
@@ -259,7 +250,7 @@ const shortcuts = [
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber: number) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = Math.min(pageNumber * queryParams.pageSize,total.value);
+  const end = pageNumber * queryParams.pageSize;
   const pageNumbers: string[] = [];
   for (let i = start; i <= end; i++) {
     pageNumbers.push('序号'+i);
@@ -279,7 +270,6 @@ const initChart = () => {
     rankChart.setOption({
       title: { text: '各柜列耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-      barMaxWidth: '30px',
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
@@ -301,29 +291,7 @@ window.addEventListener('resize', function() {
   rankChart?.resize(); 
 });
 
-function startOfMonth(date: Date): Date {
-  return dayjs(new Date(date.getFullYear(), date.getMonth(), 1)).format("YYYY-MM-DD HH:mm:ss");
-}
-function endOfMonth(date: Date): Date {
-  const bigMonth=[1,3,5,7,8,10,12]
-  if(date.getMonth() === 1){
-    if((date.getFullYear() % 4 === 0&&date.getFullYear() % 100 !== 0)||date.getFullYear() % 400 === 0){
-      return dayjs(new Date(date.getFullYear(), date.getMonth(), 29,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
-    }else{
-      return dayjs(new Date(date.getFullYear(), date.getMonth(), 28,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
-    }
-  }else if(bigMonth.includes(date.getMonth()+1)){
-    return dayjs(new Date(date.getFullYear(), date.getMonth(), 31,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
-  }else{
-    return dayjs(new Date(date.getFullYear(), date.getMonth(), 30,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
-  }
-}
-watch(() => queryParams.granularity, (newValue) => {
-  if(newValue == "month"){
-    if(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2){
-      selectTimeRangeNoDay.value=[dayjs(startOfMonth(convertDate(selectTimeRangeHaveDay.value[0]))).format("YYYY-MM"),dayjs(endOfMonth(convertDate(selectTimeRangeHaveDay.value[1]))).format("YYYY-MM")]
-    }
-  }
+watch(() => queryParams.granularity, () => {
   handleQuery();
 });
 
@@ -347,22 +315,19 @@ const tableColumns = ref([
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
-  // console.log("selectTimeRange",selectTimeRange.value)
+  console.log("selectTimeRange",selectTimeRange.value)
   try {
-    if ( queryParams.granularity!="month" && selectTimeRangeHaveDay.value!=null){
-      console.log("noMonth===>",selectTimeRangeHaveDay.value)
-      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRangeHaveDay.value[0])))
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRangeHaveDay.value[1])))
-      queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
-    if(queryParams.granularity=="month"&&selectTimeRangeNoDay.value!=null){
-      console.log("month===>",selectTimeRangeNoDay.value)
-      const selectedStartTime = formatDate(startOfMonth(convertDate(selectTimeRangeNoDay.value[0])))
-      const selectedEndTime = formatDate(endOfMonth(convertDate(selectTimeRangeNoDay.value[1])))
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      // 开始时间的天数减一天 ，  一天的毫秒数
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
+      console.log("selectedStartTime",selectedStartTime)
+      console.log("selectedEndTime",selectedEndTime)
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(( queryParams.granularity!="month" && selectTimeRangeHaveDay.value==null)||(queryParams.granularity=="month"&&selectTimeRangeNoDay.value==null)){
+    if(selectTimeRange.value == null|| selectTimeRange.value[0] == null ||selectTimeRange.value[1] == null){
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
@@ -496,45 +461,10 @@ const handleCheck = async (node: any[]) => {
   handleQuery()
 }
 
-let tempId=-1;
-function setNavList(list) {
-  if(list==null||list.length==0) return;
-  list.forEach(item => {
-    if(item.type!=2){
-      item.id=tempId--;
-    }
-    if(item.children!=null&&item.children.length>0){
-      setNavList(item.children);
-    }
-  });
-}
-
-const defaultExpandedKeys = ref([])
-if(history.state.id!=null){
-  defaultExpandedKeys.value.push(history.state.id)
-}
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getAisleMenu()
-  setNavList(res)
-  setDefaultExpandedKeys(res)
-  console.log("getNavList   defaultExpandedKeys====",defaultExpandedKeys.value)
   navList.value = res
-}
-function setDefaultExpandedKeys(list):boolean {
-  if(list==null||list.length==0) return false;
-   for(let item of list){
-    if(defaultExpandedKeys.value.includes(item.id)) {
-      return true;
-    }
-    if(item.children!=null&&item.children.length>0){
-      if(setDefaultExpandedKeys(item.children)==true){
-        defaultExpandedKeys.value.push(item.id)
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 // 获取导航的数据显示
@@ -569,16 +499,10 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (aisleId: number, location: string) => {
-  // if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
-  //     push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location,start:selectTimeRange.value[0],end:selectTimeRange.value[1]}})
-  // }else{
-  //   push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location}})
-  // }
-  if(queryParams.granularity!='month'){
-    push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location,start:(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2?selectTimeRangeHaveDay.value[0]:''),end:(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2?selectTimeRangeHaveDay.value[1]:'')}});
+  if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
+      push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location,start:selectTimeRange.value[0],end:selectTimeRange.value[1]}})
   }else{
-    console.log(selectTimeRangeNoDay.value,"==============selectTimeRangeNoDay.value")
-    push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location,start:(selectTimeRangeNoDay.value!=null&&selectTimeRangeNoDay.value.length==2?dayjs(startOfMonth(convertDate(selectTimeRangeNoDay.value[0]))).format("YYYY-MM-DD"):''),end:(selectTimeRangeNoDay.value!=null&&selectTimeRangeNoDay.value.length==2?dayjs(endOfMonth(convertDate(selectTimeRangeNoDay.value[1]))).format("YYYY-MM-DD"):'')}});
+    push({path:"/aisle/aisleenergyconsumption/ecdistribution",state:{aisleId,location}})
   }
   // push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?('&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]):''));
 }

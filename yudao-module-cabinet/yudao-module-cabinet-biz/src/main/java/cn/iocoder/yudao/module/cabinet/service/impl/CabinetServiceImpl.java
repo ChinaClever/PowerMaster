@@ -10,7 +10,6 @@ import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.*;
-import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
@@ -513,6 +512,7 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetCfgMapper.updateById(convertCfg(vo, cfg));
             } else {
                 cfg = new CabinetCfg();
+
                 //新增
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
@@ -541,17 +541,12 @@ public class CabinetServiceImpl implements CabinetService {
                     }
                 }
             } else if (vo.getPduBox() == PduBoxFlagEnums.BUS.getValue()) {
-                if (Objects.isNull(vo.getCasIdA()) || Objects.isNull(vo.getCasIdB())){
-                    BusinessAssert.error(6012,"插接箱编号为空");
+
+                if (Objects.isNull(vo.getBoxOutletIdA()) && Objects.isNull(vo.getBoxOutletIdB())) {
+                    //删除
+                    cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
+                            .eq(CabinetBox::getCabinetId, vo.getId()));
                 }
-                if (Objects.isNull(vo.getBoxOutletIdA()) || Objects.isNull(vo.getBoxOutletIdB())){
-                    BusinessAssert.error(6013,"插接箱输出位为空");
-                }
-//                if (Objects.isNull(vo.getBoxOutletIdA()) && Objects.isNull(vo.getBoxOutletIdB())) {
-//                    //删除
-//                    cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
-//                            .eq(CabinetBox::getCabinetId, vo.getId()));
-//                }
                 //母线关联表
                 CabinetBox bus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>()
                         .eq(CabinetBox::getCabinetId, vo.getId()));

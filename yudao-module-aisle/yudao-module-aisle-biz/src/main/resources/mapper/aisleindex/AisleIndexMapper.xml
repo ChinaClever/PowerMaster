@@ -53,14 +53,14 @@
                 and id != #{vo.id}
             </if>
             <if test="vo.direction !=null ">
-                and (((#{vo.xCoordinate}+#{vo.aisleLength})>x_coordinate+aisle_length - 1
+                and (( x_coordinate + aisle_length - 1 > #{vo.xCoordinate}+#{vo.aisleLength}-1  and x_coordinate <![CDATA[ <= ]]> #{vo.xCoordinate}+#{vo.aisleLength}-1
                 and ((y_coordinate BETWEEN #{vo.yCoordinate}  and #{vo.yCoordinate}+1)
                 or (y_coordinate+1 BETWEEN #{vo.yCoordinate}  and #{vo.yCoordinate}+1))
                 AND direction = 'x' )
                 or
                 (direction = 'y'
-                and  ((x_coordinate+1 BETWEEN #{vo.xCoordinate} AND #{vo.xCoordinate}+#{vo.aisleLength})
-                or (x_coordinate BETWEEN #{vo.xCoordinate} AND #{vo.xCoordinate}+#{vo.aisleLength}))
+                and  ((x_coordinate+1 BETWEEN #{vo.xCoordinate} AND #{vo.xCoordinate}+#{vo.aisleLength}-1)
+                or (x_coordinate BETWEEN #{vo.xCoordinate} AND #{vo.xCoordinate}+#{vo.aisleLength}-1))
                 and ((#{vo.yCoordinate} BETWEEN y_coordinate and  y_coordinate+aisle_length-1)
                 or  (#{vo.yCoordinate}+1 BETWEEN y_coordinate and  y_coordinate+aisle_length-1))))
             </if>
@@ -84,14 +84,14 @@
                 and id != #{vo.id}
             </if>
             <if test="vo.direction !=null ">
-                and (((#{vo.yCoordinate}+#{vo.aisleLength})>y_coordinate+aisle_length - 1
+                and ((y_coordinate + aisle_length - 1 > (#{vo.yCoordinate}+#{vo.aisleLength}-1)  and y_coordinate <![CDATA[ <= ]]> (#{vo.yCoordinate}+#{vo.aisleLength}-1)
                 and ((x_coordinate BETWEEN #{vo.xCoordinate}  and #{vo.xCoordinate}+1)
                 or (x_coordinate+1 BETWEEN #{vo.xCoordinate}  and #{vo.xCoordinate}+1))
                 AND direction = 'y' )
                 or
                 (direction = 'x'
-                and  ((y_coordinate+1 BETWEEN #{vo.yCoordinate} AND #{vo.yCoordinate}+#{vo.aisleLength})
-                or (y_coordinate BETWEEN #{vo.yCoordinate} AND #{vo.yCoordinate}+#{vo.aisleLength}))
+                and  ((y_coordinate+1 BETWEEN #{vo.yCoordinate} AND #{vo.yCoordinate}+#{vo.aisleLength}-1)
+                or (y_coordinate BETWEEN #{vo.yCoordinate} AND #{vo.yCoordinate}+#{vo.aisleLength}-1))
                 and ((#{vo.xCoordinate} BETWEEN x_coordinate and  x_coordinate+aisle_length-1)
                 or  (#{vo.xCoordinate}+1 BETWEEN x_coordinate and  x_coordinate+aisle_length-1))))
             </if>

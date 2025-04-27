@@ -33,7 +33,7 @@ public class RealtimePageRespVO {
     @NumberFormat("0.000")
     private Double apparent_total;
 
-    @ExcelProperty("总无功功率(kVar)")
+    @ExcelProperty("总无功功率(kW)")
     @NumberFormat("0.000")
     private Double reactive_total;
 
@@ -49,7 +49,7 @@ public class RealtimePageRespVO {
     @NumberFormat("0.000")
     private Double apparent_a;
 
-    @ExcelProperty("A路无功功率(kVar)")
+    @ExcelProperty("A路无功功率(kW)")
     @NumberFormat("0.000")
     private Double reactive_a;
 
@@ -65,7 +65,7 @@ public class RealtimePageRespVO {
     @NumberFormat("0.000")
     private Double apparent_b;
 
-    @ExcelProperty("B路无功功率(kVar)")
+    @ExcelProperty("B路无功功率(kW)")
     @NumberFormat("0.000")
     private Double reactive_b;
 

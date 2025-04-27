@@ -529,7 +529,7 @@ public class AisleServiceImpl implements AisleService {
     }
 
     @Override
-    public AisleDetailDTO  getAisleDetail(Integer aisleId) throws IOException {
+    public AisleDetailDTO getAisleDetail(Integer aisleId) throws IOException {
         AisleDetailDTO detailDTO = new AisleDetailDTO();
         AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
         ValueOperations ops = redisTemplate.opsForValue();

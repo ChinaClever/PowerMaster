@@ -8,20 +8,23 @@
       label-width="100px"
       center
     >
-      <el-form-item label="柜列名称" prop="name">
+      <el-form-item label="类型" prop="type">
+        <el-input model-value="机柜列" disabled />
+      </el-form-item>
+      <el-form-item label="名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入" />
       </el-form-item>
 
       <el-form-item v-if="formData.type == 2" label="高度" prop="cabinetHeight">
          <el-input v-model.number="formData.cabinetHeight" :suffixIcon="() => 'U'" />
       </el-form-item> 
-      <el-form-item v-if="formData.type == 1" label="柜列方向" prop="direction">
+      <el-form-item v-if="formData.type == 1" label="方向" prop="direction">
         <el-select v-model="formData.direction" placeholder="请选择活动区域">
           <el-option label="横向" :value="1"/>
           <el-option label="纵向" :value="2"/>
         </el-select>
       </el-form-item>
-      <el-form-item v-if="formData.type == 1" label="柜列数量" prop="amount">
+      <el-form-item v-if="formData.type == 1" label="数量" prop="amount">
          <el-input-number v-model="formData.amount" :min="minAmount" :max="formData.direction == 1 ? operateInfo.maxlndexX : operateInfo.maxlndexY" />
       </el-form-item>
 
@@ -111,7 +114,7 @@ const layoutForm = ref() // 表单 Ref
 /** 打开弹窗 */
 const open = async (type: string, data, info) => {
   dialogVisible.value = true
-  dialogTitle.value = type == 'edit' ? '编辑柜列': '新增柜列'
+  dialogTitle.value = type == 'edit' ? '编辑': '添加'
   formType.value = type
   operateInfo.value = info
   resetForm()

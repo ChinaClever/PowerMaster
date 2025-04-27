@@ -301,11 +301,12 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
     }
 
     @Override
-    public  List<AisleIndex> getAisleByIds(List<Integer> aisleIds) {
+    public Map<Integer, AisleIndex> getAisleByIds(List<Integer> aisleIds) {
         LambdaQueryWrapper<AisleIndex> queryWrapper = new LambdaQueryWrapper<AisleIndex>().orderByDesc(AisleIndex::getCreateTime)
                 .in(AisleIndex::getId,aisleIds).eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus());
-        return aisleIndexMapper.selectList(queryWrapper);
-
+        List<AisleIndex> roomIndexList = aisleIndexMapper.selectList(queryWrapper);
+        return roomIndexList.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                .collect(Collectors.toMap(AisleIndex::getId, roomIndex -> roomIndex));
     }
 
     @Override

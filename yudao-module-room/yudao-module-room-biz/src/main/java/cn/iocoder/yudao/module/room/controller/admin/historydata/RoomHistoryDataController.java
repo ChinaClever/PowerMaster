@@ -50,51 +50,15 @@ public class RoomHistoryDataController {
         PageResult<Object> pageResult = roomHistoryDataService.getHistoryDataDetails(reqVO);
         List<Object> list = pageResult.getList();
         if (Objects.equals("realtime",reqVO.getGranularity())) {
-            if("a".equals(reqVO.getAbtotal())||"A".equals(reqVO.getAbtotal())){
-                List<RoomPowerAnalysisResAVO> bean = BeanUtils.toBean(list, RoomPowerAnalysisResAVO.class);
-                bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", RoomPowerAnalysisResAVO.class,
-                        bean);
-            }else if("b".equals(reqVO.getAbtotal())||"B".equals(reqVO.getAbtotal())){
-                List<RoomPowerAnalysisResBVO> bean = BeanUtils.toBean(list, RoomPowerAnalysisResBVO.class);
-                bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", RoomPowerAnalysisResBVO.class,
-                        bean);
-            }else if("total".equals(reqVO.getAbtotal())){
-                List<RoomPowerAnalysisResTotalVO> bean = BeanUtils.toBean(list, RoomPowerAnalysisResTotalVO.class);
-                bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", RoomPowerAnalysisResTotalVO.class,
-                        bean);
-            }else{
-                List<RoomPowerAnalysisResVO> bean = BeanUtils.toBean(list, RoomPowerAnalysisResVO.class);
-                bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", RoomPowerAnalysisResVO.class,
-                        bean);
-            }
+            List<RoomPowerAnalysisResVO> bean = BeanUtils.toBean(list, RoomPowerAnalysisResVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
+            ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", RoomPowerAnalysisResVO.class,
+                    bean);
         }else {
-            if("a".equals(reqVO.getAbtotal())||"A".equals(reqVO.getAbtotal())){
-                List<HourAndDayPageRespAVO> bean = BeanUtils.toBean(list, HourAndDayPageRespAVO.class);
-                bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespAVO.class,
-                        bean);
-            }else if("b".equals(reqVO.getAbtotal())||"B".equals(reqVO.getAbtotal())){
-                List<HourAndDayPageRespBVO> bean = BeanUtils.toBean(list, HourAndDayPageRespBVO.class);
-                bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespBVO.class,
-                        bean);
-            }else if("total".equals(reqVO.getAbtotal())){
-                List<HourAndDayPageRespTotalVO> bean = BeanUtils.toBean(list, HourAndDayPageRespTotalVO.class);
-                bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespTotalVO.class,
-                        bean);
-            }else {
-                List<HourAndDayPageRespVO> bean = BeanUtils.toBean(list, HourAndDayPageRespVO.class);
-                bean.stream().forEach(iter -> {
-                    iter.setLocation(reqVO.getNowAddress());
-                });
-                ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespVO.class,
-                        bean);
-            }
+            List<HourAndDayPageRespVO> bean = BeanUtils.toBean(list, HourAndDayPageRespVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
+            ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespVO.class,
+                    bean);
         }
     }
     @GetMapping("/new-data/{granularity}")

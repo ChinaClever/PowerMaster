@@ -161,7 +161,7 @@ public class RoomIndexController {
     @PostMapping("/report/pow")
     @Operation(summary = "获得机房报表数据")
     public CommonResult<Map> getReportPowDataById(@RequestBody RoomIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
+        return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pfline")

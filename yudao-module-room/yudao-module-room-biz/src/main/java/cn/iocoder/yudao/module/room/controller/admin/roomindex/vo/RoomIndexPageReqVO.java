@@ -68,9 +68,4 @@ public class RoomIndexPageReqVO extends PageParam {
 
     private String timeGranularity;
 
-    /**
-     * 数据类型（最大值=1，平均值=0，最小值=-1）
-     */
-    private Integer dataType;
-
 }

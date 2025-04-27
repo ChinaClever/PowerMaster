@@ -473,14 +473,10 @@ const getNavList = async() => {
 
 /** 搜索按钮操作 */
 const handleQuery = async() => {
-  if(queryParams.roomId ==undefined){
-    ElMessage.error('机房不能为空')
-    return;
+    if(queryParams.roomId ==undefined){
+      ElMessage.error('机房不能为空')
+      return;
   }
-  // if(selectTimeRange.value==null||selectTimeRange.value.length!=2){
-  //   ElMessage.error('时间段不能为空')
-  //   return;
-  // }
   await getLineChartData();
   // await getRankChartData();
   initLineChart();
@@ -543,8 +539,8 @@ const handleExport1 = async () => {
     font-size: 14px;
   }
 .nav_data{
-  padding-left: 0px;
-  width: 95%px;
+  padding-left: 5px;
+  width: 195px;
 }
 .nav_content span{
   font-size: 14px;

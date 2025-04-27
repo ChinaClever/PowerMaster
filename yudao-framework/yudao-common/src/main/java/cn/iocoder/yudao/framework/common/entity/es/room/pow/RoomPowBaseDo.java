@@ -204,35 +204,18 @@ public class RoomPowBaseDo extends RoomBaseDo {
     private float reactiveAAvgValue;
 
     /**
-     * a路最大无功功率
-     */
-    @JsonProperty("reactive_a_max_value")
-    private float reactiveAMaxValue;
-
-    /**
-     * a路最小无功功率
-     */
-    @JsonProperty("reactive_a_min_value")
-    private float reactiveAMinValue;
-
-    /**
      * b路平均无功功率
      */
     @JsonProperty("reactive_b_avg_value")
     private float reactiveBAvgValue;
 
-    /**
-     * b路平均无功功率
-     */
-    @JsonProperty("reactive_b_max_value")
-    private float reactiveBMaxValue;
+
 
     /**
-     * b路平均无功功率
+     * 总平均功率因素
      */
-    @JsonProperty("reactive_b_min_value")
-    private float reactiveBMinValue;
-
+    @JsonProperty("factor_total_avg_value")
+    private float factorTotalAvgValue;
 
     /**
      * a路平均功率因素
@@ -240,50 +223,9 @@ public class RoomPowBaseDo extends RoomBaseDo {
     @JsonProperty("factor_a_avg_value")
     private float factorAAvgValue;
 
-    @JsonProperty("factor_a_max_time")
-    private DateTime factorAMaxTime;
-
-    @JsonProperty( "factor_a_max_value")
-    private float factorAMaxValue;
-
-    @JsonProperty("factor_a_min_time")
-    private DateTime factorAMinTime;
-
-    @JsonProperty("factor_a_min_value")
-    private float factorAMinValue;
-
     /**
      * b路平均功率因素
      */
     @JsonProperty("factor_b_avg_value")
     private float factorBAvgValue;
-
-    @JsonProperty("factor_b_max_time")
-    private DateTime factorBMaxTime;
-
-    @JsonProperty("factor_b_max_value")
-    private float factorBMaxValue;
-
-    @JsonProperty("factor_b_min_time")
-    private DateTime factorBMinTime;
-
-    @JsonProperty("factor_b_min_value")
-    private float factorBMinValue;
-    /**
-     * 总平均功率因素
-     */
-    @JsonProperty("factor_total_avg_value")
-    private float factorTotalAvgValue;
-
-    @JsonProperty("factor_total_max_time")
-    private DateTime factorTotalMaxTime;
-
-    @JsonProperty("factor_total_max_value")
-    private float factorTotalMaxValue;
-
-    @JsonProperty("factor_total_min_time")
-    private DateTime factorTotalMinTime;
-
-    @JsonProperty("factor_total_min_value")
-    private float factorTotalMinValue;
 }

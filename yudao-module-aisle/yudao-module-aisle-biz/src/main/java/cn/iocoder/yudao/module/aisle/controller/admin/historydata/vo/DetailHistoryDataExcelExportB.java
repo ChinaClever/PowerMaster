@@ -28,10 +28,10 @@ public class DetailHistoryDataExcelExportB {
     @ExcelProperty("B路有功功率(kW)")
     private Double active_b;
     @NumberFormat("0.000")
-    @ExcelProperty("B路视在功率(kVA)")
+    @ExcelProperty("B路视在功率(kW)")
     private Double apparent_b;
     @NumberFormat("0.000")
-    @ExcelProperty("B路无功功率(kVar)")
+    @ExcelProperty("B路无功功率(kW)")
     private Double reactive_b;
     @NumberFormat("0.00")
     @ExcelProperty("B路功率因素")

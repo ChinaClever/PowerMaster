@@ -1227,21 +1227,10 @@ const handleBackData = (data) => {
 }
 
 const updatePowChartOptions = () => {
-  let powApparentData
-  let powActiveData
-  let powReactiveData
-  if(roomDownVal.aisleList.length) {
-    powChartOptions.value.radar.indicator = roomDownVal.aisleList.map(item => ({name: item.aisleName}))
-    powApparentData = roomDownVal.aisleList.map(item => item.powApparentTotal ? item.powApparentTotal : 0)
-    powActiveData = roomDownVal.aisleList.map(item => item.powActiveTotal ? item.powActiveTotal : 0)
-    powReactiveData = roomDownVal.aisleList.map(item => item.powReactiveTotal ? item.powReactiveTotal : 0)
-  } else {
-    powChartOptions.value.radar.indicator = ['柜列1']
-    powApparentData = [0]
-    powActiveData = [0]
-    powReactiveData = [0]
-  }
-  
+  powChartOptions.value.radar.indicator = roomDownVal.aisleList.map(item => ({name: item.aisleName}))
+  let powApparentData = roomDownVal.aisleList.map(item => item.powApparentTotal ? item.powApparentTotal : 0)
+  let powActiveData = roomDownVal.aisleList.map(item => item.powActiveTotal ? item.powActiveTotal : 0)
+  let powReactiveData = roomDownVal.aisleList.map(item => item.powReactiveTotal ? item.powReactiveTotal : 0)
   powChartOptions.value.series = [
     {
       name: '功率',
@@ -1270,8 +1259,7 @@ const getHomeAlarmData = async() => {
   const res2 = await AlarmApi.getAlarmRecord({
     pageNo: 1,
     pageSize: 30,
-    alarmStatus: [0],
-    roomId: Number(roomId.value)
+    alarmStatus: [0]
   })
   if (res2.list) {
     alarmData.value = res2.list

@@ -5,8 +5,6 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.PduBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
@@ -1962,9 +1960,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     lineRes.getSeries().add(lineSeries);
                 }
                 String temMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_max_value");
-                CabinetEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, CabinetEnvHourDo.class);
+                PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
                 String temMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_min_value");
-                CabinetEnvHourDo temMin = JsonUtils.parseObject(temMinValue, CabinetEnvHourDo.class);
+                PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
                 result.put("lineRes", lineRes);
                 if (temMax != null) {
                     result.put("temMaxValue", temMax.getTemMaxValue());

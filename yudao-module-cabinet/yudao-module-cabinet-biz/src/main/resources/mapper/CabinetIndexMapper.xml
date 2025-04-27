@@ -354,27 +354,13 @@
             OR cp.pdu_key_b = #{pduKey}
         </where>
     </select>
-    <select id="findAddAisleVerify" resultType="java.lang.Integer">
-        select count(1) from cabinet_index ci
-        left join cabinet_cfg cc on ci.id = cc.cabinet_id
-        <where>
-            room_id = #{roomId} and aisle_id = 0 and is_deleted =0
-            <if test="direction == 'x'">
-                and x_coordinate > #{xCoordinate}+#{aisleLength}
-                and (y_coordinate = #{yCoordinate} or y_coordinate+1 > #{yCoordinate})
-            </if>
-            <if test="direction == 'y'">
-                and y_coordinate+1 > #{yCoordinate}+#{aisleLength}
-                and (x_coordinate = #{xCoordinate} or x_coordinate+1 > #{xCoordinate})
-            </if>
-        </where>
-    </select>
+
     <select id="findAddAisleVerifyx" resultType="java.lang.Integer">
         select count(1) from cabinet_index ci
         left join cabinet_cfg cc on ci.id = cc.cabinet_id
         <where>
             room_id = #{roomId} and aisle_id = 0 and is_deleted =0
-            and  #{xCoordinate}+#{aisleLength} > x_coordinate
+            and  x_coordinate  between #{xCoordinate} and  #{xCoordinate}+#{aisleLength}
             and y_coordinate BETWEEN #{yCoordinate}  and #{yCoordinate}+1
         </where>
     </select>
@@ -384,10 +370,9 @@
         left join cabinet_cfg cc on ci.id = cc.cabinet_id
         <where>
             room_id = #{roomId} and aisle_id = 0 and is_deleted =0
-            and  #{yCoordinate} + #{aisleLength} > y_coordinate+1
+            and   y_coordinate between #{yCoordinate} and #{yCoordinate} + #{aisleLength}
             and x_coordinate BETWEEN #{xCoordinate}  and #{xCoordinate}+1
         </where>
     </select>
-    <!--            and y_coordinate+1 > #{yCoordinate}+#{aisleLength}
-            and (x_coordinate = #{xCoordinate} or x_coordinate+1 > #{xCoordinate})-->
+
 </mapper>

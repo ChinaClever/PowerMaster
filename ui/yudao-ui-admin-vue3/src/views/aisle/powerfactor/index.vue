@@ -281,10 +281,6 @@ import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 import Bar from "./Bar.vue"
-import { useRoute } from 'vue-router'
-
-const route = useRoute();
-const query = route.query;
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -313,7 +309,6 @@ const loadAll = async () => {
   });
   return objectArray;
 }
-const openDetailFlag=ref("0")
 
 const querySearch = (queryString: string, cb: any) => {
 
@@ -419,13 +414,6 @@ watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
-watch(openDetailFlag,(val) => {
-  if(val == "1") {
-    console.log({id: query.id,location: query.location})
-    openPFDetail({id: query.id,location: query.location})
-  }
-})
-
 
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
@@ -512,8 +500,8 @@ const getList = async () => {
       } 
 
       obj.pfTotal = obj.pfTotal?.toFixed(2);
-      obj.pfA = obj?.pfA?.toFixed(2);
-      obj.pfB = obj?.pfB?.toFixed(2);
+      obj.pfA = obj.pfA?.toFixed(2);
+      obj.pfB = obj.pfB?.toFixed(2);
 
     });
 
@@ -744,7 +732,6 @@ onMounted(async () => {
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
-  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 onBeforeUnmount(()=>{

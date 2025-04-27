@@ -10,7 +10,6 @@
     <div class="tree-container" style="margin-left:-20px;height:500px;width:calc(100% + 40px); /* 增加宽度以适应滚动条 */ overflow-x: auto; white-space: nowrap;">
       <el-tree
         ref="treeRef"
-        :expand-on-click-node="true"
         :data="showList"
         :props="defaultProps"
         :accordion="isAccordion"
@@ -78,21 +77,17 @@ const props = defineProps({
     required: false
   },
   currentKey: {
-    type: Number,
+    type: number,
     default: null,
-    required: false
-  },
-  highlightTypes:{
-    type:Array,
-    default: () => [],
-    required: false
-  },
-  defaultExpandedKeys:{
-    type:Array,
-    default: () => [],
     required: false
   }
 })
+// nextTick(() => {
+//   console.log('props.currentKey===', props.currentKey)
+//   treeRef.value?.$nextTick(()=>{
+//     treeRef.value?.setCurrentKey(props.currentKey)
+//   })
+// })
 
 const defaultProps = {
   children: 'children',
@@ -103,11 +98,7 @@ const checkKeys = ref(props.defaultCheckedKeys)
 const deptName = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const showList = ref<any[]>([])
-const expandKeys=ref(props.defaultExpandedKeys)
-
-watch(()=>props.defaultExpandedKeys, (val) => {
-  expandKeys.value = val
-},{deep:true})
+const expandKeys=ref([])
 /** 复选初始化 */
 const initCheck = (keys) => {
   treeRef.value!.setCheckedKeys(keys)
@@ -120,21 +111,11 @@ const filterNode = (value:string, data) => {
 
   return data.name.includes(value) || data.unique.includes(value);
 }
-let lastKey:number=props.currentKey as number;
+
 /** 处理部门被点击 */
 const handleNodeClick = async (row: { [key: string]: any }) => {
   console.log('处理部门被点击row', row)
   emits('node-click', row)
-  if(props.highlightTypes!=null&&props.highlightTypes.length>0){
-    console.log('props.highlightTypes', props.highlightTypes)
-    props.highlightTypes.forEach(type=>{
-      if(type==row.type){
-        lastKey=row.id
-      }else{
-        treeRef.value?.setCurrentKey(lastKey)
-      }
-    })
-  }
 }
 
 /** 处理多选被点击 */
@@ -173,6 +154,12 @@ function search(){
   for(let i in ans){
     addExpandKeys(ans[i])
   }
+  // treeRef.value.expandAll();
+  // console.log("treeRef.value",treeRef.value)
+  // const allNodes = treeRef.value.store._getAllNodes();
+  // allNodes.forEach(node => {
+  //   node.expanded = true;
+  // });
 }
 function addExpandKeys(node){
   if(node==null||node.children==null||node.children.length==0)return;

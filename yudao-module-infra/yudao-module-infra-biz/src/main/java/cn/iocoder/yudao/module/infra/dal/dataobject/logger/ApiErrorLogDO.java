@@ -17,11 +17,11 @@ import java.time.LocalDateTime;
  */
 @TableName("infra_api_error_log")
 @Data
-@EqualsAndHashCode(callSuper = true)//重写equals方法
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Builder
-@NoArgsConstructor//生成无参的构造方法
-@AllArgsConstructor //生成该类下全部属性的构造方法。
+@NoArgsConstructor
+@AllArgsConstructor
 @KeySequence(value = "infra_api_error_log_seq")
 public class ApiErrorLogDO extends BaseDO {
 

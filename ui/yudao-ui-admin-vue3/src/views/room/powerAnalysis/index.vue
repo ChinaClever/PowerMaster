@@ -3,6 +3,20 @@
     <template #NavInfo>
     <br/>
         <div class="nav_data">
+          <!-- <div class="carousel-container">
+            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+              </el-carousel-item>
+            </el-carousel>
+          </div>
+          <div class="nav_content">
+          <el-descriptions title="" direction="vertical" :column="1" border >
+              <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
+            </el-descriptions>
+          </div>-->
           <div class="descriptions-container" style="font-size: 14px;">
             <div class="description-item">
               <span class="label">最近一天 :</span>
@@ -261,7 +275,7 @@ const shortcuts = [
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = Math.min(pageNumber * queryParams.pageSize,total.value);
+  const end = pageNumber * queryParams.pageSize;
   const pageNumbers: string[] = [];
   for (let i = start; i <= end; i++) {
     pageNumbers.push('序号'+i);
@@ -282,7 +296,6 @@ const initChart = () => {
       title: { text: '各机房耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
-      barMaxWidth: '30px',
       toolbox: {feature: {saveAsImage:{}}},
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
@@ -362,7 +375,7 @@ const getList = async () => {
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(( queryParams.granularity!="month" && selectTimeRangeHaveDay.value==null)||(queryParams.granularity=="month"&&selectTimeRangeNoDay.value==null)){
+    if(!( queryParams.granularity!="month" && selectTimeRangeHaveDay.value!=null)&&!(queryParams.granularity=="month"&&selectTimeRangeNoDay.value!=null)){
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
