@@ -125,7 +125,7 @@ public interface RoomService {
 
     List<String> getRoomAddrList();
 
-    RoomMainResVO getDatanewDetail(int id) throws ExecutionException, InterruptedException;
+    RoomMainResVO getDataNewDetail(int id) throws ExecutionException, InterruptedException;
 
     //柜列编辑删除
     Integer roomAisleDeleteById(int id);
@@ -138,4 +138,6 @@ public interface RoomService {
     Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName);
 
     Boolean findAreaById(Integer xLength, Integer yLength, Integer id);
+
+    Boolean findAddAisleVerify(AisleSaveVo vo);
 }

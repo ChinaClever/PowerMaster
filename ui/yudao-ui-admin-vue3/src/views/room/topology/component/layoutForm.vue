@@ -20,8 +20,8 @@
       </el-form-item> 
       <el-form-item v-if="formData.type == 1" label="方向" prop="direction">
         <el-select v-model="formData.direction" placeholder="请选择活动区域">
-          <el-option label="横向" :value="1" :disabled="!operateInfo.maxlndexX" />
-          <el-option label="纵向" :value="2" :disabled="!operateInfo.maxlndexY" />
+          <el-option label="横向" :value="1"/>
+          <el-option label="纵向" :value="2"/>
         </el-select>
       </el-form-item>
       <el-form-item v-if="formData.type == 1" label="数量" prop="amount">
@@ -53,6 +53,19 @@
         <div style="flex: 1;">
           <el-form-item label="月用能限制" label-width="100">
             <el-input-number v-model="formData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+      </div>
+
+      <div style="display: flex;">
+        <div style="flex: 1;">
+          <el-form-item label="横坐标" label-width="100">
+            <el-input-number v-model="formData.xCoordinate" :min="1" :max="operateInfo.xLength" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+        <div style="flex: 1;">
+          <el-form-item label="纵坐标" label-width="100">
+            <el-input-number v-model="formData.yCoordinate" :min="1" :max="operateInfo.yLength" controls-position="right" placeholder="请输入" />
           </el-form-item>
         </div>
       </div>
@@ -88,7 +101,9 @@ const formData = ref({
   direction: operateInfo.value.maxlndexX ? 1 : 2,
   amount: 12,
   id: '',
-  cabinetList: [] as any
+  cabinetList: [] as any,
+  xCoordinate: 0,
+  yCoordinate: 0
 })
 const formRules = reactive<FormRules>({
   name: [{ required: true, message: '名称不能为空', trigger: 'blur' }],
@@ -116,6 +131,8 @@ const open = async (type: string, data, info) => {
     }
   }
   if (data) formData.value = data
+  formData.value.xCoordinate = Number(operateInfo.value.lndexX)+1
+  formData.value.yCoordinate = Number(operateInfo.value.lndexY)+1
   console.log('formData.value', formData.value)
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -170,8 +187,11 @@ const resetForm = () => {
     direction: operateInfo.value.maxlndexX ? 1 : 2,
     amount: 12,
     id: '',
-    cabinetList: []
+    cabinetList: [],
+    xCoordinate: Number(operateInfo.value.lndexX)+1,
+    yCoordinate: Number(operateInfo.value.lndexY)+1
   }
+  console.log(typeof(operateInfo.value.lndexX))
   minAmount.value = 1
   layoutForm.value?.resetFields()
 }

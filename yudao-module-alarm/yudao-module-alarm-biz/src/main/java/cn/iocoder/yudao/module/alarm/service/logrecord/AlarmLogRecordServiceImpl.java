@@ -1,9 +1,18 @@
 package cn.iocoder.yudao.module.alarm.service.logrecord;
 
+import cn.iocoder.yudao.framework.common.constant.FieldConstant;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.enums.*;
+import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -25,7 +34,6 @@ import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
 
 /**
  * 系统告警记录 Service 实现类
@@ -46,6 +54,15 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     @Autowired
     private PduDeviceApi pduDeviceApi;
 
+    @Autowired
+    private AisleBarMapper aisleBarMapper;
+
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
+
+    @Autowired
+    private CabinetIndexMapper cabinetIndexMapper;
+
     @Override
     public Integer saveLogRecord(AlarmLogRecordSaveReqVO createReqVO) {
         // 插入
@@ -60,13 +77,13 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         if (Objects.nonNull(updateReqVO.getAlarmStatus())
                 && updateReqVO.getAlarmStatus().equals(AlarmStatusEnums.FINISH.getStatus())) {
             logRecordMapper.update(null, new LambdaUpdateWrapper<AlarmLogRecordDO>()
-                    .eq(AlarmLogRecordDO::getId, updateReqVO.getId())
+                    .in(AlarmLogRecordDO::getId, updateReqVO.getIds())
                     .set(AlarmLogRecordDO::getFinishTime, new Date())
                     .set(Objects.nonNull(updateReqVO.getAlarmStatus()), AlarmLogRecordDO::getAlarmStatus, updateReqVO.getAlarmStatus())
                     .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()),AlarmLogRecordDO::getFinishReason, updateReqVO.getConfirmReason()));
         } else {
             logRecordMapper.update(null, new LambdaUpdateWrapper<AlarmLogRecordDO>()
-                    .eq(AlarmLogRecordDO::getId, updateReqVO.getId())
+                    .in(AlarmLogRecordDO::getId, updateReqVO.getIds())
                     .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()), AlarmLogRecordDO::getConfirmReason, updateReqVO.getConfirmReason())
                     .set(Objects.nonNull(updateReqVO.getAlarmStatus()), AlarmLogRecordDO::getAlarmStatus, updateReqVO.getAlarmStatus()));
         }
@@ -180,28 +197,28 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Override
     public void insertOrUpdateAlarmRecordWhenPduAlarm (List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
-        ValueOperations ops = redisTemplate.opsForValue();
         if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            ValueOperations ops = redisTemplate.opsForValue();
             List<PduIndexDo> pduIndexDoListOld = BeanUtils.toBean(oldMaps, PduIndexDo.class);
             List<PduIndexDo> pduIndexDoListNew = BeanUtils.toBean(newMaps, PduIndexDo.class);
             for (int i = 0; i < pduIndexDoListOld.size(); i++) {
                 PduIndexDo pduIndexDoOld = pduIndexDoListOld.get(i);
                 PduIndexDo pduIndexDoNew = pduIndexDoListNew.get(i);
                 List<Integer> alarmCodeList = new ArrayList<>();
-                alarmCodeList.add(DeviceAlarmStatusEnum.EARLY_WARNING.getStatus());
-                alarmCodeList.add(DeviceAlarmStatusEnum.ALARM.getStatus());
-                alarmCodeList.add(DeviceAlarmStatusEnum.OFF_LINE.getStatus());
+                alarmCodeList.add(PduStatusEnum.EARLY_WARNING.getStatus());
+                alarmCodeList.add(PduStatusEnum.ALARM.getStatus());
+                alarmCodeList.add(PduStatusEnum.OFF_LINE.getStatus());
                 if (alarmCodeList.contains(pduIndexDoNew.getRunStatus()) && !pduIndexDoOld.getRunStatus().equals(pduIndexDoNew.getRunStatus())) {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
                     alarmRecord.setAlarmKey(pduIndexDoNew.getPduKey());
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
-                    if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.EARLY_WARNING.getStatus())) {
+                    if (pduIndexDoNew.getRunStatus().equals(PduStatusEnum.EARLY_WARNING.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_WARNING.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
-                    } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.ALARM.getStatus())) {
+                    } else if (pduIndexDoNew.getRunStatus().equals(PduStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
-                    } else if (pduIndexDoNew.getRunStatus().equals(DeviceAlarmStatusEnum.OFF_LINE.getStatus())) {
+                    } else if (pduIndexDoNew.getRunStatus().equals(PduStatusEnum.OFF_LINE.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.PDU_OFF_LINE.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     }
@@ -209,7 +226,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     Map<String, String> positionMap = pduDeviceApi.getPositionByKeys(Arrays.asList(pduIndexDoNew.getPduKey()));
                     alarmRecord.setAlarmPosition(positionMap.get(pduIndexDoNew.getPduKey()));
                     // 告警描述、告警开始时间
-                    JSONObject pduJson = (JSONObject) ops.get(REDIS_KEY_PDU + pduIndexDoNew.getPduKey());
+                    JSONObject pduJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_PDU + pduIndexDoNew.getPduKey());
                     if (pduJson != null) {
                         String pdu_alarm = pduJson.get("pdu_alarm")==null?"":pduJson.get("pdu_alarm").toString();
                         alarmRecord.setAlarmDesc(pdu_alarm);
@@ -222,8 +239,15 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             alarmRecord.setStartTime(LocalDateTime.now());
                         }
                     }
+                    // 级联关系id
+                    CabinetIndex cabinetIndex = cabinetIndexMapper.selectByPduKey(pduIndexDoNew.getPduKey());
+                    if (cabinetIndex != null) {
+                        alarmRecord.setRoomId(cabinetIndex.getRoomId());
+                        alarmRecord.setAisleId(cabinetIndex.getAisleId());
+                        alarmRecord.setCabinetId(cabinetIndex.getId());
+                    }
                     logRecordMapper.insert(alarmRecord);
-                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && DeviceAlarmStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
+                } else if (alarmCodeList.contains(pduIndexDoOld.getRunStatus()) && PduStatusEnum.NORMAL.getStatus().equals(pduIndexDoNew.getRunStatus())) {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
@@ -234,6 +258,83 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
             }
         }
 
+    }
+
+
+    @Override
+    public void insertOrUpdateAlarmRecordWhenBusAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            ValueOperations ops = redisTemplate.opsForValue();
+            List<BusIndex> busIndexListOld = BeanUtils.toBean(oldMaps, BusIndex.class);
+            List<BusIndex> busIndexListNew = BeanUtils.toBean(newMaps, BusIndex.class);
+            for (int i = 0; i < busIndexListOld.size(); i++) {
+                BusIndex busIndexOld = busIndexListOld.get(i);
+                BusIndex busIndexNew = busIndexListNew.get(i);
+                List<Integer> alarmCodeList = new ArrayList<>();
+                alarmCodeList.add(BusTypeEnum.OFF_LINE.getStatus());
+                alarmCodeList.add(BusTypeEnum.ALARM.getStatus());
+                if (alarmCodeList.contains(busIndexNew.getRunStatus()) && !busIndexOld.getRunStatus().equals(busIndexNew.getRunStatus())) {
+                    AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
+                    alarmRecord.setAlarmKey(busIndexNew.getBusKey());
+                    alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
+                    if (busIndexNew.getRunStatus().equals(BusTypeEnum.ALARM.getStatus())) {
+                        alarmRecord.setAlarmType(AlarmTypeEnums.BUS_ALARM.getType());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
+                    } else if (busIndexNew.getRunStatus().equals(BusTypeEnum.OFF_LINE.getStatus())) {
+                        alarmRecord.setAlarmType(AlarmTypeEnums.BUS_OFF_LINE.getType());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
+                    }
+                    // 告警位置
+                    String location = getLocationByBusId(busIndexNew);
+                    alarmRecord.setAlarmPosition(location);
+                    // 告警描述、告警开始时间
+                    JSONObject busJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_BUS + busIndexNew.getBusKey());
+                    if (busJson != null) {
+                        String bus_alarm = busJson.get("dev_alarm")==null?"":busJson.get("dev_alarm").toString();
+                        alarmRecord.setAlarmDesc(bus_alarm);
+                        Object datetime = busJson.get("datetime");
+                        if (datetime != null) {
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            LocalDateTime startTime = LocalDateTime.parse(datetime.toString(), formatter);
+                            alarmRecord.setStartTime(startTime);
+                        } else {
+                            alarmRecord.setStartTime(LocalDateTime.now());
+                        }
+                    }
+                    // 机房id
+                    AisleIndex aisleIndex = aisleIndexMapper.selectByBusKey(busIndexNew.getBusKey());
+                    if (aisleIndex != null) {
+                        alarmRecord.setRoomId(aisleIndex.getRoomId());
+                        alarmRecord.setAisleId(aisleIndex.getId());
+                    }
+                    logRecordMapper.insert(alarmRecord);
+                } else if (alarmCodeList.contains(busIndexOld.getRunStatus()) && BusTypeEnum.NORMAL.getStatus().equals(busIndexNew.getRunStatus())) {
+                    int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
+                            .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
+                            .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
+                            .set(AlarmLogRecordDO::getFinishReason,"状态恢复正常")
+                            .eq(AlarmLogRecordDO::getAlarmKey, busIndexNew.getBusKey())
+                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
+                }
+            }
+        }
+
+    }
+
+    public String getLocationByBusId (BusIndex busIndex) {
+        String location = busIndex.getBusKey();
+        //设备位置
+        AisleBar aisleBar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>().eq(AisleBar::getBusKey, busIndex.getBusKey()));
+        if (aisleBar != null) {
+            Object aisle = redisTemplate.opsForValue().get(FieldConstant.REDIS_KEY_AISLE + aisleBar.getAisleId());
+            if (aisle != null) {
+                JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                location = json.getString("room_name") + FieldConstant.SPLIT_KEY
+                        + json.getString("aisle_name") + FieldConstant.SPLIT_KEY
+                        + aisleBar.getPath() + "路";
+            }
+        }
+        return location;
     }
 
 

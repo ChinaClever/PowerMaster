@@ -8,13 +8,13 @@
         代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
-     <select id="selectAisleIndexByCfgList">
-         select  ai.aisle_name,ai.id,ai.aisle_length,ai.pdu_bar,ac.ele_alarm_day,ac.ele_alarm_month
-                ,ac.ele_limit_day,ac.ele_limit_month,ai.direction,ai.x_coordinate
-               ,ai.y_coordinate,ac.power_capacity
-         from
-         aisle_index ai left join  aisle_cfg ac on ai.id = ac.aisle_id  where  ai.room_id =#{roomId} and  ai.is_delete = '0'
-     </select>
+    <select id="selectAisleIndexByCfgList">
+        select ai.aisle_name,ai.id,ai.aisle_length,ai.pdu_bar,ac.ele_alarm_day,ac.ele_alarm_month
+        ,ac.ele_limit_day,ac.ele_limit_month,ai.direction,ai.x_coordinate
+        ,ai.y_coordinate,ac.power_capacity
+        from
+        aisle_index ai left join aisle_cfg ac on ai.id = ac.aisle_id where ai.room_id =#{roomId} and ai.is_delete = '0'
+    </select>
     <select id="selectRoomAisleList" resultType="cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO">
         SELECT
         ai.id as id,
@@ -35,14 +35,78 @@
         aisle_index ai
         LEFT JOIN aisle_cfg ac ON ai.id = ac.aisle_id
         WHERE
-        ai.room_id = #{id} and  ai.is_delete = '0'
+        ai.room_id = #{id} and ai.is_delete = 0
     </select>
     <select id="findAreaById" resultType="java.lang.Integer">
-        select count(id) from aisle_index  where  room_id =3391 and
-        (y_coordinate+1 >#{yLength} and  x_coordinate+aisle_length-1 >#{xLength} and direction ='x') or
-        ( direction ='y' and y_coordinate + aisle_length-1 >#{yLength} and x_coordinate > #{xLength} )
+        select count(id) from aisle_index where is_delete = 0 and room_id =3391 and
+        (y_coordinate+1 >#{yLength} and direction ='x') or
+        ( direction ='y' and x_coordinate+1 > #{xLength} )
     </select>
 
+    <select id="findAddAisleVerifyx" resultType="java.lang.Integer">
+        select count(id)
+        from aisle_index
+        <where>
+            is_delete = 0
+            and room_id = #{vo.roomId}
+            <if test="vo.id != null">
+                and id != #{vo.id}
+            </if>
+            <if test="vo.direction !=null ">
+                and (( x_coordinate + aisle_length - 1 > #{vo.xCoordinate}+#{vo.aisleLength}-1  and x_coordinate <![CDATA[ <= ]]> #{vo.xCoordinate}+#{vo.aisleLength}-1
+                and ((y_coordinate BETWEEN #{vo.yCoordinate}  and #{vo.yCoordinate}+1)
+                or (y_coordinate+1 BETWEEN #{vo.yCoordinate}  and #{vo.yCoordinate}+1))
+                AND direction = 'x' )
+                or
+                (direction = 'y'
+                and  ((x_coordinate+1 BETWEEN #{vo.xCoordinate} AND #{vo.xCoordinate}+#{vo.aisleLength}-1)
+                or (x_coordinate BETWEEN #{vo.xCoordinate} AND #{vo.xCoordinate}+#{vo.aisleLength}-1))
+                and ((#{vo.yCoordinate} BETWEEN y_coordinate and  y_coordinate+aisle_length-1)
+                or  (#{vo.yCoordinate}+1 BETWEEN y_coordinate and  y_coordinate+aisle_length-1))))
+            </if>
+        </where>
+    </select>
+    <!--                AND( (( 8+2 )< y_coordinate + aisle_length - 1
+                AND   (x_coordinate+1 BETWEEN 5 AND 6)
+                AND direction = 'y' )
+
+                or (direction = 'x' and  ((y_coordinate+1 BETWEEN 8 AND 10)
+                or (y_coordinate BETWEEN 8 AND 10))
+                and ((5 BETWEEN x_coordinate and  x_coordinate+aisle_length-1)
+                or  (6 BETWEEN x_coordinate and  x_coordinate+aisle_length-1))))-->
+    <select id="findAddAisleVerifyy" resultType="java.lang.Integer">
+        select count(id)
+        from aisle_index
+        <where>
+            is_delete = 0
+            and room_id = #{vo.roomId}
+            <if test="vo.id != null">
+                and id != #{vo.id}
+            </if>
+            <if test="vo.direction !=null ">
+                and ((y_coordinate + aisle_length - 1 > (#{vo.yCoordinate}+#{vo.aisleLength}-1)  and y_coordinate <![CDATA[ <= ]]> (#{vo.yCoordinate}+#{vo.aisleLength}-1)
+                and ((x_coordinate BETWEEN #{vo.xCoordinate}  and #{vo.xCoordinate}+1)
+                or (x_coordinate+1 BETWEEN #{vo.xCoordinate}  and #{vo.xCoordinate}+1))
+                AND direction = 'y' )
+                or
+                (direction = 'x'
+                and  ((y_coordinate+1 BETWEEN #{vo.yCoordinate} AND #{vo.yCoordinate}+#{vo.aisleLength}-1)
+                or (y_coordinate BETWEEN #{vo.yCoordinate} AND #{vo.yCoordinate}+#{vo.aisleLength}-1))
+                and ((#{vo.xCoordinate} BETWEEN x_coordinate and  x_coordinate+aisle_length-1)
+                or  (#{vo.xCoordinate}+1 BETWEEN x_coordinate and  x_coordinate+aisle_length-1))))
+            </if>
+        </where>
+    </select>
+    <select id="selectByBusKey" resultType="cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex">
+        SELECT
+        *
+        FROM
+        `aisle_bar` ab
+        LEFT JOIN aisle_index ai ON ab.aisle_id = ai.id
+        <where>
+            ab.bus_key = #{busKey}
+        </where>
+    </select>
     <update id="roomAisleDeleteById">
         update aisle_index ai set ai.is_delete = 1 where ai.id = #{aisleId}
     </update>

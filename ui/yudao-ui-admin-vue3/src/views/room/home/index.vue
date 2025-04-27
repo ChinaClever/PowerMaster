@@ -92,7 +92,9 @@
       <el-card shadow="never" style="">
         <template #header>
           <div style="font-weight: bold">环境</div>
-          <el-link @click="updateChart(); toggleTable = !toggleTable" type="primary" style="display:flex;justify-content: flex-end">{{toggleTable?'温度':'湿度'}}</el-link>
+          <div style="display:flex;justify-content: flex-end">
+            <el-link @click.prevent="toggleTable = !toggleTable;updateChart();" type="primary">{{!toggleTable?'温度':'湿度'}}</el-link>
+          </div>
         </template>
         <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:32vh;"></div>
         <!--<div>当前平均温度：{{envInfo.temAvg}}°C</div>
@@ -180,30 +182,51 @@
           </el-progress>
         </div>
       </ContentWrap>-->
+       <el-card shadow="never" class="mb-8px" v-if="toggleAlarm===false">
+        <template #header>
+          <div class="h-3 flex justify-between">
+            <span>设备/告警</span>
+            <el-link @click="toggleAlarm = !toggleAlarm" type="primary">切换</el-link>
+          </div>
+        </template>
+        <el-skeleton :loading="loading" animated :rows="8" style="height: 328px">
+          <Echart :height="328" :options="numChartOptions" />
+        </el-skeleton>
+      </el-card>
+      <el-card shadow="never" class="mb-8px" v-else-if="toggleAlarm===true">
+        <template #header>
+          <div class="h-3 flex justify-between">
+            <span>设备/告警</span>
+            <el-link @click="toggleAlarm = !toggleAlarm" type="primary">切换</el-link>
+          </div>
+        </template>
+        <el-skeleton :loading="loading" animated>
+          <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
+            <el-table :data="alarmData" style="width: 100%" border class="text-12px" tooltip-formatter="tableRowFormatter">
+              <el-table-column prop="alarmTypeDesc" label="告警类型">
+                <template #default="{ row }">
+                  <el-tooltip 
+                    :content="`${row.alarmDesc}`" 
+                    placement="top"
+                  >
+                    <span class="hover-text">{{ row.alarmTypeDesc }}</span>
+                  </el-tooltip>
+                </template>
+              </el-table-column>
+              <el-table-column prop="alarmPosition" label="所在区域" />
+            </el-table>
+          </div>
+        </el-skeleton>
+      </el-card>
       <el-card shadow="never">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span> 设备统计</span>
+            <span>功率</span>
           </div>
         </template>
-        <el-table :data="tableData" style="" border class="text-12px">
-          <el-table-column prop="name" label="" width="58" height="10vh" />
-          <el-table-column prop="pdu_num" label="PDU" width="70" height="10vh" />
-          <el-table-column prop="box_num" label="插接箱" width="70" height="10vh" />
-          <el-table-column prop="bus_num" label="始端箱" width="70" height="10vh" />
-        </el-table>
-      </el-card>
-      <el-card shadow="never" class="mb-8px">
-        <template #header>
-          <div class="h-3 flex justify-between">
-            <span>告警统计</span>
-          </div>
-        </template>
-        <el-table :data="tableData" border class="text-12px" height="44svh">
-          <el-table-column prop="error" label="告警内容"  />
-          <el-table-column prop="box" label="告警设备" />
-          <el-table-column prop="time" label="告警时间" />
-        </el-table>
+        <el-skeleton :loading="loading" animated :rows="7" style="height: 300px">
+          <Echart :height="300" :options="powChartOptions" />
+        </el-skeleton>
       </el-card>
       
       <!--<el-card shadow="never" class="mb-8px">
@@ -235,6 +258,7 @@
 <script lang="ts" setup>
 import CabTopology from "../topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
+import { AlarmApi } from '@/api/system/notify/alarm'
 import { EChartsOption } from 'echarts'
 import { formatDate} from '@/utils/formatTime';
 
@@ -245,6 +269,12 @@ const route = useRoute();
 const query = route.query;
 
 const format = (percentage) => ( ``)  //用来自定义进度条的内容
+
+const scrollableContainerOne = ref(null); // 挂载到设备模块
+
+let scrollIntervalOne; // 设备模块的定时器
+let scrollTimeout; // 用于检测滚动是否停止的延迟定时器
+let isScrollingManually = false; // 标记是否正在手动滚动
 
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
 const environmentOptions = ref<EChartsOption>({}) //用来存储环境图表的配置选项
@@ -260,6 +290,9 @@ const roomDownVal = reactive({}) // 机房信息
 const envInfo = reactive({}) // 空间信息
 const echartInfo = reactive<any>({}) //配置图表的数据系列
 const toggleTable = ref(false)
+const toggleAlarm = ref(false)
+const loading = ref(true)
+const alarmData = ref([])
 const tableData = ref([
   {
     name: '总数',
@@ -336,6 +369,92 @@ const dataTime = ref({
   L3DataTime: []
 })
 
+const numChartOptions = ref({
+  title: { text: ''},
+  tooltip: { trigger: 'item',
+    formatter: '{b} : {c}',
+    confine: true},
+  grid: {
+    bottom: 50,
+    left: 30
+  },
+  legend: {
+    data: ['PDU', '始端箱','插接箱'] // 图例项
+  },
+  xAxis: {
+    type: 'category',nameLocation: 'end',
+    data:['总数','在线','离线','告警']
+  },
+  yAxis: {
+    type: 'value',
+    boundaryGap: false
+  },
+  series: [
+    {
+      name: 'PDU',
+      type: 'bar',
+      data: [0,0,0,0],
+    },
+    {
+      name: '始端箱',
+      type: 'bar',
+      data: [0,0,0,0],
+    },
+    {
+      name: '插接箱',
+      type: 'bar',
+      data: [0,0,0,0],
+    }
+  ]
+})
+
+const powChartOptions = ref({
+  // tooltip: {
+  //   trigger: 'item',
+  //   axisPointer: {
+  //     type: 'shadow'
+  //   },
+  //   confine: true,
+  //   formatter: function (params) {
+  //     console.log('params', params)
+  //     let result = '';
+  //       // item 是每一个系列的数据
+  //       const seriesName = params.name; // 系列名称
+  //       const value = params.value[params.dataIndex]; // 数据值
+  //       const marker = params.marker; // 标志图形
+  //       result += `${marker}${seriesName}: ${value}kW·h<br/>`;
+  //     return result;
+  //   }
+  // },
+  legend: {
+    data: ['视在功率', '有功功率', '无功功率'],
+  },
+  radar: {
+    // shape: 'circle',
+    indicator: [
+    ]
+  },
+  series: [
+    {
+      name: '功率',
+      type: 'radar',
+      data: [
+        {
+          value: [],
+          name: '视在功率'
+        },
+        {
+          value: [],
+          name: '有功功率'
+        },
+        {
+          value: [],
+          name: '无功功率'
+        }]
+    }
+  ]
+});
+
 const chartContainer2 = ref<HTMLElement | null>(null);
 const chartContainer3 = ref<HTMLElement | null>(null);
 const chartContainer4 = ref<HTMLElement | null>(null);
@@ -382,7 +501,9 @@ const clickPower = async () => {
 const initChart2 = () => {
     console.log("bbbbbbbbbbbbbbbb")
   if (chartContainer2.value && instance) {
-    myChart2 = echarts.init(chartContainer2.value);
+    if (!myChart2) {
+      myChart2 = echarts.init(chartContainer2.value);
+    }
     myChart2.setOption(
       {
         title: { text: ''},
@@ -472,7 +593,9 @@ const initChart2 = () => {
 
 const initChart3 = () => {
   if (chartContainer3.value && instance) {
-    myChart3 = echarts.init(chartContainer3.value);
+    if (!myChart3) {
+      myChart3 = echarts.init(chartContainer3.value);
+    }
     myChart3.setOption(
       {
         title: { text: ''},
@@ -551,7 +674,9 @@ const initChart3 = () => {
 const initChart4 = () => {
   // console.log(L4Data.value,L5Data.value,L6Data.value)
   if (chartContainer4.value && instance) {
-    myChart4 = echarts.init(chartContainer4.value);
+    if (!myChart4) {
+      myChart4 = echarts.init(chartContainer4.value);
+    }
     myChart4.setOption(
       {
         title: { text: ''},
@@ -1039,11 +1164,23 @@ const getRoomDevData = async() => {
 
   console.log('***获取机房主页面设备数据', res)
 
-  tableData.value.forEach((item,index) => {
-    tableData.value[index].pdu_num = res['pdu' + tableData.value[index].flag] ? res['pdu' + tableData.value[index].flag] : 0
-    tableData.value[index].box_num = res['box' + tableData.value[index].flag] ? res['box' + tableData.value[index].flag] : 0
-    tableData.value[index].bus_num = res['bus' + tableData.value[index].flag] ? res['bus' + tableData.value[index].flag] : 0
-  })
+  numChartOptions.value.series = [
+    {
+      name: 'PDU',
+      type: 'bar',
+      data: [res.pduNum,res.pduOnLine,res.pduOffLine,res.pduInform],
+    },
+    {
+      name: '始端箱',
+      type: 'bar',
+      data: [res.busNum,res.busOnLine,res.busOffLine,res.busInform],
+    },
+    {
+      name: '插接箱',
+      type: 'bar',
+      data: [res.boxNum,res.boxOnLine,res.boxOffLine,res.boxInform],
+    }
+  ]
   
   Object.assign(deviceInfo, res)
 }
@@ -1082,8 +1219,51 @@ const handleBackData = (data) => {
   Object.assign(roomDownVal, data)
 
   
-  initChart()
+  updateChart()
   getRoomEqData()
+  getHomeAlarmData()
+  updatePowChartOptions()
+  loading.value = false
+}
+
+const updatePowChartOptions = () => {
+  powChartOptions.value.radar.indicator = roomDownVal.aisleList.map(item => ({name: item.aisleName}))
+  let powApparentData = roomDownVal.aisleList.map(item => item.powApparentTotal ? item.powApparentTotal : 0)
+  let powActiveData = roomDownVal.aisleList.map(item => item.powActiveTotal ? item.powActiveTotal : 0)
+  let powReactiveData = roomDownVal.aisleList.map(item => item.powReactiveTotal ? item.powReactiveTotal : 0)
+  powChartOptions.value.series = [
+    {
+      name: '功率',
+      type: 'radar',
+      data: [
+        {
+          value: powApparentData,
+          name: '视在功率'
+        },
+        {
+          value: powActiveData,
+          name: '有功功率'
+        },
+        {
+          value: powReactiveData,
+          name: '无功功率'
+        }
+      ]
+    }
+  ]
+  console.log(powChartOptions.value.series.data)
+}
+
+const getHomeAlarmData = async() => {
+  //获取告警轮播信息
+  const res2 = await AlarmApi.getAlarmRecord({
+    pageNo: 1,
+    pageSize: 30,
+    alarmStatus: [0]
+  })
+  if (res2.list) {
+    alarmData.value = res2.list
+  }
 }
 
 const initChart = () => {
@@ -1129,7 +1309,9 @@ const initChart = () => {
 }
 
 const updateChart = () => {
-  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  if (!lineidChart) {
+    lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  }
   if(toggleTable.value === true){
     lineidChart.setOption({
       title: { text: ''},
@@ -1293,11 +1475,85 @@ const switchTrend = (type, first = false) => {
   }
 }
 
+const startScrolling = () => {
+  // 检查是否已经有一个定时器在运行
+  if (scrollIntervalOne || isScrollingManually) return;
+ 
+  scrollIntervalOne = setInterval(() => {
+    // 设备模块的滚动逻辑
+    scrollContainer('scrollableContainerOne');
+  }, 1000);
+};
+ 
+const scrollContainer = (containerName) => {
+  let containerRef, interval;
+  if (containerName === 'scrollableContainerOne') {
+    containerRef = scrollableContainerOne;
+    interval = scrollIntervalOne;
+  }
+
+  // 检查 containerRef.value 是否存在，用来解决控制台报错
+  if (!containerRef?.value) {
+    return; // 可以返回一个特定的值或对象来表示错误
+  }
+ 
+  const { scrollTop, clientHeight, scrollHeight } = containerRef.value;
+  const scrollStep = 10; // 滚动步长
+  const scrollTolerance = -10; // 停止前的容忍范围
+ 
+  if (scrollTop + clientHeight >= scrollHeight) {
+    // 滚动到顶部
+    containerRef.value.scrollTop = 0;
+  } else if (scrollTop + scrollStep + scrollTolerance >= scrollHeight - clientHeight) {
+    // 接近底部时停止定时器
+    clearInterval(interval);
+    scrollIntervalOne = null;
+  } else {
+    // 继续滚动
+    containerRef.value.scrollTop += scrollStep;
+  }
+};
+ 
+const stopScrolling = () => {
+  clearInterval(scrollIntervalOne);
+  scrollIntervalOne = null;
+};
+ 
+const handleScroll = (event, containerName) => {
+  // 停止自动滚动
+  isScrollingManually = true;
+  stopScrolling();
+ 
+  // 设置延迟来判断滚动是否停止
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    // 如果在延迟期间没有新的滚动事件，则恢复自动滚动
+    isScrollingManually = false;
+    startScrolling();
+  }, 1000); // 延迟时间，单位毫秒，可以根据需要调整
+};
+
 onMounted(() => {
   const centerEle = document.getElementById('center')
   containerInfo.width = centerEle?.offsetWidth as number
   console.log('centerEle', containerInfo.width, centerEle?.offsetWidth, centerEle?.offsetHeight)
+  if (scrollableContainerOne.value) {
+    scrollableContainerOne.value.addEventListener('scroll', (event) => handleScroll(event, 'scrollableContainerOne'));
+  }
+ 
+  // 初始启动自动滚动
+  startScrolling();
 })
+ 
+onUnmounted(() => {
+  // 移除滚动事件监听器
+  if (scrollableContainerOne.value) {
+    scrollableContainerOne.value.removeEventListener('scroll', (event) => handleScroll(event, 'scrollableContainerOne'));
+  }
+ 
+  // 确保在组件卸载时清除定时器
+  stopScrolling();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -1407,6 +1663,27 @@ onMounted(() => {
     height: 100%;
     box-sizing: border-box;
     padding: 5 20px;
+  }
+}
+
+@media screen and (min-width:2048px){
+  .scrollable-container-one{
+    height: 34.7vh;
+    overflow-y: auto;
+  }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .scrollable-container-one{
+    height: 33.7vh;
+    overflow-y:auto;
+  }
+}
+
+@media screen and (max-width:1600px){
+  .scrollable-container-one{
+    height: 43.7vh;
+    overflow-y: auto;
   }
 }
 

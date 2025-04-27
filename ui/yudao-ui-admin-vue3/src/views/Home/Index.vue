@@ -166,7 +166,7 @@
       <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===true">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>设备统计/告警统计</span>
+            <span>设备/告警</span>
             <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
           </div>
         </template>
@@ -479,7 +479,7 @@ const getHomeDevData = async() => {
     {
       name: 'PDU',
       type: 'bar',
-      data: [res.pduNum,res.pduOnLine,res.pduOffLine,1000],
+      data: [res.pduNum,res.pduOnLine,res.pduOffLine,res.pduInform],
     },
     {
       name: '始端箱',
@@ -803,7 +803,7 @@ const getHomeAlarmData = async() => {
 const switchPowBtn = (index) => {
   prePowBtn.value = index
 
-  let unitFlag = false
+  // let unitFlag = false
 
   // for(let i = 0;i < eqInfo.roomEqList.length;i++) {
   //   if(eqInfo.roomEqList[i][powBtns[index].param] > 1000) {

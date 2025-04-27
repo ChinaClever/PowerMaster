@@ -28,7 +28,7 @@
               <div v-if="parseFloat(EleChain.dayRate) > 100" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:top" size="23" color="#bd0000" /></div>
               <div v-else-if="!EleTrendLoading" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:bottom" size="23" color="#5470c6" /></div>
             </div>
-            <div class="introduce">日环比(当日/昨日)</div>
+            <div class="introduce">日环比(昨日/前日)</div>
           </div>
           <div class="box">
             <div class="value">{{EleChain.thisWeekEq && EleChain.thisWeekEq.toFixed(1)}}</div>
@@ -44,7 +44,7 @@
               <div v-if="parseFloat(EleChain.weekRate) > 100" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:top" size="23" color="#bd0000" /></div>
               <div v-else-if="!EleTrendLoading" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:bottom" size="23" color="#5470c6" /></div>
             </div>
-            <div class="introduce">周环比(当周/上周)</div>
+            <div class="introduce">周环比(上周/上上周)</div>
           </div>
           <div class="box">
             <div class="value">{{EleChain.thisMonthEq && EleChain.thisMonthEq.toFixed(1)}}</div>
@@ -60,7 +60,7 @@
               <div v-if="parseFloat(EleChain.monthRate) > 100" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:top" size="23" color="#bd0000" /></div>
               <div v-else-if="!EleTrendLoading" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:bottom" size="23" color="#5470c6" /></div>
             </div>
-            <div class="introduce">月环比(当月/上月)</div>
+            <div class="introduce">月环比(上月/上上月)</div>
           </div>
         </div>
       </el-card>
