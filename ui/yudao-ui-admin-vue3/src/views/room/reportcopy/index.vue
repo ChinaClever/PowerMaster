@@ -290,7 +290,6 @@ const location = ref() as any;
 const pfLineList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
-const diyTotalLineList = ref() as any;
 const aLineList = ref() as any;
 const bLineList = ref() as any;
 const idList = ref() as any;
@@ -343,8 +342,6 @@ const createFilter = (query: string | number) => {
 
 // 2025422
 const typeRadioShow = ref("最大")
-// const timeRadio = ref('近一小时');
-// const isHourDisabled = ref(false);
 // 2025422
 
 const disabledDate = (date) => {
@@ -611,30 +608,17 @@ const getList = async () => {
 
 }
 
-const handlePFLineQuery = async () => {
-  const data = await IndexApi.getRoomPFLine(queryParams);
-  pfLineList.value = data.pfLineRes;
+// const handlePFLineQuery = async () => {
+//   const data = await IndexApi.getRoomPFLine(queryParams);
+//   pfLineList.value = data.pfLineRes;
   
-  if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
-    visControll.pfVis = true;
-  }else {
-    visControll.pfVis = false;
-  }
-}
+//   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
+//     visControll.pfVis = true;
+//   }else {
+//     visControll.pfVis = false;
+//   }
+// }
 
-
-watch(
-  () => totalLineList.value?.series,
-  (newSeries) => {
-   
-    if (newSeries?.[0]?.data) {
-
-    }
-
-  },
-  
-  { deep: true, immediate: true } // immediate: true 表示初始化时立即执行
-);
 
 const handlePowQuery = async () => {
  
