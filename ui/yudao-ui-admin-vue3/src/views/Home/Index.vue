@@ -10,6 +10,7 @@
               </el-avatar>
               <div>
                 <div class="text-20px">
+                <div class="text-20px font-700">
                   PowerMaster系统安全守护第 {{devInfo.days}} 天
                 </div>
                 <div class="mt-10px text-14px text-gray-500">
