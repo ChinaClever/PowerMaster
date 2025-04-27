@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord;
 
-import com.github.shyiko.mysql.binlog.event.EventType;
 import lombok.Data;
 
 import java.io.Serializable;

@@ -80,13 +80,13 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         if (Objects.nonNull(updateReqVO.getAlarmStatus())
                 && updateReqVO.getAlarmStatus().equals(AlarmStatusEnums.FINISH.getStatus())) {
             logRecordMapper.update(null, new LambdaUpdateWrapper<AlarmLogRecordDO>()
-                    .eq(AlarmLogRecordDO::getId, updateReqVO.getId())
+                    .in(AlarmLogRecordDO::getId, updateReqVO.getIds())
                     .set(AlarmLogRecordDO::getFinishTime, new Date())
                     .set(Objects.nonNull(updateReqVO.getAlarmStatus()), AlarmLogRecordDO::getAlarmStatus, updateReqVO.getAlarmStatus())
                     .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()), AlarmLogRecordDO::getFinishReason, updateReqVO.getConfirmReason()));
         } else {
             logRecordMapper.update(null, new LambdaUpdateWrapper<AlarmLogRecordDO>()
-                    .eq(AlarmLogRecordDO::getId, updateReqVO.getId())
+                    .in(AlarmLogRecordDO::getId, updateReqVO.getIds())
                     .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()), AlarmLogRecordDO::getConfirmReason, updateReqVO.getConfirmReason())
                     .set(Objects.nonNull(updateReqVO.getAlarmStatus()), AlarmLogRecordDO::getAlarmStatus, updateReqVO.getAlarmStatus()));
         }
