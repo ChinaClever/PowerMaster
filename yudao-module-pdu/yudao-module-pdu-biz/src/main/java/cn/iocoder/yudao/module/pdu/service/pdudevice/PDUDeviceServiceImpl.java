@@ -12,6 +12,7 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
@@ -35,6 +36,8 @@ import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
+import cn.iocoder.yudao.module.pdu.enums.PduDataTypeEnum;
+import cn.iocoder.yudao.module.pdu.utils.PduAnalysisResult;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -816,6 +819,14 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("l", dayList1);
                 result.put("ll", dayList2);
                 result.put("lll", dayList3);
+
+                Map<String, Object> dataL1 = PduAnalysisResult.analyzePduData(dayList1);
+                Map<String, Object> dataL2 = PduAnalysisResult.analyzePduData(dayList2);
+                Map<String, Object> dataL3 = PduAnalysisResult.analyzePduData(dayList3);
+
+                result.put("showL1",dataL1);
+                result.put("showL2",dataL2);
+                result.put("showL3",dataL3);
             }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
 
@@ -1569,23 +1580,23 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
-    public Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
         Map result = new HashMap<>();
         CabinetChartResBase totalLineRes = new CabinetChartResBase();
-        result.put("totalLineRes", totalLineRes);
+//        result.put("totalLineRes", totalLineRes);
 
-        result.put("apparentPowMaxValue", null);
-        result.put("apparentPowMaxTime", null);
-        result.put("apparentPowMinValue", null);
-        result.put("apparentPowMinTime", null);
-        result.put("activePowMaxValue", null);
-        result.put("activePowMaxTime", null);
-        result.put("activePowMinValue", null);
-        result.put("activePowMinTime", null);
-        result.put("reactivePowMaxValue", null);
-        result.put("reactivePowMaxTime", null);
-        result.put("reactivePowMinValue", null);
-        result.put("reactivePowMinTime", null);
+//        result.put("apparentPowMaxValue", null);
+//        result.put("apparentPowMaxTime", null);
+//        result.put("apparentPowMinValue", null);
+//        result.put("apparentPowMinTime", null);
+//        result.put("activePowMaxValue", null);
+//        result.put("activePowMaxTime", null);
+//        result.put("activePowMinValue", null);
+//        result.put("activePowMinTime", null);
+//        result.put("reactivePowMaxValue", null);
+//        result.put("reactivePowMaxTime", null);
+//        result.put("reactivePowMinValue", null);
+//        result.put("reactivePowMinTime", null);
         try {
             PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
 
@@ -1610,33 +1621,83 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 List<String> data = getData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index);
                 List<PduHdaTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, PduHdaTotalHourDo.class)).collect(Collectors.toList());
 
+
                 LineSeries totalApparentPow = new LineSeries();
-                totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
-                totalActivePow.setName("总平均有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+
+                //判断是设置的数据类型（最大值、最小值、平均值）
+                if (dataType == 1) {
+                    totalApparentPow.setName(PduDataTypeEnum.APPARENT_TOTAL_MAX.getDataType());
+                    totalActivePow.setName(PduDataTypeEnum.ACTIVE_TOTAL_MAX.getDataType());
+                    totalReactivePow.setName(PduDataTypeEnum.REACTIVE_TOTAL_MAX.getDataType());
+
+
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getApparentPowMaxValue());
+                            totalActivePow.getData().add(hourdo.getActivePowMaxValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+
+                        });
+                    } else {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getApparentPowMaxValue());
+                            totalActivePow.getData().add(hourdo.getActivePowMaxValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                        });
+                    }
+                } else if (dataType == 0) {
+                    totalApparentPow.setName(PduDataTypeEnum.APPARENT_TOTAL_AVG.getDataType());
+                    totalActivePow.setName(PduDataTypeEnum.ACTIVE_TOTAL_AVG.getDataType());
+                    totalReactivePow.setName(PduDataTypeEnum.REACTIVE_TOTAL_AVG.getDataType());
+
+
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getApparentPowAvgValue());
+                            totalActivePow.getData().add(hourdo.getActivePowAvgValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+
+                        });
+                    } else {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getApparentPowAvgValue());
+                            totalActivePow.getData().add(hourdo.getActivePowAvgValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                        });
+                    }
+                }else if (dataType == -1){
+                    totalApparentPow.setName(PduDataTypeEnum.APPARENT_TOTAL_MIN.getDataType());
+                    totalActivePow.setName(PduDataTypeEnum.ACTIVE_TOTAL_MIN.getDataType());
+                    totalReactivePow.setName(PduDataTypeEnum.REACTIVE_TOTAL_MIN.getDataType());
+
+
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getApparentPowMinValue());
+                            totalActivePow.getData().add(hourdo.getActivePowMinValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveMinValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+
+                        });
+                    } else {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getApparentPowMinValue());
+                            totalActivePow.getData().add(hourdo.getActivePowMinValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveMinValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                        });
+                    }
+                }
+
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
-                LineSeries totalReactivePow = new LineSeries();
-                totalReactivePow.setName("总平均无功功率");
                 totalLineRes.getSeries().add(totalReactivePow);
-
-
-                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
-                    powList.forEach(hourdo -> {
-                        totalApparentPow.getData().add(hourdo.getApparentPowAvgValue());
-                        totalActivePow.getData().add(hourdo.getActivePowAvgValue());
-                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
-
-                    });
-                } else {
-                    powList.forEach(hourdo -> {
-                        totalApparentPow.getData().add(hourdo.getApparentPowAvgValue());
-                        totalActivePow.getData().add(hourdo.getActivePowAvgValue());
-                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
-                    });
-                }
 
                 String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_reactive_max_value");
                 PduHdaTotalHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, PduHdaTotalHourDo.class);
@@ -1647,7 +1708,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 PduHdaTotalHourDo totalMaxApparent = JsonUtils.parseObject(apparentTotalMaxValue, PduHdaTotalHourDo.class);
                 String apparentTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_apparent_min_value");
                 PduHdaTotalHourDo totalMinApparent = JsonUtils.parseObject(apparentTotalMinValue, PduHdaTotalHourDo.class);
-
 
                 String activeTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "pow_active_max_value");
                 PduHdaTotalHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, PduHdaTotalHourDo.class);
@@ -1675,6 +1735,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         return result;
     }
+
+
+
 
     @Override
     public Map getReportOutLetDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
