@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
@@ -61,6 +62,10 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     List<CabinetPdu> getFindCabinetBoxList(Integer roomId);
 
     Integer findAreaById(@Param("xLength") Integer xLength, @Param("yLength") Integer yLength, @Param("roomId") Integer roomId);
+
+    int findAddAisleVerifyx(AisleSaveVo vo);
+
+    int findAddAisleVerifyy(AisleSaveVo vo);
 
     CabinetIndex selectByPduKey(String pduKey);
 }
