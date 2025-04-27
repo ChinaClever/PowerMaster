@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.room.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndexVo;
@@ -29,6 +30,11 @@ public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
     void initaisleData();
 
     Integer findAreaById(@Param("xLength") Integer xLength, @Param("yLength") Integer yLength, @Param("roomId") Integer roomId);
+
+
+    int findAddAisleVerifyx(@Param("vo") AisleSaveVo vo);
+
+    int findAddAisleVerifyy(@Param("vo") AisleSaveVo vo);
 
     AisleIndex selectByBusKey(String busKey);
 }
