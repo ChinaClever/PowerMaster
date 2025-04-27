@@ -374,5 +374,4 @@
             and x_coordinate BETWEEN #{xCoordinate}  and #{xCoordinate}+1
         </where>
     </select>
-
 </mapper>

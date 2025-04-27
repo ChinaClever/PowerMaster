@@ -346,6 +346,10 @@ import { ElTree } from 'element-plus'
 import EnvTemLine from './component/EnvTemLine.vue'
 import EnvHumLine from './component/EnvHumLine.vue'
 import Gauge from './component/Gauge.vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -410,7 +414,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   devKey : undefined,
-  id: history?.state?.id || 1,
+  id: Number(query.id) || 1,
   type: 'total',
   eqGranularity:"day",
   powGranularity : "hour",

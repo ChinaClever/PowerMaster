@@ -631,7 +631,6 @@ const handleCheck = async (row) => {
 }
 
 watch(openDetailFlag,(val) => {
-  console.log(val)
   if(val == "1") {
     toDetail({id: query.id})
   }

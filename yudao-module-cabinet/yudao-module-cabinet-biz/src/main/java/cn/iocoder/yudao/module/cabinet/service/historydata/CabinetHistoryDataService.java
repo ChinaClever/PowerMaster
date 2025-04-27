@@ -44,7 +44,7 @@ public interface CabinetHistoryDataService {
 
     Map<Integer, RoomIndex> getRoomById(List<Integer> roomIds);
 
-    Map<Integer, AisleIndex> getAisleByIds(List<Integer> aisleIds);
+    List<AisleIndex> getAisleByIds(List<Integer> aisleIds);
 
     PageResult<CabinetEnvResVO> getHistoryDataPageEnv(CabinetHistoryDataPageReqVO pageReqVO);
 }
