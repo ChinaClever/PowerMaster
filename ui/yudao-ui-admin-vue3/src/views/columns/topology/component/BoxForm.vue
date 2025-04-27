@@ -70,6 +70,9 @@ const open = async (data) => {
   resetForm()
   console.log('data', data)
   if (data) formData.value = {...data}
+  if(!formData.value.outletNum) {
+    formData.value.outletNum = 1
+  }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
@@ -86,6 +89,9 @@ const submitForm = async () => {
     console.log('提交请求', formData.value)
     dialogVisible.value = false
     // 发送操作成功的事件
+    if(formData.value.type) {
+      formData.value.outletNum = 0
+    }
     emit('success', formData.value)
   } catch (error) {
     console.log('error', error)

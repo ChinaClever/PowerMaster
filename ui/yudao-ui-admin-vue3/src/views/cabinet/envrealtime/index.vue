@@ -7,56 +7,6 @@
           <div class="name">温湿度</div>
         </div>
         <div class="line"></div>
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>&lt;15%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>15%-30%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>&gt;30
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div>
-        <div class="line"></div>
-        <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -73,7 +23,7 @@
           </button>
            
           <template v-for="(status, index) in statusList" :key="index">
-              <button v-if="switchValue == 1"
+              <button
                 class="btn_normal normal"
                 @click.prevent="handleSelectStatus(index)"
                 :style="{
@@ -83,28 +33,11 @@
                   borderStyle: 'solid',
                   color:isSelected(index) ? '#000' : 'white'
                 }"
-                style="width: 90px;"
+                style="width: 100px;"
               >
-              {{ status.startNum+15 }}°C ~ {{ status.endNum+15 }}°C
-              </button>
-              <button v-else
-                   class="btn_normal normal"
-                @click.prevent="handleSelectStatus(index)"
-                :style="{
-                  backgroundColor: isSelected(index) ? 'white' : status.color,
-                  borderColor: status.color,
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  color:isSelected(index) ? '#000' : 'white'
-                }"
-                style="width: 90px;"
-              >
-              {{ status.name }}
+              {{ status.startNum}}°C ~ {{ status.endNum}}°C
               </button>
 
-              <!--       name: `${item.min}°C ~ ${item.max}°C`,
-      startNum: item.min,
-      endNum: item.max, -->
           </template>
 
           <el-button
@@ -112,7 +45,7 @@
             plain
             @click="openForm('create')"
           >
-            <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色123
+            <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色
           </el-button>
         </el-form-item>
         <el-form-item prop="company">
@@ -137,8 +70,6 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <!-- <el-button @click="switchTemAndHum = 0;" :type="switchTemAndHum == 0 ? 'primary' : ''"><Icon icon="mdi:temperature-celsius" style="margin-right: 4px" />温度</el-button>
-          <el-button @click="switchTemAndHum = 1;" :type="switchTemAndHum == 1 ? 'primary' : ''"><Icon icon="carbon:humidity" style="margin-right: 4px" />温度</el-button> -->
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;handleQuery();" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />冷通道</el-button>
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;handleQuery();" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />热通道</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 2;handleQuery();" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />环境表格</el-button>
@@ -254,19 +185,19 @@
             <div  class="tem">
                 <div><span>冷</span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                     {{ item.iceAverageTem === null ? '--' : item.iceAverageTem }}℃  
+                     {{ item.iceMaxTem === null ? '--' : item.iceMaxTem }}℃  
                 </span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                     {{ item.iceAverageHum === null ? '--' : item.iceAverageHum }}% 
+                     {{ item.iceMaxHum === null ? '--' : item.iceMaxHum }}% 
                 </span></div>
             </div>
             <div  class="tem">
                 <div><span>热</span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }">
-                    {{ item.hotAverageTem === null ? '--' : item.hotAverageTem }}℃  
+                    {{ item.hotMaxTem === null ? '--' : item.hotMaxTem }}℃  
                 </span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }">
-                    {{ item.hotAverageHum === null ? '--' : item.hotAverageHum }}% 
+                    {{ item.hotMaxHum === null ? '--' : item.hotMaxHum }}% 
                 </span></div>
             </div>
           </div>
@@ -286,19 +217,19 @@
             <div  class="tem">
                 <div><span>冷</span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                   {{ item.iceAverageTem === null ? '--' : item.iceAverageTem }}℃  
+                   {{ item.iceMaxTem === null ? '--' : item.iceMaxTem }}℃  
                  </span></div>
                 <div><span :style="{ color : item.iceAverageTemColor }">
-                   {{ item.iceAverageHum === null ? '--' : item.iceAverageHum }}% 
+                   {{ item.iceMaxHum === null ? '--' : item.iceMaxHum }}% 
                 </span></div>
             </div>
             <div  class="tem">
                 <div><span>热</span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }">
-                   {{ item.hotAverageTem === null ? '--' : item.hotAverageTem }}℃  
+                   {{ item.hotMaxTem === null ? '--' : item.hotMaxTem }}℃  
                 </span></div>
                 <div><span :style="{ color : item.hotAverageTemColor }"> 
-                   {{ item.hotAverageHum === null ? '--' : item.hotAverageHum }}% 
+                   {{ item.hotMaxHum === null ? '--' : item.hotMaxHum }}% 
                 </span></div>
             </div>
           </div>
@@ -353,12 +284,6 @@ const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const tableLoading = ref(false);
-// const statusNumber = reactive({
-//   lessFifteen : 0,
-//   greaterFifteen : 0,
-//   greaterThirty : 0,
-//   smallCurrent : 0
-// })
 
 const toCabinetEnvDetail = (row) =>{
   const id = row.id
@@ -372,24 +297,37 @@ const statusList:any = ref([]);
 
 const getCabinetColorAll = async () => {
   const res = await IndexApi.getCabinetColorAll()
-  console.log('res', res)
   if (res != null) {
-  statusList.value = res.map(item => ({
-      name: `${item.min}°C ~ ${item.max}°C`,
-      startNum: item.min,
-      endNum: item.max,
-      selected: true, // 根据实际情况设置默认选中状态
-      cssClass: 'btn_normal',// 根据实际情况设置样式类
-      activeClass: 'btn_normal normal',// 根据实际情况设置样式类
-      value: 0,
-      color: item.color
-    }));
+  statusList.value = res.map(item =>{
+    if(switchValue.value == 0){
+      return {
+        name: `${item.min}°C ~ ${item.max}°C`,
+        startNum: item.min,
+        endNum: item.max,
+        selected: true, // 根据实际情况设置默认选中状态
+        cssClass: 'btn_normal',// 根据实际情况设置样式类
+        activeClass: 'btn_normal normal',// 根据实际情况设置样式类
+        value: 0,
+        color: item.color
+      }; 
+    }else{
+      return {
+        name: `${item.hotMin}°C ~ ${item.hotMax}°C`,
+        startNum: item.hotMin,
+        endNum: item.hotMax,
+        selected: true, // 根据实际情况设置默认选中状态
+        cssClass: 'btn_normal',// 根据实际情况设置样式类
+        activeClass: 'btn_normal normal',// 根据实际情况设置样式类
+        value: 0,
+        color: item.hotColor
+      }; 
+    }
+  });
   }
 }
 
 
 const handleClick = (row) => {
-  console.log("click",row)
 }
 
 const handleCheck = async (row) => {
@@ -541,22 +479,14 @@ const getNavList = async() => {
 // }
 
 const handleSelectStatus = (index) => {
-  // console.log('index',index);
-  // console.log('statusList',statusList.value[index].startNum);
   butColor.value = 1;
   if(allSelected.value) {
      allSelected.value = false;
   }
   colorIndex.value = index;
   selectedIndex.value = index;
-  if(switchValue.value ==1){
-  queryParams.startNum = statusList.value[index].startNum+15;
-  queryParams.endNum = statusList.value[index].endNum+15;
-  }else{
   queryParams.startNum = statusList.value[index].startNum;
   queryParams.endNum = statusList.value[index].endNum;
-  }
-
   handleQuery();
 }
 
@@ -581,21 +511,16 @@ const toggleAllStatus = () => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
-  if(switchValue.value ==1){
-  queryParams.startNum = statusList.value[colorIndex.value].startNum+15;
-  queryParams.endNum = statusList.value[colorIndex.value].endNum+15;
-  }else{
-  queryParams.startNum = statusList.value[colorIndex.value].startNum;
-  queryParams.endNum = statusList.value[colorIndex.value].endNum;
-  }
   getList()
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
+  queryFormRef.value.resetFields()
     butColor.value = 0;
     colorIndex.value =0;
-  allSelected.value = !allSelected.value;
+  // allSelected.value = !allSelected.value;
+  allSelected.value = true;
   selectedIndex.value = null;
   onclickColor.value = -1;
   queryParams.startNum = null;

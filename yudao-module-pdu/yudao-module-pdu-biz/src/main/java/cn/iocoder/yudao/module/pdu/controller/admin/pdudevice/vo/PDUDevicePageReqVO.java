@@ -66,4 +66,7 @@ public class PDUDevicePageReqVO extends PageParam {
         return devKey;
     }
 
+    @Schema(description = "电流/功率/标识")
+    private Integer flagVlaue;
+
 }

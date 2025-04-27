@@ -1,10 +1,13 @@
 package cn.iocoder.yudao.module.room.controller.admin.roomindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomIndexChartDetailDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
 import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
 import cn.iocoder.yudao.module.room.service.roomindex.RoomIndexService;
@@ -13,6 +16,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,7 +94,17 @@ public class RoomIndexController {
     @Operation(summary = "机房用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<RoomEQRes>> getEqPage(@RequestBody RoomIndexPageReqVO pageReqVO) {
-        PageResult<RoomEQRes> pageResult = indexService.getEqPage(pageReqVO);
+//        PageResult<RoomEQRes> pageResult = indexService.getEqPage(pageReqVO);
+//        return success(pageResult);
+        PageResult<RoomEQRes> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getRoomIds()) || ObjectUtil.isNotEmpty(pageReqVO.getName())) {
+            pageResult = indexService.getEqPage(pageReqVO);
+        } else {
+            pageResult = indexService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)) {
+                pageResult = indexService.getEqPage(pageReqVO);
+            }
+        }
         return success(pageResult);
     }
 
@@ -109,6 +123,12 @@ public class RoomIndexController {
         return success(dto);
     }
 
+    @Operation(summary = "获得机房用能最大")
+    @GetMapping("/eq/maxEq")
+    public CommonResult<List<RoomMaxEqResVO>> maxEq(){
+        return success(indexService.getMaxEq());
+    }
+
     /**
      * 机房用能趋势
      *
@@ -116,14 +136,13 @@ public class RoomIndexController {
      */
     @Operation(summary = "机房用能趋势")
     @GetMapping("/eleTrend")
-    public CommonResult<List<RoomEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
-        List<RoomEqTrendDTO> dto = indexService.eqTrend(id, type);
+    public CommonResult<List<RoomEqTrendVO>> eleTrend(@Param("id") int id, @Param("type") String type) {
+        List<RoomEqTrendVO> dto = indexService.eqTrend(id, type);
         return success(dto);
     }
 
     /**
      * 机房用能环比
-     *
      * @param id 机房id
      */
     @Operation(summary = "机房用能环比")
@@ -132,19 +151,6 @@ public class RoomIndexController {
         RoomEleChainDTO dto = indexService.getEleChain(id);
         return success(dto);
     }
-
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出机房索引 Excel")
-//    @PreAuthorize("@ss.hasPermission('room:index:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportIndexExcel(@Valid RoomIndexPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<RoomIndexDO> list = indexService.getIndexPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "机房索引.xls", "数据", RoomIndexRespVO.class,
-//                        BeanUtils.toBean(list, RoomIndexRespVO.class));
-//    }
 
     @PostMapping("/report/ele")
     @Operation(summary = "获得机房报表数据")
@@ -183,7 +189,18 @@ public class RoomIndexController {
         PageResult<RoomEleTotalRealtimeResVO> list = indexService.getRoomEleTotalRealtime(reqVO, false);
         ExcelUtils.write(response, "机房实时电能记录数据.xlsx", "数据", RoomEleTotalRealtimeResVO.class,
                 BeanUtils.toBean(list.getList(), RoomEleTotalRealtimeResVO.class));
-
     }
 
+    @PostMapping("/chartDetail")
+    @Operation(summary = "折线图数据")
+    public CommonResult<List<Map<String, Object>>> getChartDetail(@RequestBody @Valid RoomIndexChartDetailDTO detailDTO) throws IOException {
+        return success(indexService.getChartDetail(detailDTO));
+    }
+
+    @Operation(summary = "机房设备数据")
+    @GetMapping("/deviceStatistics")
+    public CommonResult<DeviceStatisticsVO> deviceStatistics(@RequestParam(value = "roomId", required = true) @Parameter(description = "机房id") Integer roomId) {
+        DeviceStatisticsVO vo = indexService.deviceStatistics(roomId);
+        return success(vo);
+    }
 }

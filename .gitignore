@@ -72,3 +72,6 @@ auto-*.d.ts
 *.zip
 yudao-module-pdu/yudao-module-pdu-biz/src/main/java/cn/iocoder/yudao/module/pdu/service/pdudevice/PDUDeviceServiceImpl.java
 yudao-module-pdu/yudao-module-pdu-biz/src/main/java/cn/iocoder/yudao/module/pdu/service/pdudevice/PDUDeviceServiceImpl.java
+ui/yudao-ui-admin-vue3/.env.local
+/ui/yudao-ui-admin-vue3/dist-prod
+yudao-module-alarm/yudao-module-alarm-biz/pom.xml

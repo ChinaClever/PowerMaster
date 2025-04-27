@@ -91,7 +91,7 @@ public interface BoxIndexService {
 
     BusBalanceDeatilRes getBoxBalanceDetail(String devKey);
 
-    List<BusTrendDTO> getBoxBalanceTrend(Integer boxId);
+    List<BusTrendDTO> getBoxBalanceTrend(Integer boxId, Integer timeType);
 
     BusActivePowDTO getActivePow(BusPowVo vo);
 
@@ -133,7 +133,7 @@ public interface BoxIndexService {
 
     Map getAvgBoxHdaLineForm(BoxIndexPageReqVO pageReqVO) throws IOException;
 
-    LineBoxMaxResVO getBoxLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
+    LineBoxMaxResVO getBoxLineMax(BoxIndexPageReqVO pageReqVO) throws IOException;
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
 
@@ -156,4 +156,6 @@ public interface BoxIndexService {
     Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO) throws IOException;
 
     Map<String, BoxNameVO> getRoomByKeys(List<String> keys);
+
+    void getHarmonicLineExcel(BoxIndexPageReqVO pageReqVO) throws IOException;
 }

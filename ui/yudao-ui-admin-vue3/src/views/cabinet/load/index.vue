@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜负载">
+  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜负荷">
     <template #NavInfo>
       <div class="navInfo">
         <!-- <div class="header">
@@ -10,7 +10,7 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载123
+              <div class="tag empty"></div>空载
             </div>
             <div class="value"><span class="number">{{statusNumber.LoadRateZero}}</span>个</div>
           </div>
@@ -300,10 +300,9 @@ const statusList = reactive([
 const getTableData = async(reset = false) => {
   loading.value = true
   if (reset) queryParams.pageNo = 1
- 
   try {
     const res = await CabinetApi.getIndexLoadPage(queryParams)
-    console.log('res66666666', res);
+    getLoadStatusList();
     if (!res) {
       // 可以选择设置一个空数组和总页数为0，或者显示错误消息
       listPage.value = [];
@@ -417,13 +416,13 @@ const toMachineDetail = (row) => {
   const cabinet = row.id;
   const cabinetName = row.cabinetName;
   const roomName = row.roomName;
-  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet }})
+  const pduBox = row.pduBox;
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: {roomName, roomId ,cabinetName, cabinet, pduBox}})
 }
 
 onBeforeMount(() => {
   getNavList();
   getTableData();
-  getLoadStatusList();
   flashListTimer.value = setInterval((getTableData), 5000);
 })
 

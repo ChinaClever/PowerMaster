@@ -3,7 +3,25 @@
   <div class="energy">
     <div class="top">
       <ContentWrap>
-        <el-tag size="large">{{ location }}</el-tag>
+        <el-form
+          class="-mb-15px topForm"
+          :model="queryParams"
+          ref="queryFormRef"
+          :inline="true"
+          label-width="68px"
+        >
+          <el-form-item label="" prop="jf">
+            <el-select v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-200px">
+              <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item >
+          <span class="line"></span>
+          <el-form-item label="" prop="jg">
+            <el-select v-model="queryParams.aisle" placeholder="请选择" class="!w-200px">
+              <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+        </el-form>
       </ContentWrap>
     </div>
     <div class="content">
@@ -97,10 +115,17 @@
 import { EChartsOption } from 'echarts'
 import { CabinetApi } from '@/api/cabinet/info'
 import { AisleEnergyApi } from '@/api/aisle/aisleenergy'
+import { IndexApi } from '@/api/aisle/aisleindex';
 import 'echarts/lib/component/dataZoom';
+import { c } from 'vite/dist/node/types.d-aGj9QkWt';
+import { useRoute } from 'vue-router'
 
-const location = ref(history?.state?.location )
+const route = useRoute();
+const query = route.query;
+
+const location = ref(Number(query.location) )
 const roomList = ref([]) // 左侧导航栏树结构列表
+const AllMachineList=ref(null);
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
 const EleTrendOption = {
@@ -110,8 +135,8 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  busId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1
+  aisle: Number(query.id) || 1,
+  cabinetroomId: Number(query.roomId) || 1
 })
 const EleChain = reactive({
   todayEq: '',
@@ -129,14 +154,14 @@ const ActivePowTrend = reactive({})
 watch(() => queryParams.cabinetroomId, (val) => {
   machineList.value = handleNavList(val)
   if (machineList.value.length == 0) {
-    queryParams.busId = null
+    queryParams.aisle = null
     return
   }
   const defaultValue = machineList.value[0] as any
-  queryParams.busId = defaultValue.id
+  queryParams.aisle = defaultValue.id
 })
 
-watch(() => queryParams.busId,(val) => {
+watch(() => queryParams.aisle,(val) => {
   console.log('wwwwwwwwwww', val)
   getActivePowTrend()
   getMachineEleChain()
@@ -145,34 +170,28 @@ watch(() => queryParams.busId,(val) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  if (res.length > 0) {
-    roomList.value = res
-    machineList.value = handleNavList(queryParams.cabinetroomId)
-    console.log('接口获取机房导航列表', res)
-  }
+  const res = await IndexApi.getAisleMenu();
+  roomList.value =res.map((item) => {return{"id":item.id,"name":item.name}});
+  AllMachineList.value=res.map((item) => {return item.children.map((inner) => {return {id:inner.id,name:inner.name}})});
+  console.log('接口获取机房导航列表',res);
+  machineList.value=handleNavList(queryParams.cabinetroomId);
+  // const res = await CabinetApi.getRoomMenuAll({})
+  // if (res.length > 0) {
+  //   roomList.value = res
+  //   machineList.value = handleNavList(queryParams.cabinetroomId)
+  //   console.log('接口获取机房导航列表', res)
+  // }
 }
 const handleNavList = (cabinetroomId) => {
-  const data = roomList.value as any
-  const roomIndex = data.findIndex(item => item.id == cabinetroomId)
-  let list = [] as any
-  if (data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 2) {
-    data[roomIndex].children.forEach(child => {
-      if (child.children.length > 0)  {
-        child.children.forEach(grandChild => {
-          list.push(grandChild)
-        })
-      }
-    })
-  } else if(data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 3) {
-    list = data[roomIndex].children.map(item => item)
-  }
-  return list
+  let index=-1;
+  roomList.value.find(item => {index++;return item.id == cabinetroomId});
+  if(index==-1) return [];
+  return AllMachineList.value[index];
 }
 
 // 获取机柜有功功率趋势
 const getActivePowTrend = async() => {
-  const res = await AisleEnergyApi.getActivePowTrend({id:queryParams.busId})
+  const res = await AisleEnergyApi.getActivePowTrend({id:queryParams.aisle})
   Object.assign(ActivePowTrend, res)
   console.log('获取机柜有功功率趋势------', res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1]))
   echartsOptionPowTrend.value = {
@@ -262,7 +281,7 @@ const getActivePowTrend = async() => {
 }
 // 获取机柜用能环比
 const getMachineEleChain = async() => {
-  const res = await AisleEnergyApi.getEleChain({id:queryParams.busId})
+  const res = await AisleEnergyApi.getEleChain({id:queryParams.aisle})
   Object.assign(EleChain, res)
   console.log('获取机柜用能环比', EleChain)
 }
@@ -270,7 +289,7 @@ const getMachineEleChain = async() => {
 const getMachineEleTrend = async(type) => {
   try {
     EleTrendLoading.value = true
-    const res = await AisleEnergyApi.getEleTrend({ id: queryParams.busId, type })
+    const res = await AisleEnergyApi.getEleTrend({ id: queryParams.aisle, type })
     echarsOptionEleTrend.value ={
       tooltip: {
         trigger: 'axis',

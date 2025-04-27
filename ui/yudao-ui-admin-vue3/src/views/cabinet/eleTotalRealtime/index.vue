@@ -34,10 +34,12 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
          </el-form-item>
+         <el-form-item style="position: absolute;right: 0px">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+          </el-form-item>
       </el-form> 
     </template>
     <template #Content>
@@ -60,7 +62,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.id,String(selectTimeRange[0]),String(selectTimeRange[1]))">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.id,selectTimeRange!=null?selectTimeRange[0]:null,selectTimeRange!=null?selectTimeRange[1]:null)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -80,7 +82,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.id,selectTimeRange!=null?selectTimeRange[0]:null,selectTimeRange!=null?selectTimeRange[1]:null)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -116,7 +118,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
@@ -230,7 +232,7 @@ const initChart = () => {
     });
     rankChart.on('click', function(params) {
       // 控制台打印数据的名称
-      toDetails(list.value[params.dataIndex].roomId,
+      toDetails(list.value[params.dataIndex].id,
       list.value[params.dataIndex].createTimeMin,
       list.value[params.dataIndex].createTimeMax);
     });
@@ -267,12 +269,12 @@ const getList = async () => {
   loading.value = true
   try {
     if(selectTimeRange.value == null){
-      alert('请输入时间范围');
+      ElMessage.warning('请选择时间范围')
     return;
     }
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       
       const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
@@ -401,16 +403,20 @@ const getNavNewData = async() => {
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
+    if(selectTimeRange.value == null||selectTimeRange.value.length != 2){
+      return ElMessage.warning('请选择时间范围')
+    }
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    queryParams.timeRange=[formatDate(startOfDay(convertDate(selectTimeRange.value[0]))),formatDate(endOfDay(convertDate(selectTimeRange.value[1])))]
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.getCabinetEleTotalRealtimeExcel(queryParams, axiosConfig)
-    await download.excel(data, '机柜实时能耗.xlsx')
+    await download.excel(data, '机柜能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -421,9 +427,9 @@ const handleExport = async () => {
 
 
 /** 详情操作*/
-const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
-  push('/cabinet/nenghao/powerAnalysis?start='+createTimeMin+
-  '&end='+createTimeMax+'&id='+ id);
+const toDetails = (id: number, createTimeMin : any,createTimeMax : any) => {
+  push('/cabinet/nenghao/powerAnalysis?id='+id+(createTimeMax!=null&&createTimeMax!=''&&createTimeMin!=null&&createTimeMin!=''?"&start="+createTimeMin+
+  '&end='+createTimeMax:''));
 }
 const format = (date) => {
   const year = date.getFullYear();
@@ -431,6 +437,9 @@ const format = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+watch(() => selectTimeRange.value, (newValue) => {
+  queryParams.timeRange = newValue
+})
 /** 初始化 **/
 onMounted(() => {
   getNavList()

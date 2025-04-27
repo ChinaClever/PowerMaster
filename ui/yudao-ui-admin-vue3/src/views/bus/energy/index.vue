@@ -87,7 +87,13 @@
         </div>
         <el-table v-show="switchValue == 1" style="width: 100%;height: 720px;margin-top:-10px;overflow-y: auto;" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
-          <el-table-column label="位置" min-width="110" align="center" prop="local" />
+          <el-table-column min-width="110" label="所在位置" align="center" prop="local">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.local ? scope.row.local : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>  
           <el-table-column label="设备名称"  align="center" prop="busName" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
@@ -344,7 +350,7 @@ const changeTimeGranularity = (value) => {
 // 跳转详情
 const toDetail = (row) => {
   console.log('toDetail', row.roomName)
-   push({path: '/bus/busmonitor/busenergydetail', state: { devKey: row.devKey,
+   push({path: '/bus/busmonitor/busmonitor/busenergydetail', query: { devKey: row.devKey,
       roomId: row.roomId,
       id: row.id,
       location: row.location,
@@ -505,8 +511,9 @@ onBeforeMount(() => {
       padding-left: 20px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 64px 0 0;
       }
       .info {
         line-height: 1.7;
@@ -575,8 +582,9 @@ onBeforeMount(() => {
       padding-left: 20px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 64px 0 0;
       }
       .info {
         line-height: 1.7;
@@ -645,8 +653,9 @@ onBeforeMount(() => {
       padding-left: 20px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       .count_img {
-        margin: 0 35px 0 13px;
+        margin: 0 64px 0 0;
       }
       .info {
         line-height: 1.7;

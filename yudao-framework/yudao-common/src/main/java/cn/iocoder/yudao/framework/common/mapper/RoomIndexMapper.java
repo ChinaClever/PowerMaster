@@ -5,11 +5,15 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author luowei
@@ -26,4 +30,13 @@ public interface RoomIndexMapper extends BaseMapper<RoomIndex> {
     Page<RoomIndexDTO> selectRoomleteList(@Param("page") Page<RoomIndexDTO> page, @Param("indexVo") RoomIndexVo pageReqVO);
 
     int restoreByDeleteRoom(@Param("id")int id);
+
+    List<String> getRoomAddrList();
+
+    RoomIndexCfgVO findRoomIndexCfg(@Param("id")int id);
+
+    Integer selectRoomByName(@Param("name") String name);
+
+    @Delete("DELETE FROM room_index")
+    void initRoomData();
 }

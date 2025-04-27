@@ -89,7 +89,10 @@
                   <div style="position:relative;" :style="{flex: item.usedSpace}">
                     <div style="position:absolute;top:55px;left:5px;">剩余量</div>
                   </div>
-                  <div class="fill" :style="{flex: item.usedSpaceRate}">{{item.usedSpaceRate}}%</div>
+                  <div v-if ="item.usedSpaceRate == 100" class="fill" :style="{flex: item.usedSpaceRate}">{{item.usedSpaceRate}}%</div>
+                  <div v-if ="item.usedSpaceRate < 100 && item.usedSpaceRate >= 50" class="normal" :style="{flex: item.usedSpaceRate}">{{item.usedSpaceRate}}%</div>
+                  <div v-if ="item.usedSpaceRate < 50 && item.usedSpaceRate >= 30" class="fill" :style="{flex: item.usedSpaceRate}">{{item.usedSpaceRate}}%</div>
+                  <div v-if ="item.usedSpaceRate < 30 && item.usedSpaceRate >= 0" class="fill" :style="{flex: item.usedSpaceRate}">{{item.usedSpaceRate}}%</div>
                 </div>
                 <div class="bottom"></div>
               </div>
@@ -165,9 +168,9 @@ const statusList = reactive([
     name: '剩余量100%',
     selected: true,
     value: 0,
-    cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal',
-    color: '#3bbb00',
+    cssClass: 'btn_full',
+    activeClass: 'btn_full full',
+    color: '#42ee5f',
     startNum: 100,
     endNum: 100,
   },
@@ -346,6 +349,24 @@ onBeforeMount(async () => {
             align-items: center;
             justify-content: center;
           }
+          .normal {
+            background-color: #409EFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .worn {
+            background-color: #ffc402;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .error {
+            background-color: #fa3333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
         }
         .bottom {
           width: 50px;
@@ -425,6 +446,7 @@ onBeforeMount(async () => {
 .btn_fault,
 .btn_offline,
 .btn_normal,
+.btn_full,
 .btn_warn,
 .btn_error{
   width: 125px;
@@ -456,13 +478,25 @@ onBeforeMount(async () => {
     color: #fff;
   }
 }
-.btn_normal {
+.btn_full {
   border: 1px solid #3bbb00;
   background-color: #fff;
   margin-right: 8px;
 }
-.normal {
+.full {
   background-color: #3bbb00;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_normal {
+  border: 1px solid #3B8BF5;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.normal {
+  background-color: #3B8BF5;
   color: #fff;
   &:hover {
     color: #fff;

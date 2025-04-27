@@ -16,9 +16,9 @@ public class SystemWebConfiguration {
     /**
      * system 模块的 API 分组
      */
-    @Bean
-    public GroupedOpenApi systemGroupedOpenApi() {
-        return YudaoSwaggerAutoConfiguration.buildGroupedOpenApi("system");
-    }
+//    @Bean
+//    public GroupedOpenApi systemGroupedOpenApi() {
+//        return YudaoSwaggerAutoConfiguration.buildGroupedOpenApi("system");
+//    }
 
 }

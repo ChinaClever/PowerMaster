@@ -13,6 +13,7 @@ public class BusPFDetailRes {
 
     private List<Float> powerFactorAvgValueC;
 
+
     private List<String> time;
 
 }

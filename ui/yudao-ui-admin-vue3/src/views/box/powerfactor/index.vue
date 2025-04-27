@@ -105,7 +105,13 @@
         <el-table v-if="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="300px">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="typeText == 'line'" label="总功率因数" align="center" prop="totalPf" width="130px" >
           <template #default="scope" >
@@ -311,7 +317,7 @@
         <div class="custom-row" style="display: flex; align-items: center;">
           <!-- 位置标签 -->
           <div class="location-tag el-col">
-            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因数详情</span>
             <span>所在位置：{{ location? location:'未绑定'}}</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
@@ -320,18 +326,27 @@
           <div class="date-picker-col el-col">
             <el-date-picker
               v-model="queryParams.oldTime"
+              :clearable = "false"
+              :editable = "false"
               value-format="YYYY-MM-DD HH:mm:ss"
               type="datetime"
+              :disabled-date="disabledDate"
+              @change="handleDayPick()"
               :picker-options="pickerOptions"
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button :disabled="clickAdd" @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
           <div class="chart-data-buttons el-col" style="margin-right: 50px;">
             <div class="button-group">
+              <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+                <el-option label="平均" value="平均" />
+                <el-option label="最大" value="最大" />
+                <el-option label="最小" value="最小" />
+              </el-select>
               <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
               <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
               <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
@@ -344,11 +359,16 @@
         <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList" />
         <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
           <el-table :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;" >
-          <el-table-column label="时间" align="center" prop="create_time"/>
-          <el-table-column label="输出位" align="center" prop="outlet_id"/>
-          <el-table-column label="功率因数" align="center" prop="power_factor_avg_value"/>
-          <!-- <el-table-column label="输出位3功率因数" align="center" prop="powerFactorAvgValueC"/> -->
-        </el-table>
+            <!-- <el-table-column label="输出位3功率因数" align="center" prop="powerFactorAvgValueC"/> -->
+            <el-table-column label="序号" align="center" prop="index" width="80px" />
+            <el-table-column label="时间" align="center" prop="createTime" />
+            <el-table-column label="输出位1功率因数" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : (typeRadioShow == '最小' ? 'Min' : 'Avg')}Value`" />
+            <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : 'Min'}Time`" />
+            <el-table-column v-if="outletNum >= 2" label="输出位2功率因数" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : (typeRadioShow == '最小' ? 'Min' : 'Avg')}Valueb`" />
+            <el-table-column v-if="outletNum >= 2 && typeRadioShow != '平均'" label="发生时间" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : 'Min'}Timeb`" />
+            <el-table-column v-if="outletNum == 3" label="输出位3功率因数" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : (typeRadioShow == '最小' ? 'Min' : 'Avg')}Valuec`" />
+            <el-table-column v-if="outletNum == 3 && typeRadioShow != '平均'" label="发生时间" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : 'Min'}Timec`" />
+          </el-table>
         </div>
       </el-dialog>
     </template>
@@ -363,6 +383,7 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import PFDetail from './component/PFDetail.vue'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
@@ -394,6 +415,11 @@ const loadAll = async () => {
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
+
+const typeRadioShow = ref("最大")
+
+const clickAdd = ref(true)
+
 const statusNumber = reactive({
   normal : 0,
   alarm : 0,
@@ -450,13 +476,28 @@ const createFilter = (queryString: string) => {
   }
 }
 
+const getBoxIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBoxIdAndLocation(queryParams);
+    if (data != null){
+      openPFDetail(data)
+    }else{
+      location.value = null
+      boxName.value = null
+    }
+ } finally {
+ }
+}
+
 const openPFDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location;
   devkey.value = row.devKey;
   await getDetail();
+  clickAdd.value = true
   detailVis.value = true;
+  typeRadioShow.value = '最大'
 }
 const getListAll = async () => {
   try {
@@ -489,8 +530,19 @@ const disabledDate = (date) => {
 const handleDayPick = async () => {
 
   if(queryParams?.oldTime ){
+    var date = new Date(queryParams.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
+
+    var today = new Date(); // 今天的日期
+    today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+    if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+      clickAdd.value = true
+    } else {
+      clickAdd.value = false
+    }
+
     await getDetail();
-    
   } 
 }
 
@@ -534,6 +586,8 @@ const subtractOneDay = () => {
 
   date.setDate(date.getDate() - 1); // 减去一天
 
+  clickAdd.value = false
+
   queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
 
@@ -541,6 +595,14 @@ const addtractOneDay = () => {
   var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
 
   date.setDate(date.getDate() + 1); // 减去一天
+
+  var today = new Date(); // 今天的日期
+  today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+  if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+    clickAdd.value = true
+  }
 
   queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
@@ -589,6 +651,8 @@ const handleCheck = async (row) => {
 
 const serverRoomArr =  ref([])
 
+const outletNum = ref(0)
+
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
@@ -623,7 +687,7 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: undefined,
+  devKey : history?.state?.devKey as string | undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -636,16 +700,79 @@ const exportLoading = ref(false) // 导出的加载中
 /** 查询列表 */
 const getDetail = async () => {
   const data = await IndexApi.getBoxPFDetail(queryParams);
-  pfESList.value = data;
-  console.log('pfESList.value',pfESList.value);
+  
+  outletNum.value = 0
 
   pfTableList.value = data?.table;
-  console.log('pfTableList',pfTableList.value);
-  pfTableList.value?.forEach((obj) => {
-    console.log(obj,obj.powerFactorAvgValue);
-    obj.power_factor_avg_value = obj?.power_factor_avg_value?.toFixed(2);
+  pfTableList.value?.forEach((obj,index) => {
+    obj.index = index+1
+    obj.powerFactorAvgValue = obj?.powerFactorAvgValue?.toFixed(2);
+    obj.powerFactorAvgValueb = obj?.powerFactorAvgValueb?.toFixed(2);
+    obj.powerFactorAvgValuec = obj?.powerFactorAvgValuec?.toFixed(2);
+
+    obj.powerFactorMaxValue = obj?.powerFactorMaxValue?.toFixed(2);
+    obj.powerFactorMaxValueb = obj?.powerFactorMaxValueb?.toFixed(2);
+    obj.powerFactorMaxValuec = obj?.powerFactorMaxValuec?.toFixed(2);
+
+    obj.powerFactorMaxTime = obj.powerFactorMaxTime ? obj.powerFactorMaxTime.slice(0,-3) : '';
+    obj.powerFactorMaxTimeb = obj.powerFactorMaxTimeb ? obj.powerFactorMaxTimeb.slice(0,-3) : '';
+    obj.powerFactorMaxTimec = obj.powerFactorMaxTimec ? obj.powerFactorMaxTimec.slice(0,-3) : '';
+
+    obj.powerFactorMinValue = obj?.powerFactorMinValue?.toFixed(2);
+    obj.powerFactorMinValueb = obj?.powerFactorMinValueb?.toFixed(2);
+    obj.powerFactorMinValuec = obj?.powerFactorMinValuec?.toFixed(2);
+    
+    obj.powerFactorMinTime = obj.powerFactorMinTime ? obj.powerFactorMinTime.slice(0,-3) : '';
+    obj.powerFactorMinTimeb = obj.powerFactorMinTimeb ? obj.powerFactorMinTimeb.slice(0,-3) : '';
+    obj.powerFactorMinTimec = obj.powerFactorMinTimec ? obj.powerFactorMinTimec.slice(0,-3) : '';
+
+    if(outletNum.value < 3 && (obj.powerFactorAvgValuec || obj.powerFactorMaxValuec || obj.powerFactorMinValuec)) {
+      outletNum.value = 3
+    } else if(outletNum.value < 2 && (obj.powerFactorAvgValueb || obj.powerFactorMaxValueb || obj.powerFactorMinValueb)) {
+      outletNum.value = 2
+    } else if(outletNum.value < 1 && (obj.powerFactorAvgValue || obj.powerFactorMaxValue || obj.powerFactorMinValue)) {
+      outletNum.value = 1
+    } 
+    console.log(outletNum.value)
   });
+
+
+  getPfESList()
 }
+
+watch( ()=>typeRadioShow.value, ()=>{
+  getPfESList()
+})
+
+const getPfESList = () => {
+  let itemFactorType = typeRadioShow.value == "最小" ? 'Min' : (typeRadioShow.value == "最大" ? 'Max' : '')
+
+  pfESList.value = []
+  if(itemFactorType != '' && pfTableList.value) {
+    pfESList.value = pfTableList.value.map(obj => ({
+      pow_factor_value1: obj[`powerFactor${itemFactorType}Value`],
+      powerFactorTime: [
+        obj[`powerFactor${itemFactorType}Time`],
+        obj[`powerFactor${itemFactorType}Timeb`],
+        obj[`powerFactor${itemFactorType}Timec`]
+      ],
+      pow_factor_value2: obj[`powerFactor${itemFactorType}Valueb`],
+      pow_factor_value3: obj[`powerFactor${itemFactorType}Valuec`],
+      time: obj.createTime,
+      outletNum: outletNum.value
+    }));
+  } else {
+    pfESList.value = pfTableList.value.map(obj => ({
+      pow_factor_value1: obj.powerFactorAvgValue,
+      pow_factor_value2: obj.powerFactorAvgValueb,
+      pow_factor_value3: obj.powerFactorAvgValuec,
+      time: obj.createTime,
+      outletNum: outletNum.value
+    }));
+  }
+  console.log(pfESList.value)
+}
+
 const getList = async () => {
   loading.value = true;
   try {
@@ -683,37 +810,40 @@ const getList = async () => {
   }
 }
 
-// const getListNoLoading = async () => {
-//   try {
-//     const data = await IndexApi.getBoxPFPage(queryParams)
-//     list.value = data.list
-//     var tableIndex = 0;    
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBoxPFPage(queryParams);
+    // console.log('data',data);
 
-//     list.value.forEach((obj) => {
-//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-//       if(obj?.phasePowFactor == null){
-//         return;
-//       } 
-//       for(var i= 0;i < obj.phasePowFactor.length; i++)
-//       {
-//         obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
-//       }
-//       for(var i= 0;i < obj.loopPowFactor.length; i++)
-//       {
-//         obj.loopPowFactor[i] = obj.loopPowFactor[i]?.toFixed(2);
-//       }
-//       for(var i= 0;i < obj.outletPowFactor.length; i++)
-//       {
-//         obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
-//       }
-//       obj.totalPowFactor = obj.totalPowFactor?.toFixed(2);
-//     });
+    list.value = data.list;
 
-//     total.value = data.total
-//   } catch (error) {
-    
-//   }
-// }
+    // console.log('list.value',list.value);
+    var tableIndex = 0;
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.phasePowFactor == null){
+        return;
+      } 
+      for(var i= 0;i < obj.phasePowFactor.length; i++)
+      {
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      for(var i= 0;i < obj.loopPowFactor.length; i++)
+      {
+        obj.loopPowFactor[i] = obj.loopPowFactor[i]?.toFixed(2);
+      }
+      for(var i= 0;i < obj.outletPowFactor.length; i++)
+      {
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
+      obj.totalPowFactor = obj.totalPowFactor?.toFixed(2);
+    });
+
+    total.value = data.total
+  } finally {
+  }
+}
 
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
@@ -827,11 +957,12 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  getBoxIdAndLocation();
   getList();
   getListAll();
   getNavList();
   getTypeMaxValue();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -853,7 +984,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>

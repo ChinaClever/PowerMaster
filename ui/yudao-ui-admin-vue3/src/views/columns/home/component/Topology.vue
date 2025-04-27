@@ -540,7 +540,7 @@ const switchBtn = (value) => {
   chosenBtn.value = value
 }
 const handleJump = () => {
-  push({path: '/aisle/topology', state: {id: 6}})
+  push({path: '/aisle/aislemonitor/topology', state: {id: 6}})
 }
 
 getMachineColInfo()

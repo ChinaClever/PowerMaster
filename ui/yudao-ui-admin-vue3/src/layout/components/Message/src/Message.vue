@@ -12,7 +12,7 @@ const list = ref<any[]>([]) // 消息列表
 
 // 获得消息列表
 const getList = async () => {
-  push('/line/Alarm')
+  push('/Alarm')
   // list.value = await NotifyMessageApi.getUnreadNotifyMessageList()
   // 强制设置 unreadCount 为 0，避免小红点因为轮询太慢，不消除
   // unreadCount.value = 3
@@ -23,7 +23,8 @@ const getUnreadCount = async () => {
   const res = await AlarmApi.getUnhandleAlarm({})
   console.log('获得未读消息数', res)
   if (res) {
-    unreadCount.value = res[1] + res[2]
+    // unreadCount.value = res[1] + res[2]
+    unreadCount.value = res.total
   }
   // NotifyMessageApi.getUnreadNotifyMessageCount().then((data) => {
   //   unreadCount.value = data
@@ -52,8 +53,8 @@ onMounted(() => {
 </script>
 <template>
   <div class="message">
-    <el-badge :value="unreadCount" :max="10" >
-      <Icon :size="18" class="cursor-pointer" icon="ep:bell" @click="getList" />
+    <el-badge :value="unreadCount" :max="1000000" >
+      <Icon :size="18" class="cursor-pointer" :icon="unreadCount ? 'ep:bell-filled' : 'ep:bell'" @click="getList" :color="unreadCount ? 'red' : ''" />
     </el-badge>
     <!-- <ElPopover :width="400" placement="bottom" trigger="click">
       <template #reference>

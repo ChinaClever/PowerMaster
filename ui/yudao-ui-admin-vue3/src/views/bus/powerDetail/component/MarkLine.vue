@@ -31,7 +31,19 @@ const echartsOption = ref({
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
     width:1000
   },
-  tooltip: { trigger: 'axis' },
+  tooltip: { trigger: 'axis',
+    formatter: function(params) {
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName + '&nbsp'
+        if(series.value[i]?.times?.[params[i].dataIndex]) {
+          result +=  '发生时间:' + series.value[i].times[params[i].dataIndex].slice(0,-3) + '&nbsp&nbsp'
+        }
+        result += params[i].value.toFixed(0) + ' %' + '<br>';
+      }
+      return result;
+    } 
+  },
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: {
     type: "value",
@@ -113,7 +125,7 @@ watchEffect(() => {
     // 如果 item 已经有 markPoint，但你想更新它（比如样式），可以在这里做  
   });  
   series.value?.push(markLine.value)
-  time.value = prop.list.time;
+  time.value = prop.list.time.map(item => item.slice(0,-3));
 
 });
 

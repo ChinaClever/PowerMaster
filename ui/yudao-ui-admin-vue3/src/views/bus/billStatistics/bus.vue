@@ -79,7 +79,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" border>
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -121,7 +121,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
-import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'BillStatistics' })
@@ -251,7 +251,7 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
   

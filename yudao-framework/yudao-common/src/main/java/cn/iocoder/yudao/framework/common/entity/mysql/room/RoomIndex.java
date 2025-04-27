@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -33,6 +34,24 @@ public class RoomIndex implements Serializable {
     private String roomName;
 
     /**
+     * 地址（楼层）
+     */
+    @Schema(description = "地址（楼层）", example = "地址（楼层）")
+    private String addr;
+
+    /**
+     * 显示选择
+     */
+    @Schema(description = "显示选择")
+    private Boolean displayFlag;
+
+    /**
+     * 显示类型（0-负载率/1-pue）
+     */
+    @Schema(description = "显示类型（0-负载率/1-pue）")
+    private Boolean displayType;
+
+    /**
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
@@ -51,38 +70,30 @@ public class RoomIndex implements Serializable {
     @Schema(description = "空调额定功率", example = "0")
     private float airPower;
 
-//    /**
-//     * 日用能告警开关
-//     */
-//    private  int eleAlarmDay;
-//
-//    /**
-//     * 月用能告警开关
-//     */
-//    private  int eleAlarmMonth;
-//
-//    /**
-//     * 日用能限制
-//     */
-//    private double eleLimitDay;
-//
-//    /**
-//     * 月用能限制
-//     */
-//    private double eleLimitMonth;
+    @Schema(description = "面积类型：0-地砖 1-面积")
+    private Boolean areaFlag;
 
 
     /**
      * 机房x长度(单位机柜)
      */
     @JsonProperty(value="xLength")
+    @TableField(value = "x_length")
     private int xLength;
 
     /**
      * 机房Y长度(单位机柜)
      */
     @JsonProperty(value="yLength")
+    @TableField(value = "y_length")
     private int yLength;
+
+    @TableField(value = "area_x_length")
+    private BigDecimal areaxLength;
+
+    @TableField(value = "area_y_length")
+    private BigDecimal areayLength;
+
     /**
      * 更新时间
      */

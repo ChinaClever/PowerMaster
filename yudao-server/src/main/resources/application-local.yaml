@@ -54,6 +54,8 @@ spring:
           #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
           #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=${spring.datasource.dynamic.datasource.master.name} # SQLServer 连接的示例
           #          url: jdbc:dm://10.211.55.4:5236?schema=RUOYI_VUE_PRO # DM 连接的示例
+          host: 192.168.1.245
+          port: 3306
           username: root
           password: 123456
         #          username: sa
@@ -348,3 +350,4 @@ mybatis-plus:
 logging:
   level:
     com.simons.cn.springbootdemo.dao.system: debug
+    com.github.shyiko.mysql.binlog.BinaryLogClient: WARN

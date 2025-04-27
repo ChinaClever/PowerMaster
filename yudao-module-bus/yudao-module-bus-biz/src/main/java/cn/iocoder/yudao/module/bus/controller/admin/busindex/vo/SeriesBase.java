@@ -10,6 +10,6 @@ public class SeriesBase {
 
     private String name;
 
-    private List<Float> data = new ArrayList<>();
+    private List data = new ArrayList<>();
 
 }

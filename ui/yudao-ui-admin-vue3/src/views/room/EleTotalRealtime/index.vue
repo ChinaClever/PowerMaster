@@ -1,7 +1,7 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房实时能耗">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/>
         <div class="nav_data">
 <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
@@ -28,15 +28,18 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
+            :clearable="false"
           />
           </el-form-item>
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
          </el-form-item>
+         <el-form-item style="position: absolute;right: 0px;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>         
+          </el-form-item>
       </el-form> 
     </template>
     <template #Content>
@@ -62,7 +65,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -82,20 +85,20 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.roomId,row.createTimeMin,row.createTimeMax)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.roomId,row.createTimeMin,row.createTimeMax)">详情</el-button>
               </template>
             </el-table-column>
           </template>
         </el-table-column>
       </template>
         <!-- 超过一万条数据提示信息 -->
-          <template v-if="shouldShowDataExceedMessage" #append>
-            <tr>
-              <td colspan="列数" style="text-align: center; padding: 12px 0;">
-                <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
-              </td>
-            </tr>
-          </template>
+        <template v-if="shouldShowDataExceedMessage" #append>
+          <tr>
+            <td colspan="列数" style="text-align: center; padding: 12px 0;">
+              <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
+            </td>
+          </tr>
+        </template>
       </el-table>
       <!-- 分页 -->
       <Pagination
@@ -122,6 +125,8 @@ import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/
 import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
 import { RoomEnergyApi } from '@/api/room/roomenergy'
+import { time } from 'console'
+import { on } from 'events'
 const message = useMessage() // 消息弹窗
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
@@ -136,7 +141,7 @@ const loading = ref(false)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref([])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -228,7 +233,7 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }}
       ],
     });
     rankChart.on('click', function(params) {
@@ -273,7 +278,6 @@ const getList = async () => {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-
       const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
@@ -283,7 +287,11 @@ const getList = async () => {
     }
     if(selectTimeRange.value == null){
       // queryParams.timeRange = undefined
-      alert('请输入时间范围');
+      ElMessage({
+        message: '请输入时间范围',
+        type: 'error',
+        plain: true,
+      })
     return;
     }
     const data = await RoomEnergyApi.getRoomEleTotalRealtime(queryParams)
@@ -296,6 +304,8 @@ const getList = async () => {
       total.value = data.total
     }
   } finally {
+    rankChart?.off("click")
+    rankChart?.dispose();
     initChart();
     loading.value = false
   }
@@ -388,27 +398,15 @@ const handleCheck = async (node) => {
     }
   queryParams.roomIds = arr
   handleQuery()
-  //  let arr = [] as any
-  //   node.forEach(item => { 
-  //       arr.push(item.unique);
-  //   });
-  //   //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
-  //   if(arr.length == 0  && node.length != 0){
-  //     arr.push(0)
-  //     rankChart?.clear()
-  //     ElMessage({
-  //       message: '暂无数据',
-  //       type: 'warning',
-  //     });
-  //   }
-  //   queryParams.roomIds = arr
-  //   handleQuery()
 }
+
+
 
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+    navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 // 获取导航的数据显示
@@ -418,11 +416,21 @@ const getNavNewData = async() => {
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
 }
-
+watch(()=>selectTimeRange.value,(newValue)=>{
+  queryParams.timeRange = newValue
+});
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
     // 导出的二次确认
+    if(queryParams.timeRange == null||queryParams.timeRange.length != 2){
+      ElMessage({
+        message: '请输入时间范围',
+        type: 'error',
+        plain: true,
+      })
+      return;
+    }
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
@@ -431,7 +439,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await RoomEnergyApi.getRoomEleTotalRealtimeExcel(queryParams, axiosConfig)
-    await download.excel(data, '机房能耗趋势.xlsx')
+    await download.excel(data, '机房能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -463,21 +471,27 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (roomId: number, createTimeMin : string,createTimeMax : string) => {
-    push('/room/energyConsumption/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
-  '&end='+createTimeMax+'&roomId='+ roomId);
+  //   push('/room/energyConsumption/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
+  // '&end='+createTimeMax+'&roomId='+ roomId+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:""));
+  push({path:"/room/energyConsumption/powerAnalysis",state:{type:"total",granularity:"day",
+  start:createTimeMin,end:createTimeMax,roomId,startTime:(selectTimeRange.value!=null?selectTimeRange.value[0]:""),endTime:(selectTimeRange.value!=null?selectTimeRange.value[1]:"")}})
 }
-
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavNewData()
+  // getNavNewData()
   // getList();
 });
-
+onBeforeUnmount(() => {
+  rankChart?.off("click");
+  rankChart?.dispose();
+});
+let now = new Date()
+selectTimeRange.value = [dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")]
+getList();
 </script>
 
 <style scoped>
-
 .realTotal{
   float: right;
   padding-top: 20px;

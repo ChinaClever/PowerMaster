@@ -72,6 +72,8 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <el-form-item style="position: absolute; right: 0;">
           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
@@ -79,7 +81,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table :border="true" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -241,11 +243,11 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(selectTimeRange.value[0])
-      // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(selectTimeRange.value[1])
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(addTime(selectTimeRange.value[0],oneDay))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const selectedEndTime = formatDate(addTime(selectTimeRange.value[1],oneDay))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
   
@@ -379,17 +381,16 @@ const format = (date) => {
 };
 /** 初始化 **/
 onMounted(() => {
-  getList();
-  getNavList()
-  getNavNewData()
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
-selectTimeRange.value = [
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  selectTimeRange.value = [
   format(startOfMonth),
   format(now)
 ];
-  
+  getList();
+  getNavList()
+  getNavNewData()
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 });
 
 </script>

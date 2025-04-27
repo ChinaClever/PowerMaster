@@ -11,8 +11,8 @@ import com.baomidou.mybatisplus.annotation.*;
  *
  * @author clever
  */
-@TableName("cabinet_statis_config")
-@KeySequence("cabinet_statis_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
+@TableName("cabinet_cron_config")
+@KeySequence("cabinet_cron_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @ToString(callSuper = true)
 @Builder

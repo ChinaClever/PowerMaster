@@ -209,6 +209,8 @@ public class RoomPowBaseDo extends RoomBaseDo {
     @JsonProperty("reactive_b_avg_value")
     private float reactiveBAvgValue;
 
+
+
     /**
      * 总平均功率因素
      */

@@ -14,6 +14,7 @@ import lombok.Getter;
 public enum AlarmLevelEnums {
     ONE(1, "一级告警"),
     TWO(2, "二级告警"),
+    THREE(3, "三级告警"),
     ;
 
     /**
@@ -30,6 +31,16 @@ public enum AlarmLevelEnums {
         for (AlarmLevelEnums indexEnum : enums){
             if (indexEnum.status.equals(status)){
                 return indexEnum.getName();
+            }
+        }
+        return null;
+    }
+
+    public static Integer getStatusByName(String name) {
+        AlarmLevelEnums[] enums = AlarmLevelEnums.values();
+        for (AlarmLevelEnums indexEnum : enums){
+            if (indexEnum.getName().equals(name)){
+                return indexEnum.getStatus();
             }
         }
         return null;

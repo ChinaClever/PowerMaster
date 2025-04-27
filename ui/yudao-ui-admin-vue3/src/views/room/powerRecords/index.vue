@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房电能记录">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
         <div class="carousel-container">
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -11,13 +11,27 @@
           </el-carousel> -->
         </div>
         <div class="nav_content">
-          <div class="nav_content1" >
+          <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>
+          </div>
+          <!-- <div class="nav_content1" >
             <span class="label">全部机房最近一天新增记录</span>
           </div>
            <div class="description-item">
             <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }} 条</span>
-          </div> 
+          </div>  -->
           <!-- <el-descriptions title="全部机房最近一天新增记录" direction="vertical" :column="1" width="80px" border >
             <el-descriptions-item label="电能" >{{ navTotalData }}条</el-descriptions-item>
           </el-descriptions> -->
@@ -45,6 +59,10 @@
       />
       </el-form-item>
 
+      <el-form-item >
+        <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+      </el-form-item>
+
       <el-form-item label="筛选列">
         <el-cascader
           v-model="defaultOptionsCol"
@@ -57,9 +75,8 @@
           class="!w-180px"
         />
         </el-form-item>
-
-        <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        
+        <el-form-item style="position: absolute; right: 0;">
           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
@@ -67,7 +84,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" :header-cell-style="headCellStyle">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -105,6 +122,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import { IndexApi } from '@/api/room/roomindex'
+import { last } from 'lodash-es'
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
@@ -115,10 +133,14 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
+const lastDayTotalData=ref()
+const lastWeekTotalData=ref()
+const lastMonthTotalData=ref()
+let now=new Date()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
-  timeRange: undefined as any,
+  timeRange: [dayjs(new Date(now.getFullYear(), now.getMonth(), 1,0,0,0)).format("YYYY-MM-DD HH:mm:ss"),dayjs(now).format("YYYY-MM-DD HH:mm:ss")],
   roomIds: [],
 })
 const pageSizeArr = ref([15,30,50,100])
@@ -307,13 +329,16 @@ const handleExport = async () => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  navList.value = res
+  // navList.value = res
+  navList.value=res.map((item)=>{return {id:item.id,name:item.roomName,children:[]}})
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
-  navTotalData.value = res.total
+const getNavData = async() => {
+  const res = await EnergyConsumptionApi.getNavNewData({})
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
+  lastMonthTotalData.value = res.month
 }
 
 /** 搜索按钮操作 */
@@ -325,9 +350,15 @@ const handleQuery = () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData()
+  getNavData()
   getList();
 })
+
+function headCellStyle(){
+  return {
+    backgroundColor: 'rgb(245, 247, 250)',
+  }
+}
 </script>
 
 <style scoped>

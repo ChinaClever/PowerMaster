@@ -55,9 +55,9 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -180,7 +180,7 @@ import CommonMenu1 from './component/CommonMenu1.vue';
 defineOptions({ name: 'BoxEnvLine' })
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref() as any// 导航栏的位置信息
@@ -194,11 +194,11 @@ const queryParams = reactive({
   pageNo:1,
   pageSize: 15,
   boxId: undefined as number | undefined,
-  granularity: 'realtime',
+  granularity: 'day',
   devkey: undefined as string | undefined,
   nowAddress: undefined as string | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1) as any
+  timeRange: defaultHourTimeRange(24*30) as any
 })
 // const carouselItems = ref([
 //       { imgUrl: PDUImage},
@@ -567,23 +567,40 @@ const initChart = () => {
     if (chartContainer.value && instance) {
       realtimeChart = echarts.init(chartContainer.value);
       if (realtimeChart) {
-        realtimeChart.setOption({
-          title: { text: ''},
-          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['A路温度(℃)','B路温度(℃)','C路温度(℃)','中线温度(℃)'], selected: { "A路温度(℃)": true, "B路温度(℃)": true, "C路温度(℃)": true, "中线温度(℃)": true}},
-          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
-          series: [
-            {name: 'A路温度(℃)', type: 'line', symbol: 'none', data: aTemValueData.value},
-            {name: 'B路温度(℃)', type: 'line', symbol: 'none', data: bTemValueData.value},
-            {name: 'C路温度(℃)', type: 'line', symbol: 'none', data: cTemValueData.value},
-            {name: '中线温度(℃)', type: 'line', symbol: 'none', data: nTemValueData.value},
-          ],
-          dataZoom:[{type: "inside"}],
-        });
-      }
+          realtimeChart.setOption({     
+            title: {text: ''},
+            tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+            legend: { 
+                      data: ['A路平均温度(℃)', 'A路最高温度(℃)', 'A路最低温度(℃)', 'B路平均温度(℃)', 'B路最高温度(℃)', 'B路最低温度(℃)',
+                              'C路平均温度(℃)', 'C路最高温度(℃)', 'C路最低温度(℃)', '中线平均温度(℃)', '中线最高温度(℃)', '中线最低温度(℃)'],
+                      selected: { "A路平均温度(℃)": false, "A路最高温度(℃)": true,"A路最低温度(℃)": false, 
+                                  "B路平均温度(℃)": false, "B路最高温度(℃)": true, "B路最低温度(℃)": false,
+                                  "C路平均温度(℃)": false, "C路最高温度(℃)": true, "C路最低温度(℃)": false, 
+                                  "中线平均温度(℃)": false, "中线最高温度(℃)": true, "中线最低温度(℃)": false,}
+            },
+            grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
+            toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
+            xAxis: [
+              {type: 'category', boundaryGap: false, data: createTimeData.value}
+            ],
+            yAxis: { type: 'value'},
+            series: [
+              { name: 'A路平均温度(℃)', type: 'line', symbol: 'none', data: aTemAvgValueData.value, },
+              { name: 'A路最高温度(℃)', type: 'line', symbol: 'none', data: aTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'A路最低温度(℃)', type: 'line', symbol: 'none', data: aTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'B路平均温度(℃)', type: 'line', symbol: 'none', data: bTemAvgValueData.value, },
+              { name: 'B路最高温度(℃)', type: 'line', symbol: 'none', data: bTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'B路最低温度(℃)', type: 'line', symbol: 'none', data: bTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'C路平均温度(℃)', type: 'line', symbol: 'none', data: cTemAvgValueData.value, },
+              { name: 'C路最高温度(℃)', type: 'line', symbol: 'none', data: cTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'C路最低温度(℃)', type: 'line', symbol: 'none', data: cTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '中线平均温度(℃)', type: 'line', symbol: 'none', data: nTemAvgValueData.value, },
+              { name: '中线最高温度(℃)', type: 'line', symbol: 'none', data: nTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '中线最低温度(℃)', type: 'line', symbol: 'none', data: nTemMinValueData.value, lineStyle: {type: 'dashed'}},
+            ],
+            dataZoom:[{type: "inside"}],
+          });
+        }
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
@@ -651,13 +668,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -729,10 +746,10 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             legend: { 
                       data: ['A路平均温度(℃)', 'A路最高温度(℃)', 'A路最低温度(℃)', 'B路平均温度(℃)', 'B路最高温度(℃)', 'B路最低温度(℃)',
                               'C路平均温度(℃)', 'C路最高温度(℃)', 'C路最低温度(℃)', '中线平均温度(℃)', '中线最高温度(℃)', '中线最低温度(℃)'],
-                      selected: { "A路平均温度(℃)": true, "A路最高温度(℃)": false," A路最低温度(℃)": false, 
-                                  "B路平均温度(℃)": true, "B路最高温度(℃)": false, "B路最低温度(℃)": false,
-                                  "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
-                                  "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,   }
+                      selected: { "A路平均温度(℃)": false, "A路最高温度(℃)": true,"A路最低温度(℃)": false, 
+                                  "B路平均温度(℃)": false, "B路最高温度(℃)": true, "B路最低温度(℃)": false,
+                                  "C路平均温度(℃)": false, "C路最高温度(℃)": true, "C路最低温度(℃)": false, 
+                                  "中线平均温度(℃)": false, "中线最高温度(℃)": true, "中线最低温度(℃)": false,   }
             },
             grid: {left: '3%', right: '6%', bottom: '3%', containLabel: true },
             toolbox: {feature: {  restore:{}, saveAsImage: {}}, top: '5%'},
@@ -1091,8 +1108,14 @@ const handleQuery = () => {
   const queryDevKey = ref(history?.state?.devKey);
   const queryboxId = ref(history?.state?.boxId);
   const queryLocation = ref(history?.state?.location);
+  const start=ref(history?.state?.start)
+  const end=ref(history?.state?.end)
+  console.log("history.state",history.state)
 /** 初始化 **/
 onMounted( async () => {
+  if(start.value!=undefined&&end.value!=undefined&&start.value!=''&&end.value!=''){
+    queryParams.timeRange = [start.value, end.value]
+  }
   getNavList()
   // 获取路由参数中的 pdu_id
   queryParams.devkey = queryDevKey;

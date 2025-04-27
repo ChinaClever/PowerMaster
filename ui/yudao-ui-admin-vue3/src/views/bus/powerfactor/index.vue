@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="功率因素">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="功率因数">
     <template #NavInfo>
       <div>
         <!-- <div class="header">
@@ -115,33 +115,39 @@
     </template>
     <template #Content>
       <div v-if="switchValue !== 0  && list.length > 0">
-        <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+        <el-table v-show="switchValue == 3" v-loading="loading" :stripe="true" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" />
+          <el-table-column label="所在位置" align="center" prop="location">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.location ? scope.row.location : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>  
-          <el-table-column v-if="valueMode == 0" label="总功率因素" align="center" prop="apf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="总功率因数" align="center" prop="apf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.totalPf != null">
                 {{ scope.row.totalPf }}
               </el-text>
             </template>
           </el-table-column> 
-          <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="A相功率因数" align="center" prop="apf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.apf != null">
                 {{ scope.row.apf }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column v-if="valueMode == 0" label="B相功率因素" align="center" prop="bpf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="B相功率因数" align="center" prop="bpf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bpf != null">
                 {{ scope.row.bpf }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column v-if="valueMode == 0" label="C相功率因素" align="center" prop="cpf" width="130px" >
+          <el-table-column v-if="valueMode == 0" label="C相功率因数" align="center" prop="cpf" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.cpf != null">
                 {{ scope.row.cpf }}
@@ -187,7 +193,7 @@
             </div>-->
             <div class="icon">
               <div v-if=" item.totalPf != null ">
-                <span style="font-size: 20px;">{{ item.totalPf }}</span><br/>总功率因素
+                <span style="font-size: 20px;">{{ item.totalPf }}</span><br/>总功率因数
               </div>                    
             </div>
             <div v-show="item.status != 0"><Bar :width="130" :height="100" :max="{L1:item.apf,L2:item.bpf,L3:item.cpf}" /></div>
@@ -217,7 +223,7 @@
         <div class="custom-row" style="display: flex; align-items: center;">
           <!-- 位置标签 -->
           <div class="location-tag el-col">
-            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因数详情</span>
             <span>所在位置：{{ location?location:'未绑定' }}</span>
             <span> 网络地址：{{ devkey }}</span>
           </div>
@@ -226,18 +232,27 @@
           <div class="date-picker-col el-col">
             <el-date-picker
               v-model="queryParams.oldTime"
+              :clearable = "false"
+              :editable = "false"
               value-format="YYYY-MM-DD HH:mm:ss"
               type="datetime"
+              :disabled-date="disabledDate"
+              @change="handleDayPick()"
               :picker-options="pickerOptions"
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button :disabled="clickAdd" @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
           <div class="chart-data-buttons el-col" style="margin-right: 50px;">
             <div class="button-group">
+              <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+                <el-option label="平均" value="平均" />
+                <el-option label="最大" value="最大" />
+                <el-option label="最小" value="最小" />
+              </el-select>
               <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
               <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
               <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
@@ -249,12 +264,16 @@
         <br/>
         <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
         <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
-          <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
-          <el-table-column label="时间" align="center" prop="time" />
-          <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
-          <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
-          <el-table-column label="C相功率因素" align="center" prop="powerFactorAvgValueC" />
-        </el-table>
+          <el-table style="height:70vh;" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" height="70vh" >
+            <el-table-column label="序号" align="center" prop="index" width="80px" />
+            <el-table-column label="时间" align="center" prop="time" />
+            <el-table-column label="A相功率因数" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : (typeRadioShow == '最小' ? 'Min' : 'Avg')}ValueA`" />
+            <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : 'Min'}TimeA`" />
+            <el-table-column label="B相功率因数" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : (typeRadioShow == '最小' ? 'Min' : 'Avg')}ValueB`" />
+            <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : 'Min'}TimeB`" />
+            <el-table-column label="C相功率因数" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : (typeRadioShow == '最小' ? 'Min' : 'Avg')}ValueC`" />
+            <el-table-column v-if="typeRadioShow != '平均'" label="发生时间" align="center" :prop="`powerFactor${typeRadioShow == '最大' ? 'Max' : 'Min'}TimeC`" />
+          </el-table>
         </div>
       </el-dialog>
     </template>
@@ -269,6 +288,7 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
@@ -296,6 +316,10 @@ const pfTotal = ref()
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
+
+const typeRadioShow = ref("最大")
+
+const clickAdd = ref(true)
 
 const statusList = reactive([
   {
@@ -353,6 +377,19 @@ const createFilter = (queryString: string) => {
   }
 }
 
+const getBusIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);
+    if (data != null){
+      openPFDetail(data)
+    }else{
+      location.value = null
+      busName.value = null
+    }
+ } finally {
+ }
+}
+
 const openPFDetail = async (row) =>{
   queryParams.busId = row.busId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
@@ -361,7 +398,9 @@ const openPFDetail = async (row) =>{
   devkey.value = row.devKey;
   console.log('row',row);
   await getDetail();
+  clickAdd.value = true
   detailVis.value = true;
+  typeRadioShow.value = '最大'
 }
 
 const disabledDate = (date) => {
@@ -384,8 +423,19 @@ const disabledDate = (date) => {
 const handleDayPick = async () => {
 
   if(queryParams?.oldTime ){
+    var date = new Date(queryParams.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
+
+    var today = new Date(); // 今天的日期
+    today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+    if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+      clickAdd.value = true
+    } else {
+      clickAdd.value = false
+    }
+
     await getDetail();
-    
   } 
 }
 
@@ -394,13 +444,23 @@ const subtractOneDay = () => {
 
   date.setDate(date.getDate() - 1); // 减去一天
 
+  clickAdd.value = false
+
   queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
 
 const addtractOneDay = () => {
   var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
 
-  date.setDate(date.getDate() + 1); // 减去一天
+  date.setDate(date.getDate() + 1); // 加一天
+
+  var today = new Date(); // 今天的日期
+  today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+  if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+    clickAdd.value = true
+  }
 
   queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
@@ -469,7 +529,7 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: undefined,
+  devKey : history?.state?.devKey as string | undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -483,23 +543,62 @@ const exportLoading = ref(false) // 导出的加载中
 const getDetail = async () => {
   const data = await IndexApi.getBusPFDetail(queryParams);
   console.log('数据',data);
-  pfESList.value = data?.chart;
-  pfESList.value?.powerFactorAvgValueA?.forEach((obj) => {
-    obj = obj?.toFixed(2);
-  });
-  pfESList.value?.powerFactorAvgValueB?.forEach((obj) => {
-    obj = obj?.toFixed(2);
-  });
-  pfESList.value?.powerFactorAvgValueC?.forEach((obj) => {
-    obj = obj?.toFixed(2);
-  });
 
   pfTableList.value = data?.table;
-  pfTableList.value?.forEach((obj) => {
+  pfTableList.value?.forEach((obj,index) => {
+    obj.index = index+1
     obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
     obj.powerFactorAvgValueB = obj?.powerFactorAvgValueB?.toFixed(2);
     obj.powerFactorAvgValueC = obj?.powerFactorAvgValueC?.toFixed(2);
+
+    obj.powerFactorMaxValueA = obj?.powerFactorMaxValueA?.toFixed(2);
+    obj.powerFactorMaxValueB = obj?.powerFactorMaxValueB?.toFixed(2);
+    obj.powerFactorMaxValueC = obj?.powerFactorMaxValueC?.toFixed(2);
+
+    obj.powerFactorMaxTimeA = obj.powerFactorMaxTimeA ? obj.powerFactorMaxTimeA.slice(0,-3) : '';
+    obj.powerFactorMaxTimeB = obj.powerFactorMaxTimeB ? obj.powerFactorMaxTimeB.slice(0,-3) : '';
+    obj.powerFactorMaxTimeC = obj.powerFactorMaxTimeC ? obj.powerFactorMaxTimeC.slice(0,-3) : '';
+
+    obj.powerFactorMinValueA = obj?.powerFactorMinValueA?.toFixed(2);
+    obj.powerFactorMinValueB = obj?.powerFactorMinValueB?.toFixed(2);
+    obj.powerFactorMinValueC = obj?.powerFactorMinValueC?.toFixed(2);
+    
+    obj.powerFactorMinTimeA = obj.powerFactorMinTimeA ? obj.powerFactorMinTimeA.slice(0,-3) : '';
+    obj.powerFactorMinTimeB = obj.powerFactorMinTimeB ? obj.powerFactorMinTimeB.slice(0,-3) : '';
+    obj.powerFactorMinTimeC = obj.powerFactorMinTimeC ? obj.powerFactorMinTimeC.slice(0,-3) : '';
   });
+
+  getPfESList()
+}
+
+watch( ()=>typeRadioShow.value, ()=>{
+  getPfESList()
+})
+
+const getPfESList = () => {
+  let itemFactorType = typeRadioShow.value == "最小" ? 'Min' : (typeRadioShow.value == "最大" ? 'Max' : '')
+
+  pfESList.value = []
+  if(itemFactorType != '' && pfTableList.value) {
+    pfESList.value = pfTableList.value.map(obj => ({
+      powerFactorValueA: obj[`powerFactor${itemFactorType}ValueA`],
+      powerFactorTime: [
+        obj[`powerFactor${itemFactorType}TimeA`],
+        obj[`powerFactor${itemFactorType}TimeB`],
+        obj[`powerFactor${itemFactorType}TimeC`]
+      ],
+      powerFactorValueB: obj[`powerFactor${itemFactorType}ValueB`],
+      powerFactorValueC: obj[`powerFactor${itemFactorType}ValueC`],
+      time: obj.time
+    }));
+  } else if(pfTableList.value) {
+    pfESList.value = pfTableList.value.map(obj => ({
+      powerFactorValueA: obj?.powerFactorAvgValueA,
+      powerFactorValueB: obj?.powerFactorAvgValueB,
+      powerFactorValueC: obj?.powerFactorAvgValueC,
+      time: obj.time
+    }));
+  }
 }
 
 const getList = async () => {
@@ -516,16 +615,25 @@ const getList = async () => {
       if(obj?.apf == null){
         return;
       } 
-      obj.apf = obj.apf?.toFixed(2);
-      obj.bpf = obj.bpf?.toFixed(2);
-      obj.cpf = obj.cpf?.toFixed(2);
-      obj.totalPf = obj.totalPf?.toFixed(2);
+      obj.apf = formatNumber(obj.apf,2);
+      obj.bpf = formatNumber(obj.bpf,2);
+      obj.cpf = formatNumber(obj.cpf,2);
+      obj.totalPf = formatNumber(obj.totalPf,2);
     });
 
     total.value = data.total
   } finally {
     loading.value = false
   }
+}
+
+// 处理数据后有几位小数点
+function formatNumber(value, decimalPlaces) {
+    if (!isNaN(value)) {
+        return value.toFixed(decimalPlaces);
+    } else {
+        return '0'; // 或者其他默认值
+    }
 }
 
 const getListNoLoading = async () => {
@@ -549,10 +657,10 @@ const getListNoLoading = async () => {
       if(obj?.apf == null){
         return;
       } 
-      obj.apf = obj.apf?.toFixed(2);
-      obj.bpf = obj.bpf?.toFixed(2);
-      obj.cpf = obj.cpf?.toFixed(2);
-      obj.totalPf = obj.totalPf?.toFixed(2);
+      obj.apf = formatNumber(obj.apf,2);
+      obj.bpf = formatNumber(obj.bpf,2);
+      obj.cpf = formatNumber(obj.cpf,2);
+      obj.totalPf = formatNumber(obj.totalPf,2);
     });
 
     total.value = data.total
@@ -716,6 +824,7 @@ const getFullTimeByDate = (date) => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  getBusIdAndLocation()
   getList();
   getNavList();
   getListNoLoading();
@@ -1303,5 +1412,8 @@ onActivated(() => {
   width: 80%;
   height: 80%;
   margin-top: 100px;
+}
+:deep(.el-table .el-table__header th) {
+  height: 40px;
 }
 </style>

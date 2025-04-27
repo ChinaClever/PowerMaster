@@ -4,7 +4,9 @@ import javax.validation.*;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.aisle.dto.AislePowerLoadDetailReqDTO;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,7 @@ public interface AisleIndexService {
      *
      * @param id 编号
      */
-    void deleteIndex(Integer id);
+    Boolean deleteIndex(Integer id);
 
     /**
      * 获得通道列
@@ -85,4 +87,18 @@ public interface AisleIndexService {
     List<Integer> idList();
 
     PageResult<AisleEQRes> getEqPage1(AisleIndexPageReqVO pageReqVO);
+
+    AisleBalanceChartResVO getAisleBalanceChart(Integer id);
+
+    Map getLineChartDetailData(AislePowerLoadDetailReqDTO reqVO);
+
+    List<AisleMaxEqResVO> getMaxEq();
+
+    Map findAisleFactor() throws IOException;
+
+    Map<String, AislePowerFactorMaxResVO> getAisleLineMax(AisleIndexPageReqVO pageReqVO) throws IOException;
+
+    PageResult<AisleIndexDelResVO> getDelPage(AisleIndexPageReqVO pageReqVO);
+
+    Boolean restore(Integer id);
 }

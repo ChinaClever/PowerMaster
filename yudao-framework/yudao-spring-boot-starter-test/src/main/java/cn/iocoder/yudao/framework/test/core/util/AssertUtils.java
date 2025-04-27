@@ -3,7 +3,7 @@ package cn.iocoder.yudao.framework.test.core.util;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.iocoder.yudao.framework.common.exception.ErrorCode;
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.function.Executable;
@@ -91,11 +91,11 @@ public class AssertUtils {
      */
     public static void assertServiceException(Executable executable, ErrorCode errorCode, Object... messageParams) {
         // 调用方法
-        ServiceException serviceException = assertThrows(ServiceException.class, executable);
+        BusinessException businessException = assertThrows(BusinessException.class, executable);
         // 校验错误码
-        Assertions.assertEquals(errorCode.getCode(), serviceException.getCode(), "错误码不匹配");
+        Assertions.assertEquals(errorCode.getCode(), businessException.getCode(), "错误码不匹配");
         String message = ServiceExceptionUtil.doFormat(errorCode.getCode(), errorCode.getMsg(), messageParams);
-        Assertions.assertEquals(message, serviceException.getMessage(), "错误提示不匹配");
+        Assertions.assertEquals(message, businessException.getMessage(), "错误提示不匹配");
     }
 
 }

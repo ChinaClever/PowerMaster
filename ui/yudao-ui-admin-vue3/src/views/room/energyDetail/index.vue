@@ -3,7 +3,9 @@
   <div class="energy">
     <div class="top">
       <ContentWrap>
-        <el-tag size="large">{{ location }}</el-tag>
+        <el-select v-model="queryParams.roomId" placeholder="请选择机房" class="!w-200px">
+          <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
       </ContentWrap>
     </div>
     <div class="content">
@@ -21,8 +23,12 @@
             <div class="introduce">昨日电量(kW·h)</div>
           </div>
           <div class="box">
-            <div class="value">{{EleChain.dayRate}}</div>
-            <div class="introduce">日环比</div>
+            <div style="display: flex;align-items: center">
+              <div class="value">{{EleChain.dayRate}}</div>
+              <div v-if="parseFloat(EleChain.dayRate) > 100" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:top" size="23" color="#bd0000" /></div>
+              <div v-else-if="!EleTrendLoading" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:bottom" size="23" color="#5470c6" /></div>
+            </div>
+            <div class="introduce">日环比(昨日/前日)</div>
           </div>
           <div class="box">
             <div class="value">{{EleChain.thisWeekEq && EleChain.thisWeekEq.toFixed(1)}}</div>
@@ -33,8 +39,12 @@
             <div class="introduce">上周电量(kW·h)</div>
           </div>
           <div class="box">
-            <div class="value">{{EleChain.weekRate}}</div>
-            <div class="introduce">周环比</div>
+            <div style="display: flex;align-items: center">
+              <div class="value">{{EleChain.weekRate}}</div>
+              <div v-if="parseFloat(EleChain.weekRate) > 100" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:top" size="23" color="#bd0000" /></div>
+              <div v-else-if="!EleTrendLoading" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:bottom" size="23" color="#5470c6" /></div>
+            </div>
+            <div class="introduce">周环比(上周/上上周)</div>
           </div>
           <div class="box">
             <div class="value">{{EleChain.thisMonthEq && EleChain.thisMonthEq.toFixed(1)}}</div>
@@ -45,8 +55,12 @@
             <div class="introduce">上月电量(kW·h)</div>
           </div>
           <div class="box">
-            <div class="value">{{EleChain.monthRate}}</div>
-            <div class="introduce">月环比</div>
+            <div style="display: flex;align-items: center">
+              <div class="value">{{EleChain.monthRate}}</div>
+              <div v-if="parseFloat(EleChain.monthRate) > 100" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:top" size="23" color="#bd0000" /></div>
+              <div v-else-if="!EleTrendLoading" style="padding: 8px 0;font-size: 24px"><Icon icon="ep:bottom" size="23" color="#5470c6" /></div>
+            </div>
+            <div class="introduce">月环比(上月/上上月)</div>
           </div>
         </div>
       </el-card>
@@ -69,7 +83,7 @@
     <div class="bottom">
       <el-card class="card-day" shadow="never">
         <template #header>
-          <CardTitle title="日用电有功功率曲线" />
+          <CardTitle title="日用电最大有功功率曲线" />
         </template>
         <Echart :options="echartsOptionPowTrend" :height="260" />
       </el-card>
@@ -95,13 +109,12 @@
 <script lang="ts" setup>
 // import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts'
-import { CabinetApi } from '@/api/cabinet/info'
-import { AisleEnergyApi } from '@/api/aisle/aisleenergy'
+import { IndexApi } from '@/api/room/roomindex/index'
 import 'echarts/lib/component/dataZoom';
+import Index from '@/components/RouterSearch/index.vue';
 
 const location = ref(history?.state?.location )
 const roomList = ref([]) // 左侧导航栏树结构列表
-const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
 const EleTrendOption = {
   DAY: ['当日', '昨日'], 
@@ -111,7 +124,6 @@ const EleTrendOption = {
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
   roomId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1
 })
 const EleChain = reactive({
   todayEq: '',
@@ -126,16 +138,6 @@ const EleChain = reactive({
 })
 const ActivePowTrend = reactive({})
 
-watch(() => queryParams.cabinetroomId, (val) => {
-  machineList.value = handleNavList(val)
-  if (machineList.value.length == 0) {
-    queryParams.roomId = null
-    return
-  }
-  const defaultValue = machineList.value[0] as any
-  queryParams.roomId = defaultValue.id
-})
-
 watch(() => queryParams.roomId,(val) => {
   console.log('wwwwwwwwwww', val)
   getActivePowTrend()
@@ -145,36 +147,16 @@ watch(() => queryParams.roomId,(val) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  if (res.length > 0) {
-    roomList.value = res
-    machineList.value = handleNavList(queryParams.cabinetroomId)
-    console.log('接口获取机房导航列表', res)
-  }
-}
-const handleNavList = (cabinetroomId) => {
-  const data = roomList.value as any
-  const roomIndex = data.findIndex(item => item.id == cabinetroomId)
-  let list = [] as any
-  if (data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 2) {
-    data[roomIndex].children.forEach(child => {
-      if (child.children.length > 0)  {
-        child.children.forEach(grandChild => {
-          list.push(grandChild)
-        })
-      }
-    })
-  } else if(data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 3) {
-    list = data[roomIndex].children.map(item => item)
-  }
-  return list
+  const list=await IndexApi.getRoomList();
+  console.log("list",list);
+  roomList.value=list.map((item)=>{return {id:item.id,name:item.roomName}})
 }
 
 // 获取机柜有功功率趋势
 const getActivePowTrend = async() => {
-  const res = await AisleEnergyApi.getActivePowTrend({id:queryParams.roomId})
+  const res = await IndexApi.getActivePowTrend(queryParams.roomId)
   Object.assign(ActivePowTrend, res)
-  console.log('获取机柜有功功率趋势------', res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1]))
+  console.log('获取机房有功功率趋势------', res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1]))
   echartsOptionPowTrend.value = {
     grid: {
       left: '3%',
@@ -190,6 +172,17 @@ const getActivePowTrend = async() => {
         label: {
           backgroundColor: '#505765'
         }
+      },
+      formatter: function(params) {
+        var result = ''
+
+        if(res.yesterdayList[params[1].dataIndex].activePowMaxTime && res.yesterdayList[params[1].dataIndex].activePowMaxTime != "") {
+          result = `${params[0].seriesName}&nbsp;发生时间:${res.yesterdayList[params[0].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[0].value}kW` + '<br>'
+        }
+        if(res.todayList[params[1].dataIndex].activePowMaxTime && res.todayList[params[1].dataIndex].activePowMaxTime != "") {
+          result += `${params[1].seriesName}&nbsp;发生时间:${res.todayList[params[1].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[1].value}kW`
+        }
+        return result; // 使用 <b> 标签使数值加粗显示
       }
     },
     legend: {
@@ -238,7 +231,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList?.map(item => item?.activePow)
+        data: res.yesterdayList?.map(item => item?.activePowMax)
       },
       {
         name: '当日',
@@ -254,7 +247,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: 'Avg2' }]
         },
-        data: res.todayList?.map(item => item?.activePow)
+        data: res.todayList?.map(item => item?.activePowMax)
       }
     ]
   }
@@ -262,7 +255,7 @@ const getActivePowTrend = async() => {
 }
 // 获取机柜用能环比
 const getMachineEleChain = async() => {
-  const res = await AisleEnergyApi.getEleChain({id:queryParams.roomId})
+  const res = await IndexApi.getEleChain(queryParams.roomId)
   Object.assign(EleChain, res)
   console.log('获取机柜用能环比', EleChain)
 }
@@ -270,7 +263,7 @@ const getMachineEleChain = async() => {
 const getMachineEleTrend = async(type) => {
   try {
     EleTrendLoading.value = true
-    const res = await AisleEnergyApi.getEleTrend({ id: queryParams.roomId, type })
+    const res = await IndexApi.getEleTrend({ id: queryParams.roomId, type })
     echarsOptionEleTrend.value ={
       tooltip: {
         trigger: 'axis',
@@ -279,7 +272,11 @@ const getMachineEleTrend = async(type) => {
         },
         formatter: function(params) {
           console.log('params', params)
-          return `${params[0].seriesName}：${params[0].value}kW·h` + '<br>' + `${params[1].seriesName}：${params[1].value}kW·h`; // 使用 <b> 标签使数值加粗显示
+          let result = `${params[0].seriesName}：${params[0].value}kW·h`
+          for (var i = 1; i < params.length; i++) {
+            result += '<br>' + `${params[i].seriesName}：${params[i].value}kW·h`
+          }
+          return result; // 使用 <b> 标签使数值加粗显示
         }
       },
       legend: {

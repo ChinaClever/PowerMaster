@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.RoomHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.RoomHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.room.service.energyconsumption.RoomEnergyConsumptionService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -86,7 +87,7 @@ public class RoomHistoryDataServiceImpl implements RoomHistoryDataService {
         SearchRequest searchRequest = new SearchRequest();
 
         String[] roomIds = pageReqVO.getRoomIds();
-        if (roomIds != null){
+        if (ObjectUtils.isNotEmpty(roomIds)){
             searchSourceBuilder.query(QueryBuilders.termsQuery("room_id", roomIds));
         }
         if ("realtime".equals(pageReqVO.getGranularity())) {
@@ -167,17 +168,15 @@ public class RoomHistoryDataServiceImpl implements RoomHistoryDataService {
         String[] key = new String[]{"total"};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
+        indices = new String[]{"room_hda_pow_realtime"};
         switch (granularity){
             case "realtime":
-                indices = new String[]{"room_hda_pow_realtime"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1)};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusSeconds(100)};
                 break;
             case "hour":
-                indices = new String[]{"room_hda_pow_hour"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"room_hda_pow_day"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
                 break;
             default:

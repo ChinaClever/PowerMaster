@@ -63,13 +63,16 @@ const echartsOption = computed(() => ({
           const unitMap = ['KVAR', 'KW', 'KVA'];
           return `${params.value}${unitMap[params.dataIndex]}`;
         },
+        color: '#fff', // 字体颜色为白色
+        textBorderColor: 'auto', // 轮廓颜色自动跟随柱形图颜色
+        textBorderWidth: 2, // 轮廓宽度
         fontSize: 14,
         fontWeight: 'bold'
       },
       data: [
-        {value:props.loadFactor.powReactiveB,itemStyle: { color: 'purple'}},
-        {value:props.loadFactor.powActiveB,itemStyle: { color: 'green' }},
-        {value:props.loadFactor.powApparentB,itemStyle: { color: 'blue' }}]
+        {value:props.loadFactor.powReactiveB,itemStyle: { color: '#800080'}},
+        {value:props.loadFactor.powActiveB,itemStyle: { color: '#91cc75' }},
+        {value:props.loadFactor.powApparentB,itemStyle: { color: '#5470c6' }}]
     }
   ]
 }));

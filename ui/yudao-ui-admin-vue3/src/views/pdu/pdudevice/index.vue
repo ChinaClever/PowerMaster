@@ -143,6 +143,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="网络地址" align="center" prop="devKey" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
@@ -164,23 +165,30 @@
             <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="总视在功率(kVA)" align="center" prop="apparentPow" width="150px" >
+        <el-table-column label="视在功率(kVA)" align="center" prop="apparentPow" width="150px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
               {{ scope.row.apparentPow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="总有功功率(kW)" align="center" prop="pow" width="130px">
+        <el-table-column label="有功功率(kW)" align="center" prop="pow" width="130px">
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.pow != null" >
               {{ scope.row.pow }}
             </el-text>
           </template>
         </el-table-column>
+        <el-table-column label="无功功率(kVar)" align="center" prop="reactivePow" width="130px">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if=" scope.row.reactivePow != null" >
+              {{ scope.row.reactivePow }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
         <!-- 数据库查询 -->
-        <el-table-column label="总电能(kWh)" align="center" prop="ele" >
+        <el-table-column label="电能(kWh)" align="center" prop="ele" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.ele != null" >
               {{ scope.row.ele }}
@@ -216,6 +224,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="网络地址" align="center" prop="devKey" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag type="info" v-if="scope.row.deleted">已删除</el-tag>
@@ -248,54 +257,54 @@
       <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content" style="margin-left: 10px;">
-            <div class="info">
-              <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kVA</div>
-              <div >有功功率：{{ formatEQ(item.pow,3) }}kW</div>
-              <div >无功功率：{{ formatEQ(item.reactivePow,3) }}kVar</div>
+            <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
+            <div class="content" style="margin-left: 10px;">
+              <div class="info">
+                <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kVA</div>
+                <div >有功功率：{{ formatEQ(item.pow,3) }}kW</div>
+                <div >无功功率：{{ formatEQ(item.reactivePow,3) }}kVar</div>
+              </div>
+              <div class="icon">
+                <div v-if="item.pf != null">
+                  {{item.pf}}<br/>
+                  <span class="text-pf">PF</span>
+                </div>                    
+              </div>
+              <!-- <div class="info">
+                
+                <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
+                <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div> -->
+                <!-- <div >网络地址：{{ item.devKey }}</div> -->
+                <!-- <div>AB路占比：{{item.fzb}}</div> -->
+              <!-- </div> -->
             </div>
-            <div class="icon">
-              <div v-if="item.pf != null">
-                {{item.pf}}<br/>
-                <span class="text-pf">PF</span>
-              </div>                    
+            <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+            <div class="status">
+              <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
+              <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
+              <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
+
+              <el-popover
+                placement="top-start"
+                title="告警内容"
+                :width="1000"
+                trigger="hover"
+                :content="item.pduAlarm"
+                v-if="item.status == 2"
+              >
+                <template #reference>
+                  <el-tag type="danger">告警</el-tag>
+                </template>
+              </el-popover>
+
+              <el-tag type="danger" v-if="item.status == 4">故障</el-tag>
+              <el-tag type="info" v-if="item.status == 5">离线</el-tag>
             </div>
-            <!-- <div class="info">
-              
-              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
-              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div> -->
-              <!-- <div >网络地址：{{ item.devKey }}</div> -->
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            <!-- </div> -->
+            <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
           </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status">
-            <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
-            <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
-            <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
-
-            <el-popover
-              placement="top-start"
-              title="告警内容"
-              :width="1000"
-              trigger="hover"
-              :content="item.pduAlarm"
-              v-if="item.status == 2"
-            >
-              <template #reference>
-                <el-tag type="danger">告警</el-tag>
-              </template>
-            </el-popover>
-
-            <el-tag type="danger" v-if="item.status == 4">故障</el-tag>
-            <el-tag type="info" v-if="item.status == 5">离线</el-tag>
+          <div v-else class="arrayItem">
+            
           </div>
-          <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-        </div>
-        <div v-else class="arrayItem">
-          
-        </div>
         </template>      
       </div>
         <Pagination
@@ -434,33 +443,33 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
-
-  if(row.length == 0){
-    queryParams.pduKeyList = null;
-    getDeletedList();
-    getList();
-    return;
-  }
   const pduKeys = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    console.log('row',item)
+    console.log(item)
     if (item.type == 4) {
       pduKeys.push(item.unique)
       haveCabinet = true;
     }
   })
-  if(!haveCabinet ){
-
-    queryParams.pduKeyList = [-1]
-    queryDeletedPageParams.pduKeyList = [-1]
-  }else{
+  if(haveCabinet){
     queryParams.pduKeyList = pduKeys
+    if(row[0].name == '未绑定') {
+      queryParams.status = [0,1,2,3,4]
+    } else {
+      queryParams.status = []
+    }
     queryDeletedPageParams.pduKeyList = pduKeys
+  }else{
+    queryParams.pduKeyList = null;
+    queryParams.status = []
+    queryDeletedPageParams.pduKeyList = null;
   }
-  getList();
-  getDeletedList();
-  console.log('呜呜呜呜',queryParams.pduKeyList)
+ if(switchValue.value ==2){
+         getDeletedList();
+    }else{
+         getList();
+    }
 }
 
 
@@ -568,10 +577,10 @@ const getList = async () => {
       obj.dataUpdateTime = splitArray[1];
       
       obj.apparentPow = obj.apparentPow.toFixed(3);
+      obj.reactivePow = obj.reactivePow.toFixed(3);
       obj.pow = obj.pow.toFixed(3);
       obj.ele = obj.ele.toFixed(1);
       obj.pf = obj.pf.toFixed(2);
-      
     });
 
     total.value = data.total;
@@ -655,7 +664,7 @@ const router = useRouter();
 const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
   const { devKey, location, id } = row;
   router.push({
-    path: '/pdu/pdudisplayscreen',
+    path: '/pdu/power/pdudisplayscreen',
     query: { devKey, id: id.toString(), location }
   });
 };
@@ -683,10 +692,27 @@ const toggleAllStatus = () => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
+    if (queryDeletedPageParams.devKey !=='' && queryDeletedPageParams.devKey !== undefined){
+    butColor.value = 0;
+    onclickColor.value = -1;
+    queryParams.status = [];
+    }
+
+    if (queryParams.devKey  !=='' &&  queryParams.devKey !== undefined ){
+    butColor.value = 0;
+    onclickColor.value = -1;
+    queryParams.status = [];
+    }
+    
+
   queryParams.pageNo = 1;
   queryDeletedPageParams.pageNo = 1;
-  getList();
-  getListAll();
+   if(switchValue.value ==2){
+      getDeletedList();
+    }else{
+      getList();
+      // getListAll();
+    }
 }
 
 /** 重置按钮操作 */
@@ -756,13 +782,13 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList();
   getNavList();
-  getListAll();
-  // flashListTimer.value = setInterval(() => {
-  //        setTimeout(() => {
-  //         getList()
-  //      }, 0);
-  // }, 10000);
-  flashListTimer.value = setInterval((getList), 10000);
+  // getListAll();
+  flashListTimer.value = setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
+  // flashListTimer.value = setInterval((getList), 10000);
 })
 
 onBeforeUnmount(()=>{
@@ -783,12 +809,12 @@ onBeforeRouteLeave(()=>{
 onActivated(() => {
   getList();
   getNavList();
-  if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval(() => {
-        getListAll();
-  }, 10000);
-    // flashListTimer.value = setInterval((getListAll), 5000);
-  }
+  // if(!firstTimerCreate.value){
+  //   flashListTimer.value = setInterval(() => {
+  //       getListAll();
+  // }, 10000);
+  //   flashListTimer.value = setInterval((getListAll), 5000);
+  // }
 })
 </script>
 

@@ -50,7 +50,7 @@
            <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
-            <button v-else-if="butColor === 1" style="height:25px;" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
         <!-- <el-button
@@ -148,7 +148,11 @@
         <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="300px">
+          <template #default="scope" >
+                <div>{{ scope.row.roomName === null ? '未绑定' : scope.row.location }}</div>
+          </template>
+        </el-table-column> 
         <el-table-column label="设备地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="设备名称" align="center" prop="boxName" />
         <el-table-column label="运行状态" align="center" prop="color" >
@@ -402,8 +406,11 @@ const handleCheck = async (row) => {
   if(row.length == 0){
     queryParams.boxDevKeyList = null;
     queryDeletedPageParams.boxDevKeyList = null;
-    getList();
-    getDeletedList();
+    if(switchValue.value ==4){
+         getDeletedList();
+    }else{
+         getList();
+    }
     return;
   }
   const ids = [] as any
@@ -422,8 +429,15 @@ const handleCheck = async (row) => {
     queryDeletedPageParams.boxDevKeyList = ids
   }
 
-  getList();
-  getDeletedList();
+  // if(switchValue.value ==4){
+  //        getDeletedList();
+  //   }else{
+  //        getList();
+  //   }
+
+    getDeletedList();
+    getList();
+
 }
 
 
@@ -510,7 +524,6 @@ const exportLoading = ref(false); // 导出的加载中
 const getList = async () => {
   loading.value = true;
   try {
-    console.log('queryParams',queryParams);
     const data = await IndexApi.getIndexPage(queryParams);
      
     list.value = data.list;
@@ -535,8 +548,6 @@ const getLoadRateStatus = async () => {
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
     });
-
-    console.log('statusNumber',res);
     statusNumber.greaterNinety = res.greaterNinety;
     statusNumber.lessThirty = res.lessThirty;
     statusNumber.greaterThirty = res.greaterThirty;
@@ -586,7 +597,7 @@ const toDetail = (row) =>{
   const boxId = row.boxId;
   const location = row.location != null ? row.location : devKey;
   const roomName =row.roomName;
-  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey, boxId ,location,roomName}});
+  push({path: '/bus/busmonitor/boxmonitor/boxpowerLoadDetail', state: { devKey, boxId ,location,roomName}});
 }
 
 
@@ -610,7 +621,6 @@ const toDetail = (row) =>{
 //}
 
 const handleSelectStatus = (index) => {
-  console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.color = [index];
@@ -628,8 +638,10 @@ const toggleAllStatus = () => {
 const handleQuery = () => {
   queryParams.pageNo = 1;
   queryDeletedPageParams.pageNo = 1;
-  getList();
+  if(switchValue.value ==4){
   getDeletedList();
+  }else{  
+    getList();}
 }
 
 /** 重置按钮操作 */
@@ -1267,7 +1279,7 @@ onActivated(() => {
 .btnallNotSelected{
   margin-right: 10px;
   width: 58px;
-  height: 25px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;

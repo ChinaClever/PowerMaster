@@ -30,19 +30,51 @@ public class RoomPowerAnalysisResVO {
     private String create_time;
 
     @NumberFormat("0.000")
-    @ExcelProperty("总有功功率")
+    @ExcelProperty("总有功功率(kW)")
     private Double active_total;
 
     @NumberFormat("0.000")
-    @ExcelProperty("总视在功率")
+    @ExcelProperty("总视在功率(kVA)")
     private Double apparent_total;
 
     @NumberFormat("0.000")
-    @ExcelProperty("总无功功率")
+    @ExcelProperty("总无功功率(kVar)")
     private Double factor_total;
 
-    @NumberFormat("0.000")
+    @NumberFormat("0.00")
     @ExcelProperty("总功率因素")
     private Double reactive_total;
+
+    @NumberFormat("0.000")
+    @ExcelProperty("A路有功功率(kW)")
+    private Double active_a;
+
+    @NumberFormat("0.000")
+    @ExcelProperty("A路视在功率(kVA)")
+    private Double apparent_a;
+
+    @NumberFormat("0.000")
+    @ExcelProperty("A路无功功率(kVar)")
+    private Double reactive_a;
+
+    @NumberFormat("0.00")
+    @ExcelProperty("A路功率因素")
+    private Double factor_a;
+
+    @NumberFormat("0.000")
+    @ExcelProperty("B路有功功率(kW)")
+    private Double active_b;
+
+    @NumberFormat("0.000")
+    @ExcelProperty("B路视在功率(kVA)")
+    private Double apparent_b;
+
+    @NumberFormat("0.000")
+    @ExcelProperty("B路无功功率(kVar)")
+    private Double reactive_b;
+
+    @NumberFormat("0.00")
+    @ExcelProperty("B路功率因素")
+    private Double factor_b;
 
 }

@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列实时能耗">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/>
         <div class="nav_data">
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
@@ -28,15 +28,16 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
+            :clearable="false"
           />
           </el-form-item>
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
          </el-form-item>
+         <el-button style="position: absolute;right: 20px;" type="success" plain :loading="exportLoading" @click="handleExport">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
       </el-form> 
     </template>
     <template #Content>
@@ -59,7 +60,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -79,7 +80,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -132,7 +133,8 @@ const loading = ref(false)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const today=new Date();
+const selectTimeRange = ref([dayjs(new Date(today.getFullYear(), today.getMonth(), 1)).format("YYYY-MM-DD"),dayjs(new Date(today.getFullYear(), today.getMonth(), today.getDate())).format("YYYY-MM-DD")])
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -214,6 +216,8 @@ let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
 const initChart = () => {
   if (rankChartContainer.value && instance) {
+    rankChart?.off("click");
+    rankChart?.dispose();
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各柜列耗电量'},
@@ -223,12 +227,12 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }},
       ],
     });
     rankChart.on('click', function(params) {
       // 控制台打印数据的名称
-      toDetails(list.value[params.dataIndex].roomId,
+      toDetails(list.value[params.dataIndex].id,
       list.value[params.dataIndex].createTimeMin,
       list.value[params.dataIndex].createTimeMax);
     });
@@ -265,7 +269,7 @@ const getList = async () => {
   loading.value = true
   try {
     if(selectTimeRange.value == null){
-      alert('请输入时间范围');
+      ElMessage.error('请输入时间范围')
     return;
     }
     if ( selectTimeRange.value != undefined){
@@ -400,6 +404,10 @@ const getNavNewData = async() => {
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
+    if(selectTimeRange.value == null){
+      ElMessage.error('请输入时间范围')
+      return;
+    }
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
@@ -408,8 +416,13 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
+    // 格式化时间范围 加上23:59:59的时分秒 
+    const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
+    // 结束时间的天数多加一天 ，  一天的毫秒数
+    const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+    queryParams.timeRange = [selectedStartTime, selectedEndTime];
     const data = await EnergyConsumptionApi.getAisleEleTotalRealtimeExcel(queryParams, axiosConfig)
-    await download.excel(data, '柜列实时能耗.xlsx')
+    await download.excel(data, '柜列能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -420,8 +433,10 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
-  push('/aisle/aisleenergyconsumption/powerAnalysis?start='+createTimeMin+
-  '&end='+createTimeMax+'&id='+ id);
+  push({path:"/aisle/aisleenergyconsumption/powerAnalysis",state:{start:createTimeMin,end:createTimeMax,id,startTime:(selectTimeRange.value!=null?selectTimeRange.value[0]:"")
+    ,endTime:(selectTimeRange.value!=null?selectTimeRange.value[1]:'')}})
+  // push('/aisle/aisleenergyconsumption/powerAnalysis?start='+createTimeMin+
+  // '&end='+createTimeMax+'&id='+ id+"&startTime="+(selectTimeRange.value!=null?selectTimeRange.value[0]:"")+"&endTime="+(selectTimeRange.value!=null?selectTimeRange.value[1]:''));
 }
 
 /** 初始化 **/
@@ -431,6 +446,7 @@ onMounted(() => {
   // getList();
 });
 
+handleQuery();
 </script>
 
 <style scoped>

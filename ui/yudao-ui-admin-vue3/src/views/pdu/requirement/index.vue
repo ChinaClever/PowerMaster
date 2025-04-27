@@ -11,7 +11,7 @@
     </div>  -->
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>所在位置 :</span>
-      <span>{{ item.location}}</span>
+      <span class="text-ellipsis">{{ item.location }}</span>
     </div>     
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
@@ -22,7 +22,7 @@
       <span class="value">{{ item.l1MaxCurTime }}</span>
     </div>
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
-      <span>最大电流 :</span>
+      <span>{{ flagName }} :</span>
       <span>{{ item.l1MaxCur}}A</span>
     </div>    
 
@@ -52,7 +52,7 @@
             月份
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showSearchBtn = true;" 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showSearchBtn = true;dateSwitch = false" 
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
@@ -108,8 +108,8 @@
         
         
         <div style="float:right ">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />电流</el-button>
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />功率</el-button>          
+          <el-button @click="visModeShow(0)" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />电流</el-button>
+          <el-button @click="visModeShow(1)" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />功率</el-button>          
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
@@ -127,8 +127,6 @@
       
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        
-        
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="130px" >
           <template #default="scope" >
@@ -161,7 +159,7 @@
               link
               type="primary"
               
-              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0,scope.row.l1MaxCur)"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0,scope.row.l1MaxCur)"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -203,7 +201,7 @@
             <el-button
               link
               type="primary"
-              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -213,6 +211,7 @@
               type="danger"
               @click="handleDelete(scope.row.id)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -257,7 +256,7 @@
             <el-button
               link
               type="primary"
-              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day',1, scope.row.l1MaxPow);"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day',1, scope.row.l1MaxPow);"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -268,6 +267,7 @@
               type="danger"
               @click="handleDelete(scope.row.id)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -296,7 +296,7 @@
             <el-button
               link
               type="primary"
-              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1,scope.row.l1MaxPow);"
+              @click="location=scope.row.location;onlyDevKey=scope.row.devKey;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1,scope.row.l1MaxPow);"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -306,6 +306,7 @@
               type="danger"
               @click="handleDelete(scope.row.id)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -316,7 +317,7 @@
       
       <div  v-if="switchValue == 1 && list.length > 0  && valueMode == 1" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
             <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
             <div class="info" style="margin-bottom: 60px">
@@ -344,7 +345,7 @@
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
           <!-- <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button> -->    
-          <button class="detail" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null" @click="onlyDevKey=item.devKey,location=item.location;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1,item.l1MaxPow);location1=item.location">详情</button>
+          <button class="detail" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null" @click="onlyDevKey=item.devKey;location=item.location;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1,item.l1MaxPow);location1=item.location">详情</button>
         </div>
       </div>
 
@@ -356,8 +357,8 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
-          <div><h3>功率详情</h3></div> 
-          <div>所在位置：{{ location?location:'未绑定' }}<span style="margin-left: 10px;">网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</span><span style="float: right;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
+          <span style="float: right; margin: 7px 10px;">时间段：{{ queryParams1.startTime }} - {{ queryParams1.endTime }}</span>
+          <div><span style="font-weight: 700; font-size: 20px;">功率详情</span> 所在位置：{{ location?location:'未绑定' }}  网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</div> 
         </template>
 
         <!-- 自定义的主要内容 -->
@@ -368,7 +369,7 @@
 
       <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != null && item.location != '未绑定' ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" style="width: 500px;height: 100px">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info" style="margin-bottom: 20px;">
@@ -390,9 +391,10 @@
 
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 28px"><Pie :width="100" :height="100" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+           <!--<div style="padding: 0 28px"><Pie :width="100" :height="100" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div> -->
           </div>   
-          <div class="content" v-if="item.l3MaxCur == undefined || item.l3MaxCur == null && item.l2MaxCur == undefined && item.l2MaxCur == null && item.l1MaxCur == undefined && item.l1MaxCur == null">
+         <!-- <div class="content" v-if="item.l3MaxCur == undefined || item.l3MaxCur == null && item.l2MaxCur == undefined && item.l2MaxCur == null && item.l1MaxCur == undefined && item.l1MaxCur == null"> -->
+          <div class="content" v-if="item.l1MaxCur == null">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info">
               
@@ -404,7 +406,7 @@
           </div>       
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
-          <button class="detail" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" @click="onlyDevKey=item.devKey,location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0,item.l1MaxCur);">详情</button>
+          <button class="detail" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" @click="onlyDevKey=item.devKey;location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0,item.l1MaxCur);">详情</button>
         </div>
       </div>
       
@@ -415,9 +417,9 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
-          <div><h3>需量电流详情</h3></div> 
-          <div>所在位置：{{location?location:'未绑定'}} 
-            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="float: right;">{{ createTimes }} - {{ endTimes }}</span>
+          <span style="float: right; margin:7px 10px;">{{ queryParams1.startTime }} - {{ queryParams1.endTime }}</span>
+          <div>
+            <div><span style="font-weight: 700; font-size: 20px;">需量电流详情</span> 所在位置：{{location?location:'未绑定'}} 网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</div> 
           </div>
           
         </template>
@@ -462,6 +464,7 @@ import Bar from './component/Bar.vue'
 import pow from './component/pow.vue'
 
 const searchbth = ref(false);
+const flagName = ref('最大电流');
 const now1 = new Date();
 let startTime = new Date(now1.getTime() - 24 * 60 * 60 * 1000);
 let endTime = new Date();
@@ -507,6 +510,7 @@ onMounted(() => {
   giveValue()
   getList()
   getNavList()
+  getListAll(0);
   if (chartDom.value) {
     myChart = echarts.init(chartDom.value);
     myChart.setOption(option);
@@ -695,7 +699,10 @@ const handleDayPick = () => {
 
     queryParams.oldTime = queryParams.timeArr[0];
     queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
+    startTime = new Date(queryParams.oldTime);
+    endTime = new Date(queryParams.newTime);
   }
+  handleQuery()
 }
 
 const handleMonthPick = () => {
@@ -776,16 +783,34 @@ const getList = async () => {
   try {
     const data = await PDUDeviceApi.getPDULinePage(queryParams)
     list.value = data.list
-    const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
-    maxCurAll.value = allData.list
-    maxCurAll.value.forEach((obj) => {
-      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
-    })
     total.value = data.total
   } finally {
     loading.value = false
   }
 }
+
+const visModeShow = (flag) => {
+  if(flag == 0){
+    valueMode.value =0;
+    flagName.value ='最大电流';
+    getListAll(flag);
+  }else{
+    valueMode.value =1;
+    flagName.value ='最大功率';
+    getListAll(flag);
+  }
+}
+
+const getListAll = async (flagVlaue) => {
+  queryParams.flagVlaue = flagVlaue
+  const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
+  maxCurAll.value = allData.list
+  maxCurAll.value.forEach((obj) => {
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
+  })
+}
+
+
 
 // 接口获取导航列表
 const getNavList = async() => {
@@ -807,7 +832,7 @@ const router = useRouter();
 const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
   const { devKey, location } = row;
   router.push({
-    path: '/pdu/pdudisplayscreen',
+    path: '/pdu/power/pdudisplayscreen',
     query: { devKey,  location }
   });
 };
@@ -972,7 +997,7 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
   tooltip: {
     trigger: 'axis',
     formatter: function (params) {
-        let result = '';
+        let result = params[0].value.Year + '<br>';
         params.forEach((param) => {
             let unit = param.seriesName.includes('功率')? 'kW' : 'A';
             result += `${param.seriesName}: ${param.value.Income} ${unit}<br>`;
@@ -982,7 +1007,9 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
 },
   xAxis: {
     type: 'category',
-    nameLocation: 'middle'
+    axisTick: {
+      alignWithLabel: true, // 让刻度线与标签对齐
+    },
   },
   yAxis: {
     
@@ -1402,6 +1429,13 @@ window.addEventListener('resize', function() {
 </script>
 
 <style scoped lang="scss">
+
+.text-ellipsis {
+  white-space: nowrap;    /* 禁止换行 */
+  overflow: hidden;       /* 隐藏溢出内容 */
+  text-overflow: ellipsis; /* 显示省略号 */
+  width: 120px;
+}
 :deep(.ip:hover) {
   color: blue !important;
   cursor: pointer;

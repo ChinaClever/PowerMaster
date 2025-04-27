@@ -73,10 +73,12 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
          </el-form-item>
+         <el-form-item style="position: absolute; right: 0;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+          </el-form-item>
       </el-form> 
     </template>
     <template #Content>
@@ -99,7 +101,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -119,7 +121,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -155,7 +157,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
@@ -172,7 +174,11 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const now=new Date()
+const selectTimeRange = ref([dayjs(new Date(now.getFullYear(), now.getMonth(), 1)).format('YYYY-MM-DD'), dayjs(new Date()).format('YYYY-MM-DD')])
+if(useRoute().query.start!=null&&useRoute().query.start!=''&&useRoute().query.end!=null&&useRoute().query.end!=''){
+  selectTimeRange.value=[useRoute().query.start as string,useRoute().query.end as string]
+}
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -267,6 +273,9 @@ const initChart = () => {
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
       ],
     });
+    rankChart.on("click",(params)=>{
+      toDetails(list.value[params.dataIndex].cabinet_id, list.value[params.dataIndex].location)
+    })
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
@@ -305,8 +314,8 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60 * 60 * 24)))
+      // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -335,9 +344,8 @@ const getList1 = async () => {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(convertDate(end.value) ))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedEndTime = formatDate(endOfDay(addTime( convertDate(end.value) ,1000*60 * 60 * 24) ))
+      // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     	console.log('入参', queryParams);
@@ -471,7 +479,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '机柜能耗趋势.xlsx')
+    await download.excel(data, '机柜能耗数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -488,7 +496,7 @@ const format = (date) => {
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location: string) => {
-  push('/cabinet/nenghao/ecdistribution?cabinetId='+cabinetId+'&location='+location);
+  push('/cabinet/nenghao/ecdistribution?cabinetId='+cabinetId+'&location='+location+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?"&start="+selectTimeRange.value[0]+"&end="+selectTimeRange.value[1]:""));
 }
 const start = ref('')
 const end = ref('')

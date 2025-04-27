@@ -43,7 +43,7 @@
     <template #Content>
       <div>
 
-        <el-table  :data="list"  :show-overflow-tooltip="true" width="1800px"  :header-cell-style="{background:'#f7f7f7',color:'#606266',height:'30px'}">
+        <el-table :border="true" :data="list"  :show-overflow-tooltip="true" width="1800px"  :header-cell-style="{background:'#f7f7f7',color:'#606266',height:'30px'}">
           <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
@@ -91,7 +91,7 @@
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="center">
+          <el-table-column label="操作" align="center" width="100px">
           <template #default="scope">
             <el-button
               link
@@ -333,7 +333,7 @@ const getList = async () => {
     // 时间段清空后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       // queryParams.timeRange = undefined
-      alert('请输入时间范围');
+      ElMessage.error('请输入时间范围');
     return;
     }
     const data = await EnergyConsumptionApi.getEleTotalRealtime(queryParams);
@@ -468,7 +468,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.getEleTotalRealtimeExcel(queryParams, axiosConfig);
-    await download.excel(data, 'PDU实时能耗统计.xlsx')
+    await download.excel(data, 'PDU能耗查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -557,8 +557,8 @@ const format = (date) => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
    
-   ::v-deep .el-table th,
+   /* ::v-deep .el-table th,
    ::v-deep .el-table td{
     border-right: none;
-   }
+   } */
 </style>

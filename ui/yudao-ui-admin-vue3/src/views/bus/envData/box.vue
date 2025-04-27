@@ -11,6 +11,10 @@
             </el-descriptions>
           </div> -->
           <div class="descriptions-container" style="font-size: 14px;">
+            <div ><span>全部始端箱新增环境记录</span>
+            
+            </div>
+            <div class="line" style="margin-top: 10px;"></div>
             <div class="description-item">
                 <span class="label">最近一周 :</span>
                 <span class="value">{{ lastWeekTotalData }}条</span>
@@ -23,9 +27,7 @@
                 <span class="label">最近一小时 :</span>
                 <span class="value">{{ lastHourTotalData }}条</span>
             </div>
-            <div ><span>全部始端箱新增环境记录</span>
-              <div class="line" style="margin-top: 10px;"></div>
-            </div>
+            <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
     </template>
@@ -86,7 +88,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="false">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="false" border>
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -95,10 +97,17 @@
         </el-table-column>
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'" >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.box_id, row.dev_key, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.box_id, row.dev_key, row.location)">详情</el-button>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot=='actions'" fixed="right">
+            <template #default="{ row }">
+              <div v-if="column.slot === 'actions'">
+                <el-button type="primary" @click="toDetails(row.box_id, row.dev_key, row.location)">详情</el-button>
               </div>
             </template>
           </el-table-column>
@@ -131,7 +140,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/bus/envData'
 import { IndexApi } from '@/api/bus/busindex'
-import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay} from '@/utils/formatTime'
 const { push } = useRouter()
 /** bus历史数据 列表 */
 defineOptions({ name: 'BusEnvHistoryData' })
@@ -371,10 +380,10 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      // const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     const data = await EnvDataApi.getBoxEnvDataPage(queryParams)
@@ -447,7 +456,13 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (boxId: number, dev_key: string, location: string) => {
   const devKey = dev_key;
-  push({path: '/bus/record/envAnalysis/box', state: {boxId,devKey,location}})
+  const start=selectTimeRange.value?.[0];
+  const end=selectTimeRange.value?.[1];
+  if(start!=null && end!=null&&start!=''&&end!=''){
+    push({path: '/bus/record/box/envAnalysis', state: {boxId,devKey,location,start,end}})
+  }else{
+    push({path: '/bus/record/box/envAnalysis', state: {boxId,devKey,location}})
+  }
 }
 
 
@@ -488,8 +503,8 @@ onMounted( () => {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  formatDate(startOfMonth),
+  formatDate(now)
 ];
   getNavList()
   getNavNewData()

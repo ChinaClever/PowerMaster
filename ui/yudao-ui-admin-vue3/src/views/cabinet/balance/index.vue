@@ -137,7 +137,7 @@
           </div>
         </el-dialog>
 
-        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" >
+        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" class="matrixContainer">
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="所在位置" min-width="90" align="center" prop="roomName" />
           <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" :formatter="formatEle"/>
@@ -187,12 +187,12 @@ const cabinetId = ref();
 const { push } = useRouter(); // 路由跳转
 const router = useRouter(); // 路由跳转
 const tableLoading = ref(false); // 
-const isFirst = ref(true); // 是否第一次调用getTableData函数
+const isFirst = ref(history?.state?.isFirst ? history?.state?.isFirst : true); // 是否第一次调用getTableData函数
 const navList = ref([]); // 左侧导航栏树结构列表
 const tableData = ref([]);
 const tableCopyData = ref([]);
 const switchValue = ref(0); // 表格(1) 矩阵(0)切换
-const cabinetIds = ref<number[]>([]); // 左侧导航菜单所选id数组
+const cabinetIds = ref<number[]>([history?.state?.cabinetIds]); // 左侧导航菜单所选id数组
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
@@ -250,7 +250,8 @@ const balanceObj = reactive({
 const getBalanceDetail = async(item) => {
   const data = await CabinetApi.getDetail({id:item});
   const res = data.redisData;
-  // console.log('data1111', data);
+    balanceObj.imbalanceValueA = data.curUnbalancea
+    balanceObj.imbalanceValueB = data.curUnbalanceb
   if (res.cabinet_power.path_a && res.cabinet_power.path_b) {
     if (res.cabinet_power.path_a.pow_apparent == 0) balanceObj.pow_apparent_percent = 0
     else balanceObj.pow_apparent_percent = (res.cabinet_power.path_a.pow_apparent / res.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
@@ -333,10 +334,6 @@ const getBalanceDetail = async(item) => {
       ]
     }
   }
-
-  balanceObj.imbalanceValueA = res.curUnbalance;
-  balanceObj.imbalanceValueB = res.volUnbalance;
-  balanceObj.colorIndex = res.color - 1;
 }
 
 // 接口获取机房导航列表
@@ -368,11 +365,13 @@ const getTableData = async(reset = false) => {
           roomName: item.roomName +'-' +item.cabinetName
         };
       });
-            // console.log('tableData.value', tableData.value);
       queryParams.pageTotal = res.total
     }
   } finally {
     tableLoading.value = false
+    if(history?.state?.cabinetIds) {
+      showDialog(tableData.value[0])
+    }
   }
 }
 
@@ -495,7 +494,6 @@ const getBalanceTrend = async () => {
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
-  console.log(cellValue);
   if (cellValue === null) {
     return '';
   }
@@ -582,17 +580,6 @@ const handleClose = () => {
   balanceObj.imbalanceValueB= 0;
   balanceObj.colorIndex= 0;
 
-//   const balanceObj = reactive({
-//   pow_apparent_percent: 0,
-//   pow_active_percent: 0,
-//   cur_valueA: [],
-//   cur_valueB: [],
-//   imbalanceValueA: 0,
-//   imbalanceValueB: 0,
-//   colorIndex: 0,
-// })
-  // const list = zoomOut(formData.value)
-  // emit('update:modelValue', list)
 }
 
 const showDialog = async (item) => {
@@ -605,7 +592,7 @@ const showDialog = async (item) => {
   apow.value = item.apow;
   bpow.value = item.bpow;
   await getBalanceDetail(item.id);
-  await getBalanceDegree();
+  // await getBalanceDegree();
   await getBalanceTrend();
 
 }
@@ -734,7 +721,8 @@ onBeforeMount(() => {
   }
 }
 .matrixContainer {
-  height: calc(100vh - 320px);
+  height: 720px;
+  // calc(100vh - 320px);
   overflow: auto;
   display: flex;
   flex-wrap: wrap;
@@ -742,7 +730,7 @@ onBeforeMount(() => {
   .item {
     width: 25%;
     min-width: 290px;
-    height: 120px;
+    height: 130px;
     font-size: 12px;
     box-sizing: border-box;
     background-color: #eef4fc;

@@ -5,7 +5,7 @@
       <div class="nav_data">
         <div class="nav_header">      
           <span>{{nowAddress}}</span>
-          <span style="padding-top:10px">{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span>
+          <!-- <span style="padding-top:10px">{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span> -->
         </div>
       <div class="nav_content">
        <div class="description-item">
@@ -63,9 +63,11 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <el-form-item style="position: absolute; right: 0;">
           <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -76,12 +78,12 @@
           <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
         </el-tab-pane>
         <el-tab-pane label="数据" name="lineChartData">
-          <div style="height: 58vh;">
+          <div style="height: 70vh;">
             <el-table  
               :border="true"
               :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;"
+              style="height: 100%; width: 99.97%;"
               :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
@@ -95,15 +97,15 @@
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
-                  <el-table-column prop="startEleData" label="数值"/>   
+                  <el-table-column prop="startEleData" label="开始电能(kWh)"/>   
                   <el-table-column prop="startTimeData" label="发生时间"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
-                  <el-table-column prop="endEleData" label="数值"/>   
+                  <el-table-column prop="endEleData" label="结束电能(kWh)"/>   
                   <el-table-column prop="endTimeData" label="发生时间"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column :prop="item.name" label="耗电量(kWh)"/>   
                   <el-table-column prop="create_time" label="记录时间"/>
                 </el-table-column>
               </template>
@@ -140,6 +142,10 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14)) as any
+const route=useRoute()
+if(route.query.start!=null&&route.query.end!=null){
+  selectTimeRange.value=[route.query.start as string,route.query.end as string]
+}
 const loading = ref(false) 
 const queryParams = reactive({
   pageNo: 1,
@@ -238,13 +244,13 @@ const shortcuts = [
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(14)
+    // selectTimeRange.value = defaultDayTimeRange(14)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(3)
+    // selectTimeRange.value = defaultMonthTimeRange(3)
   }else{
     queryParams.granularity = 'month'
-    selectTimeRange.value = defaultMonthTimeRange(12)
+    // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
@@ -285,9 +291,9 @@ const getLineChartData =async () => {
 loading.value = true
  try {
     // 格式化时间范围 加上23:59:59的时分秒 
-    queryParams.timeRange[0] = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
+    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
-    queryParams.timeRange[1] = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data != null && data.total != 0){
@@ -374,35 +380,36 @@ function customTooltipFormatter(params: any[]) {
         break;
     }
   });
+  tooltipContent += '<br/>时间: ' + params[0].name;
   return tooltipContent;
 }
 
 // 处理时间选择不超过xxx范围
 const handleDayPick = () => {
-  if (activeName.value=='weekTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差不超过7天，则重置选择的日期
-    if (diffDays < 7) {
-      selectTimeRange.value = defaultDayTimeRange(7)
-      ElMessage({
-        message: '时间选择不少于7天,已默认选择最近一周',
-        type: 'warning',
-      })
-    }
-  }
-  if (activeName.value=='monthTabPane'){
-    // 计算两个日期之间的天数差
-    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
-    // 如果天数差超过30天，则重置选择的日期
-    if (diffDays < 30) {
-      selectTimeRange.value = defaultMonthTimeRange(1)
-      ElMessage({
-        message: '时间选择不少于1个月,已默认选择最近一个月',
-        type: 'warning',
-      })
-    }
-  }
+  // if (activeName.value=='weekTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差不超过7天，则重置选择的日期
+  //   if (diffDays < 7) {
+  //     selectTimeRange.value = defaultDayTimeRange(7)
+  //     ElMessage({
+  //       message: '时间选择不少于7天,已默认选择最近一周',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
+  // if (activeName.value=='monthTabPane'){
+  //   // 计算两个日期之间的天数差
+  //   const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+  //   // 如果天数差超过30天，则重置选择的日期
+  //   if (diffDays < 30) {
+  //     selectTimeRange.value = defaultMonthTimeRange(1)
+  //     ElMessage({
+  //       message: '时间选择不少于1个月,已默认选择最近一个月',
+  //       type: 'warning',
+  //     })
+  //   }
+  // }
 }
 
 // 禁选未来的日期
@@ -470,7 +477,7 @@ const handleExport1 = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportOutletsPageData(queryParams, axiosConfig)
-    await download.excel(data, '机柜能耗排名.xlsx')
+    await download.excel(data, '机柜能耗分布.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -493,7 +500,6 @@ onMounted(async () => {
     initLineChart();
   }
 })
-
 </script>
 
 <style scoped>

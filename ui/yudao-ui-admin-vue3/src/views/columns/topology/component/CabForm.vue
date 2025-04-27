@@ -13,9 +13,7 @@
         <el-collapse-item title="机柜参数" name="1">
           <div class="collapseItem">
             <el-form-item label="机房：" prop="roomId">
-              <el-select disabled v-model="machineFormData.roomId" placeholder="请选择">
-                <el-option v-for="room in roomList" :key="room.id" :label="room.name" :value="room.id" />
-              </el-select>
+              <el-input disabled v-model="machineFormData.roomName" placeholder="请输入" />
             </el-form-item>
             <el-form-item label="机柜名称：" prop="cabinetName">
               <el-input v-model="machineFormData.cabinetName" placeholder="请输入" />
@@ -104,7 +102,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
-                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index" />
+                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
@@ -125,7 +123,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
-                      <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index" />
+                      <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
@@ -349,10 +347,11 @@ const sensorListRight = reactive([
 ])
 const machineFormData = ref({
   roomId: '',
+  roomName: '',
   aisleId: '',
   index: '',
   cabinetName: '',
-  type: '',
+  type: 'IT机柜',
   cabinetHeight: 42, //U
   powCapacity: 8, // kAV
   company: '',
@@ -496,9 +495,10 @@ const open = async (type: string, data, machineColInfo) => {
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
+    roomName: '',
     aisleId: '',
     index: '',
-    type: '',
+    type: 'IT机柜',
     cabinetHeight: 42,
     powCapacity: 8,
     company: '',
@@ -521,6 +521,7 @@ const open = async (type: string, data, machineColInfo) => {
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
   }
+  machineFormData.value.roomName = machineColInfo.roomName
   machineFormData.value.roomId = machineColInfo.roomId
   machineFormData.value.aisleId = machineColInfo.aisleId
   machineFormData.value.index = machineColInfo.index
@@ -537,9 +538,9 @@ const open = async (type: string, data, machineColInfo) => {
       barIdB: machineColInfo.barIdB,
       busIpB: machineColInfo.busIpB,
     }
-    machineFormData.value.pduBox = machineFormData.value.pduBox ? 1 : 0
     console.log(machineFormData)
   }
+  machineFormData.value.pduBox = machineFormData.value.pduBox ? 1 : 0
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
@@ -564,6 +565,17 @@ const submitForm = async () => {
     const sensorListFilter = sensorList.filter(item => item.sensorId)
     console.log('sensorListFilter', sensorListFilter)
     machineFormData.value.sensorList = sensorListFilter
+
+    console.log(boxListA.value,machineFormData.value)
+
+    let boxListA_Index = boxListA.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexA)
+    let boxListB_Index = boxListB.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexB)
+    
+    console.log(boxListA_Index,boxListB_Index)
+
+    machineFormData.value.casIdA = boxListA_Index != -1 ? boxListA.value[boxListA_Index].casAddr : 0
+    machineFormData.value.casIdB = boxListB_Index != -1 ? boxListB.value[boxListB_Index].casAddr : 0
+
     console.log('roomName', {...machineFormData.value})
     const res = await CabinetApi.saveCabinetInfo({
       ...machineFormData.value,
@@ -586,7 +598,8 @@ const resetForm = () => {
   machineFormData.value = {
     cabinetName: '',
     roomId: '',
-    type: '',
+    roomName: '',
+    type: 'IT机柜',
     cabinetHeight: 42,
     powCapacity: 8,
     company: '',

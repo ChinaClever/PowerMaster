@@ -22,7 +22,7 @@ console.log('1111',props.data)
 
 
 // 设置饼图的选项
-const echartsOption = reactive( {
+const echartsOption = computed(() => ({
   series: [
     {
       type: 'gauge',
@@ -64,6 +64,7 @@ const echartsOption = reactive( {
       },
       detail: {
         valueAnimation: true,
+        offsetCenter: [0, '60%'],
         formatter: '{value}%',
         color: 'inherit'
       },
@@ -74,7 +75,7 @@ const echartsOption = reactive( {
       ]
     }
   ]
-})
+}))
 
 onUnmounted(() => {
   console.log('onUnmounted******')

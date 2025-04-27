@@ -125,8 +125,9 @@ const toLastView = () => {
 const moveToCurrentTag = async () => {
   await nextTick()
   for (const v of unref(visitedViews)) {
-    if (v.fullPath === unref(currentRoute).path) {
+    if (v.path === unref(currentRoute).path) {
       moveToTarget(v)
+      console.log(v)
       if (v.fullPath !== unref(currentRoute).fullPath) {
         tagsViewStore.updateVisitedView(unref(currentRoute))
       }

@@ -3,7 +3,7 @@
   <div class="energy" style="background-color: #E7E7E7;">
   <div class="header_app">
     <div class="header_app_text">
-      <span style="margin-right:10px;">机房：{{roomName}}</span>
+      <span style="margin-right:10px;">位置：{{location}}</span>
       <span style="margin-right:10px;">名称：{{busName}}</span>
       <span style="margin-right:10px;">网络地址：{{ devKey }}</span>
     </div>
@@ -96,7 +96,7 @@
     <div class="bottom">
       <el-card class="card-day" shadow="never">
         <template #header>
-          <CardTitle title="日用电有功功率曲线" />
+          <CardTitle title="日用电最大有功功率曲线" />
         </template>
         <Echart :options="echartsOptionPowTrend" :height="260" />
       </el-card>
@@ -126,11 +126,15 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { BusEnergyApi } from '@/api/bus/busenergy'
 import 'echarts/lib/component/dataZoom';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
+import { useRoute } from 'vue-router'
 
-const location = ref(history?.state?.local)
-const busName = ref(history?.state?.busName)
-const devKey = ref(history?.state?.devKey)
-const roomName = ref(history?.state?.roomName)
+const route = useRoute();
+const query = route.query;
+
+const location = ref(query.local)
+const busName = ref(query.busName)
+const devKey = ref(query.devKey)
+const roomName = ref(query.roomName)
 
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
@@ -142,13 +146,13 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  busId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1,
-  devKey : history?.state?.devKey as string | undefined,
+  busId: query.id || 1,
+  cabinetroomId: query.roomId || 1,
+  devKey : query.devKey as string | undefined,
 })
 const queryParamsSearch = reactive({
-  id: history?.state?.busId as number | undefined,
-  devKey : history?.state?.devKey as string | undefined,
+  id: query.busId as number | undefined,
+  devKey : query.devKey as string | undefined,
 })
 const EleChain = reactive({
   todayEq: '',
@@ -198,6 +202,7 @@ const getBusIdAndLocation =async () => {
       queryParams.busId = data.busId
       location.value = data.location
       busName.value = data.busName
+      devKey.value = data.devKey
     }else{
       location.value = null
       busName.value = null
@@ -270,6 +275,17 @@ const getActivePowTrend = async() => {
         label: {
           backgroundColor: '#505765'
         }
+      },
+      formatter: function(params) {
+        var result = ''
+
+        if(res.yesterdayList[params[1].dataIndex].activePowMaxTime && res.yesterdayList[params[1].dataIndex].activePowMaxTime != "") {
+          result = `${params[0].seriesName}&nbsp;发生时间:${res.yesterdayList[params[0].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[0].value}kW` + '<br>'
+        }
+        if(res.todayList[params[1].dataIndex].activePowMaxTime && res.todayList[params[1].dataIndex].activePowMaxTime != "") {
+          result += `${params[1].seriesName}&nbsp;发生时间:${res.todayList[params[1].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[1].value}kW`
+        }
+        return result; // 使用 <b> 标签使数值加粗显示
       }
     },
     legend: {
@@ -320,7 +336,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList?.map(item => item?.activePow)
+        data: res.yesterdayList?.map(item => item?.activePowMax)
       },
       {
         name: '当日',
@@ -336,7 +352,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: '当日有功功率平均值线' }]
         },
-        data: res.todayList?.map(item => item?.activePow)
+        data: res.todayList?.map(item => item?.activePowMax)
       }
     ]
   }
@@ -438,6 +454,7 @@ const handleQuery = async () => {
 
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  getBusIdAndLocation()
 })
 
 onBeforeMount(() => {

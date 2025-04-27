@@ -114,8 +114,8 @@
           >
             <template #default="{ row }" v-if="column.slot === 'actions' && queryParams.granularity == 'day'">
 
-              <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'total'" @click="showDetails(row.pdu_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
-              <el-button link type="primary" v-else-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'outlet'" @click="showDetails(row.pdu_id, row.outlet_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
+              <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'total'" @click="showDetails(row.pdu_id, row.create_time, row.location, row.end_time)">分段计费</el-button>
+              <el-button link type="primary" v-else-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'outlet'" @click="showDetails(row.pdu_id, row.outlet_id, row.create_time, row.location, row.end_time)">分段计费</el-button>
               <div v-else>固定计费</div>
             </template>  
           </el-table-column>
@@ -148,7 +148,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import { ElMessage } from 'element-plus'
@@ -315,8 +315,9 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+
     }
   
     const data = await EnergyConsumptionApi.getBillDataPage(queryParams)

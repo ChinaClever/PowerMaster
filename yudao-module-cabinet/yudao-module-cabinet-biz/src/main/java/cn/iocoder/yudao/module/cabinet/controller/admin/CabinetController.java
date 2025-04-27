@@ -8,10 +8,11 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetEnvAndHumRes;
-import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.IndexPageReqVO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
@@ -20,9 +21,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -44,6 +47,8 @@ public class CabinetController {
     @Autowired
     CabinetService cabinetService;
 
+    @Value("${cabinet-refresh-url}")
+    public String adder;
 
     /**
      * 机柜主页面
@@ -62,8 +67,8 @@ public class CabinetController {
     public CommonResult<CabinetDistributionDetailsResVO> getCabinetDistributionDetails(
             @RequestParam(value = "id", required = true) @Parameter(description = "机柜id") int id,
             @RequestParam(value = "roomId", required = true) @Parameter(description = "机房id") int roomId,
-            @RequestParam(value = "type", required = true) @Parameter(description = "近一小时/近一天 hour,day")  String type) throws IOException {
-        return success(cabinetService.getCabinetdistributionDetails(id,roomId,type));
+            @RequestParam(value = "type", required = true) @Parameter(description = "近一小时/近一天 hour,day") String type) throws IOException {
+        return success(cabinetService.getCabinetdistributionDetails(id, roomId, type));
     }
 
     @Operation(summary = "机柜配电详情-负载率")
@@ -71,8 +76,8 @@ public class CabinetController {
     public CommonResult<Map> getCabinetDistributionFactor(
             @RequestParam(value = "id", required = true) @Parameter(description = "机柜id") int id,
             @RequestParam(value = "roomId", required = true) @Parameter(description = "机房id") int roomId,
-            @RequestParam(value = "type", required = true) @Parameter(description = "近一小时/近一天/今天/近三天 hour,day,today,threeDay")  String type) throws IOException {
-        return success(cabinetService.getCabinetDistributionFactor(id,roomId,type));
+            @RequestParam(value = "type", required = true) @Parameter(description = "近一小时/近一天/今天/近三天 hour,day,today,threeDay") String type) throws IOException {
+        return success(cabinetService.getCabinetDistributionFactor(id, roomId, type));
     }
 
 
@@ -134,12 +139,12 @@ public class CabinetController {
     @Operation(summary = "获得机柜用能分页")
     public CommonResult<PageResult<CabinetEnergyStatisticsResVO>> getEnergyStatisticsPage(@RequestBody CabinetIndexVo pageReqVO) throws IOException {
         PageResult<CabinetEnergyStatisticsResVO> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getCabinetIds()) || ObjectUtil.isNotEmpty(pageReqVO.getCompany())){
-            pageResult =  cabinetService.getEnergyStatisticsPage(pageReqVO);
-        }else {
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getCabinetIds()) || ObjectUtil.isNotEmpty(pageReqVO.getCompany())) {
+            pageResult = cabinetService.getEnergyStatisticsPage(pageReqVO);
+        } else {
             pageResult = cabinetService.getEqPage1(pageReqVO);
-            if (ObjectUtil.isEmpty(pageResult)){
-                pageResult =  cabinetService.getEnergyStatisticsPage(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)) {
+                pageResult = cabinetService.getEnergyStatisticsPage(pageReqVO);
             }
         }
         return success(pageResult);
@@ -147,7 +152,7 @@ public class CabinetController {
 
     @GetMapping("/cabinet/eq/max")
     @Operation(summary = "获得机柜用能最大")
-    public CommonResult<List<CabinetEnergyMaxResVO>> getEnergyMax(){
+    public CommonResult<List<CabinetEnergyMaxResVO>> getEnergyMax() {
         return success(cabinetService.getEnergyMax());
     }
 
@@ -160,6 +165,7 @@ public class CabinetController {
     @PostMapping("/cabinet/save")
     public CommonResult saveCabinet(@RequestBody CabinetVo vo) throws Exception {
         CommonResult message = cabinetService.saveCabinet(vo);
+        HttpUtil.get(adder);
         return message;
     }
 
@@ -172,8 +178,8 @@ public class CabinetController {
     @Operation(summary = "机柜删除")
     @GetMapping("/cabinet/delete")
     public CommonResult<Integer> deleteCabinet(@RequestParam("id") int id,
-                                               @RequestParam(value = "type" , required = false) @Parameter(description = "删除类型：1-解绑pdu  2-解绑bus(母线) 3-解绑机架  4-删除机柜") Integer type) throws Exception {
-        int cabinetId = cabinetService.delCabinet(id,type);
+                                               @RequestParam(value = "type", required = false) @Parameter(description = "删除类型：1-解绑pdu  2-解绑bus(母线) 3-解绑机架  4-删除机柜") Integer type) throws Exception {
+        int cabinetId = cabinetService.delCabinet(id, type);
         if (cabinetId == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
         }
@@ -220,7 +226,7 @@ public class CabinetController {
 
     @Operation(summary = "机柜环境详情")
     @PostMapping("/cabinet/env")
-    public CommonResult<PageResult<CabinetIndexEnvResVO>> getCabinetEnv(@RequestBody CabinetIndexVo pageReqVO){
+    public CommonResult<PageResult<CabinetIndexEnvResVO>> getCabinetEnv(@RequestBody CabinetIndexVo pageReqVO) {
         return success(cabinetService.getCabinetEnv(pageReqVO));
     }
 
@@ -258,5 +264,20 @@ public class CabinetController {
     @Operation(summary = "获得机柜环境分页")
     public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@RequestBody @Valid CabinetIndexVo pageReqVO) {
         return success(cabinetService.getCabinetEnvPage(pageReqVO));
+    }
+
+    @Operation(summary = "机柜功率因素详情")
+    @PostMapping("/pf/detail")
+    public CommonResult<Map> getCabinetPFDetail(@RequestBody CabinetIndexVo pageReqVO) {
+        Map map = cabinetService.getCabinetPFDetail(pageReqVO);
+        return success(map);
+    }
+
+    @Operation(summary = "机柜功率因素详情-导出")
+    @PostMapping("/pf/detailExcel")
+    public void getBusPFDetailExcel(@RequestBody CabinetIndexVo pageReqVO, HttpServletResponse response) throws IOException {
+        Map map = cabinetService.getCabinetPFDetail(pageReqVO);
+        List<CabinetPFDetailVO> tableList = (List<CabinetPFDetailVO>) map.get("table");
+        ExcelUtils.write(response, "机柜功率因素详情.xlsx", "数据", CabinetPFDetailVO.class, tableList);
     }
 }

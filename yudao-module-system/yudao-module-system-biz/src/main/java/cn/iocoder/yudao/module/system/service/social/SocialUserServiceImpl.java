@@ -2,7 +2,7 @@ package cn.iocoder.yudao.module.system.service.social;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
-import cn.iocoder.yudao.framework.common.exception.ServiceException;
+import cn.iocoder.yudao.framework.common.exception.BusinessException;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.system.api.social.dto.SocialUserBindReqDTO;
 import cn.iocoder.yudao.module.system.api.social.dto.SocialUserRespDTO;
@@ -121,7 +121,7 @@ public class SocialUserServiceImpl implements SocialUserService {
 
     /**
      * 授权获得对应的社交用户
-     * 如果授权失败，则会抛出 {@link ServiceException} 异常
+     * 如果授权失败，则会抛出 {@link BusinessException} 异常
      *
      * @param socialType 社交平台的类型 {@link SocialTypeEnum}
      * @param userType 用户类型

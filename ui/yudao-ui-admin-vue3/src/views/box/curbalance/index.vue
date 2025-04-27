@@ -95,8 +95,8 @@
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
           <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
@@ -105,7 +105,13 @@
         <el-table v-if="visMode == 1" v-loading="loading" style="margin-top:-10px;height:720px;oveflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location"  width="300px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="300px">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
@@ -177,8 +183,8 @@
             <el-button
               link
               type="primary"
-              @click="toDeatil(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              @click="showDialogCur(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 0"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
@@ -217,12 +223,12 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
             <el-tag type="info"  v-if="item.color == 0">单相设备</el-tag>
-            <el-tag type="info"  v-if="item.color == 1">{{statusList[3].name}}</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
+            <el-tag type="info"  v-if="item.color == 1 && item.status != 0">{{statusList[3].name}}</el-tag>
+            <el-tag type="success"  v-if="item.color == 2 && item.status != 0">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-if="item.color == 3 && item.status != 0">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-if="item.color == 4 && item.status != 0">{{ statusList[2].name }}</el-tag>
           </div>
-          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0 && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -238,7 +244,7 @@
           </div>
         </template>
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
+        <div class="custom-content" style="margin-top: -30px;">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
             <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name"/>
@@ -269,8 +275,19 @@
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
+              <div style="display: flex;align-items: center;justify-content: space-between">
+                <div style="font-size: 18px;font-weight: bold;margin-left: 5px;">电流趋势</div>
+                <div>
+                  <el-select v-model="typeRadioCur" placeholder="请选择" style="width: 100px">
+                    <el-option label="实时" value="实时" />
+                    <el-option label="平均" value="平均" />
+                    <el-option label="最大" value="最大" />
+                    <el-option label="最小" value="最小" />
+                  </el-select>
+                </div>
+              </div>
               <div class="IechartBar">
-                <Echart :options="ALineOption" :height="300" />
+                <Echart :options="ALineOption" :height="280" />
               </div>
             </el-card>
           </div>
@@ -303,8 +320,19 @@
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
+              <div style="display: flex;align-items: center;justify-content: space-between">
+                <div style="font-size: 18px;font-weight: bold;margin-left: 5px;">电压趋势</div>
+                <div>
+                  <el-select v-model="typeRadioVol" placeholder="请选择" style="width: 100px">
+                    <el-option label="实时" value="实时" />
+                    <el-option label="平均" value="平均" />
+                    <el-option label="最大" value="最大" />
+                    <el-option label="最小" value="最小" />
+                  </el-select>
+                </div>
+              </div>
               <div class="IechartBar">
-                <Echart :options="BLineOption" :height="300"/>
+                <Echart :options="BLineOption" :height="280"/>
               </div>
             </el-card>
           </div>
@@ -333,7 +361,7 @@
             <el-tag type="info"  v-if="item.color === 0">单相设备</el-tag>
             <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0 && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -349,7 +377,7 @@
           </div>
         </template>
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
+        <div class="custom-content" style="margin-top: -30px;">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
               <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
@@ -380,6 +408,17 @@
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
+              <div style="display: flex;align-items: center;justify-content: space-between">
+                <div style="font-size: 18px;font-weight: bold;margin-left: 5px;">电流趋势</div>
+                <div>
+                  <el-select placeholder="请选择" style="width: 100px">
+                    <el-option label="实时" value="实时" />
+                    <el-option label="平均" value="平均" />
+                    <el-option label="最大" value="最大" />
+                    <el-option label="最小" value="最小" />
+                  </el-select>
+                </div>
+              </div>
               <div class="IechartBar">
                 <Echart :options="ALineOption" :height="300" />
               </div>
@@ -414,6 +453,17 @@
               </div>
             </el-card>
             <el-card class="cardChilc" shadow="hover">
+              <div style="display: flex;align-items: center;justify-content: space-between">
+                <div style="font-size: 18px;font-weight: bold;margin-left: 5px;">电压趋势</div>
+                <div>
+                  <el-select placeholder="请选择" style="width: 100px">
+                    <el-option label="实时" value="实时" />
+                    <el-option label="平均" value="平均" />
+                    <el-option label="最大" value="最大" />
+                    <el-option label="最小" value="最小" />
+                  </el-select>
+                </div>
+              </div>
               <div class="IechartBar">
                 <Echart :options="BLineOption" :height="300"/>
               </div>
@@ -462,6 +512,11 @@ const visMode = ref(0);
 const curBalanceColorForm = ref();
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
+const typeRadioCur = ref("最大")
+const typeRadioVol = ref("最大")
+const boxBalanceTrend = ref([])
+const balanceTrendTime = ref([])
+const clickBoxId = ref('')
 const pageSizeArr = ref([24,36,48,96]);
 const switchValue = ref(0);
 const statusNumber = reactive({
@@ -614,7 +669,6 @@ watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
-
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
@@ -665,10 +719,6 @@ const ABarOption = ref<EChartsOption>({})
 const BBarOption = ref<EChartsOption>({})
 
 const ALineOption = ref<EChartsOption>({
-  title: {
-    text: '电流趋势',
-    left: 'left'
-  },
   tooltip: {
     trigger: 'axis',
     formatter: function (params) {
@@ -684,15 +734,17 @@ const ALineOption = ref<EChartsOption>({
       return tooltipContent;
     }
   },
+  legend: { orient: 'horizontal', right: '25'},
+  dataZoom:[{type: "inside"}],
   grid: {
     left: '3%',
-    right: '4%',
+    right: '5%',
     bottom: '3%',
+    top: '8%',
     containLabel: true
   },
   yAxis: {
     type: 'value',
-    name: '电流',
     axisLabel: {
       formatter: '{value} A'
     }
@@ -702,10 +754,6 @@ const ALineOption = ref<EChartsOption>({
 })
 
 const BLineOption = ref<EChartsOption>({
-  title: {
-    text: '电压趋势',
-    left: 'left'
-  },
   tooltip: {
     trigger: 'axis',
     formatter: function (params) {
@@ -722,15 +770,17 @@ const BLineOption = ref<EChartsOption>({
       return tooltipContent;
     }
   },
+  legend: { orient: 'horizontal', right: '25'},
+  dataZoom:[{type: "inside"}],
   grid: {
     left: '3%',
-    right: '4%',
+    right: '5%',
     bottom: '3%',
+    top: '8%',
     containLabel: true
   },
   yAxis: {
     type: 'value',
-    name: '电压',
     axisLabel: {
       formatter: '{value} V'
     }
@@ -787,6 +837,34 @@ const getList = async () => {
   }
 }
 
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBalancePage(queryParams)
+     var tableIndex = 0;
+    // var lessFifteen = 0;
+    // var greaterFifteen = 0;
+    // var greaterThirty = 0;
+    // var smallCurrent = 0;
+    data.list.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      
+      obj.acur = obj.acur?.toFixed(2);
+      obj.bcur = obj.bcur?.toFixed(2);
+      obj.ccur = obj.ccur?.toFixed(2);
+      obj.curUnbalance = obj.curUnbalance?.toFixed(0);
+      obj.avol = obj.avol?.toFixed(1);
+      obj.bvol = obj.bvol?.toFixed(1);
+      obj.cvol = obj.cvol?.toFixed(1);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+
+    });
+
+    list.value = data.list
+    total.value = data.total
+  } finally {
+  }
+}
+
 const getStatistics = async () => {
   const data = await IndexApi.getBalanceStatistics()
     statusNumber.smallCurrent = data.smallCurrent;
@@ -828,6 +906,8 @@ const showDialogCur = (item) => {
   curdevkey.value = item.devKey;
   curRoomName.value = item.roomName;
   boxName.value = item.boxName;
+  typeRadioCur.value = "最大"
+  typeRadioVol.value = "最大"
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -838,6 +918,8 @@ const showDialogVol = (item) => {
   voldevkey.value = item.devKey;
   volRoomName.value = item.roomName;
   boxName.value = item.boxName;
+  typeRadioCur.value = "最大"
+  typeRadioVol.value = "最大"
   getBalanceDetail(item);
   getBalanceTrend(item);
 }
@@ -860,7 +942,7 @@ const getBalanceDetail = async(item) => {
   // 设置电流饼形图数据
   ABarOption.value = {
     title: {
-      text: '电流饼形图',
+      text: '相电流',
       left: 'left'
     },
     tooltip: {
@@ -895,7 +977,7 @@ const getBalanceDetail = async(item) => {
   // 设置电压饼形图数据
   BBarOption.value = {
     title: {
-      text: '电压饼形图',
+      text: '相电压',
       left: 'left'
     },
     tooltip: {
@@ -935,11 +1017,143 @@ const getBalanceDetail = async(item) => {
 
 const getBalanceTrend = async (item) => {
   const res = await IndexApi.getBoxBalanceTrend({
-    boxId: item.boxId
+    boxId: item.boxId,
+    timeType: 1
   })
+
+  boxBalanceTrend.value = res
+  clickBoxId.value = item.boxId
+  
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime);
+    balanceTrendTime.value = timeList
+    ALineOption.value.grid = {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '8%',
+      containLabel: true
+    }
+    BLineOption.value.grid = {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '8%',
+      containLabel: true
+    }
     if(res[0].cur && res[0].cur.length == 1) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[0].curMaxValue.toFixed(2)),
+        },
+      ]
+    } else if (res[0].cur && res[0].cur.length == 3) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[0].curMaxValue.toFixed(2)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[1].curMaxValue.toFixed(2)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.cur[2].curMaxValue.toFixed(2)),
+        },
+      ]
+    }
+    if (res[0].vol && res[0].vol.length == 1) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volMaxValue.toFixed(1)),
+        },
+      ]
+    } else if(res[0].vol && res[0].vol.length == 3) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volMaxValue.toFixed(1)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[1].volMaxValue.toFixed(1)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[2].volMaxValue.toFixed(1)),
+        },
+      ]
+    }
+  }
+}
+
+const getBalanceTrendReal = async () => {
+  const res = await IndexApi.getBoxBalanceTrend({
+    boxId: clickBoxId.value,
+    timeType: 0
+  })
+  
+  if (res.length > 0) {
+    const timeList = res.map(item => item.dateTime);
+    console.log(res)
+    if(typeRadioCur.value == "实时") {
+      ALineOption.value.grid = {
+        left: '6%',
+        right: '4%',
+        bottom: '3%',
+        top: '8%',
+        containLabel: true
+      }
+    }
+    if(typeRadioVol.value == "实时") {
+      BLineOption.value.grid = {
+        left: '6%',
+        right: '4%',
+        bottom: '3%',
+        top: '8%',
+        containLabel: true
+      }
+    }
+    if(res[0].cur && res[0].cur.length == 1 && typeRadioCur.value == "实时") {
       ALineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -953,12 +1167,13 @@ const getBalanceTrend = async (item) => {
           data: res.map(item => item.cur[0].curValue.toFixed(2)),
         },
       ]
-    } else if (res[0].cur && res[0].cur.length == 3) {
+    } else if (res[0].cur && res[0].cur.length == 3 && typeRadioCur.value == "实时") {
       ALineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
         data: timeList
       }
+      console.log(ALineOption.value.xAxis)
       ALineOption.value.series = [
         {
           name: 'A',
@@ -980,7 +1195,7 @@ const getBalanceTrend = async (item) => {
         },
       ]
     }
-    if (res[0].vol && res[0].vol.length == 1) {
+    if (res[0].vol && res[0].vol.length == 1 && typeRadioVol.value == "实时") {
       BLineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -994,7 +1209,7 @@ const getBalanceTrend = async (item) => {
           data: res.map(item => item.vol[0].volValue.toFixed(1)),
         },
       ]
-    } else if(res[0].vol && res[0].vol.length == 3) {
+    } else if(res[0].vol && res[0].vol.length == 3 && typeRadioVol.value == "实时") {
       BLineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -1022,6 +1237,106 @@ const getBalanceTrend = async (item) => {
       ]
     }
   }
+
+  console.log(ALineOption.value.xAxis)
+}
+
+const changeType = (flag) => {
+  if (boxBalanceTrend.value.length > 0) {
+    let itemCurType = typeRadioCur.value == "最小" ? 'curMinValue' : (typeRadioCur.value == "最大" ? 'curMaxValue' : 'curValue')
+    let itemVolType = typeRadioVol.value == "最小" ? 'volMinValue' : (typeRadioVol.value == "最大" ? 'volMaxValue' : 'volValue')
+    console.log(itemCurType,itemVolType,flag)
+    if(typeRadioCur.value != "实时") {
+      ALineOption.value.grid = {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '8%',
+        containLabel: true
+      }
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: balanceTrendTime.value
+      }
+    }
+    if(typeRadioVol.value != "实时") {
+      BLineOption.value.grid = {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '8%',
+        containLabel: true
+      }
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: balanceTrendTime.value
+      }
+    }
+    
+    if (boxBalanceTrend.value[0].cur && boxBalanceTrend.value[0].cur.length == 1 && flag) {
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map((item) => formatEQ(item.cur[0][`${itemCurType}`],2))
+        }
+      ]
+    } else if (boxBalanceTrend.value[0].cur && boxBalanceTrend.value[0].cur.length == 3 && flag) {
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map((item) => formatEQ(item.cur[0][`${itemCurType}`],2))
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map((item) => formatEQ(item.cur[1][`${itemCurType}`],2))
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map((item) => formatEQ(item.cur[2][`${itemCurType}`],2))
+        }
+      ]
+    }if (boxBalanceTrend.value[0].vol && boxBalanceTrend.value[0].vol.length == 1 && !flag) {
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map(item => formatEQ(item.vol[0][`${itemVolType}`],1)),
+        },
+      ]
+    } else if(boxBalanceTrend.value[0].vol && boxBalanceTrend.value[0].vol.length == 3 && !flag) {
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map(item => formatEQ(item.vol[0][`${itemVolType}`],1)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map(item => formatEQ(item.vol[1][`${itemVolType}`],1)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: boxBalanceTrend.value.map(item => formatEQ(item.vol[2][`${itemVolType}`],1)),
+        },
+      ]
+    }
+  }
 }
 
 const handleSelectStatus = (index) => {
@@ -1036,6 +1351,15 @@ const toggleAllStatus = () => {
   onclickColor.value = -1;
   queryParams.curUnbalanceStatus = [0,1,2,3,4];
   handleQuery();
+}
+
+// 格式化耗电量列数据，保留1位小数
+function formatEQ(value: number, decimalPlaces: number | undefined){
+  if (!isNaN(value)) {
+    return Number(value).toFixed(decimalPlaces);
+  } else {
+      return null; // 或者其他默认值
+  }
 }
 
 /** 搜索按钮操作 */
@@ -1089,6 +1413,33 @@ const handleExport = async () => {
   }
 }
 
+watch(() => list.value ,async()=>{
+  if(dialogVisibleCur.value) {
+    getBalanceDetail({devKey: curdevkey.value})
+  }
+  if(dialogVisibleVol.value) {
+    getBalanceDetail({devKey: voldevkey.value})
+  }
+})
+
+// 监听切换类型
+watch(() => typeRadioCur.value ,(value)=>{
+  if(value == "实时") {
+    getBalanceTrendReal()
+  } else {
+   changeType(true)
+  }
+})
+
+// 监听切换类型
+watch( ()=>typeRadioVol.value, (value)=>{
+  if(value == "实时") {
+    getBalanceTrendReal()
+  } else {
+   changeType(false)
+  }
+})
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
@@ -1096,7 +1447,7 @@ onMounted(async () => {
   getList();
   getNavList();
   getStatistics();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1118,7 +1469,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>
@@ -1713,10 +2064,6 @@ onActivated(() => {
   --el-card-padding:5px;
 }
 
-:deep(.el-tag){
-  margin-right:-20px;
-}
-
 :deep(.el-dialog) {
   width: 80%;
   margin-top: 70px;
@@ -1733,6 +2080,7 @@ onActivated(() => {
   display: flex;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin: 10px;
 }
 
 .question {

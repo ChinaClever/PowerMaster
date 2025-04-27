@@ -144,11 +144,17 @@
       </el-form>      
     </template>
     <template #Content>
-      <div v-show="switchValue !== 2 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y:auto;">
+      <div v-show="switchValue !== 2" style="height:720px;margin-top:-10px;overflow-y:auto;">
         <el-table :data="list" v-if="switchValue == 3 && list" v-loading="loading" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" >
@@ -206,7 +212,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -404,6 +410,7 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
+  console.log(row)
   if(row.length == 0){
     queryParams.busDevKeyList = null;
     queryDeletedPageParams.busDevKeyList = null;
@@ -591,7 +598,7 @@ const toDetail = (row) =>{
   const busId = row.busId
   const location = row.location != null ? row.location : devKey;
   const busName = row.busName;
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName,roomName }})
+  push({path: '/bus/busmonitor/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName,roomName }})
 }
 
 
@@ -1310,6 +1317,6 @@ onUpdated(() => {
 }
 
 :deep(.el-tag){
-  margin-right:-60px;
+  margin-right:0px;
 }
 </style>

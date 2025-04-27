@@ -57,7 +57,7 @@ public class RoomMenuController {
     /**
      * 机房菜单全部
      */
-    @Operation(summary = "机房菜单")
+    @Operation(summary = "机房菜单-机柜")
     @GetMapping("/room/menuAll")
     public CommonResult<List<RoomMenuDTO>> getRoomMenuAll() {
         List<RoomMenuDTO> dto = roomService.roomMenuListAll();

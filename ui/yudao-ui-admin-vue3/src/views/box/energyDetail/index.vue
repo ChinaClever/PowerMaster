@@ -74,7 +74,7 @@
     <div class="bottom">
       <el-card class="card-day" shadow="never">
         <template #header>
-          <CardTitle title="日用电有功功率曲线" />
+          <CardTitle title="日用电最大有功功率曲线" />
         </template>
         <Echart :options="echartsOptionPowTrend" :height="260" />
       </el-card>
@@ -102,13 +102,18 @@
 import { EChartsOption } from 'echarts'
 import { IndexApi } from '@/api/bus/boxindex'
 import { BoxEnergyApi } from '@/api/bus/boxenergy'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import 'echarts/lib/component/dataZoom';
+import { useRoute } from 'vue-router'
 
-const roomName = ref(history?.state?.roomName);
+const route = useRoute();
+const query = route.query;
+
+const roomName = ref(query.roomName);
 console.log('roomName',roomName)
-const boxName = ref(history?.state?.boxName );
-const busName = ref(history?.state?.busName );
-const devKey = ref(history?.state?.devKey );
+const boxName = ref(query.boxName );
+const busName = ref(query.busName );
+const devKey = ref(query.devKey );
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
@@ -119,8 +124,9 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  busId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1
+  busId: query.id || 1,
+  cabinetroomId: query.roomId || 1,
+  devKey : query.devKey as string | undefined
 })
 const EleChain = reactive({
   todayEq: '',
@@ -134,6 +140,19 @@ const EleChain = reactive({
   monthRate: '',
 })
 const ActivePowTrend = reactive({})
+
+const getBoxIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBoxIdAndLocation(queryParams);
+    if (data != null){
+      queryParams.busId = data.boxId
+      busName.value = data.busName
+    }else{
+      busName.value = null
+    }
+ } finally {
+ }
+}
 
 watch(() => queryParams.cabinetroomId, (val) => {
   machineList.value = handleNavList(val)
@@ -198,6 +217,17 @@ const getActivePowTrend = async() => {
         label: {
           backgroundColor: '#505765'
         }
+      },
+      formatter: function(params) {
+        var result = ''
+
+        if(res.yesterdayList[params[1].dataIndex].activePowMaxTime && res.yesterdayList[params[1].dataIndex].activePowMaxTime != "") {
+          result = `${params[0].seriesName}&nbsp;发生时间:${res.yesterdayList[params[0].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[0].value}kW` + '<br>'
+        }
+        if(res.todayList[params[1].dataIndex].activePowMaxTime && res.todayList[params[1].dataIndex].activePowMaxTime != "") {
+          result += `${params[1].seriesName}&nbsp;发生时间:${res.todayList[params[1].dataIndex].activePowMaxTime.slice(0,-3)}&nbsp;&nbsp;${params[1].value}kW`
+        }
+        return result; // 使用 <b> 标签使数值加粗显示
       }
     },
     legend: {
@@ -246,7 +276,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList?.map(item => item?.activePow)
+        data: res.yesterdayList?.map(item => item?.activePowMax)
       },
       {
         name: '当日',
@@ -262,7 +292,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: 'Avg2' }]
         },
-        data: res.todayList?.map(item => item?.activePow)
+        data: res.todayList?.map(item => item?.activePowMax)
       }
     ]
   }
@@ -353,8 +383,9 @@ const getMachineEleTrend = async(type) => {
   
 }
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   // getNavList()
+  await getBoxIdAndLocation()
   getActivePowTrend()
   getMachineEleChain()
   getMachineEleTrend('DAY')

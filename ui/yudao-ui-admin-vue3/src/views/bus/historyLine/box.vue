@@ -37,9 +37,9 @@
     </template> 
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
       </el-tabs>
       <!-- 搜索工作栏 -->
       <el-form
@@ -70,7 +70,6 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate"
-
           class="!w-350px"
         />
                     <!-- @change="handleDayPick" -->
@@ -197,7 +196,7 @@ import  CommonMenu1 from './component/CommonMenu1.vue'
 
 defineOptions({ name: 'PDUHistoryLine' })
 
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const message = useMessage() // 消息弹窗
@@ -220,9 +219,9 @@ const queryParams = reactive({
   outletId: undefined,
   nowAddress: undefined as string | undefined,
   type: 'total',
-  granularity: 'realtime',
+  granularity: 'day',
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1) as any,
+  timeRange: defaultHourTimeRange(24*30) as any,
   devkey: undefined as string | undefined,
 })
 
@@ -426,7 +425,7 @@ const loading2=ref(false);
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-  if (nowAddress.value == null){
+  if (nowAddress.value == null&&nowAddressTemp.value==null){
     ElMessage.error('请先选择设备！');
   }
   loading.value = true;
@@ -523,28 +522,35 @@ const initChart = () => {
     if (chartContainer.value && instance) {
       realtimeChart = echarts.init(chartContainer.value);
       if (realtimeChart) {
-        realtimeChart.setOption({
-          title: { text: ''},
-          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素'],
-                selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, }
-              },
-          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
-          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
-          series: [
-            {name: '总有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
-            {name: '总无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
-            {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
-            {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
-         
-        ],
-          dataZoom:[{type: "inside"}],
-        });
-      }
+            realtimeChart.setOption({     
+              title: {text: ''},
+              tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+              legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)' ],
+                        selected: { "平均有功功率(kW)": false, "最大有功功率(kW)": true, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": true, "最小无功功率(kVar)": false,
+                                  "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false }
+                      },
+              grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
+              xAxis: [
+                {type: 'category', boundaryGap: false, data: createTimeData.value}
+              ],
+              yAxis: { type: 'value'},
+              series: [
+                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
+                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
+                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
+                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
+              ],
+              dataZoom:[{type: "inside"}],
+            });
+          }
       // 图例切换监听
-      totalRealtimeLegendListener(realtimeChart);
+      totalAndOutletHourAndDayLegendListener(realtimeChart);
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
@@ -596,13 +602,13 @@ window.addEventListener('resize', function() {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(50)
+    // queryParams.timeRange = defaultHourTimeRange(50)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(100)
+    // queryParams.timeRange = defaultHourTimeRange(100)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
   needFlush.value ++;
 });
@@ -662,8 +668,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)' ],
-                        selected: { "平均有功功率(kW)": true, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": true, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
-                                  "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
+                        selected: { "平均有功功率(kW)": false, "最大有功功率(kW)": true, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": true, "最小无功功率(kVar)": false,
+                                  "平均视在功率(kVA)": false, "最大视在功率(kVA)": true, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
@@ -1648,8 +1654,14 @@ const handleExport1 = async () => {
   const queryBoxId =ref(history?.state?.boxId);
   const queryLocation = ref(history?.state?.location);
   const queryDevKey = ref(history?.state?.dev_key);
+  const start=ref(history?.state?.start)
+  const end=ref(history?.state?.end)
+  console.log("history.state",history?.state)
 /** 初始化 **/
 onMounted( async () => { 
+  if(start.value!=undefined&&end.value!=undefined&&start.value!=''&&end.value!=''){
+    queryParams.timeRange = [start.value, end.value]
+  }
   getNavList()
   // 获取路由参数中的 pdu_id
   queryParams.boxId = queryBoxId;

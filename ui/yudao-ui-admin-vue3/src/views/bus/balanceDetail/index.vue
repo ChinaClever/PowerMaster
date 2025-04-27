@@ -8,7 +8,7 @@
           </div>
           <div style="margin-top:-30px;float:right">
             <span>网络地址：</span>
-            <el-tag size="large">{{ adder }}</el-tag>
+            <el-tag size="large">{{ devKey }}</el-tag>
           </div>
       </div>
       <CardTitle title="电流不平衡" />
@@ -76,12 +76,12 @@
 <script lang="ts" setup>
 import { EChartsOption } from 'echarts'
 import { IndexApi } from '@/api/bus/busindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
-const busId = history?.state?.busId || -1
-const devKey = history?.state?.devKey || "0"
-const location =  history?.state?.location 
-const adder = history?.state?.location.split('-')[0]
-const busName = history?.state?.busName
+const busId = ref(history?.state?.busId || -1)
+const devKey = ref(history?.state?.devKey || "0")
+const location = ref(history?.state?.location)
+const busName = ref(history?.state?.busName)
 console.log('busName', busName);
 const colorList = [{
   name: '小电流不平衡',
@@ -121,8 +121,23 @@ const balanceObj = reactive({
   colorIndex: 0,
 })
 
+const getBusIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation({devKey:devKey.value});
+    if (data != null){
+      location.value = data.location
+      busId.value = data.busId
+      busName.value = data.busName
+      console.log(location.value,busId.value,busName.value)
+    }else{
+      location.value = null
+    }
+ } finally {
+ }
+}
+
 const getBalanceDetail = async() => {
-  const res = await IndexApi.getBusBalanceDetail({devKey:devKey})
+  const res = await IndexApi.getBusBalanceDetail({devKey:devKey.value})
   console.log('res', res)
   if (res.cur_value) {
     const cur_valueA = res.cur_value.map(item => item.toFixed(2))
@@ -286,7 +301,7 @@ const getBalanceDetail = async() => {
 // 获取pdu电流趋势
 const getBalanceTrend = async () => {
   const res = await IndexApi.getBusBalanceTrend({
-    busId: busId
+    busId: busId.value
   })
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime)
@@ -452,7 +467,8 @@ const BLineOption = ref<EChartsOption>({
   series: []
 })
 
-onBeforeMount(()=> {
+onBeforeMount(async ()=> {
+  await getBusIdAndLocation()
   getBalanceDetail()
   // getBalanceDegree()
   getBalanceTrend()

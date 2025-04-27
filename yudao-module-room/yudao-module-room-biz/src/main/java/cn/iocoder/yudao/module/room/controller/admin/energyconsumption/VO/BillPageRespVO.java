@@ -32,7 +32,7 @@ public class BillPageRespVO {
     private Double bill_value;
 
     @ExcelProperty(value = "计费方式",converter = TypeOptionConverter.class)
-    @EnumFiledConvert(enumMap = "0|固定计费,1|分段计费")
+    @EnumFiledConvert(enumMap = "1|固定计费,2|分段计费")
     private Integer bill_mode;
 
 }

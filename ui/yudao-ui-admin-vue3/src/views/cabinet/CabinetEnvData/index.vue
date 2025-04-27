@@ -3,8 +3,6 @@
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
-
-
           <div class="descriptions-container" style="font-size: 14px;">
             <div class="description-item">
                 <span class="label">最近一小时 :</span>
@@ -102,7 +100,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" >
+      <el-table v-loading="loading" :data="list" :border="true"  :show-overflow-tooltip="true" >
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -116,12 +114,31 @@
                            :align="column.align" 
                            :prop="column.prop" 
                            :formatter="column.formatter" 
-                           :width="column.width" 
-                           v-if="column.istrue" 
+                           :min-width="column.width" 
+                           v-if="column.istrue&&column.slot!= 'actions'" 
                            >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+              </div>
+              <div v-else-if="column.slot === 'detect'">
+                {{ getCombinedString(row.address?.channel, row.address?.position) }}
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column :key="column.prop" 
+                           :label="column.label" 
+                           :align="column.align" 
+                           :prop="column.prop" 
+                           :formatter="column.formatter" 
+                           :width="column.width" 
+                           v-if="column.istrue&&column.slot == 'actions'" 
+                           fixed="right"
+                           >
+            <template #default="{ row }">
+              <div v-if="column.slot === 'actions'">
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
               </div>
               <div v-else-if="column.slot === 'detect'">
                 {{ getCombinedString(row.address?.channel, row.address?.position) }}
@@ -501,7 +518,9 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, address: string, channel: number, position: number, sensorId: number) => {
   let detectValue = channel?.toString()+position?.toString()
-  push('/cabinet/record/CabinetEnvAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId);
+  console.log("selectTimeRange",selectTimeRange);
+  push('/cabinet/record/CabinetEnvAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId+
+  (selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+dayjs(selectTimeRange.value[0]).format("YYYY-MM-DD HH:mm:ss")+'&end='+dayjs(selectTimeRange.value[1]).format("YYYY-MM-DD HH:mm:ss"):''));
 }
 
 /** 导出按钮操作 */
@@ -541,11 +560,11 @@ const format = (date) => {
 /** 初始化 **/
 onMounted( () => {
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  dayjs(startOfMonth).format('YYYY-MM-DD HH:mm:ss'),
+  dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 ];
   getNavList()
   getNavNewData()

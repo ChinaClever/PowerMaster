@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -31,6 +32,23 @@ public class RoomSaveVo {
     @Schema(description = "机房名称", example = "机房1")
     private String roomName;
 
+    /**
+     * 地址（楼层）
+     */
+    @Schema(description = "地址（楼层）", example = "地址（楼层）")
+    private String addr;
+
+    /**
+     * 显示选择
+     */
+    @Schema(description = "显示选择")
+    private Boolean displayFlag;
+
+    /**
+     * 显示类型（0-负载率/1-pue）
+     */
+    @Schema(description = "显示类型（0-负载率/1-pue）")
+    private Boolean displayType;
 
     /**
      * 电力容量
@@ -49,9 +67,16 @@ public class RoomSaveVo {
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private Integer isDeleted;
+    private int isDelete;
 
+    @Schema(description = "面积类型：0-地砖 1-面积")
+   private Boolean areaFlag;
 
+    @Schema(description = "面积长度")
+    private BigDecimal areaxLength;
+
+    @Schema(description = "面积宽")
+    private BigDecimal areayLength;
     /**
      * 机房x长度(单位机柜)
      */

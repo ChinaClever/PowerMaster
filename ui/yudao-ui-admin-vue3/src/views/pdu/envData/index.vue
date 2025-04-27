@@ -100,7 +100,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" >
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" border>
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -114,12 +114,31 @@
                            :align="column.align" 
                            :prop="column.prop" 
                            :formatter="column.formatter" 
-                           :width="column.width" 
-                           v-if="column.istrue" 
+                           :min-width="column.width" 
+                           v-if="column.istrue&&column.slot !== 'actions'" 
                            >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+              </div>
+              <div v-else-if="column.slot === 'detect'">
+                {{ getCombinedString(row.address?.channel, row.address?.position) }}
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column :key="column.prop" 
+                           :label="column.label" 
+                           :align="column.align" 
+                           :prop="column.prop" 
+                           :formatter="column.formatter" 
+                           :width="column.width" 
+                           v-if="column.istrue&&column.slot == 'actions'" 
+                           fixed="right"
+                           >
+            <template #default="{ row }">
+              <div v-if="column.slot === 'actions'">
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
               </div>
               <div v-else-if="column.slot === 'detect'">
                 {{ getCombinedString(row.address?.channel, row.address?.position) }}
@@ -181,6 +200,7 @@ const queryParams = reactive({
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
   timeRange: undefined,
+    ipArray: [],
   cabinetIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
@@ -302,7 +322,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value =([
         { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '180px'},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
@@ -315,10 +335,7 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       // 配置筛选列
-      defaultOptionsCol.value = [
-        ["tem_value", "tem_avg_value"],["tem_value", "tem_max"], ["tem_value", "tem_min"],
-        ["hum_value", "hum_avg_value"],["hum_value", "hum_max"], ["hum_value", "hum_min"],
-      ];
+      defaultOptionsCol.value = [["tem_value", "tem_max"],["hum_value", "hum_max"]];
       optionsCol.value = [
         { value: "tem_value", label: '温度', children: [
             { value: "tem_avg_value", label: '平均温度'},
@@ -344,20 +361,20 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address.address', istrue:true, width: '180px'}, 
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '平均湿度(%RH)', align: 'center', prop: 'hum_avg_value', istrue:false, width: '180px', formatter: formatData},
-        { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:false, width: '180px', formatter: formatData },
-        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false,formatter: formatTime},
+        { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false,formatter: formatTime},
-        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true,formatter: formatTime},
-        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true,formatter: formatTime},
+        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:false, width: '180px', formatter: formatData },
+        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:false,formatter: formatTime},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
       queryParams.pageNo = 1;
@@ -368,7 +385,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '230px'},
-  { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
   { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:true, width: '120px'},
@@ -444,9 +461,9 @@ function formatData1(_row: any, _column: any, cellValue: number): string {
 const handleCheck = async (node) => {
    let arr = [] as any
   node.forEach(item => { 
-    if(item.type == 3){
-      arr.push(item.id);
-    }
+      if(item.type == 4){
+        arr.push(item.unique);
+      }
   });
    //没筛选到 不显示任何数据 参数传0 后端返回空
    if(arr.length == 0 && node.length != 0){
@@ -456,7 +473,7 @@ const handleCheck = async (node) => {
         type: 'warning',
       });
     }
-    queryParams.cabinetIds = arr
+    queryParams.ipArray = arr
     handleQuery()
 
 }
@@ -500,7 +517,7 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, address: string, channel: number, position: number, sensorId: number) => {
   let detectValue = channel?.toString()+position?.toString()
-  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId);
+  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+dayjs(selectTimeRange.value[0]).format("YYYY-MM-DD HH:mm:ss")+'&end='+dayjs(selectTimeRange.value[1]).format("YYYY-MM-DD HH:mm:ss"):''));
 }
 
 /** 导出按钮操作 */

@@ -35,7 +35,7 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) + '°C' ;
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(0) + '°C' ;
         result += '<br>';
       }
       return result;

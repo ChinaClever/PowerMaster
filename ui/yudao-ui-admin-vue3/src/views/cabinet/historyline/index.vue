@@ -65,9 +65,10 @@
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
-        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
-        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
+        <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
+
       </el-tabs>
        <!-- 搜索工作栏 -->
        <el-form
@@ -104,10 +105,12 @@
          
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+         </el-form-item>
+         <el-form-item style="position: absolute; right: 0;">
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
-         </el-form-item>
+          </el-form-item>
        </el-form>
     </template>
     <template #Content>
@@ -219,7 +222,7 @@ const exportLoading = ref(false)
 
 const nowAddress = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart')
 const instance = getCurrentInstance()
 const tableData = ref<Array<{ }>>([]) // 列表数据
@@ -231,9 +234,12 @@ const queryParams = reactive({
   pageSize: 15,
   abtotal: "total",
   cabinetId: undefined as number | undefined,
-  granularity: 'realtime',
-  timeRange: defaultHourTimeRange(1) as any,
+  granularity: 'day',
+  timeRange: defaultHourTimeRange(24*30) as any,
 })
+if(useRoute().query.start!=null&&useRoute().query.end!=null){
+  queryParams.timeRange = [useRoute().query.start as string, useRoute().query.end as string]
+}
 const loading = ref(false) // 列表的加载中
 const carouselItems = ref([
       { imgUrl: PDUImage},
@@ -531,8 +537,8 @@ const initChart = () => {
             title: {text: ''},
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
             legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'],
-                  selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false}},
-            grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
+                  selected: { 总平均有功功率: false, 总最大有功功率: true, 总最小有功功率: false, 总平均视在功率: false, 总最大视在功率: true, 总最小视在功率: false}},
+            grid: {left: '3%', right: '4%',bottom: '3%', containLabel: false },
             toolbox: {feature: { restore:{}, saveAsImage: {}}},
             xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
             yAxis: { type: 'value'},
@@ -570,15 +576,15 @@ const status = ref(0)
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
-    queryParams.timeRange = defaultHourTimeRange(1)
+    // queryParams.timeRange = defaultHourTimeRange(1)
     status.value = 0
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
-    queryParams.timeRange = defaultHourTimeRange(24)
+    // queryParams.timeRange = defaultHourTimeRange(24)
     status.value = 1
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    // queryParams.timeRange = defaultHourTimeRange(24*30)
     status.value = 2
   }
   needFlush.value ++;
@@ -625,7 +631,7 @@ watch(() => paramType.value , (newValues) => {
     if ( newParamType == 'total'){
       realtimeChart?.setOption({
         legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'],
-              selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false}},
+              selected: { 总平均有功功率: false, 总最大有功功率: true, 总最小有功功率: false, 总平均视在功率: false, 总最大视在功率: true, 总最小视在功率: false}},
         series: [
           { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
           { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -638,7 +644,7 @@ watch(() => paramType.value , (newValues) => {
     }else if( newParamType == 'a' ){
       realtimeChart?.setOption({
         legend: { data: ['A路平均有功功率', 'A路最大有功功率', 'A路最小有功功率','A路平均视在功率', 'A路最大视在功率', 'A路最小视在功率'],
-              selected: { A路平均有功功率: true, A路最大有功功率: false, A路最小有功功率: false, A路平均视在功率: true, A路最大视在功率: false, A路最小视在功率: false}},
+              selected: { A路平均有功功率: false, A路最大有功功率: true, A路最小有功功率: false, A路平均视在功率: false, A路最大视在功率: true, A路最小视在功率: false}},
         series: [
           { name: 'A路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
           { name: 'A路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -651,7 +657,7 @@ watch(() => paramType.value , (newValues) => {
     }else{
       realtimeChart?.setOption({
        legend: { data: ['B路平均有功功率', 'B路最大有功功率', 'B路最小有功功率','B路平均视在功率', 'B路最大视在功率', 'B路最小视在功率'],
-              selected: { B路平均有功功率: true, B路最大有功功率: false, B路最小有功功率: false, B路平均视在功率: true, B路最大视在功率: false, B路最小视在功率: false}},
+              selected: { B路平均有功功率: false, B路最大有功功率: true, B路最小有功功率: false, B路平均视在功率: false, B路最大视在功率: true, B路最小视在功率: false}},
         series: [
           { name: 'B路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
           { name: 'B路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -674,12 +680,12 @@ watch(() => paramType.value , (newValues) => {
 watch(() => [activeName.value, needFlush.value], async (newValues) => {
   const [newActiveName] = newValues;
   if ( newActiveName == 'realtimeTabPane'){
+    paramType.value = 'total'
     await getList();
     // 销毁原有的图表实例
     beforeUnmount()
     if ( isHaveData.value == true ){
       // 参数类型变回总
-      paramType.value = 'total'
       // 创建新的图表实例
       realtimeChart = echarts.init(document.getElementById('chartContainer'));
       // 设置新的配置对象
@@ -704,12 +710,12 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
     headerData.value = realtimeChart?.getOption().series as any[];
     updateTableData();
   }else{
+    paramType.value = 'total'
     await getList();
     // 销毁原有的图表实例
     beforeUnmount()
     if ( isHaveData.value == true ){
       // 参数类型变回总
-      paramType.value = 'total'
       // 创建新的图表实例
       realtimeChart = echarts.init(document.getElementById('chartContainer'));
       // 设置新的配置对象
@@ -718,7 +724,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           title: {text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
           legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'],
-                selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false}},
+                selected: { 总平均有功功率: false, 总最大有功功率: true, 总最小有功功率: false, 总平均视在功率: false, 总最大视在功率: true, 总最小视在功率: false}},
           grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
           toolbox: {feature: { restore:{}, saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
@@ -876,7 +882,7 @@ const handleExport1 = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await HistoryDataApi.exportHistorydetailsPageData(queryParams, axiosConfig)
-    await download.excel(data, '机柜电力分析.xlsx')
+    await download.excel(data, '机柜环境数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -905,6 +911,7 @@ const handleQuery = async() => {
 // 导航栏选择后触发
 const handleClick = async (row) => {
    if(row.type != null  && row.type == 3){
+    paramType.value="total"
     queryParams.cabinetId = row.id
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName

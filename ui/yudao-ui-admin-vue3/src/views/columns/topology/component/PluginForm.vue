@@ -13,17 +13,13 @@
           <el-collapse-item title="A路始端箱" name="1">
             <div class="collapseItem">
               <div class="flex">
-                <el-form-item label="母线编号：" prop="barIdA" style="width:100%">
-                  <el-input v-model="formData.barIdA" placeholder="请输入" />
-                </el-form-item>
-              </div>
-              <div class="flex">
-                <el-form-item label="ip：" prop="ipA" style="width:100%">
+                <el-form-item label="母线ip：" prop="ipA" style="width:33%">
                   <el-input v-model="formData.ipA" placeholder="请输入" />
                 </el-form-item>
-              </div>
-              <div class="flex">
-                <el-form-item label="插接箱位置：" prop="directionA" style="width:100%">
+                <el-form-item label="母线编号：" prop="barIdA" style="width:33%">
+                  <el-input v-model="formData.barIdA" placeholder="请输入" />
+                </el-form-item>
+                <el-form-item label="插接箱位置：" prop="directionA" style="width:33%">
                   <el-select v-model="formData.directionA" placeholder="请选择">
                     <el-option label="左侧" :value="0" />
                     <el-option label="右侧" :value="1" />
@@ -35,17 +31,13 @@
           <el-collapse-item title="B路始端箱" name="2">
             <div class="collapseItem">
               <div class="flex">
-                <el-form-item label="母线编号：" prop="barIdB" style="width:100%">
-                  <el-input v-model="formData.barIdB" placeholder="请输入" />
-                </el-form-item>
-              </div>
-              <div class="flex">
-                <el-form-item label="ip：" prop="ipB" style="width:100%">
+                <el-form-item label="母线ip：" prop="ipB" style="width:33%">
                   <el-input v-model="formData.ipB" placeholder="请输入" />
                 </el-form-item>
-              </div>
-              <div class="flex">
-                <el-form-item label="插接箱位置：" prop="directionB" style="width:100%">
+                <el-form-item label="母线编号：" prop="barIdB" style="width:33%">
+                  <el-input v-model="formData.barIdB" placeholder="请输入" />
+                </el-form-item>
+                <el-form-item label="插接箱位置：" prop="directionB" style="width:33%">
                   <el-select v-model="formData.directionB" placeholder="请选择">
                     <el-option label="左侧" :value="0" />
                     <el-option label="右侧" :value="1" />

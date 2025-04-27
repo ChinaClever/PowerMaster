@@ -78,17 +78,18 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机柜Id" prop="ipAddr" >
+        <el-form-item label="所在位置" prop="ipAddr" >
           <el-input
             v-model="cabinetEnvData.location"
+            disabled
             placeholder="请输入IP"
             clearable
-            class="!w-140px"
+            class="!w-160px"
           />
         </el-form-item>
-        <el-form-item>
+        <!-- <el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->

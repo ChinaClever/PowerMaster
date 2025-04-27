@@ -56,7 +56,7 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="柜列Id" prop="ipAddr" >
+        <!-- <el-form-item label="柜列Id" prop="ipAddr" >
           <el-autocomplete
             v-model="queryParams.id"
             :fetch-suggestions="querySearch"
@@ -65,7 +65,7 @@
             placeholder="请输入id"
             @select="handleQuery"
           />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
@@ -89,7 +89,7 @@
           
           
         </el-form-item>
-        <el-form-item>
+        <el-form-item style="position: relative; left: -27%;">
           <el-date-picker
             v-if="switchValue == 0"
             v-model="queryParams.oldTime"
@@ -120,7 +120,7 @@
             class="!w-200px"
           />
         </el-form-item>
-        <el-form-item>
+        <el-form-item style="position: relative;left: -55%;">
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <!-- <el-text size="large">
@@ -218,7 +218,7 @@
               总平均功率曲线
             </div>
             <p class="paragraph">本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.ApowVis">
@@ -226,7 +226,7 @@
               A路平均功率曲线
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kW， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kW， 发生时间{{powData.AactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="aLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.BpowVis">
@@ -234,8 +234,42 @@
               B路平均功率曲线
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kW， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kW， 发生时间{{powData.BactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="bLineList"/>
+          </div>
+          <div class="pageBox"  v-if="warnList!=null">
+            <div class="page-conTitle">
+              告警信息
+            </div>
+                <el-table
+                  ref="multipleTableRef"
+                  :data="warnList.list"
+                  highlight-current-row
+                  style="width: 100%"
+                  :stripe="true" 
+                  :border="true"
+                  @current-change="handleCurrentChange"
+                >
+                    <el-table-column type="index" width="80" label="序号" align="center" />
+                    <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
+                    <el-table-column property="devName" label="设备" min-width="100" align="center" />
+                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+                    <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+                    <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+                      <template #default="scope">
+                        <el-tooltip  placement="right">
+                          <div class="table-desc">{{scope.row.alarmDesc}}</div>
+                          <template #content>
+                            <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
+                          </template>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
+                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+                    <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+                    <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+                </el-table>
           </div>
           <!-- <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
@@ -276,6 +310,7 @@ const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 const location = ref("");
+const warnList=ref(null)
 
 const visControll = reactive({
   visAllReport : false,
@@ -570,6 +605,7 @@ const getList = async () => {
   await handlePowQuery();
   await handleDetailQuery();
   await handlePFLineQuery();
+  await handleWarn();
 
   visControll.visAllReport = true;
   loading.value = false
@@ -744,6 +780,16 @@ onMounted( async () =>  {
   getNavList();
   idList.value = await loadAll();
 })
+async function handleWarn(){
+  warnList.value= await IndexApi.getRecordPage({
+    pageNo: 1,
+    pageSize: 10,
+    devKey: queryParams.devKey,
+    devType: 2
+})
+}
+const handleCurrentChange = (val) => {
+}
 </script>
 <style scoped lang="scss">
 .master {

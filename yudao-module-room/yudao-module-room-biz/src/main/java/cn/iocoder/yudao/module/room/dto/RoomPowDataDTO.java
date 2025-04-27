@@ -1,7 +1,9 @@
 package cn.iocoder.yudao.module.room.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -46,5 +48,15 @@ public class RoomPowDataDTO {
      */
     private  float powApparent;
 
+    /**
+     * 显示类型（0-负载率/1-pue）
+     */
+    @Schema(description = "显示类型（0-负载率/1-pue）")
+    private Boolean displayType;
 
+    @Schema(description = "机房负载")
+    private BigDecimal roomLoadFactor;
+
+    @Schema(description = "PUE")
+    private BigDecimal roomPue;
 }

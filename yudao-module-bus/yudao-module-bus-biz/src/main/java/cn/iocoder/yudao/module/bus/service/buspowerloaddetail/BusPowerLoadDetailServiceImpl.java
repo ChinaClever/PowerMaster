@@ -126,49 +126,48 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         Long busId = reqVO.getId();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        String startTime;
+        String endTime = now.format(formatter);
         if (busId == null) {
             return null;
         }
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-        searchSourceBuilder.size(10000);
-        searchSourceBuilder.trackTotalHits(true);
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
-        if (Objects.equals(reqVO.getGranularity(), "realtime")) {
-            searchRequest.indices("bus_hda_line_realtime");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value", "cur_value", "load_rate", "vol_line", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneHourAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
-            searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneDayAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-            searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(threeDaysAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else {
-            searchRequest.indices("bus_hda_line_day");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "vol_line_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneMonthAgo.format(formatter))
-                    .to(now.format(formatter)));
+        String index;
+        String indexTotal;
+        switch (reqVO.getGranularity()) {
+            case "realtime":
+                index = "bus_hda_line_realtime";
+                indexTotal ="bus_hda_total_realtime";
+                LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+                startTime = oneHourAgo.format(formatter);
+                break;
+            case "hour":
+                index = "bus_hda_line_hour";
+                indexTotal ="bus_hda_total_hour";
+                LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+                startTime = oneDayAgo.format(formatter);
+                break;
+            case "SeventyHours":
+                index = "bus_hda_line_hour";
+                indexTotal ="bus_hda_total_hour";
+                LocalDateTime threeDayAgo = LocalDateTime.now().minusDays(3);
+                startTime = threeDayAgo.format(formatter);
+                break;
+            default:
+                index = "bus_hda_line_day";
+                indexTotal ="bus_hda_total_day";
+                LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+                startTime = oneMonthAgo.format(formatter);
         }
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        Map<String, Object> resultMap = new HashMap<>();
+        List<Object> resultLine1 = new ArrayList<>();
+        List<Object> resultLine2 = new ArrayList<>();
+        List<Object> resultLine3 = new ArrayList<>();
+        List<Object> total = new ArrayList<>();
+        // 搜索源构建对象
+        SearchResponse searchResponse = getSearchResponse("bus_id",busId, startTime, endTime, index);
+
+        SearchResponse searchResponseTotal = getSearchResponse("bus_id",busId, startTime, endTime, indexTotal);
+
         // 搜索结果
         SearchHits hits = searchResponse.getHits();
         // 匹配到的总记录数
@@ -176,10 +175,10 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         if (totalHits == 0) {
             return null;
         }
-        Map<String, Object> resultMap = new HashMap<>();
-        List<Object> resultLine1 = new ArrayList<>();
-        List<Object> resultLine2 = new ArrayList<>();
-        List<Object> resultLine3 = new ArrayList<>();
+        searchResponseTotal.getHits().forEach(searchHit -> {
+            Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+            total.add(sourceAsMap);
+        });
         hits.forEach(searchHit -> {
             // 获取文档内容，假设它以 Map 的形式存储
             Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
@@ -198,11 +197,32 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 default:
             }
         });
-
+        resultMap.put("total", total);
         resultMap.put("L1", resultLine1);
         resultMap.put("L2", resultLine2);
         resultMap.put("L3", resultLine3);
         return resultMap;
+    }
+
+    private SearchResponse getSearchResponse(String keyWord,Long busId, String startTime, String endTime, String index) throws IOException {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        searchSourceBuilder.query(QueryBuilders.termQuery(keyWord, busId));
+
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(startTime)
+                .to(endTime));
+
+        searchRequest.indices(index);
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return searchResponse;
     }
 
     @Override
@@ -264,51 +284,49 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
     @Override
     public Map<String, Object> getBoxLineChartDetailData(BusPowerLoadDetailReqVO reqVO) throws IOException {
         Long boxId = reqVO.getId();
+        if (boxId == null) {
+            return null;
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
         LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        if (boxId == null) {
-            return null;
+
+        String index;
+        String indexTotal;
+        String startTime;
+        String endTime = now.format(formatter);
+
+        switch (reqVO.getGranularity()) {
+            case "realtime":
+                index = "box_hda_line_realtime";
+                indexTotal="box_hda_total_realtime";
+                startTime = oneHourAgo.format(formatter);
+                break;
+            case "hour":
+                index = "box_hda_line_hour";indexTotal="box_hda_total_hour";
+                startTime = oneDayAgo.format(formatter);
+                break;
+            case "SeventyHours":
+                index = "box_hda_line_hour";indexTotal="box_hda_total_hour";
+                startTime = threeDaysAgo.format(formatter);
+                break;
+            default:
+                index = "box_hda_line_day";indexTotal="box_hda_total_day";
+                startTime = oneMonthAgo.format(formatter);
+                break;
         }
+        Map<String, Object> resultMap = new HashMap<>();
+        List<Object> resultLine1 = new ArrayList<>();
+        List<Object> resultLine2 = new ArrayList<>();
+        List<Object> resultLine3 = new ArrayList<>();
+        List<Object> total = new ArrayList<>();
         // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-        searchSourceBuilder.size(10000);
-        searchSourceBuilder.trackTotalHits(true);
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
-        if (Objects.equals(reqVO.getGranularity(), "realtime")) {
-            searchRequest.indices("box_hda_line_realtime");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "vol_value", "cur_value", "load_rate", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneHourAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
-            searchRequest.indices("box_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneDayAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-            searchRequest.indices("box_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(threeDaysAgo.format(formatter))
-                    .to(now.format(formatter)));
-        } else {
-            searchRequest.indices("box_hda_line_day");
-            searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value", "power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value", "cur_avg_value", "create_time"}, null);
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(oneMonthAgo.format(formatter))
-                    .to(now.format(formatter)));
-        }
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        SearchResponse searchResponse = getSearchResponse("box_id",boxId, startTime, endTime, index);
+        SearchResponse searchResponseTotal = getSearchResponse("box_id",boxId, startTime, endTime, indexTotal);
+
         // 搜索结果
         SearchHits hits = searchResponse.getHits();
         // 匹配到的总记录数
@@ -316,10 +334,12 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         if (totalHits == 0) {
             return null;
         }
-        Map<String, Object> resultMap = new HashMap<>();
-        List<Object> resultLine1 = new ArrayList<>();
-        List<Object> resultLine2 = new ArrayList<>();
-        List<Object> resultLine3 = new ArrayList<>();
+
+        searchResponseTotal.getHits().forEach(searchHit -> {
+            Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+            total.add(sourceAsMap);
+        });
+
         hits.forEach(searchHit -> {
             // 获取文档内容，假设它以 Map 的形式存储
             Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
@@ -338,7 +358,7 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 default:
             }
         });
-
+        resultMap.put("total", total);
         resultMap.put("L1", resultLine1);
         resultMap.put("L2", resultLine2);
         resultMap.put("L3", resultLine3);
@@ -441,9 +461,8 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
             DecimalFormat df = new DecimalFormat("#.000");
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-            LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-            LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+            //LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+            //LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
             LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
             if (busId == null) {
                 return null;
@@ -462,17 +481,13 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                         .from(oneMonthAgo.format(formatter))
                         .to(now.format(formatter)));
-            } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
+            } else if (Objects.equals(reqVO.getGranularity(), "hour") || Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
+                int daysOffset = "SeventyHours".equals(reqVO.getGranularity()) ? 3 : 1;
+                LocalDateTime startTime = LocalDateTime.now().minusDays(daysOffset);
                 searchRequest.indices("bus_ele_total_realtime");
                 searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
                 searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(oneDayAgo.format(formatter))
-                        .to(now.format(formatter)));
-            } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
-                searchRequest.indices("bus_ele_total_realtime");
-                searchSourceBuilder.fetchSource(new String[]{"bus_id", "ele_active", "create_time"}, null);
-                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(threeDaysAgo.format(formatter))
+                        .from(startTime.format(formatter))
                         .to(now.format(formatter)));
             } else {
                 searchRequest.indices("bus_eq_total_day");
@@ -522,8 +537,8 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
 
             resultMap.put("L1", result);
             return resultMap;
-        }catch (Exception e){
-            log.error("母线用能详情错误："+e);
+        } catch (Exception e) {
+            log.error("母线用能详情错误：" + e);
             return null;
         }
     }

@@ -14,6 +14,9 @@ const props = defineProps({
   customColor: {
     type: String,
     default: ''
+  },
+  name:{
+    type: String,
   }
 });
 
@@ -29,6 +32,10 @@ const restPercentageValue = computed(() => 100 - percentageValue.value);
 
 // 动态生成图表配置
 const option = computed(() => ({
+  title: {
+    text: props.name,
+    left: 'left'
+  },
   tooltip: {
     trigger: 'item',
     formatter: '{d}%'

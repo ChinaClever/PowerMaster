@@ -147,7 +147,13 @@
           </template>
         </el-table-column>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" min-width="110" align="center" prop="location" />
+        <el-table-column min-width="110" label="所在位置" align="center" prop="location">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.location ? scope.row.location : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>  
         <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0" label="A相电流(A)" align="center" prop="acur" width="130px" >
@@ -776,6 +782,48 @@ const getList = async () => {
   }
 }
 
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBusRedisPage(queryParams)
+    list.value = data.list
+    //filterData()
+    console.log('查询列表的数据',list.value)
+    var tableIndex = 0;
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.acur == null){
+        return;
+      } 
+      obj.acur = obj.acur?.toFixed(2);
+      obj.bcur = obj.bcur?.toFixed(2);
+      obj.ccur = obj.ccur?.toFixed(2);
+      //测试数据
+      // obj.acur = 0.3
+      // obj.bcur = 0.6
+      // obj.ccur = 0.9
+      // obj.avol = 210
+      // obj.bvol = 250
+      // obj.cvol = 400
+      // obj.acurStatus = 1
+      // obj.cvolStatus = 9
+      obj.avol = obj.avol?.toFixed(1);
+      obj.bvol = obj.bvol?.toFixed(1);
+      obj.cvol = obj.cvol?.toFixed(1);
+      obj.aactivePow = obj.aactivePow?.toFixed(3);
+      obj.bactivePow = obj.bactivePow?.toFixed(3);
+      obj.cactivePow = obj.cactivePow?.toFixed(3);
+      obj.areactivePow = obj.areactivePow?.toFixed(3);
+      obj.breactivePow = obj.breactivePow?.toFixed(3);
+      obj.creactivePow = obj.creactivePow?.toFixed(3);
+      obj.powApparent = obj.powApparent?.toFixed(3);
+    });
+
+    total.value = data.total
+  } finally {
+  }
+}
+
 const getDeletedList = async () => {
   try {
     const data = await IndexApi.getDeletedIndexPage(queryDeletedPageParams)
@@ -829,8 +877,7 @@ const toDeatil = (row) =>{
   const busId = row.busId;
   const location = row.location != null ? row.location : row.devKey
   const busName = row.busName;
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName, roomName }})
-
+  push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey, busId , location , busName, roomName }})
 }
 
 //const filterData = () => {
@@ -947,7 +994,7 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -969,7 +1016,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>

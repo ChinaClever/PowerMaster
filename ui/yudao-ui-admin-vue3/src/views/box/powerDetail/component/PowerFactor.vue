@@ -21,7 +21,7 @@ console.log('loadFactor',props.loadFactor)
 
 
 // 设置饼图的选项
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   series: [
     {
       type: 'gauge',
@@ -47,7 +47,7 @@ const echartsOption = reactive({
         icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
         length: '12%',
         width: 20,
-        offsetCenter: [0, '-60%'],
+        offsetCenter: [0, '-40%'],
         itemStyle: {
           color: 'auto'
         }
@@ -86,7 +86,7 @@ const echartsOption = reactive({
       },
       detail: {
         fontSize: 30,
-        offsetCenter: [0, '-15%'],
+        offsetCenter: [0, 0],
         valueAnimation: true,
         formatter: function (value) {
           return Math.round(value * 100) + '';
@@ -101,7 +101,7 @@ const echartsOption = reactive({
       ]
     }
   ]
-})
+}))
 
 onUnmounted(() => {
   console.log('onUnmounted******')

@@ -35,8 +35,11 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(3) + ' kW' ;
-        result += '<br>';
+        result +=  params[i].marker + params[i].seriesName + '&nbsp'
+        if(series.value[i]?.times?.[params[i].dataIndex]) {
+          result +=  '发生时间:' + series.value[i].times[params[i].dataIndex].slice(0,-3) + '&nbsp&nbsp'
+        }
+        result += params[i].value.toFixed(0) + ' kW' + '<br>';
       }
       return result;
     } 
@@ -61,12 +64,13 @@ const echartsOption = ref({
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
-
-  series.value = prop.list.series;
+  console.log(prop.list.series)
+  series.value = prop.list.series
+  console.log(series.value)
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
-  time.value = prop.list.time;
+  time.value = prop.list.time.map(item => item.slice(0,-3));
 
 });
 

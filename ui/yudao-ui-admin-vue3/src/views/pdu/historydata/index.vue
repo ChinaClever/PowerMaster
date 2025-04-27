@@ -78,8 +78,9 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          format="YYYY-MM-DD HH:mm"
+          format="YYYY-MM-DD HH:mm:ss"
           v-model="selectTimeRange"
+          value-format="YYYY-MM-DD HH:mm:ss"
           type="datetimerange"
           :shortcuts="shortcuts"
           range-separator="-"
@@ -106,7 +107,7 @@
     <template #Content>
       <el-table v-loading="loading" 
                 :data="list" 
-                
+                border
                 :show-overflow-tooltip="true" 
                 
                 >
@@ -122,9 +123,14 @@
         
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address)">详情</el-button>
+              <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address)">详情</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot == 'actions'" fixed="right">
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -339,7 +345,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value =([
           { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '200px'},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
@@ -351,8 +357,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],["pow_active", "pow_active_max"], 
-          ["pow_active", "pow_active_min"]
+          ["pow_active", "pow_active_max"], ["pow_apparent", "pow_apparent_max"]
         ];
         optionsCol.value = [
           { value: "pow_active", label: '有功功率', children: [
@@ -374,16 +379,16 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:true, width: '180px', formatter: formatPower},
-          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:false, width: '180px', formatter: formatPower},
+          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
@@ -409,7 +414,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
@@ -424,9 +429,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],
+          ["vol_value", "vol_max"],
+          ["cur_value", "cur_max"],
           ["pow_active", "pow_active_max"],
-          ["pow_active", "pow_active_min"],
+          ["pow_apparent", "pow_apparent_max"]
         ];
         optionsCol.value = [
           { value: "vol_value", label: '电压', children: [
@@ -462,27 +468,27 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
-          { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:false, width: '120px', formatter: formatVoltage},
-          { label: '最大电压时间', align: 'center', prop: 'vol_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:true, width: '120px', formatter: formatVoltage},
+          { label: '最大电压时间', align: 'center', prop: 'vol_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小电压(V)', align: 'center', prop: 'vol_min_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最小电压时间', align: 'center', prop: 'vol_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '平均电流(A)', align: 'center', prop: 'cur_avg_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:true, width: '140px', formatter: formatCurrent},
+          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小电流(A)', align: 'center', prop: 'cur_min_value', istrue:false, width: '140px', formatter: formatCurrent},
           { label: '最小电流时间', align: 'center', prop: 'cur_min_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:true, width: '180px', formatter: formatPower},
-          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:false, width: '180px', formatter: formatPower},
+          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
@@ -508,7 +514,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
@@ -523,9 +529,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
         // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],
+          ["vol_value", "vol_max"],
+          ["cur_value", "cur_max"],
           ["pow_active", "pow_active_max"],
-          ["pow_active", "pow_active_min"],
+          ["pow_apparent", "pow_apparent_max"]
         ];
         optionsCol.value = [
           { value: "vol_value", label: '电压', children: [
@@ -561,24 +568,24 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, width: '100px', formatter: formatLoopId},
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
-          { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:false, width: '140px', formatter: formatVoltage},
-          { label: '最大电压时间', align: 'center', prop: 'vol_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:true, width: '140px', formatter: formatVoltage},
+          { label: '最大电压时间', align: 'center', prop: 'vol_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小电压(V)', align: 'center', prop: 'vol_min_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最小电压时间', align: 'center', prop: 'vol_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '平均电流(A)', align: 'center', prop: 'cur_avg_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:true, width: '140px', formatter: formatCurrent},
+          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小电流(A)', align: 'center', prop: 'cur_min_value', istrue:false, width: '140px', formatter: formatCurrent},
           { label: '最小电流时间', align: 'center', prop: 'cur_min_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:true, width: '180px', formatter: formatPower},
-          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:false, width: '180px', formatter: formatPower},
+          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
@@ -606,7 +613,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent},
@@ -620,9 +627,9 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
       }else{
          // 配置筛选列
         defaultOptionsCol.value = [
-          ["pow_active", "pow_active_avg_value"],
+          ["cur_value", "cur_max"],
           ["pow_active", "pow_active_max"],
-          ["pow_active", "pow_active_min"],
+          ["pow_apparent", "pow_apparent_max"],
         ];
         optionsCol.value = [
           { value: "cur_value", label: '电流', children: [
@@ -651,22 +658,22 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
-          { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '100px'},
           { label: '平均电流(A)', align: 'center', prop: 'cur_avg_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:false, width: '140px', formatter: formatCurrent},
-          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:true, width: '140px', formatter: formatCurrent},
+          { label: '最大电流时间', align: 'center', prop: 'cur_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小电流(A)', align: 'center', prop: 'cur_min_value', istrue:false, width: '140px', formatter: formatCurrent},
           { label: '最小电流时间', align: 'center', prop: 'cur_min_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:true, width: '180px', formatter: formatPower},
-          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '最小有功功率(kW)', align: 'center', prop: 'pow_active_min_value', istrue:false, width: '180px', formatter: formatPower},
+          { label: '最小有功功率时间', align: 'center', prop: 'pow_active_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:false, width: '180px', formatter: formatPower},
-          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:true, width: '180px', formatter: formatPower},
+          { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
@@ -679,7 +686,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
-  { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
   { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '200px'},
   { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
@@ -692,13 +699,17 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
+      // console.log(selectTimeRange.value,"selectTimeRange.value");
       // 格式化日期范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-     
-      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
-     // selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedStartTime = selectTimeRange.value[0];
+    //  console.log(selectedStartTime,"selectedStartTime");
+      const selectedEndTime = selectTimeRange.value[1];
+      // console.log(selectedEndTime,"selectedEndTime");
+     selectTimeRange.value = [selectedStartTime, selectedEndTime];
+     console.log(selectTimeRange,"selectedStartTime");
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
+    console.log(queryParams,"搜索queryParams");
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -870,7 +881,7 @@ const handleQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (pduId: number, location: string, address: string) => {
-  push('/pdu/record/historyLine?pduId='+pduId+'&location='+location+'&address='+address);
+  push('/pdu/record/historyLine?pduId='+pduId+'&location='+location+'&address='+address+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
 }
 
 /** 导出按钮操作 */
@@ -880,12 +891,14 @@ const handleExport = async () => {
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    // queryParams.cascadeAddr = cascadeAddr.value.toString();
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
+    console.log(queryParams,"导出queryParams")
     const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU电力历史数据.xlsx')
+    await download.excel(data, 'PDU电力数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -914,10 +927,10 @@ onMounted( () => {
   getNavNewData()
   getTypeMaxValue();
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       selectTimeRange.value = [
-      formatDate1(startOfMonth),
-      formatDate1(now)
+      dayjs(startOfMonth).format('YYYY-MM-DD HH:mm:ss'),
+      dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 ];
   getList();
 });

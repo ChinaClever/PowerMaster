@@ -104,7 +104,13 @@
         <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0 && typeText == 'line'" label="A相电流(A)" align="center" prop="acur" width="130px" >
           <template #default="scope" >
@@ -1017,6 +1023,70 @@ const getList = async () => {
   }
 };
 
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBoxRedisPage(queryParams);
+
+    list.value = data.list;
+    var tableIndex = 0;
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.phaseCur == null){
+        return;
+      }
+      for(var i= 0;i < obj.phaseCur.length; i++)
+      {
+        obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+        obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+        obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+        obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+        obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      
+      for(var i= 0;i < obj.loopCur.length; i++)
+      {
+        obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
+        obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
+        obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
+        obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
+      } 
+      
+      for(var i= 0;i < obj.outletActivePow.length; i++)
+      {
+        obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
+        obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
+        obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
+    });
+
+    for(let i = 0; i < list.value.length; i++){
+      const loopCur = list.value[i].loopCur;
+      const selectedElements = [];
+      const indicesToSelect = [2, 5, 8];
+      for (let j = 0; j < indicesToSelect.length; j++) {
+        if (Array.isArray(loopCur) && Array.isArray(indicesToSelect) && j < loopCur.length) {
+          const index = indicesToSelect[j];
+          if (index >= 0 && index < loopCur.length) {
+            selectedElements.push(loopCur[index]);
+          } else {
+            console.warn('Index out of bounds:', index);
+          }
+        } else {
+          console.warn('Invalid loopCur or indicesToSelect array');
+        }
+      }
+
+      list.value[i].loopCur = selectedElements;
+    }
+
+    total.value = data.total;
+  } finally {
+  }
+};
+
 const getListAll = async () => {
   try {
     const allData = await IndexApi.getBoxIndexStatistics();
@@ -1170,7 +1240,7 @@ const toDeatil = (row) =>{
   const busName = row.busName;
   const location = row.location != null ? row.location : '未绑定';
   const roomName = row.roomName != null ? row.roomName : '未绑定';
-  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,boxName,location,busName,roomName}});
+  push({path: '/bus/busmonitor/boxmonitor/boxpowerdetail', query: { devKey, boxId ,boxName,location,busName,roomName}});
 };
 
 const defaultSelected = ref(['line']);
@@ -1291,7 +1361,7 @@ onMounted(async () => {
   getListAll();
   //getTypeMaxValue();
   // flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1313,7 +1383,7 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListAll), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>

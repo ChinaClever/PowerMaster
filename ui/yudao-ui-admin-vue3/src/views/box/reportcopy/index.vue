@@ -95,6 +95,11 @@
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
       </el-form>
+      <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
+        <el-option label="平均" value="平均" />
+        <el-option label="最大" value="最大" />
+        <el-option label="最小" value="最小" />
+      </el-select>
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >
@@ -170,7 +175,7 @@
               平均功率曲线
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}KW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最无功功率{{powData.reactivePowMinValue}}kVar， 发生时间{{powData.reactivePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
@@ -303,6 +308,8 @@ const visControll = reactive({
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
+
+const typeRadioShow = ref("最大")
 
 // 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
@@ -819,17 +826,17 @@ const getList = async () => {
   temList.value = temData.value.lineRes;
 
 
-    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(2);
-    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(2);
+    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(0);
+    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(0);
 
-    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(2);
-    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(2);
+    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(0);
+    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(0);
 
-    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(2);
-    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(2);
+    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(0);
+    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(0);
 
-    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(2);
-    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(2);
+    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(0);
+    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(0);
     visControll.temVis = true;
 
 
@@ -1004,7 +1011,6 @@ let newTime = route.query?.newTime as string | undefined;
 let timeArr = route.query?.timeArr as string | undefined;
 let visAllReport = route.query?.visAllReport as string | undefined;
 let switchValue1 = route.query?.switchValue as string | undefined;
-console.log('devKey', switchValue1);
 
 if (devKey != undefined) {
   queryParams.devKey = devKey;
@@ -1014,7 +1020,6 @@ if (devKey != undefined) {
   queryParams.timeArr = timeArr;
   queryParams.visAllReport = visAllReport;
   switchValue.value = switchValue1;
-  console.log('1111111111111111111', switchValue.value);
   getList();
   initChart();
 }
@@ -1273,11 +1278,6 @@ if (devKey != undefined) {
 
 .el-table {
     color: #2c2c2c !important;
-}
-
-:deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
 }
 
 :deep(.master-left .el-card__body) {

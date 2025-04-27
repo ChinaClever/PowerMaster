@@ -25,13 +25,11 @@ public class RoomCfg implements Serializable {
      * 更新时间
      */
     @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
     /**
      * 创建时间
      */
     @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**

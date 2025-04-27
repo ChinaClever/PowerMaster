@@ -78,7 +78,7 @@
       </el-form> 
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" border>
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -97,7 +97,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -117,7 +117,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -153,7 +153,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
@@ -285,6 +285,10 @@ const initChart = () => {
                     }},
       ],
     });
+    rankChart.on('click', function(params) {
+      console.log("params==",params)
+      toDetails(list.value[params.dataIndex].box_id,list.value[params.dataIndex].location,list.value[params.dataIndex].dev_key);
+    });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
@@ -333,7 +337,7 @@ const getList = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
@@ -367,8 +371,8 @@ const getList1 = async () => {
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(convertDate(end.value) ))
-      selectTimeRange.value = [selectedStartTime, selectedEndTime];
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value),oneDay)))
+      selectTimeRange.value = [start.value, end.value];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     queryParams.devkeys = [devKey.value];
@@ -539,7 +543,11 @@ const toDetails = (boxId: number, location: string,devkey: string) => {
   const id = boxId
   const devKey = devkey;
   const locationName = location;
-  push({path: '/bus/nenghao/ecdistribution/box', state: {id,devKey,locationName}})
+  if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
+    push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName,"start":selectTimeRange.value[0],"end":selectTimeRange.value[1]}})
+  }else{
+    push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName}})
+  }
 }
 
 
@@ -551,13 +559,12 @@ const devKey =  ref(history?.state?.devKey);
 onMounted(() => {
   getNavList()
   getNavNewData()
-
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  if (start.value != null){
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (start.value != null&&end.value != null&&start.value != ''&&end.value != ''){
   getList1();
   }else{
+      selectTimeRange.value = [dayjs(startOfMonth).format("YYYY-MM-DD"), dayjs(now).format("YYYY-MM-DD")];
       getList();
   }
 });

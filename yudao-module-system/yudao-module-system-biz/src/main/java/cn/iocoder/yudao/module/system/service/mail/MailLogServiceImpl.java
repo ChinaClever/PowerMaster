@@ -43,7 +43,7 @@ public class MailLogServiceImpl implements MailLogService {
     @Override
     public Long createMailLog(Long userId, Integer userType, String toMail,
                               MailAccountDO account, MailTemplateDO template,
-                              String templateContent, Map<String, Object> templateParams, Boolean isSend) {
+                              String templateContent, Object templateParams, Boolean isSend) {
         MailLogDO.MailLogDOBuilder logDOBuilder = MailLogDO.builder();
         // 根据是否要发送，设置状态
         logDOBuilder.sendStatus(Objects.equals(isSend, true) ? MailSendStatusEnum.INIT.getStatus()

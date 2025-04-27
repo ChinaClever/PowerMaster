@@ -125,7 +125,13 @@
         <el-table v-if="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location">
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.location != scope.row.devKey ? scope.row.location : '未绑定' }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="设备名称" align="center" prop="boxName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="130px" >
@@ -156,7 +162,7 @@
             <el-button
               link
               type="primary"
-              @click="toDetail(scope.row)"
+              @click="showDialog(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
@@ -254,18 +260,26 @@
           </el-button>
           <el-date-picker
             v-model="queryParamsCopy.oldTime"
+            :clearable = "false"
+            :editable = "false"
             value-format="YYYY-MM-DD HH:mm:ss"
             type="date"
             :disabled-date="disabledDate"
-            @change="handleDayPick"
+            @change="handleDayPick()"
             class="!w-160px"
           />
           <el-button 
+            :disabled="clickAdd"
             @click="addtractOneDay();handleDayPick()" 
           >
             &gt;
           </el-button>
+          <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+          <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
           <el-button @click="handleQueryCopy"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+            <i class="el-icon-download"></i> 导出
+          </el-button>
         </el-form-item>
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
@@ -275,7 +289,18 @@
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <div class="custom-content-container">
-            <HarmonicLine v-if="abcLineShow === true" width="70vw" height="58vh" :list="abcLineData"/>
+            <HarmonicLine v-if="switchChartOrTable == 0" width="75vw" height="58vh" :list="abcLineData"/>
+            <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+              <el-table :data="tableData" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;">
+                <el-table-column label="时间" align="center" prop="time" />
+                <el-table-column label="A相电流谐波" align="center" prop="lineOne" />
+
+                <el-table-column label="B相电流谐波" align="center" prop="linetwe" />
+
+                <el-table-column label="C相电流谐波" align="center" prop="linethree" />
+
+              </el-table>
+            </div>
           </div>
         </div>
       </el-dialog>
@@ -322,11 +347,14 @@ const butColor = ref(0);
 const onclickColor = ref(-1);
 const dialogVisible = ref(false);
 
+const clickAdd = ref(true)
+
 const harmonicColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
+const switchChartOrTable = ref(0);
 const valueMode = ref(0)
 
 const allData = ref();
@@ -568,6 +596,38 @@ const getList = async () => {
   }
 }
 
+const getListNoLoading = async () => {
+  try {
+    const data = await IndexApi.getBoxHarmonicPage(queryParams)
+    list.value = data.list
+
+    //获取颜色范围
+    //var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    //if(range != null){
+    //  statusList[0].name = '<' + range.rangeOne + '%';
+    //  statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+    //  statusList[2].name = '>' + range.rangeFour + '%';
+    //}
+
+    var tableIndex = 0;
+
+
+    list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.acurThd == null){
+        return;
+      } 
+      obj.acurThd = obj.acurThd?.toFixed(2);
+      obj.bcurThd = obj.bcurThd?.toFixed(2);
+      obj.ccurThd = obj.ccurThd?.toFixed(2);
+
+    });
+
+    total.value = data.total
+  } finally {
+  }
+}
+
 const getListAll = async () => {
   try {
     const allData = await IndexApi.getBoxIndexStatistics();
@@ -604,6 +664,7 @@ const seriesAndTimeArr = ref() as any;
 const lineVis = ref(false);
 const harmonicLine = ref([]) as any;
 
+const tableData = ref([])
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -623,7 +684,6 @@ const disabledDate = (date) => {
 }
 
 const abcLineData = ref({});
-const abcLineShow = ref(false);
 
 const getDetail = async () => {
 
@@ -640,7 +700,14 @@ const getDetail = async () => {
 
   const lineData = await IndexApi.getHarmonicLine(queryParamsCopy);
   abcLineData.value = lineData;
-  abcLineShow.value = true;
+
+  tableData.value = abcLineData.value.lineOne.map((item, index) => ({
+      time: abcLineData.value.time[index],
+      lineOne: item,
+      linetwe: abcLineData.value.linetwe[index],
+      linethree: abcLineData.value.linethree[index]
+    }));
+
   //seriesAndTimeArr.value = lineData;
   //if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
   //  const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParamsCopy.harmonicArr.includes(index));
@@ -662,6 +729,18 @@ const handleQueryCopy = async () => {
 const handleDayPick = async () => {
 
   if(queryParamsCopy?.oldTime ){
+    var date = new Date(queryParamsCopy.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
+
+    var today = new Date(); // 今天的日期
+    today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+
+    if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+      clickAdd.value = true
+    } else {
+      clickAdd.value = false
+    }
+
     await getDetail();
   } 
 }
@@ -669,8 +748,8 @@ const handleDayPick = async () => {
 
 const subtractOneDay = () => {
   var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
-
   date.setDate(date.getDate() - 1); // 减去一天
+  clickAdd.value = false
 
   queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
@@ -678,7 +757,14 @@ const subtractOneDay = () => {
 const addtractOneDay = () => {
   var date = new Date(queryParamsCopy.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
 
-  date.setDate(date.getDate() + 1); // 减去一天
+  date.setDate(date.getDate() + 1); // 加去一天
+
+  var today = new Date(); // 今天的日期
+  today.setHours(0, 0, 0, 0); // 去掉时间部分，只比较日期
+
+  if (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+    clickAdd.value = true
+  }
 
   queryParamsCopy.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
@@ -704,6 +790,8 @@ const showDialog = async (item) => {
   devkey.value = item.devKey;
   busName.value = item.busName;
   boxName.value = item.boxName;
+  queryParamsCopy.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0))
+  clickAdd.value = true
   dialogVisible.value = true;
   await handleQueryCopy();
 }
@@ -765,6 +853,27 @@ const handleDelete = async (id: number) => {
   } catch {}
 }
 
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm();
+    // 发起导出
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getBoxHarmonicDetailExcel(queryParamsCopy, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '谐波详细.xlsx');
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error);
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
@@ -786,7 +895,7 @@ onMounted(async () => {
   getList();
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -808,7 +917,7 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getList), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>

@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.room.dal.dataobject.roomindex;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -21,48 +23,75 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @AllArgsConstructor
 public class RoomIndexDO {
 
-    /**
-     * 主键id
-     */
-    @TableId
+    @Schema(description = "机房id", example = "2")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+
+
     /**
      * 机房名
      */
+    @Schema(description = "机房名", example = "机房2")
     private String roomName;
+
+    /**
+     * 地址（楼层）
+     */
+    @Schema(description = "地址（楼层）", example = "地址（楼层）")
+    private String addr;
+
+    /**
+     * 显示选择
+     */
+    @Schema(description = "显示选择")
+    private Boolean displayFlag;
+
+    /**
+     * 显示类型（0-负载率/1-pue）
+     */
+    @Schema(description = "显示类型（0-负载率/1-pue）")
+    private Boolean displayType;
+
     /**
      * 是否删除
      */
-    private Integer isDelete;
+    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
+    private int isDelete;
+
     /**
      * 电力容量
      */
-    private Double powerCapacity;
+    @Schema(description = "电力容量", example = "0")
+    private float powerCapacity;
+
+
     /**
-     * 日用电告警开关 0 关 1开
+     * 空调额定功率
      */
-    private Integer eleAlarmDay;
+    @Schema(description = "空调额定功率", example = "0")
+    private float airPower;
+
+
     /**
-     * 日用能限制
+     * 机房x长度(单位机柜)
      */
-    private Double eleLimitDay;
+    @JsonProperty(value="xLength")
+    private int xLength;
+
     /**
-     * 月用电告警开关 0关 1开
+     * 机房Y长度(单位机柜)
      */
-    private Integer eleAlarmMonth;
+    @JsonProperty(value="yLength")
+    private int yLength;
     /**
-     * 月用能限制
+     * 更新时间
      */
-    private Double eleLimitMonth;
+    @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
+    private LocalDateTime updateTime;
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
     private LocalDateTime createTime;
-    /**
-     * 最后更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
 
 }

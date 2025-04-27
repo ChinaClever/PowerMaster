@@ -14,7 +14,7 @@
     statusNumber.cur_max_value = allData.cur_max_value;
         </div> -->
         <div style="font-size:14px; margin-top:45px; margin-left:20px">
-          <div ><span>最大电流需量</span>
+          <div ><span>{{ titleName }}</span>
           </div>
           <div>
             <span>位置：</span>
@@ -22,7 +22,7 @@
           </div>
           <div >
             <span>名称：</span>
-            <span>{{ statusNumber.busName  }}</span>
+            <span>{{ statusNumber.location  }}</span>
           </div>
           <div >
             <span>相位：</span>
@@ -33,8 +33,8 @@
             <span>{{ statusNumber.create_time }}</span>
           </div>
           <div >
-            <span>电流：</span>
-            <span>{{ statusNumber.cur_max_value }}</span>
+            <span>{{ flagName }}：</span>
+            <span>{{ statusNumber.cur_max_value }}{{ flagName == '功率' ? ' kW' : ' A' }}</span>
           </div>
         </div>
         <!-- <div class="status">
@@ -138,8 +138,8 @@
           </el-form-item>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
-          <el-button @click="visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
+          <el-button @click="visModeShow(0)" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
+          <el-button @click="visModeShow(1)" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
@@ -150,7 +150,13 @@
         <el-table v-show="visMode == 0" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px" />
           <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="所在位置" align="center" prop="location" width="218px">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.location ? scope.row.location : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
             <template #default="scope" >
@@ -201,7 +207,13 @@
         </el-table>
         <el-table v-show="visMode == 1" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="所在位置" align="center" prop="location" width="218px">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.location ? scope.row.location : '未绑定' }}
+              </el-text>
+            </template>
+          </el-table-column>
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
             <template #default="scope" >
@@ -283,7 +295,7 @@
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div ><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div style="padding: 0 28px"><Pie :width="80" :height="80" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
           <div class="status" style="margin-right:-20px;">
@@ -359,7 +371,6 @@ import RequirementLine from './component/RequirementLine.vue'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
 
-
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -374,6 +385,9 @@ const now = ref()
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const showSearchBtn = ref(false)
+const titleName = ref();
+const flagName = ref();
+
 const switchChartOrTable = ref(0)
 const pfTableList = ref([]) as any
 const statusNumber = reactive({
@@ -408,6 +422,16 @@ const createFilter = (queryString: string) => {
   }
 }
 
+const visModeShow = (flag) => {
+  if(flag == 0){
+    visMode.value =0;
+    getListAll(flag);
+  }else{
+    visMode.value =1;
+    getListAll(flag);
+  }
+}
+
 
 // 时间段快捷选项
 const shortcuts = [
@@ -417,6 +441,7 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setDate(start.getDate() - 7)
+      handleQuery();
       return [start, end]
     },
   },
@@ -426,6 +451,7 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 1)
+      handleQuery();
       return [start, end]
     },
   },
@@ -435,6 +461,7 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      handleQuery();
       return [start, end]
     },
   },
@@ -573,9 +600,10 @@ const handleMonthPick = () => {
   }
   handleQuery()
 } 
-const getListAll = async () => {
+const getListAll = async (flagVlaue) => {
   try {
-        const allData = await IndexApi.getBusLineMax(queryParams)
+    queryParams.flagVlaue = flagVlaue
+    const allData = await IndexApi.getBusLineMax(queryParams)
     //设置左边数量
     statusNumber.location = allData.location;
     statusNumber.devKey = allData.devKey;
@@ -584,7 +612,15 @@ const getListAll = async () => {
     statusNumber.bus_id = allData.bus_id;
     statusNumber.line_id = allData.line_id;
     statusNumber.create_time = allData.create_time;
-    statusNumber.cur_max_value = allData.cur_max_value;
+    if(flagVlaue == 0){
+      titleName.value ='最大电流需量';
+      flagName.value ='电流';
+      statusNumber.cur_max_value = parseFloat(allData.cur_max_value).toFixed(2);
+    }else{
+      titleName.value ='最大功率需量';
+      flagName.value ='功率';
+      statusNumber.cur_max_value = parseFloat(allData.pow_active_max_value).toFixed(2);
+    }
   } catch (error) {
   }
 }
@@ -692,7 +728,7 @@ const handleQuery = () => {
     return;
   }
   getList();
-  getListAll();
+  getListAll(0);
 }
 
 /** 重置按钮操作 */
@@ -746,7 +782,7 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList();
   getNavList();
-  getListAll();
+  getListAll(0);
 })
 
 

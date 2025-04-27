@@ -97,7 +97,7 @@ console.log('init chosenBtn', chosenBtn, pluginData)
   text-align: center;
 }
 .boxList {
-  min-width: 65px;
+  min-width: 150px;
   min-height: 32px;
   display: flex;
   justify-content: center;

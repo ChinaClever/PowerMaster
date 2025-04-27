@@ -27,6 +27,9 @@ public class LineBoxMaxResVO {
     @JsonProperty("line_id")
     private Integer lineId;
 
+    @JsonProperty("outlet_id")
+    private Integer outletId;
+
     @Schema(description = "相位")
     private String lineName;
 
@@ -37,4 +40,12 @@ public class LineBoxMaxResVO {
     @JsonProperty("cur_max_value")
     @Schema(description = "最大电流")
     private String curMaxValue;
+
+    @JsonProperty("pow_active_max_value")
+    @Schema(description = "最大功率")
+    private String powActiveMaxValue;
+
+    @JsonProperty("pow_apparent_max_value")
+    @Schema(description = "最大视在功率")
+    private String powApparentMaxValue;
 }

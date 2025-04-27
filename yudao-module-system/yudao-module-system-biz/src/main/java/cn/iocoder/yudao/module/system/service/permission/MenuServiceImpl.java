@@ -2,12 +2,14 @@ package cn.iocoder.yudao.module.system.service.permission;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 import cn.iocoder.yudao.module.system.controller.admin.permission.vo.menu.MenuSaveVO;
 import cn.iocoder.yudao.module.system.controller.admin.permission.vo.menu.MenuListReqVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.permission.MenuDO;
 import cn.iocoder.yudao.module.system.dal.mysql.permission.MenuMapper;
 import cn.iocoder.yudao.module.system.dal.redis.RedisKeyConstants;
 import cn.iocoder.yudao.module.system.enums.permission.MenuTypeEnum;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -125,6 +128,23 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public List<MenuDO> getMenuList(Collection<Long> ids) {
         return menuMapper.selectBatchIds(ids);
+    }
+
+    @Override
+    public void forceDeleteMenu(Long id) {
+        if (menuMapper.selectById(id) == null) {
+            throw exception(MENU_NOT_EXISTS);
+        }
+        List<Long> ids=new ArrayList<>();
+        ids.add(id);
+        List<Long> res=null;
+        for (int i=0;i<ids.size();i++){
+            res=menuMapper.selectIdByParentId(ids.get(i));
+            ids.addAll(res);
+        }
+        menuMapper.update(null, new LambdaUpdateWrapper<MenuDO>()
+                .in(MenuDO::getId, ids)
+                .set(BaseDO::getDeleted,1));
     }
 
     /**

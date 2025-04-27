@@ -55,7 +55,7 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "颜色")
     private List<Integer> color;
 
-    @Schema(description = "时间类型")
+    @Schema(description = "时间类型")//    0 - 实时；1-历史
     private Integer timeType;
 
     @Schema(description = "开始时间")
@@ -88,5 +88,8 @@ public class BoxIndexPageReqVO extends PageParam {
 
     @Schema(description = "时间颗粒度 插接箱配电（day/hour/today/threeDay）")
     private String timeGranularity;
+
+    @Schema(description = "1-相电流 2-相有功功率 3-输出位功率")
+    private Integer boxType;
 
 }

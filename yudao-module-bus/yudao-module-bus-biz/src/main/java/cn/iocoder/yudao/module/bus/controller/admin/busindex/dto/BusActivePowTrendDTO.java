@@ -1,7 +1,10 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @author luowei
@@ -24,4 +27,29 @@ public class BusActivePowTrendDTO {
      */
     @Schema(description = "有功功率")
     private String activePow;
+
+    /**
+     * 有功功率
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Schema(description = "有功功率最大时间")
+    private Date activePowMaxTime;
+
+    /**
+     * 有功功率
+     */    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @Schema(description = "有功功率最小时间")
+    private Date activePowMinTime;
+
+    /**
+     * 有功功率
+     */
+    @Schema(description = "有功功率最大")
+    private String activePowMax;
+
+    /**
+     * 有功功率
+     */
+    @Schema(description = "有功功率最小")
+    private String activePowMin;
 }

@@ -86,6 +86,9 @@
 
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          </el-form-item>
+
+          <el-form-item style="position:absolute; right: 0;">
             <el-button
               type="success"
               plain
@@ -98,7 +101,7 @@
         </el-form>
       </template>
       <template #Content>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
            <!-- 添加行号列 -->
           <el-table-column label="序号" align="center" width="60px">
             <template #default="{ $index }">
@@ -107,12 +110,13 @@
           </el-table-column>
           <!-- 遍历其他列 -->
           <template v-for="column in tableColumns">
-            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
-              <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
+            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.label!='操作'" />
+          </template>
+          <el-table-column label="操作" align="center" :width="90" fixed="right">
+              <template #default="{ row }">
+                <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
-          </template>
           <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
             <tr>
@@ -327,8 +331,7 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       defaultOptionsCol.value = [
-        ["total", "active_pow", "active_total_avg_value"], ["total", "active_pow", "active_total_max"], ["total", "active_pow", "active_total_min"],
-        ["total", "apparent_pow", "apparent_total_avg_value"], ["total", "apparent_pow", "apparent_total_max"], ["total", "apparent_pow", "apparent_total_min"]
+        ["total", "active_pow", "active_total_max"], ["total", "apparent_pow", "apparent_total_max"],
       ]
       optionsCol.value = [
         {
@@ -394,16 +397,16 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', formatter: formatTime, istrue:true},
-        { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: formatTime, width: '200px', istrue:true},
-        { label: '总最小有功功率(kW)', align: 'center', prop: 'active_total_min_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '总最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: formatTime, width: '200px', istrue:true},
-        { label: '总平均视在功率(kVA)', align: 'center', prop: 'apparent_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最小有功功率(kW)', align: 'center', prop: 'active_total_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: '总最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: '总平均视在功率(kVA)', align: 'center', prop: 'apparent_total_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最大视在功率(kVA)', align: 'center', prop: 'apparent_total_max_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: formatTime, width: '200px', istrue:true},
-        { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: formatTime, width: '200px', istrue:true},
+        { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: formatTime, width: '200px', istrue:false},
 
         { label: 'A路平均有功功率(kW)', align: 'center', prop: 'active_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大有功功率(kW)', align: 'center', prop: 'active_a_max_value', istrue:false, width: '180px', formatter: formatPower},
@@ -449,8 +452,8 @@ const tableColumns = ref([
 
 
 /** 查询列表 */
-const getList = async () => {
-  loading.value = true
+const getList = async (isLoading = true) => {
+  loading.value = isLoading
   try {
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
@@ -516,7 +519,7 @@ const getNavNewData = async() => {
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location:string) => {
-  push('/cabinet/record/historyLine?cabinetId='+cabinetId+'&location='+location);
+  push('/cabinet/record/historyLine?cabinetId='+cabinetId+'&location='+location+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?"&start="+queryParams.timeRange[0]+"&end="+queryParams.timeRange[1]:""));
 }
 
 /** 导出按钮操作 */
@@ -531,7 +534,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
-    await download.excel(data, '机柜电力历史数据.xlsx')
+    await download.excel(data, '机柜电力数据.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -551,6 +554,17 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getList()
+  intervalId.value=setInterval(() => {
+      getList(false)
+  }, 1000 * 60)
+})
+
+const intervalId:any=ref(null)
+
+onBeforeUnmount(() => {
+  if(intervalId.value!=null){
+    clearInterval(intervalId.value)
+  }
 })
 </script>
 

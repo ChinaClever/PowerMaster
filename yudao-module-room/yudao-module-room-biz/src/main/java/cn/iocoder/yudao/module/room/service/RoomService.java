@@ -6,10 +6,15 @@ import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.dto.*;
+import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
+import cn.iocoder.yudao.module.room.vo.RoomMainResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author luowei
@@ -97,7 +102,7 @@ public interface RoomService {
     Integer roomAisleSave(AisleSaveVo vo);
 
     /**
-     * 新-机房详情
+     * 新-roomAisleDelete
      * @param id
      * @return
      */
@@ -115,4 +120,24 @@ public interface RoomService {
 
     //恢复已删除机房
     void getRestoreRoom(int id);
+
+    List<RoomIndexAddrResVO> getRoomList(String addr, String roomName);
+
+    List<String> getRoomAddrList();
+
+    RoomMainResVO getDataNewDetail(int id) throws ExecutionException, InterruptedException;
+
+    //柜列编辑删除
+    Integer roomAisleDeleteById(int id);
+
+    //机房新增根据名称异步查询
+    Integer newSelectRoomByName(String name);
+
+    void getRoomListRedis(List<RoomIndexAddrResVO> bean);
+
+    Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName);
+
+    Boolean findAreaById(Integer xLength, Integer yLength, Integer id);
+
+    Boolean findAddAisleVerify(AisleSaveVo vo);
 }

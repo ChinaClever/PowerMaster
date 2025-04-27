@@ -24,6 +24,12 @@ export const IndexApi = {
     return await request.get({ url: `/room/index/get?id=` + id })
   },
 
+    // 获得机房用能最大
+    getMaxEq: async () => {
+      return await request.get({ url: `/room/index/eq/maxEq` })
+    },
+  
+
   // 新增机房索引
   createIndex: async (data: IndexVO) => {
     return await request.post({ url: `/room/index/create`, data })
@@ -71,5 +77,16 @@ export const IndexApi = {
   
   idList: async () => {
     return await request.download({ url: `/room/index/idList`})
+  },
+
+  getActivePowTrend:async (id) => {
+    return await request.get({ url: `/room/index/activePowTrend?id=${id}`})
+  },
+
+  getEleChain:async (id)=>{
+    return await request.get({ url: `/room/index/eleChain?id=${id}`})
+  },
+  getEleTrend:async (params)=>{
+    return await request.get({ url: `/room/index/eleTrend?id=${params.id}&type=${params.type}`})
   },
 }

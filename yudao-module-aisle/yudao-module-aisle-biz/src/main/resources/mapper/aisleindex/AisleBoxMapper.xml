@@ -23,9 +23,11 @@
         ab.update_time,
         r.room_name,
         r.id as room_id
-        from aisle_box ab left join aisle_index ai on ab.aisle_id = ai.id
+        from aisle_box ab
+        left join aisle_index ai on ab.aisle_id = ai.id
         left join room_index r on ai.room_id = r.id
         <where>
+            r.is_delete =0 and ai.is_delete =0
             <if test="keys != null and keys.size() > 0">
                 and ab.box_key in
                 <foreach item="item" index="index" collection="keys"

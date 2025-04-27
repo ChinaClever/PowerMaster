@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  * @date 2024/4/17 14:05
  */
 @Data
-@TableName(value = "cabinet_statis_config")
+@TableName(value = "cabinet_cron_config")
 public class CabinetStatisConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 

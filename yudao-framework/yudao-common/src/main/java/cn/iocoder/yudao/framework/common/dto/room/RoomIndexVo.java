@@ -24,6 +24,11 @@ public class RoomIndexVo extends PageParam {
     private String roomName;
 
     /**
+     * 地址（楼层）
+     */
+    private String addr;
+
+    /**
      * 最后更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)

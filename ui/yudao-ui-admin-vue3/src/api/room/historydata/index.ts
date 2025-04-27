@@ -4,8 +4,8 @@ import request from '@/config/axios'
 export const HistoryDataApi = {
 
   // 查询机房历史数据分页
-  getHistoryDataPage: async (params: any) => {
-    return await request.get({ url: `/room/history-data/page`, params })
+  getHistoryDataPage: async (data: any) => {
+    return await request.post({ url: `/room/history-data/page`, data })
   },
 
   // 查询机房历史数据详情

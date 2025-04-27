@@ -3,7 +3,7 @@ package cn.iocoder.yudao.module.cabinet.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.*;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,13 +33,13 @@ public class CabinetPduCurTrendDTO {
      * A路电流
      */
     @Schema(description = "A路电流", example = "[]")
-    private List<Map<String,Object>> curA;
+    private List<Map<String, Object>> curA;
 
     /**
      * B路电流
      */
     @Schema(description = "B路电流", example = "[]")
-    private List<Map<String,Object>> curB;
+    private List<Map<String, Object>> curB;
 
 
 }

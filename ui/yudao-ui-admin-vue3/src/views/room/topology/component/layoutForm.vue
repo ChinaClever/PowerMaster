@@ -9,10 +9,7 @@
       center
     >
       <el-form-item label="类型" prop="type">
-        <el-select v-model="formData.type" placeholder="请选择活动区域">
-          <el-option label="机柜列" :value="1" />
-          <el-option label="机柜" :value="2" />
-        </el-select>
+        <el-input model-value="机柜列" disabled />
       </el-form-item>
       <el-form-item label="名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入" />
@@ -23,8 +20,8 @@
       </el-form-item> 
       <el-form-item v-if="formData.type == 1" label="方向" prop="direction">
         <el-select v-model="formData.direction" placeholder="请选择活动区域">
-          <el-option label="横向" :value="1" />
-          <el-option label="纵向" :value="2" />
+          <el-option label="横向" :value="1"/>
+          <el-option label="纵向" :value="2"/>
         </el-select>
       </el-form-item>
       <el-form-item v-if="formData.type == 1" label="数量" prop="amount">
@@ -59,6 +56,19 @@
           </el-form-item>
         </div>
       </div>
+
+      <div style="display: flex;">
+        <div style="flex: 1;">
+          <el-form-item label="横坐标" label-width="100">
+            <el-input-number v-model="formData.xCoordinate" :min="1" :max="operateInfo.xLength" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+        <div style="flex: 1;">
+          <el-form-item label="纵坐标" label-width="100">
+            <el-input-number v-model="formData.yCoordinate" :min="1" :max="operateInfo.yLength" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+      </div>
     </el-form>
     <template #footer>
       <el-button @click="dialogVisible = false">取 消</el-button>
@@ -88,10 +98,12 @@ const formData = ref({
   type: 1,
   name: '',
   cabinetHeight: 42,
-  direction: 1,
+  direction: operateInfo.value.maxlndexX ? 1 : 2,
   amount: 12,
   id: '',
-  cabinetList: [] as any
+  cabinetList: [] as any,
+  xCoordinate: 0,
+  yCoordinate: 0
 })
 const formRules = reactive<FormRules>({
   name: [{ required: true, message: '名称不能为空', trigger: 'blur' }],
@@ -106,7 +118,7 @@ const open = async (type: string, data, info) => {
   formType.value = type
   operateInfo.value = info
   resetForm()
-  console.log('data', data)
+  console.log('data', data,info)
   if (data && data.type == 1 && data.amount > 1 && data.cabinetList.length > 0) { // 如果是柜列且长度大于一，则该柜列的最小长度应为其中最后那个绑定id机柜的下标值，如果最小值比这个下标值还小的话就会删掉该机柜
     const length = data.amount
     beginAmount.value = length
@@ -119,6 +131,8 @@ const open = async (type: string, data, info) => {
     }
   }
   if (data) formData.value = data
+  formData.value.xCoordinate = Number(operateInfo.value.lndexX)+1
+  formData.value.yCoordinate = Number(operateInfo.value.lndexY)+1
   console.log('formData.value', formData.value)
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -170,11 +184,14 @@ const resetForm = () => {
     type: 1,
     name: '',
     cabinetHeight: 42,
-    direction: 1,
+    direction: operateInfo.value.maxlndexX ? 1 : 2,
     amount: 12,
     id: '',
-    cabinetList: []
+    cabinetList: [],
+    xCoordinate: Number(operateInfo.value.lndexX)+1,
+    yCoordinate: Number(operateInfo.value.lndexY)+1
   }
+  console.log(typeof(operateInfo.value.lndexX))
   minAmount.value = 1
   layoutForm.value?.resetFields()
 }

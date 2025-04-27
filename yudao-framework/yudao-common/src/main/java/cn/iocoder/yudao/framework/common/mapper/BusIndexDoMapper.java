@@ -2,7 +2,10 @@ package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.vo.DeviceStatisticsVO;
+import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,4 +20,11 @@ import java.util.List;
 @Mapper
 public interface BusIndexDoMapper extends BaseMapper<BusIndex> {
     List<RoomMenuDTO> queryRoomMenuDTO(@Param("busKeys") List<String> busKeys);
+
+    EquipmentStatisticsResVO equipmentStatisticsQuery(@Param("busKey") List<String> busKey);
+
+    @Delete("DELETE FROM bus_index")
+    void initBusData();
+
+    DeviceStatisticsVO deviceStatistics(@Param("busKeys") List<String> busKeys);
 }

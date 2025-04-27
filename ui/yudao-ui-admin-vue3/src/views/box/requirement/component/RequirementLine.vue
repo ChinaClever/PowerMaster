@@ -56,16 +56,36 @@ const echartsOption = ref({
       formatter: formatter
     }},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-  series: series,
+  series: series
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
-  series.value = prop.list.series;
+  series.value = prop.list.series
+
   if(  series.value != null && series.value?.length > 0){
-    legendList.value =  series.value?.map(item => item.name)
+    legendList.value = series.value?.map(item => item.name) 
   }
+
+  if(series.value != null && series.value?.length > 0 && series.value[0].name == "输出位1最大有功功率") {
+    series.value = [
+      ...series.value.map(seriesItem => ({
+        ...seriesItem,
+        data: seriesItem.data.map(ele => ele.pow_active_max_value),
+        maxTime: seriesItem.data.map(ele => ele.pow_active_max_time)
+      })),
+      ...series.value.map((seriesItem,index) => ({
+        ...seriesItem,
+        data: seriesItem.data.map(ele => ele.pow_apparent_max_value),
+        maxTime: seriesItem.data.map(ele => ele.pow_apparent_max_time),
+        name: "输出位" + Number(index+1) + "最大视在功率"
+      }))
+    ]
+    legendList.value = [...series.value?.map(item => item.name),...series.value?.map((index) => "输出位" + Number(index+1) + "最大视在功率")]
+  }
+  
+  
   formatter.value = prop.list.formatter;
   time.value = prop.list.time;
 

@@ -87,7 +87,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="false">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="false" border>
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -96,10 +96,17 @@
         </el-table-column>
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'" >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)">详情</el-button>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot == 'actions'" fixed="right">
+            <template #default="{ row }">
+              <div v-if="column.slot === 'actions'">
+                <el-button type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)">详情</el-button>
               </div>
             </template>
           </el-table-column>
@@ -449,7 +456,16 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (busId: number, dev_key: string, location: string) => {
   const devKey = dev_key;
-  push({path: '/bus/record/envAnalysis/bus', state: {busId,devKey,location}})
+  const start=selectTimeRange.value?.[0];
+  const end=selectTimeRange.value?.[1];
+  console.log("selectTimeRange:start",selectTimeRange.value?.[0])
+  console.log("selectTimeRange:end",selectTimeRange.value?.[1])
+  if(start!=null && end!=null&&start!=''&&end!=''){
+    console.log("have time")
+    push({path: '/bus/record/bus/envAnalysis', state: {busId,devKey,location,start,end}})
+  }else{
+    push({path: '/bus/record/bus/envAnalysis', state: {busId,devKey,location}})
+  }
 }
 
 /** 导出按钮操作 */
@@ -489,8 +505,8 @@ onMounted( () => {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  formatDate(startOfMonth),
+  formatDate(now)
 ];
   getNavList()
   getNavNewData()

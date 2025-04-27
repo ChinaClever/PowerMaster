@@ -1,29 +1,32 @@
 package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.security.access.prepost.PreAuthorize;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Operation;
-
-import javax.validation.*;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
-
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
+import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
+import cn.iocoder.yudao.module.aisle.dto.AislePowerLoadDetailReqDTO;
 import cn.iocoder.yudao.module.aisle.service.aisleindex.AisleIndexService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 通道列")
 @RestController
@@ -31,7 +34,7 @@ import cn.iocoder.yudao.module.aisle.service.aisleindex.AisleIndexService;
 @Validated
 public class AisleIndexController {
 
-    @Resource
+    @Autowired
     private AisleIndexService indexService;
 
     @PostMapping("/create")
@@ -54,8 +57,14 @@ public class AisleIndexController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('aisle:index:delete')")
     public CommonResult<Boolean> deleteIndex(@RequestParam("id") Integer id) {
-        indexService.deleteIndex(id);
-        return success(true);
+        return success(indexService.deleteIndex(id));
+    }
+
+    @GetMapping("/restore")
+    @Operation(summary = "恢复通道列")
+    @Parameter(name = "id", description = "编号", required = true)
+    public CommonResult<Boolean> restore(@RequestParam("id") Integer id) {
+        return success(indexService.restore(id));
     }
 
     @GetMapping("/get")
@@ -71,14 +80,20 @@ public class AisleIndexController {
     @Operation(summary = "获得通道列分页")
     public CommonResult<PageResult<AisleIndexRes>> getIndexPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, AisleIndexRes.class));
+        return success(pageResult);
+    }
+
+    @PostMapping("/delPage")
+    @Operation(summary = "删除通道列分页")
+    public CommonResult<PageResult<AisleIndexDelResVO>> getDelPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getDelPage(pageReqVO));
     }
 
     @PostMapping("/powerpage")
-    @Operation(summary = "获得通道列索引分页")
+    @Operation(summary = "获得通道列电力索引分页")
     public CommonResult<PageResult<AislePowerRes>> getPowerPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
         PageResult<AislePowerRes> pageResult = indexService.getPowerPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, AislePowerRes.class));
+        return success(pageResult);
     }
 
     @PostMapping("/line/page")
@@ -87,7 +102,13 @@ public class AisleIndexController {
         return success(indexService.getAisleLineMaxPage(pageReqVO));
     }
 
-    @Operation(summary = "始端箱需量ES数据图表")
+    @Operation(summary = "获得通道列需量AB路最大")
+    @PostMapping("/line/max")
+    public CommonResult<Map<String,AislePowerFactorMaxResVO>> getAisleLineMax(@RequestBody AisleIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAisleLineMax(pageReqVO));
+    }
+
+    @Operation(summary = "柜列需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<AisleLineResBase> getAisleLineCurLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
         AisleLineResBase pageResult = indexService.getAisleLineCurLine(pageReqVO);
@@ -105,23 +126,23 @@ public class AisleIndexController {
 //        PageResult<AisleEQRes> pageResult = indexService.getEqPage(pageReqVO);
 
         PageResult<AisleEQRes> pageResult;
-        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getAisleIds()) || ObjectUtil.isNotEmpty(pageReqVO.getName())){
-            pageResult =  indexService.getEqPage(pageReqVO);
-        }else {
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity()) || !CollectionUtils.isEmpty(pageReqVO.getAisleIds()) || ObjectUtil.isNotEmpty(pageReqVO.getName())) {
+            pageResult = indexService.getEqPage(pageReqVO);
+        } else {
             pageResult = indexService.getEqPage1(pageReqVO);
-            if (ObjectUtil.isEmpty(pageResult)){
-                pageResult =  indexService.getEqPage(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)) {
+                pageResult = indexService.getEqPage(pageReqVO);
             }
         }
         return success(pageResult);
     }
 
     /**
-     * 始端箱有功功率趋势
+     * 柜列有功功率趋势
      *
-     * @param id 始端箱id
+     * @param id 柜列id
      */
-    @Operation(summary = "始端箱有功功率趋势")
+    @Operation(summary = "柜列有功功率趋势")
     @GetMapping("/activePowTrend")
     public CommonResult<AisleActivePowDTO> activePowTrend(@Param("id") int id) {
         AislePowVo vo = new AislePowVo();
@@ -131,11 +152,11 @@ public class AisleIndexController {
     }
 
     /**
-     * 始端箱用能趋势
+     * 柜列用能趋势
      *
-     * @param id 始端箱id
+     * @param id 柜列id
      */
-    @Operation(summary = "始端箱用能趋势")
+    @Operation(summary = "柜列用能趋势")
     @GetMapping("/eleTrend")
     public CommonResult<List<AisleEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
         List<AisleEqTrendDTO> dto = indexService.eqTrend(id, type);
@@ -143,11 +164,11 @@ public class AisleIndexController {
     }
 
     /**
-     * 始端箱用能环比
+     * 柜列用能环比
      *
-     * @param id 始端箱id
+     * @param id 柜列id
      */
-    @Operation(summary = "始端箱用能环比")
+    @Operation(summary = "柜列用能环比")
     @GetMapping("/eleChain")
     public CommonResult<AisleEleChainDTO> eleChain(@Param("id") int id) {
         AisleEleChainDTO dto = indexService.getEleChain(id);
@@ -158,14 +179,37 @@ public class AisleIndexController {
     @Operation(summary = "获得通道列功率因素分页")
     public CommonResult<PageResult<AislePfRes>> getAislePFPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
         PageResult<AislePfRes> pageResult = indexService.getAislePFPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, AislePfRes.class));
+        return success(pageResult);
     }
 
-    @Operation(summary = "始端箱功率因素详情分页")
+    @GetMapping("/findAisleFactor")
+    @Operation(summary = "获得最大最小功率因素")
+    public CommonResult<Map> findAisleFactor() throws IOException {
+        return success(indexService.findAisleFactor());
+    }
+
+    @Operation(summary = "柜列功率因素详情分页")
     @PostMapping("/pf/detail")
     public CommonResult<Map> getAislePFDetail(@RequestBody AisleIndexPageReqVO pageReqVO) {
         return success(indexService.getAislePFDetail(pageReqVO));
     }
+
+    @Operation(summary = "柜列功率因素详情导出")
+    @PostMapping("/pf/detail/excel")
+    public void getAislePFDetailExcel(@RequestBody AisleIndexPageReqVO pageReqVO, HttpServletResponse response) throws IOException {
+        Map aislePFDetail = indexService.getAislePFDetail(pageReqVO);
+        List<AislePFTableRes> res = (List<AislePFTableRes>) aislePFDetail.get("table");
+        if (ObjectUtil.isEmpty(res)) {
+            return;
+        }
+        if (ObjectUtil.isNotEmpty(pageReqVO.getLocation())) {
+            res.forEach(iter -> {
+                iter.setLocation(pageReqVO.getLocation());
+            });
+        }
+        ExcelUtils.write(response, "通道列详情.xls", "通道列详情", AislePFTableRes.class, res);
+    }
+
 
     @GetMapping("/devKeyList")
     @Operation(summary = "获得通道列devKey列表")
@@ -177,25 +221,37 @@ public class AisleIndexController {
     @Operation(summary = "获得通道列平衡分页")
     public CommonResult<PageResult<AisleBalanceRes>> getAisleBalancePage(@RequestBody AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleBalanceRes> pageResult = indexService.getAisleBalancePage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, AisleBalanceRes.class));
+        return success(pageResult);
+    }
+
+    @PostMapping("/balance/chart")
+    @Operation(summary = "获得通道列平衡详情")
+    public CommonResult<AisleBalanceChartResVO> getAisleBalanceChart(@RequestParam("id") Integer id) {
+        return success(indexService.getAisleBalanceChart(id));
     }
 
     @PostMapping("/report/ele")
     @Operation(summary = "获得通道列报表数据")
     public CommonResult<Map> getReportConsumeDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportConsumeDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getReportConsumeDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pow")
     @Operation(summary = "获得通道列报表数据")
-    public CommonResult<Map> getReportPowDataById(@RequestBody AisleIndexPageReqVO pageReqVO)  {
-        return success(indexService.getReportPowDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    public CommonResult<Map> getReportPowDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pfline")
     @Operation(summary = "获得通道列报表数据")
-    public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO)  {
-        return success(indexService.getAislePFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getAislePFLine(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/chartDetail")
+    @Operation(summary = "折线图数据")
+    public CommonResult<Map> getBusLineChartDetailData(@RequestBody @Valid AislePowerLoadDetailReqDTO reqVO) throws IOException {
+        return success(indexService.getLineChartDetailData(reqVO));
     }
 
     @GetMapping("/idList")
@@ -203,6 +259,14 @@ public class AisleIndexController {
     public List<Integer> idList() {
         return indexService.idList();
     }
+
+    @Operation(summary = "柜列用能最多")
+    @PostMapping("/eq/maxEq")
+    public CommonResult<List<AisleMaxEqResVO>> getMaxEq() {
+        List<AisleMaxEqResVO> pageResult = indexService.getMaxEq();
+        return success(pageResult);
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出通道列 Excel")
 //    @PreAuthorize("@ss.hasPermission('aisle:index:export')")

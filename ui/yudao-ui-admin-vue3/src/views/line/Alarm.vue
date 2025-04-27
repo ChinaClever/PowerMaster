@@ -77,8 +77,8 @@
       >
           <!-- <el-table-column type="selection" width="55" /> -->
           <el-table-column type="index" width="80" label="序号" align="center" />
-          <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
-          <el-table-column property="devName" label="设备" min-width="100" align="center" />
+          <el-table-column property="alarmPosition" label="区域" min-width="100" align="center" />
+          <!-- <el-table-column property="devName" label="设备" min-width="100" align="center" /> -->
           <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
           <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
           <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
@@ -92,7 +92,7 @@
             </template>
           </el-table-column>
           <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
-          <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+          <el-table-column property="finishTime" label="结束时间" min-width="100" align="center" />
           <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
           <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
       </el-table>
@@ -208,7 +208,6 @@ const getAlarmConfig = async() => {
     const res = await AlarmApi.getAlarmConfig({})
     console.log('res', res)
     if (res) {
-      queryParams.id = res.id
       queryParams.openEmail = !!res.mailAlarm
       queryParams.openVoice = !!res.voiceAlarm
       queryParams.openMessage = !!res.smsAlarm
@@ -222,7 +221,6 @@ const saveAlarmConfig = async() => {
   queryLoading.value = true
   try {
     const res = await AlarmApi.saveAlarmConfig({
-      id: queryParams.id,
       mailAlarm: queryParams.openEmail ? 1 : 0,
       voiceAlarm: queryParams.openVoice ? 1 : 0,
       smsAlarm: queryParams.openMessage ? 1 : 0,
@@ -243,12 +241,15 @@ const getTableData = async(reset = false) => {
     const res = await AlarmApi.getAlarmRecord({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      a: 0,
-      status: preStatus.value,
+      alarmStatus: preStatus.value,
       likeName: queryParams.search
     })
     console.log('res', res)
     if (res.list) {
+      res.list.forEach(item => {
+        item.startTime = item.startTime == null?"":new Date(item.startTime).toLocaleString()
+        item.finishTime = item.finishTime == null?"":new Date(item.finishTime).toLocaleString()
+      })
       tableData.value = res.list
       queryParams.pageTotal = res.total
     }
@@ -268,13 +269,14 @@ const toHandle = (type) => {
       console.log(value)
       AlarmApi.saveAlarmRecord({
         id: targetId.value,
-        status: type,
+        alarmStatus: type,
         confirmReason: value
       }).then(() => {
         ElMessage({
           type: 'success', // 0 未处理 1 挂起 2确认 3结束
           message: '成功',
         })
+        getTableData(false)
       })
     })
 }

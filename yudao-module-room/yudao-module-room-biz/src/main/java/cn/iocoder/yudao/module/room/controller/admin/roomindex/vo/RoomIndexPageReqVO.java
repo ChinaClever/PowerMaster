@@ -66,4 +66,6 @@ public class RoomIndexPageReqVO extends PageParam {
     @Schema(description = "月用能限制")
     private Double eleLimitMonth;
 
+    private String timeGranularity;
+
 }

@@ -1,15 +1,15 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.vo.*;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.SelectKey;
 
 import java.util.List;
 import java.util.Map;
@@ -47,4 +47,25 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     Page<CabinetCfg> selectCabinetEnvPage(Page page, CabinetIndexVo pageReqVO);
 
     List<CabineIndexCfgVO> selectCabineIndexCfgByAisleId(Integer aisleId);
+
+    List<CabinetPduResVO> selectCabinetPduList(@Param("pduKey") List<String> pduKey);
+
+    List<CabinetPduResVO> selectCabinetPduByPduKey(String pduKey);
+
+    @Delete("DELETE FROM cabinet_index")
+    void initCabinetData();
+
+    DeviceStatisticsVO deviceStatistics(Integer roomId);
+
+    List<CabinetPdu> getFindCabinetPduList(Integer roomId);
+
+    List<CabinetPdu> getFindCabinetBoxList(Integer roomId);
+
+    Integer findAreaById(@Param("xLength") Integer xLength, @Param("yLength") Integer yLength, @Param("roomId") Integer roomId);
+
+    int findAddAisleVerifyx(AisleSaveVo vo);
+
+    int findAddAisleVerifyy(AisleSaveVo vo);
+
+    CabinetIndex selectByPduKey(String pduKey);
 }

@@ -1,71 +1,38 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="柜列能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="柜列能耗排名" :showCheckbox="false">
     <template #NavInfo>
-      <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container"> -->
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        <!-- </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div>
-      <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div> -->
-
-              <div class="nav_header">      
+        <div class="nav_header">      
           <span v-if="nowAddress">{{nowAddress}}</span>
         </div>
-        <br/> 
         <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <div class="description-item" >
+        <!-- <div class="description-item" v-show="selectTimeRange[0]!=null">
           <span class="label">开始日期 :</span>
           <span >{{selectTimeRange[0]}}</span>
         </div>
-        <div class="description-item" >
+        <div class="description-item" v-show="selectTimeRange[1]!=null">
           <span class="label">结束日期 :</span>
           <span >{{selectTimeRange[1]}}</span>
-        </div>
-        <div class="description-item">
+        </div> -->
+        <div class="description-item" v-show="totalEqData!=null">
           <span class="label">总耗电量 :</span>
           <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
         </div>
-        <div class="description-item">
+        <div class="description-item" v-show="maxEqDataTemp!=null">
           <span class="label">最大耗电量 :</span>
           <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="maxEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
+        <div v-if="maxEqDataTimeTemp" class="description-item" v-show="maxEqDataTimeTemp!=null">
+          <span class="label">记录时间 :</span>
           <span class="value">{{ maxEqDataTimeTemp }}</span>
         </div>
 
-        <div class="description-item">
+        <div class="description-item" v-show="minEqDataTemp!=null">
           <span class="label">最小耗电量 :</span>
           <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
         </div>
-        <div v-if="minEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
+        <div v-if="minEqDataTimeTemp" class="description-item" v-show="minEqDataTimeTemp!=null">
+          <span class="label">记录时间 :</span>
           <span class="value">{{ minEqDataTimeTemp }}</span>
         </div>
         <div class="line" style="margin-top: 10px;"></div>
@@ -78,7 +45,6 @@
         <el-tab-pane label="周数据" name="weekTabPane"/>
         <el-tab-pane label="月数据" name="monthTabPane"/>
       </el-tabs>
-      <!-- 搜索工作栏 -->
       <el-form
         class="-mb-15px"
         :model="queryParams"
@@ -102,46 +68,45 @@
         />
       </el-form-item>
 
-        <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
-        </el-form-item>
+      <el-form-item >
+        <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+      </el-form-item>
+      <el-form-item style="position: absolute;right: 0px;">
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+          <Icon icon="ep:download" class="mr-5px" /> 导出
+        </el-button>
+      </el-form-item>
       </el-form>
     </template>
     <template #Content>
-      <!-- 列表 -->
       <el-tabs v-model="activeName1" v-if="loading2">
         <el-tab-pane label="图表" name="lineChart">
           <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
         </el-tab-pane>
         <el-tab-pane label="数据" name="lineChartData">
-          <div style="height: 58vh;">
+          <div style="height: 70vh;">
             <el-table  
               :border="true"
               :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;"
+              style="height: 100%; width: 99.97%;"
               :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
-              <!-- 添加行号列 -->
               <el-table-column label="序号" align="center" width="80px">
                 <template #default="{ $index }">
                   {{ $index + 1 }}
                 </template>  
               </el-table-column>
-              <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
                   <el-table-column prop="startEleData" label="数值"/>   
-                  <el-table-column prop="startTimeData" label="发生时间"/>
+                  <el-table-column prop="startTimeData" label="开始时间"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
                   <el-table-column prop="endEleData" label="数值"/>   
-                  <el-table-column prop="endTimeData" label="发生时间"/>
+                  <el-table-column prop="endTimeData" label="结束时间"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
                   <el-table-column :prop="item.name" label="数值"/>   
@@ -153,18 +118,18 @@
         </el-tab-pane>
       </el-tabs>
     </template>
-  </CommonMenu>
-
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/aisle/aisleindex'
 import download from '@/utils/download'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
+import CommonMenu1 from './CommonMenu1.vue';
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'ECDistribution' })
 
@@ -178,6 +143,11 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(7)) as any
+let lastDate=null;
+let lastWeekOrMonth=null;
+if(history.state.start!=null&&history.state.end!=null){
+  selectTimeRange.value=[history.state.start,history.state.end]
+}
 const loading = ref(false) 
 const loading2 = ref(false) 
 const exportLoading = ref(false)
@@ -273,17 +243,41 @@ const shortcuts = [
   },
 ]
 
+function defaultYear(){
+  const preYear=new Date();
+  preYear.setFullYear(preYear.getFullYear()-1)
+  return [dayjs(preYear).format("YYYY-MM-DD HH:mm:ss"),dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")]
+}
+
 // 监听切换日周月tab切换
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="dayTabPane"){
+    lastDate=selectTimeRange.value;
+  }else{
+    lastWeekOrMonth=selectTimeRange.value;
+  }
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(7)
+    if(lastDate!=null){
+      selectTimeRange.value=lastDate;
+    }
+    // selectTimeRange.value = defaultDayTimeRange(7)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(1)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
+    // selectTimeRange.value = defaultMonthTimeRange(1)
   }else{
     queryParams.granularity = 'month'
-    selectTimeRange.value = defaultMonthTimeRange(12)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
+    // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
@@ -326,8 +320,7 @@ loading.value = true
     // 格式化时间范围 加上23:59:59的时分秒 
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
-    const oneDay = 24 * 60 * 60 * 1000;
-    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data != null && data.total != 0){
@@ -344,17 +337,31 @@ loading.value = true
       minEqDataTemp.value = Math.min(...eqData.value);
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = startTimeData.value[index]
+          maxEqDataTimeTemp.value = createTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
-          minEqDataTimeTemp.value = startTimeData.value[index]
+          minEqDataTimeTemp.value = createTimeData.value[index]
         }
         totalEqData.value += Number(num);
       });
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
-      loading2.value=false
+      loading2.value=true
+      totalEqData.value = null;
+      startEleData.value = [];
+      startTimeData.value = [];
+      endEleData.value = [];
+      endTimeData.value = [];
+      eqData.value = [];
+      createTimeData.value = [];
+
+      maxEqDataTemp.value = null;
+      minEqDataTemp.value = null;
+      maxEqDataTimeTemp.value = null
+      minEqDataTimeTemp.value = null
+      // 图表显示的位置变化
+      nowAddress.value = nowAddressTemp.value
       ElMessage({
         message: '暂无数据',
         type: 'warning',
@@ -373,6 +380,7 @@ const initLineChart = () => {
     lineChart.dispose(); // 销毁之前的实例
   }
   if (chartContainer.value && instance) {
+    lineChart?.dispose();
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
       title: { text: '耗电量趋势图', top: -4},
@@ -380,7 +388,7 @@ const initLineChart = () => {
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
       series: [{name: '耗电量', type: 'line', data: eqData.value}],
       dataZoom:[{type: "inside"}],
@@ -403,14 +411,14 @@ function formatNumber(value, decimalPlaces) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
+  console.log("params==",params)
   var tooltipContent = '';
-  params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '耗电量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
-        break;
-    }
-  });
+  tooltipContent += params[0].marker + ' ' +'记录时间: ' + params[0].name;
+  tooltipContent += "&nbsp;&nbsp;&nbsp;&nbsp;" + params[0].seriesName + ': ' + params[0].value + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'开始时间: ' + tableData.value[params[0].dataIndex].startTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;开始电能: ' + tableData.value[params[0].dataIndex].startEleData + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'结束时间: ' + tableData.value[params[0].dataIndex].endTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;结束电能: ' + tableData.value[params[0].dataIndex].endEleData + ' kWh';
   return tooltipContent;
 }
 
@@ -484,6 +492,14 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 //导出Excel
 const handleExport1 = async () => {
   try {
+    if(queryParams.aisleId == null){
+      ElMessage({
+        message: '未选择机房',
+        type: 'warning',
+      });
+      return;
+    }
+    
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
@@ -493,7 +509,7 @@ const handleExport1 = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportDetailPageData(queryParams, axiosConfig)
-    await download.excel(data, '柜列能耗排名.xlsx')
+    await download.excel(data, '柜列能耗分析.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -520,8 +536,8 @@ const handleQuery = async() => {
 onMounted(async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryAisleId = useRoute().query.aisleId as string | undefined;
-  const queryLocation = useRoute().query.location as string;
+  const queryAisleId = history.state.aisleId as string | undefined;
+  const queryLocation = history.state.location as string;
   queryParams.aisleId = queryAisleId ? parseInt(queryAisleId, 10) : undefined;
   if (queryParams.aisleId != undefined){
     await getLineChartData();
@@ -559,7 +575,7 @@ onMounted(async () => {
   object-fit: cover; 
 }
 .description-item {
-  display: flex;
+  /* display: flex; */
   align-items: center;
 }
 

@@ -38,6 +38,16 @@ export const IndexApi = {
     return await request.delete({ url: `/aisle/index/delete?id=` + id })
   },
 
+  // 恢复通道列
+  restoreAisleInfo: async (params: any) => {
+    return await request.get({ url: `/aisle/index/restore`, params })
+  },
+
+  // 删除通道列分页
+  deletedAisleInfo: async (data: any) => {
+    return await request.post({ url: `/aisle/index/delPage`, data })
+  },
+
   // 导出通道列 Excel
   exportIndex: async (params) => {
     return await request.download({ url: `/aisle/index/export-excel`, params })
@@ -57,6 +67,10 @@ export const IndexApi = {
 
   getAisleRedisPage: async (data: any) => {
     return await request.post({ url: `/aisle/index/powerpage`, data })
+  },
+
+  getLineChartData: async (data: any) => {
+    return await request.post({ url: `/aisle/index/chartDetail`, data })
   },
 
   getEqPage: async (data: any) => {
@@ -83,6 +97,10 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/balancepage`,data})
   },
 
+  getAisleEleChain: async (params: any) => {
+    return await request.get({ url: `/aisle/index/eleChain`, params })
+  },
+
   getConsumeData: async (data) => {
     return await request.post({ url: `/aisle/index/report/ele`,data})
   },
@@ -97,5 +115,26 @@ export const IndexApi = {
 
   idList: async () => {
     return await request.download({ url: `/aisle/index/idList`})
+  },
+
+  getAislePFDetailExcel: async (data) => {
+    return await request.downloadPost({ url: `/aisle/index/pf/detail/excel`, data })
+  },
+
+  getBalanceDetail: async (data) => {
+    return await request.post({ url: `/aisle/index/balance/chart?id=${data}`, })
+  },
+
+  getMaxEq: async () => {
+    return await request.post({ url: `/aisle/index/eq/maxEq`})
+  },
+  getMaxAndMinPowFac: async () => {
+    return await request.get({ url: `/aisle/index/findAisleFactor`})
+  },
+  getMaxApparentPower: async (data) => {
+    return await request.post({ url: `/aisle/index/line/max`,data})
+  },
+  getRecordPage: async (data: any) => {
+    return await request.post({ url: `/alarm/log-record/page`, data})
   },
 }

@@ -1,7 +1,10 @@
 package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Schema(description = "管理后台 - 通道列电力 Response VO")
@@ -42,4 +45,37 @@ public class AislePowerRes extends  AisleIndexRespVO{
 
     @Schema(description = "B路无功功率")
     private Double powReactiveB;
+
+    @Schema(description = "A路电流")
+    private List<Double> curAList;
+
+    @Schema(description = "B路电流")
+    private List<Double> curBList;
+
+    @Schema(description = "A路电压")
+    private List<Double> volAList;
+
+    @Schema(description = "B路电压")
+    private List<Double> volBList;
+
+    @Schema(description = "A路功率")
+    private List<Double> powValueAList;
+
+    @Schema(description = "B路功率")
+    private List<Double>  powValueBList;
+
+    @Schema(description = "B路功率因素")
+    private Double powerFactorA;
+
+    @Schema(description = "B路功率因素")
+    private Double powerFactorB;
+
+    @Schema(description = "功率因素")
+    private Double powerFactor;
+
+    @Schema(description = "能否删除")
+    private Boolean flagType;
+
+//    @Schema(description = "机柜")
+//    private List<CabinetIndex> cabinetIndexList;
 }

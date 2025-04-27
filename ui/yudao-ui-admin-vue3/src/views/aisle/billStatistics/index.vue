@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列电费统计">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -73,6 +73,8 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <el-form-item style="position: absolute; right: 0;">
           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
@@ -133,7 +135,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, startOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/aisle/aisleindex'
 import { useMessage } from '@/hooks/web/useMessage'
 import { ElMessage } from 'element-plus'
@@ -234,8 +236,7 @@ const getList = async () => {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay)))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
 
@@ -395,6 +396,9 @@ const getNavNewData = async () => {
 
 /** 初始化 **/
 onMounted(() => {
+  const now=new Date()
+  const oneOfMonth=new Date(now.getFullYear(), now.getMonth(), 1,23,59,59)
+  selectTimeRange.value=[dayjs(oneOfMonth).format("YYYY-MM-DD HH:mm:ss"),dayjs(now).format("YYYY-MM-DD HH:mm:ss")]
   getNavList()
   getNavNewData()
   getList();

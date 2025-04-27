@@ -1,0 +1,1 @@
+import{r as s}from"./index-mcOGIq4g.js";const t=()=>s.get({url:"/system/menu/simple-list"}),m=e=>s.get({url:"/system/menu/list",params:e}),u=e=>s.get({url:"/system/menu/get?id="+e}),a=e=>s.post({url:"/system/menu/create",data:e}),r=e=>s.put({url:"/system/menu/update",data:e}),l=e=>s.delete({url:"/system/menu/delete?id="+e});export{u as a,m as b,a as c,l as d,t as g,r as u};

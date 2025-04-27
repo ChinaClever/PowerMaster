@@ -30,7 +30,12 @@
     </div>
     <div class="header_app_text_other flex-container">
         <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-        <el-button @click="changeTime('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
+        <el-select v-if="queryParams.timeGranularity != '近一小时'" v-model="typeRadioShow" placeholder="请选择" style="width: 100px;margin-left: 5px;">
+            <el-option label="平均" value="平均" />
+            <el-option label="最大" value="最大" />
+            <el-option label="最小" value="最小" />
+        </el-select>
+        <el-button @click="changeTime('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 5px;">近一小时</el-button>
         <el-button @click="changeTime('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
         <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
         <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
@@ -155,6 +160,10 @@ import PowReactiveLine from './component/PowReactiveLine.vue';
 import PowActiveLine from './component/PowActiveLine.vue';
 import { IndexApi } from '@/api/bus/busindex';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 const peakDemand = ref(0);
 const peakDemandTime = ref('');
@@ -163,10 +172,13 @@ const loadRateList = ref() as any;
 const powActiveList = ref() as any;
 const powReactiveList = ref() as any;
 const selectedOption = ref('current');
-const location = ref(history?.state?.location);
-const busName = ref(history?.state?.busName);
-const roomName = ref(history?.state?.roomName);
-const devKey = ref(history?.state?.devKey);
+const location = ref(query.location);
+const busName = ref(query.busName);
+const roomName = ref(query.roomName);
+const devKey = ref(query.devKey);
+
+const typeRadioShow = ref("最大")
+const dataArr = ref([])
 
 const visContro = ref({
   gaugeVis : false,
@@ -193,13 +205,13 @@ const getFullTimeByDate = (date) => {
       (second > 9 ? second : ("0" + second));
 }
 const queryParamsSearch = reactive({
-  devKey : history?.state?.devKey as string | undefined,
+  devKey : query.devKey as string | undefined,
 })
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: history?.state?.devKey,
-  busId : history?.state?.busId,
+  devKey: query.devKey,
+  busId : query.busId,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -207,7 +219,7 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
-  timeGranularity: '近一小时',
+  timeGranularity: '近三天',
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
 }) as any
@@ -252,14 +264,192 @@ const getLoadRateList = async () =>{
 
 const getBusPowActiveList = async () =>{
     const data = await IndexApi.getBusPowActiveLine(queryParams);//oldtime newtime id
-    powActiveList.value = data;
+    dataArr.value = data
+
+    let itemType = typeRadioShow.value == "最小" ? '_min_' : (typeRadioShow.value == "最大" ? '_max_' : '_avg_')
+
+    let loadRateSeriesNames = ['A相负载率','B相负载率','C相负载率']
+    let powReactiveSeriesNames = ['Q','Qa','Qb','Qc']
+
+    if(queryParams.timeGranularity == '近一小时') {
+        powActiveList.value = JSON.parse(JSON.stringify(data))
+        powActiveList.value.series = data.series.map(item => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_active`]),
+        }))
+
+        loadRateList.value = JSON.parse(JSON.stringify(data))
+        loadRateList.value.series = data.series.slice(1).map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`load_rate`]),
+            name: loadRateSeriesNames[index],
+        }))
+
+        powReactiveList.value = JSON.parse(JSON.stringify(data))
+        powReactiveList.value.series = data.series.map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_reactive`]),
+            name: powReactiveSeriesNames[index],
+        }))
+    } else if(typeRadioShow.value == "平均") {
+        powActiveList.value = JSON.parse(JSON.stringify(data))
+        powActiveList.value.series = data.series.map(item => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_active${itemType}value`]),
+        }))
+
+        loadRateList.value = JSON.parse(JSON.stringify(data))
+        loadRateList.value.series = data.series.slice(1).map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`load_rate${itemType}value`]),
+            name: loadRateSeriesNames[index],
+        }))
+
+        powReactiveList.value = JSON.parse(JSON.stringify(data))
+        powReactiveList.value.series = data.series.map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_reactive${itemType}value`]),
+            name: powReactiveSeriesNames[index],
+        }))
+    } else {
+        powActiveList.value = JSON.parse(JSON.stringify(data))
+        powActiveList.value.series = data.series.map(item => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_active${itemType}value`]),
+            times: item.data.map(obj => obj[`pow_active${itemType}time`])
+        }))
+
+        loadRateList.value = JSON.parse(JSON.stringify(data))
+        loadRateList.value.series = data.series.slice(1).map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`load_rate${itemType}value`]),
+            name: loadRateSeriesNames[index],
+            times: item.data.map(obj => obj[`load_rate${itemType}time`])
+        }))
+
+        powReactiveList.value = JSON.parse(JSON.stringify(data))
+        powReactiveList.value.series = data.series.map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_reactive${itemType}value`]),
+            name: powReactiveSeriesNames[index],
+            times: item.data.map(obj => obj[`pow_reactive${itemType}time`])
+        }))
+    }
+    
+
+    console.log(powActiveList.value,loadRateList.value,powReactiveList.value)
 
     if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
         visContro.value.powActiveVis = true;
     }else {
         visContro.value.powActiveVis = false;
     }
+
+    if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
+        visContro.value.loadRateVis = true;
+    }else {
+        visContro.value.loadRateVis = false;
+    }
+
+    if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
+        visContro.value.powReactiveVis = true;
+    }else {
+        visContro.value.powReactiveVis = false;
+    }
 }
+
+watch( ()=>typeRadioShow.value, async()=>{
+    let itemType = typeRadioShow.value == "最小" ? '_min_' : (typeRadioShow.value == "最大" ? '_max_' : '_avg_')
+
+    let loadRateSeriesNames = ['A相负载率','B相负载率','C相负载率']
+    let powReactiveSeriesNames = ['Q','Qa','Qb','Qc']
+
+    if(queryParams.timeGranularity == '近一小时') {
+        powActiveList.value = JSON.parse(JSON.stringify(dataArr.value))
+        powActiveList.value.series = dataArr.value.series.map(item => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_active`]),
+        }))
+
+        loadRateList.value = JSON.parse(JSON.stringify(dataArr.value))
+        loadRateList.value.series = dataArr.value.series.slice(1).map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`load_rate`]),
+            name: loadRateSeriesNames[index],
+        }))
+
+        powReactiveList.value = JSON.parse(JSON.stringify(dataArr.value))
+        powReactiveList.value.series = dataArr.value.series.map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_reactive`]),
+            name: powReactiveSeriesNames[index],
+        }))
+    } else if(typeRadioShow.value == "平均") {
+        powActiveList.value = JSON.parse(JSON.stringify(dataArr.value))
+        powActiveList.value.series = dataArr.value.series.map(item => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_active${itemType}value`]),
+        }))
+
+        loadRateList.value = JSON.parse(JSON.stringify(dataArr.value))
+        loadRateList.value.series = dataArr.value.series.slice(1).map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`load_rate${itemType}value`]),
+            name: loadRateSeriesNames[index],
+        }))
+
+        powReactiveList.value = JSON.parse(JSON.stringify(dataArr.value))
+        powReactiveList.value.series = dataArr.value.series.map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_reactive${itemType}value`]),
+            name: powReactiveSeriesNames[index],
+        }))
+    } else {
+        powActiveList.value = JSON.parse(JSON.stringify(dataArr.value))
+        powActiveList.value.series = dataArr.value.series.map(item => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_active${itemType}value`]),
+            times: item.data.map(obj => obj[`pow_active${itemType}time`])
+        }))
+
+        loadRateList.value = JSON.parse(JSON.stringify(dataArr.value))
+        loadRateList.value.series = dataArr.value.series.slice(1).map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`load_rate${itemType}value`]),
+            name: loadRateSeriesNames[index],
+            times: item.data.map(obj => obj[`load_rate${itemType}time`])
+        }))
+
+        powReactiveList.value = JSON.parse(JSON.stringify(dataArr.value))
+        powReactiveList.value.series = dataArr.value.series.map((item,index) => ({
+            ...item,
+            data: item.data.map(obj => obj[`pow_reactive${itemType}value`]),
+            name: powReactiveSeriesNames[index],
+            times: item.data.map(obj => obj[`pow_reactive${itemType}time`])
+        }))
+    }
+    
+
+    console.log(powActiveList.value,loadRateList.value,powReactiveList.value)
+
+    if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
+        visContro.value.powActiveVis = true;
+    }else {
+        visContro.value.powActiveVis = false;
+    }
+
+    if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
+        visContro.value.loadRateVis = true;
+    }else {
+        visContro.value.loadRateVis = false;
+    }
+
+    if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
+        visContro.value.powReactiveVis = true;
+    }else {
+        visContro.value.powReactiveVis = false;
+    }
+})
 
 const getBusIdAndLocation =async () => {
  try {
@@ -301,9 +491,9 @@ const getBusPowReactiveList = async () =>{
 const flashChartData = async () =>{
     await getRedisData();
     await getPeakDemand();
-    await getLoadRateList();
+    // await getLoadRateList();
     await getBusPowActiveList();
-    await getBusPowReactiveList();
+    // await getBusPowReactiveList();
 }
 
 const handleQuery = async () => {
@@ -313,7 +503,6 @@ const handleQuery = async () => {
 }
 
 const changeTime = async (data) => {
-    console.log('changeTime',data);
     queryParams.timeGranularity = data;   
     handleQuery();
 }
@@ -372,11 +561,12 @@ onMounted(async () => {
   // await getDetailData();
   // await getLineChartData();
   devKeyList.value = await loadAll();
+  await getBusIdAndLocation()
   await getRedisData();
   await getPeakDemand();
-  await getLoadRateList();
+//   await getLoadRateList();
   await getBusPowActiveList();
-  await getBusPowReactiveList();
+//   await getBusPowReactiveList();
   flashListTimer.value = setInterval((getRedisData), 5000);
   // initChart1();
   // initChart2();

@@ -7,7 +7,7 @@ import 'echarts'
 import { reactive, watch, defineProps, onUnmounted } from 'vue';
 const props = defineProps({
   loadFactor: {
-    type: Number,
+    type: Object as () => { ua: number; ub: number; uc: number; ia?: number; ib?: number; ic?: number },
     required: true
   },
   height: {
@@ -19,35 +19,8 @@ const props = defineProps({
 })
 console.log('loadFactor',props.loadFactor)
 
-const gaugeData = [
-  {
-    value: props.loadFactor.totalPowApparent.toFixed(3),
-    itemStyle: { color: '#C8603A' },
-    detail: {
-      valueAnimation: true,
-      offsetCenter: ['0%', '-20%']
-    }
-  },
-  {
-    value: props.loadFactor.totalPowActive.toFixed(3),
-    itemStyle: { color: '#AD3762' },
-    detail: {
-      valueAnimation: true,
-      offsetCenter: ['0%', '10%']
-    }
-  },
-  {
-    value: props.loadFactor.totalPowReactive.toFixed(3),
-    itemStyle: { color: '#E5B849' },
-    detail: {
-      valueAnimation: true,
-      offsetCenter: ['0%', '40%']
-    }
-  }
-];
-
 // 设置饼图的选项
-const echartsOption = reactive({
+const echartsOption = computed(() => ({
   series: [
     {
       type: 'gauge',
@@ -83,7 +56,32 @@ const echartsOption = reactive({
         show: false,
         distance: 50
       },
-      data: gaugeData,
+      data: [
+        {
+          value: props.loadFactor.totalPowApparent.toFixed(3),
+          itemStyle: { color: '#C8603A' },
+          detail: {
+            valueAnimation: true,
+            offsetCenter: ['0%', '-20%']
+          }
+        },
+        {
+          value: props.loadFactor.totalPowActive.toFixed(3),
+          itemStyle: { color: '#AD3762' },
+          detail: {
+            valueAnimation: true,
+            offsetCenter: ['0%', '10%']
+          }
+        },
+        {
+          value: props.loadFactor.totalPowReactive.toFixed(3),
+          itemStyle: { color: '#E5B849' },
+          detail: {
+            valueAnimation: true,
+            offsetCenter: ['0%', '40%']
+          }
+        }
+      ],
       max: 1000, // 设置最大值为1000
       title: {
         fontSize: 14
@@ -100,15 +98,11 @@ const echartsOption = reactive({
       }
     }
   ]
-});;
+}));
 
 onUnmounted(() => {
   console.log('onUnmounted******')
 })
-
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data[0].value = newVal;
-});
 
 </script>
 

@@ -67,9 +67,12 @@ public interface PDUDeviceService {
 
     PduBalanceDeatilRes getPDUDeviceDetail(String key);
 
-    List<PduTrendVO> getPudBalanceTrend(Integer pduId);
+    List<PduTrendVO> getPudBalanceTrend(Integer pduId, Integer timeType);
 
     PduDeviceCountResVO getPDUDeviceCount();
 
     BalancedDistributionStatisticsVO getBalancedDistribution();
+
+    Map<String, String> setLocation(List<String> collect1);
+
 }

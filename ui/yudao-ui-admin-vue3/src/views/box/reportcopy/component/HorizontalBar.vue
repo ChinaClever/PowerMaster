@@ -63,6 +63,16 @@ const echartsOption = computed(() => ({
     type: 'category',
     data: time.value
   },
+  tooltip: { trigger: 'axis',
+    formatter: function(params) {
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(3) + 'kWh' ;
+        result += '<br>';
+      }
+      return result;
+    } 
+  },
   yAxis: {
     type: 'value'
   },

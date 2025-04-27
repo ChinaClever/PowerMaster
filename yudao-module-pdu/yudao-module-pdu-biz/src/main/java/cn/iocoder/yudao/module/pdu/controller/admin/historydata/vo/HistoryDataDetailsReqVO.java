@@ -28,4 +28,6 @@ public class HistoryDataDetailsReqVO extends PageParam {
     private String[] timeRange;
 
     private String nowAddress;
+
+    private String pduKey;
 }

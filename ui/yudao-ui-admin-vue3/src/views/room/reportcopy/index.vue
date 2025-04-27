@@ -4,8 +4,8 @@
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>{{ location}}</div>
+          <div class="name">机房</div>
+          <div >{{ location}}</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -56,7 +56,7 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机房Id" prop="ipAddr" >
+        <!-- <el-form-item label="机房Id" prop="ipAddr" >
           <el-autocomplete
             v-model="queryParams.id"
             :fetch-suggestions="querySearch"
@@ -65,7 +65,7 @@
             placeholder="请输入id"
             @select="handleQuery"
           />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
@@ -89,7 +89,7 @@
           
           
         </el-form-item>
-        <el-form-item>
+        <el-form-item style="position: absolute;left: 23%;">
           <el-date-picker
             v-if="switchValue == 0"
             v-model="queryParams.oldTime"
@@ -120,7 +120,7 @@
             class="!w-200px"
           />
         </el-form-item>
-        <el-form-item>
+        <el-form-item style="position: absolute;left: 39%;">
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <!-- <el-text size="large">
@@ -218,7 +218,7 @@
               总平均功率曲线
             </div>
             <p class="paragraph">本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.ApowVis">
@@ -226,7 +226,7 @@
               A路平均功率曲线
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kW， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kW， 发生时间{{powData.AactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="aLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.BpowVis">
@@ -234,7 +234,7 @@
               B路平均功率曲线
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kW， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kW， 发生时间{{powData.BactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="bLineList"/>
           </div>
           <!-- <div class="pageBox" v-if="visControll.outletVis">
@@ -355,7 +355,6 @@ const handleDayPick = () => {
     queryParams.oldTime = queryParams.timeArr[0];
     queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
   }
-  
 }
 
 const handleMonthPick = () => {
@@ -370,7 +369,6 @@ const handleMonthPick = () => {
   }else {
     queryParams.newTime = null;
   }
-  
 } 
 
 const getFullTimeByDate = (date) => {
@@ -427,18 +425,24 @@ const serverRoomArr =  ref([]) as any
 
 const getNavList = async() => {
   const res = await IndexApi.getRoomList()
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
-  }
+  // console.log("res="+JSON. res);
+  serverRoomArr.value = res.map(res => {
+    return {
+      id:res.id,
+      name:res.roomName
+    }
+  });
+  // if (res && res.length > 0) {
+  //   const room = res[0]
+  //   const keys = [] as string[]
+  //   room.children.forEach(child => {
+  //     if(child.children.length > 0) {
+  //       child.children.forEach(son => {
+  //         keys.push(son.id + '-' + son.type)
+  //       })
+  //     }
+  //   })
+  // }
 }
 
 const handleClick = (row) => {
@@ -564,6 +568,9 @@ const itemStyle = ref({
   }  
 }); 
 const getList = async () => {
+  if(queryParams.id == null){
+    return;
+  }
   loading.value = true
   
   await handleConsumeQuery();
@@ -688,7 +695,6 @@ const queryFormRef = ref() // 搜索的表单
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-
   if(queryParams.id){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();

@@ -6,13 +6,7 @@
 import { ref } from 'vue';
 
 const props = defineProps({
-  curChartData: {
-    type: Array,
-    required: true,
-  },
-  timeRadio: {
-    required: true,
-  },
+  curChartData: Object,
 });
 
 const L1Data = ref([]);
@@ -23,16 +17,31 @@ const L5Data = ref([]);
 const L6Data = ref([]);
 const createTimeData = ref([]);
 
-
-if (props.curChartData != null) {
+console.log(props.curChartData?.aPathVc,!props.curChartData?.aPathVc,props.curChartData?.bPathVc)
+if(!props.curChartData?.aPathVc || !props.curChartData?.aPathVc.length) {
+  L1Data.value = 0
+  L2Data.value = 0
+  L3Data.value = 0
+}
+else if (props.curChartData?.aPathVc) {
   L1Data.value = props.curChartData.aPathVc.map((item) => item.curValue);
-  L2Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
-  L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuelll);
-  L4Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
-  L5Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
-  L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuelll);
+  L2Data.value = props.curChartData.aPathVc.map((item) => item.curValuell || 0);
+  L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuelll || 0);
   createTimeData.value = props.curChartData.aPathVc.map((item) => item.createTime);
 }
+
+if(!props.curChartData?.bPathVc || !props.curChartData?.bPathVc.length) {
+  L4Data.value = 0
+  L5Data.value = 0
+  L6Data.value = 0
+}
+else if (props.curChartData?.bPathVc) {
+  L4Data.value = props.curChartData.bPathVc.map((item) => item.curValue || 0);
+  L5Data.value = props.curChartData.bPathVc.map((item) => item.curValuell || 0);
+  L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuelll || 0);
+  createTimeData.value = props.curChartData.bPathVc.map((item) => item.createTime);
+}
+console.log(L1Data.value,L2Data.value,L3Data.value,L4Data.value)
 
 const chartOptions = ref({
   title: { text: '' },
@@ -79,13 +88,29 @@ watch(
   () => props.curChartData,
   (newData, oldData) => {
     if (newData != null) {
-      L1Data.value = props.curChartData.aPathVc.map((item) => item.curValue);
-      L2Data.value = props.curChartData.aPathVc.map((item) => item.curValuell);
-      L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuelll);
-      L4Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
-      L5Data.value = props.curChartData.bPathVc.map((item) => item.curValuell);
-      L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuelll);
-      createTimeData.value = props.curChartData.aPathVc.map((item) => item.createTime);
+      if(!props.curChartData?.aPathVc || !props.curChartData?.aPathVc.length) {
+        L1Data.value = 0
+        L2Data.value = 0
+        L3Data.value = 0
+      }
+      else if (props.curChartData?.aPathVc) {
+        L1Data.value = props.curChartData.aPathVc.map((item) => item.curValue);
+        L2Data.value = props.curChartData.aPathVc.map((item) => item.curValuell || 0);
+        L3Data.value = props.curChartData.aPathVc.map((item) => item.curValuelll || 0);
+        createTimeData.value = props.curChartData.aPathVc.map((item) => item.createTime);
+      }
+
+      if(!props.curChartData?.bPathVc || !props.curChartData?.bPathVc.length) {
+        L4Data.value = 0
+        L5Data.value = 0
+        L6Data.value = 0
+      }
+      else if (props.curChartData?.bPathVc) {
+        L4Data.value = props.curChartData.bPathVc.map((item) => item.curValue);
+        L5Data.value = props.curChartData.bPathVc.map((item) => item.curValuell || 0);
+        L6Data.value = props.curChartData.bPathVc.map((item) => item.curValuelll || 0);
+        createTimeData.value = props.curChartData.bPathVc.map((item) => item.createTime);
+      }
       chartOptions.value = {
         ...chartOptions.value,
         xAxis: { ...chartOptions.value.xAxis, data: createTimeData.value },

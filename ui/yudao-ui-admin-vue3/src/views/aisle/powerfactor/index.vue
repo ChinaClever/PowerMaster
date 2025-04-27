@@ -2,10 +2,18 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="功率因素">
     <template #NavInfo>
       <div>
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
-        </div>
-        <div class="line"></div>
+        </div> -->
+        <!-- <div class="line"> -->
+          <Echart :height="150" :width="200" :options="echartsOption" />
+          <div style="position: relative; text-align:center">最大功率因素：{{max!=null?max.toFixed(2):0.00}}</div>
+          <div style="position: relative; text-align:center">最小功率因素：{{min!=null?min.toFixed(2):0.00}}</div>
+          <!-- <div>用能最大柜列</div>
+          <div>昨日：{{ yesterdayMaxEq==null?"无数据":yesterdayMaxEq }}</div>
+          <div>上周：{{ lastWeekMaxEq==null?"无数据":lastWeekMaxEq }}</div>
+          <div>上月：{{ lastMonthMaxEq==null?"无数据":lastMonthMaxEq }}</div> -->
+        <!-- </div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -45,21 +53,37 @@
         label-width="68px"                          
       >
         <el-form-item >
+          <div class="statusColor" v-show="switchValue == 0 ">
+            <div style="background-color: rgb(255, 110, 118)">功率因数&lt;0.25</div> 
+            <div style="background-color: rgb(253, 221, 96)">0.25&#8804;功率因数&lt;0.50</div>
+            <div style="background-color: rgb(88, 217, 249)">0.50&#8804;功率因数&lt;0.75</div> 
+            <div style="background-color: rgb(124, 255, 178)">0.75&#8804;功率因数</div>
+          </div>
+        </el-form-item>
+        <!-- <el-form-item style="position: relative;">
           <el-checkbox-group  v-model="queryParams.status">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="网络地址" prop="devKey">
+        </el-form-item> -->
+        <!-- <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
             clearable
             class="!w-200px"
             placeholder="请输入网络地址"
-            @select="handleQuery"
+            @select="handleQuery"/>
+        </el-form-item> -->
+        <el-form-item label="柜列名" prop="name" :style="{position:'relative',left:nameLeft+'px'}">
+          <el-input
+            v-model="queryParams.name"
+            placeholder="请输入柜列名"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-240px"
           />
         </el-form-item>
-        <el-form-item>
+        <el-form-item :style="{position: 'relative', left: buttonLeft+'px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -81,32 +105,35 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="if(switchValue==3){pageSizeArr=[24,36,48];queryParams.pageSize=24;queryParams.pageNo=1;switchValue = 0;getList();nameLeft=-65;buttonLeft=-110}" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="if(switchValue==0){pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize=15;queryParams.pageNo=1;switchValue = 3;getList();nameLeft=-255;buttonLeft=-485}" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table style="height: calc(100vh - 215px);" v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :header-cell-style="headerCellStyle" :border="true">
+        <el-table-column width="100" label="序号" align="center">
+            <template #default="scope">
+              {{ (queryParams.pageNo - 1) * queryParams.pageSize + scope.$index + 1 }}
+            </template>  
+          </el-table-column>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="总功率因素" align="center" prop="pfTotal" width="130px" >
+        <el-table-column label="总功率因素" align="center" prop="pfTotal" width="160px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.apfA != null">
               {{ scope.row.apfA }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="A路功率因素" align="center" prop="pfA" width="130px" >
+        <el-table-column label="A路功率因素" align="center" prop="pfA" width="160px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bpfA != null">
               {{ scope.row.bpfA }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="B路功率因素" align="center" prop="pfB" width="130px" >
+        <el-table-column label="B路功率因素" align="center" prop="pfB" width="160px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cpfA != null">
               {{ scope.row.cpfA }}
@@ -115,15 +142,14 @@
         </el-table-column>
         
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="150">
           <template #default="scope">
             <el-button
-              link
               type="primary"
               @click="openPFDetail(scope.row)"
               v-if=" scope.row.pfTotal != null"
             >
-            设备详情
+            详情
             </el-button>
             <el-button
               link
@@ -136,19 +162,21 @@
           </template>
         </el-table-column>
       </el-table>    
-
-      <div v-show="switchValue == 0  && valueMode == 0 && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0  && valueMode == 0 && list.length > 0" class="arrayContainer" v-loading="loading">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" v-if=" item.pfTotal != null ">
-              功率因素                
+              <div>{{item.pfTotal}}</div>
+              总功率因素           
             </div>
-            <div class="info" >                  
-              <div  v-if="item.pfTotal != null">总 :{{item.pfTotal}}</div>
+            <!-- <div class="info" >                  
               <div  v-if="item.pfA != null">A路:{{item.pfA}}</div>
               <div  v-if="item.pfB != null">B路:{{item.pfB}}</div>
-            </div>          
+            </div>           -->
+            <div class="zu" v-if=" item.pfTotal != null">
+              <Bar :width="65" :height="100" :max="{L1:item.pfA,L2:item.pfB}" />
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
@@ -160,61 +188,76 @@
         </div>
       </div>
 
-      <Pagination
+      <!-- <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
-      />
+      /> -->
+      <Pagination
+          :total="total"
+          :page-size="queryParams.pageSize"
+          :page-sizes="pageSizeArr"
+          :current-page="queryParams.pageNo"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+
       <template v-if="list.length == 0 && switchValue != 3">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
-        <el-row>
-          <el-tag>{{ location }}</el-tag>
-          <div >
-            日期:
-            <el-date-picker
-              v-model="detailQueryParams.oldTime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              type="date"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-160px"
-            />
-          </div>
-
-          <el-button 
-            @click="subtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &lt;前一日
-          </el-button>
-          <el-button 
-            @click="addtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &gt;后一日
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ?  'primary' : ``"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type=" switchChartOrTable == 1 ?  'primary' : ``"
-          >
-            数据
-          </el-button>
-
+      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" >
+        <el-row style="position: absolute;top: 20px; left: 20%; vertical-align: middle;">
+          <span style="vertical-align:middle; position: relative;top: 5px; right: 120px;">机房：{{ location.split("-")[0] }}<span  v-for="n in Array(10)" :key="n">&nbsp;</span>柜列：{{location.split("-")[1]}}</span>
+          <span style="position: relative;left: 220px;">
+            <div style="vertical-align:middle;display: inline-block;">
+              日期:
+              <el-date-picker
+                :clearable="false"
+                v-model="detailQueryParams.oldTime"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                type="date"
+                :disabled-date="disabledDate"
+                @change="handleDayPick"
+                class="!w-160px"
+              />
+            </div>
+            <el-button 
+              @click="subtractOneDay();handleDayPick()" 
+              :type=" 'primary'"
+            >
+              &lt;前一日
+            </el-button>
+            <el-button 
+              @click="addtractOneDay();handleDayPick()" 
+              :type=" 'primary'"
+            >
+              &gt;后一日
+            </el-button>
+            <el-button 
+              @click="switchChartOrTable = 0" 
+              :type="switchChartOrTable == 0 ?  'primary' : ``"
+            >
+              图表
+            </el-button>
+            <el-button 
+              @click="switchChartOrTable = 1" 
+              :type=" switchChartOrTable == 1 ?  'primary' : ``"
+            >
+              数据
+            </el-button>
+            <el-button 
+            @click="exportExcel()"
+            v-show="switchChartOrTable == 1">
+              导出
+            </el-button>
+          </span>
         </el-row>
         <br/>
         <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
-        <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+        <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" style="width: 100%;height:58vh;overflow-y:auto;" >
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="总功率因素" align="center" prop="factorTotalAvgValue" />
           <el-table-column label="A路功率因素" align="center" prop="factorAAvgValue" />
@@ -237,6 +280,7 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
+import Bar from "./Bar.vue"
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -251,8 +295,10 @@ const switchValue = ref(0)
 const valueMode = ref(0)
 const switchChartOrTable = ref(0)
 const detailVis = ref(false);
-
-
+const nameLeft=ref(-65)
+const buttonLeft=ref(-110)
+const min=ref()
+const max=ref()
 const pfESList = ref({}) as any
 const pfTableList = ref([]) as any
 const devKeyList = ref([])
@@ -402,6 +448,7 @@ const queryParams = reactive({
   status:[],
   cabinetIds : [],
   timeType : 0,
+  name: undefined
 })as any
 
 const detailQueryParams = reactive({
@@ -556,6 +603,24 @@ const handleExport = async () => {
   }
 }
 
+//导出excel
+async function exportExcel(){
+  try{
+    await message.exportConfirm()
+    exportLoading.value = true
+    const data=await IndexApi.getAislePFDetailExcel({
+      ...detailQueryParams
+    })
+    download.excel(data, '功率因素详情.xls');
+  }
+  catch(error){
+    console.error('导出失败：', error);
+  }
+  finally{
+    exportLoading.value = false
+  } 
+}
+
 const getFullTimeByDate = (date) => {
   var year = date.getFullYear();//年
   var month = date.getMonth();//月
@@ -571,9 +636,99 @@ const getFullTimeByDate = (date) => {
       (second > 9 ? second : ("0" + second));
 }
 
+function headerCellStyle() {
+    return {
+      backgroundColor: '#eee', // 表头背景颜色
+    };
+  }
+
+const echartsOption = computed(() => ({
+  series: [
+    {
+      type: 'gauge',
+      startAngle: 180,
+      endAngle: 0,
+      center: ['50%', '75%'],
+      radius: '90%',
+      min: 0,
+      max: 1,
+      splitNumber: 8,
+      axisLine: {
+        lineStyle: {
+          width: 6,
+          color: [
+            [0.25, '#FF6E76'],
+            [0.5, '#FDDD60'],
+            [0.75, '#58D9F9'],
+            [1, '#7CFFB2']
+          ]
+        }
+      },
+      pointer: {
+        icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+        length: '20%',
+        width: 20,
+        offsetCenter: [0, '-60%'],
+        itemStyle: {
+          color: 'auto'
+        }
+      },
+      axisTick: {
+        length: 12,
+        lineStyle: {
+          color: 'auto',
+          width: 2
+        }
+      },
+      splitLine: {
+        length: 20,
+        lineStyle: {
+          color: 'auto',
+          width: 5
+        }
+      },
+      axisLabel: {
+        color: '#464646',
+        fontSize: 25,
+        distance: -60,
+        rotate: 'tangential',
+        formatter: function (value) {
+          if (value === 0.875) {
+          } else if (value === 0.625) {
+          } else if (value === 0.375) {
+          } else if (value === 0.125) {
+          }
+          return '';
+        }
+      },
+      title: {
+        offsetCenter: [0, '-10%'],
+        fontSize: 20
+      },
+      detail: {
+        fontSize: 25,
+        offsetCenter: [0, '-10%'],
+        valueAnimation: true,
+        formatter: function (value) {
+          return Math.round(value * 100) + '';
+        },
+        color: 'inherit'
+      },
+      data: [
+        {
+          value: max.value!=null?max.value:0
+        }
+      ]
+    }
+  ]
+}));
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  const result=await IndexApi.getMaxAndMinPowFac();
+  console.log(result.min);
+  min.value=result.min.factor_total;
+  max.value=result.max.factor_total;
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
@@ -601,6 +756,16 @@ onActivated(() => {
     flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
+
+function handleSizeChange(val) {
+  queryParams.pageSize = val
+  queryParams.pageNo = 1
+  getList()
+}
+function handleCurrentChange(val) {
+  queryParams.pageNo = val
+  getList()
+}
 </script>
 
 <style scoped lang="scss">
@@ -866,9 +1031,13 @@ onActivated(() => {
 }
 
 .arrayContainer {
-  display: flex;
+  display: inline-block;
   flex-wrap: wrap;
+  height: calc(100vh - 215px);
+  width: 100%;
   .arrayItem {
+    display: inline-block;
+    vertical-align: top;
     width: 25%;
     height: 140px;
     font-size: 13px;
@@ -886,10 +1055,13 @@ onActivated(() => {
         margin: 0 35px 0 13px;
       }
       .icon {
+        div{
+          font-size: large;
+        }
         width: 74px;
         height: 30px;
         margin: 0 28px;
-        font-size: large;
+        font-size: small;
         text-align: center;
       }
     }
@@ -943,5 +1115,20 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.zu{
+  position: absolute;
+  right: 30%;
+  bottom: -5px;
+}
+.statusColor{
+  div{
+    display: inline-block;
+    font-size: small;
+    margin-right: 10px;
+    width: 130px;
+    text-align: center;
+    border-radius: 7px;
+  }
 }
 </style>

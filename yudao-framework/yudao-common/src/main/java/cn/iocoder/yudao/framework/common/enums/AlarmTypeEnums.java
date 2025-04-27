@@ -12,9 +12,15 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AlarmTypeEnums {
-    STATUS(1, "状态告警"),
-    OFF_LINE(2, "离线告警"),
-    ELE(3, "用能告警"),
+    PDU_OFF_LINE(1, "PDU离线"),
+    PDU_ALARM(2, "PDU告警"),
+    PDU_WARNING(3, "PDU预警"),
+    BUS_ALARM(4, "母线告警"),
+    BUS_OFF_LINE(5, "母线离线"),
+    CABINET_CAPACITY(6, "机柜容量"),
+    STATUS(7, "状态告警"),
+    OFF_LINE(8, "离线告警"),
+    ELE(9, "用能告警"),
     ;
 
     /**
@@ -31,6 +37,16 @@ public enum AlarmTypeEnums {
         for (AlarmTypeEnums indexEnum : enums){
             if (indexEnum.type.equals(type)){
                 return indexEnum.getName();
+            }
+        }
+        return null;
+    }
+
+    public static Integer getStatusByName(String name) {
+        AlarmTypeEnums[] enums = AlarmTypeEnums.values();
+        for (AlarmTypeEnums indexEnum : enums){
+            if (indexEnum.getName().equals(name)){
+                return indexEnum.getType();
             }
         }
         return null;

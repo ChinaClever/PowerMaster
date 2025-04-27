@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.bus.controller.admin.boxindex;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -90,7 +91,7 @@ public class BoxIndexController {
     }
     @PostMapping("/line/max")
     @Operation(summary = "获得始端箱需量最大")
-    public CommonResult<LineBoxMaxResVO> getBoxLineMax(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+    public CommonResult<LineBoxMaxResVO> getBoxLineMax(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getBoxLineMax(pageReqVO));
     }
     @Operation(summary = "插接箱需量ES数据图表")
@@ -153,8 +154,9 @@ public class BoxIndexController {
     @PostMapping("/tem/detailExcel")
     public void getBoxTemDetailExcel(@RequestBody BoxIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
         Map busTemDetail = indexService.getBoxTemDetail(pageReqVO);
-        List<BusTemTableRes> tableList  = (List<BusTemTableRes>) busTemDetail.get("table");
-        ExcelUtils.write(response, "插接箱温度详情.xlsx", "数据", BusTemTableRes.class,tableList);
+        List<BoxTemHourDo> tableList  = (List<BoxTemHourDo>) busTemDetail.get("table");
+        List<BusTemTableRes> list = BeanUtils.toBean(tableList, BusTemTableRes.class);
+        ExcelUtils.write(response, "插接箱温度详情.xlsx", "数据", BusTemTableRes.class,list);
     }
 
     @PostMapping("/boxpfpage")
@@ -204,6 +206,14 @@ public class BoxIndexController {
     public CommonResult<BoxHarmonicLineResVO> getHarmonicLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BoxHarmonicLineResVO pageResult = indexService.getHarmonicLine(pageReqVO);
         return success(pageResult);
+    }
+
+
+    @Operation(summary = "插接箱谐波监测ES数据图表-导出")
+    @PostMapping("/harmonic/lineExcel")
+    public void getHarmonicLineExcel(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        indexService.getHarmonicLineExcel(pageReqVO);
+
     }
 
     /**
@@ -287,7 +297,7 @@ public class BoxIndexController {
     @PostMapping("/balance/trend")
     @Operation(summary = "获得插接箱不平衡度详情图表")
     public CommonResult<List<BusTrendDTO>> getBoxBalanceTrend(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        List<BusTrendDTO> result = indexService.getBoxBalanceTrend(pageReqVO.getBoxId());
+        List<BusTrendDTO> result = indexService.getBoxBalanceTrend(pageReqVO.getBoxId(),pageReqVO.getTimeType());
         return success(result);
     }
 
