@@ -1,1 +1,0 @@
-import{x as s,dq as a,dr as c}from"./index-mcOGIq4g.js";const{t:m}=s();function i(r){if(r&&r instanceof Array&&r.length>0){const{wsCache:n}=a(),e=r,o="*:*:*";return!!n.get(c.USER).permissions.some(t=>o===t||e.includes(t))}return!1}export{i as c};
