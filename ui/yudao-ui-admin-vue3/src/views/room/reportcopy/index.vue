@@ -321,6 +321,10 @@ const createFilter = (query: string | number) => {
 };
 
 
+// 2025422
+
+// 2025422
+
 const disabledDate = (date) => {
   // 获取今天的日期
   const today = new Date();
@@ -576,23 +580,23 @@ const getList = async () => {
   await handleConsumeQuery();
   await handlePowQuery();
   await handleDetailQuery();
-  await handlePFLineQuery();
+  // await handlePFLineQuery();
 
   visControll.visAllReport = true;
   loading.value = false
 
 }
 
-const handlePFLineQuery = async () => {
-  const data = await IndexApi.getRoomPFLine(queryParams);
-  pfLineList.value = data.pfLineRes;
+// const handlePFLineQuery = async () => {
+//   const data = await IndexApi.getRoomPFLine(queryParams);
+//   pfLineList.value = data.pfLineRes;
   
-  if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
-    visControll.pfVis = true;
-  }else {
-    visControll.pfVis = false;
-  }
-}
+//   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
+//     visControll.pfVis = true;
+//   }else {
+//     visControll.pfVis = false;
+//   }
+// }
 
 
 const handlePowQuery = async () => {
