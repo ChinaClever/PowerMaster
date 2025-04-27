@@ -20,6 +20,7 @@ import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.*;
+import cn.iocoder.yudao.framework.common.entity.mysql.alarm.AlarmLogRecord;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
@@ -919,8 +920,7 @@ public class RoomServiceImpl implements RoomService {
                     continue;
                 }
                 JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
-//                dataDTO.setRoomLoadFactor(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_load_factor"), 2));
-//                dataDTO.setRoomPue(BigDemicalUtil.setScale(jsonObject.getBigDecimal("room_pue"), 2));
+
                 JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
                 JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
                 JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
@@ -963,7 +963,7 @@ public class RoomServiceImpl implements RoomService {
                     dataDTO.setPowerFactorB(pathB.getDouble("power_factor"));
                 }
                 List<AisleBar> barList = aisleBarMap.get(dataDTO.getId());
-                if (CollectionUtils.isEmpty(barList)){
+                if (CollectionUtils.isEmpty(barList)) {
                     continue;
                 }
                 for (AisleBar aisleBar : barList) {
@@ -973,7 +973,7 @@ public class RoomServiceImpl implements RoomService {
                     barVo.setBarId(Integer.parseInt(split[1]));
                     List<AisleBoxDTO> boxDTOList = new ArrayList<>();
                     List<AisleBox> boxList = aisleBoxMap.get(aisleBar.getId());
-                    if (CollectionUtils.isEmpty(boxList)){
+                    if (CollectionUtils.isEmpty(boxList)) {
                         continue;
                     }
                     for (AisleBox aisleBox : boxList) {
@@ -985,9 +985,9 @@ public class RoomServiceImpl implements RoomService {
                         boxDTOList.add(boxDTO);
                     }
                     barVo.setBoxList(boxDTOList);
-                    if (Objects.equals(aisleBar.getPath(),"A")){
+                    if (Objects.equals(aisleBar.getPath(), "A")) {
                         dataDTO.setBarA(barVo);
-                    }else {
+                    } else {
                         dataDTO.setBarB(barVo);
                     }
                 }
@@ -1133,7 +1133,7 @@ public class RoomServiceImpl implements RoomService {
             boxMap = cabinetBoxs.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
         }
         List<Integer> ids = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
-        List<RackIndex> rackIndices = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, ids).eq(RackIndex::getIsDelete,0));
+        List<RackIndex> rackIndices = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, ids).eq(RackIndex::getIsDelete, 0));
         if (!CollectionUtils.isEmpty(rackIndices)) {
             rackMap = rackIndices.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
         }
@@ -1142,6 +1142,12 @@ public class RoomServiceImpl implements RoomService {
                 .in(CabinetEnvSensor::getCabinetId, ids));
         if (!CollectionUtils.isEmpty(envs)) {
             envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
+        }
+        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
+                .eq(AlarmLogRecord::getAlarmStatus, 0));
+        Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+            alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
         }
         String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         String endTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
@@ -1156,7 +1162,7 @@ public class RoomServiceImpl implements RoomService {
                 Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getString("cabinet_key"), Function.identity()));
 
         for (RoomCabinetDTO iter : cabinetDTOList) {
-            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap,envMap);
+            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap, envMap,alarmMap);
         }
     }
 
@@ -1176,7 +1182,7 @@ public class RoomServiceImpl implements RoomService {
         }
 
         List<Integer> ids = cabinetDTOList.stream().map(RoomCabinetDTO::getId).collect(Collectors.toList());
-        List<RackIndex> rackIndices = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, ids).eq(RackIndex::getIsDelete,0));
+        List<RackIndex> rackIndices = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>().in(RackIndex::getCabinetId, ids).eq(RackIndex::getIsDelete, 0));
         if (!CollectionUtils.isEmpty(rackIndices)) {
             rackMap = rackIndices.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
         }
@@ -1186,6 +1192,13 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(envs)) {
             envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
         }
+        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
+                .eq(AlarmLogRecord::getAlarmStatus, 0));
+        Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+            alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
+        }
+
         String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         String endTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
         List<CabinetEqBaseDo> list = getDataKey(startTime, endTime, ids, CABINET_EQ_TOTAL_DAY, "cabinet_id", CabinetEqBaseDo.class);
@@ -1206,16 +1219,20 @@ public class RoomServiceImpl implements RoomService {
                 //纵向
                 iter.setIndex(iter.getYCoordinate() - dataDTO.getYCoordinate() + 1);
             }
-            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap, envMap);
+            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap, envMap, alarmMap);
         }
     }
 
     private static void extractedCabinetCommon(RoomCabinetDTO iter, Map<Integer, List<RackIndex>> rackMap, Map<Integer, CabinetPdu> pduMap,
                                                Map<Integer, CabinetBox> boxMap, Map<Integer, List<CabinetEqBaseDo>> eqMap, Map<String, Object> cabinetMap,
-                                               Map<Integer, List<CabinetEnvSensor>> envMap) {
+                                               Map<Integer, List<CabinetEnvSensor>> envMap, Map<Integer, List<AlarmLogRecord>> alarmMap) {
         List<RackIndex> rackIndices1 = rackMap.get(iter.getId());
         if (!CollectionUtils.isEmpty(rackIndices1)) {
             iter.setRackIndices(rackIndices1);
+        }
+        List<AlarmLogRecord> alarmLogRecords = alarmMap.get(iter.getId());
+        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+            iter.setAlarmLogRecords(alarmLogRecords);
         }
         List<CabinetEnvSensor> envSensorList = envMap.get(iter.getId());
         if (!CollectionUtils.isEmpty(envSensorList)) {
@@ -1250,7 +1267,7 @@ public class RoomServiceImpl implements RoomService {
 
                 if (!StringUtils.isBlank(cabinetBox.getBoxKeyA())) {
                     String[] keya = cabinetBox.getBoxKeyA().split(SPLIT_KEY);
-                    if (keya.length ==3) {
+                    if (keya.length == 3) {
                         iter.setBusIpA(keya[0]);
                         iter.setBarIdA(Integer.valueOf(keya[1]));
                         iter.setCasIdA(Integer.valueOf(keya[2]));
@@ -1260,7 +1277,7 @@ public class RoomServiceImpl implements RoomService {
                 }
                 if (!StringUtils.isBlank(cabinetBox.getBoxKeyB())) {
                     String[] keyb = cabinetBox.getBoxKeyB().split(SPLIT_KEY);
-                    if (keyb.length==3) {
+                    if (keyb.length == 3) {
                         iter.setBusIpB(keyb[0]);
                         iter.setBarIdB(Integer.valueOf(keyb[1]));
                         iter.setCasIdB(Integer.valueOf(keyb[2]));
@@ -1667,8 +1684,8 @@ public class RoomServiceImpl implements RoomService {
             }
         } else {
             Long count = roomIndexMapper.selectCount(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, vo.getRoomName()).eq(RoomIndex::getIsDelete, 0));
-            if (count>0){
-                BusinessAssert.error(10010,"当前机房名称已存在");
+            if (count > 0) {
+                BusinessAssert.error(10010, "当前机房名称已存在");
             }
             //新增
             int insert = roomIndexMapper.insert(index);
@@ -1743,45 +1760,45 @@ public class RoomServiceImpl implements RoomService {
                     int updateById = aisleIndexMapper.updateById(index);
                     if (updateById > 0) {
                         aisleCfgMapper.updateByAisleCfg(vo);
-                        if (!Objects.equals(aisleIndex.getXCoordinate(),index.getXCoordinate())||
-                                !Objects.equals(aisleIndex.getYCoordinate(),index.getYCoordinate())){
+                        if (!Objects.equals(aisleIndex.getXCoordinate(), index.getXCoordinate()) ||
+                                !Objects.equals(aisleIndex.getYCoordinate(), index.getYCoordinate())) {
                             List<CabinetIndex> cabinetList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                                    .eq(CabinetIndex::getAisleId, aisleIndex.getId()).eq(CabinetIndex::getIsDeleted,0));
+                                    .eq(CabinetIndex::getAisleId, aisleIndex.getId()).eq(CabinetIndex::getIsDeleted, 0));
                             List<Integer> cabinetIds = cabinetList.stream().map(CabinetIndex::getId).distinct().collect(Collectors.toList());
                             List<CabinetCfg> cabinetCfgs = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>().in(CabinetCfg::getCabinetId, cabinetIds));
-                            Boolean flag = Objects.equals(aisleIndex.getDirection(),index.getDirection());
+                            Boolean flag = Objects.equals(aisleIndex.getDirection(), index.getDirection());
                             for (CabinetCfg cabinetCfg : cabinetCfgs) {
-                                if (flag){
-                                    if (Objects.equals(index.getDirection(),"x")){
+                                if (flag) {
+                                    if (Objects.equals(index.getDirection(), "x")) {
                                         cabinetCfg.setYCoordinate(index.getYCoordinate());
                                         int i = index.getXCoordinate() - aisleIndex.getXCoordinate();
-                                        if (i>0){
-                                           cabinetCfg.setXCoordinate(cabinetCfg.getXCoordinate() + Math.abs(i));
-                                        }else {
+                                        if (i > 0) {
+                                            cabinetCfg.setXCoordinate(cabinetCfg.getXCoordinate() + Math.abs(i));
+                                        } else {
                                             cabinetCfg.setXCoordinate(cabinetCfg.getXCoordinate() - Math.abs(i));
                                         }
-                                    }else {
+                                    } else {
                                         cabinetCfg.setXCoordinate(index.getXCoordinate());
                                         int i = index.getYCoordinate() - aisleIndex.getYCoordinate();
-                                        if (i>0){
+                                        if (i > 0) {
                                             cabinetCfg.setYCoordinate(cabinetCfg.getYCoordinate() + Math.abs(i));
-                                        }else {
+                                        } else {
                                             cabinetCfg.setYCoordinate(cabinetCfg.getYCoordinate() + Math.abs(i));
                                         }
                                     }
-                                }else {
-                                    if (Objects.equals(index.getDirection(),"x")){
+                                } else {
+                                    if (Objects.equals(index.getDirection(), "x")) {
                                         int i = index.getXCoordinate() - aisleIndex.getYCoordinate();
-                                        if (i>0){
+                                        if (i > 0) {
                                             cabinetCfg.setXCoordinate(cabinetCfg.getXCoordinate() - Math.abs(i));
-                                        }else {
+                                        } else {
                                             cabinetCfg.setXCoordinate(cabinetCfg.getXCoordinate() + Math.abs(i));
                                         }
-                                    }else {
+                                    } else {
                                         int i = index.getYCoordinate() - aisleIndex.getXCoordinate();
-                                        if (i>0){
+                                        if (i > 0) {
                                             cabinetCfg.setYCoordinate(cabinetCfg.getYCoordinate() - Math.abs(i));
-                                        }else {
+                                        } else {
                                             cabinetCfg.setYCoordinate(cabinetCfg.getYCoordinate() + Math.abs(i));
                                         }
                                     }
@@ -1913,8 +1930,8 @@ public class RoomServiceImpl implements RoomService {
         try {
             RoomIndex vo = roomIndexMapper.selectById(id);
             Long count = roomIndexMapper.selectCount(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, vo.getRoomName()).eq(RoomIndex::getIsDelete, 0));
-            if (count>0){
-                BusinessAssert.error(10010,"当前机房名称已存在");
+            if (count > 0) {
+                BusinessAssert.error(10010, "当前机房名称已存在");
             }
 
             int affectedRows = roomIndexMapper.restoreByDeleteRoom(id);
@@ -1962,7 +1979,7 @@ public class RoomServiceImpl implements RoomService {
 
 
     public void getRoomListRedis(List<RoomIndexAddrResVO> bean) {
-        if (CollectionUtils.isEmpty(bean)){
+        if (CollectionUtils.isEmpty(bean)) {
             return;
         }
         ValueOperations ops = redisTemplate.opsForValue();
@@ -1983,7 +2000,7 @@ public class RoomServiceImpl implements RoomService {
         List<Integer> ids = bean.stream().map(RoomIndexAddrResVO::getId).collect(Collectors.toList());
 
         List<Map<String, Object>> maps = alarmLogRecordDoMapper.queryCount(ids);
-        Map<Integer, Map<String, Object>> alarmCountMap = maps.stream().collect(Collectors.toMap(i -> (Integer)i.get("roomId"), Function.identity()));
+        Map<Integer, Map<String, Object>> alarmCountMap = maps.stream().collect(Collectors.toMap(i -> (Integer) i.get("roomId"), Function.identity()));
         //柜列
         LambdaQueryWrapper<AisleIndex> queryWrapper = new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getRoomId, ids).eq(AisleIndex::getIsDelete, 0);
         List<AisleIndex> aisleIndices = aisleIndexMapper.selectList(queryWrapper);
@@ -2004,7 +2021,7 @@ public class RoomServiceImpl implements RoomService {
         for (RoomIndexAddrResVO i : bean) {
             i.setFlagType(true);
             Map<String, Object> map = alarmCountMap.get(i.getId());
-            if (Objects.nonNull(map)){
+            if (Objects.nonNull(map)) {
                 Long alarmStatus = (Long) map.get("alarmStatus");
                 i.setAlarmCount(alarmStatus.intValue());
             }
@@ -2087,11 +2104,11 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName) {
         LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(StringUtils.isNotEmpty(addr),RoomIndex::getAddr,addr)
-                .eq(StringUtils.isNotEmpty(roomName),RoomIndex::getRoomName,roomName)
-                .eq(RoomIndex::getIsDelete,0).orderByAsc(RoomIndex::getAddr);
+        queryWrapper.eq(StringUtils.isNotEmpty(addr), RoomIndex::getAddr, addr)
+                .eq(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName)
+                .eq(RoomIndex::getIsDelete, 0).orderByAsc(RoomIndex::getAddr);
         List<RoomIndex> list = roomIndexMapper.selectList(queryWrapper);
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return null;
         }
         List<RoomIndexAddrResVO> bean = BeanUtils.toBean(list, RoomIndexAddrResVO.class);
@@ -2103,35 +2120,43 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public Boolean findAreaById(Integer xLength, Integer yLength, Integer id) {
-        int count = aisleIndexMapper.findAreaById(xLength,yLength,id);
-        int cabinetCount = cabinetIndexMapper.findAreaById(xLength,yLength,id);
-        return count+cabinetCount>0;
+        int count = aisleIndexMapper.findAreaById(xLength, yLength, id);
+        int cabinetCount = cabinetIndexMapper.findAreaById(xLength, yLength, id);
+        return count + cabinetCount > 0;
     }
 
     @Override
     public Boolean findAddAisleVerify(AisleSaveVo vo) {
-        if (Objects.nonNull(vo.getAisleName()) && Objects.isNull(vo.getId())){
+        if (Objects.nonNull(vo.getAisleName()) && Objects.isNull(vo.getId())) {
             long count = aisleIndexMapper.selectCount(new LambdaQueryWrapper<AisleIndex>()
-                    .eq(AisleIndex::getAisleName, vo.getAisleName())
+                    .eq(AisleIndex::getAisleName, vo.getAisleName()).eq(AisleIndex::getRoomId, vo.getRoomId())
                     .eq(AisleIndex::getIsDelete, 0));
-            if (count>0l){
-                BusinessAssert.error(7013,"柜列名称重复");
+            if (count > 0l) {
+                BusinessAssert.error(7013, "柜列名称重复");
             }
         }
+        RoomIndex roomIndex = roomIndexMapper.selectById(vo.getRoomId());
         int count;
         int cabinetCount;
-        if (Objects.equals(vo.getDirection(),"x")){
+        if (Objects.equals(vo.getDirection(), "x")) {
+            if (vo.getXCoordinate() + vo.getAisleLength() - 1 > roomIndex.getXLength() || vo.getYCoordinate() + 1 > roomIndex.getYLength()) {
+                BusinessAssert.error(7014, "柜列超过机房范围");
+            }
             count = aisleIndexMapper.findAddAisleVerifyx(vo);
-        }else {
+        } else {
+            if (vo.getYCoordinate() + vo.getAisleLength() - 1 > roomIndex.getYLength() || vo.getXCoordinate() + 1 > roomIndex.getXLength()) {
+                BusinessAssert.error(7014, "柜列超过机房范围");
+            }
             count = aisleIndexMapper.findAddAisleVerifyy(vo);
         }
-        if (Objects.equals(vo.getDirection(),"x")){
+        if (Objects.equals(vo.getDirection(), "x")) {
             cabinetCount = cabinetIndexMapper.findAddAisleVerifyx(vo);
-        }else {
+        } else {
             cabinetCount = cabinetIndexMapper.findAddAisleVerifyy(vo);
         }
-        return count+cabinetCount>0;
+        return count + cabinetCount > 0;
     }
+
 
     private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {
         indices.forEach(iter -> {
