@@ -59,9 +59,9 @@
         <el-form-item style="margin-left: auto">
           <el-button  type="primary" @click="handleFormOpen('phone')">手机配置</el-button>
           <el-button  type="primary" @click="handleFormOpen('mail')">邮箱配置</el-button>
-          <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(1)">挂起</el-button>
-          <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(2)">确认</el-button>
-          <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(3)">结束</el-button>
+          <el-button  type="primary" :disabled="selectedIds.length === 0 || preStatus.includes(3)" @click="toHandle(1)">挂起</el-button>
+          <el-button  type="primary" :disabled="selectedIds.length === 0 || preStatus.includes(3)" @click="toHandle(2)">确认</el-button>
+          <el-button  type="primary" :disabled="selectedIds.length === 0 || preStatus.includes(3)" @click="toHandle(3)">结束</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -74,8 +74,9 @@
         :stripe="true" 
         :border="true"
         @current-change="handleCurrentChange"
+        @selection-change="handleSelectionChange"
       >
-          <!-- <el-table-column type="selection" width="55" /> -->
+          <el-table-column v-if="showCheckbox" type="selection" width="55" align="center" />
           <el-table-column type="index" width="80" label="序号" align="center" />
           <el-table-column property="alarmPosition" label="区域" min-width="100" align="center" />
           <!-- <el-table-column property="devName" label="设备" min-width="100" align="center" /> -->
@@ -132,74 +133,14 @@ const queryParams = reactive({
   openVoice: true,
   openMessage: false,
 })
-// const tableData = [
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-// ]
+const showCheckbox = computed(() => {
+  return !preStatus.value.includes(3);
+});
+
+const selectedIds = ref<string[]>([]);
+
+const handleSelectionChange = (val: any[]) => {
+  selectedIds.value = val.map(item => item.id);};
 
 // 获取警告配置
 const getAlarmConfig = async() => {
@@ -260,6 +201,11 @@ const getTableData = async(reset = false) => {
 // 警告处理
 const toHandle = (type) => {
   const statusList = ['挂起', '确认', '结束']
+  const ids = selectedIds.value.length > 0 ? selectedIds.value : [targetId.value];
+  if (ids.length === 0) {
+    message.warning('请选择要处理的告警记录')
+    return
+  }
   ElMessageBox.prompt('请输入原因：', `${statusList[type-1]}告警`, {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -268,7 +214,7 @@ const toHandle = (type) => {
     .then(({ value }) => {
       console.log(value)
       AlarmApi.saveAlarmRecord({
-        id: targetId.value,
+        ids: ids,
         alarmStatus: type,
         confirmReason: value
       }).then(() => {
