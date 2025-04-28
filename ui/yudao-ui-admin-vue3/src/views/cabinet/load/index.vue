@@ -916,19 +916,19 @@ onBeforeRouteLeave(()=>{
       left: 8px;
       top: 8px;
     }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    // .status {
+    //   width: 40px;
+    //   height: 20px;
+    //   font-size: 12px;
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
-    }
+    //   color: #fff;
+    //   position: absolute;
+    //   right: 38px;
+    //   top: 8px;
+    // }
     .detail {
       width: 40px;
       height: 25px;
