@@ -635,7 +635,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="排序" label-width="90">
-            <el-input-number v-model="rowColInfo.sort" :min="1" :max="10000" controls-position="right" placeholder="请输入" />
+            <el-input-number v-model="rowColInfo.sort" controls-position="right" placeholder="请输入" />
           </el-form-item>
         <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
@@ -719,7 +719,7 @@ const rowColInfo = reactive({
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
-  sort:0,
+  sort:null,
 })
 const queryParams = reactive({
   roomName: undefined,
@@ -855,8 +855,9 @@ const handleDialogCancel = () => {
 // 处理点击添加机房事件
 const handleAdd = () => {
   roomFlag.value = 1;
-  dialogVisible.value = true;
   resetForm();
+  dialogVisible.value = true;
+
 }
 
 // 处理点击删除机房事件
@@ -925,6 +926,7 @@ const resetForm = () => {
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
+    sort:null,
   })
   radio.value = "负载率"
 }
