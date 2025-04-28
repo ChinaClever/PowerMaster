@@ -12,7 +12,6 @@
                 <div class="text-20px font-700">
                   PowerMaster系统安全守护第 {{devInfo.days}} 天
                 </div>
-                </div>
                 <div class="mt-10px text-14px text-gray-500">
                   <ScrollAlarm :notices="alarmData" v-if="true" />
                   <span v-else>当前一切正常</span>
