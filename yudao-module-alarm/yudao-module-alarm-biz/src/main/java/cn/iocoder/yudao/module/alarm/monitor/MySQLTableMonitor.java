@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.alarm.monitor;
 
+import cn.iocoder.yudao.framework.common.constant.WebsocketMessageType;
+import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.constants.BinLogConstants;
 import cn.iocoder.yudao.framework.mybatis.core.object.ColumnInfo;
@@ -8,6 +10,7 @@ import cn.iocoder.yudao.module.alarm.constants.DBTable;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.BinlogEventHeader;
 import cn.iocoder.yudao.module.alarm.service.cfgmail.AlarmCfgMailService;
 import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
+import cn.iocoder.yudao.module.infra.api.websocket.WebSocketSenderApi;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
 import de.danielbechler.util.Collections;
@@ -34,6 +37,9 @@ public class MySQLTableMonitor {
 
     @Autowired
     private AlarmCfgMailService alarmCfgMailService;
+
+    @Autowired
+    private WebSocketSenderApi webSocketSenderApi;
 
     // 缓存表结构：表ID -> 字段列表（字段名+类型）
     private static Map<String, List<ColumnInfo>> tableSchemaCache = new HashMap<>();
@@ -133,6 +139,8 @@ public class MySQLTableMonitor {
                             default:
                                 break;
                         }
+                        // 向前端发送消息
+                        webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
                     }
                 }
             });
