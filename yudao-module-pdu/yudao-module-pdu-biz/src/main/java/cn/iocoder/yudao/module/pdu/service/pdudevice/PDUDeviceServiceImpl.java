@@ -1583,20 +1583,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     public Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
         Map result = new HashMap<>();
         CabinetChartResBase totalLineRes = new CabinetChartResBase();
-//        result.put("totalLineRes", totalLineRes);
 
-//        result.put("apparentPowMaxValue", null);
-//        result.put("apparentPowMaxTime", null);
-//        result.put("apparentPowMinValue", null);
-//        result.put("apparentPowMinTime", null);
-//        result.put("activePowMaxValue", null);
-//        result.put("activePowMaxTime", null);
-//        result.put("activePowMinValue", null);
-//        result.put("activePowMinTime", null);
-//        result.put("reactivePowMaxValue", null);
-//        result.put("reactivePowMaxTime", null);
-//        result.put("reactivePowMinValue", null);
-//        result.put("reactivePowMinTime", null);
         try {
             PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
 
@@ -1639,7 +1626,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             totalActivePow.getData().add(hourdo.getActivePowMaxValue());
                             totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
                             totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
-
                         });
                     } else {
                         powList.forEach(hourdo -> {
@@ -1909,10 +1895,126 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     }
 
+//    @Override
+//    public Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+//        Map result = new HashMap<>();
+//        CabinetChartResBase lineRes = new CabinetChartResBase();
+//        CabinetChartHumResBase humeRes = new CabinetChartHumResBase();
+//        try {
+//            PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
+//            if (pduIndex != null) {
+//                Integer Id = pduIndex.getId();
+//                String index = null;
+//                boolean isSameDay = false;
+//                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+//                    index = "pdu_env_hour";
+//                    if (oldTime.equals(newTime)) {
+//                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+//                    }
+//                    isSameDay = true;
+//                } else {
+//                    index = "pdu_env_day";
+//                    oldTime = oldTime.plusDays(1);
+//                    newTime = newTime.plusDays(1);
+//                    isSameDay = false;
+//                }
+//                String startTime = localDateTimeToString(oldTime);
+//                String endTime = localDateTimeToString(newTime);
+//                List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index);
+//                Map<Integer, List<PduEnvHourDo>> envMap = cabinetData.stream()
+//                        .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
+//                        .collect(Collectors.groupingBy(PduEnvHourDo::getSensorId));
+//                boolean isFisrt = false;
+//                    List<String> time = null;
+//                List<String> humTime = null;
+//                List<String> humHappenTime = null;
+//                List<String> temHappenTime = null;
+//
+//
+//                for (int i = 1; i < 6; i++) {
+//                    if (CollectionUtil.isEmpty(envMap.get(i))) {
+//                        continue;
+//                    }
+//                    //温度湿度数据收集
+//                    LineSeries lineSeries = new LineSeries();
+//                    HumSeries humSeries = new HumSeries();
+//
+//
+//                    lineSeries.setName("温度传感器" + i + "号");
+//                    humSeries.setName("湿度传感器" + i + "号");
+//                    List<PduEnvHourDo> hourDoList = envMap.get(i);
+//                    List<Float> temAvg = hourDoList.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
+//                    List<Integer> humData = hourDoList.stream().map(PduEnvHourDo::getHumAvgValue).collect(Collectors.toList());
+//                    temHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+//
+//                    humHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+//
+//                    lineSeries.setData(temAvg);
+//                    humSeries.setData(humData);
+//                    if (!isFisrt) {
+//                        if (!isSameDay) {
+//                            time = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+//                        } else {
+//                            time = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+//                        }
+//                        lineRes.setTime(time);
+//                        lineRes.setHappenTime(temHappenTime);
+//                        humeRes.setTime(time);
+//                        humSeries.setHappenTime(humHappenTime);
+//                        isFisrt = true;
+//                    }
+//
+//                    lineRes.getSeries().add(lineSeries);
+//                    humeRes.getSeries().add(humSeries);
+//                }
+//                String temMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_max_value");
+//                PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
+//                String temMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_min_value");
+//                PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+//
+//                String humMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "hum_max_value");
+//                PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+//                String humMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "hum_min_value");
+//                PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
+//
+//                result.put("lineRes", lineRes);
+//                result.put("humRes", humeRes);
+//                if (temMax != null) {
+//                    result.put("temMaxValue", temMax.getTemMaxValue());
+//                    result.put("temMaxTime", temMax.getTemMaxTime());
+//                    result.put("temMaxSensorId", temMax.getSensorId());
+//                }
+//                if (temMin != null) {
+//                    result.put("temMinValue", temMin.getTemMinValue());
+//                    result.put("temMinTime", temMin.getTemMinTime());
+//                    result.put("temMinSensorId", temMin.getSensorId());
+//                }
+//
+//                if (humMax != null) {
+//                    result.put("humMaxValue", humMax.getTemMaxValue());
+//                    result.put("humMaxTime", humMax.getTemMaxTime());
+//                    result.put("humMaxSensorId", humMax.getSensorId());
+//                }
+//                if (humMin != null) {
+//                    result.put("humMinValue", humMin.getTemMinValue());
+//                    result.put("humMinTime", humMin.getTemMinTime());
+//                    result.put("humMinSensorId", humMin.getSensorId());
+//                }
+//
+//                return result;
+//            }
+//        } catch (Exception e) {
+//            log.error("获取数据失败", e);
+//        }
+//        return result;
+//    }
+
+
     @Override
     public Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
         CabinetChartResBase lineRes = new CabinetChartResBase();
+        CabinetChartHumResBase humeRes = new CabinetChartHumResBase();
         try {
             PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
             if (pduIndex != null) {
@@ -1939,15 +2041,32 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .collect(Collectors.groupingBy(PduEnvHourDo::getSensorId));
                 boolean isFisrt = false;
                 List<String> time = null;
+                List<String> humTime = null;
+                List<String> humHappenTime = null;
+                List<String> temHappenTime = null;
+
+
                 for (int i = 1; i < 6; i++) {
                     if (CollectionUtil.isEmpty(envMap.get(i))) {
                         continue;
                     }
+                    //温度湿度数据收集
                     LineSeries lineSeries = new LineSeries();
+                    HumSeries humSeries = new HumSeries();
+
+
                     lineSeries.setName("温度传感器" + i + "号");
+                    humSeries.setName("湿度传感器" + i + "号");
                     List<PduEnvHourDo> hourDoList = envMap.get(i);
+
                     List<Float> temAvg = hourDoList.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
+                    List<Integer> humData = hourDoList.stream().map(PduEnvHourDo::getHumAvgValue).collect(Collectors.toList());
+
+                    temHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+
                     lineSeries.setData(temAvg);
+                    humSeries.setData(humData);
                     if (!isFisrt) {
                         if (!isSameDay) {
                             time = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
@@ -1955,15 +2074,26 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             time = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
                         }
                         lineRes.setTime(time);
+                        lineRes.setHappenTime(temHappenTime);
+                        humeRes.setTime(time);
                         isFisrt = true;
                     }
+//                    humSeries.setHappenTime(humHappenTime);
                     lineRes.getSeries().add(lineSeries);
+                    humeRes.getSeries().add(humSeries);
                 }
                 String temMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_max_value");
                 PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
                 String temMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_min_value");
                 PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
+
+                String humMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "hum_max_value");
+                PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
+                String humMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "hum_min_value");
+                PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
+
                 result.put("lineRes", lineRes);
+                result.put("humRes", humeRes);
                 if (temMax != null) {
                     result.put("temMaxValue", temMax.getTemMaxValue());
                     result.put("temMaxTime", temMax.getTemMaxTime());
@@ -1974,6 +2104,18 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     result.put("temMinTime", temMin.getTemMinTime());
                     result.put("temMinSensorId", temMin.getSensorId());
                 }
+
+                if (humMax != null) {
+                    result.put("humMaxValue", humMax.getTemMaxValue());
+                    result.put("humMaxTime", humMax.getTemMaxTime());
+                    result.put("humMaxSensorId", humMax.getSensorId());
+                }
+                if (humMin != null) {
+                    result.put("humMinValue", humMin.getTemMinValue());
+                    result.put("humMinTime", humMin.getTemMinTime());
+                    result.put("humMinSensorId", humMin.getSensorId());
+                }
+
                 return result;
             }
         } catch (Exception e) {

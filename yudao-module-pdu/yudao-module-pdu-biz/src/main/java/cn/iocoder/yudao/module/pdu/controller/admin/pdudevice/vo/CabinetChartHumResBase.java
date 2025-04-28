@@ -1,4 +1,6 @@
-package cn.iocoder.yudao.module.cabinet.controller.admin.index.vo;
+package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo;
+
+
 
 import lombok.Data;
 
@@ -6,11 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class CabinetChartResBase {
-
-    private List<SeriesBase> series = new ArrayList<>();
+public class CabinetChartHumResBase {
+    private List<HumSeries> series = new ArrayList<>();
 
     private List<String> time = new ArrayList<>();
 
     private List<String> happenTime = new ArrayList<>();
+
 }
