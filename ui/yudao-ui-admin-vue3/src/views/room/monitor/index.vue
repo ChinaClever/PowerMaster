@@ -587,67 +587,91 @@
           <el-text>机房</el-text>
         </div>
         <div class="double-formitem">
-          <el-form-item label="名称" label-width="90">
+          <el-form-item label-width="60" style="flex: 0">
+            <el-checkbox-button v-model="addrFlag" >
+              分楼层
+            </el-checkbox-button>
+          </el-form-item>
+          <el-form-item label="名称" label-width="60">
             <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
           </el-form-item>
-          <el-form-item label="楼层" prop="type" label-width="90">
+          <el-form-item v-if="addrFlag" label="楼层" prop="type" label-width="60">
             <el-select v-model="rowColInfo.addr" placeholder="请选择">
-              <el-option v-for="(addr_item,addr_index) in addrList" :key="addr_index" :label="addr_item" :value="addr_item" />
+              <el-option v-for="(addr_item,addr_index) in addrList.slice(1)" :key="addr_index" :label="addr_item" :value="addr_item" />
             </el-select>
           </el-form-item>
         </div>
-        <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
-          <div>
-            <el-text>地砖（地砖按60CM*60CM）</el-text>
-          </div>
-          <el-radio-group v-model="rowColInfo.areaFlag">
-            <el-radio :label="false" size="small">砖数</el-radio>
-            <el-radio :label="true" size="small">面积</el-radio>
-          </el-radio-group>
+        <div style="margin-bottom: 5px">
+          <el-text>拓扑</el-text>
         </div>
         <div v-if="!rowColInfo.areaFlag" class="double-formitem">
-          <el-form-item label="行数" label-width="90">
-            <el-input-number v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
+          <div style="width: 30%;display: flex;justify-content: space-between;margin-left: 60px;margin-bottom: 18px">
+            <el-radio-group v-model="rowColInfo.areaFlag">
+              <el-radio-button :label="true">面积</el-radio-button>
+              <el-radio-button :label="false">地砖</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-form-item label="行数" label-width="60">
+            <el-input type="number" v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
           </el-form-item>
-          <el-form-item label="列数" label-width="90">
-            <el-input-number v-model="rowColInfo.col" :min="1" :max="100" controls-position="right" placeholder="请输入" />
+          <el-form-item label="列数" label-width="60">
+            <el-input type="number" v-model="rowColInfo.col" :min="1" :max="100" controls-position="right" placeholder="请输入" />
           </el-form-item>
         </div>
         <div v-else class="double-formitem">
-          <el-form-item label="宽度" label-width="90">
+          <div style="width: 30%;display: flex;justify-content: space-between;margin-left: 60px;margin-bottom: 18px">
+            <el-radio-group v-model="rowColInfo.areaFlag">
+              <el-radio-button :label="true">面积</el-radio-button>
+              <el-radio-button :label="false">地砖</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-form-item label="宽度" label-width="60">
             <el-input type="number" v-model="rowColInfo.width" :min="1" :max="60" placeholder="请输入">
               <template #append>m</template>
             </el-input>
           </el-form-item>
-          <el-form-item label="长度" label-width="90">
+          <el-form-item label="长度" label-width="60">
             <el-input type="number" v-model="rowColInfo.length" :min="1" :max="60" placeholder="请输入">
               <template #append>m</template>
             </el-input>
           </el-form-item>
         </div>
         
-        <div v-if="rowColInfo.displayFlag" style="margin-bottom: 5px">
+        <div style="margin-bottom: 5px">
           <el-text>容量</el-text>
         </div>
-        <el-form-item v-if="rowColInfo.displayFlag" label="机房总电力容量" label-width="160">
-          <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
-            <template #append>kVA</template>
-          </el-input>
-        </el-form-item>
         <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
           </el-input>
         </el-form-item> -->
-
         <div class="double-formitem">
-          <el-form-item label="显示选择" label-width="90" style="padding-top: 15px">
-            <el-switch v-model="rowColInfo.displayFlag" :active-value="1" :inactive-value="0" />
+          <el-form-item label-width="60" style="flex: 0">
+            <el-checkbox-button v-model="rowColInfo.displayFlag" >
+              负载率
+            </el-checkbox-button>
           </el-form-item>
-          <el-radio-group v-model="radio" size="large" style="margin-left: 15px;">
-            <el-radio-button label="负载率" value="负载率"/>
-            <!-- <el-radio-button label="PUE" value="PUE"/> -->
-          </el-radio-group>
+          <el-form-item v-if="rowColInfo.displayFlag" label="电力容量" label-width="160">
+            <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
+              <template #append>kVA</template>
+            </el-input>
+          </el-form-item>
+        </div>
+
+        
+
+        <div style="margin-bottom: 5px">
+          <el-text>排序</el-text>
+        </div>
+        <div class="double-formitem">
+          <el-form-item label-width="60" style="flex: 0">
+            <el-checkbox-button v-model="rowColInfo.displayFlag">
+              {{rowColInfo.displayFlag ? '已启用' : '未启用'}}
+            </el-checkbox-button>
+          </el-form-item>
+          <el-form-item v-if="rowColInfo.displayFlag" label="排序序号" label-width="160">
+            <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入" />
+          </el-form-item>
         </div>
 
         <!-- <div class="double-formitem">
@@ -702,7 +726,7 @@ const radio = ref("负载率")
 const radioareaFlag = ref('"0"')
 const rowColInfo = reactive({
   roomName: '', // 机房名
-  addr: '未区分', //楼层
+  addr: '一楼', //楼层
   row: 14, // 行
   col: 18, // 列
   areaFlag: true, //新建类型 砖数 面积
@@ -721,6 +745,8 @@ const queryParams = reactive({
   roomName: undefined,
 })as any
 
+const addrFlag = ref(false)
+
 const searchRoomName = ref("")
 
 const flashListTimer = ref();
@@ -737,6 +763,8 @@ const addrAllPowChartOptions = ref([[{}],[{}],[{}],[{}],[{}],[{}],[{}],[{}],[{}]
 const clickIndex = ref(0)
 
 const editRoom = ref(false)
+
+const emit = defineEmits(['backData']) 
 
 const queryDeleteParams = reactive({
   roomName: undefined,
@@ -906,7 +934,7 @@ const handleRestore = async (flagRoomid) => {
 const resetForm = () => {
   Object.assign(rowColInfo, {
     roomName: '', // 机房名
-    addr: '未区分', //楼层
+    addr: '一楼', //楼层
     row: 14, // 行
     col: 18, // 列,
     areaFlag: true, //新建类型 砖数 面积
@@ -922,6 +950,7 @@ const resetForm = () => {
     eleLimitMonth: 1000, // 月用能限制
   })
   radio.value = "负载率"
+  addrFlag.value = false
 }
 
 // 处理设置提交
@@ -1042,6 +1071,8 @@ const getRoomAddrList = async() => {
         getAddrAllRoomList(res[item],index)
       }
     })
+
+    emit('backData', res)
   }
 }
 
