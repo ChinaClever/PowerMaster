@@ -64,7 +64,7 @@ public interface AlarmLogRecordService {
      * 告警等级统计
      * @return
      */
-    Map<Object, Object> levelCount();
+    AlarmLogRecordStatisticsVO levelCount(Integer roomId);
 
 
     /**

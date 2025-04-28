@@ -7,6 +7,8 @@ import cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgprompt.AlarmCfgPromptDO;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
+import cn.iocoder.yudao.module.alarm.rabbitmq.Messages.AlarmMqMessage;
+import cn.iocoder.yudao.module.alarm.rabbitmq.producer.AlarmRabbitMQProducer;
 import cn.iocoder.yudao.module.alarm.service.cfgprompt.AlarmCfgPromptService;
 import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
 import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailAccountDO;
@@ -32,7 +34,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.dal.mysql.cfgmail.AlarmCfgMailMapper;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.*;
@@ -68,6 +70,9 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
 
     @Autowired
     private AlarmLogRecordService alarmLogRecordService;
+
+    @Autowired
+    private AlarmRabbitMQProducer alarmRabbitMQProducer;
 
 
     public AlarmCfgMailServiceImpl(MailAccountService mailAccountService) {
@@ -275,6 +280,9 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
             if (emailAlarm == 1) {
                 sendAlarmMail(list);
             }
+            // rabbitmq告警
+//            String content = constructMqContent(list);
+//            alarmRabbitMQProducer.sendMessage(AlarmMqMessage.KEY_ALARM,content);
         }
     }
 
@@ -325,5 +333,17 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
         });
     }
 
+    public String constructMqContent (List<AlarmLogRecordDO> list) {
+        StringBuilder contentBuff = new StringBuilder();
+        for (AlarmLogRecordDO alarmLogRecordDO : list) {
+            String alarmPosition = alarmLogRecordDO.getAlarmPosition();
+            LocalDateTime startTime = alarmLogRecordDO.getStartTime();
+            String alarmType = AlarmTypeEnums.getNameByStatus(alarmLogRecordDO.getAlarmType());
+            String alarmDesc = alarmLogRecordDO.getAlarmDesc();
+            String content = String.format("%s在%s发生%s，告警原因：%s", alarmPosition, startTime, alarmType, alarmDesc);
+            contentBuff.append(content).append("\n");
+        }
+        return contentBuff.toString();
+    }
 
 }

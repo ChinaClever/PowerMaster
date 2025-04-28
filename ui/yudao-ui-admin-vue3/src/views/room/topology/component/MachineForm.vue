@@ -664,9 +664,9 @@ const submitForm = async () => {
       yCoordinate: Number(operateInfo.value.lndexY)+1
     })
 
-    return
     const res = await CabinetApi.saveCabinetInfo({
       ...machineFormData.value,
+      type: machineFormData.value.cabinetType,
       xCoordinate: Number(operateInfo.value.lndexX)+1,
       yCoordinate: Number(operateInfo.value.lndexY)+1
     })
@@ -681,6 +681,11 @@ const submitForm = async () => {
     //   message.success(t('common.updateSuccess'))
     // }
     dialogVisible.value = false
+    if(res) {
+      message.success(dialogTitle.value + '成功')
+    } else {
+      message.error(dialogTitle.value + '失败')
+    }
     resetForm();
     // 发送操作成功的事件
     emit('success');

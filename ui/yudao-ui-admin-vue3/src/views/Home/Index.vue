@@ -56,7 +56,7 @@
             </div>
           </div>
         </template>
-        <RoomPower :isFromHome="true" :valueButton="valueMode" />
+        <RoomPower :isFromHome="true" :valueButton="valueMode" @back-data="handleBackData" />
       </el-card>
 
       <el-card shadow="never" class="mt-8px">
@@ -159,7 +159,41 @@
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
-            <Echart :height="200" :options="numChartOptions" />
+            <Echart :height="200" :options="temChartOptions"/>
+            <!-- <div style="display: flex;flex-direction: column;height: 200px;justify-content: space-between">
+              <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+                <div>{{devInfo.pduNum}}</div>
+                <div>{{devInfo.pduOnLine}}</div>
+              </div>
+              <div style="display: flex;justify-content: space-around;align-items: center">
+                <div>PDU数量</div>
+                <div>PDU在线</div>
+              </div>
+              <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+                <div>{{devInfo.pduInform}}</div>
+                <div>{{devInfo.pduOffLine}}</div>
+              </div>
+              <div style="display: flex;justify-content: space-around;align-items: center">
+                <div>PDU告警</div>
+                <div>PDU离线</div>
+              </div>
+              <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+                <div>{{devInfo.busNum}}</div>
+                <div>{{devInfo.busOnLine}}</div>
+              </div>
+              <div style="display: flex;justify-content: space-around;align-items: center">
+                <div>母线数量</div>
+                <div>母线在线</div>
+              </div>
+              <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+                <div>{{devInfo.busInform}}</div>
+                <div>{{devInfo.busOffLine}}</div>
+              </div>
+              <div style="display: flex;justify-content: space-around;align-items: center">
+                <div>母线告警</div>
+                <div>母线离线</div>
+              </div>
+            </div> -->
         </el-skeleton>
       </el-card>
       <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===true">
@@ -354,20 +388,70 @@ const numChartOptions = ref({
     {
       name: 'PDU',
       type: 'bar',
-      data: [40,20,30,20],
+      data: [0,0,0,0],
     },
     {
       name: '始端箱',
       type: 'bar',
-      data: [10,30,20,20],
+      data: [0,0,0,0],
     },
     {
       name: '插接箱',
       type: 'bar',
-      data: [10,30,20,20],
+      data: [0,0,0,0],
     }
   ]
 })
+
+const temChartOptions = ref({
+  // tooltip: {
+  //   trigger: 'item',
+  //   axisPointer: {
+  //     type: 'shadow'
+  //   },
+  //   confine: true,
+  //   formatter: function (params) {
+  //     console.log('params', params)
+  //     let result = '';
+  //       // item 是每一个系列的数据
+  //       const seriesName = params.name; // 系列名称
+  //       const value = params.value[params.dataIndex]; // 数据值
+  //       const marker = params.marker; // 标志图形
+  //       result += `${marker}${seriesName}: ${value}kW·h<br/>`;
+  //     return result;
+  //   }
+  // },
+  legend: {
+    data: ['前门温度', '后门温度'],
+    left : '0%', 
+  },
+  radar: {
+    radius: '60%',
+    // shape: 'circle',
+    indicator: [
+      { name: '机房1' },
+      { name: '机房1' },
+      { name: '机房1 Technology' },
+      { name: '机房1'},
+      { name: '机房1' }
+    ]
+  },
+  series: [
+    {
+      name: '温度',
+      type: 'radar',
+      data: [
+        {
+          value: [10,10,10,10,10],
+          name: '前门温度'
+        },
+        {
+          value: [10,10,10,10,10],
+          name: '后门温度'
+        }]
+    }
+  ]
+});
 
 // 获取机房主页面曲线数据
 const getRoomEchartData = async() => {
@@ -897,6 +981,41 @@ const computedEnInfoWidth = computed(() => {
     }
   }
 })
+
+// 获取空间信息 ?需不需要刷新
+const handleBackData = (data) => {
+  let dataArray = Object.values(data).flat().slice(0,7) || []
+  console.log('***',Object.values(data).flat())
+  let temMaxFrontData
+  let temMaxBlackData
+  if(dataArray.length >= 5) {
+    temChartOptions.value.radar.indicator = dataArray.map(item => ({name: item.roomName}))
+    temMaxFrontData = dataArray.map(item => item.temMaxFront ? item.temMaxFront : 0)
+    temMaxBlackData = dataArray.map(item => item.temMaxBlack ? item.temMaxBlack : 0)
+  } else {
+    temChartOptions.value.radar.indicator = ['机房1']
+    temMaxFrontData = [0]
+    temMaxBlackData = [0]
+  }
+  
+  temChartOptions.value.series = [
+    {
+      name: '温度',
+      type: 'radar',
+      data: [
+        {
+          value: temMaxFrontData,
+          name: '前门温度'
+        },
+        {
+          value: temMaxBlackData,
+          name: '后门温度'
+        }
+      ]
+    }
+  ]
+  console.log(temChartOptions.value)
+}
 
 const handleClose = () => {
   // 弹窗关闭时执行的逻辑

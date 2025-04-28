@@ -121,4 +121,10 @@ public class RoomSavesVo {
      */
     @Schema(description = "月用能限制")
     private double eleLimitMonth;
+
+    /**
+     * 排序字段
+     */
+    @Schema(description = "排序字段")
+    private Integer sort;
 }

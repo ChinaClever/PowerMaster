@@ -14,6 +14,8 @@ public class AlarmLogRecordSaveReqVO {
     @Schema(description = "主键id", requiredMode = Schema.RequiredMode.REQUIRED, example = "6203")
     private Integer id;
 
+    private List<Integer> ids;
+
     @Schema(description = "设备唯一标识", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "设备唯一标识不能为空")
     private String alarmKey;

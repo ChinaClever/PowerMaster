@@ -22,12 +22,27 @@ public class PduHdaLineHouResVO extends PduBaseDo {
     @Schema(description = "平均电压")
     @JsonProperty("vol_avg_value")
     private BigDecimal volValue;
+
+    /**
+     * 平均电压时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("vol_avg_time")
+    private Date volAvgTime;
+
     /**
      * 平均电流
      */
     @Schema(description = "平均电流")
     @JsonProperty("cur_avg_value")
     private BigDecimal curValue;
+
+    /**
+     * 平均电流时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("cur_avg_time")
+    private Date curAvgTime;
 
     /**
      * 最大电压

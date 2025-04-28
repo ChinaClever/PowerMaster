@@ -204,10 +204,35 @@ public class RoomPowBaseDo extends RoomBaseDo {
     private float reactiveAAvgValue;
 
     /**
+     * a路最大无功功率
+     */
+    @JsonProperty("reactive_a_max_value")
+    private float reactiveAMaxValue;
+
+    /**
+     * a路最小无功功率
+     */
+    @JsonProperty("reactive_a_min_value")
+    private float reactiveAMinValue;
+
+    /**
      * b路平均无功功率
      */
     @JsonProperty("reactive_b_avg_value")
     private float reactiveBAvgValue;
+
+    /**
+     * b路平均无功功率
+     */
+    @JsonProperty("reactive_b_max_value")
+    private float reactiveBMaxValue;
+
+    /**
+     * b路平均无功功率
+     */
+    @JsonProperty("reactive_b_min_value")
+    private float reactiveBMinValue;
+
 
     /**
      * a路平均功率因素

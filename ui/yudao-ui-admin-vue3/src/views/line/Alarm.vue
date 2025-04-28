@@ -59,9 +59,9 @@
         <el-form-item style="margin-left: auto">
           <el-button  type="primary" @click="handleFormOpen('phone')">手机配置</el-button>
           <el-button  type="primary" @click="handleFormOpen('mail')">邮箱配置</el-button>
-          <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(1)">挂起</el-button>
-          <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(2)">确认</el-button>
-          <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(3)">结束</el-button>
+          <el-button  type="primary" :disabled="selectedIds.length === 0 || preStatus.includes(3)" @click="toHandle(1)">挂起</el-button>
+          <el-button  type="primary" :disabled="selectedIds.length === 0 || preStatus.includes(3)" @click="toHandle(2)">确认</el-button>
+          <el-button  type="primary" :disabled="selectedIds.length === 0 || preStatus.includes(3)" @click="toHandle(3)">结束</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -74,8 +74,9 @@
         :stripe="true" 
         :border="true"
         @current-change="handleCurrentChange"
+        @selection-change="handleSelectionChange"
       >
-          <!-- <el-table-column type="selection" width="55" /> -->
+          <el-table-column v-if="showCheckbox" type="selection" width="55" align="center" />
           <el-table-column type="index" width="80" label="序号" align="center" />
           <el-table-column property="alarmPosition" label="区域" min-width="100" align="center" />
           <!-- <el-table-column property="devName" label="设备" min-width="100" align="center" /> -->
@@ -111,6 +112,8 @@
 import { AlarmApi } from '@/api/system/notify/alarm'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import AlarmForm from './AlarmForm.vue'
+import { useWebSocket } from '@vueuse/core'
+import { getAccessToken } from '@/utils/auth'
 
 const message = useMessage() // 消息弹窗
 
@@ -132,74 +135,58 @@ const queryParams = reactive({
   openVoice: true,
   openMessage: false,
 })
-// const tableData = [
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-//   {
-//     qy: '2房-3柜',
-//     level: '二级警告',
-//     lx: 'ATS警告',
-//     ms: '*****',
-//     sb: '服务器12',
-//     kssj: '2024-06-13 22:25:11',
-//     jssj: '2024-06-13 22:25:11',
-//     jsyy: '断网',
-//     qrry: '确认断网',
-//   },
-// ]
+const showCheckbox = computed(() => {
+  return !preStatus.value.includes(3);
+});
+
+const selectedIds = ref<number[]>([]);
+
+const handleSelectionChange = (val: any[]) => {
+  selectedIds.value = val.map(item => item.id);};
+
+  const server = ref(
+  (import.meta.env.VITE_BASE_URL + '/infra/ws').replace('http', 'ws') + '?token=' + getAccessToken()
+) // WebSocket 服务地址
+
+  /** 发起 WebSocket 连接 */
+const {data} = useWebSocket(server.value, {
+  autoReconnect: false,
+  heartbeat: true
+})
+
+watchEffect(() => {
+  if (!data.value) {
+    return
+  }
+  try {
+    // 1. 收到心跳
+    if (data.value === 'pong') {
+      // state.recordList.push({
+      //   text: '【心跳】',
+      //   time: new Date().getTime()
+      // })
+      return
+    }
+
+    // 2.1 解析 type 消息类型
+    const jsonMessage = JSON.parse(data.value)
+    console.log('ws:', jsonMessage)
+    const type = jsonMessage.type
+    if (!type) {
+      message.error('未知的消息类型：' + data.value)
+      return
+    }
+    // 2.2 消息类型：alarm_message
+    if (type === 'alarm_message') {
+      getTableData(true)
+      return
+    }
+  } catch (error) {
+    message.error('处理消息发生异常：' + data.value)
+    console.error(error)
+  }
+})
+
 
 // 获取警告配置
 const getAlarmConfig = async() => {
@@ -260,6 +247,11 @@ const getTableData = async(reset = false) => {
 // 警告处理
 const toHandle = (type) => {
   const statusList = ['挂起', '确认', '结束']
+  const ids = selectedIds.value.length > 0 ? selectedIds.value : [targetId.value];
+  if (ids.length === 0) {
+    message.warning('请选择要处理的告警记录')
+    return
+  }
   ElMessageBox.prompt('请输入原因：', `${statusList[type-1]}告警`, {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -268,7 +260,7 @@ const toHandle = (type) => {
     .then(({ value }) => {
       console.log(value)
       AlarmApi.saveAlarmRecord({
-        id: targetId.value,
+        ids: ids,
         alarmStatus: type,
         confirmReason: value
       }).then(() => {
