@@ -25,44 +25,45 @@ public class HourAndDayDetailHistoryDataExcelExportB {
     @ExcelProperty("记录时间")
     private String create_time;
     @NumberFormat("0.000")
-    @ExcelProperty("B路平均有功功率(kW)")
+    @ExcelProperty({"B路有功功率(kW)","平均值"})
     private Double active_b_avg_value;
+
     @NumberFormat("0.000")
-    @ExcelProperty({"B路有功功率最大值(kW)","数值"})
+    @ExcelProperty({"B路有功功率(kW)","最大值"})
     private Double active_b_max_value;
-    @ExcelProperty({"B路有功功率最大值(kW)","发生时间"})
+
+    @ExcelProperty({"B路有功功率(kW)","发生时间"})
     private String active_b_max_time;
+
     @NumberFormat("0.000")
-    @ExcelProperty({"B路有功功率最小值(kW)","数值"})
+    @ExcelProperty({"B路有功功率(kW)","最小值"})
     private Double active_b_min_value;
-    @ExcelProperty({"B路有功功率最小值(kW)","发生时间"})
+
+    @ExcelProperty({"B路有功功率(kW)","发生时间"})
     private String active_b_min_time;
+
     @NumberFormat("0.000")
-    @ExcelProperty("B路平均视在功率(kVA)")
-    private Double apparent_b_avg_value;;
+    @ExcelProperty({"B路视在功率(kVA)","平均值"})
+    private Double apparent_b_avg_value;
+
     @NumberFormat("0.000")
-    @ExcelProperty({"B路视在功率最大值(kVA)","数值"})
+    @ExcelProperty({"B路视在功率(kVA)","最大值"})
     private Double apparent_b_max_value;
-    @ExcelProperty({"B路视在功率最大值(kVA)","发生时间"})
+
+    @ExcelProperty({"B路视在功率(kVA)","发生时间"})
     private String apparent_b_max_time;
+
     @NumberFormat("0.000")
-    @ExcelProperty({"B路视在功率最小值(kVA)","数值"})
+    @ExcelProperty({"B路视在功率(kVA)","最小值"})
     private Double apparent_b_min_value;
-    @ExcelProperty({"B路视在功率最小值(kVA)","发生时间"})
+
+    @ExcelProperty({"B路视在功率(kVA)","发生时间"})
     private String apparent_b_min_time;
+
     @NumberFormat("0.000")
-    @ExcelProperty("B路平均无功功率(kW)")
+    @ExcelProperty("B路平均无功功率(kVar)")
     private Double reactive_b_avg_value;
-//    @NumberFormat("0.000")
-//    @ExcelProperty({"B路无功功率最大值(kW)","数值"})
-//    private Double reactive_b_max_value;
-//    @ExcelProperty({"B路无功功率最大值(kW)","发生时间"})
-//    private String reactive_b_max_time;
-//    @NumberFormat("0.000")
-//    @ExcelProperty({"B路无功功率最小值(kW)","数值"})
-//    private Double reactive_b_min_value;
-//    @ExcelProperty({"B路无功功率最小值(kW)","发生时间"})
-//    private String reactive_b_min_time;
+
     @NumberFormat("0.00")
     @ExcelProperty("B路平均功率因素")
     private Double factor_b_avg_value;

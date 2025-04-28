@@ -24,17 +24,17 @@
             <div class="h-70px flex items-center justify-end lt-sm:mt-10px">
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">机柜数</div>
-                <span class="text-20px">{{devInfo.cabNum}}</span>
+                <span class="text-30px" style="font-weight: bold">{{devInfo.cabNum}}</span>
               </div>
               <el-divider direction="vertical" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">已开通</div>
-                <span class="text-20px">{{devInfo.cabUse}}</span>
+                <span class="text-30px" style="font-weight: bold">{{devInfo.cabUse}}</span>
               </div>
               <el-divider direction="vertical" border-style="dashed" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">未启用</div>
-                <span class="text-20px">{{devInfo.cabUnused}}</span>
+                <span class="text-30px" style="font-weight: bold">{{devInfo.cabUnused}}</span>
               </div>
             </div>
           </el-col>
@@ -48,7 +48,7 @@
       <el-card shadow="never">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>机房状态</span>
+            <span class="font-700">机房状态</span>
             <div class="roomPowerBtns">
               <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
               <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
@@ -63,7 +63,7 @@
       <el-card shadow="never" class="mt-8px">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>用电分布</span>
+            <span class="font-700">用电分布</span>
             <div class="flex text-12px">
               <template v-for="(btn, index) in powBtns" :key="index">
                 <div class="flex mr-8px" style="cursor: pointer;" @click="switchPowBtn(index)">
@@ -84,9 +84,9 @@
                     <div>{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(2) : '0.00'}}kW·h</div>
                   </div> -->
                   <div class="w-full h-210px flex" style="flex-direction: column; align-items: center;justify-content: center;position: relative;">
-                    <el-progress type="dashboard" :percentage="Math.min(eqInfo[powBtns[prePowBtn].totalParam]/eqInfo[oldPowList[prePowBtn]]*100,100)" width="200">
+                    <el-progress type="dashboard" :percentage="Math.min(eqInfo[powBtns[prePowBtn].totalParam]/eqInfo[oldPowList[prePowBtn]]*100,100)" width="200" stroke-width="20" :color="progressColor[prePowBtn]">
                       <!-- <span v-if="eqInfo[powBtns[prePowBtn].totalParam] > 1000" class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? (eqInfo[powBtns[prePowBtn].totalParam]/1000).toFixed(2) : '0.00'}}</span> -->
-                      <span class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(2) : '0.00'}}</span>
+                      <span class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(0) : '0'}}</span>
                       <span class="percentage-label">总用电量</span>
                       <!-- <span class="percentage-unit">kW·h</span> -->
                     </el-progress>
@@ -112,7 +112,7 @@
       <el-card shadow="never" class="mb-8px">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>告警统计</span>
+            <span class="font-700">告警统计</span>
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
@@ -131,7 +131,7 @@
       <el-card shadow="never" class="mb-8px">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>实时功率</span>
+            <span class="font-700">实时功率</span>
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
@@ -155,7 +155,7 @@
       <el-card shadow="never" class="mb-8px" v-if="toggleTable===false">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>设备/告警</span>
+            <span class="font-700">设备/告警</span>
             <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
           </div>
         </template>
@@ -166,14 +166,14 @@
       <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===true">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>设备/告警</span>
+            <span class="font-700">设备/告警</span>
             <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
           <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
             <el-table :data="alarmData" style="width: 100%" border class="text-12px" tooltip-formatter="tableRowFormatter">
-              <el-table-column prop="alarmTypeDesc" label="告警类型">
+              <el-table-column prop="alarmTypeDesc" label="告警类型" width="120px">
                 <template #default="{ row }">
                   <el-tooltip 
                     :content="`${row.alarmDesc}`" 
@@ -242,28 +242,29 @@ const radioBtn = ref('pow')
 const echartInfo = reactive<any>({}) //配置图表的数据系列
 const roomId = ref<number>(0)
 const screenValue = ref(0) //控制按钮的切换
+const progressColor = ['rgba(200, 96, 58, 1)','rgba(229, 184, 73, 1)','rgba(173, 55, 98, 1)','rgba(180, 118, 96, 1)']
 const powBtns = [ // 功率 当天/当月等切换
   {
     name:'当天',
-    backgroundColor: 'rgb(84, 112, 198)',
+    backgroundColor: 'rgba(200, 96, 58, 0.8)',
     param: 'todayEq',
     totalParam: 'todayEqTotal',
   },
   {
     name:'昨天',
-    backgroundColor: 'rgb(145, 204, 117)',
+    backgroundColor: 'rgba(229, 184, 73, 0.8)',
     param: 'yesterdayEq',
     totalParam: 'yesterdayEqTotal',
   },
   {
     name:'上周',
-    backgroundColor: 'rgb(250, 200, 88)',
+    backgroundColor: 'rgba(173, 55, 98, 0.8)',
     param: 'lastWeekEq',
     totalParam: 'lastWeekEqTotal',
   },
   {
     name:'上月',
-    backgroundColor: 'rgb(238, 102, 102)',
+    backgroundColor: 'rgba(180, 118, 96, 0.8)',
     param: 'lastMonthEq',
     totalParam: 'lastMonthEqTotal',
   },
@@ -733,7 +734,7 @@ const getHomeEqData = async() => {
       },
       xAxis: {
         type: 'category',
-        data: res.roomEqList ? res.roomEqList.map(item => item.name) : [],
+        data: res.roomEqList ? res.roomEqList.sort((a,b) => b.todayEq - a.todayEq).map(item => item.name) : [],
         axisLabel: {
           interval: 0, // 显示所有标签，不设间隔
         },
@@ -749,13 +750,16 @@ const getHomeEqData = async() => {
       series: [
         {
           name: '当天',
-          data: res.roomEqList ? res.roomEqList.map(item => item.todayEq ? item.todayEq.toFixed(2) : '0.00') : [],
+          data: res.roomEqList ? res.roomEqList.sort((a,b) => b.todayEq - a.todayEq).map(item => item.todayEq ? item.todayEq.toFixed(0) : '0') : [],
           type: 'bar',
           barWidth: 30, // 固定柱宽为 30 像素
           label: {
             show: true,
             position: 'top', // 顶部显示
           },
+          itemStyle: {
+            color: 'rgba(200, 96, 58, 0.8)'
+          }
         },
       ]
     })
@@ -835,9 +839,17 @@ const switchPowBtn = (index) => {
   //     }
   //   }
   // }
+    eqOptionsData.xAxis = {
+      type: 'category',
+      data: eqInfo.roomEqList ? eqInfo.roomEqList.sort((a,b) => b[powBtns[index].param] - a[powBtns[index].param]).map(item => item.name) : [],
+      axisLabel: {
+        interval: 0, // 显示所有标签，不设间隔
+      },
+    }
+    
     eqOptionsData.series = [{
       name: powBtns[index].name,
-      data: eqInfo.roomEqList ? eqInfo.roomEqList.map(item => item[powBtns[index].param] ? item[powBtns[index].param].toFixed(2) : '0.00') : [],
+      data: eqInfo.roomEqList ? eqInfo.roomEqList.sort((a,b) => b[powBtns[index].param] - a[powBtns[index].param]).map(item => item[powBtns[index].param] ? item[powBtns[index].param].toFixed(0) : '0') : [],
       type: 'bar',
       barWidth: 30, // 固定柱宽为 30 像素
       label: {

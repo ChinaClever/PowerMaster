@@ -63,6 +63,7 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
 
     Integer findAreaById(@Param("xLength") Integer xLength, @Param("yLength") Integer yLength, @Param("roomId") Integer roomId);
 
+
     int findAddAisleVerifyx(AisleSaveVo vo);
 
     int findAddAisleVerifyy(AisleSaveVo vo);

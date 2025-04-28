@@ -165,13 +165,14 @@ public class CabinetAisleVO {
     @Schema(description = "剩余空间", example = "1")
     private int freeSpace;
 
+    @Schema(description = "A路母线名称", example = "1")
+    private String busNameA;
 
     @Schema(description = "A路母线ip地址", example = "1")
     private String busIpA;
 
-    @Schema(description = "A路母线名称", example = "1")
-    private String busNameA;
-
+    @Schema(description = "B路母线ip地址", example = "1")
+    private String busIpB;
 
     @Schema(description = "A路插接箱名称", example = "1")
     private String boxNameA;
@@ -195,9 +196,22 @@ public class CabinetAisleVO {
     @Schema(description = "A路插接箱输出位id", example = "1")
     private Integer boxOutletIdA;
 
+    @Schema(description = "B路插接箱输出位id", example = "1")
+    private Integer boxOutletIdB;
 
-    @Schema(description = "B路母线ip地址", example = "1")
-    private String busIpB;
+    /**
+     * 插接箱ID编号
+     */
+    @Schema(description = "插接箱ID编号")
+    private Integer boxIndexA;
+
+    /**
+     * 插接箱ID编号
+     */
+    @Schema(description = "插接箱ID编号")
+    private Integer boxIndexB;
+
+
 
     @Schema(description = "B路母线名称", example = "1")
     private String busNameB;
@@ -207,8 +221,7 @@ public class CabinetAisleVO {
     private String boxNameB;
 
 
-    @Schema(description = "B路插接箱输出位id", example = "1")
-    private Integer boxOutletIdB;
+
 
     /**
      * 柜列中机柜位置
@@ -222,17 +235,6 @@ public class CabinetAisleVO {
     @Schema(description = "昨日电量", example = "1")
     private Double yesterdayEq;
 
-    /**
-     * 插接箱ID编号
-     */
-    @Schema(description = "昨日电量")
-    private Integer boxIndexA;
-
-    /**
-     * 插接箱ID编号
-     */
-    @Schema(description = "昨日电量")
-    private Integer boxIndexB;
     /**
      * 日用能告警开关
      */

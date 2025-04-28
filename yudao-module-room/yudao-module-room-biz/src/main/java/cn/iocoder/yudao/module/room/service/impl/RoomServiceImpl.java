@@ -2157,6 +2157,7 @@ public class RoomServiceImpl implements RoomService {
         return count + cabinetCount > 0;
     }
 
+
     private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {
         indices.forEach(iter -> {
             Object objAisle = aisleMap.get(iter.getId());

@@ -42,10 +42,10 @@
       </div>
       <div>
         <el-form-item>
-          <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
-            <el-option label="平均" value="平均" />
-            <el-option label="最大" value="最大" />
-            <el-option label="最小" value="最小" />
+          <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
+            <el-option label="最大" :value="1" />
+            <el-option label="平均" :value="0" />
+            <el-option label="最小" :value="-1" />
           </el-select>
         </el-form-item>
         <el-form-item label="时间段" prop="createTime" label-width="100px">
@@ -182,14 +182,14 @@
               相电流历史曲线趋势图
             </div>
             <!--<div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>-->
-            <CurLine class="adaptiveStyle" :list="curVolData"/>
+            <CurLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
           </div>
           <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电压历史曲线趋势图
             </div>
             <!--<div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>-->
-            <VolLine class="adaptiveStyle" :list="curVolData"/>
+            <VolLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -197,15 +197,54 @@
             </div>        
             <PFLine class="Container" :width="computedWidth" height="58vh" :list="pfLineList"/>
           </div>
-          <div class="pageBox"  v-if="visControll.powVis">
+          <!-- <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
-              功率曲线
+              功率曲线分析(当前周期)
             </div>
-            <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVar， 发生时间{{powData.reactivePowMinTime}}</p>
+            <p>视在功率极值</p>
+            <p>峰值{{powData.apparentPowMaxValue}}kVA， (记录于{{powData.apparentPowMaxTime}})</p>
+            <p>谷值{{powData.apparentPowMinValue}}kVA， (记录于{{powData.apparentPowMinTime}})</p> 
+            
+            <p>有功功率极值</p>
+            <p>峰值{{powData.activePowMaxValue}}kW， (记录于{{powData.activePowMaxTime}})</p>
+            <p>谷值{{powData.activePowMinValue}}kW， (记录于{{powData.activePowMinTime}})</p> 
+
+            <p>无功功率极值</p>
+            <p>峰值{{powData.reactivePowMaxValue}}kVar， (记录于{{powData.reactivePowMaxTime}})</p>
+            <p>谷值{{powData.reactivePowMinValue}}kVar， (记录于{{powData.reactivePowMinTime}})</p> 
+
             <Line class="Container" :width="computedWidth" height="58vh" :list="totalLineList"/>
-          </div>
+          </div> -->
+          <div class="pageBox" v-if="visControll.powVis">
+  <div class="page-conTitle">
+    功率曲线分析(当前周期)
+  </div>
+  
+  <div class="power-section single-line">
+  <span class="power-title">视在功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{powData.apparentPowMaxValue}}</span> kVA <span class="time">({{powData.apparentPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{powData.apparentPowMinValue}}</span> kVA <span class="time">({{powData.apparentPowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">有功功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{powData.activePowMaxValue}}</span> kW，<span class="time">(记录于 {{powData.activePowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{powData.activePowMinValue}}</span> kW，<span class="time">(记录于 {{powData.activePowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">无功功率极值</span>
+  <span class="power-value">峰值 <span class="highlight">{{powData.reactivePowMaxValue}}</span> kVar，<span class="time">(记录于 {{powData.reactivePowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{powData.reactivePowMinValue}}</span> kVar，<span class="time">(记录于 {{powData.reactivePowMinTime}})</span></span>
+</div>
+  
+
+  <Line class="Container" :width="computedWidth" height="58vh" :list="totalLineList"/>
+</div>
+
+
           <div class="pageBox" v-if="visControll.volVis">
             <div class="page-conTitle" >
               电压曲线
@@ -306,6 +345,7 @@ import { viewDepthKey } from 'vue-router';
 import { Bottom } from '@element-plus/icons-vue/dist/types';
 //import { ElMessageBox, ElMessage } from 'element-plus'
 import { remove } from 'nprogress';
+import { dataType } from 'element-plus/es/components/table-v2/src/common';
 
 // 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
@@ -368,7 +408,6 @@ const visControll = reactive({
 })
 const serChartContainerWidth = ref(0)
 
-const typeRadioShow = ref("最大")
 
 const loadAll = async () => {
   var data = await PDUDeviceApi.ipList();
@@ -499,9 +538,16 @@ const queryParams = reactive({
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
   timeType: 1,
-  cascadeAddr : 0
+  cascadeAddr : 0,
+  dataType : 1
 }) as any
 
+
+watch( ()=>queryParams.dataType, async()=>{
+   queryParams.devKey = queryParams.ipAddr;  
+  getList()
+
+})
 
 const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   if (node.level === 0) {
@@ -574,7 +620,7 @@ const filterTimesFromDate = (dateTimeStrings, targetDate) => {
 };
  
 // 获取当前日期（或者您可以指定任意日期）
-const currentDate = new Date().toISOString().split('T')[0];
+let currentDate = new Date().toISOString().split('T')[0];
 //获取PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async () => {
   const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime})
@@ -619,6 +665,8 @@ const PDUHdaLineHisdata = async () => {
   if (dateTimeName.value === 'twentyfourHour') {
     lineidDateTimes.value = filterTimesFromDate(result.dateTimes, currentDate).map(item => item.substring(11, 16))
   } else if (dateTimeName.value === 'seventytwoHour') {
+
+    console.log('result.dateTimes'+result.dateTimes);
     lineidDateTimes.value = result.dateTimes.map(item => item.substring(0, 10))
   }
 
@@ -1672,4 +1720,55 @@ onUnmounted(() => {
     height: 42vh;
   }
 }
+
+.pageBox {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  padding: 20px;
+}
+
+.page-conTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.power-section {
+  margin-bottom: 15px;
+  background: #f9f9f9;
+  padding: 12px 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.power-title {
+  font-weight: bold;
+  color: #3498db;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.power-value {
+  margin: 5px 0;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 4px;
+  font-size: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.highlight {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.time {
+  color: #7f8c8d;
+  font-size: 13px;
+  margin-left: 5px;
+}
+
 </style>
