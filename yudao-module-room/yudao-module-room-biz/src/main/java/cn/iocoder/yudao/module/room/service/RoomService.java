@@ -125,7 +125,7 @@ public interface RoomService {
 
     List<String> getRoomAddrList();
 
-    RoomMainResVO getDatanewDetail(int id) throws ExecutionException, InterruptedException;
+    RoomMainResVO getDataNewDetail(int id) throws ExecutionException, InterruptedException;
 
     //柜列编辑删除
     Integer roomAisleDeleteById(int id);

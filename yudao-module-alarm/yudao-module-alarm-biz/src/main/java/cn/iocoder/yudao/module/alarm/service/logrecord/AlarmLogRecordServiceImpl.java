@@ -6,13 +6,19 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
-import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
-import cn.iocoder.yudao.framework.common.vo.CabinetPduResVO;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordPageReqVO;
+import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordRespVO;
+import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordSaveReqVO;
+import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordStatisticsVO;
+import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
+import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
 import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -27,15 +33,11 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.*;
-import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
 
 /**
  * 系统告警记录 Service 实现类
@@ -79,13 +81,13 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         if (Objects.nonNull(updateReqVO.getAlarmStatus())
                 && updateReqVO.getAlarmStatus().equals(AlarmStatusEnums.FINISH.getStatus())) {
             logRecordMapper.update(null, new LambdaUpdateWrapper<AlarmLogRecordDO>()
-                    .eq(AlarmLogRecordDO::getId, updateReqVO.getId())
+                    .in(AlarmLogRecordDO::getId, updateReqVO.getIds())
                     .set(AlarmLogRecordDO::getFinishTime, new Date())
                     .set(Objects.nonNull(updateReqVO.getAlarmStatus()), AlarmLogRecordDO::getAlarmStatus, updateReqVO.getAlarmStatus())
-                    .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()),AlarmLogRecordDO::getFinishReason, updateReqVO.getConfirmReason()));
+                    .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()), AlarmLogRecordDO::getFinishReason, updateReqVO.getConfirmReason()));
         } else {
             logRecordMapper.update(null, new LambdaUpdateWrapper<AlarmLogRecordDO>()
-                    .eq(AlarmLogRecordDO::getId, updateReqVO.getId())
+                    .in(AlarmLogRecordDO::getId, updateReqVO.getIds())
                     .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()), AlarmLogRecordDO::getConfirmReason, updateReqVO.getConfirmReason())
                     .set(Objects.nonNull(updateReqVO.getAlarmStatus()), AlarmLogRecordDO::getAlarmStatus, updateReqVO.getAlarmStatus()));
         }
@@ -127,6 +129,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         Page<AlarmLogRecordDO> recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
                 .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
                 .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
                 .eqIfPresent(AlarmLogRecordDO::getAlarmType, alarmType)
                 .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
                         .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
@@ -135,6 +138,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         .or()
                         .like(AlarmLogRecordDO::getAlarmPosition, pageReqVO.getLikeName()))
                 .orderByDesc(AlarmLogRecordDO::getCreateTime));
+
         List<AlarmLogRecordRespVO> recordRespVOS = new ArrayList<>();
         if (Objects.nonNull(recordPageResult)) {
             List<AlarmLogRecordDO> list = recordPageResult.getRecords();
@@ -153,43 +157,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     }
 
     @Override
-    public Map<Object, Object> levelCount() {
-        Map<Object, Object> map = new HashMap<>();
-        for (int i = 0; i < AlarmLevelEnums.values().length; i++) {
-            map.put(AlarmLevelEnums.values()[i].getStatus(), 0);
-        }
-        LambdaQueryWrapper<AlarmLogRecordDO> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus());
-        queryWrapper.select(AlarmLogRecordDO::getAlarmLevel, AlarmLogRecordDO::getCount);
-        queryWrapper.groupBy(AlarmLogRecordDO::getAlarmLevel);
-        List<AlarmLogRecordDO> list = logRecordMapper.selectList(queryWrapper);
-        if (!CollectionUtils.isEmpty(list)) {
-            Map<Integer, Integer> statusMap = list.stream().collect(Collectors.toMap(AlarmLogRecordDO::getAlarmLevel, AlarmLogRecordDO::getCount));
-            statusMap.keySet().forEach(key -> map.put(key, statusMap.get(key)));
-        }
-        //获取总数
-        List<AlarmLogRecordDO> records = logRecordMapper.selectList(new LambdaQueryWrapper<AlarmLogRecordDO>()
-                .ne(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus()));
-        if (!CollectionUtils.isEmpty(records)) {
-            //总报警数
-            map.put("total", records.size());
-            //未处理
-            long untreated = records.stream()
-                    .filter(t -> t.getAlarmStatus().equals(AlarmStatusEnums.UNTREATED.getStatus())).distinct().count();
-            long hung = records.stream()
-                    .filter(t -> t.getAlarmStatus().equals(AlarmStatusEnums.HUNG.getStatus())).distinct().count();
-            long confirm = records.stream()
-                    .filter(t -> t.getAlarmStatus().equals(AlarmStatusEnums.CONFIRM.getStatus())).distinct().count();
-            map.put("untreated", untreated);
-            map.put("hung", hung);
-            map.put("confirm", confirm);
-
-        } else {
-            map.put("total", 0);
-            map.put("hung", 0);
-            map.put("confirm", 0);
-        }
-        return map;
+    public AlarmLogRecordStatisticsVO levelCount(Integer roomId) {
+        return logRecordMapper.levelCount(roomId);
     }
 
     @Override
@@ -198,7 +167,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     }
 
     @Override
-    public void insertOrUpdateAlarmRecordWhenPduAlarm (List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+    public void insertOrUpdateAlarmRecordWhenPduAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
         if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
             ValueOperations ops = redisTemplate.opsForValue();
             List<PduIndexDo> pduIndexDoListOld = BeanUtils.toBean(oldMaps, PduIndexDo.class);
@@ -230,7 +199,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     // 告警描述、告警开始时间
                     JSONObject pduJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_PDU + pduIndexDoNew.getPduKey());
                     if (pduJson != null) {
-                        String pdu_alarm = pduJson.get("pdu_alarm")==null?"":pduJson.get("pdu_alarm").toString();
+                        String pdu_alarm = pduJson.get("pdu_alarm") == null ? "" : pduJson.get("pdu_alarm").toString();
                         alarmRecord.setAlarmDesc(pdu_alarm);
                         Object datetime = pduJson.get("datetime");
                         if (datetime != null) {
@@ -253,7 +222,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
-                            .set(AlarmLogRecordDO::getFinishReason,"状态恢复正常")
+                            .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
                             .eq(AlarmLogRecordDO::getAlarmKey, pduIndexDoNew.getPduKey())
                             .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
                 }
@@ -292,7 +261,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     // 告警描述、告警开始时间
                     JSONObject busJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_BUS + busIndexNew.getBusKey());
                     if (busJson != null) {
-                        String bus_alarm = busJson.get("dev_alarm")==null?"":busJson.get("dev_alarm").toString();
+                        String bus_alarm = busJson.get("dev_alarm") == null ? "" : busJson.get("dev_alarm").toString();
                         alarmRecord.setAlarmDesc(bus_alarm);
                         Object datetime = busJson.get("datetime");
                         if (datetime != null) {
@@ -314,7 +283,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     int alarmRecord = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
-                            .set(AlarmLogRecordDO::getFinishReason,"状态恢复正常")
+                            .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
                             .eq(AlarmLogRecordDO::getAlarmKey, busIndexNew.getBusKey())
                             .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
                 }
@@ -323,7 +292,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     }
 
-    public String getLocationByBusId (BusIndex busIndex) {
+    public String getLocationByBusId(BusIndex busIndex) {
         String location = busIndex.getBusKey();
         //设备位置
         AisleBar aisleBar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>().eq(AisleBar::getBusKey, busIndex.getBusKey()));

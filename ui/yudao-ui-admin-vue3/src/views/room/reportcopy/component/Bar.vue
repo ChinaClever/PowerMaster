@@ -25,7 +25,7 @@ const legendList = ref()
 
 // 设置饼图的选项
 const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
+  dataZoom:[{ type:"inside"}],  
   tooltip: { trigger: 'axis',
     formatter: function(params) {
       var result = params[0].name + '<br>';
@@ -38,14 +38,58 @@ const echartsOption = ref({
   },
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: { type: 'value' , name : "kWh"},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+  toolbox: {feature: {saveAsImage: {},
+    dataView: {
+      optionToContent: function(opt) {
+        const axisData = opt.xAxis[0].data;
+        const series = opt.series;
+        
+        let table = `
+          <style>
+            .data-view-table {
+              width: 100%;
+              font-size: 12px;
+              border-collapse: collapse;
+            }
+            .data-view-table th, .data-view-table td {
+              padding: 4px 8px;
+              border: 1px solid #eee;
+              text-align: center;
+            }
+            .data-view-table th {
+              background: #fafafa;
+            }
+          </style>
+          <table class="data-view-table">
+            <tr><th>时间</th>
+        `;
+
+        series.forEach(item => table += `<th>${item.name}</th>`);
+        table += '</tr>';
+
+        for (let i = 0; i < axisData.length; i++) {
+          table += `<tr><td>${axisData[i]}</td>`;
+          series.forEach(item => {
+            table += `<td>${item.data[i]?.toFixed(3) || '-'}</td>`;
+          });
+          table += '</tr>';
+        }
+
+        return table + '</table>';
+      }
+    }
+  ,dataZoom :{},restore :{}, }},
+  // color: ['#C8603A'],
+  
   series: series,
+  
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   series.value = prop.list.series;
+  series.value[0].itemStyle = {color: '#C8603A'}
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }

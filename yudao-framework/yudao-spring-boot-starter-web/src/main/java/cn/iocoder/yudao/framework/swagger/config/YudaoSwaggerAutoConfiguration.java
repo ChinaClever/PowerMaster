@@ -160,6 +160,12 @@ public class YudaoSwaggerAutoConfiguration {
 //        return GroupedOpenApi.builder().group("系统").packagesToScan("cn.iocoder.yudao.module.system").build();
     }
 
+    @Bean
+    public GroupedOpenApi alarmGroupApi() {
+        return buildGroupedOpenApi("告警", "alarm");
+//        return GroupedOpenApi.builder().group("系统").packagesToScan("cn.iocoder.yudao.module.system").build();
+    }
+
     public static GroupedOpenApi buildGroupedOpenApi(String group) {
         return buildGroupedOpenApi(group, group);
     }

@@ -72,14 +72,14 @@ public class RoomIndexAddrResVO {
      * 机房x长度(单位机柜)
      */
     @Schema(description = "机房x长度")
-    @JsonProperty(value="xLength")
+    @JsonProperty(value = "xLength")
     private int xLength;
 
     /**
      * 机房Y长度(单位机柜)
      */
     @Schema(description = "机房Y长度")
-    @JsonProperty(value="yLength")
+    @JsonProperty(value = "yLength")
     private int yLength;
 
     @Schema(description = "面积长度")
@@ -149,6 +149,18 @@ public class RoomIndexAddrResVO {
     @Schema(description = "后门平均温度")
     private Double temAvgBlack;
 
-
+    /**
+     * 是否可删除
+     */
+    @Schema(description = "是否可删除")
     private Boolean flagType;
+
+    /**
+     * 机房告警统计
+     */
+    @Schema(description = "机房告警统计")
+    private Integer alarmCount;
+
+    @Schema(description = "排序字段")
+    private Integer sort;
 }

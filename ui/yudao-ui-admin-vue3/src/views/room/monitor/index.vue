@@ -740,6 +740,7 @@ const rowColInfo = reactive({
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
+  sort:null,
 })
 const queryParams = reactive({
   roomName: undefined,
@@ -821,6 +822,7 @@ const openSetting = (item) => {
     eleLimitDay: item.eleLimitDay,
     eleAlarmMonth: item.eleAlarmMonth,
     eleLimitMonth: item.eleLimitMonth,
+    sort: item.sort,
   })
   radio.value = item.displayType ? "PUE" : "负载率"
   roomId.value = item.id
@@ -878,8 +880,9 @@ const handleDialogCancel = () => {
 // 处理点击添加机房事件
 const handleAdd = () => {
   roomFlag.value = 1;
-  dialogVisible.value = true;
   resetForm();
+  dialogVisible.value = true;
+
 }
 
 // 处理点击删除机房事件
@@ -948,6 +951,7 @@ const resetForm = () => {
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
+    sort:null,
   })
   radio.value = "负载率"
   addrFlag.value = false
@@ -1029,6 +1033,7 @@ const submitSetting = async() => {
       eleAlarmMonth: rowColInfo.eleAlarmMonth,
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
+      sort:rowColInfo.sort,
     })
     
     if(res != null || res != "")

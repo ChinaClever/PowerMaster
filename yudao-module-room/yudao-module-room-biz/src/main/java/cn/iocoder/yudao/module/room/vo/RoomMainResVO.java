@@ -168,6 +168,9 @@ public class RoomMainResVO {
     @Schema(description = "后门平均温度")
     private Double temAvgBlack;
 
+    @Schema(description = "排序字段")
+    private Integer sort;
+
 //    @Schema(description = "设备统计")
 //    private Map<String, EquipmentStatisticsResVO> map;
 

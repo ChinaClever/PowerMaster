@@ -739,6 +739,9 @@
             <template #append>kVA</template>
           </el-input>
         </el-form-item>
+        <el-form-item label="排序" label-width="90">
+            <el-input-number v-model="rowColInfo.sort" controls-position="right" placeholder="请输入" />
+          </el-form-item>
         <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
@@ -961,6 +964,7 @@ const rowColInfo = reactive({
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
+  sort: null,
 })
 const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<Record<string, any[]>[]>([]);
@@ -1434,6 +1438,7 @@ const getRoomInfo = async() => {
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
+      sort: res.sort,
     })
     emit('backData', res)
     
@@ -1540,6 +1545,7 @@ const getRoomInfoNoLoading = async() => {
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
+      sort: res.sort,
     })
     emit('backData', res)
     
@@ -1751,6 +1757,7 @@ const resetForm = () => {
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
+    sort: null,
   })
   radio.value = "负载率"
 }
@@ -2637,6 +2644,7 @@ const submitSetting = async() => {
       eleAlarmMonth: rowColInfo.eleAlarmMonth,
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
+      sort:rowColInfo.sort,
     })
     
     if(res != null || res != "")
@@ -2720,6 +2728,7 @@ const handleSubmit = async() => {
         eleAlarmMonth: rowColInfo.eleAlarmMonth,
         eleLimitDay: rowColInfo.eleLimitDay,
         eleLimitMonth: rowColInfo.eleLimitMonth,
+        sort:rowColInfo.sort,
         aisleList,
         cabinetList
     })
