@@ -83,6 +83,9 @@ public class RoomIndexCfgVO {
     @TableField(value = "area_y_length")
     private BigDecimal areayLength;
 
+    @Schema(description = "排序")
+    private Integer sort;
+
     /**
      * 日用能告警开关
      */

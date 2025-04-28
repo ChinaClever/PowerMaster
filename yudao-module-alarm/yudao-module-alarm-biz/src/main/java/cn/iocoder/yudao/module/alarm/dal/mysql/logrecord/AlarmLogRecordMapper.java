@@ -32,4 +32,5 @@ public interface AlarmLogRecordMapper extends BaseMapperX<AlarmLogRecordDO> {
                 .orderByDesc(AlarmLogRecordDO::getId));
     }
 
+    AlarmLogRecordStatisticsVO levelCount(Integer roomId);
 }

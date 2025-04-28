@@ -102,8 +102,8 @@ public class AlarmLogRecordController {
 
     @Operation(summary = "告警等级统计")
     @GetMapping("/level/count")
-    public CommonResult<Map<Object,Object>> levelCount() {
-        Map<Object,Object> result = logRecordService.levelCount();
+    public CommonResult<AlarmLogRecordStatisticsVO> levelCount(@RequestParam(value = "roomId", required = false)@Parameter(description = "机房id") Integer roomId) {
+        AlarmLogRecordStatisticsVO result = logRecordService.levelCount(roomId);
         return success(result);
     }
 }

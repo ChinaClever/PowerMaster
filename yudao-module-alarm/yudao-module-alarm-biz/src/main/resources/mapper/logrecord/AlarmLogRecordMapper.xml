@@ -9,4 +9,20 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="levelCount"
+            resultType="cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordStatisticsVO">
+        select count(id) as total,
+        count(case when  alarm_level = 1 then 1 end) as alarmLevelOne,
+        count(case when  alarm_level = 2 then 1 end) as alarmLevelTwe,
+        count(case when  alarm_level = 3 then 1 end) as alarmLevelThree,
+        count(case when  alarm_status = 0 then 1 end) as untreated,
+        count(case when  alarm_status = 1 then 1 end) as hung,
+        count(case when  alarm_status = 2 then 1 end) as confirm
+        from alarm_log_record
+        <where>
+            <if test="roomId != null">
+                and room_id =#{roomId}
+            </if>
+        </where>
+    </select>
 </mapper>
