@@ -112,6 +112,8 @@
 import { AlarmApi } from '@/api/system/notify/alarm'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import AlarmForm from './AlarmForm.vue'
+import { useWebSocket } from '@vueuse/core'
+import { getAccessToken } from '@/utils/auth'
 
 const message = useMessage() // 消息弹窗
 
@@ -141,6 +143,50 @@ const selectedIds = ref<number[]>([]);
 
 const handleSelectionChange = (val: any[]) => {
   selectedIds.value = val.map(item => item.id);};
+
+  const server = ref(
+  (import.meta.env.VITE_BASE_URL + '/infra/ws').replace('http', 'ws') + '?token=' + getAccessToken()
+) // WebSocket 服务地址
+
+  /** 发起 WebSocket 连接 */
+const {data} = useWebSocket(server.value, {
+  autoReconnect: false,
+  heartbeat: true
+})
+
+watchEffect(() => {
+  if (!data.value) {
+    return
+  }
+  try {
+    // 1. 收到心跳
+    if (data.value === 'pong') {
+      // state.recordList.push({
+      //   text: '【心跳】',
+      //   time: new Date().getTime()
+      // })
+      return
+    }
+
+    // 2.1 解析 type 消息类型
+    const jsonMessage = JSON.parse(data.value)
+    console.log('ws:', jsonMessage)
+    const type = jsonMessage.type
+    if (!type) {
+      message.error('未知的消息类型：' + data.value)
+      return
+    }
+    // 2.2 消息类型：alarm_message
+    if (type === 'alarm_message') {
+      getTableData(true)
+      return
+    }
+  } catch (error) {
+    message.error('处理消息发生异常：' + data.value)
+    console.error(error)
+  }
+})
+
 
 // 获取警告配置
 const getAlarmConfig = async() => {
