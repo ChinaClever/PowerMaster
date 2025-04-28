@@ -581,7 +581,7 @@
       </el-table>
     </div>
     
-    <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
+    <el-dialog v-model="dialogVisible" title="机房配置" width="34%" :before-close="handleDialogCancel">
       <el-form>
         <div style="margin-bottom: 5px">
           <el-text>机房</el-text>
@@ -665,12 +665,12 @@
         </div>
         <div class="double-formitem">
           <el-form-item label-width="60" style="flex: 0">
-            <el-checkbox-button v-model="rowColInfo.displayFlag">
-              {{rowColInfo.displayFlag ? '已启用' : '未启用'}}
+            <el-checkbox-button v-model="sortFlag">
+              {{sortFlag ? '已启用' : '未启用'}}
             </el-checkbox-button>
           </el-form-item>
-          <el-form-item v-if="rowColInfo.displayFlag" label="排序序号" label-width="160">
-            <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入" />
+          <el-form-item v-if="sortFlag" label="排序序号" label-width="160">
+            <el-input type="number" v-model="rowColInfo.sort" placeholder="请输入" />
           </el-form-item>
         </div>
 
@@ -723,7 +723,6 @@ const dialogVisible = ref(false);
 const deletedList = ref<any>([]) //已删除的
 const roomId = ref(0) // 房间id
 const radio = ref("负载率")
-const radioareaFlag = ref('"0"')
 const rowColInfo = reactive({
   roomName: '', // 机房名
   addr: '一楼', //楼层
@@ -747,6 +746,7 @@ const queryParams = reactive({
 })as any
 
 const addrFlag = ref(false)
+const sortFlag = ref(false)
 
 const searchRoomName = ref("")
 
@@ -816,15 +816,18 @@ const openSetting = (item) => {
     powerCapacity:item.powerCapacity,
     addr: item.addr,
     airPower:item.airPower ? item.airPower : 0,
-    displayType: item.displayType ? 1 : 0, //0负载率 1PUE
-    displayFlag: item.displayFlag ? 1 : 0,
+    displayType: item.displayType, //0负载率 1PUE
+    displayFlag: item.displayFlag,
     eleAlarmDay: item.eleAlarmDay,
     eleLimitDay: item.eleLimitDay,
     eleAlarmMonth: item.eleAlarmMonth,
     eleLimitMonth: item.eleLimitMonth,
     sort: item.sort,
   })
+  console.log(rowColInfo)
   radio.value = item.displayType ? "PUE" : "负载率"
+  addrFlag.value = item.addr == '未区分' ? false : true
+  sortFlag.value = item.sort ? true : false
   roomId.value = item.id
   dialogVisible.value = true;
 }
@@ -955,6 +958,7 @@ const resetForm = () => {
   })
   radio.value = "负载率"
   addrFlag.value = false
+  sortFlag.value = false
 }
 
 // 处理设置提交
