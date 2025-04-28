@@ -160,4 +160,7 @@ public class RoomIndexAddrResVO {
      */
     @Schema(description = "机房告警统计")
     private Integer alarmCount;
+
+    @Schema(description = "排序字段")
+    private Integer sort;
 }

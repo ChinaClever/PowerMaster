@@ -9,19 +9,19 @@
         </el-select>
       </div>
       <div class="status">
-        <template v-for="item in statusInfo" :key="item.value">
+        <template v-for="item in statusInfo[chosenBtn]" :key="item.value">
           <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
         </template>
       </div>
       <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px'">
         <div style="display: flex;justify-content: flex-end;margin-right:3px;width: 100%;align-items: center;">
-          <el-button v-if="isFromHome" size="small" @click="tableScaleValue = 0.2;tableScaleWidth = 500;tableScaleHeight = 500" circle ><Icon icon="ep:refresh-right" /></el-button>
+          <el-button v-if="isFromHome" size="small" @click="tableScaleValue = tableScaleValueStart;tableScaleWidth = tableScaleWidthStart;tableScaleHeight = tableScaleHeightStart" circle ><Icon icon="ep:refresh-right" /></el-button>
           <el-button v-else size="small" @click="tableScaleValue = 1;tableScaleWidth = 100;tableScaleHeight = 100" circle ><Icon icon="ep:refresh-right" /></el-button>
           <el-button size="small" @click="tableScale(false)" circle ><Icon icon="ep:minus" /></el-button>
           <el-button size="small" @click="tableScale(true)" circle ><Icon icon="ep:plus" /></el-button>
         </div>
         <template v-for="item in btns" :key="item.value">
-          <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+          <el-button @click="switchBtn(item.value)" round color="#00778c" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
         </template>
       </div>
       <div style="display: flex;align-items: center">
@@ -36,14 +36,14 @@
       </div>
     </div>
   </el-card>
-  <el-card shadow="never">
+  <el-card shadow="never" :style="isFromHome ? 'flex: 1;' : ''">
     <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="{cursor: `${dragCursor}`}">
         <div class="dragContainer" 
           ref="tableContainer"
           v-loading="loading" 
           style="z-index: 100"
           @click.right="handleRightClick"
-          :style="isFromHome ? `transform-origin: 0 0;height: 50vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
+          :style="isFromHome ? `transform-origin: 0 0;height: 49vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
           <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
           <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
             <el-table-column fixed type="index" align="center" :resizable="false" />
@@ -63,55 +63,151 @@
                   >
                     <template #item="{ element }">
                       <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)">
-                        <div v-if="chosenBtn == 0 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? '#fa3333' : (element.loadRate>=60 ? '#ffc402' : (element.loadRate>=30 ? '#05ebfc' : '#3bbb00'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
-                                机柜状态：{{statusInfo[element.runStatus].name}} <br/>
-                                机柜名称：{{element.cabinetName}} <br/>
-                                机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                A路设备：{{element.cabinetkeya}}<br/>
-                                A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                B路设备：{{element.cabinetkeyb}}<br/>
-                                B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                前门温度：{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                前门湿度：{{element.temFront ? element.humFront.toFixed(0) : '0'}}%<br/>
-                                后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                已用空间：{{element.usedSpace}}U<br/>
-                                未用空间：{{element.freeSpace}}U<br/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路设备：{{element.cabinetkeya}}<br/>
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路设备：{{element.cabinetkeyb}}<br/>
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                  <div style="width: 50%">
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">%</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">%</div></div>
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 2 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? '#7CFFB2' : (element.powerFactor>=0.5 ? '#58D9F9' : (element.powerFactor>=0.25 ? '#FDDD60' : '#FF6E76'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 1 && element.runStatus == 1" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
-                                机柜状态：{{statusInfo[element.runStatus].name}} <br/>
-                                机柜名称：{{element.cabinetName}} <br/>
-                                机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                A路设备：{{element.cabinetkeya}}<br/>
-                                A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                B路设备：{{element.cabinetkeyb}}<br/>
-                                B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                前门温度：{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                前门湿度：{{element.temFront ? element.humFront.toFixed(0) : '0'}}%<br/>
-                                后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                已用空间：{{element.usedSpace}}U<br/>
-                                未用空间：{{element.freeSpace}}U<br/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路设备：{{element.cabinetkeya}}<br/>
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路设备：{{element.cabinetkeyb}}<br/>
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                  <div style="width: 50%">
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                            </el-tooltip>
+                          </template>
+                        </div>
+                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? `rgba(124, 255, 178, ${element.powerFactor})` : (element.powerFactor>=0.5 ? `rgba(88, 217, 249, ${element.powerFactor+0.25})` : (element.powerFactor>=0.25 ? `rgba(253, 221, 96, ${element.powerFactor+0.5})` : `rgba(255, 110, 118, ${element.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.name">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路设备：{{element.cabinetkeya}}<br/>
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路设备：{{element.cabinetkeyb}}<br/>
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                  <div style="width: 50%">
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
                               </template>
                               <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
                             </el-tooltip>
@@ -121,26 +217,49 @@
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
-                                机柜状态：{{statusInfo[element.runStatus].name}} <br/>
-                                机柜名称：{{element.cabinetName}} <br/>
-                                机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                A路设备：{{element.cabinetkeya}}<br/>
-                                A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                B路设备：{{element.cabinetkeyb}}<br/>
-                                B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                前门温度：{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                前门湿度：{{element.temFront ? element.humFront.toFixed(0) : '0'}}%<br/>
-                                后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                已用空间：{{element.usedSpace}}U<br/>
-                                未用空间：{{element.freeSpace}}U<br/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路设备：{{element.cabinetkeya}}<br/>
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路设备：{{element.cabinetkeyb}}<br/>
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                  <div style="width: 50%">
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -148,58 +267,104 @@
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
-                                机柜状态：{{statusInfo[element.runStatus].name}} <br/>
-                                机柜名称：{{element.cabinetName}} <br/>
-                                机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                A路设备：{{element.cabinetkeya}}<br/>
-                                A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                B路设备：{{element.cabinetkeyb}}<br/>
-                                B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                前门温度：{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                前门湿度：{{element.temFront ? element.humFront.toFixed(0) : '0'}}%<br/>
-                                后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                已用空间：{{element.usedSpace}}U<br/>
-                                未用空间：{{element.freeSpace}}U<br/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路设备：{{element.cabinetkeya}}<br/>
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路设备：{{element.cabinetkeyb}}<br/>
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                  <div style="width: 50%">
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else :style="{backgroundColor: element.cabinetName ? statusInfo[element.runStatus].color : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else :style="{backgroundColor: element.cabinetName ? statusColor[element.runStatus].color : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
-                                机柜状态：{{statusInfo[element.runStatus].name}} <br/>
-                                机柜名称：{{element.cabinetName}} <br/>
-                                机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                A路设备：{{element.cabinetkeya}}<br/>
-                                A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                B路设备：{{element.cabinetkeyb}}<br/>
-                                B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                前门温度：{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                前门湿度：{{element.temFront ? element.humFront.toFixed(0) : '0'}}%<br/>
-                                后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                已用空间：{{element.usedSpace}}U<br/>
-                                未用空间：{{element.freeSpace}}U<br/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路设备：{{element.cabinetkeya}}<br/>
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路设备：{{element.cabinetkeyb}}<br/>
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                  <div style="width: 50%">
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
                               </template>
-                              <div v-if="chosenBtn == 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">%</div></div>
-                              <div v-if="chosenBtn == 1" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">kW</div></div>
-                              <div v-if="chosenBtn == 2" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                              <div v-if="chosenBtn == 3" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
-                              <div v-if="chosenBtn == 4" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
-                              <div v-if="chosenBtn == 5" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">kWh</div></div>
+                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">%</div></div>
+                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                              <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kWh</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -207,55 +372,151 @@
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
                           <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
-                            <div v-if="chosenBtn == 0 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? '#fa3333' : (item.loadRate>=60 ? '#ffc402' : (item.loadRate>=30 ? '#05ebfc' : '#3bbb00'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
-                                    机柜状态：{{statusInfo[item.runStatus].name}} <br/>
-                                    机柜名称：{{item.cabinetName}} <br/>
-                                    机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                    昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                    总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                    总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                    A路设备：{{item.cabinetkeya}}<br/>
-                                    A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                    B路设备：{{item.cabinetkeyb}}<br/>
-                                    B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                    前门温度：{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                    后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                    前门湿度：{{item.temFront ? item.humFront.toFixed(0) : '0'}}%<br/>
-                                    后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                    已用空间：{{item.usedSpace}}U<br/>
-                                    未用空间：{{item.freeSpace}}U<br/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路设备：{{item.cabinetkeya}}<br/>
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路设备：{{item.cabinetkeyb}}<br/>
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                      </div>
+                                      <div style="width: 50%">
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">%</div></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">%</div><span v-else style="font-size: 10px;">%</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 2 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? '#7CFFB2' : (item.powerFactor>=0.5 ? '#58D9F9' : (item.powerFactor>=0.25 ? '#FDDD60' : '#FF6E76'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 1 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
-                                    机柜状态：{{statusInfo[item.runStatus].name}} <br/>
-                                    机柜名称：{{item.cabinetName}} <br/>
-                                    机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                    昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                    总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                    总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                    A路设备：{{item.cabinetkeya}}<br/>
-                                    A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                    B路设备：{{item.cabinetkeyb}}<br/>
-                                    B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                    前门温度：{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                    后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                    前门湿度：{{item.temFront ? item.humFront.toFixed(0) : '0'}}%<br/>
-                                    后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                    已用空间：{{item.usedSpace}}U<br/>
-                                    未用空间：{{item.freeSpace}}U<br/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路设备：{{item.cabinetkeya}}<br/>
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路设备：{{item.cabinetkeyb}}<br/>
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                      </div>
+                                      <div style="width: 50%">
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                                </el-tooltip>
+                              </template>
+                            </div>
+                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? `rgba(124, 255, 178, ${item.powerFactor})` : (item.powerFactor>=0.5 ? `rgba(88, 217, 249, ${item.powerFactor+0.25})` : (item.powerFactor>=0.25 ? `rgba(253, 221, 96, ${item.powerFactor+0.5})` : `rgba(255, 110, 118, ${item.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路设备：{{item.cabinetkeya}}<br/>
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路设备：{{item.cabinetkeyb}}<br/>
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                      </div>
+                                      <div style="width: 50%">
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
                                   </template>
                                   <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
                                 </el-tooltip>
@@ -265,26 +526,49 @@
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
-                                    机柜状态：{{statusInfo[item.runStatus].name}} <br/>
-                                    机柜名称：{{item.cabinetName}} <br/>
-                                    机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                    昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                    总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                    总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                    A路设备：{{item.cabinetkeya}}<br/>
-                                    A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                    B路设备：{{item.cabinetkeyb}}<br/>
-                                    B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                    前门温度：{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                    后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                    前门湿度：{{item.temFront ? item.humFront.toFixed(0) : '0'}}%<br/>
-                                    后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                    已用空间：{{item.usedSpace}}U<br/>
-                                    未用空间：{{item.freeSpace}}U<br/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路设备：{{item.cabinetkeya}}<br/>
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路设备：{{item.cabinetkeyb}}<br/>
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                      </div>
+                                      <div style="width: 50%">
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -292,58 +576,104 @@
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
-                                    机柜状态：{{statusInfo[item.runStatus].name}} <br/>
-                                    机柜名称：{{item.cabinetName}} <br/>
-                                    机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                    昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                    总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                    总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                    A路设备：{{item.cabinetkeya}}<br/>
-                                    A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                    B路设备：{{item.cabinetkeyb}}<br/>
-                                    B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                    前门温度：{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                    后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                    前门湿度：{{item.temFront ? item.humFront.toFixed(0) : '0'}}%<br/>
-                                    后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                    已用空间：{{item.usedSpace}}U<br/>
-                                    未用空间：{{item.freeSpace}}U<br/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路设备：{{item.cabinetkeya}}<br/>
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路设备：{{item.cabinetkeyb}}<br/>
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                      </div>
+                                      <div style="width: 50%">
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else :style="{backgroundColor: item.cabinetName ? statusInfo[item.runStatus].color : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else :style="{backgroundColor: item.cabinetName ? statusColor[item.runStatus].color : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
-                                    机柜状态：{{statusInfo[item.runStatus].name}} <br/>
-                                    机柜名称：{{item.cabinetName}} <br/>
-                                    机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                    昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                    总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                    总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                    A路设备：{{item.cabinetkeya}}<br/>
-                                    A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                    B路设备：{{item.cabinetkeyb}}<br/>
-                                    B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/><br/>
-                                    前门温度：{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}°C<br/>
-                                    后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}°C<br/><br/>
-                                    前门湿度：{{item.temFront ? item.humFront.toFixed(0) : '0'}}%<br/>
-                                    后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : '0'}}%<br/><br/>
-                                    已用空间：{{item.usedSpace}}U<br/>
-                                    未用空间：{{item.freeSpace}}U<br/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路设备：{{item.cabinetkeya}}<br/>
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路设备：{{item.cabinetkeyb}}<br/>
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                      </div>
+                                      <div style="width: 50%">
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
                                   </template>
-                                  <div v-if="chosenBtn == 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">%</div></div>
-                                  <div v-if="chosenBtn == 1" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">kW</div></div>
-                                  <div v-if="chosenBtn == 2" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                  <div v-if="chosenBtn == 3" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
-                                  <div v-if="chosenBtn == 4" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -10px">°C</div></div>
-                                  <div v-if="chosenBtn == 5" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -10px">kWh</div></div>
+                                  <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                  <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kWh</div></div> -->
                                 </el-tooltip>
                               </template>
                             </div>
@@ -359,6 +689,7 @@
               </el-table-column>
             </template>
           </el-table>
+          
         <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
           <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
             <!-- <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div> -->
@@ -408,6 +739,9 @@
             <template #append>kVA</template>
           </el-input>
         </el-form-item>
+        <el-form-item label="排序" label-width="90">
+            <el-input-number v-model="rowColInfo.sort" controls-position="right" placeholder="请输入" />
+          </el-form-item>
         <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
@@ -580,11 +914,16 @@ const dragTable = ref() // 可移动编辑表格
 const dragTableViewEle = ref()
 const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
-const tableScaleValue = ref(isFromHome ? 0.2 : 1)
-const tableScaleWidth = ref(isFromHome ? 500 : 100)
-const tableScaleHeight = ref(isFromHome ? 500 : 100)
+
+const tableScaleValue = ref(1)
+const tableScaleWidth = ref(100)
+const tableScaleHeight = ref(100)
+const tableScaleValueStart = ref(1)
+const tableScaleWidthStart = ref(100)
+const tableScaleHeightStart = ref(100)
+
 const deletedList = ref<any>([]) //已删除的
-const chosenBtn = ref(0)
+const chosenBtn = ref(1)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
@@ -625,33 +964,104 @@ const rowColInfo = reactive({
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
+  sort: null,
 })
 const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<Record<string, any[]>[]>([]);
-const statusInfo = ref([
+const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量'])
+const statusInfo = ref([[
   {
-    name: '未绑定',
-    color: '#05ebfc',
+    name: '0%<负载率<60%',
+    color: '#7cffb2',
     value: 0,
   },
   {
+    name: '60%<=负载率<=90%',
+    color: '#e5b849',
+    value: 1,
+  },
+  {
+    name: '90%<负载率',
+    color: '#d42023',
+    value: 2,
+  }
+],[
+  {
+    name: '空载',
+    color: '#effaff',
+    value: 5,
+  },
+  {
     name: '正常',
-    color: '#3bbb00',
+    color: '#298447',
     value: 1,
   },
   {
     name: '预警',
-    color: '#ffc402',
+    color: '#e56e19',
     value: 2,
   },
   {
     name: '告警',
-    color: '#fa3333',
+    color: '#d42023',
+    value: 3,
+  },
+  {
+    name: '未绑定',
+    color: '#3e62c7',
+    value: 0,
+  },
+  {
+    name: '离线',
+    color: '#757c8a',
+    value: 4,
+  },
+],[
+  {
+    name: '功数<0.25',
+    color: '#ff6e76',
+    value: 0,
+  },
+  {
+    name: '0.25<=功数<0.50',
+    color: '#fddd60',
+    value: 1,
+  },
+  {
+    name: '0.50<=功数<0.75',
+    color: '#58d9f9',
+    value: 2,
+  },
+  {
+    name: '0.75<=功数',
+    color: '#7cffb2',
+    value: 3,
+  }
+]])
+const statusColor = ref([
+  {
+    name: '未绑定',
+    color: '#3e62c7',
+    value: 0,
+  },
+  {
+    name: '正常',
+    color: '#298447',
+    value: 1,
+  },
+  {
+    name: '预警',
+    color: '#e56e19',
+    value: 2,
+  },
+  {
+    name: '告警',
+    color: '#d42023',
     value: 3,
   },
   {
     name: '离线',
-    color: '#7700ff',
+    color: '#757c8a',
     value: 4,
   },
   {
@@ -662,21 +1072,21 @@ const statusInfo = ref([
 ])
 const btns = [
   {
-    value: 0,
-    name: '机柜负荷',
+    value: 1,
+    name: '视在功率',
   },
   {
-    value: 1,
-    name: '有功功率',
+    value: 0,
+    name: '机柜负荷',
   },
   {
     value: 2,
     name: '功率因素',
   },
-  {
-    value: 5,
-    name: '昨日用能',
-  },
+  // {
+  //   value: 5,
+  //   name: '昨日用能',
+  // },
   {
     value: 3,
     name: '前门温度',
@@ -1028,6 +1438,7 @@ const getRoomInfo = async() => {
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
+      sort: res.sort,
     })
     emit('backData', res)
     
@@ -1095,6 +1506,8 @@ const getRoomInfo = async() => {
     tableData.value = data;
     //console.log("tableData.value",tableData.value)
     getRoomStatus(result)
+    if(isFromHome)
+    updateScale()
     // handleCssScale()
   } finally {
     loading.value = false
@@ -1132,6 +1545,7 @@ const getRoomInfoNoLoading = async() => {
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
+      sort: res.sort,
     })
     emit('backData', res)
     
@@ -1238,23 +1652,21 @@ const tableScale = (flag) => {
 
 const updateScale = () => {
   console.log(dragTableViewEle.value,dragTable.value)
-  if (!dragTableViewEle.value || !dragTable.value) return;
+  if (!dragTableViewEle.value) return;
 
   const containerWidth = dragTableViewEle.value.clientWidth;
   const containerHeight = dragTableViewEle.value.clientHeight;
 
-  // 获取表格的原始宽高（可能因列数变化而变化）
-  const tableWidth = dragTable.value.$el.scrollWidth;
-  const tableHeight = dragTable.value.$el.scrollHeight;
-
   // 计算缩放比例（取宽高中较小的比例，确保完整显示）
-  const scaleX = containerWidth / tableWidth;
-  const scaleY = containerHeight / tableHeight;
-  tableScaleValue.value = Math.min(scaleX, scaleY, 1); // 最大缩放 1（不放大）
-  tableScaleWidth.value = 1/tableScaleValue.value*100
-  tableScaleHeight.value = 1/tableScaleValue.value*100
+  tableScaleValueStart.value = Math.min(Math.floor(containerHeight/(rowColInfo.row*2.4))/10,Math.floor(containerWidth/(rowColInfo.col*5.4))/10)
+  tableScaleWidthStart.value = 1/tableScaleValueStart.value*100
+  tableScaleHeightStart.value = 1/tableScaleValueStart.value*100
+  
+  tableScaleValue.value = tableScaleValueStart.value
+  tableScaleWidth.value = tableScaleWidthStart.value
+  tableScaleHeight.value = tableScaleHeightStart.value
 
-  console.log(containerWidth,containerHeight,tableWidth,tableHeight,tableScaleValue.value,tableScaleWidth.value,tableScaleHeight.value)
+  console.log(tableScaleValueStart.value,tableScaleWidthStart.value,tableScaleHeightStart.value,containerWidth,containerHeight,rowColInfo)
 };
 
 // 计算出要缩放的比例
@@ -1345,6 +1757,7 @@ const resetForm = () => {
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
+    sort: null,
   })
   radio.value = "负载率"
 }
@@ -1828,7 +2241,6 @@ const dragTableView = () => {
   operateMenu.value.show = false
 }
 const onMouseDown = (e) => {
-  // updateScale()
 
   if (dragCursor.value == 'grab') {
     dragCursor.value = 'grabbing';
@@ -1994,9 +2406,11 @@ const deleteMachine = () => {
 const handleChange = async(data) => {
   let aisleFlagId:any = null;
   let messageAisleFlag = "保存成功！";
+  let messageAisleFlagError = "保存失败！";
   if(aisleFlag.value == 2){
       aisleFlagId = data.id; 
       messageAisleFlag = "修改成功！";
+      messageAisleFlagError = "修改失败！"
   }
   if(data.type == 1){
       let asileObject = {id:aisleFlagId,
@@ -2015,9 +2429,10 @@ const handleChange = async(data) => {
 
       const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
 
-      console.log(flagRes)
-
-      return
+      if(flagRes) {
+        message.error(messageAisleFlagError + "可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+        return
+      }
 
       const aisleRes = await MachineRoomApi.saveRoomAisle(asileObject) 
       if(aisleRes != null || aisleRes != "") {
@@ -2229,6 +2644,7 @@ const submitSetting = async() => {
       eleAlarmMonth: rowColInfo.eleAlarmMonth,
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
+      sort:rowColInfo.sort,
     })
     
     if(res != null || res != "")
@@ -2312,6 +2728,7 @@ const handleSubmit = async() => {
         eleAlarmMonth: rowColInfo.eleAlarmMonth,
         eleLimitDay: rowColInfo.eleLimitDay,
         eleLimitMonth: rowColInfo.eleLimitMonth,
+        sort:rowColInfo.sort,
         aisleList,
         cabinetList
     })
@@ -2392,7 +2809,7 @@ onUnmounted(() => {
   .box {
     width: 10px;
     height: 10px;
-    border-radius: 2px;
+    border-radius: 50%;
     margin-left: 10px;
     margin-right: 5px;
   }
@@ -2400,7 +2817,8 @@ onUnmounted(() => {
 .toolbar {
   display: flex;
   justify-content: space-between;
-  align-items:center
+  align-items:center;
+  height: 3vh
 }
 .dragContainer {
   // transform-origin: left right;
@@ -2470,7 +2888,7 @@ onUnmounted(() => {
         }
       }
       .fill {
-        background-color: #0cff2c;
+        background-color: #effaff;
       }
     }
     .dragChildCol {
@@ -2493,9 +2911,15 @@ onUnmounted(() => {
         justify-content: center;
         background-color: #effaff;
         border-bottom: 1px solid #bed1ff;
+        &>div {
+          min-height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       }
       .fill {
-        background-color: #0cff2c;
+        background-color: #effaff;
       }
     }
   }

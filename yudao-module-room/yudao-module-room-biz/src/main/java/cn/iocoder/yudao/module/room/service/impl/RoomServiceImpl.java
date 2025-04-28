@@ -1142,12 +1142,12 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(envs)) {
             envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
         }
-        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
-                .eq(AlarmLogRecord::getAlarmStatus, 0));
-        Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(alarmLogRecords)){
-            alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
-        }
+//        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
+//                .eq(AlarmLogRecord::getAlarmStatus, 0));
+//        Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
+//        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+//            alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
+//        }
         String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         String endTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
         List<CabinetEqBaseDo> list = getDataKey(startTime, endTime, ids, CABINET_EQ_TOTAL_DAY, "cabinet_id", CabinetEqBaseDo.class);
@@ -1161,7 +1161,7 @@ public class RoomServiceImpl implements RoomService {
                 Collectors.toMap(i -> JSON.parseObject(JSON.toJSONString(i)).getString("cabinet_key"), Function.identity()));
 
         for (RoomCabinetDTO iter : cabinetDTOList) {
-            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap, envMap,alarmMap);
+            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap, envMap,null);
         }
     }
 
@@ -1191,12 +1191,12 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(envs)) {
             envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
         }
-        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
-                .eq(AlarmLogRecord::getAlarmStatus, 0));
-        Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(alarmLogRecords)){
-            alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
-        }
+//        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
+//                .eq(AlarmLogRecord::getAlarmStatus, 0));
+//        Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
+//        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+//            alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
+//        }
 
         String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
         String endTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MAX), "yyyy-MM-dd HH:mm:ss");
@@ -1218,21 +1218,27 @@ public class RoomServiceImpl implements RoomService {
                 //纵向
                 iter.setIndex(iter.getYCoordinate() - dataDTO.getYCoordinate() + 1);
             }
-            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap, envMap, alarmMap);
+            extractedCabinetCommon(iter, rackMap, pduMap, boxMap, eqMap, cabinetMap, envMap, null);
         }
     }
 
-    private static void extractedCabinetCommon(RoomCabinetDTO iter, Map<Integer, List<RackIndex>> rackMap, Map<Integer, CabinetPdu> pduMap,
+    private void extractedCabinetCommon(RoomCabinetDTO iter, Map<Integer, List<RackIndex>> rackMap, Map<Integer, CabinetPdu> pduMap,
                                                Map<Integer, CabinetBox> boxMap, Map<Integer, List<CabinetEqBaseDo>> eqMap, Map<String, Object> cabinetMap,
                                                Map<Integer, List<CabinetEnvSensor>> envMap, Map<Integer, List<AlarmLogRecord>> alarmMap) {
         List<RackIndex> rackIndices1 = rackMap.get(iter.getId());
         if (!CollectionUtils.isEmpty(rackIndices1)) {
             iter.setRackIndices(rackIndices1);
         }
-        List<AlarmLogRecord> alarmLogRecords = alarmMap.get(iter.getId());
-        if (!CollectionUtils.isEmpty(alarmLogRecords)){
-            iter.setAlarmLogRecords(alarmLogRecords);
-        }
+
+        AlarmLogRecord alarmLogRecords = alarmLogRecordDoMapper.selectOne(new LambdaQueryWrapper<AlarmLogRecord>()
+                .in(AlarmLogRecord::getCabinetId,iter.getId())
+                .eq(AlarmLogRecord::getAlarmStatus, 0).orderByDesc(AlarmLogRecord::getCreateTime)
+                .last("limit 1"));
+        iter.setAlarmLogRecord(alarmLogRecords);
+//        List<AlarmLogRecord> alarmLogRecords = alarmMap.get(iter.getId());
+//        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+//            iter.setAlarmLogRecords(alarmLogRecords);
+//        }
 
         List<CabinetEnvSensor> envSensorList = envMap.get(iter.getId());
         if (!CollectionUtils.isEmpty(envSensorList)) {
@@ -2106,7 +2112,7 @@ public class RoomServiceImpl implements RoomService {
         LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(StringUtils.isNotEmpty(addr), RoomIndex::getAddr, addr)
                 .eq(StringUtils.isNotEmpty(roomName), RoomIndex::getRoomName, roomName)
-                .eq(RoomIndex::getIsDelete, 0).orderByAsc(RoomIndex::getAddr);
+                .eq(RoomIndex::getIsDelete, 0).orderByAsc(RoomIndex::getAddr).orderByAsc(RoomIndex::getSort);
         List<RoomIndex> list = roomIndexMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(list)) {
             return null;

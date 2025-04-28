@@ -308,5 +308,5 @@ public class RoomCabinetDTO {
     @Schema(description = "环境数据")
     private List<CabinetEnvSensorDTO> sensorList;
 
-    private List<AlarmLogRecord> alarmLogRecords;
+    private AlarmLogRecord alarmLogRecord;
 }
