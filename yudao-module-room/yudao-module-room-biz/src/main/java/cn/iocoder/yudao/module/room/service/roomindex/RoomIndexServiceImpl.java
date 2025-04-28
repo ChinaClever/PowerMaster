@@ -1055,7 +1055,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
             searchSourceBuilder2.query(boolQuery);
             searchSourceBuilder2.size(1);
-            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            searchSourceBuilder2.sort("ele_total", SortOrder.DESC);
             SearchRequest searchRequest2 = new SearchRequest();
             searchRequest2.indices("room_ele_total_realtime");
             //query条件--正常查询条件

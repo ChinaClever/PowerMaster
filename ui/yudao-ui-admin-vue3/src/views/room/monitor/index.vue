@@ -634,6 +634,9 @@
             <template #append>kVA</template>
           </el-input>
         </el-form-item>
+        <el-form-item label="排序" label-width="90">
+            <el-input-number v-model="rowColInfo.sort" :min="1" :max="10000" controls-position="right" placeholder="请输入" />
+          </el-form-item>
         <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
@@ -716,6 +719,7 @@ const rowColInfo = reactive({
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
+  sort:0,
 })
 const queryParams = reactive({
   roomName: undefined,
@@ -793,6 +797,7 @@ const openSetting = (item) => {
     eleLimitDay: item.eleLimitDay,
     eleAlarmMonth: item.eleAlarmMonth,
     eleLimitMonth: item.eleLimitMonth,
+    sort: item.sort,
   })
   radio.value = item.displayType ? "PUE" : "负载率"
   roomId.value = item.id
@@ -1000,6 +1005,7 @@ const submitSetting = async() => {
       eleAlarmMonth: rowColInfo.eleAlarmMonth,
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
+      sort:rowColInfo.sort,
     })
     
     if(res != null || res != "")
