@@ -140,7 +140,7 @@ public class PDUDeviceController {
     @PostMapping("/report/pfline")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+        return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/pow")
