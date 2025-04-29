@@ -34,6 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -324,6 +326,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     if (cabinetJson != null) {
                         // 告警描述
                         String loadFactor = cabinetJson.get(FieldConstant.LOAD_FACTOR) + "";
+                        DecimalFormat decimalFormat = new DecimalFormat("0.00%");
+                        decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
+                        loadFactor = decimalFormat.format(Double.parseDouble(loadFactor)/100);
                         String powerCapacity = cabinetJson.get(FieldConstant.POW_CAPACITY) + "";
                         JSONObject cabinetPower = (JSONObject) cabinetJson.get(FieldConstant.CABINET_POWER);
                         JSONObject totalData = (JSONObject) cabinetPower.get(FieldConstant.TOTAL_DATA);
