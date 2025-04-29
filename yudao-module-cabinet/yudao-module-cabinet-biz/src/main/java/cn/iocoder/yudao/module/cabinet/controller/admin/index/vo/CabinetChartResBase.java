@@ -12,5 +12,5 @@ public class CabinetChartResBase {
 
     private List<String> time = new ArrayList<>();
 
-    private List<String> happenTime = new ArrayList<>();
+
 }

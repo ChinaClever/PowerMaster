@@ -16,16 +16,22 @@ const prop = defineProps({
   width: {
     type: [Number,String],
     default: 60
+  },
+  dataType:{
+      type : Number,
+      default : 1
   }
 })
 
 const series = ref()
 const time = ref()
 const legendList = ref()
+const happenTime = ref()
 
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
+  color:['#C8603A'],
   legend: { data: legendList,
     type: 'scroll', // 设置为 'single' 或 'multiple'
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
@@ -36,13 +42,22 @@ const echartsOption = ref({
       console.log('打印1'+params)
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value + ' kWh' ;
-        
+        if(prop.dataType != 0){
+          result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex] +'&nbsp&nbsp&nbsp&nbsp' +params[i].value + ' kWh' ;
         if (params[i].seriesName.includes("视在功率")) {
           result += params[i].value.toFixed(3) +  ' kVA'; 
         } else if (params[i].seriesName.includes("有功功率")) {
           result += params[i].value.toFixed(3) + ' kW';
         }
+        }else{
+          result +=  params[i].marker + params[i].seriesName + '&nbsp&nbsp&nbsp&nbsp' +params[i].value + ' kWh' ;
+        if (params[i].seriesName.includes("视在功率")) {
+          result += params[i].value.toFixed(3) +  ' kVA'; 
+        } else if (params[i].seriesName.includes("有功功率")) {
+          result += params[i].value.toFixed(3) + ' kW';
+        }
+        }
+     
         result += '<br>';
       }
       return result;
@@ -59,8 +74,9 @@ watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   series.value = prop.list.series;
-  series.value[0].data = series.value[0].data.map((item)=>item.toFixed(2))
+  series.value[0].data = series.value[0].data.map((item)=>item.toFixed(2));
   //console.log("series.value",  series.value)
+  happenTime.value = prop.list.series.map(item => item.happenTime);
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
