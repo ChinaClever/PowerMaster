@@ -86,4 +86,11 @@ public interface AlarmLogRecordService {
      *
      */
     void insertOrUpdateAlarmRecordWhenBusAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
+
+    /**
+     * 当cabinet报警时，插入告警记录
+     *
+     */
+    void insertOrUpdateAlarmRecordWhenCabinetAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
 }

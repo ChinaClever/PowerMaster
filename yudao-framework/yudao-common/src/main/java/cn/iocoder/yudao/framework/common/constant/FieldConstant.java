@@ -520,5 +520,19 @@ public class FieldConstant {
      * 聚合名称
      */
     public static final String BY_ROOM = "by_room";
+
+    public static final String PDU_ALARM = "pdu_alarm";
+
+    public static final String DEV_ALARM = "dev_alarm";
+
+    public static final String DATETIME = "datetime";
+
+    public static final String POW_CAPACITY = "pow_capacity";
+
+    public static final String ROOM_NAME = "room_name";
+
+    public static final String AISLE_NAME = "aisle_name";
+
+    public static final String CABINET_NAME = "cabinet_name";
 }
 

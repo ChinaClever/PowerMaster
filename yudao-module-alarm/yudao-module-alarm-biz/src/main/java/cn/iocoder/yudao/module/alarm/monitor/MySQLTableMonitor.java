@@ -136,6 +136,8 @@ public class MySQLTableMonitor {
                             case DBTable.BUS_INDEX:
                                 alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
                                 break;
+                            case DBTable.CABINET_INDEX:
+                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
                             default:
                                 break;
                         }

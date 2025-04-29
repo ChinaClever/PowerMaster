@@ -7,7 +7,7 @@ import lombok.Getter;
  * @time: 2024/11/26 16:04
  */
 @Getter
-public enum BusTypeEnum {
+public enum BusStatusEnum {
 
     /**
      * 设备离线
@@ -33,7 +33,7 @@ public enum BusTypeEnum {
      */
     private  String desc;
 
-    BusTypeEnum(Integer status, String desc) {
+    BusStatusEnum(Integer status, String desc) {
         this.status = status;
         this.desc = desc;
     }
