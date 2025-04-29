@@ -21,7 +21,7 @@ const prop = defineProps({
 
 const series = ref()
 const time = ref()
-const happenTime = ref()
+
 const legendList = ref()
 
 // 设置饼图的选项
@@ -37,14 +37,21 @@ const echartsOption = ref({
     trigger: 'axis',
     formatter: function(params) {
       // 获取当前数据点的索引
-      const dataIndex = params[0].dataIndex;
+   
+   
+       // 获取当前数据点的索引
+       const dataIndex = params[0].dataIndex;
       // 获取对应的 happenTime
-      const currentHappenTime = happenTime.value?.[dataIndex] || '';
+      // const currentHappenTime = params[0].happenTime.value?.[dataIndex] || '';
+
       
       let result = `${params[0].name}<br>`;
       console.log('Tooltip params:', params);
       for (let i = 0; i < params.length; i++) {
-        result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp;发生时间: &nbsp;&nbsp;&nbsp;&nbsp;${currentHappenTime} &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(2)}°C`;
+        console.log('Tooltip series:', series);
+        // const currentHappenTime = params[i].series.happenTime?.[dataIndex] 
+        
+        result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;发生时间:${series.value.happenTime[dataIndex]}  &nbsp;&nbsp;值: ${params[i].value.toFixed(2)}°C`;
         result += '<br>';
       }
       return result;
@@ -69,15 +76,13 @@ const echartsOption = ref({
 })
 
 watchEffect(() => {
-
   series.value = prop.list.series;
-
   
   if(series.value != null && series.value?.length > 0){
     legendList.value = series.value?.map(item => item.name)
   }
   
   time.value = prop.list.time;
-  happenTime.value = prop.list.happenTime;
+
 });
 </script>

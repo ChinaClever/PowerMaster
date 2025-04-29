@@ -180,6 +180,26 @@
           <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电流历史曲线趋势图
+  <div class="power-section single-line">
+  <span class="power-title">A相电流：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL1.current.maxCurValue}}</span> A <span class="time">({{curVolData.value?.showL1.current.maxCurTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL1.current.minCurValue}}</span> A <span class="time">({{curVolData.value?.showL1.current.minCurTime}})</span></span>
+</div>
+
+<div class="power-section single-line">
+  <span class="power-title">B相电流：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL2.current.maxCurValue}}</span> A <span class="time">({{curVolData.value?.showL2.current.maxCurTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL2.current.minCurValue}}</span> A <span class="time">({{curVolData.value?.showL2.current.minCurTime}})</span></span>
+</div>
+
+<div class="power-section single-line">
+  <span class="power-title">C相电流：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL3.current.maxCurValue}}</span> A <span class="time">({{curVolData.value?.showL3.current.maxCurTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL3.current.minCurValue}}</span> A <span class="time">({{curVolData.value?.showL3.current.minCurTime}})</span></span>
+</div>
+
+              <!-- curVolData.value.showL1.current.maxCurValue -->
+
             </div>
             <!--<div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>-->
             <CurLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
@@ -187,6 +207,23 @@
           <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电压历史曲线趋势图
+              <div class="power-section single-line">
+  <span class="power-title">A相电压：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL1.voltage.maxVolValue}}</span> V <span class="time">({{curVolData.value?.showL1.voltage.maxVolTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL1.voltage.minVolValue}}</span> V <span class="time">({{curVolData.value?.showL1.voltage.minVolTime}})</span></span>
+</div>
+
+<div class="power-section single-line">
+  <span class="power-title">B相电压：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL2.voltage.maxVolValue}}</span> V <span class="time">({{curVolData.value?.showL2.voltage.maxVolTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL2.voltage.minVolValue}}</span> V <span class="time">({{curVolData.value?.showL2.voltage.minVolTime}})</span></span>
+</div>
+
+<div class="power-section single-line">
+  <span class="power-title">C相电压：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL3.voltage.maxVolValue}}</span> V <span class="time">({{curVolData.value?.showL3.voltage.maxVolTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL3.voltage.minVolValue}}</span> V <span class="time">({{curVolData.value?.showL3.voltage.minVolTime}})</span></span>
+</div>
             </div>
             <!--<div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>-->
             <VolLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
@@ -270,6 +307,15 @@
             <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
             <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
             <EnvTemLine :width="computedWidth" height="58vh" :list="temList"  />
+          </div>
+
+          <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
+              湿度曲线
+            </div>
+            <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
+            <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
+            <EnvHumLine :width="computedWidth" height="58vh" :list="humList"  />
           </div>
 
 
@@ -380,11 +426,15 @@ defineOptions({ name: 'PDUDevice' })
 const dateTimeName = ref('seventytwoHour');
 const curVolData = ref();
 
+
+
+
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
 const volList = ref() as any;
 const curList = ref() as any;
 const temList = ref() as any;
+const humList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
@@ -403,6 +453,7 @@ const visControll = reactive({
   curVis : false,
   outletVis : false,
   temVis : false,
+  humVis : false,
   pfVis: false,
   flag: false,
 })
@@ -629,6 +680,10 @@ const PDUHdaLineHisdata = async () => {
 
   
   if(curVolData.value?.dateTimes != null && curVolData.value?.dateTimes?.length > 0){
+    console.log('curVolData.value',curVolData.value);
+    console.log('curVolData.value.showL1.current.maxCurValue',curVolData.value?.showL1.current.maxCurValue);
+    
+
     visControll.flag = true;
   }else{
     visControll.flag = false;
@@ -1034,12 +1089,21 @@ const getList = async () => {
   
   temData.value = await PDUDeviceApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
+  humList.value = temData.value.humRes;
   if(temList.value?.series != null && temList.value?.series?.length > 0 ){
     temData.value.temMinValue = temData.value.temMinValue?.toFixed(2);
     temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
     visControll.temVis = true;
   }else{
     visControll.temVis = false;
+  }
+
+  if(humList.value?.series != null && humList.value?.series?.length > 0 ){
+    humList.value.humMinValue = humList.value.humMinValue?.toFixed(2);
+    humList.value.humMaxValue = humList.value.humMaxValue?.toFixed(2);
+    visControll.humVis = true;
+  }else{
+    visControll.humVis = false;
   }
 
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
