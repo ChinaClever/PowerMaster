@@ -3,24 +3,7 @@
     <template #NavInfo>
       <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container"> -->
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        <!-- </div>
-        <div class="nav_header">
-          <br/>
-          <span v-if="queryParams.granularity == 'realtime' ">全部柜列最近一分钟新增记录</span>
-          <span v-if="queryParams.granularity == 'hour' ">全部柜列最近一小时新增记录</span>
-          <span v-if="queryParams.granularity == 'day' ">全部柜列最近一天新增记录</span>
-        </div>
-        <div class="nav_content" >
-          <el-descriptions title="" direction="vertical" :column="1" border >
-            <el-descriptions-item label=""><span >{{ navTotalData }} 条</span></el-descriptions-item>
-          </el-descriptions>
-        </div> -->
+
         <div class="descriptions-container" style="font-size: 14px;">
           <div style="margin-left: 10px;">
             <div>最近一分钟:{{ minTotal }}条</div>
@@ -150,9 +133,9 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const pageSizeArr = ref([15,30,50,100])
-const minTotal=ref()
-const hourTotal=ref()
-const dayTotal=ref()
+const minTotal=ref(0)
+const hourTotal=ref(0)
+const dayTotal=ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,

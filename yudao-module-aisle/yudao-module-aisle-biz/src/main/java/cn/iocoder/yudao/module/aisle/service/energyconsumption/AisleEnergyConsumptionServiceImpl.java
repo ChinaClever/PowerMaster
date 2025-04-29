@@ -99,8 +99,8 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
             }
             if(map.get("start_ele")!=null&&map.get("end_ele")!=null){
                 BigDecimal subtract = new BigDecimal((Double) map.get("end_ele")).subtract(new BigDecimal((Double) map.get("start_ele")));
-                if(subtract.compareTo(BigDecimal.ZERO)==1){
-                    map.put("eq_value", subtract.setScale(1,BigDecimal.ROUND_HALF_UP).doubleValue());
+                if(subtract.compareTo(BigDecimal.ZERO)==-1){
+                    map.put("eq_value", new BigDecimal((Double) map.get("end_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
                 }
             }
         });

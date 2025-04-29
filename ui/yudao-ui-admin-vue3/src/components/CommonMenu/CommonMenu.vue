@@ -206,7 +206,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #eef4fc;
+  background-color: #f7f7f7;
   font-size: 14px;
 }
 .nav-left {

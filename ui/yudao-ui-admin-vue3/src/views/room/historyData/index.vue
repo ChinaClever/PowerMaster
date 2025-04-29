@@ -142,9 +142,9 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const pageSizeArr = ref([15,30,50,100])
-const minTotal=ref()
-const hourTotal=ref()
-const dayTotal=ref()
+const minTotal=ref(0)
+const hourTotal=ref(0)
+const dayTotal=ref(0)
 let now=new Date()
 const queryParams = reactive({
   pageNo: 1,
