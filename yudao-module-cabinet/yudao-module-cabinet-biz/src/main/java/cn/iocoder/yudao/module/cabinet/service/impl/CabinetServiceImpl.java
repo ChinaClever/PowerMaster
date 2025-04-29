@@ -10,7 +10,6 @@ import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.*;
-import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
@@ -433,7 +432,7 @@ public class CabinetServiceImpl implements CabinetService {
     public CommonResult saveCabinet(CabinetVo vo) throws Exception {
         try {
             //判断pdu是否已经关联其他机柜
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
+            if (vo.getPduBox().equals(PduBoxFlagEnums.PDU.getValue())) {
                 List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
@@ -488,7 +487,7 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                         .eq(CabinetIndex::getRoomId, vo.getRoomId()));
                 if (Objects.nonNull(index)) {
-                    if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus() || index.getIsDisabled() == DisableFlagEnums.DISABLE.getStatus()) {
+                    if (index.getIsDeleted().equals(DelFlagEnums.DELETE.getStatus()) || index.getIsDisabled().equals(DisableFlagEnums.DISABLE.getStatus())) {
                         //index 索引表
                         //修改
                         cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -513,11 +512,12 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetCfgMapper.updateById(convertCfg(vo, cfg));
             } else {
                 cfg = new CabinetCfg();
+
                 //新增
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
             //机柜与PDU/插接箱的关联
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
+            if (vo.getPduBox().equals(PduBoxFlagEnums.PDU.getValue())) {
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
                     //删除
@@ -540,18 +540,13 @@ public class CabinetServiceImpl implements CabinetService {
                         cabinetPduMapper.insert(convertPdu(vo, pdu));
                     }
                 }
-            } else if (vo.getPduBox() == PduBoxFlagEnums.BUS.getValue()) {
-                if (Objects.isNull(vo.getCasIdA()) || Objects.isNull(vo.getCasIdB())){
-                    BusinessAssert.error(6012,"插接箱编号为空");
+            } else if (vo.getPduBox().equals(PduBoxFlagEnums.BUS.getValue())) {
+
+                if (Objects.isNull(vo.getBoxOutletIdA()) && Objects.isNull(vo.getBoxOutletIdB())) {
+                    //删除
+                    cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
+                            .eq(CabinetBox::getCabinetId, vo.getId()));
                 }
-                if (Objects.isNull(vo.getBoxOutletIdA()) || Objects.isNull(vo.getBoxOutletIdB())){
-                    BusinessAssert.error(6013,"插接箱输出位为空");
-                }
-//                if (Objects.isNull(vo.getBoxOutletIdA()) && Objects.isNull(vo.getBoxOutletIdB())) {
-//                    //删除
-//                    cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
-//                            .eq(CabinetBox::getCabinetId, vo.getId()));
-//                }
                 //母线关联表
                 CabinetBox bus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>()
                         .eq(CabinetBox::getCabinetId, vo.getId()));

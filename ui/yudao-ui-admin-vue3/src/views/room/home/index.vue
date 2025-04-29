@@ -1,7 +1,7 @@
 <template>
    <div class="homeContainer">
     <div class="left">
-      <el-card style="height: 30vh">
+      <el-card style="height: 28vh">
         <template #header>
           <div class="flex justify-between" style="align-item: center">
             <div style="font-weight: bold;">负载率</div>
@@ -33,6 +33,20 @@
         <div>总空间：{{spaceInfo.totalSpace}}u</div>
         <div>机柜数：{{spaceInfo.cabNum}}</div>
       </el-card>-->
+      <el-card shadow="never" style="height: 38vh">
+        <template #header>
+          <div class="flex justify-between">
+            <span style="font-weight: bold">柜列功率</span>
+          </div>
+        </template>
+        <el-skeleton :loading="loading" animated :rows="7" style="height: 28vh">
+          <div style="height: 28vh">
+            <Echart v-if="roomDownVal.aisleList.length>= 6" :height="280" :options="powChartOptions" />
+            <Echart v-else :height="280" :options="powChartOptionsBar" />
+          </div>
+        </el-skeleton>
+      </el-card>
+
       <el-card shadow="never" style="height:24vh;margin-bottom: 15px;">
         <template #header>
           <div class="flex justify-between" style="align-item: center">
@@ -43,12 +57,6 @@
           </div>
         </template>
         <div style="height:14vh;display: flex;flex-direction: column;justify-content: space-between">
-          <!--<template #header>
-            <div>当前用能</div>
-          </template>
-          <div>今日：{{EqInfo.todayEq && EqInfo.todayEq.toFixed(2)}}kW·h</div>
-          <div>本周：{{EqInfo.thisWeekEq && EqInfo.thisWeekEq.toFixed(2)}}kW·h</div>
-          <div>本月：{{EqInfo.thisMonthEq  && EqInfo.thisMonthEq.toFixed(2)}}kW·h</div>-->
           <div class="flex items-center" style="height: 40%;">
             <div style="height: 100%;margin-right: 0.5vw">
               <img alt="" src="@/assets/imgs/dn.jpg" style="height: 100%" />
@@ -96,19 +104,6 @@
           </div>
         </div>
       </el-card>
-      <el-card shadow="never" style="height: 39vh">
-        <template #header>
-          <div class="flex justify-between">
-            <span style="font-weight: bold">柜列功率</span>
-          </div>
-        </template>
-        <el-skeleton :loading="loading" animated :rows="7" style="height: 30vh">
-          <div style="height: 30vh">
-            <Echart v-if="roomDownVal.aisleList.length>= 6" :height="300" :options="powChartOptions" />
-            <Echart v-else :height="300" :options="powChartOptionsBar" />
-          </div>
-        </el-skeleton>
-      </el-card>
       
     </div>
     <div class="center" id="center">
@@ -148,22 +143,24 @@
       </el-card>
     </div>
     <div class="right">
-      <el-card shadow="never" style="height: 30vh">
+      <el-card shadow="never" style="height: 28vh">
         <template #header>
           <div style="font-weight: bold">机房功率</div>
         </template>
-        <el-skeleton :loading="loading" animated :rows="5" style="height: 21vh">
-          <div class="flex justify-around" style="height: 21vh;flex-direction: column">
+        <el-skeleton :loading="loading" animated :rows="4" style="height: 19vh">
+          <div class="flex justify-around" style="height: 19vh;flex-direction: column">
             <div class="flex justify-around">
               <div class="flex items-center" style="width: 50%">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
+                <div class="bullet" style="background-color:#C8603A;"></div>
                 <div class="flex" style="flex-direction: column">
                   <div>总有功功率</div>
                   <div><span style="font-weight: bold">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(3) : '0.000'}}</span>kW</div>
                 </div>
               </div>
               <div class="flex items-center" style="width: 50%">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
+                <div class="bullet" style="background-color:#E5B849;"></div>
                 <div class="flex" style="flex-direction: column">
                   <div>总无功功率</div>
                   <div><span style="font-weight: bold">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(3) : '0.000'}}</span>kVar</div>
@@ -172,14 +169,16 @@
             </div>
             <div class="flex justify-around">
               <div class="flex items-center" style="width: 50%">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
+                <div class="bullet" style="background-color:#AD3762;"></div>
                 <div class="flex" style="flex-direction: column">
                   <div>总视在功率</div>
                   <div><span style="font-weight: bold">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(3) : '0.000'}}</span>kVA</div>
                 </div>
               </div>
               <div class="flex items-center" style="width: 50%">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
+                <div class="bullet" style="background-color:#614e43;"></div>
                 <div class="flex" style="flex-direction: column">
                   <div>总电力容量</div>
                   <div><span style="font-weight: bold">{{roomDownVal.powerCapacity ? roomDownVal.powerCapacity : '-----------'}}</span></div>
@@ -192,44 +191,7 @@
           </div>
         </el-skeleton>
       </el-card>
-      <el-card shadow="never" style="margin-bottom: 15px;height:24vh;">
-        <template #header>
-          <div style="font-weight: bold;font-size: 16px;">设备</div>
-        </template>
-        <div style="height:14vh;display: flex;flex-direction: column;justify-content: space-around">
-          <div style="display: flex; align-items: center;">
-            <div style="width: 20%">机柜:</div>
-            <div style="font-weight: bold;width: 80%">{{deviceInfo.cabUse}}/{{deviceInfo.cabNum}}</div>
-          </div>
-          <div v-if="deviceInfo.pduNum != 0" style="display: flex; align-items: center;">
-            <div style="width: 20%">PDU:</div>
-            <div style="font-weight: bold;width: 80%">{{deviceInfo.pduOnLine}}/{{deviceInfo.pduNum}}</div>
-          </div>
-          <div v-else style="display: flex; align-items: center;">
-            <div style="width: 20%">母线:</div>
-            <div style="font-weight: bold;width: 80%">{{deviceInfo.busOnLine}}/{{deviceInfo.busNum}}</div>
-          </div>
-        </div>
-      </el-card>
-      <!--<el-card shadow="never">
-        <template #header>
-          <div>用能</div>
-        </template>
-        <div>昨日用能：{{EqInfo.yesterdayEq ? EqInfo.yesterdayEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>上周用能：{{EqInfo.lastWeekEq ? EqInfo.lastWeekEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>上月用能：{{EqInfo.lastMonthEq ? EqInfo.lastMonthEq.toFixed(2) : '0.00'}}kW·h</div>
-      </el-card>
-      <ContentWrap>
-        <div class="progress">
-          <el-progress type="dashboard" :percentage="roomDownVal.powActive && roomDownVal.powActive.toFixed()">
-            <template #default="{ percentage }">
-              <span class="percentage-value">{{ percentage }}kW</span>
-              <span class="percentage-label">总有功功率</span>
-            </template>
-          </el-progress>
-        </div>
-      </ContentWrap>-->
-       <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===false" style="height: 39vh">
+       <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===false" style="height: 38vh">
         <template #header>
           <div class="flex justify-between" style="align-items: center">
             <span style="font-weight: bold">环境/告警</span>
@@ -241,7 +203,7 @@
         </template>
         <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:30vh;"></div>
       </el-card>
-      <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===true" style="height: 39vh">
+      <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===true" style="height: 38vh">
         <template #header>
           <div class="flex justify-between" style="align-items: center">
             <span style="font-weight: bold">环境/告警</span>
@@ -266,29 +228,94 @@
           </div>
         </el-skeleton>
       </el-card>
-      
-      <!--<el-card shadow="never" class="mb-8px">
+      <el-card shadow="never" style="margin-bottom: 15px;height:24vh;">
         <template #header>
-          <div class="h-3 flex justify-between">
-            <span>设备统计</span>
+          <div style="font-weight: bold;font-size: 16px;">设备</div>
+        </template>
+        <div style="height:14vh;display: flex;flex-direction: column;justify-content: space-between">
+          <div class="flex items-center" style="height: 40%;">
+            <div style="height: 100%;margin-right: 0.5vw">
+              <img alt="" src="@/assets/imgs/dn.jpg" style="height: 100%" />
+            </div>
+            <div style="display: flex;flex-direction: column;flex: 1">
+              <div style="font-weight: bold;background: linear-gradient(to right, rgba(30, 144, 255, 0.3), rgba(30, 144, 255, 0));padding-left: 0.2vw">
+                机柜
+              </div>
+              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
+                <div>开通：</div>
+                <div style="font-weight: bold">{{deviceInfo.cabUse}}</div>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <div style="width: 30%"></div>
+                <el-progress :percentage="deviceInfo.cabUse/deviceInfo.cabNum*100" :show-text="false" style="width: 70%;" />
+              </div>
+              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
+                <div>总数：</div>
+                <div style="font-weight: bold">{{deviceInfo.cabNum}}</div>
+              </div>
+            </div>
           </div>
-        </template>
-        <el-table :data="tableData" style="width: 15vw;height:25vh" border class="text-12px">
-          <el-table-column prop="name" label=""  />
-          <el-table-column prop="all" label="总数"  />
-          <el-table-column prop="on" label="在线" />
-          <el-table-column prop="off" label="离线" />
-        </el-table>
+          
+          <div v-if="deviceInfo.pduNum != 0" class="flex items-center" style="height: 40%;">
+            <div style="height: 100%;margin-right: 0.5vw">
+              <img alt="" src="@/assets/imgs/dn.jpg" style="height: 100%" />
+            </div>
+            <div style="display: flex;flex-direction: column;flex: 1">
+              <div style="font-weight: bold;background: linear-gradient(to right, rgba(30, 144, 255, 0.3), rgba(30, 144, 255, 0));padding-left: 0.2vw">
+                PDU
+              </div>
+              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
+                <div>开通：</div>
+                <div style="font-weight: bold">{{deviceInfo.pduOnLine}}</div>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <div style="width: 30%"></div>
+                <el-progress :percentage="deviceInfo.pduOnLine/deviceInfo.pduNum*100" :show-text="false" style="width: 70%;" />
+              </div>
+              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
+                <div>总数：</div>
+                <div style="font-weight: bold">{{deviceInfo.pduNum}}</div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="flex items-center" style="height: 40%;">
+            <div style="height: 100%;margin-right: 0.5vw">
+              <img alt="" src="@/assets/imgs/dn.jpg" style="height: 100%" />
+            </div>
+            <div style="display: flex;flex-direction: column;flex: 1">
+              <div style="font-weight: bold;background: linear-gradient(to right, rgba(30, 144, 255, 0.3), rgba(30, 144, 255, 0));padding-left: 0.2vw">
+                母线
+              </div>
+              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
+                <div>开通：</div>
+                <div style="font-weight: bold">{{deviceInfo.busOnLine}}</div>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <div style="width: 30%"></div>
+                <el-progress :percentage="deviceInfo.busOnLine/deviceInfo.busNum*100" :show-text="false" style="width: 70%;" />
+              </div>
+              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
+                <div>总数：</div>
+                <div style="font-weight: bold">{{deviceInfo.busNum}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- <div style="height:14vh;display: flex;flex-direction: column;justify-content: space-around">
+          <div style="display: flex; align-items: center;">
+            <div style="width: 20%">机柜:</div>
+            <div style="font-weight: bold;width: 80%">{{deviceInfo.cabUse}}/{{deviceInfo.cabNum}}</div>
+          </div>
+          <div v-if="deviceInfo.pduNum != 0" style="display: flex; align-items: center;">
+            <div style="width: 20%">PDU:</div>
+            <div style="font-weight: bold;width: 80%">{{deviceInfo.pduOnLine}}/{{deviceInfo.pduNum}}</div>
+          </div>
+          <div v-else style="display: flex; align-items: center;">
+            <div style="width: 20%">母线:</div>
+            <div style="font-weight: bold;width: 80%">{{deviceInfo.busOnLine}}/{{deviceInfo.busNum}}</div>
+          </div>
+        </div> -->
       </el-card>
-      <el-card shadow="never">
-        <template #header>
-          <div>环境数据</div>
-        </template>
-        <div>当前平均湿度：{{envInfo.humAvg}}%</div>
-        <div>当前最高湿度：{{envInfo.humMax}}%</div>
-        <div>当前最低湿度：{{envInfo.humMin}}%</div>
-        <div>最近更新时间：{{envInfo.updateTime}}</div>
-      </el-card>-->
     </div>
   </div>
 </template>
@@ -342,7 +369,7 @@ const tableData = ref([
     box:'温湿度01',
     time:'2022-11-07 12:15:46'
   },{
-    name: '在线',
+    name: '开通',
     pdu_num: 0,
     box_num: 0,
     bus_num: 0,
@@ -421,7 +448,7 @@ const numChartOptions = ref({
   },
   xAxis: {
     type: 'category',nameLocation: 'end',
-    data:['总数','在线','离线','告警']
+    data:['总数','开通','离线','告警']
   },
   yAxis: {
     type: 'value',
@@ -481,14 +508,27 @@ const powRoomChartOptions = ref({
 
 const powChartOptionsBar = ref({
   title: { text: ''},
-  tooltip: { trigger: 'item',
-    formatter: '{b} : {c}',
-    confine: true},
+  tooltip: { 
+    trigger: 'item',
+    confine: true,      
+    formatter: function (params) {
+      console.log(params)
+      let result = params.seriesName + "：" + params.value
+      if(params.seriesName == "视在功率") {
+        result += 'kVA'
+      } else if(params.seriesName == "有功功率") {
+        result += 'kW'
+      } else if(params.seriesName == "无功功率") {
+        result += 'kVar'
+      }
+      return result
+    }},
   grid: {
     left: '15%'
   },
   legend: {
-    data: ['视在功率', '有功功率','无功功率'] // 图例项
+    data: ['视在功率', '有功功率','无功功率'], // 图例项
+    bottom: '0%'
   },
   xAxis: {
     type: 'category',
@@ -540,6 +580,7 @@ const powChartOptions = ref({
   // },
   legend: {
     data: ['视在功率', '有功功率', '无功功率'],
+    bottom: '0%'
   },
   radar: {
     // shape: 'circle',
@@ -1783,7 +1824,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   position: relative;
-  height: 21vh;
+  height: 19vh;
   .percentage-value {
     display: block;
     margin-top: 50px;
@@ -1857,21 +1898,21 @@ onUnmounted(() => {
 
 @media screen and (min-width:2048px){
   .scrollable-container-one{
-    height: 33vh;
+    height: 31vh;
     overflow-y: auto;
   }
 }
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .scrollable-container-one{
-    height: 30vh;
+    height: 28vh;
     overflow-y:auto;
   }
 }
 
 @media screen and (max-width:1600px){
   .scrollable-container-one{
-    height: 42vh;
+    height: 40vh;
     overflow-y: auto;
   }
 }

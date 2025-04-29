@@ -63,7 +63,7 @@
                   >
                     <template #item="{ element }">
                       <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)">
-                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -75,32 +75,32 @@
                                     昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                   </div>
                                   <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
                                     总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
                                     总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
-                                    A路设备：{{element.cabinetkeya}}<br/>
-                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
                                   </div>
                                   <div style="width: 50%">
-                                    B路设备：{{element.cabinetkeyb}}<br/>
-                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
                                   </div>
                                   <div style="width: 50%">
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -125,32 +125,32 @@
                                     昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                   </div>
                                   <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
                                     总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
                                     总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
-                                    A路设备：{{element.cabinetkeya}}<br/>
-                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
                                   </div>
                                   <div style="width: 50%">
-                                    B路设备：{{element.cabinetkeyb}}<br/>
-                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
                                   </div>
                                   <div style="width: 50%">
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -163,7 +163,7 @@
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? `rgba(124, 255, 178, ${element.powerFactor})` : (element.powerFactor>=0.5 ? `rgba(88, 217, 249, ${element.powerFactor+0.25})` : (element.powerFactor>=0.25 ? `rgba(253, 221, 96, ${element.powerFactor+0.5})` : `rgba(255, 110, 118, ${element.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? `rgba(124, 255, 178, ${element.powerFactor})` : (element.powerFactor>=0.5 ? `rgba(88, 217, 249, ${element.powerFactor+0.25})` : (element.powerFactor>=0.25 ? `rgba(253, 221, 96, ${element.powerFactor+0.5})` : `rgba(255, 110, 118, ${element.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -175,32 +175,32 @@
                                     昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                   </div>
                                   <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
                                     总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
                                     总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
-                                    A路设备：{{element.cabinetkeya}}<br/>
-                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
                                   </div>
                                   <div style="width: 50%">
-                                    B路设备：{{element.cabinetkeyb}}<br/>
-                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
                                   </div>
                                   <div style="width: 50%">
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -225,32 +225,32 @@
                                     昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                   </div>
                                   <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
                                     总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
                                     总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
-                                    A路设备：{{element.cabinetkeya}}<br/>
-                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
                                   </div>
                                   <div style="width: 50%">
-                                    B路设备：{{element.cabinetkeyb}}<br/>
-                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
                                   </div>
                                   <div style="width: 50%">
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -275,32 +275,32 @@
                                     昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                   </div>
                                   <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
                                     总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
                                     总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
-                                    A路设备：{{element.cabinetkeya}}<br/>
-                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
                                   </div>
                                   <div style="width: 50%">
-                                    B路设备：{{element.cabinetkeyb}}<br/>
-                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
                                   </div>
                                   <div style="width: 50%">
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -325,32 +325,32 @@
                                     昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                   </div>
                                   <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
                                     总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
                                     总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
-                                    A路设备：{{element.cabinetkeya}}<br/>
-                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
                                   </div>
                                   <div style="width: 50%">
-                                    B路设备：{{element.cabinetkeyb}}<br/>
-                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
                                   </div>
                                 </div>
                                 <hr/>
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
                                   </div>
                                   <div style="width: 50%">
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -372,7 +372,7 @@
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
                           <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
-                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -384,31 +384,31 @@
                                         昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                       </div>
                                       <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
                                         总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
                                         总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
-                                        A路设备：{{item.cabinetkeya}}<br/>
-                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
                                       </div>
                                       <div style="width: 50%">
-                                        B路设备：{{item.cabinetkeyb}}<br/>
-                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
                                       </div>
                                       <div style="width: 50%">
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
                                         后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
                                       </div>
                                     </div>
@@ -434,31 +434,31 @@
                                         昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                       </div>
                                       <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
                                         总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
                                         总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
-                                        A路设备：{{item.cabinetkeya}}<br/>
-                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
                                       </div>
                                       <div style="width: 50%">
-                                        B路设备：{{item.cabinetkeyb}}<br/>
-                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
                                       </div>
                                       <div style="width: 50%">
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
                                         后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
                                       </div>
                                     </div>
@@ -472,7 +472,7 @@
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? `rgba(124, 255, 178, ${item.powerFactor})` : (item.powerFactor>=0.5 ? `rgba(88, 217, 249, ${item.powerFactor+0.25})` : (item.powerFactor>=0.25 ? `rgba(253, 221, 96, ${item.powerFactor+0.5})` : `rgba(255, 110, 118, ${item.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? `rgba(124, 255, 178, ${item.powerFactor})` : (item.powerFactor>=0.5 ? `rgba(88, 217, 249, ${item.powerFactor+0.25})` : (item.powerFactor>=0.25 ? `rgba(253, 221, 96, ${item.powerFactor+0.5})` : `rgba(255, 110, 118, ${item.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -484,31 +484,31 @@
                                         昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                       </div>
                                       <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
                                         总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
                                         总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
-                                        A路设备：{{item.cabinetkeya}}<br/>
-                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
                                       </div>
                                       <div style="width: 50%">
-                                        B路设备：{{item.cabinetkeyb}}<br/>
-                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
                                       </div>
                                       <div style="width: 50%">
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
                                         后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
                                       </div>
                                     </div>
@@ -534,31 +534,31 @@
                                         昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                       </div>
                                       <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
                                         总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
                                         总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
-                                        A路设备：{{item.cabinetkeya}}<br/>
-                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
                                       </div>
                                       <div style="width: 50%">
-                                        B路设备：{{item.cabinetkeyb}}<br/>
-                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
                                       </div>
                                       <div style="width: 50%">
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
                                         后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
                                       </div>
                                     </div>
@@ -584,31 +584,31 @@
                                         昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                       </div>
                                       <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
                                         总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
                                         总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
-                                        A路设备：{{item.cabinetkeya}}<br/>
-                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
                                       </div>
                                       <div style="width: 50%">
-                                        B路设备：{{item.cabinetkeyb}}<br/>
-                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
                                       </div>
                                       <div style="width: 50%">
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
                                         后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
                                       </div>
                                     </div>
@@ -634,31 +634,31 @@
                                         昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                                       </div>
                                       <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
                                         总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
                                         总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
-                                        A路设备：{{item.cabinetkeya}}<br/>
-                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
                                       </div>
                                       <div style="width: 50%">
-                                        B路设备：{{item.cabinetkeyb}}<br/>
-                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
                                       </div>
                                     </div>
                                     <hr/>
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
                                       </div>
                                       <div style="width: 50%">
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
                                         后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
                                       </div>
                                     </div>
