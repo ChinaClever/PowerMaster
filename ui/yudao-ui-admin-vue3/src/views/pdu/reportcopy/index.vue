@@ -180,7 +180,8 @@
           <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电流历史曲线趋势图
-  <div class="power-section single-line">
+            </div>
+            <div class="power-section single-line">
   <span class="power-title">A相电流：</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL1.current.maxCurValue}}</span> A <span class="time">({{curVolData.value?.showL1.current.maxCurTime}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL1.current.minCurValue}}</span> A <span class="time">({{curVolData.value?.showL1.current.minCurTime}})</span></span>
@@ -198,16 +199,14 @@
   <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL3.current.minCurValue}}</span> A <span class="time">({{curVolData.value?.showL3.current.minCurTime}})</span></span>
 </div>
 
-              <!-- curVolData.value.showL1.current.maxCurValue -->
-
-            </div>
             <!--<div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>-->
             <CurLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
           </div>
           <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电压历史曲线趋势图
-              <div class="power-section single-line">
+            </div>
+            <div class="power-section single-line">
   <span class="power-title">A相电压：</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL1.voltage.maxVolValue}}</span> V <span class="time">({{curVolData.value?.showL1.voltage.maxVolTime}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL1.voltage.minVolValue}}</span> V <span class="time">({{curVolData.value?.showL1.voltage.minVolTime}})</span></span>
@@ -224,7 +223,6 @@
   <span class="power-value">峰值 <span class="highlight">{{curVolData.value?.showL3.voltage.maxVolValue}}</span> V <span class="time">({{curVolData.value?.showL3.voltage.maxVolTime}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData.value?.showL3.voltage.minVolValue}}</span> V <span class="time">({{curVolData.value?.showL3.voltage.minVolTime}})</span></span>
 </div>
-            </div>
             <!--<div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>-->
             <VolLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
           </div>
@@ -282,7 +280,7 @@
 </div>
 
 
-          <div class="pageBox" v-if="visControll.volVis">
+          <!-- <div class="pageBox" v-if="visControll.volVis">
             <div class="page-conTitle" >
               电压曲线
             </div>
@@ -293,7 +291,7 @@
               电流曲线
             </div>
             <cur width="70vw" height="58vh" :list="curList" />
-          </div>   
+          </div>    -->
           <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
               输出位电量排名
@@ -308,16 +306,14 @@
             <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
             <EnvTemLine :width="computedWidth" height="58vh" :list="temList"  />
           </div>
-
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               湿度曲线
             </div>
-            <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
-            <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
+            <p v-show="temData.humMaxValue">本周期内，最高温度{{temData.humMaxValue}}°C， 最高温度发生时间{{temData.humMaxTime}}，由温度传感器{{temData.humMaxSensorId}}采集得到</p>
+            <p v-show="temData.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.humMinValue}}°C， 最低温度发生时间{{temData.humMinTime}}，由温度传感器{{temData.humMinSensorId}}采集得到</p>
             <EnvHumLine :width="computedWidth" height="58vh" :list="humList"  />
           </div>
-
 
           
           <div class="pageBox"  v-if="temp1 && temp1.length > 0">
@@ -384,6 +380,7 @@ import CurLine from './component/curLine.vue';
 import VolLine from './component/volLine.vue';
 import HorizontalBar from './component/HorizontalBar.vue';
 import EnvTemLine from './component/EnvTemLine.vue';
+import EnvHumLine from './component/EnvHumLine.vue';
 import Radar from './component/Radar.vue';
 import { Flag } from '@element-plus/icons-vue/dist/types';
 import { size } from 'min-dash';
@@ -425,9 +422,6 @@ defineOptions({ name: 'PDUDevice' })
 //const lineidChartContainerOne = ref<HTMLElement | null>(null);
 const dateTimeName = ref('seventytwoHour');
 const curVolData = ref();
-
-
-
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
@@ -680,10 +674,6 @@ const PDUHdaLineHisdata = async () => {
 
   
   if(curVolData.value?.dateTimes != null && curVolData.value?.dateTimes?.length > 0){
-    console.log('curVolData.value',curVolData.value);
-    console.log('curVolData.value.showL1.current.maxCurValue',curVolData.value?.showL1.current.maxCurValue);
-    
-
     visControll.flag = true;
   }else{
     visControll.flag = false;
@@ -1097,7 +1087,6 @@ const getList = async () => {
   }else{
     visControll.temVis = false;
   }
-
   if(humList.value?.series != null && humList.value?.series?.length > 0 ){
     humList.value.humMinValue = humList.value.humMinValue?.toFixed(2);
     humList.value.humMaxValue = humList.value.humMaxValue?.toFixed(2);
