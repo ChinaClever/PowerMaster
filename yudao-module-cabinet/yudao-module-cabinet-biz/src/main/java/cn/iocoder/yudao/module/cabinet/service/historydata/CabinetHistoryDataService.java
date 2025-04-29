@@ -46,5 +46,9 @@ public interface CabinetHistoryDataService {
 
     Map<Integer, AisleIndex> getAisleByIds(List<Integer> aisleIds);
 
-    PageResult<CabinetEnvResVO> getHistoryDataPageEnv(CabinetHistoryDataPageReqVO pageReqVO);
+    PageResult<CabinetEnvResVO> getHistoryDataPageEnv(CabinetHistoryDataPageReqVO pageReqVO,boolean isPage);
+
+    Map<String, Object> getEnvNewData();
+
+    PageResult<Object> getHistoryEnvDataDetails(Integer cabinetId, String granularity, String[] timeRange);
 }

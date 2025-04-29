@@ -29,14 +29,4 @@ public class CabinetEnvResVO {
 
     private List front;
 
-//    private Integer sensorId;
-//
-//    private BigDecimal humValueBlack;
-//
-//    private BigDecimal temValueBlack;
-//
-//    private BigDecimal humValueFront;
-//
-//    private BigDecimal temValueFront;
-
 }

@@ -1,7 +1,7 @@
 <template>
   <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜环境分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>  
       <div class="nav_data">
         <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -41,8 +41,6 @@
           <br/>
       </div>
     <div class="descriptions-container" v-if="maxTemDataTimeTemp" style="font-size: 14px;">
-                <!-- 处理原始数据和小时极值数据的菜单栏 -->
-
 
           <div  class="description-item" v-if="queryParams.granularity != 'day'" >
             <span class="label">最高温度 :</span>
@@ -110,18 +108,11 @@
         label-width="70px"
       >
       <el-form-item label="传感器" prop="detect">
-        <el-select
-          v-model="detect"
-          class="!w-130px"
-          @change="handleQuery"
-          >
-          <el-option
-            v-for="item in sensorOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+        <el-cascader
+          v-model="sensor"
+          :options="options"
+          @change="handleChange"
           />
-        </el-select>
       </el-form-item>
 
       <el-form-item label="时间段" prop="timeRange" >
@@ -213,11 +204,11 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/pdu/envData'
 import { formatDate } from '@/utils/formatTime'
+import { HistoryDataApi } from '@/api/cabinet/historydata'
 import PDUImage from '@/assets/imgs/PDU.jpg'
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { HistoryDataApi } from '@/api/pdu/historydata'
-import  CommonMenu1 from './CommonMenu1.vue'
+// import  CommonMenu1 from './CommonMenu1.vue'
 
 
 /** pdu曲线 */
@@ -236,6 +227,7 @@ const loading = ref(false) //  列表的加载中
 const detect = ref('') as any// 监测点的值 默认全部
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
+const sensor=ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -266,7 +258,33 @@ const sensorOptions = ref([
   { value: "4", label: '传感器4'},
   
 ]) 
-
+const options=ref([{
+  label:'前门',
+  value:"front",
+  children:[{
+    value:'1',
+    label:'上'
+  },{
+    label:"中",
+    value:"2"
+  },{
+    label:'下',
+    value:"3"
+  }]
+},{
+  label:'后门',
+  value:"black",
+  children:[{
+    value:'1',
+    label:'上'
+  },{
+    label:"中",
+    value:"2"
+  },{
+    label:'下',
+    value:"3"
+  }]
+}])
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -390,13 +408,16 @@ const a=ref(0)
 const b=ref(0)
 const loading2=ref(false)
 
+function handleChange(a,b){
+ console.log(a,b)
+}
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => { 
   loading.value = true;
   try {
     // 
-    const data = await EnvDataApi.getEnvDataDetails(queryParams);
+    const data = await HistoryDataApi.getHistoryEnvDetailData(queryParams);
     if (data != null && data.total != 0){
       loading2.value=true
       isHaveData.value = true
@@ -896,6 +917,7 @@ const getNavList = async() => {
   navList.value = res
 }
 import { useRoute, useRouter } from 'vue-router';
+import { func } from 'vue-types';
 const route = useRoute();
 const router = useRouter();
 if(route.query.start!=null&&route.query.end!=null){
@@ -903,23 +925,28 @@ if(route.query.start!=null&&route.query.end!=null){
 }
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  
-    
-   // const firstChar = detect.value[0];
-    const secondChar = detect.value[0];
-    if (secondChar != null){    
-    // queryParams.channel = Number(firstChar);
-    queryParams.sensorId = Number(secondChar);
-    // 更新路由查询参数
-    const querySensorId = String(Number(secondChar));
-        router.push({
-            query: {
-                ...route.query, // 保留现有查询参数
-                sensorId: querySensorId // 添加或更新 sensorId 参数
-            }
-        });
-    }
-    needFlush.value++;
+//    // const firstChar = detect.value[0];
+//     const secondChar = detect.value[0];
+//     if (secondChar != null){    
+//     // queryParams.channel = Number(firstChar);
+//     queryParams.sensorId = Number(secondChar);
+//     // 更新路由查询参数
+//     const querySensorId = String(Number(secondChar));
+//         router.push({
+//             query: {
+//                 ...route.query, // 保留现有查询参数
+//                 sensorId: querySensorId // 添加或更新 sensorId 参数
+//             }
+//         });
+//     }
+//     needFlush.value++;
+  if(queryParams.cabinetId==null){
+    ElMessage({
+      message: '请选择机柜',
+      type: 'warning',
+    })
+  }
+  getList();
 }
 /** 初始化 **/
 onMounted( async () => {
