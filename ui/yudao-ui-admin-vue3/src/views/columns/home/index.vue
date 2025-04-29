@@ -1247,9 +1247,6 @@ const handlePduBar = (type) => {
 }
 // 处理柜列id/机柜id切换事件
 const handleIdChange = async (id) => {
-  console.log(12313)
-  containerInfo.cabinetColumnId = id
-  lineChartQueryParams.id = id
   await getLineChartData()
   initChart2()
   initChart3()

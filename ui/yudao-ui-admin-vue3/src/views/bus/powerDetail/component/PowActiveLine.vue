@@ -39,7 +39,7 @@ const echartsOption = ref({
         if(series.value[i]?.times?.[params[i].dataIndex]) {
           result +=  '发生时间:' + series.value[i].times[params[i].dataIndex].slice(0,-3) + '&nbsp&nbsp'
         }
-        result += params[i].value.toFixed(0) + ' kW' + '<br>';
+        result += params[i].value.toFixed(3) + ' kW' + '<br>';
       }
       return result;
     } 
