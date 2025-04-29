@@ -20,6 +20,6 @@ public class HumSeries {
 
     private List<Integer> data = new ArrayList<>();
 
-
+    private List<String> happenTime = new ArrayList<>();
 
 }

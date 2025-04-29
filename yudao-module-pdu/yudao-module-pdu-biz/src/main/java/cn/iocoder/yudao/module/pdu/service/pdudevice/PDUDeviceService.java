@@ -38,7 +38,7 @@ public interface PDUDeviceService {
 
     Map getReportOutLetDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
-    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime,Integer dataType);
 
     PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO);
 

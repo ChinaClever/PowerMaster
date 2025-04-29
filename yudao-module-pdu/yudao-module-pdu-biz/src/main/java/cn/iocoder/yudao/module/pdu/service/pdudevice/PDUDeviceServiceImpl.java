@@ -824,9 +824,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 Map<String, Object> dataL2 = PduAnalysisResult.analyzePduData(dayList2);
                 Map<String, Object> dataL3 = PduAnalysisResult.analyzePduData(dayList3);
 
-                result.put("showL1",dataL1);
-                result.put("showL2",dataL2);
-                result.put("showL3",dataL3);
+                result.put("showL1", dataL1);
+                result.put("showL2", dataL2);
+                result.put("showL3", dataL3);
             }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
 
@@ -1657,7 +1657,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
                         });
                     }
-                }else if (dataType == -1){
+                } else if (dataType == -1) {
                     totalApparentPow.setName(PduDataTypeEnum.APPARENT_TOTAL_MIN.getDataType());
                     totalActivePow.setName(PduDataTypeEnum.ACTIVE_TOTAL_MIN.getDataType());
                     totalReactivePow.setName(PduDataTypeEnum.REACTIVE_TOTAL_MIN.getDataType());
@@ -1721,8 +1721,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         return result;
     }
-
-
 
 
     @Override
@@ -2011,7 +2009,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
 
     @Override
-    public Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+        System.out.println("dataType===========" + dataType);
         Map result = new HashMap<>();
         CabinetChartResBase lineRes = new CabinetChartResBase();
         CabinetChartHumResBase humeRes = new CabinetChartHumResBase();
@@ -2041,7 +2040,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .collect(Collectors.groupingBy(PduEnvHourDo::getSensorId));
                 boolean isFisrt = false;
                 List<String> time = null;
-                List<String> humTime = null;
+
                 List<String> humHappenTime = null;
                 List<String> temHappenTime = null;
 
@@ -2059,11 +2058,26 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     humSeries.setName("湿度传感器" + i + "号");
                     List<PduEnvHourDo> hourDoList = envMap.get(i);
 
-                    List<Float> temAvg = hourDoList.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
-                    List<Integer> humData = hourDoList.stream().map(PduEnvHourDo::getHumAvgValue).collect(Collectors.toList());
+                    //判断需要什么数值的数据（最大值，最小值，平均值）
+                    List<Float> temAvg = null;
+                    List<Integer> humData = null;
+                    if (dataType == 1) {
+                        temAvg = hourDoList.stream().map(PduEnvHourDo::getTemMaxValue).collect(Collectors.toList());
+                        humData = hourDoList.stream().map(PduEnvHourDo::getHumMaxValue).collect(Collectors.toList());
 
-                    temHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
-                    humHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                        temHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                        humHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    } else if (dataType == 0) {
+                        temAvg = hourDoList.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
+                        humData = hourDoList.stream().map(PduEnvHourDo::getHumAvgValue).collect(Collectors.toList());
+
+                    } else if (dataType == -1) {
+                        temAvg = hourDoList.stream().map(PduEnvHourDo::getTemMinValue).collect(Collectors.toList());
+                        humData = hourDoList.stream().map(PduEnvHourDo::getHumMinValue).collect(Collectors.toList());
+
+                        temHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                        humHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    }
 
                     lineSeries.setData(temAvg);
                     humSeries.setData(humData);
@@ -2074,11 +2088,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             time = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
                         }
                         lineRes.setTime(time);
-                        lineRes.setHappenTime(temHappenTime);
                         humeRes.setTime(time);
                         isFisrt = true;
                     }
-//                    humSeries.setHappenTime(humHappenTime);
+                    humSeries.setHappenTime(humHappenTime);
+                    lineSeries.setHappenTime(temHappenTime);
                     lineRes.getSeries().add(lineSeries);
                     humeRes.getSeries().add(humSeries);
                 }

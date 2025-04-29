@@ -158,7 +158,7 @@ public class PDUDeviceController {
     @PostMapping("/report/tem")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportTemDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getReportTemDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+        return success(pDUDeviceService.getReportTemDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @GetMapping("/devKeyList")
