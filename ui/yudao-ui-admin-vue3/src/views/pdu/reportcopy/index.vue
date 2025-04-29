@@ -117,64 +117,80 @@
             <div class="page-conTitle">
               PDU基本信息
             </div>
-            <el-row :gutter="24" >
-              <el-col :span="24 - serChartContainerWidth">
-                <div class="centered-div">
-                  <el-table 
-                    :data="PDUTableData" 
-                    :header-cell-style="arraySpanMethod"
-                    >
-                    <el-table-column  align="center" label="基本信息" >
-                      <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
-                      <el-table-column  prop="baseInfoValue" >
-                        <template #default="scope">
-                          <span v-if="scope.$index === 2">
-                            <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
-                            <el-popover
-                                placement="top-start"
-                                title="告警内容"
-                                :width="500"
-                                trigger="hover"
-                                :content="scope.row.pduAlarm"
-                                v-if="scope.row.baseInfoValue == 2"
-                              >
-                                <template #reference>
-                                  <el-tag type="danger">告警</el-tag>
-                                </template>
-                              </el-popover>
-                            <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                            <el-tag type="info" v-if="scope.row.baseInfoValue == '/' || scope.row.baseInfoValue == 5">离线</el-tag>
-                          </span>
-                          <span v-else>{{ scope.row.baseInfoValue }}</span>
-                        </template>
-                      </el-table-column>
-                    </el-table-column>
-                    <el-table-column  align="center" label="当前状态">
-                      <el-table-column  prop="statusInfoName"  />
-                      <el-table-column  prop="statusInfoValue" />
-                    </el-table-column>  
-                    <el-table-column  align="center" label="能耗">
-                      <el-table-column  prop="consumeName"  />
-                      <el-table-column  prop="consumeValue" />
-                    </el-table-column>  
-                    <el-table-column  align="center" label="不平衡度">
-                      <el-table-column  prop="unbalanceName"  />
-                      <el-table-column  prop="unbalanceValue" />
-                    </el-table-column>  
-                    
-                  </el-table>
-                </div>
-              </el-col>
-              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
-                
-                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+            <el-row :gutter="24">
+    <el-col :span="24 - serChartContainerWidth">
+      <div class="centered-div">
+        <el-table 
+          v-if="PDUTableData && PDUTableData.length > 0"
+          :data="PDUTableData" 
+          :header-cell-style="arraySpanMethod"
+          style="width: 100%"
+        >
+          <el-table-column align="center" label="基本信息">
+            <el-table-column align="center" prop="baseInfoName" />
+            <el-table-column prop="baseInfoValue">
+              <template #default="scope">
+                <span v-if="scope.$index === 2">
+                  <el-tag v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                  <el-tag type="warning" v-else-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                  <el-popover
+                    v-else-if="scope.row.baseInfoValue == 2"
+                    placement="top-start"
+                    title="告警内容"
+                    :width="500"
+                    trigger="hover"
+                    :content="scope.row.pduAlarm"
+                  >
+                    <template #reference>
+                      <el-tag type="danger">告警</el-tag>
+                    </template>
+                  </el-popover>
+                  <el-tag type="info" v-else-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                  <el-tag type="info" v-else-if="scope.row.baseInfoValue == '/' || scope.row.baseInfoValue == 5">离线</el-tag>
+                  <span v-else>{{ scope.row.baseInfoValue || '--' }}</span>
+                </span>
+                <span v-else>{{ scope.row.baseInfoValue || '--' }}</span>
+              </template>
+            </el-table-column>
+          </el-table-column>
+          
+          <el-table-column align="center" label="当前状态">
+            <el-table-column prop="statusInfoName" />
+            <el-table-column prop="statusInfoValue">
+              <template #default="scope">
+                {{ scope.row.statusInfoValue || '--' }}
+              </template>
+            </el-table-column>
+          </el-table-column>  
+          
+          <el-table-column align="center" label="能耗">
+            <el-table-column prop="consumeName" />
+            <el-table-column prop="consumeValue">
+              <template #default="scope">
+                {{ scope.row.consumeValue || '--' }}
+              </template>
+            </el-table-column>
+          </el-table-column>  
+          
+          <el-table-column align="center" label="不平衡度">
+            <el-table-column prop="unbalanceName" />
+            <el-table-column prop="unbalanceValue">
+              <template #default="scope">
+                {{ scope.row.unbalanceValue || '--' }}
+              </template>
+            </el-table-column>
+          </el-table-column>  
+        </el-table>
+        <div v-else class="empty-tip">暂无数据</div>
+      </div>
+    </el-col>
+    <!-- <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">   -->
+                 <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
                 <!-- <div >
                  <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
                </div> -->
-              </el-col>
-
-            </el-row>
+    <!-- </el-col> -->
+  </el-row>
 
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
@@ -291,6 +307,16 @@
             <EnvHumLine :width="computedWidth" height="58vh" :list="humList"  :dataType="queryParams.dataType"/>
           </div>
 
+          <!-- <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
+              回路曲线
+            </div> -->
+            <!-- <p v-show="temData.humMaxValue">本周期内，最高温度{{temData.humMaxValue}}°C， 最高温度发生时间{{temData.humMaxTime}}，由温度传感器{{temData.humMaxSensorId}}采集得到</p> -->
+            <!-- <p v-show="temData.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.humMinValue}}°C， 最低温度发生时间{{temData.humMinTime}}，由温度传感器{{temData.humMinSensorId}}采集得到</p> -->
+            <!-- <LoopLine :width="computedWidth" height="58vh" :list="loopList"  :dataType="queryParams.dataType"/>
+          </div> -->
+
+        
           
           <div class="pageBox"  v-if="temp1 && temp1.length > 0">
             <div class="page-conTitle">
@@ -354,6 +380,7 @@ import cur from './component/cur.vue';
 import Bar from './component/Bar.vue';
 import CurLine from './component/curLine.vue';
 import VolLine from './component/volLine.vue';
+import LoopLine from './component/LoopLine.vue';
 import HorizontalBar from './component/HorizontalBar.vue';
 import EnvTemLine from './component/EnvTemLine.vue';
 import EnvHumLine from './component/EnvHumLine.vue';
@@ -403,6 +430,7 @@ const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
 const volList = ref() as any;
 const curList = ref() as any;
+const loopList = ref() as any;
 const temList = ref() as any;
 const humList = ref() as any;
 const eleList = ref() as any;
@@ -424,6 +452,7 @@ const visControll = reactive({
   outletVis : false,
   temVis : false,
   humVis : false,
+  loopVis : false,
   pfVis: false,
   flag: false,
 })
@@ -1071,6 +1100,19 @@ const getList = async () => {
     visControll.humVis = false;
   }
 
+  loopList.value = await PDUDeviceApi.getLoopData(queryParams);
+  console.log("loopList",loopList.value);
+  if(loopList.value?.series != null && loopList.value?.series?.length > 0 ){
+    // humList.value.humMinValue = humList.value.humMinValue?.toFixed(2);
+    // humList.value.humMaxValue = humList.value.humMaxValue?.toFixed(2);
+
+    visControll.loopVis = true;
+  }else{
+    visControll.loopVis = false;
+  }
+
+
+
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   PDU = JSON.parse(PDU)
   var temp = [] as any;
@@ -1080,6 +1122,10 @@ const getList = async () => {
   var powApparentValueArray = PDU?.pdu_data?.output_item_list?.pow_apparent;
   var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
   var curValueArray = PDU?.pdu_data?.output_item_list?.cur_value;
+  var curUnBalance = PDU?.pdu_data?.pdu_total_data?.cur_unbalance;
+  var volUnBalance = PDU?.pdu_data?.pdu_total_data?.vol_unbalance;
+  console.log("===PDU===",PDU);
+
 
   // console.log(powValueArray)
   // 将值与下标保存到对象数组中
@@ -1126,7 +1172,7 @@ const getList = async () => {
     statusInfoName : "总视在功率",
     statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/',
     consumeName : "起始电能",
-    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    consumeValue : eqData.value.firstEq+"kWh",
     unbalanceName : "设备类型",
     unbalanceValue : ''
   })
@@ -1134,26 +1180,26 @@ const getList = async () => {
     baseInfoName : "网络地址",
     baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
     statusInfoName : "总有功功率",
-    statusInfoValue : '',
+    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_active.toFixed(3) + "kW" : '/',
     consumeName : "结束电能",
-    consumeValue : '',
+    consumeValue : eqData.value.lastEq+"kWh",
     unbalanceName : "电流不平衡度",
-    unbalanceValue : ''
+    unbalanceValue : curUnBalance.toFixed(0),
   })
   temp.push({
     baseInfoName : "设备状态",
     baseInfoValue : PDU?.status != null ? PDU.status : '/',
     pduAlarm : PDU?.pdu_alarm,
     statusInfoName : "总无功功率",
-    statusInfoValue : '',
+    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_reactive.toFixed(3) + "kVar" : '/',
     consumeName : "电能消耗",
-    consumeValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/',
+    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
     unbalanceName : "电压不平衡度",
-    unbalanceValue : ''
+    unbalanceValue : volUnBalance.toFixed(0),
   })
   temp.push({
     baseInfoName : "额定电流",
-    baseInfoValue : PDU?.status != null ? PDU.status : '/',
+    baseInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.cur_value.toFixed(2) + "A": '/',
     pduAlarm : PDU?.pdu_alarm,
     statusInfoName : "总功率因数",
     statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/',
@@ -1820,4 +1866,27 @@ onUnmounted(() => {
   margin-left: 5px;
 }
 
+
+
+.centered-div {
+  padding: 12px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.empty-tip {
+  text-align: center;
+  padding: 20px;
+  color: #909399;
+  font-size: 14px;
+}
+
+.el-table {
+  margin-top: 10px;
+}
+
+.el-table .el-tag {
+  margin: 2px;
+}
 </style>

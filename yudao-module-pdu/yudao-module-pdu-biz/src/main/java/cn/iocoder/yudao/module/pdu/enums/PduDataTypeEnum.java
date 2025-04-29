@@ -24,7 +24,11 @@ public enum PduDataTypeEnum {
     FACTOR_B_TOTAL_AVG("B路平均功率因素"),
     FACTOR_TOTAL_MIN("总最小功率因素"),
     FACTOR_A_TOTAL_MIN("A路最小功率因素"),
-    FACTOR_B_TOTAL_MIN("B路最小功率因素");
+    FACTOR_B_TOTAL_MIN("B路最小功率因素"),
+
+    CURRENT_MAX("最大电流"),
+    CURRENT_AVG("平均电流"),
+    CURRENT_MIN("最小电流");
 
 
 

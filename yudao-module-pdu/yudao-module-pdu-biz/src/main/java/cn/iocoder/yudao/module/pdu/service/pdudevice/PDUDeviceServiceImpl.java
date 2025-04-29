@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.loop.PduHdaLoopBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
@@ -2030,6 +2031,83 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 //        return result;
 //    }
 
+    @Override
+    public Map getReportLoopDataDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+        CabinetChartResBase lineRes = new CabinetChartResBase();
+        Map result = new HashMap<>();
+        try {
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
+        if (pduIndex != null){
+            Integer Id = pduIndex.getId();
+            String index = null;
+            boolean isSameDay = false;
+            if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                index = "pdu_hda_loop_hour";
+                if (oldTime.equals(newTime)) {
+                    newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                }
+                isSameDay = true;
+            } else {
+                index = "pdu_hda_loop_day";
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+                isSameDay = false;
+            }
+            String startTime = localDateTimeToString(oldTime);
+            String endTime = localDateTimeToString(newTime);
+            List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index);
+            Map<Integer, List<PduHdaLoopBaseDo>> envMap = cabinetData.stream()
+                    .map(str -> JsonUtils.parseObject(str, PduHdaLoopBaseDo.class))
+                    .collect(Collectors.groupingBy(PduHdaLoopBaseDo::getLoopId));
+            boolean isFisrt = false;
+            List<String> time = null;
+            List<String> happenTime = null;
+
+            for (int i = 1; i < 6; i++) {
+                if (CollectionUtil.isEmpty(envMap.get(i))) {
+                    continue;
+                }
+                List<PduHdaLoopBaseDo> hourDoList = envMap.get(i);
+                //数据收集
+                LineSeries lineSeries = new LineSeries();
+                List<Float> loopCur = null;
+                if (dataType == 1){
+                    String name = "回路"+i+PduDataTypeEnum.CURRENT_MAX;
+                    lineSeries.setName(name);
+                    loopCur = hourDoList.stream().map(PduHdaLoopBaseDo::getCurMaxValue).collect(Collectors.toList());
+                    happenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                } else if (dataType == 0) {
+                    String name = "回路"+i+PduDataTypeEnum.CURRENT_AVG;
+                    lineSeries.setName(name);
+                    loopCur = hourDoList.stream().map(PduHdaLoopBaseDo::getCurAvgValue).collect(Collectors.toList());
+                } else if (dataType == -1) {
+                    String name = "回路"+i+PduDataTypeEnum.CURRENT_MIN;
+                    lineSeries.setName(name);
+                    loopCur = hourDoList.stream().map(PduHdaLoopBaseDo::getCurMinValue).collect(Collectors.toList());
+                    happenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                }
+                lineSeries.setData(loopCur);
+                if (!isFisrt) {
+                    if (!isSameDay) {
+                        time = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    } else {
+                        time = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                    }
+                    lineRes.setTime(time);
+                    isFisrt = true;
+                }
+                lineSeries.setHappenTime(happenTime);
+                lineRes.getSeries().add(lineSeries);
+            }
+            result.put("lineRes",lineRes);
+        }
+
+        return result;
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
+        }
+        return result;
+    }
 
     @Override
     public Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
@@ -2743,6 +2821,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         });
         return locationMap;
     }
+
+
 
 
     private List getMutiRedis(List<PduIndex> list) {
