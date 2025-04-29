@@ -11,4 +11,6 @@ public class CabinetChartResBase {
     private List<SeriesBase> series = new ArrayList<>();
 
     private List<String> time = new ArrayList<>();
+
+
 }

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.alarm.controller.admin.logrecord;
 
+import cn.iocoder.yudao.framework.common.util.collection.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -43,8 +44,8 @@ public class AlarmLogRecordController {
     @Operation(summary = "更新系统告警记录")
     @PreAuthorize("@ss.hasPermission('alarm:log-record:update')")
     public CommonResult<Boolean> updateLogRecord(@RequestBody AlarmLogRecordSaveReqVO updateReqVO) {
-        if (updateReqVO.getId() == null || updateReqVO.getAlarmStatus() == null) {
-            throw new IllegalArgumentException("id 和 alarmStatus 不能为空");
+        if (CollectionUtils.isAnyEmpty(updateReqVO.getIds()) || updateReqVO.getAlarmStatus() == null) {
+            throw new IllegalArgumentException("ids 和 alarmStatus 不能为空");
         }
         logRecordService.updateLogRecord(updateReqVO);
         return success(true);
@@ -101,8 +102,8 @@ public class AlarmLogRecordController {
 
     @Operation(summary = "告警等级统计")
     @GetMapping("/level/count")
-    public CommonResult<Map<Object,Object>> levelCount() {
-        Map<Object,Object> result = logRecordService.levelCount();
+    public CommonResult<AlarmLogRecordStatisticsVO> levelCount(@RequestParam(value = "roomId", required = false)@Parameter(description = "机房id") Integer roomId) {
+        AlarmLogRecordStatisticsVO result = logRecordService.levelCount(roomId);
         return success(result);
     }
 }

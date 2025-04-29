@@ -16,57 +16,83 @@ const prop = defineProps({
   width: {
     type: [Number,String],
     default: 60
+  }, 
+  dataType:{
+      type : Number,
+      default : 1
   }
 })
 
 const series = ref()
 const time = ref()
+const happenTime = ref()
 const legendList = ref()
 
 // 设置饼图的选项
 const echartsOption = ref({
-  dataZoom:[{ type:"inside"}],
-  legend: { data: legendList,
-    type: 'scroll', // 设置为 'single' 或 'multiple'
-    orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
-    width:1000
+  dataZoom: [{ type: "inside" }],
+  color:['#E5B849','#C8603A','#5337A9','#B47660'],
+  legend: { 
+    data: legendList,
+    type: 'scroll',
+    orient: 'horizontal',
+    width: 1000
   },
-  tooltip: { trigger: 'axis',
+  tooltip: { 
+    trigger: 'axis',
     formatter: function(params) {
-      var result = params[0].name + '<br>';
-      for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) + '°C' ;
+
+      console.log('happenTime',happenTime);
+      
+      // 获取当前数据点的索引
+      // const dataIndex = params[0].dataIndex;
+      // 获取对应的 happenTime
+      // const currentHappenTime = happenTime.value?.[dataIndex] || '';
+      
+      let result = `${params[0].name}<br>`;
+      console.log('Tooltip params:', params);
+      for (let i = 0; i < params.length; i++) {
+        if(prop.dataType != 0){
+          result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp;发生时间: &nbsp;&nbsp;&nbsp;&nbsp;${happenTime.value[i][params[i].dataIndex]} &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(1)}°C`;
+
+        }else{
+          result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(1)}°C`;
+
+        }
         result += '<br>';
       }
       return result;
     } 
   },
-  grid:{left:'5%',right:'5%'},
-  xAxis: {type: 'category', boundaryGap: false, data : time},
-  yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+  grid: { left: '5%', right: '5%' },
+  xAxis: { 
+    type: 'category', 
+    boundaryGap: false, 
+    data: time 
+  },
+  yAxis: { type: 'value' },
+  toolbox: {
+    feature: { 
+      saveAsImage: {},
+      dataView: {},
+      dataZoom: {},
+      restore: {},
+    }
+  },
   series: series,
 })
 
 watchEffect(() => {
-  // 直接访问即可，watchEffect会自动跟踪变化
-  console.log('输出'+prop.list.series)
+
   series.value = prop.list.series;
-  console.log('输出1'+series.value)
-  if(  series.value != null && series.value?.length > 0){
-    legendList.value =  series.value?.map(item => item.name)
+
+  
+  if(series.value != null && series.value?.length > 0){
+    legendList.value = series.value?.map(item => item.name)
   }
+  
   time.value = prop.list.time;
+  happenTime.value = prop.list.series.map(item => item.happenTime);
+  console.log(happenTime.value)
 });
-
-
-
-onUnmounted(() => {
-  console.log('onUnmounted******')
-})
-
 </script>
-
-<style lang="scss" scoped>
-
-</style>

@@ -140,13 +140,13 @@ public class PDUDeviceController {
     @PostMapping("/report/pfline")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+        return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/pow")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getReportPowDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+        return success(pDUDeviceService.getReportPowDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/outlet")
@@ -158,7 +158,7 @@ public class PDUDeviceController {
     @PostMapping("/report/tem")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportTemDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getReportTemDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+        return success(pDUDeviceService.getReportTemDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @GetMapping("/devKeyList")

@@ -1925,12 +1925,12 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         JSONArray volThd = lineItemList.getJSONArray("vol_thd");
         JSONArray curThd = lineItemList.getJSONArray("cur_thd");
-        result.setIaTHD(curThd.getDouble(0));
-        result.setIbTHD(curThd.getDouble(1));
-        result.setIcTHD(curThd.getDouble(2));
-        result.setUaTHD(volThd.getDouble(0));
-        result.setUbTHD(volThd.getDouble(1));
-        result.setUcTHD(volThd.getDouble(2));
+        result.setIaTHD(curThd.getDouble(0) / 100);
+        result.setIbTHD(curThd.getDouble(1) / 100);
+        result.setIcTHD(curThd.getDouble(2) / 100);
+        result.setUaTHD(volThd.getDouble(0) / 100);
+        result.setUbTHD(volThd.getDouble(1) / 100);
+        result.setUcTHD(volThd.getDouble(2) / 100);
         result.setLoadFactor((result.getS() / result.getFInstalledCapacity()) * 100);
         return result;
     }

@@ -343,25 +343,25 @@ const queryParams = reactive({
 })
 const statusList = reactive([
   [{
-    name: '负载量<30%',
+    name: '负载率<30%',
     selected: true,
     value: 1,
     color: '#3bbb00'
   },
   {
-    name: '30%≤负载量<60%',
+    name: '30%≤负载率<60%',
     selected: true,
     value: 2,
     color: '#05ebfc'
   },
   {
-    name: '60%≤负载量<90%',
+    name: '60%≤负载率<90%',
     selected: true,
     value: 3,
     color: '#ffc402'
   },
   {
-    name: '负载量>90%',
+    name: '负载率>90%',
     selected: true,
     value: 4,
     color: '#fa3333'

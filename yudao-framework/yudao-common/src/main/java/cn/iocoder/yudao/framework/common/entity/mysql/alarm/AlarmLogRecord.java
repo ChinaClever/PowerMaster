@@ -79,4 +79,17 @@ public class AlarmLogRecord implements Serializable {
 
     private LocalDateTime updateTime;
 
+    /**
+     * 机房id
+     */
+    private Integer roomId;
+    /**
+     * 柜列id
+     */
+    private Integer aisleId;
+    /**
+     * 机柜id
+     */
+    private Integer cabinetId;
+
 }

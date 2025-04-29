@@ -204,8 +204,8 @@
            <div style="display:flex;height:10vh;justify-content: center;align-item:center;margin-bottom: -3vh;margin-top: 1vh">
             <!-- <Environment v-if="valueMode == 0 && item.curAList" class="chart" width="100%" height="100%" :load-factor="{first: item.curAList?.[2] ? item.curAList[2].toFixed(0) : 0,second: item.curAList?.[1] ? item.curAList[1].toFixed(0) : 0,third: item.curAList?.[0] ? item.curAList[0].toFixed(0) : 0,label: ['Ic','Ib','Ia'],unit: ['A','A','A'],color: ['#AD3762','#C8603A','#E5B849']}" style="margin-right:-15px;"/>  -->
             <!-- <Environment v-else-if="valueMode == 1 && item.volAList" class="chart" width="100%" height="100%" :load-factor="{first: item.volAList?.[2] ? item.volAList[2].toFixed(0) : 0,second: item.volAList?.[1] ? item.volAList[1].toFixed(0) : 0,third: item.volAList?.[0] ? item.volAList[0].toFixed(0) : 0,label: ['Uc','Ub','Ua'],unit: ['V','V','V'],color: ['#45C0C9','#119CB5','#075F71']}" style="margin-right:-15px;"/>  -->
-            <Environment  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactivea ? Number(load.powReactivea).toFixed(0) : 0,second: load.powActivea ? Number(load.powActivea).toFixed(0) : 0,third: load.powApparenta ? Number(load.powApparenta).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}" style="margin-right:-15px;"/>
-            <EnvironmentCopy  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactiveb ? Number(load.powReactiveb).toFixed(0) : 0,second: load.powActiveb ? Number(load.powActiveb).toFixed(0) : 0,third: load.powApparentb ? Number(load.powApparentb).toFixed(0) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}"/>
+            <Environment  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactivea ? Number(load.powReactivea).toFixed(3) : 0,second: load.powActivea ? Number(load.powActivea).toFixed(3) : 0,third: load.powApparenta ? Number(load.powApparenta).toFixed(3) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}" style="margin-right:-15px;"/>
+            <EnvironmentCopy  class="chart" width="100%" height="100%" :load-factor="{first: load.powReactiveb ? Number(load.powReactiveb).toFixed(3) : 0,second: load.powActiveb ? Number(load.powActiveb).toFixed(3) : 0,third: load.powApparentb ? Number(load.powApparentb).toFixed(3) : 0,label: ['Q','P','S'],unit: ['kVar', 'kW', 'kVA'],color: ['#800080','#91cc75','#5470c6']}"/>
 
             </div>
           <div style="display:flex;justify-content: space-around;padding: 5px 0;">
@@ -521,8 +521,12 @@ const toMachineDetail = (row) => {
   push({ path:'/cabinet/cab/cabinetPowerLoadDetail', query: {roomName, roomId ,cabinetName, cabinet, pduBox}})
 }
 
+
+
+
 onBeforeMount(() => {
   getNavList();
+  toggleAllStatus();
   getTableData();
   flashListTimer.value = setInterval((getTableData), 5000);
 })
@@ -920,8 +924,7 @@ onBeforeRouteLeave(()=>{
     //   align-items: center;
     //   justify-content: center;
 
-    //   // color: #fff;
-    //   color:#000;
+    //   color: #fff;
     //   position: absolute;
     //   right: 38px;
     //   top: 8px;

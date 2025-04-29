@@ -42,43 +42,19 @@ public class WebSocketSessionManagerImpl implements WebSocketSessionManager {
         idSessions.put(session.getId(), session);
         // 添加到 userSessions 中
         LoginUser user = WebSocketFrameworkUtils.getLoginUser(session);
-        if (user == null) {
-            return;
+        if (user != null) {
+            putSessionToUserMap(user.getUserType(), user.getId(), session);
         }
-        ConcurrentMap<Long, CopyOnWriteArrayList<WebSocketSession>> userSessionsMap = userSessions.get(user.getUserType());
-        if (userSessionsMap == null) {
-            userSessionsMap = new ConcurrentHashMap<>();
-            if (userSessions.putIfAbsent(user.getUserType(), userSessionsMap) != null) {
-                userSessionsMap = userSessions.get(user.getUserType());
-            }
-        }
-        CopyOnWriteArrayList<WebSocketSession> sessions = userSessionsMap.get(user.getId());
-        if (sessions == null) {
-            sessions = new CopyOnWriteArrayList<>();
-            if (userSessionsMap.putIfAbsent(user.getId(), sessions) != null) {
-                sessions = userSessionsMap.get(user.getId());
-            }
-        }
-        sessions.add(session);
     }
 
     @Override
     public void removeSession(WebSocketSession session) {
         // 移除从 idSessions 中
         idSessions.remove(session.getId());
-        // 移除从 idSessions 中
+        // 移除从 userSessions 中
         LoginUser user = WebSocketFrameworkUtils.getLoginUser(session);
-        if (user == null) {
-            return;
-        }
-        ConcurrentMap<Long, CopyOnWriteArrayList<WebSocketSession>> userSessionsMap = userSessions.get(user.getUserType());
-        if (userSessionsMap == null) {
-            return;
-        }
-        CopyOnWriteArrayList<WebSocketSession> sessions = userSessionsMap.get(user.getId());
-        sessions.removeIf(session0 -> session0.getId().equals(session.getId()));
-        if (CollUtil.isEmpty(sessions)) {
-            userSessionsMap.remove(user.getId(), sessions);
+        if (user != null) {
+            removeSessionFromUserMap(user.getUserType(), user.getId(), session);
         }
     }
 
@@ -88,7 +64,7 @@ public class WebSocketSessionManagerImpl implements WebSocketSessionManager {
     }
 
     @Override
-    public Collection<WebSocketSession> getSessionList(Integer userType) {
+    public List<WebSocketSession> getSessionList(Integer userType) {
         ConcurrentMap<Long, CopyOnWriteArrayList<WebSocketSession>> userSessionsMap = userSessions.get(userType);
         if (CollUtil.isEmpty(userSessionsMap)) {
             return new ArrayList<>();
@@ -96,17 +72,15 @@ public class WebSocketSessionManagerImpl implements WebSocketSessionManager {
         LinkedList<WebSocketSession> result = new LinkedList<>(); // 避免扩容
 
         for (List<WebSocketSession> sessions : userSessionsMap.values()) {
-            if (CollUtil.isEmpty(sessions)) {
-                continue;
+            if (CollUtil.isNotEmpty(sessions)) {
+                result.addAll(sessions);
             }
-
-            result.addAll(sessions);
         }
         return result;
     }
 
     @Override
-    public Collection<WebSocketSession> getSessionList(Integer userType, Long userId) {
+    public List<WebSocketSession> getSessionList(Integer userType, Long userId) {
         ConcurrentMap<Long, CopyOnWriteArrayList<WebSocketSession>> userSessionsMap = userSessions.get(userType);
         if (CollUtil.isEmpty(userSessionsMap)) {
             return new ArrayList<>();
@@ -115,4 +89,22 @@ public class WebSocketSessionManagerImpl implements WebSocketSessionManager {
         return CollUtil.isNotEmpty(sessions) ? new ArrayList<>(sessions) : new ArrayList<>();
     }
 
+    private void putSessionToUserMap(Integer userType, Long userId, WebSocketSession session) {
+        ConcurrentMap<Long, CopyOnWriteArrayList<WebSocketSession>> userSessionsMap = userSessions.computeIfAbsent(userType, k -> new ConcurrentHashMap<>());
+        CopyOnWriteArrayList<WebSocketSession> sessions = userSessionsMap.computeIfAbsent(userId, k -> new CopyOnWriteArrayList<>());
+        sessions.add(session);
+    }
+
+    private void removeSessionFromUserMap(Integer userType, Long userId, WebSocketSession session) {
+        ConcurrentMap<Long, CopyOnWriteArrayList<WebSocketSession>> userSessionsMap = userSessions.get(userType);
+        if (userSessionsMap != null) {
+            CopyOnWriteArrayList<WebSocketSession> sessions = userSessionsMap.get(userId);
+            if (sessions != null) {
+                sessions.removeIf(session0 -> session0.getId().equals(session.getId()));
+                if (CollUtil.isEmpty(sessions)) {
+                    userSessionsMap.remove(userId, sessions);
+                }
+            }
+        }
+    }
 }
