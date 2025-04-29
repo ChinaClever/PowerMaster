@@ -113,6 +113,7 @@ public class MySQLTableMonitor {
                     List<String> tableList = new ArrayList<>();
                     tableList.add(DBTable.PDU_INDEX);
                     tableList.add(DBTable.BUS_INDEX);
+                    tableList.add(DBTable.CABINET_INDEX);
                     if (columns != null && tableList.contains(tableName)) {
                         if (!repeatMessage(event)) {
                             return;
@@ -129,20 +130,23 @@ public class MySQLTableMonitor {
                                 log.info("[UPDATE] 新数据：" + newData);
                             }
                         }
+                        Integer result = null;
                         switch (tableName) {
                             case DBTable.PDU_INDEX:
-                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
                                 break;
                             case DBTable.BUS_INDEX:
-                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
                                 break;
                             case DBTable.CABINET_INDEX:
-                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
                             default:
                                 break;
                         }
-                        // 向前端发送消息
-                        webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
+                        // 告警记录表发生改变，向前端发送消息
+                        if (result != null) {
+                            webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
+                        }
                     }
                 }
             });

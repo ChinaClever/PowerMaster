@@ -525,7 +525,7 @@ public class FieldConstant {
 
     public static final String DEV_ALARM = "dev_alarm";
 
-    public static final String DATETIME = "datetime";
+    public static final String DATETIME = "date_time";
 
     public static final String POW_CAPACITY = "pow_capacity";
 
