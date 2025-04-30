@@ -50,7 +50,7 @@
           </el-form-item>
 
           <el-form-item >
-            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button @click="handleQuery"  style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           </el-form-item>
 
           <el-form-item label="筛选列">
@@ -72,6 +72,7 @@
               plain
               @click="handleExport"
               :loading="exportLoading"
+               style="background-color: #00778c;color:#ffffff;font-size: 13px;position:absolute;top: 2px;right: -28px;"
             >
               <Icon icon="ep:download" class="mr-5px" /> 导出
             </el-button>
@@ -96,7 +97,7 @@
           </template>
           <el-table-column label="操作" align="center" width="90" fixed="right">
             <template #default="{ row }">
-                <el-button type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.room_id, row.location)"  style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
               </template>
           </el-table-column>
           <!-- 超过一万条数据提示信息 -->
@@ -650,5 +651,9 @@ function headCellStyle(){
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
 }
 </style>

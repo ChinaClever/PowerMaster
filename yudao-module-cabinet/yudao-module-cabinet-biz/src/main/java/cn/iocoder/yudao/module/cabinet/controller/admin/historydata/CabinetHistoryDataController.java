@@ -209,8 +209,8 @@ public class CabinetHistoryDataController {
 
     @GetMapping("/env-details")
     @Operation(summary = "获得机柜环境数据详情")
-    public CommonResult<PageResult<Object>> getHistoryEnvDataDetails(CabinetHistoryDataDetailsReqVO reqVO) throws IOException {
-        PageResult<Object> pageResult = cabinetHistoryDataService.getHistoryEnvDataDetails(reqVO.getCabinetId(),reqVO.getGranularity(),reqVO.getTimeRange());
+    public CommonResult<PageResult<CabinetEnvResVO>> getHistoryEnvDataDetails(CabinetHistoryDataDetailsReqVO reqVO) throws IOException {
+        PageResult<CabinetEnvResVO> pageResult = cabinetHistoryDataService.getHistoryEnvDataDetails(reqVO.getCabinetId(),reqVO.getGranularity(),reqVO.getTimeRange());
         return success(pageResult);
     }
 

@@ -72,7 +72,7 @@
 
         <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item> 
 
         <el-form-item label="筛选列">
@@ -90,7 +90,7 @@
 
           <div style="float:right;">
           
-        <el-button type="success" plain @click="handleExport" :loading="exportLoading" >
+        <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;top:2px;position: absolute;right:6px">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </div>
@@ -216,7 +216,7 @@
         </el-table-column> -->
         <el-table-column label="详情" align="center" fixed="right" width="100px">
           <template #default="{ row }"> 
-            <el-button type="primary" @click="toDetails(row.pdu_id,  row.address)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.id,  row.address)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
           </template>
         </el-table-column>
 
@@ -869,5 +869,8 @@ selectTimeRange.value = [
   ::v-deep .el-table .el-table__header th {
     background-color: #f7f7f7;
     color: #909399;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
 }
 </style>

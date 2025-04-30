@@ -71,16 +71,16 @@
         </el-form-item>
          
          <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
          </el-form-item>
          <el-form-item>
           <el-button-group>
-            <el-button @click="changeTime('pre')"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
-            <el-button @click="changeTime('next')">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
+            <el-button @click="changeTime('pre')" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
+            <el-button @click="changeTime('next')" style="background-color: #00778c;color:#ffffff;font-size: 13px;">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
           </el-button-group>
          </el-form-item>
          <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
           </el-form-item>
@@ -252,6 +252,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import download from '@/utils/download'
 import PDUImage from '@/assets/imgs/PDU.jpg'
 import { stat } from 'fs';
+import {ArrowLeft,ArrowRight} from '@element-plus/icons-vue'
 import { now } from 'lodash-es';
 /** 机柜历史曲线 */
 defineOptions({ name: 'CabinetHistoryLine' })
@@ -1909,4 +1910,10 @@ onBeforeUnmount(()=>{
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+  /deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
 </style>

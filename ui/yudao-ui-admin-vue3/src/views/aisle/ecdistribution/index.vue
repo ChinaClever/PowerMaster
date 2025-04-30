@@ -61,10 +61,10 @@
       </el-form-item>
 
       <el-form-item >
-        <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
       </el-form-item>
       <el-form-item style="position: absolute;right: 0px;">
-        <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
           <Icon icon="ep:download" class="mr-5px" /> 导出
         </el-button>
       </el-form-item>
@@ -633,5 +633,12 @@ onBeforeUnmount(() => {
   height: 1px;
   margin-top: 28px;
   background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
+
+/deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
 }
 </style>
