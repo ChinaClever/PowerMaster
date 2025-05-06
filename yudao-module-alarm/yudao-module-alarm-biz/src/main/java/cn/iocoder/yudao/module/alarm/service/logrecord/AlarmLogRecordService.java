@@ -93,4 +93,10 @@ public interface AlarmLogRecordService {
      *
      */
     Integer insertOrUpdateAlarmRecordWhenCabinetAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
+    /**
+     * 根据告警处理类型获取告警数量
+     *
+     */
+    Integer getCountByStatus (Integer status);
 }

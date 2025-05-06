@@ -21,6 +21,14 @@ export const AlarmApi = {
   saveAlarmConfig: async (data: any) => {
     return await request.post({ url: `/alarm/cfg-prompt/update`, data })
   },
+  // 播放告警提示音
+  playAudio: async (params: any) => {
+    return await request.get({ url: `/alarm/cfg-prompt/play`, params })
+  },
+  // 关闭告警提示音
+  stopAudio: async (params: any) => {
+    return await request.get({ url: `/alarm/cfg-prompt/stop`, params })
+  },
   // 获取邮件列表
   getMailList: async (params: any) => {
     return await request.get({ url: `/alarm/cfg-mail/list`, params })

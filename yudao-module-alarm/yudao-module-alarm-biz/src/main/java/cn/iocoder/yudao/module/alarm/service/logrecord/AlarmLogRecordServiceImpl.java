@@ -388,5 +388,10 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         return location;
     }
 
+    public Integer getCountByStatus (Integer status) {
+        Long count = logRecordMapper.selectCount(new LambdaQueryWrapper<AlarmLogRecordDO>().eq(AlarmLogRecordDO::getAlarmStatus, status));
+        return Math.toIntExact(count);
+    }
+
 
 }
