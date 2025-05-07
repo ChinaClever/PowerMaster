@@ -59,7 +59,7 @@ public interface PDUDeviceService {
 
     String getLocationByDevKey(String devKey);
 
-    Map getPduHdaLineHisdataKey(String devKey, String type);
+    Map getPduHdaLineHisdataKey(String devKey, Integer type,LocalDateTime oldTime,LocalDateTime newTime);
 
     Map getPduHdaLineHisdataKeyByCabinet(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime);
 
@@ -75,4 +75,5 @@ public interface PDUDeviceService {
 
     Map<String, String> setLocation(List<String> collect1);
 
+    Map getReportLoopDataDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }

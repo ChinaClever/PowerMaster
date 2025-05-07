@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -115,8 +116,10 @@ public class PDUDeviceController {
     //pdu_hda_line_realtime
     @GetMapping("/pduHdaLineHisdata")
     @Operation(summary = "获得机柜PDU相历史数据")
-    public CommonResult<Map> getPduHdaLineHisdataKey(String devKey, String type) {
-        return success(pDUDeviceService.getPduHdaLineHisdataKey(devKey, type));
+    public CommonResult<Map> getPduHdaLineHisdataKey(String devKey, Integer type,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        System.out.println("oldTime"+oldTime);
+        System.out.println("newTime"+newTime);
+        return success(pDUDeviceService.getPduHdaLineHisdataKey(devKey, type,oldTime,newTime));
     }
 
     @GetMapping("/pduHdaLineHisdataByCabinet")
@@ -135,6 +138,12 @@ public class PDUDeviceController {
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/loop")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportLoopDataDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO){
+        return success(pDUDeviceService.getReportLoopDataDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/pfline")
