@@ -140,6 +140,7 @@ public class PDUDeviceController {
         return success(pDUDeviceService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
+
     @PostMapping("/report/loop")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportLoopDataDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO){
@@ -156,6 +157,12 @@ public class PDUDeviceController {
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getReportPowDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
+    }
+
+    @PostMapping("/report/outletNew")
+    @Operation(summary = "获得PDU报表输出位电流数据")
+    public CommonResult<Map> getReportOutLetCurDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getReportOutLetCurDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/outlet")

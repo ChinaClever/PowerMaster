@@ -378,6 +378,34 @@
             <LoopLine :width="computedWidth" height="58vh" :list="loopList"  :dataType="queryParams.dataType"/>
           </div>
 
+
+          <div class="pageBox"  v-for="(sensor, index) in outLetCurData?.outRes" :key="index">
+            <div class="page-conTitle">
+              回路{{ getLastChar(index) }}各输出位电流曲线
+            </div>
+            <div v-for="(data, index) in sensor?.series" :key="index">
+        <div class="power-section single-line">
+        <span class="power-title">{{ data.projectName }}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ data.maxValue }}</span> A <span class="time">记录于({{ data.maxTime }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ data.minValue }}</span> A <span class="time">记录于({{ data.minTime }})</span></span>
+      </div>
+            </div>
+
+            <OutLetCurLine :width="computedWidth" height="58vh" :list="sensor" :dataType="queryParams.dataType"/>
+          </div>
+          <!-- <div class="pageBox"  v-for="(sensor, index) in outLetCurData?.outRes" :key="index">
+      <div class="page-conTitle">
+        回路{{ index + 1 }}各输出位电流曲线
+      </div>
+      <OutLetCurLine :width="computedWidth" height="58vh" :list="sensor[`dataRes${index + 1}`]" :dataType="queryParams.dataType" />
+    </div> -->
+
+          <!-- outLetCurList.value = outLetCurData.value.outRes.dataRes1; -->
+
+
+
+          
+
           <div class="pageBox"  v-if="temp1 && temp1.length > 0">
             <div class="page-conTitle">
               告警信息
@@ -426,7 +454,6 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption';
 import { AlarmApi } from '@/api/system/notify/alarm';
 import { PDUDeviceApi } from '@/api/pdu/pdudevice';
 import * as echarts from 'echarts';
@@ -435,8 +462,6 @@ import { CabinetApi } from '@/api/cabinet/info';
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import Line from './component/Line.vue';
 import PFLine from './component/PFLine.vue';
-import vol from './component/vol.vue';
-import cur from './component/cur.vue';
 import Bar from './component/Bar.vue';
 import CurLine from './component/curLine.vue';
 import VolLine from './component/volLine.vue';
@@ -445,14 +470,13 @@ import HorizontalBar from './component/HorizontalBar.vue';
 import EnvTemLine from './component/EnvTemLine.vue';
 import EnvHumLine from './component/EnvHumLine.vue';
 import Outlet from './component/Outlet.vue';
-import Radar from './component/Radar.vue';
-import { Flag } from '@element-plus/icons-vue/dist/types';
-import { size } from 'min-dash';
-import { viewDepthKey } from 'vue-router';
-import { Bottom } from '@element-plus/icons-vue/dist/types';
+import OutLetCurLine from './component/OutLetCurLine.vue';
+
 //import { ElMessageBox, ElMessage } from 'element-plus'
-import { remove } from 'nprogress';
-import { dataType } from 'element-plus/es/components/table-v2/src/common';
+
+const getLastChar = (str) => {
+  return str.toString().slice(-1);
+};
 
 // 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
@@ -498,6 +522,8 @@ const humList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
+const outLetCurData = ref() as any;
+const outLetCurList = ref as any;
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const now = ref()
@@ -1195,6 +1221,16 @@ const outletRankData = ref<OutLetRankData>({
   eleValue : [],
 }) as any
 
+interface OutLetCurData {
+  outLetId: string[];
+  eleValue: number[];
+}
+
+const outletCurData = ref<OutLetCurData>({
+  outLetId : [],
+  eleValue : [],
+}) as any
+
 //树型控件
 interface Tree {
   [key: string]: any
@@ -1265,6 +1301,8 @@ const getList = async () => {
   
   const data = await PDUDeviceApi.getPDUPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
+  console.log('pfLineList.pfLineList',pfLineList.value);
+  
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     factorLineData.value.lineAMax = data.lineAMax;
     factorLineData.value.lineAMin = data.lineAMin;
@@ -1309,18 +1347,24 @@ const getList = async () => {
     visControll.powVis = false;
   }
   outletRankData.value = await PDUDeviceApi.getOutLetData(queryParams);
-  console.log('outletRankData.value', outletRankData.value);
   if(outletRankData.value?.barRes?.series[0]){
     outletRankData.value.barRes.series[0].itemStyle = outletItemStyle.value;
   }
   outletList.value = outletRankData.value.barRes;
-  console.log('outletList.value', outletList.value);
   if(outletList.value?.time != null  && outletList.value?.time?.length > 0){
     visControll.outletVis = true;
   }else{
     visControll.outletVis = false;
   }
+
+
+  outLetCurData.value = await PDUDeviceApi.getOutLetCurData(queryParams);
+  console.log('outLetCurData.size',outLetCurData.value.outRes);
+
+
   
+
+
   temData.value = await PDUDeviceApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
   humList.value = temData.value.humRes;
