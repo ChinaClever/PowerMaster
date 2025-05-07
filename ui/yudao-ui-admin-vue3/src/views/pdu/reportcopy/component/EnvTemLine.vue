@@ -16,6 +16,10 @@ const prop = defineProps({
   width: {
     type: [Number,String],
     default: 60
+  }, 
+  dataType:{
+      type : Number,
+      default : 1
   }
 })
 
@@ -27,6 +31,7 @@ const legendList = ref()
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom: [{ type: "inside" }],
+  color:['#E5B849','#C8603A','#5337A9','#B47660'],
   legend: { 
     data: legendList,
     type: 'scroll',
@@ -36,15 +41,24 @@ const echartsOption = ref({
   tooltip: { 
     trigger: 'axis',
     formatter: function(params) {
+
+      console.log('happenTime',happenTime);
+      
       // 获取当前数据点的索引
-      const dataIndex = params[0].dataIndex;
+      // const dataIndex = params[0].dataIndex;
       // 获取对应的 happenTime
-      const currentHappenTime = happenTime.value?.[dataIndex] || '';
+      // const currentHappenTime = happenTime.value?.[dataIndex] || '';
       
       let result = `${params[0].name}<br>`;
       console.log('Tooltip params:', params);
       for (let i = 0; i < params.length; i++) {
-        result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp;发生时间: &nbsp;&nbsp;&nbsp;&nbsp;${currentHappenTime} &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(2)}°C`;
+        if(prop.dataType != 0){
+          result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp;发生时间: &nbsp;&nbsp;&nbsp;&nbsp;${happenTime.value[i][params[i].dataIndex]} &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(1)}°C`;
+
+        }else{
+          result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(1)}°C`;
+
+        }
         result += '<br>';
       }
       return result;
@@ -78,6 +92,7 @@ watchEffect(() => {
   }
   
   time.value = prop.list.time;
-  happenTime.value = prop.list.happenTime;
+  happenTime.value = prop.list.series.map(item => item.happenTime);
+  console.log(happenTime.value)
 });
 </script>

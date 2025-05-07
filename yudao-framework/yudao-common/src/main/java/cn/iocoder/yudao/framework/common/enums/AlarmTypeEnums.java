@@ -17,10 +17,11 @@ public enum AlarmTypeEnums {
     PDU_WARNING(3, "PDU预警"),
     BUS_ALARM(4, "母线告警"),
     BUS_OFF_LINE(5, "母线离线"),
-    CABINET_CAPACITY(6, "机柜容量"),
-    STATUS(7, "状态告警"),
-    OFF_LINE(8, "离线告警"),
-    ELE(9, "用能告警"),
+    CABINET_WARNING(6, "机柜预警"),
+    CABINET_ALARM(7, "机柜告警"),
+    STATUS(8, "状态告警"),
+    OFF_LINE(9, "离线告警"),
+    ELE(10, "用能告警"),
     ;
 
     /**

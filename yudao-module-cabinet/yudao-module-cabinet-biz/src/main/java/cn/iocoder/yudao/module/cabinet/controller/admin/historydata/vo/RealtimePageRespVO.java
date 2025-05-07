@@ -25,23 +25,52 @@ public class RealtimePageRespVO {
 
     @ExcelProperty("记录时间")
     private String create_time;
-    @NumberFormat("0.000")
     @ExcelProperty("总有功功率(kW)")
+    @NumberFormat("0.000")
     private Double active_total;
-    @NumberFormat("0.000")
+
     @ExcelProperty("总视在功率(kVA)")
+    @NumberFormat("0.000")
     private Double apparent_total;
+
+    @ExcelProperty("总无功功率(kVar)")
     @NumberFormat("0.000")
+    private Double reactive_total;
+
+    @ExcelProperty("总功率因素")
+    @NumberFormat("0.00")
+    private Double factor_total;
+
     @ExcelProperty("A路有功功率(kW)")
+    @NumberFormat("0.000")
     private Double active_a;
-    @NumberFormat("0.000")
+
     @ExcelProperty("A路视在功率(kVA)")
+    @NumberFormat("0.000")
     private Double apparent_a;
+
+    @ExcelProperty("A路无功功率(kVar)")
     @NumberFormat("0.000")
+    private Double reactive_a;
+
+    @ExcelProperty("A路功率因素")
+    @NumberFormat("0.00")
+    private Double factor_a;
+
     @ExcelProperty("B路有功功率(kW)")
-    private Double active_b;
     @NumberFormat("0.000")
+    private Double active_b;
+
     @ExcelProperty("B路视在功率(kVA)")
+    @NumberFormat("0.000")
     private Double apparent_b;
+
+    @ExcelProperty("B路无功功率(kVar)")
+    @NumberFormat("0.000")
+    private Double reactive_b;
+
+    @ExcelProperty("B路功率因素")
+    @NumberFormat("0.00")
+    private Double factor_b;
 
 }

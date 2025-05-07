@@ -28,6 +28,12 @@ public class DetailHistoryDataExcelExportA {
     @ExcelProperty("A路有功功率(kW)")
     private Double active_a;
     @NumberFormat("0.000")
-    @ExcelProperty("A路视在功率(kW)")
+    @ExcelProperty("A路视在功率(kVA)")
     private Double apparent_a;
+    @NumberFormat("0.000")
+    @ExcelProperty("A路无功功率(kVar)")
+    private Double reactive_a;
+    @NumberFormat("0.00")
+    @ExcelProperty("A路功率因素")
+    private Double factor_a;
 }

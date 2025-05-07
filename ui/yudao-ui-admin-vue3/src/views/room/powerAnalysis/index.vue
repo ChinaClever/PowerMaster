@@ -282,7 +282,7 @@ const initChart = () => {
       title: { text: '各机房耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
-      barMaxWidth: '30px',
+      barMaxWidth: '50px',
       toolbox: {feature: {saveAsImage:{}}},
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
@@ -297,10 +297,10 @@ const initChart = () => {
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
-
-window.addEventListener('resize', function() {
+function resize() {
   rankChart?.resize(); 
-});
+}
+window.addEventListener('resize', resize);
 
 watch(() => queryParams.granularity, (newValue) => {
   if(newValue == "month"){
@@ -553,7 +553,11 @@ onMounted(() => {
       getList();
   }
 });
-
+onBeforeUnmount(() => {
+  rankChart?.off('click');
+  rankChart?.dispose();
+  window.removeEventListener('resize', resize);
+});
 </script>
 
 <style scoped>

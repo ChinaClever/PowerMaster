@@ -13,6 +13,6 @@ public class CabinetChartHumResBase {
 
     private List<String> time = new ArrayList<>();
 
-    private List<String> happenTime = new ArrayList<>();
+//    private List<String> happenTime = new ArrayList<>();
 
 }

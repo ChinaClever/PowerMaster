@@ -1,18 +1,17 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分析" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分析" :showCheckbox="false" :hightCurrent="true" :currentKey="currentKey" :highlightTypes="[3]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
-        <div class="nav_header">      
+        <div v-if="nowAddress" class="nav_header">      
           <span>{{nowAddress}}</span>
-          <!-- <span style="padding-top:10px">{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span> -->
         </div>
       <div class="nav_content">
-       <div class="description-item">
+       <div class="description-item" v-if="totalEqData!=null">
           <span class="label">总耗电量 :</span>
           <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
         </div>
-        <div class="description-item">
+        <div class="description-item" v-if="maxEqDataTemp!=null">
           <span class="label">最大耗电量 :</span>
           <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
         </div>
@@ -20,7 +19,7 @@
           <span class="label">发生时间 :</span>
           <span class="value">{{ maxEqDataTimeTemp }}</span>
         </div>
-        <div class="description-item">
+        <div class="description-item" v-if="minEqDataTemp!=null">
           <span class="label">最小耗电量:</span>
           <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
         </div>
@@ -119,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -127,7 +126,6 @@ import { formatDate, endOfDay, convertDate, addTime, betweenDay, beginOfDay } fr
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
-import  CommonMenu1 from './CommonMenu1.vue'
 
 defineOptions({ name: 'ECDistribution' })
 const exportLoading = ref(false)
@@ -142,9 +140,14 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14)) as any
+const currentKey=ref()
+if(history.state.cabinetId!=null){
+  currentKey.value=history.state.cabinetId
+  console.log("currentKey.value==",currentKey.value)
+}
 const route=useRoute()
-if(route.query.start!=null&&route.query.end!=null){
-  selectTimeRange.value=[route.query.start as string,route.query.end as string]
+if(history.state.start!=null&&history.state.end!=null){
+  selectTimeRange.value=[history.state.start as string,history.state.end as string]
 }
 const loading = ref(false) 
 const queryParams = reactive({
@@ -240,16 +243,41 @@ const shortcuts = [
   },
 ]
 
+function defaultYear(){
+  const preYear=new Date();
+  preYear.setFullYear(preYear.getFullYear()-1)
+  return [dayjs(preYear).format("YYYY-MM-DD HH:mm:ss"),dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")]
+}
+let lastDate=null;
+let lastWeekOrMonth=null;
 // 监听切换日周月tab切换
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="dayTabPane"){
+    lastDate=selectTimeRange.value;
+  }else{
+    lastWeekOrMonth=selectTimeRange.value;
+  }
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    // selectTimeRange.value = defaultDayTimeRange(14)
+    if(lastDate!=null){
+      selectTimeRange.value=lastDate;
+    }
+    // selectTimeRange.value = defaultDayTimeRange(7)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    // selectTimeRange.value = defaultMonthTimeRange(3)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
+    // selectTimeRange.value = defaultMonthTimeRange(1)
   }else{
     queryParams.granularity = 'month'
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
     // selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
@@ -281,10 +309,10 @@ const endEleData = ref<number[]>([]);
 const endTimeData = ref<string[]>([]);
 const eqData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
-const totalEqData = ref(0);
-const maxEqDataTemp = ref(0);// 最大耗电量 
+const totalEqData = ref();
+const maxEqDataTemp = ref();// 最大耗电量 
 const maxEqDataTimeTemp = ref();// 最大耗电量的发生时间 
-const minEqDataTemp = ref(0);// 最小耗电量 
+const minEqDataTemp = ref();// 最小耗电量 
 const minEqDataTimeTemp = ref();// 最小耗电量的发生时间 
 // 获取折线图数据
 const getLineChartData =async () => {
@@ -310,17 +338,31 @@ loading.value = true
       minEqDataTemp.value = Math.min(...eqData.value);
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = startTimeData.value[index]
+          maxEqDataTimeTemp.value = createTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
-          minEqDataTimeTemp.value = startTimeData.value[index]
+          minEqDataTimeTemp.value = createTimeData.value[index]
         }
         totalEqData.value += Number(num);
       });
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
-      loading2.value = false
+      loading2.value = true
+      totalEqData.value = null;
+      startEleData.value = [];
+      startTimeData.value = [];
+      endEleData.value = [];
+      endTimeData.value = [];
+      eqData.value = [];
+      createTimeData.value = [];
+
+      maxEqDataTemp.value = null;
+      minEqDataTemp.value = null;
+      maxEqDataTimeTemp.value = null
+      minEqDataTimeTemp.value = null
+      // 图表显示的位置变化
+      nowAddress.value = nowAddressTemp.value
       ElMessage({
         message: '暂无数据',
         type: 'warning',
@@ -339,6 +381,7 @@ const initLineChart = () => {
     lineChart.dispose(); // 销毁之前的实例
   }
   if (chartContainer.value && instance) {
+    lineChart?.dispose();
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
       title: { text: '耗电量趋势图', top: -4},
@@ -346,9 +389,9 @@ const initLineChart = () => {
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+      series: [{name: '耗电量', type: 'line', data: eqData.value,symbol:"none",itemStyle:{normal:{lineStyle:{color:'#C8603A'}}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
@@ -373,14 +416,12 @@ function formatNumber(value, decimalPlaces) {
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = '';
-  params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '耗电量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
-        break;
-    }
-  });
-  tooltipContent += '<br/>时间: ' + params[0].name;
+  tooltipContent += params[0].marker + ' ' +'记录时间: ' + params[0].name;
+  tooltipContent += "&nbsp;&nbsp;&nbsp;&nbsp;" + params[0].seriesName + ': ' + params[0].value + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'开始时间: ' + tableData.value[params[0].dataIndex].startTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;开始电能: ' + tableData.value[params[0].dataIndex].startEleData + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'结束时间: ' + tableData.value[params[0].dataIndex].endTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;结束电能: ' + tableData.value[params[0].dataIndex].endEleData + ' kWh';
   return tooltipContent;
 }
 
@@ -421,11 +462,11 @@ const disabledDate = (date) => {
   // 如果date在今天之后，则禁用
   return date > today;
 }
-
-window.addEventListener('resize', function() {
+function resize() {
   lineChart?.resize();
   // rankChart?.resize();  
-});
+}
+window.addEventListener('resize', resize);
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
@@ -451,10 +492,44 @@ function findFullName(data, targetUnique, callback, fullName = '') {
   }
 }
 
+const defaultExpandedKeys = ref([])
+if(history.state.cabinetId!=null){
+  defaultExpandedKeys.value.push(history.state.cabinetId)
+}
+
+let tempId=-1;
+function setNavList(list) {
+  if(list==null||list.length==0) return;
+  list.forEach(item => {
+    if(item.type!=3){
+      item.id=tempId--;
+    }
+    if(item.children!=null&&item.children.length>0){
+      setNavList(item.children);
+    }
+  });
+}
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
+  setNavList(res)
+  setDefaultExpandedKeys(res)
   navList.value = res
+}
+function setDefaultExpandedKeys(list):boolean {
+  if(list==null||list.length==0) return false;
+   for(let item of list){
+    if(defaultExpandedKeys.value.includes(item.id)) {
+      return true;
+    }
+    if(item.children!=null&&item.children.length>0){
+      if(setDefaultExpandedKeys(item.children)==true){
+        defaultExpandedKeys.value.push(item.id)
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /** 搜索按钮操作 */
@@ -490,8 +565,8 @@ const handleExport1 = async () => {
 onMounted(async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryCabinetId = useRoute().query.cabinetId as string | undefined;
-  const queryLocation = useRoute().query.location as string;
+  const queryCabinetId = history.state.cabinetId as string | undefined;
+  const queryLocation = history.state.location as string;
   queryParams.cabinetId = queryCabinetId ? parseInt(queryCabinetId, 10) : undefined;
   if (queryParams.cabinetId != undefined){
     await getLineChartData();
@@ -499,6 +574,10 @@ onMounted(async () => {
     nowAddressTemp.value = queryLocation;
     initLineChart();
   }
+})
+onBeforeUnmount(() => {
+  lineChart?.dispose();
+  window.removeEventListener('resize', resize);
 })
 </script>
 
@@ -508,10 +587,10 @@ onMounted(async () => {
     flex-direction: column;
     align-items: center;
     font-size: 14px;
-    padding-top: 28px;
+    /* padding-top: 28px; */
   }
 .nav_data{
-  padding-left: 20px;
+  padding-left: 5px;
   width: 170px;
 }
 .nav_content span{
@@ -530,7 +609,7 @@ onMounted(async () => {
 .description-item {
   display: flex;
   align-items: center;
-  padding-top: 10px;
+  /* padding-top: 10px; */
 }
 
 .label {
