@@ -326,22 +326,39 @@
             <div class="page-conTitle">
               温度曲线
             </div>
-            <div class="power-section single-line">
+
+            <div v-for="(sensor, index) in temList?.series" :key="index">
+        <div class="power-section single-line">
+        <span class="power-title">温度传感器{{ index + 1 }}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ temData[`temMax${index + 1}`] }}</span> °C <span class="time">记录于({{ temData[`temMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ temData[`temMin${index + 1}`] }}</span> °C <span class="time">记录于({{ temData[`temMinTime${index + 1}`] }})</span></span>
+      </div>
+            </div>
+
+            <!-- <div class="power-section single-line">
   <span class="power-title">温度极值：</span>
   <span class="power-value">峰值 <span class="highlight">{{temData.temMaxValue}}</span> °C <span class="time">由温度传感器{{temData.temMaxSensorId}}采集得到,记录于({{temData.temMaxTime}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{temData.temMinValue}}</span> °C <span class="time">由温度传感器{{temData.temMinSensorId}}采集得到,记录于({{temData.temMinTime}})</span></span>
-</div>
+</div> -->
             <EnvTemLine :width="computedWidth" height="58vh" :list="temList"  :dataType="queryParams.dataType"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               湿度曲线
             </div>
-              <div class="power-section single-line">
+            
+            <div v-for="(sensor, index) in temList?.series" :key="index">
+        <div class="power-section single-line">
+        <span class="power-title">温度传感器{{ index + 1 }}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ temData[`humMax${index + 1}`] }}</span> %RH <span class="time">记录于({{ temData[`humMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ temData[`humMin${index + 1}`] }}</span> %RH <span class="time">记录于({{ temData[`humMinTime${index + 1}`] }})</span></span>
+      </div>
+            </div>
+              <!-- <div class="power-section single-line">
   <span class="power-title">湿度极值：</span>
   <span class="power-value">峰值 <span class="highlight">{{temData.humMaxValue}}</span> °C <span class="time">由温度传感器{{temData.humMaxSensorId}}采集得到,记录于({{temData.humMaxTime}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{temData.humMinValue}}</span> °C <span class="time">由温度传感器{{temData.humMinSensorId}}采集得到,记录于({{temData.humMinTime}})</span></span>
-</div>
+</div> -->
             <EnvHumLine :width="computedWidth" height="58vh" :list="humList"  :dataType="queryParams.dataType"/>
           </div>
 
@@ -349,6 +366,15 @@
             <div class="page-conTitle">
               回路电流曲线
             </div>
+           
+      <div v-for="(sensor, index) in loopList?.series" :key="index">
+        <div class="power-section single-line">
+        <span class="power-title">回路{{ index + 1 }}电流极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ loopData[`loopMax${index + 1}`] }}</span> A <span class="time">记录于({{ loopData[`loopMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ loopData[`loopMin${index + 1}`] }}</span> A <span class="time">记录于({{ loopData[`loopMinTime${index + 1}`] }})</span></span>
+      </div>
+            </div>
+
             <LoopLine :width="computedWidth" height="58vh" :list="loopList"  :dataType="queryParams.dataType"/>
           </div>
 
@@ -1238,9 +1264,7 @@ const getList = async () => {
   }
   
   const data = await PDUDeviceApi.getPDUPFLine(queryParams);
-  console.log('getPDUPFLine',data);
   pfLineList.value = data.pfLineRes;
-  console.log("pfLineList.value",pfLineList.value);
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     factorLineData.value.lineAMax = data.lineAMax;
     factorLineData.value.lineAMin = data.lineAMin;
@@ -1303,6 +1327,19 @@ const getList = async () => {
   if(temList.value?.series != null && temList.value?.series?.length > 0 ){
     temData.value.temMinValue = temData.value.temMinValue?.toFixed(2);
     temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
+
+    temData.value.lineRes.series.forEach((_, index) => {
+          const maxKey = `temMax${index + 1}`;
+          const minKey = `temMin${index + 1}`;
+
+          if (temData.value[maxKey] != null) {
+            temData.value[maxKey] = temData.value[maxKey].toFixed(1);
+          }
+          if (temData.value[minKey] != null) {
+            temData.value[minKey] = temData.value[minKey].toFixed(1);
+          }
+        });
+
     visControll.temVis = true;
   }else{
     visControll.temVis = false;
@@ -1310,19 +1347,39 @@ const getList = async () => {
   if(humList.value?.series != null && humList.value?.series?.length > 0 ){
     humList.value.humMinValue = humList.value.humMinValue?.toFixed(2);
     humList.value.humMaxValue = humList.value.humMaxValue?.toFixed(2);
+
+    temData.value.lineRes.series.forEach((_, index) => {
+          const maxKey = `humMax${index + 1}`;
+          const minKey = `humMin${index + 1}`;
+
+          if (temData.value[maxKey] != null) {
+            temData.value[maxKey] = temData.value[maxKey].toFixed(1);
+          }
+          if (temData.value[minKey] != null) {
+            temData.value[minKey] = temData.value[minKey].toFixed(1);
+          }
+        });
     visControll.humVis = true;
   }else{
     visControll.humVis = false;
   }
 
   loopData.value = await PDUDeviceApi.getLoopData(queryParams);
+  console.log('loopData',loopData.value);
+  
   loopList.value = loopData.value.lineRes;
-  console.log("loopList",loopList.value);
   if(loopList.value?.series != null && loopList.value?.series?.length > 0 ){
-    // humList.value.humMinValue = humList.value.humMinValue?.toFixed(2);
-    // humList.value.humMaxValue = humList.value.humMaxValue?.toFixed(2);
-console.log('loopList.value?.series',loopList.value?.series);
+    loopData.value.lineRes.series.forEach((_, index) => {
+          const maxKey = `loopMax${index + 1}`;
+          const minKey = `loopMin${index + 1}`;
 
+          if (loopData.value[maxKey] != null) {
+            loopData.value[maxKey] = loopData.value[maxKey].toFixed(2);
+          }
+          if (loopData.value[minKey] != null) {
+            loopData.value[minKey] = loopData.value[minKey].toFixed(2);
+          }
+        });
     visControll.loopVis = true;
   }else{
     visControll.loopVis = false;

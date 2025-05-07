@@ -1833,12 +1833,36 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         if (dataType == 1) {
                             totalPFLine.setName(PduDataTypeEnum.FACTOR_TOTAL_MAX.getDataType());
                             totalPFLine.getData().add(pduHdaTotalHourDo.getPowerFactorMaxValue());
+                            if (totalMax < pduHdaTotalHourDo.getPowerFactorMaxValue()) {
+                                totalMax = pduHdaTotalHourDo.getPowerFactorMaxValue();
+                                totalMaxTime = pduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (totalMin > pduHdaTotalHourDo.getPowerFactorMaxValue()) {
+                                totalMin = pduHdaTotalHourDo.getPowerFactorMaxValue();
+                                totalMinTime = pduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
                         } else if (dataType == 0) {
                             totalPFLine.setName(PduDataTypeEnum.FACTOR_TOTAL_AVG.getDataType());
                             totalPFLine.getData().add(pduHdaTotalHourDo.getPowerFactorAvgValue());
+                            if (totalMax < pduHdaTotalHourDo.getPowerFactorAvgValue()) {
+                                totalMax = pduHdaTotalHourDo.getPowerFactorAvgValue();
+                                totalMaxTime = "无";
+                            }
+                            if (totalMin > pduHdaTotalHourDo.getPowerFactorAvgValue()) {
+                                totalMin = pduHdaTotalHourDo.getPowerFactorAvgValue();
+                                totalMinTime = "无";
+                            }
                         } else if (dataType == -1) {
                             totalPFLine.setName(PduDataTypeEnum.FACTOR_TOTAL_MIN.getDataType());
                             totalPFLine.getData().add(pduHdaTotalHourDo.getPowerFactorMinValue());
+                            if (totalMax < pduHdaTotalHourDo.getPowerFactorMinValue()) {
+                                totalMax = pduHdaTotalHourDo.getPowerFactorMinValue();
+                                totalMaxTime = pduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (totalMin > pduHdaTotalHourDo.getPowerFactorMinValue()) {
+                                totalMin = pduHdaTotalHourDo.getPowerFactorMinValue();
+                                totalMinTime = pduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
                         }
                         totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
                     }
@@ -1863,7 +1887,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     oldTime = oldTime.plusDays(1);
                     newTime = newTime.plusDays(1);
                 }
-                
+
                 searchRequest = new SearchRequest(index);
                 // 构建查询请求
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -1902,6 +1926,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         return result;
     }
 
+    /**
+     * 功率曲线数据处理
+     * @param hits
+     * @param dataType
+     * @param result
+     * @param totalLineRes
+     */
     public void processData(SearchHits hits,Integer dataType,Map result,CabinetChartResBase totalLineRes){
         //描述数据收集
         Float lineAMax = -0.1f;
@@ -2574,24 +2605,62 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     if (CollectionUtil.isEmpty(envMap.get(i))) {
                         continue;
                     }
+
                     List<PduHdaLoopBaseDo> hourDoList = envMap.get(i);
                     //数据收集
                     LineSeries lineSeries = new LineSeries();
                     List<Float> loopCur = null;
+
+                    //收集描述信息（峰值、谷值、发生时间）
+                    Float loopMax = -0.1f;
+                    Float loopMin = 1000f;
+                    String loopMaxTime = "";
+                    String loopMinTime = "";
+
                     if (dataType == 1) {
                         String name = "回路" + i + PduDataTypeEnum.CURRENT_MAX.getDataType();
                         lineSeries.setName(name);
                         loopCur = hourDoList.stream().map(PduHdaLoopBaseDo::getCurMaxValue).collect(Collectors.toList());
                         happenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                        for (PduHdaLoopBaseDo pduHdaLoopBaseDo : hourDoList) {
+                            if (loopMax < pduHdaLoopBaseDo.getCurMaxValue()){
+                                loopMax = pduHdaLoopBaseDo.getCurMaxValue();
+                                loopMaxTime = pduHdaLoopBaseDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (loopMin > pduHdaLoopBaseDo.getCurMaxValue()){
+                                loopMin = pduHdaLoopBaseDo.getCurMaxValue();
+                                loopMinTime = pduHdaLoopBaseDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                        }
                     } else if (dataType == 0) {
                         String name = "回路" + i + PduDataTypeEnum.CURRENT_AVG.getDataType();
                         lineSeries.setName(name);
                         loopCur = hourDoList.stream().map(PduHdaLoopBaseDo::getCurAvgValue).collect(Collectors.toList());
+                        for (PduHdaLoopBaseDo pduHdaLoopBaseDo : hourDoList) {
+                            if (loopMax < pduHdaLoopBaseDo.getCurAvgValue()){
+                                loopMax = pduHdaLoopBaseDo.getCurAvgValue();
+                                loopMaxTime = "无";
+                            }
+                            if (loopMin > pduHdaLoopBaseDo.getCurAvgValue()){
+                                loopMin = pduHdaLoopBaseDo.getCurAvgValue();
+                                loopMinTime = "无";
+                            }
+                        }
                     } else if (dataType == -1) {
                         String name = "回路" + i + PduDataTypeEnum.CURRENT_MIN.getDataType();
                         lineSeries.setName(name);
                         loopCur = hourDoList.stream().map(PduHdaLoopBaseDo::getCurMinValue).collect(Collectors.toList());
                         happenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                        for (PduHdaLoopBaseDo pduHdaLoopBaseDo : hourDoList) {
+                            if (loopMax < pduHdaLoopBaseDo.getCurMinValue()){
+                                loopMax = pduHdaLoopBaseDo.getCurMinValue();
+                                loopMaxTime = pduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (loopMin > pduHdaLoopBaseDo.getCurMinValue()){
+                                loopMin = pduHdaLoopBaseDo.getCurMinValue();
+                                loopMinTime = pduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                        }
                     }
                     lineSeries.setData(loopCur);
                     if (!isFisrt) {
@@ -2605,18 +2674,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     }
                     lineSeries.setHappenTime(happenTime);
                     lineRes.getSeries().add(lineSeries);
+
+                    result.put("loopMax"+i,loopMax);
+                    result.put("loopMin"+i,loopMin);
+                    result.put("loopMaxTime"+i,loopMaxTime);
+                    result.put("loopMinTime"+i,loopMinTime);
                 }
-                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "cur_max_value");
-                PduHdaLoopBaseDo totalMaxLoopCur = JsonUtils.parseObject(reactiveTotalMaxValue, PduHdaLoopBaseDo.class);
-                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "cur_min_value");
-                PduHdaLoopBaseDo totalMinLoopCur = JsonUtils.parseObject(reactiveTotalMinValue, PduHdaLoopBaseDo.class);
-
-
-                result.put("loopMaxValue", totalMaxLoopCur.getCurMaxValue());
-                result.put("loopMaxTime", totalMaxLoopCur.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("loopMinValue", totalMinLoopCur.getCurMinValue());
-                result.put("loopMinTime", totalMinLoopCur.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-
 
                 result.put("lineRes", lineRes);
             }
@@ -2674,26 +2737,94 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
 
                     lineSeries.setName("温度传感器" + i + "号");
-                    humSeries.setName("湿度传感器" + i + "号");
+                    humSeries.setName("温度传感器" + i + "号");
                     List<PduEnvHourDo> hourDoList = envMap.get(i);
 
                     //判断需要什么数值的数据（最大值，最小值，平均值）
                     List<Float> temAvg = null;
                     List<Integer> humData = null;
+
+                    Float temMax = -274f;
+                    Float temMin = 1000f;
+                    String temMaxTime = "";
+                    String temMinTime = "";
+
+                    Integer humMax = -100;
+                    Integer hunMin = 1000;
+                    String humMaxTime = "";
+                    String humMinTime = "";
+
+
                     if (dataType == 1) {
                         temAvg = hourDoList.stream().map(PduEnvHourDo::getTemMaxValue).collect(Collectors.toList());
                         humData = hourDoList.stream().map(PduEnvHourDo::getHumMaxValue).collect(Collectors.toList());
+                        for (PduEnvHourDo pduEnvHourDo : hourDoList) {
+                            if (temMax < pduEnvHourDo.getTemMaxValue()){
+                                temMax = pduEnvHourDo.getTemMaxValue();
+                                temMaxTime = pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (temMin > pduEnvHourDo.getTemMaxValue()){
+                                temMin = pduEnvHourDo.getTemMaxValue();
+                                temMinTime = pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+
+                            if (humMax < pduEnvHourDo.getHumMaxValue()){
+                                humMax = pduEnvHourDo.getHumMaxValue();
+                                humMaxTime = pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (hunMin > pduEnvHourDo.getHumMaxValue()){
+                                hunMin = pduEnvHourDo.getHumMaxValue();
+                                humMinTime = pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                        }
 
                         temHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                         humHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                     } else if (dataType == 0) {
                         temAvg = hourDoList.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
                         humData = hourDoList.stream().map(PduEnvHourDo::getHumAvgValue).collect(Collectors.toList());
+                        for (PduEnvHourDo pduEnvHourDo : hourDoList) {
+                            if (temMax < pduEnvHourDo.getTemAvgValue()){
+                                temMax = pduEnvHourDo.getTemAvgValue();
+                                temMaxTime = "无";
+                            }
+                            if (temMin > pduEnvHourDo.getTemAvgValue()){
+                                temMin = pduEnvHourDo.getTemAvgValue();
+                                temMinTime = "无";
+                            }
+
+                            if (humMax < pduEnvHourDo.getHumAvgValue()){
+                                humMax = pduEnvHourDo.getHumAvgValue();
+                                humMaxTime = "无";
+                            }
+                            if (hunMin > pduEnvHourDo.getHumAvgValue()){
+                                hunMin = pduEnvHourDo.getHumAvgValue();
+                                humMinTime = "无";
+                            }
+                        }
 
                     } else if (dataType == -1) {
                         temAvg = hourDoList.stream().map(PduEnvHourDo::getTemMinValue).collect(Collectors.toList());
                         humData = hourDoList.stream().map(PduEnvHourDo::getHumMinValue).collect(Collectors.toList());
+                        for (PduEnvHourDo pduEnvHourDo : hourDoList) {
+                            if (temMax < pduEnvHourDo.getTemMinValue()){
+                                temMax = pduEnvHourDo.getTemMinValue();
+                                temMaxTime = pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (temMin > pduEnvHourDo.getTemMinValue()){
+                                temMin = pduEnvHourDo.getTemMinValue();
+                                temMinTime = pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
 
+                            if (humMax < pduEnvHourDo.getHumMinValue()){
+                                humMax = pduEnvHourDo.getHumMinValue();
+                                humMaxTime = pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                            if (hunMin > pduEnvHourDo.getHumMinValue()){
+                                hunMin = pduEnvHourDo.getHumMinValue();
+                                humMinTime = pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                            }
+                        }
                         temHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                         humHappenTime = hourDoList.stream().map(pduEnvHourDo -> pduEnvHourDo.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                     }
@@ -2714,41 +2845,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     lineSeries.setHappenTime(temHappenTime);
                     lineRes.getSeries().add(lineSeries);
                     humeRes.getSeries().add(humSeries);
-                }
-                String temMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_max_value");
-                PduEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, PduEnvHourDo.class);
-                String temMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "tem_min_value");
-                PduEnvHourDo temMin = JsonUtils.parseObject(temMinValue, PduEnvHourDo.class);
 
-                String humMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "hum_max_value");
-                PduEnvHourDo humMax = JsonUtils.parseObject(humMaxValue, PduEnvHourDo.class);
-                String humMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "hum_min_value");
-                PduEnvHourDo humMin = JsonUtils.parseObject(humMinValue, PduEnvHourDo.class);
+                    result.put("temMax"+i,temMax);
+                    result.put("temMin"+i,temMin);
+                    result.put("temMaxTime"+i,temMaxTime);
+                    result.put("temMinTime"+i,temMinTime);
+
+                    result.put("humMax"+i,humMax);
+                    result.put("humMin"+i,hunMin);
+                    result.put("humMaxTime"+i,humMaxTime);
+                    result.put("humMinTime"+i,humMinTime);
+                }
 
                 result.put("lineRes", lineRes);
                 result.put("humRes", humeRes);
-                if (temMax != null) {
-                    result.put("temMaxValue", temMax.getTemMaxValue());
-                    result.put("temMaxTime", temMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                    result.put("temMaxSensorId", temMax.getSensorId());
-                }
-                if (temMin != null) {
-                    result.put("temMinValue", temMin.getTemMinValue());
-                    result.put("temMinTime", temMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                    result.put("temMinSensorId", temMin.getSensorId());
-                }
-
-                if (humMax != null) {
-                    result.put("humMaxValue", humMax.getTemMaxValue());
-                    result.put("humMaxTime", humMax.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                    result.put("humMaxSensorId", humMax.getSensorId());
-                }
-                if (humMin != null) {
-                    result.put("humMinValue", humMin.getTemMinValue());
-                    result.put("humMinTime", humMin.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                    result.put("humMinSensorId", humMin.getSensorId());
-                }
-
                 return result;
             }
         } catch (Exception e) {
