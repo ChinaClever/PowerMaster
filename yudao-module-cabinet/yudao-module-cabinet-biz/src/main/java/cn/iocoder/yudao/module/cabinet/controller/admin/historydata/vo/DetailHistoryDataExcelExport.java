@@ -30,5 +30,11 @@ public class DetailHistoryDataExcelExport {
     @NumberFormat("0.000")
     @ExcelProperty("总视在功率(kVA)")
     private Double apparent_total;
+    @NumberFormat("0.000")
+    @ExcelProperty("总无功功率(kVar)")
+    private Double reactive_total;
+    @NumberFormat("0.00")
+    @ExcelProperty("总功率因素")
+    private Double factor_total;
 
 }

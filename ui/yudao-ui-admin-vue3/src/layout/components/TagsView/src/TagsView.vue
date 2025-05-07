@@ -535,13 +535,13 @@ $prefix-cls: #{$namespace}-tags-view;
 
   &__item:not(.is-active) {
     &:hover {
-      color: var(--el-color-primary);
+      color: #00778c;
     }
   }
 
   &__item.is-active {
     color: var(--el-color-white);
-    background-color: var(--el-color-primary);
+    background-color: #00778c;
     border: 1px solid var(--el-color-primary);
     .#{$prefix-cls}__item--close {
       :deep(span) {
@@ -567,13 +567,13 @@ $prefix-cls: #{$namespace}-tags-view;
 
     &__item:not(.is-active) {
       &:hover {
-        color: var(--el-color-primary);
+        color: #00778c;
       }
     }
 
     &__item.is-active {
       color: var(--el-color-white);
-      background-color: var(--el-color-primary);
+      background-color: #00778c;
       border: 1px solid var(--el-color-primary);
       .#{$prefix-cls}__item--close {
         :deep(span) {

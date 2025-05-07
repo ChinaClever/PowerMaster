@@ -289,7 +289,7 @@ let myChart3 = null as echarts.ECharts | null;
 let myChart4 = null as echarts.ECharts | null; 
 
 const clickPower = () => {
-  if(!isPowActiveDisabled) {
+  if(!isPowActiveDisabled.value) {
     switchChartContainer.value =1
   }
 }
@@ -450,7 +450,7 @@ const initChart3 = () => {
         ],
       }
     );
-
+    console.log(myChart3)
     instance.appContext.config.globalProperties.myChart3 = myChart3;
   }
 }
@@ -607,7 +607,7 @@ const getLineChartData =async () => {
     if (data3 != null){
       // 查到数据
       allEqData.value = data3
-      console.log('allLineData',allLineData.value)
+      console.log('allEqData',allEqData.value)
       if (timeRadio.value == '近一天' || '近三天'){
         eqCreateTimeData.value = data3.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
       } else{
@@ -926,6 +926,7 @@ watch( ()=>typeRadio.value, async(value)=>{
         {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
       ],
     });
+    console.log(myChart3)
   // 更新数据后重新渲染图表
   myChart4?.setOption({
       tooltip: { trigger: 'axis' ,formatter: function(params) {

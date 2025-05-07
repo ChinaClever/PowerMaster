@@ -9,9 +9,9 @@
         label-width="68px"                          
       >
         <div v-if="!props.isFromHome" style="display: flex;aligns-item: center">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
+          <el-button @click="valueMode = 0;" :color="valueMode == 0 ? '#00778c' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
+          <el-button @click="valueMode = 1;" :color="valueMode == 1 ? '#00778c' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
+          <el-button @click="valueMode = 2;" :color="valueMode == 2 ? '#00778c' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>    
           <el-form-item label="机房名" prop="devKey">
             <el-input
               v-model="searchRoomName"
@@ -33,9 +33,9 @@
         <el-button v-if="!editRoom" @click="editRoom = true"><Icon icon="ep:grid" style="margin-right: 4px" />编辑机房</el-button>        
         <el-button v-else @click="editRoom = false"><Icon icon="ep:grid" style="margin-right: 4px" />取消编辑</el-button>        
         <el-button v-if="editRoom" @click="handleAdd"><Icon icon="ep:grid" style="margin-right: 4px" />新建机房</el-button>        
-        <el-button @click="switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-        <el-button @click="switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
-        <el-button @click="handleStopDelete();switchValue = 2;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+        <el-button @click="switchValue = 0;" :color="switchValue == 0 ? '#00778c' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+        <el-button @click="switchValue = 3;" :color="switchValue == 3 ? '#00778c' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        <el-button @click="handleStopDelete();switchValue = 2;" :color="switchValue ===2 ? '#00778c' : ''" v-show="switchValue ===3"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
       </div>
     </div>
     <div v-if="switchValue == 0" style="padding: 20px 0;background-color: #fff">
@@ -573,7 +573,7 @@
         </div>
         <div class="double-formitem">
           <div style="margin-left: 60px;margin-bottom: 18px">
-            <el-radio-group v-model="addrFlag">
+            <el-radio-group v-model="addrFlag" fill="#00778c">
               <el-radio-button :label="false">不分楼层</el-radio-button>
               <el-radio-button :label="true">分楼层</el-radio-button>
             </el-radio-group>
@@ -592,7 +592,7 @@
         </div>
         <div v-if="!rowColInfo.areaFlag" class="double-formitem">
           <div style="margin-left: 60px;margin-bottom: 18px">
-            <el-radio-group v-model="rowColInfo.areaFlag">
+            <el-radio-group v-model="rowColInfo.areaFlag" fill="#00778c">
               <el-radio-button :label="true">面积</el-radio-button>
               <el-radio-button :label="false">地砖</el-radio-button>
             </el-radio-group>
@@ -606,7 +606,7 @@
         </div>
         <div v-else class="double-formitem">
           <div style="margin-left: 60px;margin-bottom: 18px">
-            <el-radio-group v-model="rowColInfo.areaFlag">
+            <el-radio-group v-model="rowColInfo.areaFlag" fill="#00778c">
               <el-radio-button :label="true">面积</el-radio-button>
               <el-radio-button :label="false">地砖</el-radio-button>
             </el-radio-group>
@@ -633,7 +633,7 @@
         </el-form-item> -->
         <div class="double-formitem">
           <div style="margin-left: 60px;margin-bottom: 18px">
-            <el-radio-group v-model="rowColInfo.displayFlag">
+            <el-radio-group v-model="rowColInfo.displayFlag" fill="#00778c">
               <el-radio-button :label="false">不显示</el-radio-button>
               <el-radio-button :label="true">显示</el-radio-button>
             </el-radio-group>
@@ -652,7 +652,7 @@
         </div>
         <div class="double-formitem">
           <div style="margin-left: 60px;margin-bottom: 18px">
-            <el-radio-group v-model="sortFlag">
+            <el-radio-group v-model="sortFlag" fill="#00778c">
               <el-radio-button :label="false">不启用</el-radio-button>
               <el-radio-button :label="true">启用</el-radio-button>
             </el-radio-group>
@@ -681,7 +681,7 @@
       </el-form>
       <template #footer>
         <el-button @click="handleDialogCancel">取 消</el-button>
-        <el-button type="primary" @click="submitSetting">确 定</el-button>
+        <el-button type="primary" @click="submitSetting" color="black">确 定</el-button>
       </template>
     </el-dialog>
   </div>

@@ -1,6 +1,6 @@
 <template>
-<!-- <div style="height:calc(100vh - 120px);"> -->
-  <el-card shadow="never">
+<!-- <div style="height:70%;"> -->
+  <el-card shadow="never" :style="isFromHome ? 'flex: 1' : ''">
     <div class="toolbar">
       <div style="display: flex;align-items:center" v-if="!isFromHome">
         机房：
@@ -26,17 +26,17 @@
       </div>
       <div style="display: flex;align-items: center">
         <!-- <el-button @click="handleAdd" type="primary">新建机房</el-button> -->
-        <el-button v-if="!editEnable" @click="handleEdit" :size="isFromHome ? 'small' : ''" type="primary">编辑</el-button>
+        <el-button v-if="!editEnable" @click="handleEdit" :size="isFromHome ? 'small' : ''" type="primary" color="black">编辑</el-button>
         <!-- <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button> -->
-        <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
-        <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
-        <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
+        <el-button v-if="editEnable" @click="handleCancel" plain type="primary" color="black">取消</el-button>
+        <el-button v-if="editEnable" @click="openSetting" plain type="primary" color="black"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
+        <el-button v-if="editEnable" @click="handleSubmit" plain type="primary" color="black">保存</el-button>
         <!-- <el-button v-if="editEnable" @click="handleDelete" type="primary">删除机房</el-button> -->
         
       </div>
     </div>
   </el-card>
-  <el-card shadow="never" :style="isFromHome ? 'flex: 1;' : ''">
+  <el-card shadow="never" :body-style="isFromHome ? 'padding: 0' : ''">
     <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="{cursor: `${dragCursor}`}">
         <div class="dragContainer" 
           ref="tableContainer"
@@ -63,7 +63,7 @@
                   >
                     <template #item="{ element }">
                       <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)">
-                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -109,11 +109,11 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">%</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">%</div></div>
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 1 && element.runStatus == 1" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 1 && element.runStatus == 1" :style="{backgroundColor: element.cabinetName ? `rgba(41, 132, 71, ${element.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -159,11 +159,11 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">kVA</div></div>
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? `rgba(124, 255, 178, ${element.powerFactor})` : (element.powerFactor>=0.5 ? `rgba(88, 217, 249, ${element.powerFactor+0.25})` : (element.powerFactor>=0.25 ? `rgba(253, 221, 96, ${element.powerFactor+0.5})` : `rgba(255, 110, 118, ${element.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? `rgba(124, 255, 178, ${element.powerFactor})` : (element.powerFactor>=0.5 ? `rgba(88, 217, 249, ${element.powerFactor+0.25})` : (element.powerFactor>=0.25 ? `rgba(253, 221, 96, ${element.powerFactor+0.5})` : `rgba(255, 110, 118, ${element.powerFactor+0.75})`))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -213,7 +213,7 @@
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 3 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temFront>=tempList[2]?.min ? tempList[2]?.color : (element.temFront>=tempList[1]?.min ? tempList[1]?.color : (element.temFront>=tempList[0]?.min ? tempList[0]?.color : 'red'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 3 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temFront>=tempList[2]?.min ? tempList[2]?.color : (element.temFront>=tempList[1]?.min ? tempList[1]?.color : (element.temFront>=tempList[0]?.min ? tempList[0]?.color : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -259,11 +259,11 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 4 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (element.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (element.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 4 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (element.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (element.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -309,11 +309,11 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else :style="{backgroundColor: element.cabinetName ? statusColor[element.runStatus].color : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else :style="{backgroundColor: element.cabinetName ? statusColor[element.runStatus].color : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -359,12 +359,12 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">%</div></div>
-                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">%</div></div>
+                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">kVA</div></div>
                               <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
-                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
-                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kWh</div></div>
+                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">kWh</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -372,7 +372,7 @@
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
                           <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
-                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -422,7 +422,7 @@
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 1 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 1 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? `rgba(41, 132, 71, ${item.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -468,11 +468,11 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? `rgba(124, 255, 178, ${item.powerFactor})` : (item.powerFactor>=0.5 ? `rgba(88, 217, 249, ${item.powerFactor+0.25})` : (item.powerFactor>=0.25 ? `rgba(253, 221, 96, ${item.powerFactor+0.5})` : `rgba(255, 110, 118, ${item.powerFactor+0.75})`))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? `rgba(124, 255, 178, ${item.powerFactor})` : (item.powerFactor>=0.5 ? `rgba(88, 217, 249, ${item.powerFactor+0.25})` : (item.powerFactor>=0.25 ? `rgba(253, 221, 96, ${item.powerFactor+0.5})` : `rgba(255, 110, 118, ${item.powerFactor+0.75})`))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -522,7 +522,7 @@
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 3 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.temFront>=tempList[2]?.min ? tempList[2]?.color : (item.temFront>=tempList[1]?.min ? tempList[1]?.color : (item.temFront>=tempList[0]?.min ? tempList[0]?.color : 'red'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 3" :style="{background: `linear-gradient(to bottom, ${getColorFromGradient(12)} 50%, ${getColorFromGradient(60)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -568,11 +568,11 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 4 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (item.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (item.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 4 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (item.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (item.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -618,11 +618,11 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else :style="{backgroundColor: item.cabinetName ? statusColor[item.runStatus].color : '#effaff',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else :style="{backgroundColor: item.cabinetName ? statusColor[item.runStatus].color : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -671,8 +671,8 @@
                                   <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">%</div><span v-else style="font-size: 10px;">%</span></div>
                                   <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
                                   <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
-                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<br/><div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
                                   <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kWh</div></div> -->
                                 </el-tooltip>
                               </template>
@@ -968,7 +968,7 @@ const rowColInfo = reactive({
 })
 const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<Record<string, any[]>[]>([]);
-const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量'])
+const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量','机柜告警'])
 const statusInfo = ref([[
   {
     name: '0%<负载率<60%',
@@ -987,8 +987,8 @@ const statusInfo = ref([[
   }
 ],[
   {
-    name: '空载',
-    color: '#effaff',
+    name: '空机柜',
+    color: '#f5f7fa',
     value: 5,
   },
   {
@@ -1065,8 +1065,8 @@ const statusColor = ref([
     value: 4,
   },
   {
-    name: '空载',
-    color: '#effaff',
+    name: '空机柜',
+    color: '#f5f7fa',
     value: 5,
   },
 ])
@@ -1618,6 +1618,21 @@ const getRoomInfoNoLoading = async() => {
   }
 }
 
+const getColorFromGradient = (value) => {
+    // 对输入值进行归一化处理
+    const normalizedValue = value / 100;
+    const clampedValue = Math.min(Math.max(normalizedValue, 0), 1);
+
+    const startColor = {r: 244,g: 229,b: 162};
+    const endColor = {r: 191,g: 68,b: 76};
+
+    const r = Math.round(startColor.r + (endColor.r - startColor.r) * clampedValue);
+    const g = Math.round(startColor.g + (endColor.g - startColor.g) * clampedValue);
+    const b = Math.round(startColor.b + (endColor.b - startColor.b) * clampedValue);
+
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
 const getRoomStatus = async(res) => {
   if (!res) {
     res = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value})
@@ -1778,7 +1793,7 @@ const handleDelete = () => {
 // 处理点击编辑事件
 const handleEdit = () => {
   if (isFromHome) {
-    push({path: '/room/roommonitor/topology', query: { id:roomDownValId.value}})
+    push({path: '/room/roommonitor/topology', query: { id:roomId.value}})
     return
   }
   editEnable.value = true
@@ -1867,10 +1882,31 @@ const handleRightClick = (e) => {
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetName
 
     menuOptions.value[3] = menuOptionsCopy.value[3]
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes) {
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+        isBus: true
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1],
+        isBus: true
+      }
+    }
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus) {
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyA,
+        isBus: false
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.pduKeyB,
+        isBus: false
+      }
+    }
     menuOptions.value[3].value = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
     menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
 
-    menuOptions.value[4] = menuOptionsCopy.value[4]
     menuOptions.value[4].value = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
     menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
       
@@ -2066,6 +2102,15 @@ const handleMenu = (value) => {
         id: value[0].id,
         cabinetName: value[0].cabinetName
       })
+      break;
+
+    case 'A路配电':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/buspowerdetail', 
+        query: { 
+          devKey: value[0].devKey
+        } 
+      });
       break;
     
     case '拖拽视图':
@@ -2878,7 +2923,7 @@ onUnmounted(() => {
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        background-color: #effaff;
+        background-color: #f5f7fa;
         border-right: 1px solid #bed1ff;
         &>div {
           min-height: 20px;
@@ -2888,7 +2933,7 @@ onUnmounted(() => {
         }
       }
       .fill {
-        background-color: #effaff;
+        background-color: #f5f7fa;
       }
     }
     .dragChildCol {
@@ -2909,7 +2954,7 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #effaff;
+        background-color: #f5f7fa;
         border-bottom: 1px solid #bed1ff;
         &>div {
           min-height: 20px;
@@ -2919,7 +2964,7 @@ onUnmounted(() => {
         }
       }
       .fill {
-        background-color: #effaff;
+        background-color: #f5f7fa;
       }
     }
   }
@@ -2938,7 +2983,7 @@ onUnmounted(() => {
     height: 100%;
     width: 100%;
     // height: 40px;
-    background-color: #effaff;
+    background-color: #f5f7fa;
     box-sizing: border-box;
     border: 1px solid #000;
       &:hover {

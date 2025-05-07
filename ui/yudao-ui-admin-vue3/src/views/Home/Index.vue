@@ -23,17 +23,17 @@
             <div class="h-70px flex items-center justify-end lt-sm:mt-10px">
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">机柜数</div>
-                <span class="text-30px" style="font-weight: bold">{{devInfo.cabNum}}</span>
+                <span class="text-20px" style="font-weight: bold">{{devInfo.cabNum}}</span>
               </div>
               <el-divider direction="vertical" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">已开通</div>
-                <span class="text-30px" style="font-weight: bold">{{devInfo.cabUse}}</span>
+                <span class="text-20px" style="font-weight: bold">{{devInfo.cabUse}}</span>
               </div>
               <el-divider direction="vertical" border-style="dashed" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">未启用</div>
-                <span class="text-30px" style="font-weight: bold">{{devInfo.cabUnused}}</span>
+                <span class="text-20px" style="font-weight: bold">{{devInfo.cabUnused}}</span>
               </div>
             </div>
           </el-col>
@@ -49,9 +49,9 @@
           <div class="h-3 flex justify-between">
             <span class="font-700">机房状态</span>
             <div class="roomPowerBtns">
-              <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
-              <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-              <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>
+              <el-button @click="valueMode = 0;" :color="valueMode == 0 ? '#00778c' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
+              <el-button @click="valueMode = 1;" :color="valueMode == 1 ? '#00778c' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
+              <el-button @click="valueMode = 2;" :color="valueMode == 2 ? '#00778c' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>
               <el-button @click="push({path: '/room/roommonitor/roompower'})" size="small">全屏</el-button>
             </div>
           </div>
@@ -445,9 +445,11 @@ const temChartOptions = ref({
   grid: {
     left: 20,
     right: 20,
-    bottom: 20,
+    bottom: 10,
+    top: 30,
     containLabel: true
   },
+  barGap: '200%',
   xAxis: {
     type: 'category',
     data:[],
@@ -712,7 +714,8 @@ const getHomeEqData = async() => {
       grid: {
         left: 30,
         right: 20,
-        bottom: 20,
+        bottom: 0,
+        top: 30,
         containLabel: true
       },
       tooltip: {
@@ -737,8 +740,11 @@ const getHomeEqData = async() => {
         type: 'category',
         data: res.roomEqList ? res.roomEqList.sort((a,b) => b.todayEq - a.todayEq).map(item => item.name) : [],
         axisLabel: {
-          interval: 0, // 显示所有标签，不设间隔
-        },
+          width: 70, // 固定每个标签的宽度
+          overflow: 'truncate', // 超出截断
+          ellipsis: '...', // 显示省略号
+          interval: 0 // 强制显示所有标签
+        }
       },
       yAxis: {
         type: 'value',
@@ -931,12 +937,22 @@ const handleBackData = (data) => {
       type: 'bar',
       barWidth: 10, // 固定柱宽为 30 像素
       data: dataArray.sort((a,b) => b.temMaxBlack - a.temMaxBlack).map(item => item.temMaxFront ? item.temMaxFront : 0),
+      label: {
+        show: true,
+        position: 'top', // 顶部显示
+        formatter: '{c}', // 显示数据值
+      }
     },
     {
       name: '后门',
       type: 'bar',
       barWidth: 10, // 固定柱宽为 30 像素
       data: dataArray.sort((a,b) => b.temMaxBlack - a.temMaxBlack).map(item => item.temMaxBlack ? item.temMaxBlack : 0),
+      label: {
+        show: true,
+        position: 'top', // 顶部显示
+        formatter: '{c}', // 显示数据值
+      }
     }
   ]
   console.log(temChartOptions.value)
@@ -1234,12 +1250,12 @@ onUnmounted(() => {
 
 .percentage-value {
   display: block;
-  margin-top: 10px;
+  margin-top: 70px;
   font-size: 25px;
 }
 .percentage-label {
   display: block;
-  margin-top: 10px;
+  margin-top: 50px;
   font-size: 12px;
 }
 .percentage-unit {

@@ -1,42 +1,16 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜电力数据">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>
-        <div class="nav_header">
-          <br/>
-          <span v-if="queryParams.granularity == 'realtime' ">全部机柜最近一分钟新增记录</span>
-          <span v-if="queryParams.granularity == 'hour' ">全部机柜最近一小时新增记录</span>
-          <span v-if="queryParams.granularity == 'day' ">全部机柜最近一天新增记录</span>
-        </div>
-        <div class="nav_content" >
-          <el-descriptions title="" direction="vertical" :column="1" border >
-            <el-descriptions-item label=""><span >{{ navTotalData }} 条</span></el-descriptions-item>
-          </el-descriptions>
-        </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
-          <div class="description-item">
-            <span class="label">总数据 :</span>
-            <span class="value">{{ navTotalData }}条</span>
+          <div style="margin-left: 10px;">
+            <div>最近一分钟:{{ minTotal }}条</div>
+            <div>最近一小时:{{ hourTotal }}条</div>
+            <div>最近一天:{{ dayTotal }}条</div>
+            <div class="line" style="margin-top: 10px;"></div>
           </div>
-
-          <div style="text-align: center">
-            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部机柜最近一分钟新增记录</span></div>
-              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部机柜最近一小时新增记录</span></div>
-              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部机柜最近一天新增记录</span></div>
-                <div class="line" style="margin-top: 10px;"></div>
-          </div>
-          </div>
-
-
-        
+        </div>
       </div>
     </template>
       <template #ActionBar>
@@ -51,7 +25,6 @@
             <el-select
               v-model="queryParams.granularity"
               placeholder="请选择分钟/小时/天"
-              @change="granularityChange"
               class="!w-120px" >
               <el-option label="分钟" value="realtime" />
               <el-option label="小时" value="hour" />
@@ -160,6 +133,9 @@ const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
+const minTotal=ref(0)
+const hourTotal=ref(0)
+const dayTotal=ref(0)
 const pageSizeArr = ref([15,30,50,100])
 const queryParams = reactive({
   pageNo: 1,
@@ -227,7 +203,7 @@ const shortcuts = [
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref([["total", "active_total"], ["total", "apparent_total"]])
+const defaultOptionsCol = ref([["total", "active_total"], ["total", "apparent_total"],['total',"reactive_total"],["total","factor_total"]])
 const optionsCol = ref([
   {
     value: "total",
@@ -235,6 +211,8 @@ const optionsCol = ref([
     children: [
       { value: "active_total", label: '总有功功率' },
       { value: "apparent_total", label: '总视在功率' },
+      { value: "reactive_total", label: '总无功功率' },
+      {value:"factor_total",label:'总功率因数'}
     ],
   },
   {
@@ -243,6 +221,8 @@ const optionsCol = ref([
     children: [
       { value: "active_a", label: 'A路有功功率' },
       { value: "apparent_a", label: 'A路视在功率' },
+      { value: "reactive_a", label: 'A路无功功率' },
+      {value:"factor_a",label:'A路功率因数'}
     ],
   },
   {
@@ -251,10 +231,15 @@ const optionsCol = ref([
     children: [
       { value: "active_b", label: 'B路有功功率' },
       { value: "apparent_b", label: 'B路视在功率' },
+      { value: "reactive_b", label: 'B路无功功率' },
+      {value:"factor_b",label:'B路功率因数'}
     ],
   },
 ])
-const originalArray = ref(["active_total", "apparent_total", "active_a", "apparent_a", "active_b", "apparent_b"])
+const originalArray = ref([ "active_total", "apparent_total","reactive_total", "factor_total", 
+                            "active_a", "apparent_a", "reactive_a", "factor_a", 
+                            "active_b", "apparent_b", "reactive_b", "factor_b"
+                          ]  )
 
 // 处理筛选列变化
 const cascaderChange = (selectedCol) => {
@@ -277,15 +262,15 @@ const cascaderChange = (selectedCol) => {
 }
 
 // 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
-const granularityChange = () => {
-   getNavNewData()
-}
+// const granularityChange = () => {
+//    getNavNewData()
+// }
 
 watch(() => queryParams.granularity, (newValues) => { 
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
       defaultOptionsCol.value = [
-        ["total", "active_total"], ["total", "apparent_total"]
+        ["total", "active_total"], ["total", "apparent_total"],["total", "reactive_total"],["total", "factor_total"]
       ]
       optionsCol.value = [
         {
@@ -294,6 +279,8 @@ watch(() => queryParams.granularity, (newValues) => {
         children: [
           { value: "active_total", label: '总有功功率' },
           { value: "apparent_total", label: '总视在功率' },
+          { value: "reactive_total", label: '总无功功率' },
+          { value:"factor_total",label:'总功率因数'}
         ],
         },
         {
@@ -302,6 +289,8 @@ watch(() => queryParams.granularity, (newValues) => {
           children: [
             { value: "active_a", label: 'A路有功功率' },
             { value: "apparent_a", label: 'A路视在功率' },
+            { value: "reactive_a", label: 'A路无功功率' },
+            {value:"factor_a",label:'A路功率因数'}
           ],
         },
         {
@@ -310,20 +299,33 @@ watch(() => queryParams.granularity, (newValues) => {
           children: [
             { value: "active_b", label: 'B路有功功率' },
             { value: "apparent_b", label: 'B路视在功率' },
+            { value: "reactive_b", label: 'B路有功功率' },
+            {value:"factor_b",label:'B路功率因数'}
           ],
         },
       ]
-      originalArray.value = ["active_total", "apparent_total", "active_a", "apparent_a", "active_b", "apparent_b"]        
+      originalArray.value = [ "active_total", "apparent_total","reactive_total", "factor_total", 
+                            "active_a", "apparent_a", "reactive_a", "factor_a", 
+                            "active_b", "apparent_b", "reactive_b", "factor_b"
+                          ]       
  
-      tableColumns.value =[
-        { label: '位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
+                          tableColumns.value =[
+        { label: '位置', align: 'center', prop: 'location' , width: '230px' , istrue:true},
         { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
-        { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
-        { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
-        { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, formatter: formatPower},
-        { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, formatter: formatPower},
-        { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, formatter: formatPower},
-        { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, formatter: formatPower},
+        { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
+        { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
+        { label: '总无功功率(kVar)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
+        { label: '总功率因素', align: 'center', prop: 'factor_total' , istrue:true, width: '180px', formatter: formatPowerFactor},
+
+        { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路无功功率(kVar)', align: 'center', prop: 'reactive_a' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路功率因素', align: 'center', prop: 'factor_a' , istrue:false, width: '180px', formatter: formatPowerFactor},
+        
+        { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路无功功率(kVar)', align: 'center', prop: 'reactive_b' , istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路功率因素', align: 'center', prop: 'factor_b' , istrue:false, width: '180px', formatter: formatPowerFactor},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true},
       ]
       queryParams.pageNo = 1;
@@ -331,25 +333,33 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       defaultOptionsCol.value = [
-        ["total", "active_pow", "active_total_max"], ["total", "apparent_pow", "apparent_total_max"],
+        ["total", "active_pow", "active_total_max"],["total", "apparent_pow", "apparent_total_max"],["total", "reactive_pow", "reactive_total_max"],
+        ["total", "factor_total_avg_value"],
       ]
       optionsCol.value = [
         {
         value: "total",
         label: '总',
         children: [
-          { value: "active_pow", label: '有功功率', children:[
-              { value: "active_total_avg_value", label: '总平均有功功率' },
-              { value: "active_total_max", label: '总最大有功功率' },
-              { value: "active_total_min", label: '总最小有功功率' }
-            ] 
-          },
-          { value: "apparent_pow", label: '视在功率', children:[
-              { value: "apparent_total_avg_value", label: '总平均视在功率' },
-              { value: "apparent_total_max", label: '总最大视在功率' },
-              { value: "apparent_total_min", label: '总最小视在功率' }
-            ] 
-           },
+            { value: "active_pow", label: '有功功率', children:[
+                { value: "active_total_avg_value", label: '平均' },
+                { value: "active_total_max", label: '最大' },
+                { value: "active_total_min", label: '最小' }
+              ] 
+            },
+            { value: "apparent_pow", label: '视在功率', children:[
+                { value: "apparent_total_avg_value", label: '平均' },
+                { value: "apparent_total_max", label: '最大' },
+                { value: "apparent_total_min", label: '最小' }
+              ] 
+            },
+            { value: "reactive_pow", label: '无功功率', children:[
+                { value: "reactive_total_avg_value", label: '平均' },
+                { value: "reactive_total_max", label: '最大' },
+                { value: "reactive_total_min", label: '最小' }
+              ] 
+            },
+            { value: "factor_total_avg_value", label: '平均功率因素'},
           ],
         },
         {
@@ -357,17 +367,19 @@ watch(() => queryParams.granularity, (newValues) => {
           label: 'A路',
           children: [
           { value: "active_pow", label: '有功功率', children:[
-              { value: "active_a_avg_value", label: 'A路平均有功功率' },
-              { value: "active_a_max", label: 'A路最大有功功率' },
-              { value: "active_a_min", label: 'A路最小有功功率' }
+              { value: "active_a_avg_value", label: '平均' },
+              { value: "active_a_max", label: '最大' },
+              { value: "active_a_min", label: '最小' }
             ] 
           },
           { value: "apparent_pow", label: '视在功率', children:[
-              { value: "apparent_a_avg_value", label: 'A路平均视在功率' },
-              { value: "apparent_a_max", label: 'A路最大视在功率' },
-              { value: "apparent_a_min", label: 'A路最小视在功率' }
+              { value: "apparent_a_avg_value", label: '平均' },
+              { value: "apparent_a_max", label: '最大' },
+              { value: "apparent_a_min", label: '最小' }
             ] 
            },
+           { value: "reactive_a_avg_value", label: '平均无功功率'},
+           { value: "factor_a_avg_value", label: '平均功率因素'},
           ],
         },
         {
@@ -375,28 +387,34 @@ watch(() => queryParams.granularity, (newValues) => {
           label: 'B路',
           children: [
           { value: "active_pow", label: '有功功率', children:[
-              { value: "active_b_avg_value", label: 'B路平均有功功率' },
-              { value: "active_b_max", label: 'B路最大有功功率' },
-              { value: "active_b_min", label: 'B路最小有功功率' }
+              { value: "active_b_avg_value", label: '平均' },
+              { value: "active_b_max", label: '最大' },
+              { value: "active_b_min", label: '最小' }
             ] 
           },
           { value: "apparent_pow", label: '视在功率', children:[
-              { value: "apparent_b_avg_value", label: 'B路平均视在功率' },
-              { value: "apparent_b_max", label: 'B路最大视在功率' },
-              { value: "apparent_b_min", label: 'B路最小视在功率' }
+              { value: "apparent_b_avg_value", label: '平均' },
+              { value: "apparent_b_max", label: '最大' },
+              { value: "apparent_b_min", label: '最小' }
             ] 
            },
+           { value: "reactive_b_avg_value", label: '平均无功功率'},
+            { value: "factor_b_avg_value", label: '平均功率因素'},
           ],
         },
       ] as any;
-      originalArray.value = ["active_total_avg_value", "active_total_max", "active_total_min", "apparent_total_avg_value", "apparent_total_max", "apparent_total_min", 
-                            "active_a_avg_value", "active_a_max", "active_a_min", "apparent_a_avg_value", "apparent_a_max", "apparent_a_min",
-                            "active_b_avg_value", "active_b_max", "active_b_min", "apparent_b_avg_value", "apparent_b_max", "apparent_b_min",
-                          ]    
+      originalArray.value = [
+        "active_total_avg_value", "active_total_max", "active_total_min", "apparent_total_avg_value", "apparent_total_max", "apparent_total_min", 
+        "reactive_total_min", "reactive_total_max", "reactive_total_avg_value", "factor_total_avg_value",
+        "active_a_avg_value", "active_a_max", "active_a_min", "apparent_a_avg_value", "apparent_a_max", "apparent_a_min",
+       "reactive_a_avg_value", "factor_a_avg_value",
+        "active_b_avg_value", "active_b_max", "active_b_min", "apparent_b_avg_value", "apparent_b_max", "apparent_b_min",
+        "reactive_b_avg_value", "factor_b_avg_value",
+      ]    
 
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', formatter: formatTime, istrue:true},
+        { label: '位置', align: 'center', prop: 'location' , width: '240px' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', istrue:true, formatter: formatTime},
         { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: formatTime, width: '200px', istrue:true},
@@ -407,6 +425,13 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '总最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: formatTime, width: '200px', istrue:true},
         { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: formatTime, width: '200px', istrue:false},
+
+        { label: '总平均无功功率(kVar)', align: 'center', prop: 'reactive_total_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: '总最大无功功率(kVar)', align: 'center', prop: 'reactive_total_max_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大无功功率时间', align: 'center', prop: 'reactive_total_max_time', formatter: formatTime, width: '200px', istrue:true},
+        { label: '总最小无功功率(kVar)', align: 'center', prop: 'reactive_total_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: '总最小无功功率时间', align: 'center', prop: 'reactive_total_min_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: '总平均功率因素', align: 'center', prop: 'factor_total_avg_value', istrue:true, width: '180px', formatter: formatPowerFactor},
 
         { label: 'A路平均有功功率(kW)', align: 'center', prop: 'active_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大有功功率(kW)', align: 'center', prop: 'active_a_max_value', istrue:false, width: '180px', formatter: formatPower},
@@ -419,6 +444,9 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: 'A路最小视在功率(kVA)', align: 'center', prop: 'apparent_a_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最小视在功率时间', align: 'center', prop: 'apparent_a_min_time', formatter: formatTime, width: '200px', istrue:false},
 
+        { label: 'A路平均无功功率(kVar)', align: 'center', prop: 'reactive_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路平均功率因素', align: 'center', prop: 'factor_a_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+
         { label: 'B路平均有功功率(kW)', align: 'center', prop: 'active_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大有功功率(kW)', align: 'center', prop: 'active_b_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大有功功率时间', align: 'center', prop: 'active_b_max_time', formatter: formatTime, width: '200px', istrue:false},
@@ -429,6 +457,9 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: 'B路最大视在功率时间', align: 'center', prop: 'apparent_b_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: 'B路最小视在功率(kVA)', align: 'center', prop: 'apparent_b_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最小视在功率时间', align: 'center', prop: 'apparent_b_min_time', formatter: formatTime, width: '200px', istrue:false},
+
+        { label: 'B路平均无功功率(kVar)', align: 'center', prop: 'reactive_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路平均功率因素', align: 'center', prop: 'factor_b_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
         { label: '操作', align: 'center', slot: 'actions', istrue:true},
       ];
       queryParams.pageNo = 1;
@@ -439,16 +470,25 @@ watch(() => queryParams.granularity, (newValues) => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'location', width: '250px' ,  istrue:true},
+  { label: '位置', align: 'center', prop: 'location' , width: '230px' , istrue:true},
   { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
-  { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
-  { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
-  { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, formatter: formatPower},
-  { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, formatter: formatPower},
-  { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, formatter: formatPower},
-  { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, formatter: formatPower},
+  { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
+  { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
+  { label: '总无功功率(kVar)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
+  { label: '总功率因素', align: 'center', prop: 'factor_total' , istrue:true, width: '180px', formatter: formatPowerFactor},
+
+  { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'A路无功功率(kVar)', align: 'center', prop: 'reactive_a' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'A路功率因素', align: 'center', prop: 'factor_a' , istrue:false, width: '180px', formatter: formatPowerFactor},
+  
+  { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'B路无功功率(kVar)', align: 'center', prop: 'reactive_b' , istrue:false, width: '180px', formatter: formatPower},
+  { label: 'B路功率因素', align: 'center', prop: 'factor_b' , istrue:false, width: '180px', formatter: formatPowerFactor},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
+
 
 
 /** 查询列表 */
@@ -471,6 +511,9 @@ const getList = async (isLoading = true) => {
 // 格式化功率列数据，保留三位小数
 function formatPower(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(3);
+}
+function formatPowerFactor(_row: any, _column: any, cellValue: number): string {
+  return Number(cellValue).toFixed(2);
 }
 
 // 最后一页显示数据量过大的提示
@@ -513,13 +556,28 @@ const getNavList = async() => {
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await HistoryDataApi.getNavNewData(queryParams.granularity)
-  navTotalData.value = res.total
+  let promiseArr = []
+  promiseArr.push(HistoryDataApi.getNavNewData("realtime"));
+  promiseArr.push(HistoryDataApi.getNavNewData("hour"));
+  promiseArr.push(HistoryDataApi.getNavNewData("day"));
+  Promise.all(promiseArr).then((res) => {
+    minTotal.value=res[0].total;
+    hourTotal.value=res[1].total;
+    dayTotal.value=res[2].total;
+  }).catch(()=>{
+    minTotal.value=0;
+    hourTotal.value=0;
+    dayTotal.value=0;
+  })
 }
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location:string) => {
-  push('/cabinet/record/historyLine?cabinetId='+cabinetId+'&location='+location+(queryParams.timeRange!=null&&queryParams.timeRange.length==2?"&start="+queryParams.timeRange[0]+"&end="+queryParams.timeRange[1]:""));
+  if(queryParams.timeRange!=null&&queryParams.timeRange.length==2){
+    push({path:"/cabinet/record/historyLine",state:{cabinetId,location,"start":queryParams.timeRange[0],"end":queryParams.timeRange[1]}})
+  }else{
+    push({path:"/cabinet/record/historyLine",state:{cabinetId,location}})
+  }
 }
 
 /** 导出按钮操作 */
