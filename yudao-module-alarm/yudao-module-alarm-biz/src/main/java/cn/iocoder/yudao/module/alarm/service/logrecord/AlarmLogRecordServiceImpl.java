@@ -315,25 +315,17 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     alarmRecord.setAlarmKey(alarmKey);
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                     if (cabinetIndexNew.getRunStatus() == CabinetStatusEnum.ALARM.getStatus()) {
-                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_ALARM.getType());
+                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_CAPACITY_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     } else if (cabinetIndexNew.getRunStatus() == CabinetStatusEnum.EARLY_WARNING.getStatus()) {
-                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_WARNING.getType());
+                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_CAPACITY_WARNING.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
                     }
 
                     JSONObject cabinetJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_CABINET + alarmKey);
                     if (cabinetJson != null) {
                         // 告警描述
-                        String loadFactor = cabinetJson.get(FieldConstant.LOAD_FACTOR) + "";
-                        DecimalFormat decimalFormat = new DecimalFormat("0.00%");
-                        decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
-                        loadFactor = decimalFormat.format(Double.parseDouble(loadFactor)/100);
-                        String powerCapacity = cabinetJson.get(FieldConstant.POW_CAPACITY) + "";
-                        JSONObject cabinetPower = (JSONObject) cabinetJson.get(FieldConstant.CABINET_POWER);
-                        JSONObject totalData = (JSONObject) cabinetPower.get(FieldConstant.TOTAL_DATA);
-                        String powApparent = totalData.get(FieldConstant.APPARENT_POW) + "";
-                        String alarmDesc = "当前机柜负载率：" + loadFactor + "，机柜的电力容量：" + powerCapacity + "，总视在功率：" + powApparent;
+                        String alarmDesc = getOverCapacityAlarmDesc(cabinetJson);
                         alarmRecord.setAlarmDesc(alarmDesc);
                         // 告警开始时间
                         Object datetime = cabinetJson.get(FieldConstant.DATETIME);
@@ -391,6 +383,28 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     public Integer getCountByStatus (Integer status) {
         Long count = logRecordMapper.selectCount(new LambdaQueryWrapper<AlarmLogRecordDO>().eq(AlarmLogRecordDO::getAlarmStatus, status));
         return Math.toIntExact(count);
+    }
+
+    public String getOverCapacityAlarmDesc (JSONObject cabinetJson) {
+        if (cabinetJson == null) {
+            return "";
+        }
+        // 负载率
+        String loadFactor = cabinetJson.get(FieldConstant.LOAD_FACTOR) + "";
+        DecimalFormat decimalFormat = new DecimalFormat("0.0%");
+        decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
+        loadFactor = decimalFormat.format(Double.parseDouble(loadFactor)/100);
+        // 电力容量
+        String powerCapacity = cabinetJson.get(FieldConstant.POW_CAPACITY) + "";
+        DecimalFormat decimalFormat1 = new DecimalFormat("0.000");
+        decimalFormat1.setRoundingMode(RoundingMode.HALF_UP);
+        powerCapacity = decimalFormat1.format(Double.parseDouble(powerCapacity));
+        // 总视在功率
+        JSONObject cabinetPower = (JSONObject) cabinetJson.get(FieldConstant.CABINET_POWER);
+        JSONObject totalData = (JSONObject) cabinetPower.get(FieldConstant.TOTAL_DATA);
+        String powApparent = totalData.get(FieldConstant.APPARENT_POW) + "";
+        powApparent = decimalFormat1.format(Double.parseDouble(powApparent));
+        return "当前机柜负载率：" + loadFactor + "，机柜的电力容量：" + powerCapacity + "KVA" + "，总视在功率：" + powApparent + "KVA";
     }
 
 
