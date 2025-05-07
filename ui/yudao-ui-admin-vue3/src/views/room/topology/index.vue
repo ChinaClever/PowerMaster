@@ -48,7 +48,7 @@
           <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
             <el-table-column fixed type="index" align="center" :resizable="false" />
             <template v-for="(formItem, index) in formParam" :key="index">
-              <el-table-column :label="formItem" min-width="54" align="center" :resizable="false">
+              <el-table-column :label="formItem" min-width="41" align="center" :resizable="false">
                 <template #default="scope">
                   <draggable
                     :id="`${scope.$index}-${index}`"
@@ -1882,31 +1882,32 @@ const handleRightClick = (e) => {
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetName
 
     menuOptions.value[3] = menuOptionsCopy.value[3]
-    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes) {
-      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
-      menuOptions.value[3].value = {
-        devKey: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
-        isBus: true
-      }
-      menuOptions.value[4].value = {
-        devKey: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1],
-        isBus: true
-      }
-    }
-    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus) {
-      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
-      menuOptions.value[3].value = {
-        devKey: cabinetBoxes.pduKeyA,
-        isBus: false
-      }
-      menuOptions.value[4].value = {
-        devKey: cabinetBoxes.pduKeyB,
-        isBus: false
-      }
-    }
+    // if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes) {
+    //   let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
+    //   menuOptions.value[3].value = {
+    //     devKey: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+    //     isBus: true
+    //   }
+    //   menuOptions.value[4].value = {
+    //     devKey: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1],
+    //     isBus: true
+    //   }
+    // }
+    // if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus) {
+    //   let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
+    //   menuOptions.value[3].value = {
+    //     devKey: cabinetBoxes.pduKeyA,
+    //     isBus: false
+    //   }
+    //   menuOptions.value[4].value = {
+    //     devKey: cabinetBoxes.pduKeyB,
+    //     isBus: false
+    //   }
+    // }
     menuOptions.value[3].value = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
     menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
 
+    menuOptions.value[4] = menuOptionsCopy.value[4]
     menuOptions.value[4].value = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
     menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
       
@@ -2908,7 +2909,7 @@ onUnmounted(() => {
     .dragChild {
       width: 100%;
       height: 100%;
-      min-height: 20px;
+      min-height: 39px;
       box-sizing: border-box;
       display: flex;
       border: 1px solid #000;
@@ -2917,7 +2918,7 @@ onUnmounted(() => {
       }
       // align-items: center;
       .dragSon {
-        min-height: 20px;
+        min-height: 39px;
         flex: 1;
         display: flex;
         align-items: center;
@@ -2926,7 +2927,7 @@ onUnmounted(() => {
         background-color: #f5f7fa;
         border-right: 1px solid #bed1ff;
         &>div {
-          min-height: 20px;
+          min-height: 39px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -2939,7 +2940,7 @@ onUnmounted(() => {
     .dragChildCol {
       width: 100%;
       height: 100%;
-      min-height: 20px;
+      min-height: 39px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -2949,7 +2950,7 @@ onUnmounted(() => {
       }
       .dragSon {
         flex: 1;
-        min-height: 20px;
+        min-height: 39px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
@@ -2957,7 +2958,7 @@ onUnmounted(() => {
         background-color: #f5f7fa;
         border-bottom: 1px solid #bed1ff;
         &>div {
-          min-height: 20px;
+          min-height: 39px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -2969,7 +2970,7 @@ onUnmounted(() => {
     }
   }
   .warnDrag {
-    min-height: 20px;
+    min-height: 39px;
     height: 100%;
     width: 100%;
     display: flex;
@@ -2979,7 +2980,7 @@ onUnmounted(() => {
     background-color: rgb(255, 219, 12);
   }
   .normalDrag {
-    min-height: 20px;
+    min-height: 39px;
     height: 100%;
     width: 100%;
     // height: 40px;
@@ -2995,7 +2996,7 @@ onUnmounted(() => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      min-height: 20px;
+      min-height: 39px;
     }
   }
 }
@@ -3033,10 +3034,11 @@ onUnmounted(() => {
 :deep(.dragTable .el-table__cell .cell) {
   width: 100%;
   height: 100%;
-  min-height: 20px;
+  min-height: 39px;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 40px;
   padding: 0;
   & > div {
     height: 100%;
