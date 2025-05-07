@@ -1152,7 +1152,7 @@ const handleJump = (data) => {
   } else if(chosenBtn.value == 4) {
     push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
   } else if(chosenBtn.value == 7) {
-     push({path: '/cabinet/cab/balance', state: {cabinetIds: target.id,isFirst: false}})
+    push({path: '/cabinet/cab/balance', query: {openDetailFlag: 1,id: target.id}})
   } else if(chosenBtn.value == 8) {
     push({path: '/cabinet/cab/cabinetenvdetail', query: { id: target.id }})
   } else if(chosenBtn.value == 9) {

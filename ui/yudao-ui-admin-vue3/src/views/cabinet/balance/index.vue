@@ -197,7 +197,7 @@ const navList = ref([]); // 左侧导航栏树结构列表
 const tableData = ref([]);
 const tableCopyData = ref([]);
 const switchValue = ref(0); // 表格(1) 矩阵(0)切换
-const cabinetIds = ref<number[]>([history?.state?.cabinetIds]); // 左侧导航菜单所选id数组
+const cabinetIds = ref<number[]>([Number(query.id)]); // 左侧导航菜单所选id数组
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
@@ -374,9 +374,6 @@ const getTableData = async(reset = false) => {
     }
   } finally {
     tableLoading.value = false
-    if(history?.state?.cabinetIds) {
-      showDialog(tableData.value[0])
-    }
   }
 }
 
