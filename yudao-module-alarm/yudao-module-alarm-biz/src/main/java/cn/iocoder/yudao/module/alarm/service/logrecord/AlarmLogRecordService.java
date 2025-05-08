@@ -99,4 +99,11 @@ public interface AlarmLogRecordService {
      *
      */
     Integer getCountByStatus (Integer status);
+
+    /**
+     * 获取具体pdu的告警信息
+     * @param pageReqVO
+     * @return
+     */
+    PageResult<AlarmLogRecordRespVO> getPduLogRecordPage(AlarmLogRecordPageReqVO pageReqVO);
 }

@@ -118,7 +118,7 @@ const echartsOptions = computed(() => ({
       return result.trimEnd();
     }
   },
-  color:['#E5B849','#C8603A','#5337A9'],
+  color:['#E5B849','#C8603A','#5337A9'],  
   legend: {
     data: [lineAName.value, lineBName.value, lineCName.value],
     selectedMode: 'multiple'

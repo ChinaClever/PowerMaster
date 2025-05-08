@@ -378,8 +378,8 @@
             <LoopLine :width="computedWidth" height="58vh" :list="loopList"  :dataType="queryParams.dataType"/>
           </div>
 
-
-          <div class="pageBox"  v-for="(sensor, index) in outLetCurData?.outRes" :key="index">
+          <div v-if="visControll.loopOutVis">
+             <div class="pageBox"  v-for="(sensor, index) in outLetCurData?.outRes" :key="index">
             <div class="page-conTitle">
               回路{{ getLastChar(index) }}各输出位电流曲线
             </div>
@@ -393,54 +393,50 @@
 
             <OutLetCurLine :width="computedWidth" height="58vh" :list="sensor" :dataType="queryParams.dataType"/>
           </div>
-          <!-- <div class="pageBox"  v-for="(sensor, index) in outLetCurData?.outRes" :key="index">
-      <div class="page-conTitle">
-        回路{{ index + 1 }}各输出位电流曲线
-      </div>
-      <OutLetCurLine :width="computedWidth" height="58vh" :list="sensor[`dataRes${index + 1}`]" :dataType="queryParams.dataType" />
-    </div> -->
-
-          <!-- outLetCurList.value = outLetCurData.value.outRes.dataRes1; -->
-
-
-
-          
-
-          <div class="pageBox"  v-if="temp1 && temp1.length > 0">
-            <div class="page-conTitle">
-              告警信息
-            </div>
-                <el-table
-                  ref="multipleTableRef"
-                  :data="temp1"
-                  highlight-current-row
-                  style="width: 100%"
-                  :stripe="true" 
-                  :border="true"
-                  @current-change="handleCurrentChange"
-                >
-                    <!-- <el-table-column type="selection" width="55" /> -->
-                    <el-table-column type="index" width="80" label="序号" align="center" />
-                    <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
-                    <el-table-column property="devName" label="设备" min-width="100" align="center" />
-                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
-                    <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
-                    <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
-                      <template #default="scope">
-                        <el-tooltip  placement="right">
-                          <div class="table-desc">{{scope.row.alarmDesc}}</div>
-                          <template #content>
-                            <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
-                          </template>
-                        </el-tooltip>
-                      </template>
-                    </el-table-column>
-                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
-                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
-                    <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
-                    <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
-                </el-table>
           </div>
+         
+
+          <div>
+  <div v-if="tableLoading" class="loading">Loading...</div>
+  <div v-else>
+    <div class="page-conTitle">
+      告警信息
+    </div>
+    <el-table
+      ref="multipleTableRef"
+      :data="tableData"
+      highlight-current-row
+      style="width: 100%"
+      :stripe="true"
+      :border="true"
+      @current-change="handleCurrentChange"
+    >
+      <el-table-column v-if="showCheckbox" type="selection" width="55" align="center" />
+      <el-table-column type="index" width="80" label="序号" align="center" />
+      <el-table-column property="alarmPosition" label="区域" min-width="100" align="center" />
+      <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+      <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+      <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+        <template #default="scope">
+          <el-tooltip placement="right">
+            <div class="table-desc">{{ scope.row.alarmDesc }}</div>
+            <template #content>
+              <div class="tooltip-width">{{ scope.row.alarmDesc }}</div>
+            </template>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+      <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
+      <el-table-column property="finishTime" label="结束时间" min-width="100" align="center" />
+      <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+      <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+    </el-table>
+    <div v-if="tableData.length === 0" class="no-data">暂无数据</div>
+  </div>
+</div>
+
+
+      
           
         </div>
 
@@ -523,7 +519,7 @@ const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
 const outLetCurData = ref() as any;
-const outLetCurList = ref as any;
+const alarmList = ref as any;
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const now = ref()
@@ -542,6 +538,7 @@ const visControll = reactive({
   humVis : false,
   loopVis : false,
   pfVis: false,
+  loopOutVis : false,
   flag: false,
 })
 const serChartContainerWidth = ref(0)
@@ -1361,9 +1358,11 @@ const getList = async () => {
   outLetCurData.value = await PDUDeviceApi.getOutLetCurData(queryParams);
   console.log('outLetCurData.size',outLetCurData.value.outRes);
 
-
-  
-
+  if(outLetCurData.value?.outRes.dataRes1.time != null  && outLetCurData.value?.outRes.dataRes1.time.length > 0){
+    visControll.loopOutVis = true;
+  }else{
+    visControll.loopOutVis = false;
+  }
 
   temData.value = await PDUDeviceApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
@@ -1428,7 +1427,6 @@ const getList = async () => {
   }else{
     visControll.loopVis = false;
   }
-
 
 
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
@@ -1540,6 +1538,10 @@ const getList = async () => {
   console.log('表格的数据',temp)
   Object.values(tableData.value).forEach((item: any)=>item.devKey== temp[1].baseInfoValue&&newDate>=new Date(item.startTime)&&new Date(item.startTime)>=oldDate?temp1.value.push(item):console.log("no"))
   console.log('temp1',temp1.value)
+  
+
+
+
   
 }
 
@@ -1714,14 +1716,21 @@ const getTableData = async(reset = false) => {
   tableLoading.value = true
   try {
     // //debugger
-    const res = await AlarmApi.getAlarmRecord({
+    // tableLoading.value = true
+    const res = await AlarmApi.getPduAlarmRecord({
       pageNo: 1,
       pageSize: 10,
       alarmStatus: preStatus.value,
-      likeName: queryParams.search
+      likeName: null,
+      pduStartTime : queryParams.oldTime,
+      pduFinishTime : queryParams.newTime, 
     })
     console.log('res', res)
-    if (res.list) {    
+    if (res.list) {  
+      res.list.forEach(item => {
+        item.startTime = item.startTime == null?"":new Date(item.startTime).toLocaleString()
+        item.finishTime = item.finishTime == null?"":new Date(item.finishTime).toLocaleString()
+      })  
       tableData.value = res.list
       queryParams.pageTotal = res.total   
     }
@@ -2207,4 +2216,67 @@ onUnmounted(() => {
 .el-table .el-tag {
   margin: 2px;
 }
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+// .pageBox {
+//   margin-bottom: 20px;
+//   border: 1px solid #e4e7ed;
+//   padding: 10px;
+//   background-color: #f9f9f9;
+//   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//   border-radius: 4px;
+// }
+
+.page-conTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+  border-bottom: 1px solid #e4e7ed;
+  padding-bottom: 10px;
+}
+
+.alarm-details {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #606266;
+  border-bottom: 1px solid #e4e7ed;
+  padding: 8px 0;
+}
+
+.label {
+  font-weight: 600;
+  width: 120px;
+}
+
+.value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tooltip-width {
+  max-width: 300px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+
 </style>

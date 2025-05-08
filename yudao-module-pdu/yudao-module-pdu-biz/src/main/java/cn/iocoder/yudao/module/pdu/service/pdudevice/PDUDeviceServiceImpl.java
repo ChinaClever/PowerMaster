@@ -1018,80 +1018,57 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            result.put("l", dayList1);
-            result.put("ll", dayList2);
-            result.put("lll", dayList3);
 
-            Map<String, Object> dataL1 = PduAnalysisResult.analyzePduData(dayList1);
-            Map<String, Object> dataL2 = PduAnalysisResult.analyzePduData(dayList2);
-            Map<String, Object> dataL3 = PduAnalysisResult.analyzePduData(dayList3);
+            if (!dayList3.isEmpty()) {
+                result.put("lll", dayList3);
+                Map<String, Object> dataL3 = PduAnalysisResult.analyzePduData(dayList3);
+                result.put("showL3", dataL3);
+                PduAnalysisResult.CurrentResult currentResultC = (PduAnalysisResult.CurrentResult) dataL3.get("current");
+                PduAnalysisResult.VoltageResult volResultC = (PduAnalysisResult.VoltageResult) dataL3.get("voltage");
+                result.put("curCMaxValue", currentResultC.maxCurValue);
+                result.put("curCMaxTime", sdf.format(currentResultC.maxCurTime));
+                result.put("curCMinValue", currentResultC.minCurValue);
+                result.put("curCMinTime", sdf.format(currentResultC.minCurTime));
+                result.put("volCMaxValue", volResultC.maxVolValue);
+                result.put("volCMaxTime", sdf.format(volResultC.maxVolTime));
+                result.put("volCMinValue", volResultC.minVolValue);
+                result.put("volCMinTime", sdf.format(volResultC.minVolTime));
+            }
 
-            result.put("showL1", dataL1);
-            result.put("showL2", dataL2);
-            result.put("showL3", dataL3);
+            if (!dayList2.isEmpty()) {
+                result.put("ll", dayList2);
+                Map<String, Object> dataL2 = PduAnalysisResult.analyzePduData(dayList2);
+                result.put("showL2", dataL2);
+                PduAnalysisResult.CurrentResult currentResultB = (PduAnalysisResult.CurrentResult) dataL2.get("current");
+                PduAnalysisResult.VoltageResult volResultB = (PduAnalysisResult.VoltageResult) dataL2.get("voltage");
+                result.put("curBMaxValue", currentResultB.maxCurValue);
+                result.put("curBMaxTime", sdf.format(currentResultB.maxCurTime));
+                result.put("curBMinValue", currentResultB.minCurValue);
+                result.put("curBMinTime", sdf.format(currentResultB.minCurTime));
+                result.put("volBMaxValue", volResultB.maxVolValue);
+                result.put("volBMaxTime", sdf.format(volResultB.maxVolTime));
+                result.put("volBMinValue", volResultB.minVolValue);
+                result.put("volBMinTime", sdf.format(volResultB.minVolTime));
 
-            PduAnalysisResult.CurrentResult currentResultA = (PduAnalysisResult.CurrentResult) dataL1.get("current");
-            PduAnalysisResult.VoltageResult volResultA = (PduAnalysisResult.VoltageResult) dataL1.get("voltage");
+            }
+            if (!dayList1.isEmpty()) {
+                result.put("l", dayList1);
+                Map<String, Object> dataL1 = PduAnalysisResult.analyzePduData(dayList1);
+                result.put("showL1", dataL1);
+                PduAnalysisResult.CurrentResult currentResultA = (PduAnalysisResult.CurrentResult) dataL1.get("current");
+                PduAnalysisResult.VoltageResult volResultA = (PduAnalysisResult.VoltageResult) dataL1.get("voltage");
+                result.put("curAMaxValue", currentResultA.maxCurValue);
+                result.put("curAMaxTime", sdf.format(currentResultA.maxCurTime));
+                result.put("curAMinValue", currentResultA.minCurValue);
+                result.put("curAMinTime", sdf.format(currentResultA.minCurTime));
+                result.put("volAMaxValue", volResultA.maxVolValue);
+                result.put("volAMaxTime", sdf.format(volResultA.maxVolTime));
+                result.put("volAMinValue", volResultA.minVolValue);
+                result.put("volAMinTime", sdf.format(volResultA.minVolTime));
 
-            PduAnalysisResult.CurrentResult currentResultB = (PduAnalysisResult.CurrentResult) dataL2.get("current");
-            PduAnalysisResult.VoltageResult volResultB = (PduAnalysisResult.VoltageResult) dataL2.get("voltage");
-
-            PduAnalysisResult.CurrentResult currentResultC = (PduAnalysisResult.CurrentResult) dataL3.get("current");
-            PduAnalysisResult.VoltageResult volResultC = (PduAnalysisResult.VoltageResult) dataL3.get("voltage");
-
-            result.put("curAMaxValue", currentResultA.maxCurValue);
-            result.put("curAMaxTime", sdf.format(currentResultA.maxCurTime));
-            result.put("curAMinValue", currentResultA.minCurValue);
-            result.put("curAMinTime", sdf.format(currentResultA.minCurTime));
-            result.put("volAMaxValue", volResultA.maxVolValue);
-            result.put("volAMaxTime", sdf.format(volResultA.maxVolTime));
-            result.put("volAMinValue", volResultA.minVolValue);
-            result.put("volAMinTime", sdf.format(volResultA.minVolTime));
-
-            result.put("curBMaxValue", currentResultB.maxCurValue);
-            result.put("curBMaxTime", sdf.format(currentResultB.maxCurTime));
-            result.put("curBMinValue", currentResultB.minCurValue);
-            result.put("curBMinTime", sdf.format(currentResultB.minCurTime));
-            result.put("volBMaxValue", volResultB.maxVolValue);
-            result.put("volBMaxTime", sdf.format(volResultB.maxVolTime));
-            result.put("volBMinValue", volResultB.minVolValue);
-            result.put("volBMinTime", sdf.format(volResultB.minVolTime));
-
-            result.put("curCMaxValue", currentResultC.maxCurValue);
-            result.put("curCMaxTime", sdf.format(currentResultC.maxCurTime));
-            result.put("curCMinValue", currentResultC.minCurValue);
-            result.put("curCMinTime", sdf.format(currentResultC.minCurTime));
-            result.put("volCMaxValue", volResultC.maxVolValue);
-            result.put("volCMaxTime", sdf.format(volResultC.maxVolTime));
-            result.put("volCMinValue", volResultC.minVolValue);
-            result.put("volCMinTime", sdf.format(volResultC.minVolTime));
-
+            }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
             redisTemplate.opsForValue().set(key, JSONObject.toJSONString(result), 5, TimeUnit.MINUTES);
-
-//            try {
-//                curMaxValue = getMaxDataNew(startTime, endTime, Arrays.asList(Integer.valueOf(id.intValue())), lineIds, index, "cur_max_value");
-//                totalCurMax = JsonUtils.parseObject(curMaxValue, PduHdaLineHouResVO.class);
-//                curMinValue = getMaxDataNew(startTime, endTime, Arrays.asList(Integer.valueOf(id.intValue())), lineIds,index, "cur_min_value");
-//                totalCurMin = JsonUtils.parseObject(curMinValue, PduHdaLineHouResVO.class);
-//                volMaxValue = getMaxDataNew(startTime, endTime, Arrays.asList(Integer.valueOf(id.intValue())),lineIds, index, "vol_max_value");
-//                totalVolMax = JsonUtils.parseObject(volMaxValue, PduHdaLineHouResVO.class);
-//                volMinValue = getMaxDataNew(startTime, endTime, Arrays.asList(Integer.valueOf(id.intValue())),lineIds, index, "vol_min_value");
-//                totalVolMin = JsonUtils.parseObject(volMinValue, PduHdaLineHouResVO.class);
-//
-//
-//                result.put("curAMaxValue", totalCurMax.getCurMaxValue());
-//                result.put("curAMaxTime", sdf.format(totalCurMax.getCurMaxTime()));
-//                result.put("curAMinValue", totalCurMin.getCurMinValue());
-//                result.put("curAMinTime", sdf.format(totalCurMin.getCurMinTime()));
-//                result.put("volAMaxValue", totalVolMax.getVolMaxValue());
-//                result.put("volAMaxTime", sdf.format(totalVolMax.getVolMaxTime()));
-//                result.put("volAMinValue", totalVolMin.getVolMinValue());
-//                result.put("volAMinTime", sdf.format(totalVolMin.getVolMinTime()));
-//
-//            }catch (Exception e){
-//                log.error("获取数据失败", e);
-//            }
 
             return result;
         } else {
@@ -2708,7 +2685,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         Map result = new HashMap<>();
         Map dataResult = new HashMap();
-        Map description = new HashMap();
 
         try {
             PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, devKey));
@@ -2752,12 +2728,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String curMaxTime = "";
                 String curMinTime = "";
 
-
                 List<String> outLetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index);
                 Map<Integer, List<PduHdaOutletBaseDo>> outLetMap = outLetData.stream()
                         .map(str -> JsonUtils.parseObject(str, PduHdaOutletBaseDo.class))
                         .collect(Collectors.groupingBy(PduHdaOutletBaseDo::getOutletId));
-                List<PduHdaOutletBaseDo> outletBaseDoList = outLetMap.get(1);
+                List<PduHdaOutletBaseDo> outletBaseDoList = outLetMap.get(1);         //用来获取y轴的时间
                 int outLetSize = outLetMap.size();
                 int dataIndex = 1; // 从1开始
                 // 输出位和回路的关系：一个回路可以含多个输出位，即6回路 24输出位 折线图应该 展示6个，每个含4回路（24/6=4）
@@ -2772,7 +2747,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             if (dataType == 1) {
                                 String name = "输出位" + j + PduDataTypeEnum.CURRENT_MAX.getDataType();
                                 lineSeries.setName(name);
-                                lineSeries.setProjectName("输出位"+j);
+                                lineSeries.setProjectName("输出位" + j);
                                 List<Float> outLetCur = pduHdaOutletBaseDos.stream().map(PduHdaOutletBaseDo::getCurMaxValue).collect(Collectors.toList());
                                 lineSeries.setData(outLetCur);
                                 happenTime = pduHdaOutletBaseDos.stream().map(PduHdaOutletBaseDo -> PduHdaOutletBaseDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
@@ -2791,14 +2766,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 lineSeries.setMaxTime(curMaxTime);
                                 lineSeries.setMinValue(curMin);
                                 lineSeries.setMinTime(curMinTime);
-//                                description.put("curMax" + j, curMax);
-//                                description.put("curMaxTime" + j, curMaxTime);
-//                                description.put("curMin" + j, curMin);
-//                                description.put("curMinTime" + j, curMinTime);
+
                             } else if (dataType == 0) {
                                 String name = "输出位" + j + PduDataTypeEnum.CURRENT_AVG.getDataType();
                                 lineSeries.setName(name);
-                                lineSeries.setProjectName("输出位"+j);
+                                lineSeries.setProjectName("输出位" + j);
                                 List<Float> outLetCur = pduHdaOutletBaseDos.stream().map(PduHdaOutletBaseDo::getCurAvgValue).collect(Collectors.toList());
                                 lineSeries.setData(outLetCur);
                                 //获取极值描述信息（峰值、谷值）
@@ -2819,7 +2791,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             } else if (dataType == -1) {
                                 String name = "输出位" + j + PduDataTypeEnum.CURRENT_MIN.getDataType();
                                 lineSeries.setName(name);
-                                lineSeries.setProjectName("输出位"+j);
+                                lineSeries.setProjectName("输出位" + j);
                                 List<Float> outLetCur = pduHdaOutletBaseDos.stream().map(PduHdaOutletBaseDo::getCurMinValue).collect(Collectors.toList());
                                 lineSeries.setData(outLetCur);
                                 happenTime = pduHdaOutletBaseDos.stream().map(PduHdaOutletBaseDo -> PduHdaOutletBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
@@ -2857,7 +2829,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
                     dataIndex += outLetSize / loopSize; // 更新dataIndex （每个回路下要有dataIndex个输出位）
                 }
-//                result.put("description",description);
+
                 result.put("outRes", dataResult);
             }
         } catch (Exception e) {
