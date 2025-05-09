@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.NumberFormat;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
@@ -28,39 +29,51 @@ public class CabinetRealtimeEnvExcelVO {
     @ExcelProperty("时间")
     private String createTime;
 
+    @NumberFormat("0.0")
     @ExcelProperty(value = {"前门上","温度(°C)"})
     private Double temValuefront1;
 
+    @NumberFormat("0")
     @ExcelProperty(value = {"前门上","湿度(%RH)"})
     private Double humValuefront1;
 
+    @NumberFormat("0.0")
     @ExcelProperty(value = {"前门中","温度(°C)"})
     private Double temValuefront2;
 
+    @NumberFormat("0")
     @ExcelProperty(value = {"前门中","湿度(%RH)"})
     private Double humValuefront2;
 
+    @NumberFormat("0.0")
     @ExcelProperty(value = {"前门下","温度(°C)"})
     private Double temValuefront3;
 
+    @NumberFormat("0")
     @ExcelProperty(value = {"前门下","湿度(%RH)"})
     private Double humValuefront3;
 
+    @NumberFormat("0.0")
     @ExcelProperty(value = {"后门上","温度(°C)"})
     private Double temValueblack1;
 
+    @NumberFormat("0")
     @ExcelProperty(value = {"后门上","湿度(%RH)"})
     private Double humValueblack1;
 
+    @NumberFormat("0.0")
     @ExcelProperty(value = {"后门中","温度(°C)"})
     private Double temValueblack2;
 
+    @NumberFormat("0")
     @ExcelProperty(value = {"后门中","湿度(%RH)"})
     private Double humValueblack2;
 
+    @NumberFormat("0.0")
     @ExcelProperty(value = {"后门下","温度(°C)"})
     private Double temValueblack3;
 
+    @NumberFormat("0")
     @ExcelProperty(value = {"后门下","湿度(%RH)"})
     private Double humValueblack3;
 

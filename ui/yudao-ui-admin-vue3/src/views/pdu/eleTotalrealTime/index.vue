@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU实时能耗查询" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-        <br/>    <br/> 
+        <br/> 
         <div class="nav_data">
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
@@ -28,14 +28,15 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
+            :clearable="false"
           />
           </el-form-item>
 
          <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
            
          </el-form-item>
-         <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="float: right;margin-right: 10px;">
+         <el-button type="success" plain @click="handleExport" :loading="exportLoading"  style="background-color: #00778c;color:#ffffff;position: absolute;top:2px;right: 5px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
       </el-form>
@@ -94,10 +95,10 @@
           <el-table-column label="操作" align="center" width="100px">
           <template #default="scope">
             <el-button
-              link
+              v-if="scope.row.eleActive!=null"
               type="primary"
-              @click="toDetails(scope.row.location,String(selectTimeRange[0]),String(selectTimeRange[1]))"
-              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
+              @click="toDetails(scope.row.location)"
+              style="background-color: #00778c;color:#ffffff;font-size: 13px;"
             >
             详情
             </el-button>
@@ -222,7 +223,7 @@ const shortcuts = [
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = pageNumber * queryParams.pageSize;
+  const end = Math.min(pageNumber * queryParams.pageSize,total.value);
   const pageNumbers: string[] = [];
   for (let i = start; i <= end; i++) {
     pageNumbers.push('序号'+i);
@@ -249,9 +250,12 @@ const eqData = ref<number[]>([]);
 
     // 计算当前分页数量
     const totalPages = getPageNumber(queryParams.pageNo);
+    rankChart?.off("click");
+    rankChart?.dispose();
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各PDU实时耗电量'},
+      barMaxWidth: '30px',
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
@@ -259,11 +263,11 @@ const eqData = ref<number[]>([]);
         type: 'category',
         data: getPageNumbers(queryParams.pageNo),
         axisLabel: {
-          interval: 0, // 根据实际情况调整
-          formatter: function (value, index) {
-            // 如果超过阈值，则只显示索引
-            return totalPages > labelThreshold ? '' : value;
-          },  // 如果需要，可以旋转标签
+          // interval: 0, // 根据实际情况调整
+          // formatter: function (value, index) {
+          //   // 如果超过阈值，则只显示索引
+          //   return totalPages > labelThreshold ? '' : value;
+          // },  // 如果需要，可以旋转标签
         }
       },
       yAxis: { type: 'value', name: "kWh"},
@@ -275,27 +279,32 @@ const eqData = ref<number[]>([]);
           barGap: '30%',
           data: eqData.value,
           label: {
-                        show: totalPages <= labelThreshold,
-                        position: 'top'
-                    }
-
-        },
+            show: true,
+            position: 'top'
+          },
+          itemStyle: {
+          color: new echarts.graphic.LinearGradient(  
+          0, 1, 0, 0, [  
+            { offset: 0, color: '#00778c' },  
+            { offset: 1, color: '#069ab4' }  
+          ]  
+        ) }
+        }
       ],
     });
     
     rankChart.on('click', function(params) {
-      toDetails(list.value[params.dataIndex].location,
-        list.value[params.dataIndex].createTimeMin,
-        list.value[params.dataIndex].createTimeMax);
+      toDetails(list.value[params.dataIndex].location);
     });
 
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
 
-window.addEventListener('resize', function() {
+function resize() {
   rankChart?.resize(); 
-});
+}
+window.addEventListener('resize', resize);
 
 // watch(() => queryParams.granularity, () => {
 //   handleQuery();
@@ -450,9 +459,12 @@ const getNavList = async() => {
 
 
 /** 详情操作*/
-const toDetails = (location: string,createTimeMin : string,createTimeMax : string) => {
-  push('/pdu/nenghao/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
-  '&end='+createTimeMax+'&ip='+location);
+const toDetails = (location: string) => {
+  if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
+    push({path:"/pdu/nenghao/powerAnalysis",state:{ip:location,start:selectTimeRange.value[0],end:selectTimeRange.value[1]}});
+  }else{
+    push({path:"/pdu/nenghao/powerAnalysis",state:{ip:location}});
+  }
 }
 
 
@@ -491,6 +503,12 @@ selectTimeRange.value = [
   format(now)
 ];
    getList();
+});
+
+onBeforeUnmount(() => {
+  rankChart?.off("click");
+  rankChart?.dispose();
+  window.removeEventListener("resize", resize);
 });
  
 const format = (date) => {
@@ -561,4 +579,7 @@ const format = (date) => {
    ::v-deep .el-table td{
     border-right: none;
    } */
+   /deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
 </style>

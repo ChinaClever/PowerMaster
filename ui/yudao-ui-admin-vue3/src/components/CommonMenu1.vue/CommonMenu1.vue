@@ -10,7 +10,7 @@
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
           <div v-show="showNavTree" >
-            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :defaultExpandedKeys="defaultExpandedKeys" :currentKey="currentKey" :hightCurrent="hightCurrent" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" :defaultCheckedKeys="defaultCheckedKeys" :highlightTypes="highlightTypes"/>
+            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :defaultExpandedKeys="defaultExpandedKeys" :currentKey="currentKey" :hightCurrent="hightCurrent" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" :defaultCheckedKeys="defaultCheckedKeys" :highlightTypes="highlightTypes" :nodeKey="nodeKey"/>
           </div>
         </div>
         <div v-show="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
@@ -99,9 +99,17 @@ const props = defineProps({
     type:Array,
     default: () => [],
     required: false
+  },
+  nodeKey:{
+    type: String,
+    default: 'id',
+    required: false
   }
 })
-
+watch(() => props.currentKey, (newValue, oldValue) => {
+  console.log("newValue=",newValue);
+  console.log("oldValue=",oldValue);
+})
 const switchNav = ref(false) //false: 导航树 true：微模块展示
 const isCloseNav = ref(false) // 左侧导航是否收起
 

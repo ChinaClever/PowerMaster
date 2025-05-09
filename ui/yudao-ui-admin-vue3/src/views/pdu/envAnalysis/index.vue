@@ -1,7 +1,7 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="PDU环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0" :hightCurrent="true" nodeKey="unique" :currentKey="currentKey" :highlightTypes="[4]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
       <div class="nav_data">
        
     <div class="nav_header" style="font-size: 14px;">
@@ -118,11 +118,17 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          
+          <el-button @click="handleQuery"  style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
 
-        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;">
+        <el-form-item>
+          <el-button-group>
+            <el-button @click="changeTime('pre')" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
+            <el-button @click="changeTime('next')" style="background-color: #00778c;color:#ffffff;font-size: 13px;">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
+          </el-button-group>
+         </el-form-item>
+
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;float: right;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
       </el-form>
@@ -195,7 +201,7 @@ import PDUImage from '@/assets/imgs/PDU.jpg'
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import  CommonMenu1 from './CommonMenu1.vue'
+// import  CommonMenu1 from './CommonMenu1.vue'
 
 
 /** pdu曲线 */
@@ -214,6 +220,8 @@ const loading = ref(false) //  列表的加载中
 const detect = ref('') as any// 监测点的值 默认全部
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
+const next=ref("下一月");
+const pre=ref("上一月");
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -342,6 +350,50 @@ const shortcuts2 = [
     },
   },
 ]
+
+function preTime(date,time){
+  return dayjs(new Date(new Date(date.replace(" ", "T")).getTime()-time)).format('YYYY-MM-DD HH:mm:ss')
+}
+function nextMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 11){
+  pre.setMonth(0)
+  pre.setFullYear(pre.getFullYear() +1)
+ }else{
+  pre.setMonth(pre.getMonth() +1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function preMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 0){
+  pre.setMonth(11)
+  pre.setFullYear(pre.getFullYear() - 1)
+ }else{
+  pre.setMonth(pre.getMonth() - 1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function changeTime(to){
+  if(to=="next"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24),preTime(queryParams.timeRange[1],-1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24*7),preTime(queryParams.timeRange[1],-1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[nextMonth(queryParams.timeRange[0]),nextMonth(queryParams.timeRange[1])]
+    }
+  }else if(to="pre"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24),preTime(queryParams.timeRange[1],1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24*7),preTime(queryParams.timeRange[1],1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[preMonth(queryParams.timeRange[0]),preMonth(queryParams.timeRange[1])]
+    }
+  }
+  handleQuery();
+}
 
 // 处理折线图数据
 const humValueData = ref<number[]>([]);
@@ -475,12 +527,12 @@ const initChart = () => {
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
-              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
-              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}} },
+              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -526,19 +578,78 @@ window.addEventListener('resize', function() {
   realtimeChart?.resize(); 
 });
 
+
+function calculateTime(date1,date2){
+  try{
+    const dateLeft=date1.replace(" ", "T")
+    const dateRight=date2.replace(" ", "T")
+    return new Date(dateLeft).getTime() - new Date(dateRight).getTime()
+  }catch(e){
+    return 1000*60*60*24*32;
+  }
+}
+let lastRaw=null;
+let lastHour=null;
+let lastDate=null;
 // 监听切换原始数据、极值数据tab
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="realtimeTabPane"){
+    lastRaw=queryParams.timeRange;
+  }else if(oldActiveName=="hourExtremumTabPane"){
+    lastHour=queryParams.timeRange;
+  }else{
+    lastDate=queryParams.timeRange;
+  }
+
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
+    next.value="下一天";
+    pre.value="上一天";
+    if(lastRaw!=null){
+      queryParams.timeRange=lastRaw;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24){
+        queryParams.timeRange=[preTime(queryParams.timeRange[1],1000*60*60*24),queryParams.timeRange[1]]
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
+    next.value="下一周";
+    pre.value="上一周";
+    if(lastHour!=null){
+      queryParams.timeRange=lastHour;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24*7){
+        queryParams.timeRange = [preTime(queryParams.timeRange[1],1000*60*60*24*7),queryParams.timeRange[1]];
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    // queryParams.timeRange = defaultHourTimeRange(24*30)
+    next.value="下一月";
+    pre.value="上一月";
+    if(lastDate!=null){
+      queryParams.timeRange=lastDate;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>calculateTime(queryParams.timeRange[1],preMonth(queryParams.timeRange[1]))){
+        queryParams.timeRange = [preMonth(queryParams.timeRange[1]),queryParams.timeRange[1]]
+      }
+    }
+    // queryParams.timeRange = defaultMonthTimeRange(1)
   }
-  needFlush.value ++;
+  handleQuery();
+  // if ( newActiveName == 'realtimeTabPane'){
+  //   queryParams.granularity = 'realtime'
+  //   // queryParams.timeRange = defaultHourTimeRange(1)
+  // }else if (newActiveName == 'hourExtremumTabPane'){
+  //   queryParams.granularity = 'hour'
+  //   // queryParams.timeRange = defaultHourTimeRange(24)
+  // }else{
+  //   queryParams.granularity = 'day'
+  //   // queryParams.timeRange = defaultHourTimeRange(24*30)
+  // }
+  // needFlush.value ++;
 });
 
 // 监听类型颗粒度
@@ -563,8 +674,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
-                {name: '温度', type: 'line', symbol: 'none', data: temValueData.value},
-                {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value},
+                {name: '温度', type: 'line', symbol: 'none', data: temValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+                {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
               ],
               dataZoom:[{type: "inside"}],
             });
@@ -600,12 +711,12 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
-              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
-              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}} },
+              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -866,18 +977,43 @@ function findFullName(data, targetUnique, callback, fullName = '') {
   }
 }
 
+const defaultExpandedKeys = ref([])
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].type==4){
+      if(arr[i].ip==history.state.location){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
+}
 // 接口获取机房导航列表
 const getNavList = async() => {
   let arr = [] as any
   var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
   navList.value = arr
+  if(history.state.location!=null){
+    setDefaultCheckedKeys(arr);
+  }
 }
 import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
-if(route.query.start!=null&&route.query.end!=null){
-  queryParams.timeRange = [route.query.start as string, route.query.end as string]
+if(history.state.start!=null&&history.state.end!=null){
+  queryParams.timeRange = [history.state.start as string, history.state.end as string]
+}
+const currentKey=ref();
+if(history.state.location!=null){
+  currentKey.value = history.state.location
 }
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -890,7 +1026,7 @@ const handleQuery = () => {
     // const querySensorId = String(Number(secondChar));
     // router.push({
     //     query: {
-    //         ...route.query, // 保留现有查询参数
+    //         ...history.state, // 保留现有查询参数
     //         sensorId: querySensorId // 添加或更新 sensorId 参数
     //     }
     // });
@@ -904,14 +1040,14 @@ onMounted( async () => {
   console.log('22231');
   getNavList()
   // 获取路由参数中的 pdu_id
-  let queryPduId = useRoute().query.pduId as string | undefined;
-  let querySensorId = useRoute().query.sensorId as string | undefined;
+  let queryPduId = history.state.pduId as string | undefined;
+  let querySensorId = history.state.sensorId as string | undefined;
   detect.value = querySensorId;
         console.log(detect);
       console.log(detect.value); // 打印最新的值
-  let queryLocation = useRoute().query.location as string;
-  let queryAddress = useRoute().query.address as string;
-  let queryDetectValue = useRoute().query.detectValue as string;
+  let queryLocation = history.state.location as string;
+  let queryAddress = history.state.address as string;
+  let queryDetectValue = history.state.detectValue as string;
   // queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
   queryParams.pduKey =queryLocation;
   queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : undefined;
@@ -1064,5 +1200,11 @@ onMounted( async () => {
     width: 85vw;
     height: 65vh;
   }
+}
+/deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
 }
 </style>

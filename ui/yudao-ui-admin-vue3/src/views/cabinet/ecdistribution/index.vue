@@ -61,10 +61,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -139,7 +139,7 @@ const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
-const selectTimeRange = ref(defaultDayTimeRange(14)) as any
+const selectTimeRange = ref(defaultDayTimeRange(7)) as any
 const currentKey=ref()
 if(history.state.cabinetId!=null){
   currentKey.value=history.state.cabinetId
@@ -391,7 +391,7 @@ const initLineChart = () => {
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value,symbol:"none",itemStyle:{normal:{lineStyle:{color:'#C8603A'}}}}],
+      series: [{name: '耗电量', type: 'line', data: eqData.value,symbol:"none",itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
@@ -623,5 +623,11 @@ onBeforeUnmount(() => {
 }
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+}
+/deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
 }
 </style>

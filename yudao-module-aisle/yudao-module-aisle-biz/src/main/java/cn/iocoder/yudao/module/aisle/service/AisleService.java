@@ -30,7 +30,7 @@ public interface AisleService {
     /**
      * 柜列绑定母线保存
      */
-    void   aisleBusSave(AisleBusSaveVo busSaveVo);
+//    void   aisleBusSave(AisleBusSaveVo busSaveVo);
 
     /**
      * 删除绑定

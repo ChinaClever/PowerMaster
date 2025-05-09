@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱能耗排名" :showCheckbox="false" :hightCurrent="true" nodeKey="unique" :currentKey="currentKey" :highlightTypes="[6]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
       
       <div class="nav_data">
@@ -66,8 +66,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
         </el-form-item>
@@ -121,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/bus/busindex'
@@ -129,7 +131,7 @@ import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } fr
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
-import  CommonMenu1 from './component/CommonMenu1.vue'
+// import  CommonMenu1 from './component/CommonMenu1.vue'
 defineOptions({ name: 'ECDistribution' })
 
 const exportLoading = ref(false)
@@ -244,18 +246,51 @@ const shortcuts = [
   },
 ]
 
+let lastdate=null;
+let lastWeekOrMonth=null;
+function defaultYear(){
+  const preYear=new Date();
+  preYear.setFullYear(preYear.getFullYear()-1)
+  return [dayjs(preYear).format("YYYY-MM-DD HH:mm:ss"),dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")]
+}
 // 监听切换日周月tab切换
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="dayTabPane"){
+    lastdate=selectTimeRange.value;
+  }else{
+    lastWeekOrMonth=selectTimeRange.value;
+  }
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    // selectTimeRange.value = defaultDayTimeRange(14)
+    // selectTimeRange.value = defaultDayTimeRange(7)
+    if(lastdate!=null){
+      selectTimeRange.value=lastdate;
+    }
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    // selectTimeRange.value = defaultMonthTimeRange(3)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }else{
     queryParams.granularity = 'month'
-    // selectTimeRange.value = defaultMonthTimeRange(12)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }
+  // if ( newActiveName == 'dayTabPane'){
+  //   queryParams.granularity = 'day'
+  //   // selectTimeRange.value = defaultDayTimeRange(14)
+  // }else if (newActiveName == 'weekTabPane'){
+  //   queryParams.granularity = 'week'
+  //   // selectTimeRange.value = defaultMonthTimeRange(3)
+  // }else{
+  //   queryParams.granularity = 'month'
+  //   // selectTimeRange.value = defaultMonthTimeRange(12)
+  // }
   handleQuery();
 });
 
@@ -368,9 +403,9 @@ const initLineChart = () => {
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+      series: [{name: '耗电量', type: 'line', data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
@@ -417,14 +452,20 @@ function formatNumber(value, decimalPlaces) {
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = '';
-  params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '耗电量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
-        break;
-    }
-  });
-  tooltipContent += '<br/>时间: ' + params[0].name;
+  // params.forEach(function(item) {
+  //   switch( item.seriesName ){
+  //     case '耗电量':
+  //       tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
+  //       break;
+  //   }
+  // });
+  // tooltipContent += '<br/>时间: ' + params[0].name;
+  tooltipContent += params[0].marker + ' ' +'记录时间: ' + params[0].name;
+  tooltipContent += "&nbsp;&nbsp;&nbsp;&nbsp;" + params[0].seriesName + ': ' + params[0].value + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'开始时间: ' + tableData.value[params[0].dataIndex].startTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;开始电能: ' + tableData.value[params[0].dataIndex].startEleData + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'结束时间: ' + tableData.value[params[0].dataIndex].endTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;结束电能: ' + tableData.value[params[0].dataIndex].endEleData + ' kWh';
   return tooltipContent;
 }
 
@@ -502,11 +543,41 @@ function findFullName(data, targetUnique, callback, fullName = '') {
   }
 }
 
+const currentKey=ref()
+const defaultExpandedKeys = ref([])
+if(history.state.devKey!=null){
+  currentKey.value = history.state.devKey;
+}
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getBusMenu()
   navList.value = res
+  if(history.state.devKey!=null){
+    // console.log(arr,"=================arr")
+    // console.log(defaultExpandedKeys.value,"=================defaultExpandedKeys")
+    setDefaultCheckedKeys(res);
+    // console.log("currentKey================",currentKey.value)
+  }
 }
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].children==null||arr[i].children.length==0){
+      if(arr[i].unique==history.state.devKey){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 
 /** 搜索按钮操作 */
 const handleQuery = async() => {
@@ -591,4 +662,10 @@ onMounted(async () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+  /deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
 </style>

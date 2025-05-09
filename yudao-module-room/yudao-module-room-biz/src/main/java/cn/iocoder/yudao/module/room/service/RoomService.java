@@ -128,9 +128,6 @@ public interface RoomService {
 
     RoomMainResVO getDataNewDetail(int id) throws ExecutionException, InterruptedException;
 
-    //柜列编辑删除
-    Integer roomAisleDeleteById(int id);
-
     //机房新增根据名称异步查询
     Integer newSelectRoomByName(String name);
 

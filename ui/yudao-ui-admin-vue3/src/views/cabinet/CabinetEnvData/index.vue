@@ -72,7 +72,7 @@
 
         <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item> 
 
         <el-form-item label="筛选列">
@@ -90,7 +90,7 @@
 
           <div style="float:right;">
           
-        <el-button type="success" plain @click="handleExport" :loading="exportLoading" >
+        <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;top:2px;position: absolute;right:6px">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </div>
@@ -216,7 +216,7 @@
         </el-table-column> -->
         <el-table-column label="详情" align="center" fixed="right" width="100px">
           <template #default="{ row }"> 
-            <el-button type="primary" @click="toDetails(row.pdu_id,  row.address)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.id,  row.address)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
           </template>
         </el-table-column>
 
@@ -604,8 +604,8 @@ watch(() => queryParams.granularity, (newValues) => {
 // ]) as any;
 
 /** 查询列表 */
-const getList = async () => {
-  loading.value = true
+const getList = async (needLoading=true) => {
+  loading.value = needLoading;
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化日期范围 加上23:59:59的时分秒 
@@ -614,6 +614,8 @@ const getList = async () => {
       const selectedEndTime = formatDate(selectTimeRange.value[1])
      // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }else{
+      queryParams.timeRange = [];
     }
     const data = await HistoryDataApi.getHistoryEnvData(queryParams)
     for(let i=0;i<data.list.length;i++){
@@ -751,7 +753,7 @@ const disabledDate = (date) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
     queryParams.pageNo = 1
-    getNavNewData();
+    // getNavNewData();
     getList();
 }
 
@@ -800,6 +802,8 @@ const format = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+let intervalId=null as any;
 /** 初始化 **/
 onMounted( () => {
   const now = new Date()
@@ -809,11 +813,18 @@ selectTimeRange.value = [
   dayjs(startOfMonth).format('YYYY-MM-DD HH:mm:ss'),
   dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 ];
+intervalId=setInterval(() => {
+  getList(false);
+}, 60000);
   getNavList()
   getNavNewData()
   getList()
 });
-
+onBeforeUnmount(() => {
+  if(intervalId!=null){
+    clearInterval(intervalId);
+  }
+})
 </script>
 
 <style scoped>
@@ -869,5 +880,8 @@ selectTimeRange.value = [
   ::v-deep .el-table .el-table__header th {
     background-color: #f7f7f7;
     color: #909399;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
 }
 </style>
