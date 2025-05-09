@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.room.controller.admin;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.aisle.RoomAisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
@@ -46,6 +47,11 @@ public class RoomController {
     @Value("${room-refresh-url}")
     public String adder;
 
+    @Value("${aisle-refresh-url}")
+    public String adderAisle;
+
+    @Value("${cabinet-refresh-url}")
+    public String adderCabinet;
 
     /**
      * 机房详情
@@ -94,9 +100,9 @@ public class RoomController {
     @Operation(summary = "机房编辑x与y")
     @GetMapping("/findAreaById")
     public CommonResult<Boolean> findAreaById(@RequestParam(value = "xLength") @Parameter(description = "x") Integer xLength,
-                                                     @RequestParam(value = "yLength") @Parameter(description = "y") Integer yLength,
+                                              @RequestParam(value = "yLength") @Parameter(description = "y") Integer yLength,
                                               @RequestParam(value = "id") @Parameter(description = "机房id") Integer id) {
-        Boolean i = roomService.findAreaById(xLength,yLength,id);
+        Boolean i = roomService.findAreaById(xLength, yLength, id);
         return success(i);
     }
 
@@ -142,8 +148,8 @@ public class RoomController {
 
     @Operation(summary = "新的机房数据详情")
     @GetMapping("/data/newDetail")
-    public CommonResult<RoomMainResVO> getDatanewDetail(@Param("id") int id) throws ExecutionException, InterruptedException {
-        RoomMainResVO dto = roomService.getDatanewDetail(id);
+    public CommonResult<RoomMainResVO> getDataNewDetail(@Param("id") int id) throws ExecutionException, InterruptedException {
+        RoomMainResVO dto = roomService.getDataNewDetail(id);
         return success(dto);
     }
 
@@ -204,19 +210,26 @@ public class RoomController {
     }
 
 
-    @Operation(summary = "机房机柜新增/编辑")
+    @Operation(summary = "机房柜列新增/编辑")
     @PostMapping("/roomAisleSave")
-    public CommonResult<Integer> roomAisleSave(@RequestBody AisleSaveVo vo) {
-        return success(roomService.roomAisleSave(vo));
+    public CommonResult<Integer> roomAisleSave(@RequestBody RoomAisleSaveVo vo) {
+        Integer result = roomService.roomAisleSave(vo);
+        if (result > 0) {
+            ThreadPoolConfig.getTHreadPool().execute(() -> {
+                HttpUtil.get(adder);
+                HttpUtil.get(adderAisle);
+                HttpUtil.get(adderCabinet);
+            });
+        }
+        return success(result);
     }
 
-
-    @Operation(summary = "柜类删除")
-    @GetMapping("/roomAisleDelete")
-    public CommonResult<Integer> roomAisleDelete(@Param("id") int id) {
-        return success(roomService.roomAisleDeleteById(id));
+    @Operation(summary = "柜列添加验证")
+    @PostMapping("/findAddAisleVerify")
+    public CommonResult<Boolean> findAddAisleVerify(@RequestBody AisleSaveVo vo) {
+        Boolean i = roomService.findAddAisleVerify(vo);
+        return success(i);
     }
-
 
     @Operation(summary = "机房柜列新增/编辑")
     @PostMapping("/roomCabinetSave")
@@ -259,5 +272,11 @@ public class RoomController {
     public CommonResult<Map<String, List<RoomIndexAddrResVO>>> getRoomAddrListAll(@RequestParam(value = "addr", required = false) @Parameter(description = "地址（楼层）") String addr,
                                                                                   @RequestParam(value = "roomName", required = false) @Parameter(description = "机房名称") String roomName) {
         return success(roomService.getRoomAddrListAll(addr, roomName));
+    }
+
+    @Operation(summary = "机房编辑导出")
+    @PostMapping("/editAisleExport")
+    public void editAisleExport(Integer roomId, Integer aisleId) {
+        roomService.editAisleExport(roomId, aisleId);
     }
 }

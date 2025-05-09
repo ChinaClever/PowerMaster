@@ -343,25 +343,25 @@ const queryParams = reactive({
 })
 const statusList = reactive([
   [{
-    name: '负载量<30%',
+    name: '负载率<30%',
     selected: true,
     value: 1,
     color: '#3bbb00'
   },
   {
-    name: '30%≤负载量<60%',
+    name: '30%≤负载率<60%',
     selected: true,
     value: 2,
     color: '#05ebfc'
   },
   {
-    name: '60%≤负载量<90%',
+    name: '60%≤负载率<90%',
     selected: true,
     value: 3,
     color: '#ffc402'
   },
   {
-    name: '负载量>90%',
+    name: '负载率>90%',
     selected: true,
     value: 4,
     color: '#fa3333'
@@ -1024,13 +1024,13 @@ const handleInitialDblick = (e, road) => {
   if(chosenBtn.value == 0) {
     push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
   } else if(chosenBtn.value == 1) {
-    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+    push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
   } else if(chosenBtn.value == 2) {
-    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+    push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
   } else if(chosenBtn.value == 3) {
     push({path: '/bus/busmonitor/buspowerfactor', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
   } else if(chosenBtn.value == 4) {
-    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+    push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
   } else if(chosenBtn.value == 7) {
     push({path: '/bus/busmonitor/busbalancedetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
   } else if(chosenBtn.value == 8) {
@@ -1141,7 +1141,7 @@ const handleJump = (data) => {
     return
   }
   if(chosenBtn.value == 0) {
-    push({path: '/cabinet/cab/cabinetPowerLoadDetail', state: {cabinet: target.id,roomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName}})
+    push({path: '/cabinet/cab/cabinetPowerLoadDetail', query: {cabinet: target.id,roomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName}})
   } else if(chosenBtn.value == 1) {
     push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
   } else if(chosenBtn.value == 2) {
@@ -1152,13 +1152,13 @@ const handleJump = (data) => {
   } else if(chosenBtn.value == 4) {
     push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
   } else if(chosenBtn.value == 7) {
-     push({path: '/cabinet/cab/balance', state: {cabinetIds: target.id,isFirst: false}})
+    push({path: '/cabinet/cab/balance', query: {openDetailFlag: 1,id: target.id}})
   } else if(chosenBtn.value == 8) {
-    push({path: '/cabinet/cab/cabinetenvdetail', state: { id: target.id }})
+    push({path: '/cabinet/cab/cabinetenvdetail', query: { id: target.id }})
   } else if(chosenBtn.value == 9) {
     push({path: '/cabinet/cab/screen', state: { id: target.id,roomId: target.roomId }})
   } else if(chosenBtn.value == 10) {
-    push({path: '/cabinet/cab/energyDetail', state: { cabinetId: target.id,cabinetroomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName }})
+    push({path: '/cabinet/cab/energyDetail', query: { cabinetId: target.id,cabinetroomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName }})
   }
 }
 // 处理菜单点击事件

@@ -59,14 +59,24 @@ saveRoomCabinet: async (data: any) => {
   return await request.post({ url: `/room/roomCabinetSave`, data })
 },
 
+//判断柜列的位置是否存在机柜或柜列
+findAddAisleVerify: async (data: any) => {
+  return await request.post({ url: `/room/findAddAisleVerify`, data })
+},
 
 //机房柜列删除
 deletedRoomAisleInfo: async (params: any) => {
   return await request.get({ url: `/room/roomAisleDelete`, params })
 },
 
+//查找同名机房
 selectRoomByName: async (params: any) => {
   return await request.get({ url: `/room/newSelectRoomByName`, params })
+},
+
+//判断是否可以减少行数列数
+findAreaById: async (params: any) => {
+  return await request.get({ url: `/room/findAreaById`, params })
 },
 
 //获取机房主页折线图

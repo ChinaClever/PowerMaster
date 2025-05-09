@@ -263,7 +263,7 @@ const handleCheck = (row) => {
 
 // 跳转详情
 const toDetail = (row) => {
-  push({path: '/cabinet/cab/energyDetail', state: row})
+  push({path: '/cabinet/cab/energyDetail', query: row})
 }
 
 onBeforeMount(() => {

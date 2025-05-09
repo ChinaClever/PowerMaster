@@ -1925,12 +1925,12 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         JSONArray volThd = lineItemList.getJSONArray("vol_thd");
         JSONArray curThd = lineItemList.getJSONArray("cur_thd");
-        result.setIaTHD(curThd.getDouble(0));
-        result.setIbTHD(curThd.getDouble(1));
-        result.setIcTHD(curThd.getDouble(2));
-        result.setUaTHD(volThd.getDouble(0));
-        result.setUbTHD(volThd.getDouble(1));
-        result.setUcTHD(volThd.getDouble(2));
+        result.setIaTHD(curThd.getDouble(0) / 100);
+        result.setIbTHD(curThd.getDouble(1) / 100);
+        result.setIcTHD(curThd.getDouble(2) / 100);
+        result.setUaTHD(volThd.getDouble(0) / 100);
+        result.setUbTHD(volThd.getDouble(1) / 100);
+        result.setUcTHD(volThd.getDouble(2) / 100);
         result.setLoadFactor((result.getS() / result.getFInstalledCapacity()) * 100);
         return result;
     }
@@ -2623,17 +2623,17 @@ public class BusIndexServiceImpl implements BusIndexService {
                     result.put("apparentPowMaxValue", maxApparentPow.getPowApparentMaxValue());
                     result.put("apparentPowMaxTime", maxApparentPow.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-                BusTotalHourDo minApparentPow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowApparentMinValue));
+                BusTotalHourDo minApparentPow = Collections.min(powList, Comparator.comparing(BusTotalHourDo::getPowApparentMinValue));
                 if (minApparentPow != null) {
                     result.put("apparentPowMinValue", minApparentPow.getPowApparentMinValue());
-                    result.put("apparentPowMinTime", minApparentPow.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    result.put("apparentPowMinTime", minApparentPow.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
                 BusTotalHourDo maxActivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
                 if (maxActivePow != null) {
                     result.put("activePowMaxValue", maxActivePow.getPowActiveMaxValue());
                     result.put("activePowMaxTime", maxActivePow.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-                BusTotalHourDo minActivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
+                BusTotalHourDo minActivePow = Collections.min(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
                 if (minActivePow != null) {
                     result.put("activePowMinValue", minActivePow.getPowActiveMinValue());
                     result.put("activePowMinTime", minActivePow.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -2643,7 +2643,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     result.put("reactivePowMaxValue", maxReactivePow.getPowReactiveMaxValue());
                     result.put("reactivePowMaxTime", maxReactivePow.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-                BusTotalHourDo minReactivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
+                BusTotalHourDo minReactivePow = Collections.min(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
                 if (minReactivePow != null) {
                     result.put("reactivePowMinValue", minReactivePow.getPowReactiveMinValue());
                     result.put("reactivePowMinTime", minReactivePow.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));

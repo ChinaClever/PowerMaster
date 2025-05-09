@@ -69,4 +69,9 @@ public class PDUDevicePageReqVO extends PageParam {
     @Schema(description = "电流/功率/标识")
     private Integer flagVlaue;
 
+    /**
+     * 数据类型（最大值=1，最小值=-1，平均值=0）
+     */
+    private Integer dataType;
+
 }

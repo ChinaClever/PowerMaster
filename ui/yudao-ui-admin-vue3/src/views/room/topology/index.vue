@@ -1,6 +1,6 @@
 <template>
-<!-- <div style="height:calc(100vh - 120px);"> -->
-  <el-card shadow="never">
+<!-- <div style="height:70%;"> -->
+  <el-card shadow="never" :style="isFromHome ? 'flex: 1' : ''">
     <div class="toolbar">
       <div style="display: flex;align-items:center" v-if="!isFromHome">
         机房：
@@ -9,45 +9,46 @@
         </el-select>
       </div>
       <div class="status">
-        <template v-for="item in statusInfo" :key="item.value">
+        <template v-for="item in statusInfo[chosenBtn]" :key="item.value">
           <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
         </template>
       </div>
       <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px'">
-        <div style="display: flex;justify-content: flex-end;margin-right:3px;width: 100%">
-          <el-button size="small" @click="tableScaleValue = 1;tableScaleWidth = 100;tableScaleHeight = 100" circle ><Icon icon="ep:refresh-right" /></el-button>
+        <div style="display: flex;justify-content: flex-end;margin-right:3px;width: 100%;align-items: center;">
+          <el-button v-if="isFromHome" size="small" @click="tableScaleValue = tableScaleValueStart;tableScaleWidth = tableScaleWidthStart;tableScaleHeight = tableScaleHeightStart" circle ><Icon icon="ep:refresh-right" /></el-button>
+          <el-button v-else size="small" @click="tableScaleValue = 1;tableScaleWidth = 100;tableScaleHeight = 100" circle ><Icon icon="ep:refresh-right" /></el-button>
           <el-button size="small" @click="tableScale(false)" circle ><Icon icon="ep:minus" /></el-button>
           <el-button size="small" @click="tableScale(true)" circle ><Icon icon="ep:plus" /></el-button>
         </div>
         <template v-for="item in btns" :key="item.value">
-          <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+          <el-button @click="switchBtn(item.value)" round color="#00778c" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
         </template>
       </div>
       <div style="display: flex;align-items: center">
         <!-- <el-button @click="handleAdd" type="primary">新建机房</el-button> -->
-        <el-button v-if="!editEnable" @click="handleEdit" :size="isFromHome ? 'small' : ''" type="primary">编辑</el-button>
+        <el-button v-if="!editEnable" @click="handleEdit" :size="isFromHome ? 'small' : ''" type="primary" color="black">编辑</el-button>
         <!-- <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button> -->
-        <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
-        <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
-        <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
+        <el-button v-if="editEnable" @click="handleCancel" plain type="primary" color="black">取消</el-button>
+        <el-button v-if="editEnable" @click="openSetting" plain type="primary" color="black"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
+        <el-button v-if="editEnable" @click="handleSubmit" plain type="primary" color="black">保存</el-button>
         <!-- <el-button v-if="editEnable" @click="handleDelete" type="primary">删除机房</el-button> -->
         
       </div>
     </div>
   </el-card>
-  <el-card shadow="never">
+  <el-card shadow="never" :body-style="isFromHome ? 'padding: 0' : ''">
     <div ref="dragTableViewEle" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseLeave" @selectstart="onSelectStart" :style="{cursor: `${dragCursor}`}">
         <div class="dragContainer" 
           ref="tableContainer"
           v-loading="loading" 
-          style=""
+          style="z-index: 100"
           @click.right="handleRightClick"
-          :style="isFromHome ? `transform-origin: 0 0;height: 50vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
+          :style="isFromHome ? `transform-origin: 0 0;height: 49vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
           <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
           <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
             <el-table-column fixed type="index" align="center" :resizable="false" />
             <template v-for="(formItem, index) in formParam" :key="index">
-              <el-table-column :label="formItem" min-width="54" align="center" :resizable="false">
+              <el-table-column :label="formItem" min-width="41" align="center" :resizable="false">
                 <template #default="scope">
                   <draggable
                     :id="`${scope.$index}-${index}`"
@@ -61,65 +62,621 @@
                     @end.prevent="onEnd"
                   >
                     <template #item="{ element }">
-                      <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)" :style="{backgroundColor: element.cabinetName ? statusInfo[element.runStatus].color : '#effaff',color: '#fff'}" >
-                        <template v-if="element.name">
-                          <el-tooltip effect="light">
-                            <template #content>
-                              机柜名称：{{element.cabinetName}} <br/>
-                              机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                              昨日用能：{{element.yesterdayEq ? element.yesterdayEq .toFixed(1) : '0.0'}}kW·h<br/><br/>
-                              总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                              总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                              总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                              总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                              前门温度：{{element.temFront}}°C<br/>
-                              后门温度：{{element.temBlack}}°C<br/><br/>
-                              A路设备：{{element.cabinetkeya}}<br/>
-                              A路功率：{{element.powActivea}}kW<br/>
-                              B路设备：{{element.cabinetkeyb}}<br/>
-                              B路功率：{{element.powActiveb}}kW<br/><br/>
-                              已用空间：{{element.usedSpace}}U<br/>
-                              未用空间：{{element.freeSpace}}U<br/>
-                            </template>
-                            <div v-if="chosenBtn == 0">{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}<br/>%</div>
-                            <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0'}}<br/>kW</div>
-                            <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                            <div v-if="chosenBtn == 3">{{element.tem}}<br/>°C</div>
-                            <div v-if="chosenBtn == 4">{{element.cabinetHeight}}<br/>U</div>
-                            <div v-if="chosenBtn == 5">{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}<br/>kWh</div>
-                          </el-tooltip>
-                        </template>
+                      <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)">
+                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.name">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                  </div>
+                                  <div style="width: 50%">
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
+                            </el-tooltip>
+                          </template>
+                        </div>
+                        <div v-else-if="chosenBtn == 1 && element.runStatus == 1" :style="{backgroundColor: element.cabinetName ? `rgba(41, 132, 71, ${element.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.name">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                  </div>
+                                  <div style="width: 50%">
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
+                            </el-tooltip>
+                          </template>
+                        </div>
+                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? `rgba(124, 255, 178, ${element.powerFactor})` : (element.powerFactor>=0.5 ? `rgba(88, 217, 249, ${element.powerFactor+0.25})` : (element.powerFactor>=0.25 ? `rgba(253, 221, 96, ${element.powerFactor+0.5})` : `rgba(255, 110, 118, ${element.powerFactor+0.75})`))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.name">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                  </div>
+                                  <div style="width: 50%">
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                            </el-tooltip>
+                          </template>
+                        </div>
+                        <div v-else-if="chosenBtn == 3 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temFront>=tempList[2]?.min ? tempList[2]?.color : (element.temFront>=tempList[1]?.min ? tempList[1]?.color : (element.temFront>=tempList[0]?.min ? tempList[0]?.color : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.name">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                  </div>
+                                  <div style="width: 50%">
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                            </el-tooltip>
+                          </template>
+                        </div>
+                        <div v-else-if="chosenBtn == 4 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (element.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (element.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.name">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                  </div>
+                                  <div style="width: 50%">
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                            </el-tooltip>
+                          </template>
+                        </div>
+                        <div v-else :style="{backgroundColor: element.cabinetName ? statusColor[element.runStatus].color : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.name">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                  </div>
+                                  <div style="width: 50%">
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
+                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
+                              <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kWh</div></div>
+                            </el-tooltip>
+                          </template>
+                        </div>
                       </div>
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
-                          <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: item.cabinetName ? statusInfo[item.runStatus].color : '#effaff',color: '#fff'}" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
-                            <template v-if="item.id > 0">
-                              <el-tooltip effect="light">
-                                <template #content>
-                                  机柜名称：{{item.cabinetName}} <br/>
-                                  机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                  昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h<br/><br/>
-                                  总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                  总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                  总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
-                                  总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/><br/>
-                                  前门温度：{{item.temFront}}°C<br/>
-                                  后门温度：{{item.temBlack}}°C<br/><br/>
-                                  A路设备：{{item.cabinetkeya}}<br/>
-                                  A路功率：{{item.powActivea}}kW<br/>
-                                  B路设备：{{item.cabinetkeyb}}<br/>
-                                  B路功率：{{item.powActiveb}}kW<br/><br/>
-                                  已用空间：{{item.usedSpace}}U<br/>
-                                  未用空间：{{item.freeSpace}}U<br/>
-                                </template>
-                                <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}<br/>%</div>
-                                <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<br/>kW</div>
-                                <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                <div v-if="chosenBtn == 3">{{item.tem}}<br/>°C</div>
-                                <div v-if="chosenBtn == 4">{{item.cabinetHeight}}<br/>U</div>
-                                <div v-if="chosenBtn == 5">{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}<br/>kWh</div>
-                              </el-tooltip>
-                            </template>
+                          <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
+                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                      </div>
+                                      <div style="width: 50%">
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                </el-tooltip>
+                              </template>
+                            </div>
+                            <div v-else-if="chosenBtn == 1 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? `rgba(41, 132, 71, ${item.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                      </div>
+                                      <div style="width: 50%">
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                </el-tooltip>
+                              </template>
+                            </div>
+                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? `rgba(124, 255, 178, ${item.powerFactor})` : (item.powerFactor>=0.5 ? `rgba(88, 217, 249, ${item.powerFactor+0.25})` : (item.powerFactor>=0.25 ? `rgba(253, 221, 96, ${item.powerFactor+0.5})` : `rgba(255, 110, 118, ${item.powerFactor+0.75})`))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                      </div>
+                                      <div style="width: 50%">
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                </el-tooltip>
+                              </template>
+                            </div>
+                            <div v-else-if="chosenBtn == 3" :style="{background: `linear-gradient(to bottom, ${getColorFromGradient(12)} 50%, ${getColorFromGradient(60)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                      </div>
+                                      <div style="width: 50%">
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                </el-tooltip>
+                              </template>
+                            </div>
+                            <div v-else-if="chosenBtn == 4 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (item.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (item.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                      </div>
+                                      <div style="width: 50%">
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                </el-tooltip>
+                              </template>
+                            </div>
+                            <div v-else :style="{backgroundColor: item.cabinetName ? statusColor[item.runStatus].color : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                      </div>
+                                      <div style="width: 50%">
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                  <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -20px">kWh</div></div> -->
+                                </el-tooltip>
+                              </template>
+                            </div>
                           </div>
                         </template>
                         <template v-else>
@@ -132,14 +689,16 @@
               </el-table-column>
             </template>
           </el-table>
+          
         <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
           <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-            <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div>
-            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addMachine">新增</div>
+            <!-- <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div> -->
+            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addAisle">新增柜列</div>
+            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addCabinet('add')">新增机柜</div>
             <!-- <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div> -->
-            <el-cascader-panel class="menu_item_panel" v-if="!showMenuAdd && editEnable" style="width: fit-content" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" />
+            <el-cascader-panel class="menu_item_panel" v-if="(!showMenuAdd || !editEnable) && menuOptions.length" style="width: fit-content" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" />
           </div>
         </div>
     </div>
@@ -180,6 +739,9 @@
             <template #append>kVA</template>
           </el-input>
         </el-form-item>
+        <el-form-item label="排序" label-width="90">
+            <el-input-number v-model="rowColInfo.sort" controls-position="right" placeholder="请输入" />
+          </el-form-item>
         <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
@@ -260,6 +822,51 @@
       />
       <div style="height:30px"></div>
   </el-dialog>
+  <el-dialog v-model="detailVis" style="width: 80%;height: 80%;margin-top: 100px;">
+    <div class="custom-row" style="display: flex; align-items: center;">
+      <!-- 位置标签 -->
+      <div class="location-tag el-col">
+        <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+        <span>所在位置：{{ rowColInfo.roomName?rowColInfo.roomName:'未绑定' }}</span>
+        <span> 机柜名称：{{ queryParamsPF.cabinetName?queryParamsPF.cabinetName:'未绑定' }}</span>
+      </div>
+
+      <!-- 日期选择器 -->
+      <div class="date-picker-col el-col">
+        <el-date-picker
+          v-model="queryParamsPF.startTime"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          type="datetime"
+          :picker-options="pickerOptions"
+          placeholder="选择日期时间"
+        />
+        <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
+        <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+      </div>
+
+      <!-- 图表/数据切换按钮组 -->
+      <div class="chart-data-buttons el-col" style="margin-right: 50px;">
+        <div class="button-group">
+          <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+          <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
+          <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+            <i class="el-icon-download"></i> 导出
+          </el-button>
+        </div>
+      </div>
+    </div>
+    <br/>
+    <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
+    <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+      <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
+      <el-table-column label="时间" align="center" prop="create_time" />
+      <el-table-column label="总功率因素" align="center" prop="factor_total_avg_value" />
+      <el-table-column label="A路功率因素" align="center" prop="factor_a_avg_value" />
+      <el-table-column label="B路功率因素" align="center" prop="factor_b_avg_value" />
+    </el-table>
+    </div>
+  </el-dialog>
+  <MachineForm ref="machineFormCabinet" @success="saveMachine" :roomList="roomList" :roomId="roomId" />
 <!-- </div> -->
 </template>
 
@@ -269,7 +876,11 @@ import layoutForm from './component/layoutForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/cabinet/index'
 import { Console } from "console";
+import MachineForm from './component/MachineForm.vue';
+import download from '@/utils/download'
+import PFDetail from './component/PFDetail.vue'
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
@@ -295,18 +906,24 @@ const {containerInfo, isFromHome} = defineProps({
   }
 })
 let timer = null as any // 定时器
+const switchChartOrTable = ref(0)
 const isAddRoom = ref(false) // 是否为添加机房模式 
-const roomId = ref(0) // 房间id
+const roomId = ref(Number(query.id)) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
 const dragTableViewEle = ref()
 const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
+
 const tableScaleValue = ref(1)
 const tableScaleWidth = ref(100)
 const tableScaleHeight = ref(100)
+const tableScaleValueStart = ref(1)
+const tableScaleWidthStart = ref(100)
+const tableScaleHeightStart = ref(100)
+
 const deletedList = ref<any>([]) //已删除的
-const chosenBtn = ref(0)
+const chosenBtn = ref(1)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
@@ -317,6 +934,7 @@ const updateCfgInfo = ref();
 const roomsId = reactive({
   roomDownValIds: Number(query.id),
 })
+const tempList:any = ref([{},{},{}])
 
 const addrList = ref([
   '未区分',
@@ -346,61 +964,136 @@ const rowColInfo = reactive({
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
+  sort: null,
 })
 const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<Record<string, any[]>[]>([]);
-const statusInfo = ref([
+const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量','机柜告警'])
+const statusInfo = ref([[
   {
-    name: '未绑定',
-    color: '#05ebfc',
+    name: '0%<负载率<60%',
+    color: '#7cffb2',
     value: 0,
   },
   {
+    name: '60%<=负载率<=90%',
+    color: '#e5b849',
+    value: 1,
+  },
+  {
+    name: '90%<负载率',
+    color: '#d42023',
+    value: 2,
+  }
+],[
+  {
+    name: '空机柜',
+    color: '#f5f7fa',
+    value: 5,
+  },
+  {
     name: '正常',
-    color: '#3bbb00',
+    color: '#298447',
     value: 1,
   },
   {
     name: '预警',
-    color: '#ffc402',
+    color: '#e56e19',
     value: 2,
   },
   {
     name: '告警',
-    color: '#fa3333',
+    color: '#d42023',
+    value: 3,
+  },
+  {
+    name: '未绑定',
+    color: '#3e62c7',
+    value: 0,
+  },
+  {
+    name: '离线',
+    color: '#757c8a',
+    value: 4,
+  },
+],[
+  {
+    name: '功数<0.25',
+    color: '#ff6e76',
+    value: 0,
+  },
+  {
+    name: '0.25<=功数<0.50',
+    color: '#fddd60',
+    value: 1,
+  },
+  {
+    name: '0.50<=功数<0.75',
+    color: '#58d9f9',
+    value: 2,
+  },
+  {
+    name: '0.75<=功数',
+    color: '#7cffb2',
+    value: 3,
+  }
+]])
+const statusColor = ref([
+  {
+    name: '未绑定',
+    color: '#3e62c7',
+    value: 0,
+  },
+  {
+    name: '正常',
+    color: '#298447',
+    value: 1,
+  },
+  {
+    name: '预警',
+    color: '#e56e19',
+    value: 2,
+  },
+  {
+    name: '告警',
+    color: '#d42023',
     value: 3,
   },
   {
     name: '离线',
-    color: '#7700ff',
+    color: '#757c8a',
     value: 4,
   },
   {
-    name: '空载',
-    color: '#effaff',
+    name: '空机柜',
+    color: '#f5f7fa',
     value: 5,
   },
 ])
 const btns = [
   {
-    value: 0,
-    name: '机柜负荷',
+    value: 1,
+    name: '视在功率',
   },
   {
-    value: 1,
-    name: '有功功率',
+    value: 0,
+    name: '机柜负荷',
   },
   {
     value: 2,
     name: '功率因素',
   },
-  {
-    value: 5,
-    name: '昨日用能',
-  },
+  // {
+  //   value: 5,
+  //   name: '昨日用能',
+  // },
   {
     value: 3,
-    name: '温度',
+    name: '前门温度',
+  },
+  {
+    value: 4,
+    name: '后门温度',
   },
   // {
   //   value: 4,
@@ -487,8 +1180,8 @@ const dialogVisible = ref(false);
 const dialogStopDelete = ref(false);
 const editEnable = ref(false);
 const dragCursor = ref();
-const tableHeight = ref(0);
 const machineForm = ref();
+const machineFormCabinet = ref();
 const startX = ref(0);
 const startY = ref(0);
 const scrollLeft = ref(0);
@@ -505,9 +1198,9 @@ const groupMachineBlank = {
   name: 'MachineBlank',
   pull: false, //允许拖出,如果设置 字符串'clone' 表示该组拖出的元素会被克隆
   put: (event) => {
-   // console.log('event', event.el.id)
+   // //console.log('event', event.el.id)
     const moveBox = movingInfo.value
-    console.log(moveBox)
+    //console.log(moveBox)
     if (editEnable.value) {
       if(moveBox.type == 2) {
         moveBox.amount = 1
@@ -544,12 +1237,14 @@ const operateMenu = ref({
   lndexY: 0,
   maxlndexX: 0,
   maxlndexY: 0,
+  xLength: 0,
+  yLength: 0
 })
 
 // 接口获取机房导航列表
 const getRoomList = async() => {
   const res = await MachineRoomApi.getRoomList({})
-  //console.log('接口获取机房导航列表*****', res, roomId.value)
+  ////console.log('接口获取机房导航列表*****', res, roomId.value)
   if (res && res.length) {
     roomList.value = res
     const find = res.find(item => item.id == roomId.value)
@@ -563,131 +1258,14 @@ const getRoomList = async() => {
     emit('getroomid', roomId.value);
     getRoomInfo();
   }
-  console.log(typeof(roomId.value))
+  //console.log(typeof(roomId.value))
 }
 
 const menuOptions = ref([
   {
-    value: '编辑',
-    label: '编辑',
-    children: [
-      {
-        value: '机柜编辑',
-        label: '机柜编辑',
-      },
-      {
-        value: '柜列编辑',
-        label: '柜列编辑',
-      },
-      {
-        value: '柜列移动',
-        label: '柜列移动',
-      },
-    ]
-  },
-  {
-    value: '柜列：',
-    label: '柜列：',
-    children: [
-      {
-        value: '柜列配电',
-        label: '柜列配电',
-      },
-      {
-        value: '柜列用能',
-        label: '柜列用能',
-      },
-      {
-        value: '柜列需量',
-        label: '柜列需量',
-      },
-      {
-        value: '柜列供电平衡',
-        label: '柜列供电平衡',
-      },
-      {
-        value: '柜列功率因素',
-        label: '柜列功率因素',
-      }
-    ]
-  },
-  {
-    value: '机柜：',
-    label: '机柜：',
-    children: [
-      {
-        value: '机柜负荷',
-        label: '机柜负荷',
-      },
-      {
-        value: '机柜配电',
-        label: '机柜配电',
-      },
-      {
-        value: '机柜温度',
-        label: '机柜温度',
-      },
-      {
-        value: '机柜用能',
-        label: '机柜用能',
-      },
-      {
-        value: '机柜需量',
-        label: '机柜需量',
-      },
-      {
-        value: '机柜供电平衡',
-        label: '机柜供电平衡',
-      },
-      {
-        value: '机柜功率因素',
-        label: '机柜功率因素',
-      }
-    ]
-  },
-  {
-    value: 'A路设备 ',
-    label: 'A路设备 ',
-    children: [
-      {
-        value: 'A路配电',
-        label: 'A路配电',
-      },
-      {
-        value: 'A路需量',
-        label: 'A路需量',
-      },
-      {
-        value: 'A路设备管理',
-        label: 'A路设备管理',
-      },
-      {
-        value: 'A路供电平衡',
-        label: 'A路供电平衡',
-      }
-    ]
-  },
-  {
-    value: 'B路设备 ',
-    label: 'B路设备 ',
-    children: [
-      {
-        value: 'B路配电',
-        label: 'B路配电',
-      },
-      {
-        value: 'B路需量',
-        label: 'B路需量',
-      },
-      {
-        value: 'B路设备管理',
-        label: 'B路设备管理',
-      },
-      {
-        value: 'B路供电平衡',
-        label: 'B路供电平衡',
-      }
-    ]
+    value: '拖拽视图',
+    label: '拖拽视图',
+    children: [{}]
   }
 ])
 
@@ -701,13 +1279,25 @@ const menuOptionsCopy = ref([
         label: '机柜编辑',
       },
       {
-        value: '柜列编辑',
-        label: '柜列编辑',
+        value: '机柜解绑',
+        label: '机柜解绑',
+      },
+      {
+        value: '机柜删除',
+        label: '机柜删除'
       },
       {
         value: '柜列移动',
         label: '柜列移动',
       },
+      {
+        value: '柜列编辑',
+        label: '柜列编辑',
+      },
+      {
+        value: '柜列删除',
+        label: '柜列删除'
+      }
     ]
   },
   {
@@ -731,8 +1321,8 @@ const menuOptionsCopy = ref([
         label: '柜列供电平衡',
       },
       {
-        value: '柜列功率因素',
-        label: '柜列功率因素',
+        value: '柜列功率因数',
+        label: '柜列功率因数',
       }
     ]
   },
@@ -765,8 +1355,8 @@ const menuOptionsCopy = ref([
         label: '机柜供电平衡',
       },
       {
-        value: '机柜功率因素',
-        label: '机柜功率因素',
+        value: '机柜功率因数',
+        label: '机柜功率因数',
       }
     ]
   },
@@ -813,6 +1403,88 @@ const menuOptionsCopy = ref([
         label: 'B路供电平衡',
       }
     ]
+  },
+  {
+    value: '母线 ',
+    label: '母线 ',
+    children: [
+      {
+        value: 'A路母线负荷',
+        label: 'A路母线负荷',
+      },
+      {
+        value: 'A路母线配电',
+        label: 'A路母线配电',
+      },
+      {
+        value: 'A路母线需量',
+        label: 'A路母线需量',
+      },
+      {
+        value: 'B路母线负荷',
+        label: 'B路母线负荷',
+      },
+      {
+        value: 'B路母线配电',
+        label: 'B路母线配电',
+      },
+      {
+        value: 'B路母线需量',
+        label: 'B路母线需量',
+      },
+      {
+        value: 'A路母线三相平衡',
+        label: 'A路母线三相平衡',
+      },
+      {
+        value: 'B路母线三相平衡',
+        label: 'B路母线三相平衡',
+      }
+    ]
+  },
+  {
+    value: 'A路设备 ',
+    label: 'A路设备 ',
+    children: [
+      {
+        value: 'A路插接箱配电',
+        label: 'A路插接箱配电',
+      },
+      {
+        value: 'A路插接箱需量',
+        label: 'A路插接箱需量',
+      },
+      {
+        value: 'A路插接箱设备管理',
+        label: 'A路插接箱设备管理',
+      },
+      {
+        value: 'A路插接箱供电平衡',
+        label: 'A路插接箱供电平衡',
+      }
+    ]
+  },
+  {
+    value: 'B路设备 ',
+    label: 'B路设备 ',
+    children: [
+      {
+        value: 'B路插接箱配电',
+        label: 'B路插接箱配电',
+      },
+      {
+        value: 'B路插接箱需量',
+        label: 'B路插接箱需量',
+      },
+      {
+        value: 'B路插接箱设备管理',
+        label: 'B路插接箱设备管理',
+      },
+      {
+        value: 'B路插接箱供电平衡',
+        label: 'B路插接箱供电平衡',
+      }
+    ]
   }
 ])
 
@@ -822,11 +1494,14 @@ const getRoomInfo = async() => {
   try {
     const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
     const res = result;
+    if(!res) {
+      return
+    }
     // const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
     // const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
     // const results = await Promise.all([result1, result2])
     // const res = results[0];
-    console.log("res",res)
+    //console.log("res",res)
     res.aisleList = res.aisleList==null ? [] : res.aisleList
     res.cabinetList = res.cabinetList==null ? [] : res.cabinetList
     updateCfgInfo.value=res;
@@ -845,6 +1520,7 @@ const getRoomInfo = async() => {
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
+      sort: res.sort,
     })
     emit('backData', res)
     
@@ -877,6 +1553,8 @@ const getRoomInfo = async() => {
           id: item.id,
           name: item.aisleName,
           direction: item.direction == 'x' ? 1 : 2,
+          barA: item.barA,
+          barB: item.barB,
           type: 1,
           amount: item.cabinetList.length,
           cabinetList: item.cabinetList,
@@ -892,7 +1570,7 @@ const getRoomInfo = async() => {
         }
         if (i == 0) dataItem.first = true
         if (dataItem.direction == 1) {
-          console.log('----dataItem1', dataItem )
+          //console.log('----dataItem1', dataItem )
           data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
           data[item.yCoordinate][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, {...dataItem,first: false})
         } else {
@@ -908,16 +1586,18 @@ const getRoomInfo = async() => {
       }
     })
     tableData.value = data;
-    console.log("tableData.value",tableData.value)
+    //console.log("tableData.value",tableData.value)
     getRoomStatus(result)
-    handleCssScale()
+    if(isFromHome)
+    updateScale()
+    // handleCssScale()
   } finally {
     loading.value = false
+    // updateScale()
   }
 }
 
 const getRoomInfoNoLoading = async() => {
-  resetForm();
   try {
     const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
     const res = result;
@@ -925,7 +1605,10 @@ const getRoomInfoNoLoading = async() => {
     // const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
     // const results = await Promise.all([result1, result2])
     // const res = results[0];
-    console.log("res",res)
+    //console.log("res",res)
+    if(!res) {
+      return
+    }
     res.aisleList = res.aisleList==null ? [] : res.aisleList
     res.cabinetList = res.cabinetList==null ? [] : res.cabinetList
     updateCfgInfo.value=res;
@@ -944,6 +1627,7 @@ const getRoomInfoNoLoading = async() => {
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
+      sort: res.sort,
     })
     emit('backData', res)
     
@@ -976,6 +1660,8 @@ const getRoomInfoNoLoading = async() => {
           id: item.id,
           name: item.aisleName,
           direction: item.direction == 'x' ? 1 : 2,
+          barA: item.barA,
+          barB: item.barB,
           type: 1,
           amount: item.cabinetList.length,
           cabinetList: item.cabinetList,
@@ -991,7 +1677,7 @@ const getRoomInfoNoLoading = async() => {
         }
         if (i == 0) dataItem.first = true
         if (dataItem.direction == 1) {
-          console.log('----dataItem1', dataItem )
+          //console.log('----dataItem1', dataItem )
           data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
           data[item.yCoordinate][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, {...dataItem,first: false})
         } else {
@@ -1007,11 +1693,26 @@ const getRoomInfoNoLoading = async() => {
       }
     })
     tableData.value = data;
-    console.log("tableData.value",tableData.value)
+    //console.log("tableData.value",tableData.value)
     getRoomStatus(result)
-    handleCssScale()
+    // handleCssScale()
   } finally {
   }
+}
+
+const getColorFromGradient = (value) => {
+    // 对输入值进行归一化处理
+    const normalizedValue = value / 100;
+    const clampedValue = Math.min(Math.max(normalizedValue, 0), 1);
+
+    const startColor = {r: 244,g: 229,b: 162};
+    const endColor = {r: 191,g: 68,b: 76};
+
+    const r = Math.round(startColor.r + (endColor.r - startColor.r) * clampedValue);
+    const g = Math.round(startColor.g + (endColor.g - startColor.g) * clampedValue);
+    const b = Math.round(startColor.b + (endColor.b - startColor.b) * clampedValue);
+
+    return `rgb(${r}, ${g}, ${b})`;
 }
 
 const getRoomStatus = async(res) => {
@@ -1019,32 +1720,51 @@ const getRoomStatus = async(res) => {
     res = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value})
     emit('backData', res)
   }
- // console.log('//////////', tableData.value)
+ // //console.log('//////////', tableData.value)
 }
 
 let lastTime = 0;
 const throttleDelay = 100;
 const tableScale = (flag) => {
-  if(tableScaleValue.value == 0.4 && !flag) {
-    return
-  }
+  // if(tableScaleValue.value == 0.4 && !flag) {
+  //   return
+  // }
   const now = Date.now();
 
   // 如果距离上次执行的时间小于 throttleDelay，则跳过
   if (now - lastTime < throttleDelay) {
     return
   } 
-  console.log(now)
+  //console.log(now)
   lastTime = now;
   if(flag) {
     tableScaleValue.value += 0.2
   } else {
     tableScaleValue.value -= 0.2
   }
-  tableScaleValue.value = Math.max(0.4, tableScaleValue.value);
+  tableScaleValue.value = Math.max(0.1, tableScaleValue.value);
   tableScaleWidth.value = 1/tableScaleValue.value*100
   tableScaleHeight.value = 1/tableScaleValue.value*100
 }
+
+const updateScale = () => {
+  console.log(dragTableViewEle.value,dragTable.value)
+  if (!dragTableViewEle.value) return;
+
+  const containerWidth = dragTableViewEle.value.clientWidth;
+  const containerHeight = dragTableViewEle.value.clientHeight;
+
+  // 计算缩放比例（取宽高中较小的比例，确保完整显示）
+  tableScaleValueStart.value = Math.min(Math.floor(containerHeight/(rowColInfo.row*2.4))/10,Math.floor(containerWidth/(rowColInfo.col*5.4))/10)
+  tableScaleWidthStart.value = 1/tableScaleValueStart.value*100
+  tableScaleHeightStart.value = 1/tableScaleValueStart.value*100
+  
+  tableScaleValue.value = tableScaleValueStart.value
+  tableScaleWidth.value = tableScaleWidthStart.value
+  tableScaleHeight.value = tableScaleHeightStart.value
+
+  console.log(tableScaleValueStart.value,tableScaleWidthStart.value,tableScaleHeightStart.value,containerWidth,containerHeight,rowColInfo)
+};
 
 // 计算出要缩放的比例
 const handleCssScale = () => {
@@ -1057,7 +1777,7 @@ const handleCssScale = () => {
       scaleValue.value = +((containerInfo?.width/tableWidth).toFixed(2))
       ContainerHeight.value = scaleValue.value * tableHeight
       clearTimeout(timer)
-    //  console.log('containerInfotargetBody',scaleValue.value, containerInfo?.width, targetBody, targetBody.getBoundingClientRect(), tableWidth, tableHeight)
+    //  //console.log('containerInfotargetBody',scaleValue.value, containerInfo?.width, targetBody, targetBody.getBoundingClientRect(), tableWidth, tableHeight)
     }, 10)
   })
 }
@@ -1134,6 +1854,7 @@ const resetForm = () => {
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
+    sort: null,
   })
   radio.value = "负载率"
 }
@@ -1145,7 +1866,7 @@ const handleDelete = () => {
     type: 'warning'
   }).then(async () => {
     const res = await MachineRoomApi.deleteRoom({id: roomId.value})
-    console.log('handleDelete', res)
+    //console.log('handleDelete', res)
     editEnable.value = false
     message.success('删除成功')
     getRoomList()
@@ -1154,7 +1875,7 @@ const handleDelete = () => {
 // 处理点击编辑事件
 const handleEdit = () => {
   if (isFromHome) {
-    push({path: '/room/roommonitor/topology', query: { id:roomDownValId.value}})
+    push({path: '/room/roommonitor/topology', query: { id:roomId.value}})
     return
   }
   editEnable.value = true
@@ -1221,88 +1942,473 @@ const handleRightClick = (e) => {
   const rect = container.getBoundingClientRect()
   const offsetX = e.clientX - Math.ceil(rect.left) + 1
   const offsetY = e.clientY - Math.ceil(rect.top) + 1
-  const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  e.target.parentNode.parentNode.id)
-  console.log('handleRightClick', e.target,e.target.classList,e.target.dataset.index, currentId, offsetX, offsetY)
+  const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  ((e.target.parentNode.parentNode.id ? e.target.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.parentNode.id :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.id)))))
+  console.log('handleRightClick', e.target,e.target.classList,e.target.parentNode.parentNode.parentNode.parentNode.parentNode,e.target.dataset.index, currentId, offsetX, offsetY)
+  const cabinetIndex = e.target.dataset.index ? e.target.dataset.index : (e.target.parentNode.dataset.index ? e.target.parentNode.dataset.index :  ((e.target.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.parentNode.dataset.index :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.index)))))
   const lndexX = currentId.split('-')[1]
   const lndexY = currentId.split('-')[0]
   if (!currentId) return
   console.log(tableData.value,tableData.value[lndexY][formParam.value[lndexX]],lndexY,formParam.value[lndexX])
   
-  if(e.target.dataset.index >= 0) {
+  menuOptions.value = []
+  menuOptions.value[0] = JSON.parse(JSON.stringify(menuOptionsCopy.value[0]));
+
+  if(cabinetIndex >= 0) {
+    menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
+
+    menuOptions.value[1] = menuOptionsCopy.value[1]
     menuOptions.value[1].value = tableData.value[lndexY][formParam.value[lndexX]][0].id
     menuOptions.value[1].label = "柜列：" + tableData.value[lndexY][formParam.value[lndexX]][0].name
 
     menuOptions.value[2] = menuOptionsCopy.value[2]
-    menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].id
-    menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetName
+    menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
+    menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetName
+
+    
+
+    
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes) {
+      menuOptions.value[3] = menuOptionsCopy.value[5]
+
+      menuOptions.value[4] = menuOptionsCopy.value[6]
+      menuOptions.value[4].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
+
+      menuOptions.value[5] = menuOptionsCopy.value[7]
+      menuOptions.value[5].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
+
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
+      menuOptions.value[3].value = {
+        devKeyA: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+        devKeyB: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1]
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyA
+      }
+      menuOptions.value[5].value = {
+        devKey: cabinetBoxes.boxKeyB
+      }
+    }
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus) {
+      menuOptions.value[3] = menuOptionsCopy.value[3]
+      menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
+
+      menuOptions.value[4] = menuOptionsCopy.value[4]
+      menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
+      
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyA
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.pduKeyB
+      }
+    }
+      
+    // if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
+    //   menuOptions.value.splice(4,1)
+    // }
+    // if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
+    //   menuOptions.value.splice(3,1)
+    // }
+    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].id) {
+      menuOptions.value.splice(2,1)
+      menuOptions.value[0]?.children?.splice(0,3)
+      console.log(menuOptionsCopy.value[0])
+    } else if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].rackIndices) {
+      menuOptions.value[0]?.children?.splice(1,1)
+    }
+    if(!tableData.value[lndexY][formParam.value[lndexX]][0].id) {
+      menuOptions.value.splice(1,1)
+    }
+  } else if(tableData.value[lndexY][formParam.value[lndexX]][0]?.type == 2) {
+    menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0]
+
+    menuOptions.value[2] = menuOptionsCopy.value[2]
+    menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0]
+    menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].name
 
     menuOptions.value[3] = menuOptionsCopy.value[3]
-    menuOptions.value[3].value = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetkeya
-    menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetkeya
+    menuOptions.value[3].value = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
+    menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
 
     menuOptions.value[4] = menuOptionsCopy.value[4]
-    menuOptions.value[4].value = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetkeyb
-    menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetkeyb
+    menuOptions.value[4].value = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
+    menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
       
-    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetkeyb) {
+    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb) {
       menuOptions.value.splice(4,1)
     }
-    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetkeya) {
+    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya) {
       menuOptions.value.splice(3,1)
     }
-    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[e.target.dataset.index].cabinetName) {
+    if(!tableData.value[lndexY][formParam.value[lndexX]][0].id) {
       menuOptions.value.splice(2,1)
+      console.log(menuOptionsCopy.value[0])
     }
-
-  }
-  let itemId = tableData.value[lndexY][formParam.value[lndexX]]?.[0]?.id
-  let maxX = 26
-  let maxY = 26
-  for(let i = 0;i < rowColInfo.col-(+lndexX);i++) {
-    if(+lndexY+1 == rowColInfo.row || (!itemId && (tableData.value[+lndexY][formParam.value[+lndexX+i]].length || tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length)) || (tableData.value[+lndexY][formParam.value[+lndexX+i]].length && tableData.value[+lndexY][formParam.value[+lndexX+i]][0].id != itemId) || (tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length && tableData.value[+lndexY+1][formParam.value[+lndexX+i]][0].id != itemId)) {
-      maxX = i
-      break
+    menuOptions.value.splice(1,1)
+    menuOptions.value[0]?.children?.splice(3,3)
+    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus && !tableData.value[lndexY][formParam.value[lndexX]][0].rackIndices) {
+      menuOptions.value[0]?.children?.splice(1,1)
     }
+  } else {
+    menuOptions.value.splice(1,4)
   }
-  for(let i = 0;i < rowColInfo.row-(+lndexY);i++) {
-    if(+lndexX+1 == rowColInfo.col || (!itemId && (tableData.value[+lndexY+i][formParam.value[+lndexX]].length || tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length)) || (tableData.value[+lndexY+i][formParam.value[+lndexX]].length && tableData.value[+lndexY+i][formParam.value[+lndexX]][0].id != itemId) || (tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length && tableData.value[+lndexY+i][formParam.value[+lndexX+1]][0].id != itemId)) {
-      maxY = i
-      break
-    }
+  console.log(editEnable.value)
+  if(!editEnable.value) {
+    console.log(111111111)
+    menuOptions.value.splice(0,1)
   }
-  console.log(maxX,maxY)
+  // let itemId = tableData.value[lndexY][formParam.value[lndexX]]?.[0]?.id
+  // let maxX = 26
+  // let maxY = 26
+  // for(let i = 0;i < rowColInfo.col-(+lndexX);i++) {
+  //   if(+lndexY+1 == rowColInfo.row || (!itemId && (tableData.value[+lndexY][formParam.value[+lndexX+i]].length || tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length)) || (tableData.value[+lndexY][formParam.value[+lndexX+i]].length && tableData.value[+lndexY][formParam.value[+lndexX+i]][0].id != itemId) || (tableData.value[+lndexY+1][formParam.value[+lndexX+i]].length && tableData.value[+lndexY+1][formParam.value[+lndexX+i]][0].id != itemId)) {
+  //     maxX = i
+  //     break
+  //   }
+  // }
+  // for(let i = 0;i < rowColInfo.row-(+lndexY);i++) {
+  //   if(+lndexX+1 == rowColInfo.col || (!itemId && (tableData.value[+lndexY+i][formParam.value[+lndexX]].length || tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length)) || (tableData.value[+lndexY+i][formParam.value[+lndexX]].length && tableData.value[+lndexY+i][formParam.value[+lndexX]][0].id != itemId) || (tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length && tableData.value[+lndexY+i][formParam.value[+lndexX+1]][0].id != itemId)) {
+  //     maxY = i
+  //     break
+  //   }
+  // }
+  // //console.log(maxX,maxY)
   operateMenu.value = {
     left: offsetX + 'px',
     top: offsetY + 'px',
     show: true,
     lndexX, // 当前列
     lndexY, // 当前行
-    maxlndexX: (rowColInfo.col - (+lndexX)) < maxX ? (rowColInfo.col - (+lndexX)) : maxX,
-    maxlndexY: (rowColInfo.row - (+lndexY)) < maxY ? (rowColInfo.row - (+lndexY)) : maxY,
+    maxlndexX: 26,
+    maxlndexY: 26,
+    xLength: rowColInfo.col,
+    yLength: rowColInfo.row
   }
-  console.log('editEnable.value', editEnable.value)
+  //console.log('editEnable.value', editEnable.value)
 }
 
 const handleMenu = (value) => {
-  console.log(value)
+  //console.log(value)
   operateMenu.value.show = false
-  if(value[1] == '柜列配电') {
-    console.log({ id: value[0], roomId: roomId.value })
-    push({path: '/aisle/aislemonitor/columnHome', query: { id: value[0], roomId: roomId.value }})
-  } else if(value[1] == '柜列用能') {
-    push({path: '/aisle/aislemonitor/aisleenergydetail', query: { roomId: roomId.value, id: value[0],location: rowColInfo.roomName }})
-  } else if(value[1] == '柜列需量') {
-    push({path: '/aisle/aislemonitor/aislerequirement', query: { openDetailFlag: 1, id: value[0],location: rowColInfo.roomName + "-" + tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name }})
-  } else if(value[1] == '柜列供电平衡') {
-    push({path: '/aisle/aislemonitor/aislebalance', query: { openDetailFlag: 1, id: value[0]}})
+  switch (value[1]) {
+    case '柜列配电':
+      push({ 
+        path: '/aisle/aislemonitor/columnHome', 
+        query: { id: value[0], roomId: roomId.value } 
+      });
+      break;
+    
+    case '柜列用能':
+      push({ 
+        path: '/aisle/aislemonitor/aisleenergydetail', 
+        query: { roomId: roomId.value, id: value[0], location: rowColInfo.roomName } 
+      });
+      break;
+    
+    case '柜列需量':
+      push({ 
+        path: '/aisle/aislemonitor/aislerequirement', 
+        query: { 
+          openDetailFlag: 1, 
+          id: value[0], 
+          location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
+        } 
+      });
+      break;
+    
+    case '柜列供电平衡':
+      push({ 
+        path: '/aisle/aislemonitor/aislebalance', 
+        query: { openDetailFlag: 1, id: value[0] } 
+      });
+      break;
+
+    case '柜列功率因数':
+      push({ 
+        path: '/aisle/aislemonitor/aislepowerfactor', 
+        query: { 
+          openDetailFlag: 1, 
+          id: value[0], 
+          location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
+        } 
+      });
+      break;
+
+    case '机柜负荷':
+      push({ 
+        path: '/cabinet/cab/cabinetPowerLoadDetail', 
+        query: { 
+          cabinet: value[0].id, 
+          roomId: value[0].roomId,
+          roomName: rowColInfo.roomName,
+          cabinetName: value[0].cabinetName
+        } 
+      });
+      break;
+
+    case '机柜配电':
+      push({ 
+        path: '/cabinet/cab/detail', 
+        state: { 
+          id: value[0].id, 
+          roomId: value[0].roomId,
+          type: 'hour',
+          location: rowColInfo.roomName,
+          cabinetName: value[0].cabinetName
+        } 
+      });
+      break;
+
+    case '机柜温度':
+      push({ 
+        path: '/cabinet/cab/cabinetenvdetail', 
+        query: { 
+          id: value[0].id
+        } 
+      });
+      break;
+
+    case '机柜用能':
+      push({ 
+        path: '/cabinet/cab/energyDetail', 
+        query: { 
+          cabinetId: value[0].id,
+          cabinetroomId: value[0].roomId,
+          roomName: rowColInfo.roomName,
+          cabinetName: value[0].cabinetName
+        } 
+      });
+      break;
+
+    case '机柜供电平衡':
+      push({ 
+        path: '/cabinet/cab/balance', 
+        query: { 
+          openDetailFlag: 1, 
+          id: value[0].id
+        } 
+      });
+      break;
+
+    case '机柜功率因数':
+      openPFDetail({
+        id: value[0].id,
+        cabinetName: value[0].cabinetName
+      })
+      break;
+
+    case 'A路母线负荷':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/powerLoadDetail', 
+        state: { 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+      
+    case 'B路母线负荷':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/powerLoadDetail', 
+        state: { 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路母线配电':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/buspowerdetail', 
+        query: { 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+      
+    case 'B路母线配电':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/buspowerdetail', 
+        query: { 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路配电':
+    case 'B路配电':
+      push({ 
+        path: '/pdu/power/pdudisplayscreen', 
+        query: { 
+          devKey: value[0].devKey
+        } 
+      });
+      break;
+
+    case 'A路插接箱配电':
+    case 'B路插接箱配电':
+      push({ 
+        path: '/bus/busmonitor/boxmonitor/boxpowerdetail', 
+        query: { 
+          devKey: value[0].devKey,
+          roomName: rowColInfo.roomName,
+        } 
+      });
+      break;
+
+    case 'A路母线需量':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busrequirement', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+
+    case 'B路母线需量':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busrequirement', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路需量':
+    case 'B路需量':
+      push({ 
+        path: '/pdu/power/pdurequirement', 
+        query: { 
+          devKey: value[0].devKey,
+          pduId: 10020,
+          openDetailFlag: 1
+        } 
+      });
+      break;
+
+    case 'A路母线三相平衡':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busbalance', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+
+    case 'B路母线三相平衡':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busbalance', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路插接箱供电平衡':
+    case 'B路插接箱供电平衡':
+      push({ 
+        path: '/bus/busmonitor/boxmonitor/boxbalance', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKey,
+          roomName: rowColInfo.roomName
+        } 
+      });
+      break;
+
+    case 'A路供电平衡':
+    case 'B路供电平衡':
+      push({ 
+        path: '/pdu/power/curbalance/index', 
+        query: { 
+          devKey: value[0].devKey,
+          pduId: 10020,
+          openDetailFlag: 1
+        } 
+      });
+      break;
+    
+    case '拖拽视图':
+      dragTableView();
+      break;
+    
+    case '机柜编辑':
+      addCabinet('edit', value[0]);
+      break;
+    
+    case '机柜删除':
+      deleteCabinet(value[0], false);
+      break;
+    
+    case '机柜解绑':
+      deleteCabinet(value[0], true);
+      break;
+    
+    case '柜列编辑':
+      editMachine();
+      break;
+    
+    case '柜列删除':
+      deleteMachine();
+      break;
+    
+    default:
+      console.warn('未知操作类型:', value[1]);
+      break;
   }
+}
+
+const deleteCabinet = (cabItem,flag) => {
+  if(!flag && (cabItem.cabinetBoxes || cabItem.cabinetPdus || cabItem.rackIndices)) {
+    message.warning(`该机柜已绑定，无法删除，请先删除绑定关系`)
+    return
+  }
+  let messageTooltip = flag ? '确认解绑吗？' : '确认删除吗？'
+  ElMessageBox.confirm(messageTooltip, '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    let cabinetRes = null
+    if(cabItem.cabinetBoxes) {
+      console.log("aaaaaa---cabItem",cabItem)
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 2
+      })
+    } else if(cabItem.cabinetPdus) {
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 1
+      })
+    } else if(cabItem.rackIndices) {
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 3
+      })
+    } else if(!flag) {
+      cabinetRes = await CabinetApi.deleteCabinetInfo({
+        id: cabItem.id,
+        type: 4
+      })
+    }
+    if(cabinetRes) {
+      message.success(flag ? '解绑成功' : '删除成功')
+    } else {
+      message.success(flag ? '解绑失败' : '删除失败')
+    }
+    getRoomInfoNoLoading()
+  })
 }
 
 // 判断是否展示添加菜单项
 const showMenuAdd = computed(() => {
   const lndexX = operateMenu.value.lndexX
   const lndexY = operateMenu.value.lndexY
-  console.log('tableData.value[lndexY][formParam.value[lndexX]]', tableData.value[lndexY][formParam.value[lndexX]], lndexX, lndexY)
+  //console.log('tableData.value[lndexY][formParam.value[lndexX]]', tableData.value[lndexY][formParam.value[lndexX]], lndexX, lndexY)
   return !(tableData.value[lndexY][formParam.value[lndexX]].length > 0)
 })
 // 拖拽开始的事件
@@ -1311,18 +2417,18 @@ const onStart = ({from}) => {
   const Y = from.id.split('-')[0]
   const target = tableData.value[Y][formParam.value[X]][0]
   movingInfo.value = target
-  //console.log('onStssasrt', target)
+  ////console.log('onStssasrt', target)
 }
 // 拖拽结束的事件
 const onEnd = ({from, to}) => {
- console.log('onsEnd',tableData.value, from, to, from.id, to.id)
+ //console.log('onsEnd',tableData.value, from, to, from.id, to.id)
   if (from.id != to.id) { // 发生移动才处理
     const X = +to.id.split('-')[1]
     const Y = +to.id.split('-')[0]
     const X1 = +from.id.split('-')[1]
     const Y1 = +from.id.split('-')[0]
     const targetTo = tableData.value[Y][formParam.value[X]][0]
-    console.log('value*******', targetTo)
+    //console.log('value*******', targetTo,X+1,Y+1)
     
     if (targetTo.type == 1) {
       if (targetTo.direction == 1) {
@@ -1349,8 +2455,48 @@ const onEnd = ({from, to}) => {
       tableData.value[Y1+1][formParam.value[X1]] = []
       tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
     }
-    console.log('tableData.value*******', tableData.value)
+    //console.log('tableData.value*******', tableData.value)
+    moveMachine(targetTo,X+1,Y+1)
   }
+}
+const moveMachine = async (data,x,y) => {
+  let res
+  if(data.type == 1) {
+    res = await MachineRoomApi.saveRoomAisle({
+        id:data.id,
+        roomId: roomId.value,
+        aisleName:data.name,
+        aisleLength:data.amount,
+        xCoordinate:x,
+        yCoordinate:y,
+        direction:data.direction == 1 ? 'x' : 'y',
+        powerCapacity:data.powerCapacity,
+        eleAlarmDay:data.eleAlarmDay,
+        eleAlarmMonth:data.eleAlarmMonth,
+        eleLimitDay:data.eleLimitDay,
+        eleLimitMonth:data.eleLimitMonth
+    }) 
+  } else {
+    res = await MachineRoomApi.saveRoomCabinet({
+      id: data.id,
+      roomId: roomId.value,
+      cabinetName: data.name,
+      cabinetHeight: data.cabinetHeight,
+      xCoordinate:x,
+      yCoordinate:y,
+      powerCapacity:data.powerCapacity,
+      eleAlarmDay: data.eleAlarmDay,
+      eleLimitDay: data.eleLimitDay,
+      eleAlarmMonth: data.eleAlarmMonth,
+      eleLimitMonth: data.eleLimitMonth
+    })
+  }
+  if(res) {
+    message.success("移动成功")
+  } else {
+    message.success("移动失败")
+  }
+  getRoomInfoNoLoading()
 }
 //移动表格视图
 const dragTableView = () => {
@@ -1358,6 +2504,7 @@ const dragTableView = () => {
   operateMenu.value.show = false
 }
 const onMouseDown = (e) => {
+
   if (dragCursor.value == 'grab') {
     dragCursor.value = 'grabbing';
     startX.value = e.pageX;
@@ -1403,8 +2550,22 @@ const onSelectStart = (e) => {
   }
 }
 
-// 增加机柜弹框
-const addMachine = () => {
+// 增加/编辑机柜弹框
+const addCabinet = async (type: string, cabItem?: object) => {
+  if (type == 'add') {
+    machineFormCabinet.value.open(type, null,operateMenu.value,null)
+  } else if (type == 'edit' && cabItem) {
+    try {
+      console.log(cabItem)
+      machineFormCabinet.value.open(type, cabItem,operateMenu.value,tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0])
+    } finally {
+    }
+  }
+  operateMenu.value.show = false
+}
+
+// 增加柜列弹框
+const addAisle = () => {
   if(!operateMenu.value.maxlndexX && !operateMenu.value.maxlndexY) {
     message.warning("当前位置空间不足，请选择其他位置")
     operateMenu.value.show = false
@@ -1414,12 +2575,12 @@ const addMachine = () => {
   machineForm.value.open('add', null, operateMenu.value)
   operateMenu.value.show = false
 }
-// 编辑机柜弹框
+// 编辑柜列弹框
 const editMachine = () => {
   aisleFlag.value = 2;
   const Y = operateMenu.value.lndexY;
   const X = formParam.value[operateMenu.value.lndexX];
-  console.log("machineForm",machineForm)
+  //console.log("machineForm",machineForm,{...tableData.value[Y][X][0]})
   machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value);
   operateMenu.value.show = false;
 }
@@ -1433,7 +2594,7 @@ const handleJump = (data) => {
     const X = formParam.value[operateMenu.value.lndexX];
     target = tableData.value[Y][X][0];
   }
- // console.log('target', target)
+ // //console.log('target', target)
   if (!target.id) {
     message.error(`该${target.type == 1 ? '柜列' : '机柜'}暂未保存绑定，无法跳转`)
     return
@@ -1450,12 +2611,12 @@ const handleJump = (data) => {
 }
 // 删除机柜
 const deleteMachine = () => {
-  // console.log("tableData.value",tableData.value)
+  // //console.log("tableData.value",tableData.value)
    const Y = operateMenu.value.lndexY
     const X = formParam.value[operateMenu.value.lndexX]
     const target = JSON.parse(JSON.stringify(tableData.value[Y][X][0])) // 要删除的目标
- console.log('删除机柜',tableData.value[Y][X], target,Y,X)
-    console.log(target)
+ //console.log('删除机柜',tableData.value[Y][X], target,Y,X)
+    //console.log(target)
   if (target.type && target.type == 1 && !target.canDelete) {
     message.warning(`该柜列有机柜，无法删除，请先删除机柜`)
     return
@@ -1476,7 +2637,7 @@ const deleteMachine = () => {
         for (let i = 0; i < target.originAmount; i++) {
           if (target.direction == 1) {
             // const charCode = X.charCodeAt(0) + i
-        //    console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
+        //    //console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
             tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
             tableData.value[+Y + 1][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
           } else {
@@ -1486,98 +2647,219 @@ const deleteMachine = () => {
         }
         message.success('删除成功')
       }
-      // console.log("tableData.value",tableData.value)
+      // //console.log("tableData.value",tableData.value)
     } else if(target.type && target.type == 2) {
       const cabinetRes = await CabinetApi.deleteCabinetInfo({
         id: target.id,
         type: 4
       })
-      console.log("tableData.value",tableData.value)
+      //console.log("tableData.value",tableData.value)
       if(cabinetRes != null || cabinetRes != "") {
         // getRoomInfoNoLoading()
         tableData.value[Y][X].splice(0, 1)
         tableData.value[+Y + 1][X].splice(0, 1)
         message.success('删除成功')
       }
-      console.log("tableData.value",tableData.value)
+      //console.log("tableData.value",tableData.value)
     }
   })
   operateMenu.value.show = false
 }
 // 处理增加/编辑机柜
 const handleChange = async(data) => {
-  const X =getColumnCharCodeToNumber(formParam.value[operateMenu.value.lndexX]);
-  const Y = operateMenu.value.lndexY; // 当前机柜/机柜列所处行
   let aisleFlagId:any = null;
   let messageAisleFlag = "保存成功！";
+  let messageAisleFlagError = "保存失败！";
   if(aisleFlag.value == 2){
       aisleFlagId = data.id; 
       messageAisleFlag = "修改成功！";
+      messageAisleFlagError = "修改失败！"
   }
   if(data.type == 1){
-      const aisleRes = await MachineRoomApi.saveRoomAisle({
-          id:aisleFlagId,
+      let asileObject = {id:aisleFlagId,
           roomId: roomId.value,
           aisleName:data.name,
           aisleLength:data.amount,
-          xCoordinate:X+1,
-          yCoordinate:+Y+1,
+          xCoordinate:data.xCoordinate,
+          yCoordinate:data.yCoordinate,
           direction:data.direction == 1 ? 'x' : 'y',
           powerCapacity:data.powerCapacity,
           eleAlarmDay:data.eleAlarmDay,
           eleAlarmMonth:data.eleAlarmMonth,
           eleLimitDay:data.eleLimitDay,
-          eleLimitMonth:data.eleLimitMonth
-      }) 
+          eleLimitMonth:data.eleLimitMonth,
+          cabinetFirstVO: data.cabinetFirstVO,
+          pduBar: data.pduBar
+      }
+
+      const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
+
+      if(flagRes) {
+        message.error(messageAisleFlagError + "可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+        return
+      }
+
+      const aisleRes = await MachineRoomApi.saveRoomAisle(asileObject) 
       if(aisleRes != null || aisleRes != "") {
-        if(tableData.value[+Y][formParam.value[X]].length) {
-          let lastMount = tableData.value[+Y][formParam.value[X]][0].amount
-          for(let i=  0; i < lastMount; i++) {
-            if (data.direction == 1) {
-              tableData.value[+Y][formParam.value[X+i]] = []
-              tableData.value[+Y+1][formParam.value[X+i]] = []
-            } else {
-              tableData.value[+Y+i][formParam.value[X]] = []
-              tableData.value[+Y+i][formParam.value[X+1]] = []
-            }
-          }
-        }
+        // if(tableData.value[+Y][formParam.value[X]].length) {
+        //   let lastMount = tableData.value[+Y][formParam.value[X]][0].amount
+        //   for(let i=  0; i < lastMount; i++) {
+        //     if (data.direction == 1) {
+        //       tableData.value[+Y][formParam.value[X+i]] = []
+        //       tableData.value[+Y+1][formParam.value[X+i]] = []
+        //     } else {
+        //       tableData.value[+Y+i][formParam.value[X]] = []
+        //       tableData.value[+Y+i][formParam.value[X+1]] = []
+        //     }
+        //   }
+        // }
         
-        if (data.direction == 1) {
-          tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
-          tableData.value[+Y+1][formParam.value[X]] = [{...data,first: false}]
-        } else {
-          tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
-          tableData.value[+Y][formParam.value[X+1]] = [{...data,first: false}]
-        }
-        for (let i=  1; i < data.amount; i++) {
-          if (data.direction == 1) {
-            tableData.value[+Y][formParam.value[X+i]] = [{...data,first: false}]
-            tableData.value[+Y+1][formParam.value[X+i]] = [{...data,first: false}]
-          } else {
-            tableData.value[+Y+i][formParam.value[X]] = [{...data,first: false}]
-            tableData.value[+Y+i][formParam.value[X+1]] = [{...data,first: false}]
-          }
-        }
+        // if (data.direction == 1) {
+        //   tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
+        //   tableData.value[+Y+1][formParam.value[X]] = [{...data,first: false}]
+        // } else {
+        //   tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
+        //   tableData.value[+Y][formParam.value[X+1]] = [{...data,first: false}]
+        // }
+        // for (let i=  1; i < data.amount; i++) {
+        //   if (data.direction == 1) {
+        //     tableData.value[+Y][formParam.value[X+i]] = [{...data,first: false}]
+        //     tableData.value[+Y+1][formParam.value[X+i]] = [{...data,first: false}]
+        //   } else {
+        //     tableData.value[+Y+i][formParam.value[X]] = [{...data,first: false}]
+        //     tableData.value[+Y+i][formParam.value[X+1]] = [{...data,first: false}]
+        //   }
+        // }
+        getRoomInfoNoLoading()
         message.success(messageAisleFlag);
       }
-  }else{
-      const cabinetRes = await MachineRoomApi.saveRoomCabinet({
-          id:aisleFlagId,
-          roomId: roomId.value,
-          cabinetName: data.name,
-          cabinetHeight: data.cabinetHeight,
-          xCoordinate:X+1,
-          yCoordinate:+Y+1,
-          powerCapacity:data.powerCapacity,
-          eleAlarmDay: data.eleAlarmDay,
-          eleLimitDay: data.eleLimitDay,
-          eleAlarmMonth: data.eleAlarmMonth,
-          eleLimitMonth: data.eleLimitMonth
-      })
-      if(cabinetRes != null || cabinetRes != "") {
-        message.success(messageAisleFlag);
-      }
+  }
+  // else{
+      // const cabinetRes = await MachineRoomApi.saveRoomCabinet({
+      //     id:aisleFlagId
+      //     roomId: roomId.value,
+      //     cabinetName: data.name,
+      //     cabinetHeight: data.cabinetHeight,
+      //     xCoordinate:X+1,
+      //     yCoordinate:+Y+1,
+      //     powerCapacity:data.powerCapacity,
+      //     eleAlarmDay: data.eleAlarmDay,
+      //     eleLimitDay: data.eleLimitDay,
+      //     eleAlarmMonth: data.eleAlarmMonth,
+      //     eleLimitMonth: data.eleLimitMonth
+      // })
+      // if(cabinetRes != null || cabinetRes != "") {
+      //   message.success(messageAisleFlag);
+      // }
+  // }
+}
+
+const queryParamsPF = reactive({
+  pageNo: 1,
+  pageSize: 24,
+  cabinetIds : [],
+})as any
+const pfESList = ref({}) as any
+const pfTableList = ref([]) as any
+const exportLoading = ref(false) // 导出的加载中
+const detailVis = ref(false)
+
+const openPFDetail = async (row) =>{
+  queryParamsPF.cabinetName = row.cabinetName
+  queryParamsPF.cabinetIds = [row.id];
+  queryParamsPF.startTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
+  console.log('row',row);
+  await getDetail();
+  detailVis.value = true;
+}
+
+/** 查询列表 */
+const getDetail = async () => {
+  const data = await IndexApi.getCabinetPFDetail(queryParamsPF);
+  console.log('数据',data);
+  pfESList.value = data?.chart;
+  pfESList.value?.powerFactorAvgValueTotal?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+  pfESList.value?.powerFactorAvgValueA?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+  pfESList.value?.powerFactorAvgValueB?.forEach((obj) => {
+    obj = obj?.toFixed(2);
+  });
+
+  pfTableList.value = data?.table;
+  pfTableList.value?.forEach((obj) => {
+    obj.factor_total_avg_value = obj?.factor_total_avg_value?.toFixed(2);
+    obj.factor_a_avg_value = obj?.factor_a_avg_value?.toFixed(2);
+    obj.factor_b_avg_value = obj?.factor_b_avg_value?.toFixed(2);
+  });
+}
+
+const subtractOneDay = () => {
+  var date = new Date(queryParamsPF.startTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() - 1); // 减去一天
+
+  queryParamsPF.startTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const addtractOneDay = () => {
+  var date = new Date(queryParamsPF.startTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() + 1); // 减去一天
+
+  queryParamsPF.startTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const handleDayPick = async () => {
+
+  if(queryParamsPF?.startTime ){
+    await getDetail();
+    
+  } 
+}
+
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm();
+    // 发起导出
+    queryParamsPF.pageNo = 1;
+    exportLoading.value = true;
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getCabinetPFDetailExcel(queryParamsPF, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '功率因数详细.xlsx');
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error);
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
+}
+
+const getCabinetColorAll = async () => {
+  const res = await IndexApi.getCabinetColorAll()
+  if (res != null) {
+    tempList.value = res
   }
 }
 
@@ -1627,6 +2909,7 @@ const submitSetting = async() => {
       eleAlarmMonth: rowColInfo.eleAlarmMonth,
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
+      sort:rowColInfo.sort,
     })
     
     if(res != null || res != "")
@@ -1634,7 +2917,7 @@ const submitSetting = async() => {
     dialogVisible.value = false;
     roomId.value = res;
    } catch (error) {
-    console.log(error)
+    //console.log(error)
    }
    
    getRoomList();
@@ -1657,14 +2940,14 @@ const handleSubmit = async() => {
   const aisleList = [] as any
   const cabinetList = [] as any
   if (!isAddRoom.value)
-  console.log(rowColInfo.row)
-  console.log(rowColInfo.row)
+  //console.log(rowColInfo.row)
+  //console.log(rowColInfo.row)
   for(let i = 0; i < rowColInfo.row; i++) {
     for(let j = 0; j < rowColInfo.col; j++) {
-    //  console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
+    //  //console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
       const target = tableData.value[i][getTableColCharCode(j)][0]
       if (target && target.type == 1 && target.first) {
-        console.log('target.......', target)
+        //console.log('target.......', target)
         aisleList.push({
           id: target.id,
           aisleName: target.name,
@@ -1693,8 +2976,8 @@ const handleSubmit = async() => {
     }
   }
   try {
-    console.log('aisleListend.......', aisleList)
-    console.log('cabinetList.......', cabinetList)
+    //console.log('aisleListend.......', aisleList)
+    //console.log('cabinetList.......', cabinetList)
     loading.value = true
     const res = await MachineRoomApi.saveRoomDetail({
         id: isAddRoom.value ? '' : roomId.value,
@@ -1710,6 +2993,7 @@ const handleSubmit = async() => {
         eleAlarmMonth: rowColInfo.eleAlarmMonth,
         eleLimitDay: rowColInfo.eleLimitDay,
         eleLimitMonth: rowColInfo.eleLimitMonth,
+        sort:rowColInfo.sort,
         aisleList,
         cabinetList
     })
@@ -1743,10 +3027,12 @@ watch(() => containerInfo, (val) => {
 },{immediate: true})
 
 onMounted(() => {
-  flashListTimer.value = setInterval((getRoomStatus), 5000);
+  getCabinetColorAll()
+  roomsId.roomDownValIds = Number(query.id)
+  flashListTimer.value = setInterval((getRoomInfoNoLoading), 5000);
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
-    // console.log(event)
+    // //console.log(event)
     if (event.button == 0 && operateMenu.value.show && element.className != 'menu_item' && element.className != 'el-cascader-node__label') {
       operateMenu.value.show = false
     }
@@ -1788,7 +3074,7 @@ onUnmounted(() => {
   .box {
     width: 10px;
     height: 10px;
-    border-radius: 2px;
+    border-radius: 50%;
     margin-left: 10px;
     margin-right: 5px;
   }
@@ -1796,7 +3082,8 @@ onUnmounted(() => {
 .toolbar {
   display: flex;
   justify-content: space-between;
-  align-items:center
+  align-items:center;
+  height: 3vh
 }
 .dragContainer {
   // transform-origin: left right;
@@ -1819,17 +3106,20 @@ onUnmounted(() => {
     box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
     z-index: 999;
     .menu_item {
-      width: 70px;
+      width: 140px;
       height: 30px;
       padding: 20px 10px;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
+      font-size: 14px;
+      color: #606266;
     }
     .menu_item:hover {
       background-color: rgb(231, 245, 255);
       color: rgb(82, 177, 255);
+      cursor: pointer;
     }
   }
   .dragTd {
@@ -1838,7 +3128,7 @@ onUnmounted(() => {
     .dragChild {
       width: 100%;
       height: 100%;
-      min-height: 20px;
+      min-height: 39px;
       box-sizing: border-box;
       display: flex;
       border: 1px solid #000;
@@ -1847,29 +3137,29 @@ onUnmounted(() => {
       }
       // align-items: center;
       .dragSon {
-        min-height: 20px;
+        min-height: 39px;
         flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        background-color: #effaff;
+        background-color: #f5f7fa;
         border-right: 1px solid #bed1ff;
         &>div {
-          min-height: 20px;
+          min-height: 39px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
       }
       .fill {
-        background-color: #0cff2c;
+        background-color: #f5f7fa;
       }
     }
     .dragChildCol {
       width: 100%;
       height: 100%;
-      min-height: 20px;
+      min-height: 39px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -1879,21 +3169,27 @@ onUnmounted(() => {
       }
       .dragSon {
         flex: 1;
-        min-height: 20px;
+        min-height: 39px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #effaff;
+        background-color: #f5f7fa;
         border-bottom: 1px solid #bed1ff;
+        &>div {
+          min-height: 39px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       }
       .fill {
-        background-color: #0cff2c;
+        background-color: #f5f7fa;
       }
     }
   }
   .warnDrag {
-    min-height: 20px;
+    min-height: 39px;
     height: 100%;
     width: 100%;
     display: flex;
@@ -1903,11 +3199,11 @@ onUnmounted(() => {
     background-color: rgb(255, 219, 12);
   }
   .normalDrag {
-    min-height: 20px;
+    min-height: 39px;
     height: 100%;
     width: 100%;
     // height: 40px;
-    background-color: #effaff;
+    background-color: #f5f7fa;
     box-sizing: border-box;
     border: 1px solid #000;
       &:hover {
@@ -1919,7 +3215,7 @@ onUnmounted(() => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      min-height: 20px;
+      min-height: 39px;
     }
   }
 }
@@ -1928,6 +3224,13 @@ onUnmounted(() => {
   & > div {
     flex: 1;
   }
+}
+.custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  margin-top:-50px;
 }
 
 :deep(.el-card__body) {
@@ -1950,10 +3253,11 @@ onUnmounted(() => {
 :deep(.dragTable .el-table__cell .cell) {
   width: 100%;
   height: 100%;
-  min-height: 20px;
+  min-height: 39px;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 40px;
   padding: 0;
   & > div {
     height: 100%;

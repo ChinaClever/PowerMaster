@@ -214,4 +214,14 @@ public class CabinetEnvAndHumRes {
     @Schema(description = "热通道温度颜色")
     private String hotAverageTemColor;
 
+    @Schema(description = "热通道最大温度")
+    private BigDecimal hotMaxTem;
+    @Schema(description = "热通道最大湿度")
+    private BigDecimal hotMaxHum;
+    //冷 平均
+    @Schema(description = "冷通道最大湿度")
+    private BigDecimal iceMaxHum;
+    @Schema(description = "冷通道最大温度")
+    private BigDecimal iceMaxTem;
+
 }

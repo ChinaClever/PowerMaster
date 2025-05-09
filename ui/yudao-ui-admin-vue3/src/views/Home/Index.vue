@@ -9,7 +9,7 @@
                 <img src="@/assets/imgs/avatar.gif" alt="" />
               </el-avatar>
               <div>
-                <div class="text-20px">
+                <div class="text-20px font-700">
                   PowerMaster系统安全守护第 {{devInfo.days}} 天
                 </div>
                 <div class="mt-10px text-14px text-gray-500">
@@ -23,17 +23,17 @@
             <div class="h-70px flex items-center justify-end lt-sm:mt-10px">
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">机柜数</div>
-                <span class="text-20px">{{devInfo.cabNum}}</span>
+                <span class="text-20px" style="font-weight: bold">{{devInfo.cabNum}}</span>
               </div>
               <el-divider direction="vertical" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">已开通</div>
-                <span class="text-20px">{{devInfo.cabUse}}</span>
+                <span class="text-20px" style="font-weight: bold">{{devInfo.cabUse}}</span>
               </div>
               <el-divider direction="vertical" border-style="dashed" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">未启用</div>
-                <span class="text-20px">{{devInfo.cabUnused}}</span>
+                <span class="text-20px" style="font-weight: bold">{{devInfo.cabUnused}}</span>
               </div>
             </div>
           </el-col>
@@ -47,34 +47,34 @@
       <el-card shadow="never">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>机房状态</span>
+            <span class="font-700">机房状态</span>
             <div class="roomPowerBtns">
-              <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
-              <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
-              <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>
+              <el-button @click="valueMode = 0;" :color="valueMode == 0 ? '#00778c' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房功率</el-button>                             
+              <el-button @click="valueMode = 1;" :color="valueMode == 1 ? '#00778c' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房温度</el-button>            
+              <el-button @click="valueMode = 2;" :color="valueMode == 2 ? '#00778c' : ''" size="small"><Icon icon="ep:grid" style="margin-right: 4px" />机房对比</el-button>
               <el-button @click="push({path: '/room/roommonitor/roompower'})" size="small">全屏</el-button>
             </div>
           </div>
         </template>
-        <RoomPower :isFromHome="true" :valueButton="valueMode" />
+        <RoomPower :isFromHome="true" :valueButton="valueMode" @back-data="handleBackData" />
       </el-card>
 
-      <el-card shadow="never" class="mt-8px">
+      <el-card shadow="never" class="mt-8px" style="height: 32vh">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>用电分布</span>
-            <div class="flex text-12px">
+            <span class="font-700">用电分布</span>
+            <div class="flex text-12px items-center">
               <template v-for="(btn, index) in powBtns" :key="index">
                 <div class="flex mr-8px" style="cursor: pointer;" @click="switchPowBtn(index)">
-                  <div class="w-25px h-15px mr-2px" :style="{backgroundColor: prePowBtn == index ? btn.backgroundColor : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                  <div class="w-25px mr-2px" :style="{backgroundColor: prePowBtn == index ? btn.backgroundColor : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
                   <div>{{btn.name}}</div>
                 </div>
               </template>
             </div>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated>
-          <el-row :gutter="20" justify="space-between">
+        <el-skeleton :loading="loading" :rows="5" animated style="height: 20vh">
+          <el-row :gutter="20" justify="space-between" style="height: 20vh">
             <el-col :xl="6" :lg="6" :md="24" :sm="24" :xs="24">
               <el-card shadow="hover">
                 <el-skeleton :loading="loading" animated>
@@ -82,10 +82,10 @@
                     <div>总用电量</div>
                     <div>{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(2) : '0.00'}}kW·h</div>
                   </div> -->
-                  <div class="w-full h-210px flex" style="flex-direction: column; align-items: center;justify-content: center;position: relative;">
-                    <el-progress type="dashboard" :percentage="Math.min(eqInfo[powBtns[prePowBtn].totalParam]/eqInfo[oldPowList[prePowBtn]]*100,100)" width="200">
+                  <div class="w-full h-205px flex" style="flex-direction: column; align-items: center;justify-content: center;position: relative;">
+                    <el-progress type="dashboard" :percentage="Math.min(eqInfo[powBtns[prePowBtn].totalParam]/eqInfo[oldPowList[prePowBtn]]*100,100)" width="200" stroke-width="20" :color="progressColor[prePowBtn]">
                       <!-- <span v-if="eqInfo[powBtns[prePowBtn].totalParam] > 1000" class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? (eqInfo[powBtns[prePowBtn].totalParam]/1000).toFixed(2) : '0.00'}}</span> -->
-                      <span class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(2) : '0.00'}}</span>
+                      <span class="percentage-value">{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(0) : '0'}}</span>
                       <span class="percentage-label">总用电量</span>
                       <!-- <span class="percentage-unit">kW·h</span> -->
                     </el-progress>
@@ -98,7 +98,7 @@
               <div>
                 <el-card shadow="hover" :style="computedEnInfo">
                   <el-skeleton :loading="loading" animated>
-                    <Echart :options="eqOptionsData" :height="210" :style="computedEnInfoWidth" />
+                    <Echart :options="eqOptionsData" :height="190" :style="computedEnInfoWidth" />
                   </el-skeleton>
                 </el-card>
               </div>
@@ -108,14 +108,14 @@
       </el-card>
     </el-col>
     <el-col :xl="6" :lg="6" :md="24" :sm="24" :xs="24" class="mb-8px">
-      <el-card shadow="never" class="mb-8px">
+      <el-card shadow="never" style="margin-bottom: 1vh">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>告警统计</span>
+            <span class="font-700">告警统计</span>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated>
-          <el-row class="flex justify-between">
+        <el-skeleton :loading="loading" animated style="height: 16vh">
+          <el-row class="flex justify-between" style="height: 16vh">
             <el-col :span="12" class="flex flex-col justify-evenly">
               <div><span class="bullet" style="background-color:#C8603A;"></span>未处理告警数目：{{alarmInfo.untreated}}</div>
               <div><span class="bullet" style="background-color:#E5B849;"></span>已挂起告警数目：{{alarmInfo.hung}}</div>
@@ -127,14 +127,14 @@
           </el-row>
         </el-skeleton>
       </el-card>
-      <el-card shadow="never" class="mb-8px">
+      <el-card shadow="never" style="margin-bottom: 1vh">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>实时功率</span>
+            <span class="font-700">实时功率</span>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated>
-          <el-row class="flex justify-between">
+        <el-skeleton :loading="loading" animated style="height: 16vh">
+          <el-row class="flex justify-between" style="height: 16vh">
             <el-col v-if="powInfo.totalPowActive > 1000 || powInfo.totalPowReactive > 1000 || powInfo.totalPowApparent > 1000" :span="12" class="flex flex-col justify-evenly">
               <div><span class="bullet" style="background-color:#E5B849;"></span>总有功功率：{{powInfo.totalPowActive ? (powInfo.totalPowActive/1000).toFixed(1) : '0.0'}}MW</div>
               <div><span class="bullet" style="background-color:#C8603A;"></span>总无功功率：{{powInfo.totalPowReactive ? (powInfo.totalPowReactive/1000).toFixed(1) : '0.0'}}MVar</div>
@@ -151,28 +151,40 @@
           </el-row>
         </el-skeleton>
       </el-card>
-      <el-card shadow="never" class="mb-8px" v-if="toggleTable===false">
+      <el-card shadow="never" class="mb-8px" v-if="toggleTable===1" style="height: 31.7vh">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>设备/告警</span>
-            <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
+            <span class="font-700">环境/告警/设备</span>
+            <div class="flex text-12px items-center">
+              <div class="flex mr-8px" style="cursor: pointer;" @click="selectedFront = !selectedFront;updateTemChart()">
+                <div class="w-25px mr-2px" :style="{backgroundColor: selectedFront ? '#0b758a' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                <div>前门</div>
+              </div>
+              <div class="flex mr-8px" style="cursor: pointer;" @click="selectedBlack = !selectedBlack;updateTemChart()">
+                <div class="w-25px mr-2px" :style="{backgroundColor: selectedBlack ? '#e5b849' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                <div>后门</div>
+              </div>
+              <el-link @click="toggleTable = 2" type="primary">切换</el-link>
+            </div>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated>
-            <Echart :height="200" :options="numChartOptions" />
+        <el-skeleton :loading="loading" :rows="5" animated style="height: 24vh">
+          <div :style="computedEnInfo" style="height: 24vh">
+            <Echart :options="temChartOptions" :height="210" :style="computedEnInfoWidth" />
+          </div>
         </el-skeleton>
       </el-card>
-      <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===true">
+      <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===2" style="height: 31.7vh">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>设备统计/告警统计</span>
-            <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
+            <span class="font-700">环境/告警/设备</span>
+            <el-link @click="toggleTable = 3" type="primary">切换</el-link>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated>
+        <el-skeleton :loading="loading" :rows="5" animated style="height: 24vh">
           <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
             <el-table :data="alarmData" style="width: 100%" border class="text-12px" tooltip-formatter="tableRowFormatter">
-              <el-table-column prop="alarmTypeDesc" label="告警类型">
+              <el-table-column prop="alarmTypeDesc" label="告警类型" width="120px">
                 <template #default="{ row }">
                   <el-tooltip 
                     :content="`${row.alarmDesc}`" 
@@ -184,6 +196,50 @@
               </el-table-column>
               <el-table-column prop="alarmPosition" label="所在区域" />
             </el-table>
+          </div>
+        </el-skeleton>
+      </el-card>
+      <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===3" style="height: 31.7vh">
+        <template #header>
+          <div class="h-3 flex justify-between">
+            <span class="font-700">环境/告警/设备</span>
+            <el-link @click="toggleTable = 1" type="primary">切换</el-link>
+          </div>
+        </template>
+        <el-skeleton :loading="loading" :rows="5" animated style="height: 24vh">
+          <div style="display: flex;flex-direction: column;height: 24vh;justify-content: space-between">
+            <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+              <div>{{devInfo.pduNum}}</div>
+              <div>{{devInfo.pduOnLine}}</div>
+            </div>
+            <div style="display: flex;justify-content: space-around;align-items: center">
+              <div>PDU数量</div>
+              <div>PDU在线</div>
+            </div>
+            <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+              <div>{{devInfo.pduInform}}</div>
+              <div>{{devInfo.pduOffLine}}</div>
+            </div>
+            <div style="display: flex;justify-content: space-around;align-items: center">
+              <div>PDU告警</div>
+              <div>PDU离线</div>
+            </div>
+            <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+              <div>{{devInfo.busNum}}</div>
+              <div>{{devInfo.busOnLine}}</div>
+            </div>
+            <div style="display: flex;justify-content: space-around;align-items: center">
+              <div>母线数量</div>
+              <div>母线在线</div>
+            </div>
+            <div style="display: flex;justify-content: space-around;align-items: center;font-weight: bold;font-size: 20px">
+              <div>{{devInfo.busInform}}</div>
+              <div>{{devInfo.busOffLine}}</div>
+            </div>
+            <div style="display: flex;justify-content: space-around;align-items: center">
+              <div>母线告警</div>
+              <div>母线离线</div>
+            </div>
           </div>
         </el-skeleton>
       </el-card>
@@ -233,7 +289,7 @@ const alarmInfo = reactive({}) // 警告信息
 const tableData = ref([]) 
 const alarmData = ref([])
 const prePowBtn = ref(0) // 当前所选的功率
-const toggleTable = ref(false) //设备统计和告警统计的切换
+const toggleTable = ref(1) //设备统计和告警统计的切换
 const dialogVisible = ref(false) //全屏弹窗的显示隐藏
 const visible = ref(false)
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
@@ -241,28 +297,29 @@ const radioBtn = ref('pow')
 const echartInfo = reactive<any>({}) //配置图表的数据系列
 const roomId = ref<number>(0)
 const screenValue = ref(0) //控制按钮的切换
+const progressColor = ['rgba(200, 96, 58, 1)','rgba(229, 184, 73, 1)','rgba(173, 55, 98, 1)','rgba(180, 118, 96, 1)']
 const powBtns = [ // 功率 当天/当月等切换
   {
     name:'当天',
-    backgroundColor: 'rgb(84, 112, 198)',
+    backgroundColor: 'rgba(200, 96, 58, 0.8)',
     param: 'todayEq',
     totalParam: 'todayEqTotal',
   },
   {
     name:'昨天',
-    backgroundColor: 'rgb(145, 204, 117)',
+    backgroundColor: 'rgba(229, 184, 73, 0.8)',
     param: 'yesterdayEq',
     totalParam: 'yesterdayEqTotal',
   },
   {
     name:'上周',
-    backgroundColor: 'rgb(250, 200, 88)',
+    backgroundColor: 'rgba(173, 55, 98, 0.8)',
     param: 'lastWeekEq',
     totalParam: 'lastWeekEqTotal',
   },
   {
     name:'上月',
-    backgroundColor: 'rgb(238, 102, 102)',
+    backgroundColor: 'rgba(180, 118, 96, 0.8)',
     param: 'lastMonthEq',
     totalParam: 'lastMonthEqTotal',
   },
@@ -353,20 +410,74 @@ const numChartOptions = ref({
     {
       name: 'PDU',
       type: 'bar',
-      data: [40,20,30,20],
+      data: [0,0,0,0],
     },
     {
       name: '始端箱',
       type: 'bar',
-      data: [10,30,20,20],
+      data: [0,0,0,0],
     },
     {
       name: '插接箱',
       type: 'bar',
-      data: [10,30,20,20],
+      data: [0,0,0,0],
     }
   ]
 })
+
+const selectedFront = ref(true)
+const selectedBlack = ref(true)
+
+const temChartOptions = ref({
+  tooltip: { 
+    trigger: 'item',
+    confine: true,      
+    formatter: '{a}: {c}°C'
+  },
+  legend: {
+    data: ['前门', '后门'], // 图例项
+    show: false,
+    selected: {
+      '前门': true,
+      '后门': true
+    }
+  },
+  grid: {
+    left: 20,
+    right: 20,
+    bottom: 10,
+    top: 30,
+    containLabel: true
+  },
+  barGap: '200%',
+  xAxis: {
+    type: 'category',
+    data:[],
+    axisLabel: {
+      width: 80, // 固定每个标签的宽度
+      overflow: 'truncate', // 超出截断
+      ellipsis: '...', // 显示省略号
+      interval: 0 // 强制显示所有标签
+    }
+  },
+  yAxis: {
+    type: 'value',
+    name: "°C",
+    boundaryGap: false
+  },
+  series: [
+    {
+      name: '前门',
+      type: 'bar',
+      data: [],
+    },
+    {
+      name: '后门',
+      type: 'bar',
+      data: [],
+    }
+  ]
+});
 
 // 获取机房主页面曲线数据
 const getRoomEchartData = async() => {
@@ -478,7 +589,7 @@ const getHomeDevData = async() => {
     {
       name: 'PDU',
       type: 'bar',
-      data: [res.pduNum,res.pduOnLine,res.pduOffLine,1000],
+      data: [res.pduNum,res.pduOnLine,res.pduOffLine,res.pduInform],
     },
     {
       name: '始端箱',
@@ -491,112 +602,6 @@ const getHomeDevData = async() => {
       data: [res.boxNum,res.boxOnLine,res.boxOffLine,res.boxInform],
     }
   ]
-
-
-  const arr = [] as any
-  if (res.pduNum > 0) {
-    arr.push({
-      name: 'PDU',
-      all: res.pduNum,
-      on: res.pduOnLine,
-      off: res.pduOffLine,
-      error:'温度超阀值上限',
-      box:'温湿度01',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-  if (res.pduNum > 0) {
-    arr.push({
-      name: '始端箱',
-      all: res.busNum,
-      on: res.busOnLine,
-      off: res.busOffLine,
-      error:'制冷压力超阀值上限',
-      box:'精密空调',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-  if (res.pduNum > 0) {
-    arr.push({
-      name: '插接箱',
-      all: res.boxNum,
-      on: res.boxOnLine,
-      off: res.boxOffLine,
-      error:'检测到有水',
-      box:'水浸',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-    if (res.pduNum > 0) {
-    arr.push({
-      name: 'PDU-1',
-      all: res.pduNum,
-      on: res.pduOnLine,
-      off: res.pduOffLine,
-      error:'开门时间异常',
-      box:'东门门禁',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-  if (res.pduNum > 0) {
-    arr.push({
-      name: '始端箱-1',
-      all: res.busNum,
-      on: res.busOnLine,
-      off: res.busOffLine,
-      error:'设备离线',
-      box:'摄像机1',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-  if (res.pduNum > 0) {
-    arr.push({
-      name: '插接箱-1',
-      all: res.boxNum,
-      on: res.boxOnLine,
-      off: res.boxOffLine,
-      error:'检测到有人',
-      box:'红外1',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-    if (res.pduNum > 0) {
-    arr.push({
-      name: 'PDU-2',
-      all: res.pduNum,
-      on: res.pduOnLine,
-      off: res.pduOffLine,
-      error:'温度超阀值上限',
-      box:'温湿度02',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-  if (res.pduNum > 0) {
-    arr.push({
-      name: '始端箱-2',
-      all: res.busNum,
-      on: res.busOnLine,
-      off: res.busOffLine,
-      error:'温度超阀值上限',
-      box:'温湿度03',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-  if (res.pduNum > 0) {
-    arr.push({
-      name: '插接箱-2',
-      all: res.boxNum,
-      on: res.boxOnLine,
-      off: res.boxOffLine,
-      error:'温度超阀值上限',
-      box:'温湿度04',
-      time:'2022-11-07 12:15:46'
-    })
-  }
-  tableData.value = arr
-  if(tableData.value.length) {
-    toggleTable.value = true
-  }
   Object.assign(devInfo, res)
 }
 // 获取主页面功率数据
@@ -709,7 +714,8 @@ const getHomeEqData = async() => {
       grid: {
         left: 30,
         right: 20,
-        bottom: 20,
+        bottom: 0,
+        top: 30,
         containLabel: true
       },
       tooltip: {
@@ -732,10 +738,13 @@ const getHomeEqData = async() => {
       },
       xAxis: {
         type: 'category',
-        data: res.roomEqList ? res.roomEqList.map(item => item.name) : [],
+        data: res.roomEqList ? res.roomEqList.sort((a,b) => b.todayEq - a.todayEq).map(item => item.name) : [],
         axisLabel: {
-          interval: 0, // 显示所有标签，不设间隔
-        },
+          width: 70, // 固定每个标签的宽度
+          overflow: 'truncate', // 超出截断
+          ellipsis: '...', // 显示省略号
+          interval: 0 // 强制显示所有标签
+        }
       },
       yAxis: {
         type: 'value',
@@ -748,13 +757,16 @@ const getHomeEqData = async() => {
       series: [
         {
           name: '当天',
-          data: res.roomEqList ? res.roomEqList.map(item => item.todayEq ? item.todayEq.toFixed(2) : '0.00') : [],
+          data: res.roomEqList ? res.roomEqList.sort((a,b) => b.todayEq - a.todayEq).map(item => item.todayEq ? item.todayEq.toFixed(0) : '0') : [],
           type: 'bar',
           barWidth: 30, // 固定柱宽为 30 像素
           label: {
             show: true,
             position: 'top', // 顶部显示
           },
+          itemStyle: {
+            color: 'rgba(200, 96, 58, 0.8)'
+          }
         },
       ]
     })
@@ -802,7 +814,7 @@ const getHomeAlarmData = async() => {
 const switchPowBtn = (index) => {
   prePowBtn.value = index
 
-  let unitFlag = false
+  // let unitFlag = false
 
   // for(let i = 0;i < eqInfo.roomEqList.length;i++) {
   //   if(eqInfo.roomEqList[i][powBtns[index].param] > 1000) {
@@ -834,9 +846,17 @@ const switchPowBtn = (index) => {
   //     }
   //   }
   // }
+    eqOptionsData.xAxis = {
+      type: 'category',
+      data: eqInfo.roomEqList ? eqInfo.roomEqList.sort((a,b) => b[powBtns[index].param] - a[powBtns[index].param]).map(item => item.name) : [],
+      axisLabel: {
+        interval: 0, // 显示所有标签，不设间隔
+      },
+    }
+    
     eqOptionsData.series = [{
       name: powBtns[index].name,
-      data: eqInfo.roomEqList ? eqInfo.roomEqList.map(item => item[powBtns[index].param] ? item[powBtns[index].param].toFixed(2) : '0.00') : [],
+      data: eqInfo.roomEqList ? eqInfo.roomEqList.sort((a,b) => b[powBtns[index].param] - a[powBtns[index].param]).map(item => item[powBtns[index].param] ? item[powBtns[index].param].toFixed(0) : '0') : [],
       type: 'bar',
       barWidth: 30, // 固定柱宽为 30 像素
       label: {
@@ -885,6 +905,75 @@ const computedEnInfoWidth = computed(() => {
     }
   }
 })
+
+// 获取空间信息 ?需不需要刷新
+const handleBackData = (data) => {
+  let dataArray = Object.values(data).flat() || []
+  console.log('***',Object.values(data).flat())
+
+  temChartOptions.value.xAxis = {
+    type: 'category',
+    data: dataArray.sort((a,b) => b.temMaxBlack - a.temMaxBlack).map(item => item.roomName),
+    axisLabel: {
+      width: 80, // 固定每个标签的宽度
+      overflow: 'truncate', // 超出截断
+      ellipsis: '...', // 显示省略号
+      interval: 0 // 强制显示所有标签
+    }
+  }
+
+  temChartOptions.value.legend = {
+    data: ['前门', '后门'], // 图例项
+    show: false,
+    selected: {
+      '前门': selectedFront.value,
+      '后门': selectedBlack.value
+    }
+  }
+
+  temChartOptions.value.series = [
+    {
+      name: '前门',
+      type: 'bar',
+      barWidth: 10, // 固定柱宽为 30 像素
+      data: dataArray.sort((a,b) => b.temMaxBlack - a.temMaxBlack).map(item => item.temMaxFront ? item.temMaxFront : 0),
+      label: {
+        show: true,
+        position: 'top', // 顶部显示
+        formatter: '{c}', // 显示数据值
+      },
+      itemStyle: {
+        color: "#0b758a"
+      }
+    },
+    {
+      name: '后门',
+      type: 'bar',
+      barWidth: 10, // 固定柱宽为 30 像素
+      data: dataArray.sort((a,b) => b.temMaxBlack - a.temMaxBlack).map(item => item.temMaxBlack ? item.temMaxBlack : 0),
+      label: {
+        show: true,
+        position: 'top', // 顶部显示
+        formatter: '{c}', // 显示数据值
+      },
+      itemStyle: {
+        color: "#e5b849"
+      }
+    }
+  ]
+  console.log(temChartOptions.value)
+}
+
+const updateTemChart = () => {
+  temChartOptions.value.legend = {
+    data: ['前门', '后门'], // 图例项
+    show: false,
+    selected: {
+      '前门': selectedFront.value,
+      '后门': selectedBlack.value
+    }
+  }
+}
 
 const handleClose = () => {
   // 弹窗关闭时执行的逻辑
@@ -1049,6 +1138,12 @@ onUnmounted(() => {
     margin-left: 10px;
   }
 
+  .scrollable-container-one{
+    height: 21.5vh;
+    width: 20vw;
+    overflow-y: auto;
+  }
+
   .name-column {
     width: 150px;
   }
@@ -1077,7 +1172,7 @@ onUnmounted(() => {
   }
 
   .scrollable-container-one{
-    height: 20.5vh;
+    height: 24vh;
     width: 20vw;
     overflow-y:auto;
   }
@@ -1161,12 +1256,12 @@ onUnmounted(() => {
 
 .percentage-value {
   display: block;
-  margin-top: 10px;
+  margin-top: 70px;
   font-size: 25px;
 }
 .percentage-label {
   display: block;
-  margin-top: 10px;
+  margin-top: 50px;
   font-size: 12px;
 }
 .percentage-unit {
@@ -1187,6 +1282,10 @@ onUnmounted(() => {
 
 :deep(.el-card__body) {
   padding: 15px;
+}
+
+:deep(.el-card__header) {
+  height: 5vh;
 }
 
 </style>

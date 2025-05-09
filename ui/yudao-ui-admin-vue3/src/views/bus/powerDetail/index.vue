@@ -174,7 +174,7 @@ const powReactiveList = ref() as any;
 const selectedOption = ref('current');
 const location = ref(query.location);
 const busName = ref(query.busName);
-const roomName = ref(query.roomName);
+const roomName = ref();
 const devKey = ref(query.devKey);
 
 const typeRadioShow = ref("最大")
@@ -211,7 +211,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   devKey: query.devKey,
-  busId : query.busId,
+  busId : null,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -456,10 +456,12 @@ const getBusIdAndLocation =async () => {
     const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);//devKey
     if (data != null){
       location.value = data.location
+      roomName.value = data.location.split("-")[0]
       queryParams.busId = data.busId
       busName.value = data.busName
     }else{
       location.value = null
+      roomName.value = null
       queryParams.busId = null
       busName.value = null
     }

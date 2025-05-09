@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.dto.room;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.framework.common.dto.room.RoomCabinetDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -183,5 +184,14 @@ public class AisleDataDTO {
     @Schema(description = "机柜数据")
     private List<RoomCabinetDTO> cabinetList;
 
-
+    /**
+     * A路母线
+     */
+    @Schema(description = "A路母线")
+    private AisleBarDTO barA;
+    /**
+     * B路母线
+     */
+    @Schema(description = "B路母线")
+    private AisleBarDTO barB;
 }

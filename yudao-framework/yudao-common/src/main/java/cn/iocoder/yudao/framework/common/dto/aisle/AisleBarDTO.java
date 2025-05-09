@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.dto.aisle;
 
 import cn.hutool.json.JSONObject;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -122,4 +123,6 @@ public class AisleBarDTO {
      *  相视在功率
      */
     private  float[] powApparent;
+
+    private BusIndex busIndex;
 }

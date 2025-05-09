@@ -116,6 +116,10 @@ import { EChartsOption } from 'echarts'
 import { CabinetApi } from '@/api/cabinet/info'
 import { CabinetEnergyApi } from '@/api/cabinet/energy'
 import 'echarts/lib/component/dataZoom';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
@@ -127,10 +131,10 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  cabinetName: history?.state?.cabinetName || ' ',
-  cabinetId: history?.state?.id || 1,
-  roomName: history?.state?.roomName || ' ',
-  cabinetroomId: history?.state?.roomId || 1
+  cabinetName: query.cabinetName || ' ',
+  cabinetId: Number(query.id) || 1,
+  roomName: query.roomName || ' ',
+  cabinetroomId: Number(query.roomId) || 1
 })
 const EleChain = reactive({
   todayEq: '',

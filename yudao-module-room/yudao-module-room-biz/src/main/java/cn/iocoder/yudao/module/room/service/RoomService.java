@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.room.service;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.aisle.RoomAisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
@@ -99,7 +100,7 @@ public interface RoomService {
      * @param vo
      * @return
      */
-    Integer roomAisleSave(AisleSaveVo vo);
+    Integer roomAisleSave(RoomAisleSaveVo vo);
 
     /**
      * 新-roomAisleDelete
@@ -125,10 +126,7 @@ public interface RoomService {
 
     List<String> getRoomAddrList();
 
-    RoomMainResVO getDatanewDetail(int id) throws ExecutionException, InterruptedException;
-
-    //柜列编辑删除
-    Integer roomAisleDeleteById(int id);
+    RoomMainResVO getDataNewDetail(int id) throws ExecutionException, InterruptedException;
 
     //机房新增根据名称异步查询
     Integer newSelectRoomByName(String name);
@@ -138,4 +136,8 @@ public interface RoomService {
     Map<String, List<RoomIndexAddrResVO>> getRoomAddrListAll(String addr, String roomName);
 
     Boolean findAreaById(Integer xLength, Integer yLength, Integer id);
+
+    Boolean findAddAisleVerify(AisleSaveVo vo);
+
+    void editAisleExport(Integer roomId, Integer aisleId);
 }

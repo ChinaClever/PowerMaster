@@ -33,14 +33,13 @@
     </select>
     <select id="findRoomIndexCfg" resultType="cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO">
         select ri.id,ri.room_name,ri.addr,ri.display_flag,ri.display_type,
-        ri.is_delete,ri.power_capacity,ri.air_power,ri.x_length,ri.y_length,
+        ri.is_delete,ri.power_capacity,ri.air_power,ri.x_length,ri.y_length,ri.sort,
         rc.ele_alarm_day,rc.ele_alarm_month,rc.ele_limit_day,rc.ele_limit_month
         from room_index ri
         left join room_cfg rc on rc.room_id = ri.id
         <where>
             ri.is_delete =0 and ri.id = #{id}
         </where>
-
     </select>
 
     <update id="restoreByDeleteRoom">

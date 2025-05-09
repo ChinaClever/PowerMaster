@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.aisle.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleBoxDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
@@ -25,7 +26,6 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
-import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
@@ -163,14 +163,14 @@ public class AisleServiceImpl implements AisleService {
                     && "x".equals(aisleSaveVo.getDirection())) {
                 //横向
                 if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength() > roomIndex.getXLength() + 1) {
-                    BusinessAssert.error(7003,"柜列长度超出");
+                    BusinessAssert.error(7003, "柜列长度超出");
                 }
             }
             if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                     && "y".equals(aisleSaveVo.getDirection())) {
                 //纵向
                 if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getAisleLength() > roomIndex.getYLength() + 1) {
-                    BusinessAssert.error(7003,"柜列长度超出");
+                    BusinessAssert.error(7003, "柜列长度超出");
                 }
             }
         }
@@ -185,218 +185,125 @@ public class AisleServiceImpl implements AisleService {
             AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
                     .eq(AisleIndex::getId, aisleSaveVo.getId()));
             if (Objects.nonNull(aisleIndex)) {
-                index.setId(aisleSaveVo.getId());
+                index.setId(aisleIndex.getId());
                 aisleIndexMapper.updateById(index);
             }
-
         } else {
             aisleIndexMapper.insert(index);
         }
 
-
-        String busIpA;
-
-        String busNameA;
-
-        String busIpB;
-
-        String busNameB;
-
-        Integer barIdA;
-        Integer barIdB;
-
-        //母线信息
         List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                 .eq(AisleBar::getAisleId, index.getId()));
-        List<AisleBarDTO> barVos = new ArrayList<>();
-        if (Objects.nonNull(aisleSaveVo.getBarA())) {
-            barVos.add(aisleSaveVo.getBarA());
-            busIpA = aisleSaveVo.getBarA().getDevIp();
-            barIdA = aisleSaveVo.getBarA().getBarId();
-        } else {
-
-            busIpA = "";
-            barIdA = null;
-        }
-        if (Objects.nonNull(aisleSaveVo.getBarB())) {
-            barVos.add(aisleSaveVo.getBarB());
-            busIpB = aisleSaveVo.getBarB().getDevIp();
-            barIdB = aisleSaveVo.getBarB().getBarId();
-        } else {
-            busIpB = "";
-            barIdB = null;
-        }
-
-        if (!CollectionUtils.isEmpty(barVos)) {
-            if (!CollectionUtils.isEmpty(aisleBars)) {
-                List<Integer> ids = aisleBars.stream().map(AisleBar::getId).collect(Collectors.toList());
-                ids.forEach(this::deleteBus);
-
+        if (!CollectionUtils.isEmpty(aisleBars)) {
+            List<CabinetBox> list = cabinetBusMapper.selectByAisleId(index.getId());
+            Map<String, AisleBar> map = aisleBars.stream().collect(Collectors.toMap(AisleBar::getPath, Function.identity()));
+            if (Objects.nonNull(aisleSaveVo.getBarA())) {
+                AisleBar aisleBar = map.get("A");
+                AisleBarDTO barVo = aisleSaveVo.getBarA();
+                String oldBusKey = aisleBar.getBusKey();
+                String busKey = barVo.getDevIp() + SPLIT_KEY + barVo.getBarId();
+                //更改绑定不同母线
+                if (ObjectUtil.notEqual(busKey, oldBusKey)) {
+//                        if (!CollectionUtils.isEmpty(list)){
+//                            BusinessAssert.error(7004, "当前始端箱的插接位已插入机柜，如需更换母线请先删除绑定的关系");
+//                        }
+                    Long count = aisleBarMapper.selectCount(new LambdaQueryWrapper<AisleBar>()
+                            .eq(AisleBar::getBusKey, busKey));
+                    if (count > 0) {
+                        BusinessAssert.error(7003, busKey + "始端箱已添加");
+                    }
+                    if (Objects.equals(aisleBar.getBoxNum(), barVo.getBoxList().size())) {
+                        editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "A");
+                    } else {
+                        if (!CollectionUtils.isEmpty(list)) {
+                            List<Integer> boxIndexA = list.stream().map(CabinetBox::getBoxIndexA).collect(Collectors.toList());
+                            Integer max = Collections.max(boxIndexA);
+                            if (barVo.getBoxList().size() > max) {
+                                BusinessAssert.error(7003, busKey + "更改的始端箱柜列的插接箱数量小于当前已被使用的数量");
+                            }
+                            editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "A");
+                        }
+                    }
+                }
             }
-            AisleBusSaveVo busSaveVo = new AisleBusSaveVo();
-            busSaveVo.setAisleId(index.getId());
-            busSaveVo.setBarVos(barVos);
-            aisleBusSave(busSaveVo);
+            if (Objects.nonNull(aisleSaveVo.getBarB())) {
+                AisleBar aisleBar = map.get("B");
+
+                AisleBarDTO barVo = aisleSaveVo.getBarB();
+                String oldBusKey = aisleBar.getBusKey();
+                String busKey = barVo.getDevIp() + SPLIT_KEY + barVo.getBarId();
+                //更改绑定不同母线
+                if (ObjectUtil.notEqual(busKey, oldBusKey)) {
+//                        if (!CollectionUtils.isEmpty(list)){
+//                            BusinessAssert.error(7004, "当前始端箱的插接位已插入机柜，如需更换母线请先删除绑定的关系");
+//                        }
+                    Long count = aisleBarMapper.selectCount(new LambdaQueryWrapper<AisleBar>()
+                            .eq(AisleBar::getBusKey, busKey));
+                    if (count > 0) {
+                        BusinessAssert.error(7003, busKey + "始端箱已添加");
+                    }
+                    if (Objects.equals(aisleBar.getBoxNum(), barVo.getBoxList().size())) {
+                        editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "B");
+                    } else {
+                        if (!CollectionUtils.isEmpty(list)) {
+                            List<Integer> boxIndexB = list.stream().map(CabinetBox::getBoxIndexB).collect(Collectors.toList());
+                            Integer max = Collections.max(boxIndexB);
+                            if (barVo.getBoxList().size() > max) {
+                                BusinessAssert.error(7003, busKey + "更改的始端箱柜列的插接箱数量小于当前已被使用的数量");
+                            }
+                            editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "B");
+                        }
+                    }
+                }
+            }
         } else {
-            //删除绑定关系
-            if (!CollectionUtils.isEmpty(aisleBars)) {
-                List<Integer> ids = aisleBars.stream().map(AisleBar::getId).collect(Collectors.toList());
-                ids.forEach(this::deleteBus);
+            List<AisleBarDTO> barVos = new ArrayList<>();
+            if (Objects.nonNull(aisleSaveVo.getBarA())) {
+                barVos.add(aisleSaveVo.getBarA());
+            }
+            if (Objects.nonNull(aisleSaveVo.getBarB())) {
+                barVos.add(aisleSaveVo.getBarB());
+            }
+            if (!CollectionUtils.isEmpty(barVos)) {
+                AisleBusSaveVo busSaveVo = new AisleBusSaveVo();
+                busSaveVo.setAisleId(index.getId());
+                busSaveVo.setBarVos(barVos);
+                aisleBusSave(busSaveVo);
             }
         }
-
-//        List<CabinetVo> cabinetList = aisleSaveVo.getCabinetList();
-//        cabinetList.forEach(cabinetVo -> {
-//            try {
-//                cabinetService.saveCabinet(cabinetVo);
-//            } catch (Exception e) {
-//                log.error("保存机柜失败", e);
-//            }
-//        });
-
-
-        //已有机柜
-//        List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-//                .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
-//                .eq(CabinetIndex::getRoomId, aisleSaveVo.getRoomId())
-//                .eq(CabinetIndex::getAisleId, index.getId()));
-//        //机柜信息
-//        if (!CollectionUtils.isEmpty(aisleSaveVo.getCabinetList())) {
-//            //更改后的机柜列表
-//            List<Integer> ids = aisleSaveVo.getCabinetList().stream().map(CabinetVo::getId).filter(id -> id > 0).collect(Collectors.toList());
-//            if (!CollectionUtils.isEmpty(ids)) {
-//                //需要删除的机柜
-//                List<CabinetIndex> indices = cabinetIndexMapper.selectList(new LambdaUpdateWrapper<CabinetIndex>()
-//                        .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
-//                        .eq(CabinetIndex::getRoomId, aisleSaveVo.getRoomId())
-//                        .eq(CabinetIndex::getAisleId, index.getId()).notIn(CabinetIndex::getId, ids));
-//
-//                //删除不在更改后机柜中的机架
-//                if (!CollectionUtils.isEmpty(indices)) {
-//                    rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
-//                            .in(RackIndex::getCabinetId, indices.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
-//                }
-//
-//                //需要删除的机柜
-//                if (!CollectionUtils.isEmpty(indices)) {
-//                    indices.forEach(cabinetIndex -> {
-//                        try {
-//                            cabinetApi.delCabinet(cabinetIndex.getId());
-//                        } catch (Exception e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    });
-//                }
-//            } else {
-//                //清空该柜列机柜及机架
-//                if (!CollectionUtils.isEmpty(cabinetIndexList)) {
-//                    rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
-//                            .in(RackIndex::getCabinetId, cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
-//                }
-//                //需要删除的机柜
-//                if (!CollectionUtils.isEmpty(cabinetIndexList)) {
-//                    cabinetIndexList.forEach(cabinetIndex -> {
-//                        try {
-//                            cabinetApi.delCabinet(cabinetIndex.getId());
-//                        } catch (Exception e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    });
-//
-//                }
-//
-//            }
-//
-//            //新增/保存
-//            aisleSaveVo.getCabinetList().forEach(cabinetVo -> {
-//                cabinetVo.setRoomId(aisleSaveVo.getRoomId());
-//                cabinetVo.setAisleId(index.getId());
-//                if (aisleSaveVo.getPduBar().equals(PduBoxEnums.BUS.getValue())) {
-//                    cabinetVo.setBusIpA(busIpA);
-//                    cabinetVo.setBarIdA(barIdA);
-//                    cabinetVo.setBusIpB(busIpB);
-//                    cabinetVo.setBarIdB(barIdB);
-//
-//                    if (Objects.isNull(cabinetVo.getAddrA()) && Objects.nonNull(cabinetVo.getBoxIndexA())) {
-//                        AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
-//                                .eq(AisleBar::getAisleId, index.getId())
-//                                .eq(AisleBar::getBusKey, barIdA));
-//                        //.eq(AisleBar::getDevIp,busIpA));
-//                        if (Objects.nonNull(bar)) {
-//                            AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
-//                                    .eq(AisleBox::getAisleBarId, bar.getId())
-//                                    .eq(AisleBox::getBoxType, 0)
-//                                    .eq(AisleBox::getBoxIndex, cabinetVo.getBoxIndexA()));
-//                            // cabinetVo.setAddrA(Objects.nonNull(box)?box.getCasAddr():null);
-//
-//                        }
-//
-//                    }
-//                    if (Objects.isNull(cabinetVo.getAddrB()) && Objects.nonNull(cabinetVo.getBoxIndexB())) {
-//                        AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
-//                                .eq(AisleBar::getAisleId, index.getId())
-//                                .eq(AisleBar::getBusKey, barIdB));
-//                        //.eq(AisleBar::getDevIp,busIpB));
-//                        if (Objects.nonNull(bar)) {
-//                            AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
-//                                    .eq(AisleBox::getAisleBarId, bar.getId())
-//                                    .eq(AisleBox::getBoxType, 0)
-//                                    .eq(AisleBox::getBoxIndex, cabinetVo.getBoxIndexB()));
-//                            //cabinetVo.setAddrB(Objects.nonNull(box)?box.getCasAddr():null);
-//
-//                        }
-//
-//                    }
-//                }
-//                cabinetVo.setPduBox(aisleSaveVo.getPduBar());
-//
-//                if (Objects.nonNull(cabinetVo.getIndex())
-//                        && StringUtils.isNotEmpty(aisleSaveVo.getDirection())
-//                        && "x".equals(aisleSaveVo.getDirection())) {
-//                    //横向
-//                    cabinetVo.setXCoordinate(aisleSaveVo.getXCoordinate() + cabinetVo.getIndex() - 1);
-//                    cabinetVo.setYCoordinate(aisleSaveVo.getYCoordinate());
-//                }
-//                if (Objects.nonNull(cabinetVo.getIndex())
-//                        && StringUtils.isNotEmpty(aisleSaveVo.getDirection())
-//                        && "y".equals(aisleSaveVo.getDirection())) {
-//                    //纵向
-//                    cabinetVo.setYCoordinate(aisleSaveVo.getYCoordinate() + cabinetVo.getIndex() - 1);
-//                    cabinetVo.setXCoordinate(aisleSaveVo.getXCoordinate());
-//                }
-//                try {
-//                    cabinetApi.saveCabinet(cabinetVo);
-//                } catch (Exception e) {
-//                    throw new RuntimeException(e);
-//                }
-//            });
-//        } else {
-//            //清空该柜列机柜及机架
-//            if (!CollectionUtils.isEmpty(cabinetIndexList)) {
-//                rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
-//                        .in(RackIndex::getCabinetId, cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
-//            }
-//            //需要删除的机柜
-//            if (!CollectionUtils.isEmpty(cabinetIndexList)) {
-//                cabinetIndexList.forEach(cabinetIndex -> {
-//                    try {
-//                        cabinetApi.delCabinet(cabinetIndex.getId());
-//                    } catch (Exception e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                });
-//
-//            }
-//        }
-        //刷新柜列计算服务缓存
-        log.info("刷新计算服务缓存 --- " + adder);
-        HttpUtil.get(adder);
-
         return index.getId();
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    @Override
+    private void editAisleBus(AisleBar aisleBar, String busKey, AisleBarDTO barVo,
+                              AisleIndex index, List<CabinetBox> list, String oldBusKey, String path) {
+        //插接箱数量一致
+        aisleBar.setBusKey(busKey);
+        aisleBar.setBoxNum(barVo.getBoxList().size());
+        aisleBarMapper.updateById(aisleBar);
+        aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>().eq(AisleBox::getAisleBarId, aisleBar.getId()));
+        List<AisleBoxDTO> boxList = barVo.getBoxList();
+        if (!CollectionUtils.isEmpty(boxList)) {
+            boxList.forEach(boxDTO -> {
+                AisleBox box = BeanUtils.toBean(boxDTO, AisleBox.class);
+                box.setAisleId(index.getId());
+                box.setAisleBarId(aisleBar.getId());
+                box.setBoxKey(aisleBar.getBusKey() + SPLIT_KEY + boxDTO.getCasAddr());
+                box.setBusKey(aisleBar.getBusKey());
+                box.setBoxType(boxDTO.getType());
+                aisleBoxMapper.insert(box);
+            });
+        }
+        if (!CollectionUtils.isEmpty(list)) {
+            list.forEach(iter -> {
+                if (Objects.equals("A", path)) {
+                    iter.getBoxKeyA().replaceAll(oldBusKey, busKey);
+                } else {
+                    iter.getBoxKeyB().replaceAll(oldBusKey, busKey);
+                }
+            });
+        }
+    }
+
     public void aisleBusSave(AisleBusSaveVo busSaveVo) {
 
         Integer aisleId = busSaveVo.getAisleId();
@@ -404,20 +311,20 @@ public class AisleServiceImpl implements AisleService {
         if (!CollectionUtils.isEmpty(busSaveVo.getBarVos())) {
             //绑定始端箱
             List<AisleBarDTO> barVos = busSaveVo.getBarVos();
-            //先删除
-            aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                    .eq(AisleBar::getAisleId, aisleId));
-            aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                    .eq(AisleBox::getAisleId, aisleId));
+//            //先删除
+//            aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
+//                    .eq(AisleBar::getAisleId, aisleId));
+//            aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+//                    .eq(AisleBox::getAisleId, aisleId));
             List<String> collect = barVos.stream().map(i -> i.getDevIp() + SPLIT_KEY + i.getBarId()).distinct().collect(Collectors.toList());
             if (collect.size() < 2) {
-                BusinessAssert.error(7003,"A路与B路始端箱IP不能相同");
+                BusinessAssert.error(7003, "A路与B路始端箱IP不能相同");
             }
             barVos.forEach(barVo -> {
                 Long count = aisleBarMapper.selectCount(new LambdaQueryWrapper<AisleBar>()
                         .eq(AisleBar::getBusKey, barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()));
                 if (count > 0) {
-                    BusinessAssert.error(7003,barVo.getDevIp() + SPLIT_KEY + barVo.getBarId() + "始端箱已添加");
+                    BusinessAssert.error(7003, barVo.getDevIp() + SPLIT_KEY + barVo.getBarId() + "始端箱已添加");
                 }
                 AisleBar bar = BeanUtils.toBean(barVo, AisleBar.class);
                 bar.setAisleId(aisleId);
@@ -431,7 +338,6 @@ public class AisleServiceImpl implements AisleService {
                         AisleBox box = BeanUtils.toBean(boxDTO, AisleBox.class);
                         box.setAisleId(aisleId);
                         box.setAisleBarId(bar.getId());
-//                            box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + boxDTO.getCasAddr());
                         box.setBoxKey(bar.getBusKey() + SPLIT_KEY + boxDTO.getCasAddr());
                         box.setBusKey(bar.getBusKey());
                         box.setBoxType(boxDTO.getType());
@@ -439,11 +345,10 @@ public class AisleServiceImpl implements AisleService {
                     });
                 }
             });
-
         }
         //刷新柜列计算服务缓存
-        log.info("刷新计算服务缓存 --- " + adder);
-        HttpUtil.get(adder);
+//        log.info("刷新计算服务缓存 --- " + adder);
+//        HttpUtil.get(adder);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -483,49 +388,40 @@ public class AisleServiceImpl implements AisleService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteAisle(Integer aisleId) {
-        try {
-            //删除柜列
-            AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
-            if (Objects.nonNull(aisleIndex)) {
-                List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
-                        .eq(CabinetIndex::getAisleId, aisleIndex.getId()));
-                if (!CollectionUtils.isEmpty(cabinetIndexList)) {
-                    throw new RuntimeException("存在未删除机柜，不可删除");
-                }
-                //逻辑删除
-                if (aisleIndex.getIsDelete().equals(DelEnums.NO_DEL.getStatus())) {
-                    aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
-                            .eq(AisleIndex::getId, aisleId)
-                            .set(AisleIndex::getIsDelete, DelEnums.DELETE.getStatus()));
-
-                    //1.删除绑定关系
-                    aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                            .eq(AisleBox::getAisleId, aisleId));
-                    aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                            .eq(AisleBar::getAisleId, aisleId));
-
-                } else {
-                    //物理删除
-                    //1.删除绑定关系
-                    aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                            .eq(AisleBox::getAisleId, aisleId));
-                    aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                            .eq(AisleBar::getAisleId, aisleId));
-                    //2.删除柜列
-                    aisleIndexMapper.deleteById(aisleId);
-                }
+        //删除柜列
+        AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
+        if (Objects.nonNull(aisleIndex)) {
+            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                    .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
+                    .eq(CabinetIndex::getAisleId, aisleIndex.getId()));
+            if (!CollectionUtils.isEmpty(cabinetIndexList)) {
+                throw new RuntimeException("存在未删除机柜，不可删除");
             }
-            //删除key
-            String key = REDIS_KEY_AISLE + aisleId;
+            //逻辑删除
+            if (aisleIndex.getIsDelete().equals(DelEnums.NO_DEL.getStatus())) {
+                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                        .eq(AisleIndex::getId, aisleId)
+                        .set(AisleIndex::getIsDelete, DelEnums.DELETE.getStatus()));
 
-            boolean flag = redisTemplate.delete(key);
-            log.info("key: " + key + " flag : " + flag);
-        } finally {
-            log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
+                //1.删除绑定关系
+                aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+                        .eq(AisleBox::getAisleId, aisleId));
+                aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
+                        .eq(AisleBar::getAisleId, aisleId));
+            } else {
+                //物理删除
+                //1.删除绑定关系
+                aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+                        .eq(AisleBox::getAisleId, aisleId));
+                aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
+                        .eq(AisleBar::getAisleId, aisleId));
+                //2.删除柜列
+                aisleIndexMapper.deleteById(aisleId);
+            }
         }
-
+        //删除key
+        String key = REDIS_KEY_AISLE + aisleId;
+        boolean flag = redisTemplate.delete(key);
     }
 
     @Override
@@ -561,15 +457,15 @@ public class AisleServiceImpl implements AisleService {
                     detailDTO.setPowApparentTotal(BigDecimal.valueOf(totalData.getDouble("pow_apparent")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
                 }
                 if (pathA != null) {
-                    detailDTO.setCurAList(pathA.getList("cur_value",Double.class));
-                    detailDTO.setVolAList(pathA.getList("vol_value",Double.class));
+                    detailDTO.setCurAList(pathA.getList("cur_value", Double.class));
+                    detailDTO.setVolAList(pathA.getList("vol_value", Double.class));
                     detailDTO.setPowApparentA(BigDecimal.valueOf(pathA.getDouble("pow_apparent")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
                     detailDTO.setPowActiveA(BigDecimal.valueOf(pathA.getDouble("pow_active")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
                     detailDTO.setPowReactiveA(BigDecimal.valueOf(pathA.getDouble("pow_reactive")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
                 }
                 if (pathB != null) {
-                    detailDTO.setCurBList(pathB.getList("cur_value",Double.class));
-                    detailDTO.setVolBList(pathB.getList("vol_value",Double.class));
+                    detailDTO.setCurBList(pathB.getList("cur_value", Double.class));
+                    detailDTO.setVolBList(pathB.getList("vol_value", Double.class));
                     detailDTO.setPowApparentB(BigDecimal.valueOf(pathB.getDouble("pow_apparent")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
                     detailDTO.setPowActiveB(BigDecimal.valueOf(pathB.getDouble("pow_active")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
                     detailDTO.setPowReactiveB(BigDecimal.valueOf(pathB.getDouble("pow_reactive")).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue());
@@ -842,7 +738,7 @@ public class AisleServiceImpl implements AisleService {
                     if (Objects.nonNull(cabinetBoxes)) {
                         if (!StringUtils.isBlank(cabinetBoxes.getBoxKeyA())) {
                             String[] keya = cabinetBoxes.getBoxKeyA().split(SPLIT_KEY);
-                            if (keya.length ==3) {
+                            if (keya.length == 3) {
                                 cabinetDTO.setBusIpA(keya[0]);
                                 cabinetDTO.setBarIdA(Integer.valueOf(keya[1]));
                                 cabinetDTO.setCasIdA(Integer.valueOf(keya[2]));
@@ -852,7 +748,7 @@ public class AisleServiceImpl implements AisleService {
                         }
                         if (!StringUtils.isBlank(cabinetBoxes.getBoxKeyB())) {
                             String[] keyb = cabinetBoxes.getBoxKeyB().split(SPLIT_KEY);
-                            if (keyb.length==3) {
+                            if (keyb.length == 3) {
                                 cabinetDTO.setBusIpB(keyb[0]);
                                 cabinetDTO.setBarIdB(Integer.valueOf(keyb[1]));
                                 cabinetDTO.setCasIdB(Integer.valueOf(keyb[2]));
@@ -1548,9 +1444,9 @@ public class AisleServiceImpl implements AisleService {
             AisleEqTotalDayDo dayDo = JsonUtils.parseObject(str, AisleEqTotalDayDo.class);
             String dateTime = DateUtil.formatDate(dayDo.getCreateTime());
 //            eqMap.put(dateTime, dayDo.getEqValue());
-            if (Objects.equals(dayDo.getEqValue(),0.0)){
+            if (Objects.equals(dayDo.getEqValue(), 0.0)) {
                 eqMap.put(dateTime, dayDo.getEndEle());
-            }else {
+            } else {
                 eqMap.put(dateTime, dayDo.getEqValue());
             }
         });
@@ -1587,9 +1483,9 @@ public class AisleServiceImpl implements AisleService {
             AisleEqTotalWeekDo weekDo = JsonUtils.parseObject(str, AisleEqTotalWeekDo.class);
             String dateTime = DateUtil.formatDate(weekDo.getCreateTime());
 //            eqMap.put(dateTime, weekDo.getEqValue());
-            if (Objects.equals(weekDo.getEqValue(),0.0)){
+            if (Objects.equals(weekDo.getEqValue(), 0.0)) {
                 eqMap.put(dateTime, weekDo.getEndEle());
-            }else {
+            } else {
                 eqMap.put(dateTime, weekDo.getEqValue());
             }
         });
@@ -1625,9 +1521,9 @@ public class AisleServiceImpl implements AisleService {
             AisleEqTotalMonthDo monthDo = JsonUtils.parseObject(str, AisleEqTotalMonthDo.class);
             String dateTime = DateUtil.formatDate(monthDo.getCreateTime());
 //            eqMap.put(dateTime, monthDo.getEqValue());
-            if (Objects.equals(monthDo.getEqValue(),0.0)){
+            if (Objects.equals(monthDo.getEqValue(), 0.0)) {
                 eqMap.put(dateTime, monthDo.getEndEle());
-            }else {
+            } else {
                 eqMap.put(dateTime, monthDo.getEqValue());
             }
         });

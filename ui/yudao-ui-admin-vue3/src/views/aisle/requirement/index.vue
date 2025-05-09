@@ -466,7 +466,6 @@ watch(filterText, (val) => {
 })
 
 watch(openDetailFlag,(val) => {
-  console.log(val)
   if(val == "1") {
     openDetail({id: query.id,location: query.location})
   }

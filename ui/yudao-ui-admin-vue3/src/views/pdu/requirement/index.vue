@@ -462,7 +462,12 @@ import * as echarts from 'echarts';
 import { ref, onMounted, onUnmounted } from 'vue';
 import Bar from './component/Bar.vue'
 import pow from './component/pow.vue'
+import { useRoute } from 'vue-router'
 
+const route = useRoute();
+const query = route.query;
+
+const openDetailFlag=ref("0")
 const searchbth = ref(false);
 const flagName = ref('最大电流');
 const now1 = new Date();
@@ -505,6 +510,16 @@ const option = {
     }
   ]
 };
+
+watch(openDetailFlag,async (val) => {
+  if(val == "1") {
+    const data = await PDUDeviceApi.getLocation({devKey: query.devKey});
+    onlyDevKey.value = query.devKey
+    location.value = data
+    showDialog(query.pduId,"hour",0,1)
+  }
+})
+
 // 组件挂载时初始化图表
 onMounted(() => {
   giveValue()
@@ -515,6 +530,7 @@ onMounted(() => {
     myChart = echarts.init(chartDom.value);
     myChart.setOption(option);
   }
+  openDetailFlag.value = query.openDetailFlag || "0"
 });
 // 组件卸载时销毁图表
 onUnmounted(() => {

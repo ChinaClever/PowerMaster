@@ -103,6 +103,7 @@
         ci.power_capacity as powCapacity,
         ci.pdu_box as pduBox,
         ci.cabinet_height as cabinetHeight,
+        ci.cabinet_type as cabinetType,
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
         cf.ele_alarm_day as eleAlarmDay,
@@ -165,14 +166,35 @@
         = #{vo.eleAlarmMonth}, cg.ele_limit_month = #{vo.eleLimitMonth}
         where cg.cabinet_id = #{vo.id}
     </update>
+<!--    <update id="updateBatchByCabinetId">-->
+<!--        <foreach collection="cabinetList" item="item" index="index"  separator=";">-->
+<!--        update cabinet_cfg  set-->
+<!--        x_coordinate = #{item.xCoordinate},-->
+<!--        y_coordinate = #{item.yCoordinate}-->
+<!--        where cabinet_id = #{item.id}-->
+<!--        </foreach>-->
+<!--    </update>-->
+
     <update id="updateBatchByCabinetId">
-        <foreach collection="cabinetList" item="item" index="index"  separator=",">
-        update cabinet_cfg cg set
-        cg.x_coordinate = #{item.xCoordinate},
-        cg.y_coordinate = #{item.yCoordinate}
-        where cg.cabinet_id = #{item.id}
+        <!-- 使用 CASE WHEN 实现批量更新 -->
+        UPDATE cabinet_cfg
+        <set>
+            x_coordinate = CASE
+            <foreach collection="cabinetList" item="item" index="index" separator=" ">
+                WHEN cabinet_id = #{item.id} THEN #{item.xCoordinate}
+            </foreach>
+            ELSE x_coordinate
+            END,
+            y_coordinate = CASE
+            <foreach collection="cabinetList" item="item" index="index" separator=" ">
+                WHEN cabinet_id = #{item.id} THEN #{item.yCoordinate}
+            </foreach>
+            ELSE y_coordinate
+            END
+        </set>
+        WHERE cabinet_id IN
+        <foreach collection="cabinetList" item="item" index="index" open="(" separator="," close=")">
+            #{item.id}
         </foreach>
     </update>
-
-
 </mapper>

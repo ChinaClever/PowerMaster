@@ -432,7 +432,7 @@ public class CabinetServiceImpl implements CabinetService {
     public CommonResult saveCabinet(CabinetVo vo) throws Exception {
         try {
             //判断pdu是否已经关联其他机柜
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
+            if (vo.getPduBox().equals(PduBoxFlagEnums.PDU.getValue())) {
                 List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
@@ -487,7 +487,7 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                         .eq(CabinetIndex::getRoomId, vo.getRoomId()));
                 if (Objects.nonNull(index)) {
-                    if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus() || index.getIsDisabled() == DisableFlagEnums.DISABLE.getStatus()) {
+                    if (index.getIsDeleted().equals(DelFlagEnums.DELETE.getStatus()) || index.getIsDisabled().equals(DisableFlagEnums.DISABLE.getStatus())) {
                         //index 索引表
                         //修改
                         cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -517,7 +517,7 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
             //机柜与PDU/插接箱的关联
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
+            if (vo.getPduBox().equals(PduBoxFlagEnums.PDU.getValue())) {
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
                     //删除
@@ -540,7 +540,7 @@ public class CabinetServiceImpl implements CabinetService {
                         cabinetPduMapper.insert(convertPdu(vo, pdu));
                     }
                 }
-            } else if (vo.getPduBox() == PduBoxFlagEnums.BUS.getValue()) {
+            } else if (vo.getPduBox().equals(PduBoxFlagEnums.BUS.getValue())) {
 
                 if (Objects.isNull(vo.getBoxOutletIdA()) && Objects.isNull(vo.getBoxOutletIdB())) {
                     //删除
@@ -1099,10 +1099,12 @@ public class CabinetServiceImpl implements CabinetService {
                         env.setIceTopHum(front.get(0));
                         env.setIceMidHum(front.get(1));
                         env.setIceBomHum(front.get(2));
+                        env.setIceMaxHum(Collections.max(front));
                         List<BigDecimal> black = humValue.getList("black", BigDecimal.class);
                         env.setHotTopHum(black.get(0));
                         env.setHotMidHum(black.get(1));
                         env.setHotBomHum(black.get(2));
+                        env.setHotMaxHum(Collections.max(black));
                     }
                     JSONObject temValue = cabinetEnv.getJSONArray("tem_value").getJSONObject(0);
                     if (Objects.nonNull(temValue)) {
@@ -1110,10 +1112,12 @@ public class CabinetServiceImpl implements CabinetService {
                         env.setIceTopTem(front.get(0));
                         env.setIceMidTem(front.get(1));
                         env.setIceBomTem(front.get(2));
+                        env.setIceMaxTem(Collections.max(front));
                         List<BigDecimal> black = temValue.getList("black", BigDecimal.class);
                         env.setHotTopTem(black.get(0));
                         env.setHotMidTem(black.get(1));
                         env.setHotBomTem(black.get(2));
+                        env.setHotMaxTem(Collections.max(black));
                     }
                     JSONArray humAverage = cabinetEnv.getJSONArray("hum_average");
                     if (!CollectionUtils.isEmpty(humAverage)) {
@@ -1127,14 +1131,14 @@ public class CabinetServiceImpl implements CabinetService {
                     }
                     List<TemColorDO> temColorDOList = temColorService.getTemColorAll();
                     if (!CollectionUtils.isEmpty(temColorDOList)) {
-                        env.setIceAverageTemColor(findTemColorForValue(temColorDOList, env.getIceAverageTem().doubleValue(), false));
-                        env.setHotAverageTemColor(findTemColorForValue(temColorDOList, env.getHotAverageTem().doubleValue(), true));
-                        env.setIceTopTemColor(findTemColorForValue(temColorDOList, env.getIceTopTem().doubleValue(), false));
-                        env.setIceMidTemColor(findTemColorForValue(temColorDOList, env.getIceMidTem().doubleValue(), false));
-                        env.setIceBomTemColor(findTemColorForValue(temColorDOList, env.getIceBomTem().doubleValue(), false));
-                        env.setHotTopTemColor(findTemColorForValue(temColorDOList, env.getHotTopTem().doubleValue(), true));
-                        env.setHotMidTemColor(findTemColorForValue(temColorDOList, env.getHotMidTem().doubleValue(), true));
-                        env.setHotBomTemColor(findTemColorForValue(temColorDOList, env.getHotBomTem().doubleValue(), true));
+                        env.setIceAverageTemColor(findTemColorForValue(temColorDOList, env.getIceMaxTem().doubleValue(), pageReqVO.getSwitchValue()));
+                        env.setHotAverageTemColor(findTemColorForValue(temColorDOList, env.getHotMaxTem().doubleValue(),  pageReqVO.getSwitchValue()));
+                        env.setIceTopTemColor(findTemColorForValue(temColorDOList, env.getIceTopTem().doubleValue(),  pageReqVO.getSwitchValue()));
+                        env.setIceMidTemColor(findTemColorForValue(temColorDOList, env.getIceMidTem().doubleValue(),  pageReqVO.getSwitchValue()));
+                        env.setIceBomTemColor(findTemColorForValue(temColorDOList, env.getIceBomTem().doubleValue(),  pageReqVO.getSwitchValue()));
+                        env.setHotTopTemColor(findTemColorForValue(temColorDOList, env.getHotTopTem().doubleValue(),  pageReqVO.getSwitchValue()));
+                        env.setHotMidTemColor(findTemColorForValue(temColorDOList, env.getHotMidTem().doubleValue(),  pageReqVO.getSwitchValue()));
+                        env.setHotBomTemColor(findTemColorForValue(temColorDOList, env.getHotBomTem().doubleValue(),  pageReqVO.getSwitchValue()));
                     }
                 }
             }
@@ -1143,9 +1147,9 @@ public class CabinetServiceImpl implements CabinetService {
         return pageResult;
     }
 
-    public String findTemColorForValue(List<TemColorDO> temColorDOList, double value,Boolean hot) {
+    public String findTemColorForValue(List<TemColorDO> temColorDOList, double value,Integer switchValue) {
         for (TemColorDO temColorDO : temColorDOList) {
-            if (hot){
+            if (Objects.equals(switchValue,1)){
                 if (value >= temColorDO.getHotMin() && value <= temColorDO.getHotMax()) {
                     return temColorDO.getHotColor();
                 }
@@ -1426,8 +1430,14 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setPowerFactor(total.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
         }
         if (Objects.nonNull(apath)) {
-            vo.setCurA(apath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setVolA(apath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            List<BigDecimal> curValue = apath.getList("cur_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(curValue)) {
+                vo.setCurA(curValue.stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
+            List<BigDecimal> volValue = apath.getList("vol_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(volValue)) {
+                vo.setVolA(volValue.stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
             vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentA(apath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveA(apath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
@@ -1435,8 +1445,14 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentA(), vo.getPowApparentTotal()), 100));
         }
         if (Objects.nonNull(bpath)) {
-            vo.setCurB(bpath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setVolB(bpath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            List<BigDecimal> curValue = bpath.getList("cur_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(curValue)) {
+                vo.setCurB(curValue.stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
+            List<BigDecimal> volValue = bpath.getList("vol_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(volValue)) {
+                vo.setVolB(volValue.stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
             vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率

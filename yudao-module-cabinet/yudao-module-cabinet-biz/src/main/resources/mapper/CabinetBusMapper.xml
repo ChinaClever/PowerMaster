@@ -57,4 +57,18 @@
             </foreach>
         </where>
     </select>
+    <select id="selectByAisleId"
+            resultType="cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox">
+        SELECT
+        cb.id,
+        cb.cabinet_id,
+        cb.box_key_a,
+        cb.outlet_id_a,
+        cb.box_key_b,
+        cb.outlet_id_b
+        FROM cabinet_box cb left join cabinet_index ci on ci.id=cb.cabinet_id
+        <where>
+            ci.aisle_id=#{id}
+        </where>
+    </select>
 </mapper>

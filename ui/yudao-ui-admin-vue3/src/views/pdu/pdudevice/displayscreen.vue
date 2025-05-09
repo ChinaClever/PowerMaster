@@ -3166,6 +3166,9 @@ onMounted(async () => {
   //1
   devKeyList.value = await loadAll();
   await window.addEventListener('resize', updateDimensions)
+  if(!location2.value) {
+    await getLocation()
+  }
   // console.log(devKeyList.value)
   await lineidFlashChartData()
 })
