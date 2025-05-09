@@ -50,5 +50,5 @@ public interface CabinetHistoryDataService {
 
     Map<String, Object> getEnvNewData();
 
-    PageResult<CabinetEnvResVO> getHistoryEnvDataDetails(Integer cabinetId, String granularity, String[] timeRange);
+    PageResult<CabinetEnvResVO> getHistoryEnvDataDetails(Integer cabinetId, String granularity, String[] timeRange,String address);
 }

@@ -139,7 +139,7 @@ const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
-const selectTimeRange = ref(defaultDayTimeRange(14)) as any
+const selectTimeRange = ref(defaultDayTimeRange(7)) as any
 const currentKey=ref()
 if(history.state.cabinetId!=null){
   currentKey.value=history.state.cabinetId
@@ -391,7 +391,7 @@ const initLineChart = () => {
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value,symbol:"none",itemStyle:{normal:{lineStyle:{color:'#C8603A'}}}}],
+      series: [{name: '耗电量', type: 'line', data: eqData.value,symbol:"none",itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;

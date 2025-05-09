@@ -721,7 +721,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
                     List<String> collect = aisleBoxVOList.stream().map(AisleBoxVO::getBoxKey).collect(Collectors.toList());
                     boxKeys.addAll(collect);
-                    Collections.sort(aisleBoxVOList, Comparator.comparing(AisleBoxVO::getBoxName));
+//                    Collections.sort(aisleBoxVOList, Comparator.comparing(AisleBoxVO::getBoxName));
                     if (!CollectionUtils.isEmpty(aisleBoxVOList)) {
                         aisleBoxVOList.forEach(aisleBox -> {
                             if (StringUtils.isNotEmpty(aisleBox.getBoxKey())) {

@@ -17,7 +17,7 @@
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
           <div>
-            <span>全部机柜新增电费记录</span>
+            <span>全部机柜新增电能记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>

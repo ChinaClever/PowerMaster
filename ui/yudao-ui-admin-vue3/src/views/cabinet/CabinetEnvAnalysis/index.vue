@@ -80,14 +80,14 @@
          </el-form-item>
 
         <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;position: absolute;top: 54px;right: 30px;">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+          <Icon icon="ep:download" class="mr-5px" /> 导出
+        </el-button>
       </el-form>
     </template>
     
     <template #Content>
       <div v-loading="loading">
-        <el-tabs v-model="activeName1" v-if="loading2">
+        <el-tabs v-model="activeName1" v-show="loading2">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" class="adaptiveStyle"></div>
           </el-tab-pane>
@@ -133,7 +133,7 @@
               </el-table> -->
               
 
-            <el-table
+            <el-table 
                 :stripe="true" 
                 :border="true"
                 :data="tableData"
@@ -156,7 +156,7 @@
 
               <template v-if="activeName!='realtimeTabPane'">
                 <el-table-column label="平均温度(℃)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].tem_avg_value`"/>
-                <el-table-column label="平均温度(℃)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].tem_avg_value`"/>
+                <el-table-column label="平均湿度(%RH)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].hum_avg_value`"/>
 
                 <el-table-column label="最大温度(℃)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].tem_max_value`"/>
                 <el-table-column label="最大值发生时间" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].max_time`" />
@@ -221,7 +221,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   pduId: undefined as number | undefined,
-  sensorId: undefined as number | undefined,
+  sensor: undefined as string[] | undefined,
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
   nowAddress: undefined as string | undefined,
@@ -511,6 +511,16 @@ const chartContainer = ref<HTMLElement | null>(null);
 let realtimeChart = null as echarts.ECharts | null; 
 const initChart = () => {
   if ( isHaveData.value == true ){
+    if(createTimeData.value==null||createTimeData.value.length==0){
+      loading2.value=false
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+      return;
+    }else{
+      loading2.value=true
+    }
     realtimeChart?.off("legendselectchanged");
     realtimeChart?.dispose();
     realtimeChart = echarts.init(chartContainer.value);
@@ -903,7 +913,15 @@ const handleExport1 = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await HistoryDataApi.exportEnvHistorydetailsPageData(queryParams, axiosConfig)
+    queryParams.sensor=nowArray.value;
+    if(queryParams.cabinetId==null){
+      ElMessage({
+        message: '请选择机柜',
+        type: 'warning',
+      });
+      return;
+    }
+    const data = await HistoryDataApi.exportHistoryEnvDetailData(queryParams, axiosConfig)
     await download.excel(data, '机柜环境分析.xlsx')
   } catch (error) {
     // 处理异常
@@ -977,6 +995,7 @@ const handleClick = async (row) => {
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
     });
+    queryParams.nowAddress=nowAddress.value;
     let data: any[] = [];
     tableData.value = data;
     handleQuery();
@@ -1034,6 +1053,7 @@ function setDefaultExpandedKeys(list):boolean {
 import { useRoute, useRouter } from 'vue-router';
 import { func } from 'vue-types';
 import { max, min, now } from 'lodash-es';
+import { cr } from 'dist-prod/assets/installCanvasRenderer-WHaFMoQ9';
 const route = useRoute();
 const router = useRouter();
 if(route.query.start!=null&&route.query.end!=null){
@@ -1210,6 +1230,7 @@ function changeTime(to){
 console.log("history.state==",history.state);
 if(history.state.cabinetId!=null){
   queryParams.cabinetId=history.state.cabinetId;
+  queryParams.nowAddress=history.state.address;
   nowAddress.value=history.state.address;
   if(history.state.start!=null&&history.state.start!=''&&history.state.end!=null&&history.state.end!=''){
     queryParams.timeRange=[history.state.start,history.state.end];

@@ -30,7 +30,7 @@
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
           <div>
-            <span>全部柜列新增电费统计</span>
+            <span>全部柜列新增电能统计</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>

@@ -73,7 +73,7 @@
            <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
          </el-form-item>
          <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;position: absolute;top:2px;right: -21px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
           </el-form-item>
@@ -99,7 +99,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)" style="background-color: #00778c;color:#ffffff;">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.cabinet_id, row.location)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
           </template>
         </el-table-column>
         

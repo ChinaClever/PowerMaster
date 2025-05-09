@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU环境数据" placeholder="机柜名">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
         <div class="nav_data">
           <div class="descriptions-container" style="font-size: 14px;">
             <div class="description-item">
@@ -87,12 +87,12 @@
 
         <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
 
         </el-form-item> 
           <div style="float:right;">
           
-        <el-button type="success" plain @click="handleExport" :loading="exportLoading" >
+        <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </div>
@@ -119,7 +119,7 @@
                            >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
               </div>
               <div v-else-if="column.slot === 'detect'">
                 {{ getCombinedString(row.address?.channel, row.address?.position) }}
@@ -138,7 +138,7 @@
                            >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
               </div>
               <div v-else-if="column.slot === 'detect'">
                 {{ getCombinedString(row.address?.channel, row.address?.position) }}
@@ -272,7 +272,7 @@ const sensorOptions = ref([
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref([["tem"], ["hum"],["sensor_id"]])
+const defaultOptionsCol = ref([["tem"], ["hum"],["sensor_id"],['location']])
 const optionsCol = ref([
   { value: "tem", label: '温度'},
   { value: "hum", label: '湿度'},
@@ -311,7 +311,7 @@ watch(() => queryParams.granularity, (newValues) => {
     const  newGranularity = newValues;
     if ( newGranularity == 'realtime'){
       // 配置筛选列
-      defaultOptionsCol.value = [["tem"], ["hum"]];
+      defaultOptionsCol.value = [["tem"], ["hum"],['location']];
       optionsCol.value = [
         { value: "tem", label: '温度'},
         { value: "hum", label: '湿度'},
@@ -335,7 +335,7 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       // 配置筛选列
-      defaultOptionsCol.value = [["tem_value", "tem_max"],["hum_value", "hum_max"]];
+      defaultOptionsCol.value = [["tem_value", "tem_max"],["hum_value", "hum_max"],['location']];
       optionsCol.value = [
         { value: "tem_value", label: '温度', children: [
             { value: "tem_avg_value", label: '平均温度'},
@@ -517,7 +517,11 @@ const handleQuery = () => {
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, address: string, channel: number, position: number, sensorId: number) => {
   let detectValue = channel?.toString()+position?.toString()
-  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId+(selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+dayjs(selectTimeRange.value[0]).format("YYYY-MM-DD HH:mm:ss")+'&end='+dayjs(selectTimeRange.value[1]).format("YYYY-MM-DD HH:mm:ss"):''));
+  if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
+    push({path:'/pdu/record/envAnalysis',state:{pduId,location,address,detectValue,sensorId,start:dayjs(selectTimeRange.value[0]).format("YYYY-MM-DD HH:mm:ss"),end:dayjs(selectTimeRange.value[1]).format("YYYY-MM-DD HH:mm:ss")}})
+  }else{
+    push({path:'/pdu/record/envAnalysis',state:{pduId,location,address,detectValue,sensorId}})
+  }
 }
 
 /** 导出按钮操作 */
@@ -560,8 +564,8 @@ onMounted( () => {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+dayjs(startOfMonth).format('YYYY-MM-DD HH:mm:ss'),
+dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 ];
   getNavList()
   getNavNewData()
@@ -623,5 +627,8 @@ selectTimeRange.value = [
   ::v-deep .el-table .el-table__header th {
     background-color: #f7f7f7;
     color: #909399;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
 }
 </style>

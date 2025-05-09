@@ -25,57 +25,84 @@ public class HistoryDataDetailsLineExportDetailsVO {
 
     @ExcelProperty("记录时间")
     private String create_time;
-    @ExcelProperty("平均电流(A)")
+    @ExcelProperty({"电流(A)","平均值"})
     @NumberFormat("0.00")
     private Double cur_avg_value;
-    @ExcelProperty({"电流最大值", "电流最大值(A)"})
+    @ExcelProperty({"电流(A)", "最大值"})
     @NumberFormat("0.00")
     private Double cur_max_value;
-    @ExcelProperty({"电流最大值", "发生时间"})
+    @ExcelProperty({"电流(A)", "发生时间"})
     private String cur_max_time;
     @NumberFormat("0.00")
-    @ExcelProperty({"电流最小值", "电流最小值(A)"})
+    @ExcelProperty({"电流(A)", "最小值"})
     private Double cur_min_value;
-    @ExcelProperty({"电流最小值", "发生时间"})
+    @ExcelProperty({"电流(A)", "发生时间"})
     private String cur_min_time;
-    @ExcelProperty("平均电压(V)")
+    @ExcelProperty({"电压(V)","平均值"})
     @NumberFormat("0.0")
     private Double vol_avg_value;
-    @ExcelProperty({"电压最大值", "电压最大值(V)"})
+    @ExcelProperty({"电压(V)", "最大值"})
     @NumberFormat("0.0")
     private Double vol_max_value;
-    @ExcelProperty({"电压最大值", "发生时间"})
+    @ExcelProperty({"电压(V)", "发生时间"})
     private String vol_max_time;
-    @ExcelProperty({"电压最小值", "电压最小值(V)"})
+    @ExcelProperty({"电压(V)", "最小值"})
     @NumberFormat("0.0")
     private Double vol_min_value;
-    @ExcelProperty({"电压最小值", "发生时间"})
+    @ExcelProperty({"电压(V)", "发生时间"})
     private String vol_min_time;
     @NumberFormat("0.000")
-    @ExcelProperty("平均有功功率(kW)")
+    @ExcelProperty({"有功功率(kW)","平均值"})
     private Double pow_active_avg_value;
-    @ExcelProperty({"有功功率最大值", "有功功率最大值(kW)"})
+    @ExcelProperty({"有功功率(kW)", "最大值"})
     @NumberFormat("0.000")
     private Double pow_active_max_value;
-    @ExcelProperty({"有功功率最大值", "发生时间"})
+    @ExcelProperty({"有功功率(kW)", "发生时间"})
     private String pow_active_max_time;
-    @ExcelProperty({"有功功率最小值", "有功功率最小值(kW)"})
+    @ExcelProperty({"有功功率(kW)", "最小值"})
     @NumberFormat("0.000")
     private Double pow_active_min_value;
-    @ExcelProperty({"有功功率最小值", "发生时间"})
+    @ExcelProperty({"有功功率(kW)", "发生时间"})
     private String pow_active_min_time;
-    @ExcelProperty("平均视在功率(kVA)")
+    @ExcelProperty({"视在功率(kVA)","平均值"})
     @NumberFormat("0.000")
     private Double pow_apparent_avg_value;
-    @ExcelProperty({"视在功率最大值", "视在功率最大值(kVA)"})
+    @ExcelProperty({"视在功率(kVA)", "最大值"})
     @NumberFormat("0.000")
     private Double pow_apparent_max_value;
-    @ExcelProperty({"视在功率最大值", "发生时间"})
+    @ExcelProperty({"视在功率(kVA)", "发生时间"})
     private String pow_apparent_max_time;
     @NumberFormat("0.000")
-    @ExcelProperty({"视在功率最小值", "视在功率最小值(kVA)"})
+    @ExcelProperty({"视在功率(kVA)", "最小值"})
     private Double pow_apparent_min_value;
-    @ExcelProperty({"视在功率最小值", "发生时间"})
+    @ExcelProperty({"视在功率(kVA)", "发生时间"})
     private String pow_apparent_min_time;
 
+    @ExcelProperty({"无功功率(kVar)","平均值"})
+    @NumberFormat("0.000")
+    private Double pow_reactive_avg_value;
+    @ExcelProperty({"无功功率(kVar)", "最大值"})
+    @NumberFormat("0.000")
+    private Double pow_reactive_max_value;
+    @ExcelProperty({"无功功率(kVar)", "发生时间"})
+    private String pow_reactive_max_time;
+    @NumberFormat("0.000")
+    @ExcelProperty({"无功功率(kVar)", "最小值"})
+    private Double pow_reactive_min_value;
+    @ExcelProperty({"无功功率(kVar)", "发生时间"})
+    private String pow_reactive_min_time;
+
+    @ExcelProperty({"功率因素","平均值"})
+    @NumberFormat("0.00")
+    private Double power_factor_avg_value;
+    @ExcelProperty({"功率因素", "最大值"})
+    @NumberFormat("0.00")
+    private Double power_factor_max_value;
+    @ExcelProperty({"功率因素", "发生时间"})
+    private String power_factor_max_time;
+    @NumberFormat("0.00")
+    @ExcelProperty({"功率因素", "最小值"})
+    private Double power_factor_min_value;
+    @ExcelProperty({"功率因素", "发生时间"})
+    private String power_factor_min_time;
 }

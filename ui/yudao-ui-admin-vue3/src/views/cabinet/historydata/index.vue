@@ -67,7 +67,7 @@
               plain
               @click="handleExport"
               :loading="exportLoading"
-              style="background-color: #00778c;color:#ffffff;font-size: 13px;"
+              style="background-color: #00778c;color:#ffffff;font-size: 13px;position: absolute;top: 2px;right: -30px;"
             >
               <Icon icon="ep:download" class="mr-5px" /> 导出
             </el-button>
@@ -123,6 +123,7 @@ import PDUImage from '@/assets/imgs/PDU.jpg';
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { format } from 'path';
 const { push } = useRouter()
 /** 机柜历史数据 列表 */
 defineOptions({ name: 'CabinetHistoryData' })
@@ -204,7 +205,7 @@ const shortcuts = [
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref([["total", "active_total"], ["total", "apparent_total"],['total',"reactive_total"],["total","factor_total"]])
+const defaultOptionsCol = ref([["total", "active_total"], ["total", "apparent_total"],['total',"reactive_total"],["total","factor_total"],['total','load_rate']])
 const optionsCol = ref([
   {
     value: "total",
@@ -213,7 +214,8 @@ const optionsCol = ref([
       { value: "active_total", label: '总有功功率' },
       { value: "apparent_total", label: '总视在功率' },
       { value: "reactive_total", label: '总无功功率' },
-      {value:"factor_total",label:'总功率因数'}
+      {value:"factor_total",label:'总功率因数'},
+      {value:"load_rate",label:'总负载率'}
     ],
   },
   {
@@ -237,7 +239,7 @@ const optionsCol = ref([
     ],
   },
 ])
-const originalArray = ref([ "active_total", "apparent_total","reactive_total", "factor_total", 
+const originalArray = ref([ "active_total", "apparent_total","reactive_total", "factor_total", "load_rate",
                             "active_a", "apparent_a", "reactive_a", "factor_a", 
                             "active_b", "apparent_b", "reactive_b", "factor_b"
                           ]  )
@@ -271,7 +273,7 @@ watch(() => queryParams.granularity, (newValues) => {
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
       defaultOptionsCol.value = [
-        ["total", "active_total"], ["total", "apparent_total"],["total", "reactive_total"],["total", "factor_total"]
+        ["total", "active_total"], ["total", "apparent_total"],["total", "reactive_total"],["total", "factor_total"],['total','load_rate']
       ]
       optionsCol.value = [
         {
@@ -281,7 +283,8 @@ watch(() => queryParams.granularity, (newValues) => {
           { value: "active_total", label: '总有功功率' },
           { value: "apparent_total", label: '总视在功率' },
           { value: "reactive_total", label: '总无功功率' },
-          { value:"factor_total",label:'总功率因数'}
+          { value:"factor_total",label:'总功率因数'},
+          { value:"load_rate",label:'总负载率'}
         ],
         },
         {
@@ -305,7 +308,7 @@ watch(() => queryParams.granularity, (newValues) => {
           ],
         },
       ]
-      originalArray.value = [ "active_total", "apparent_total","reactive_total", "factor_total", 
+      originalArray.value = [ "active_total", "apparent_total","reactive_total", "factor_total", "load_rate",
                             "active_a", "apparent_a", "reactive_a", "factor_a", 
                             "active_b", "apparent_b", "reactive_b", "factor_b"
                           ]       
@@ -317,6 +320,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
         { label: '总无功功率(kVar)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
         { label: '总功率因素', align: 'center', prop: 'factor_total' , istrue:true, width: '180px', formatter: formatPowerFactor},
+        { label: '总负载率(%)', align: 'center', prop: 'load_rate' , istrue:true, width: '180px', formatter: formatLoadRateFactor},
 
         { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, width: '180px', formatter: formatPower},
@@ -335,7 +339,6 @@ watch(() => queryParams.granularity, (newValues) => {
     }else{
       defaultOptionsCol.value = [
         ["total", "active_pow", "active_total_max"],["total", "apparent_pow", "apparent_total_max"],["total", "reactive_pow", "reactive_total_max"],
-        ["total", "factor_total_avg_value"],
       ]
       optionsCol.value = [
         {
@@ -361,6 +364,7 @@ watch(() => queryParams.granularity, (newValues) => {
               ] 
             },
             { value: "factor_total_avg_value", label: '平均功率因素'},
+            { value: "load_rate", label: '负载率'},
           ],
         },
         {
@@ -406,7 +410,7 @@ watch(() => queryParams.granularity, (newValues) => {
       ] as any;
       originalArray.value = [
         "active_total_avg_value", "active_total_max", "active_total_min", "apparent_total_avg_value", "apparent_total_max", "apparent_total_min", 
-        "reactive_total_min", "reactive_total_max", "reactive_total_avg_value", "factor_total_avg_value",
+        "reactive_total_min", "reactive_total_max", "reactive_total_avg_value", "factor_total_avg_value","load_rate",
         "active_a_avg_value", "active_a_max", "active_a_min", "apparent_a_avg_value", "apparent_a_max", "apparent_a_min",
        "reactive_a_avg_value", "factor_a_avg_value",
         "active_b_avg_value", "active_b_max", "active_b_min", "apparent_b_avg_value", "apparent_b_max", "apparent_b_min",
@@ -432,7 +436,9 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '总最大无功功率时间', align: 'center', prop: 'reactive_total_max_time', formatter: formatTime, width: '200px', istrue:true},
         { label: '总最小无功功率(kVar)', align: 'center', prop: 'reactive_total_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最小无功功率时间', align: 'center', prop: 'reactive_total_min_time', formatter: formatTime, width: '200px', istrue:false},
-        { label: '总平均功率因素', align: 'center', prop: 'factor_total_avg_value', istrue:true, width: '180px', formatter: formatPowerFactor},
+        { label: '总平均功率因素', align: 'center', prop: 'factor_total_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+        { label: '总平均负载率(%)', align: 'center', prop: 'load_rate_total_avg_value', istrue:false, width: '180px', formatter: formatLoadRateFactor},
+
 
         { label: 'A路平均有功功率(kW)', align: 'center', prop: 'active_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大有功功率(kW)', align: 'center', prop: 'active_a_max_value', istrue:false, width: '180px', formatter: formatPower},
@@ -477,6 +483,8 @@ const tableColumns = ref([
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
   { label: '总无功功率(kVar)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
   { label: '总功率因素', align: 'center', prop: 'factor_total' , istrue:true, width: '180px', formatter: formatPowerFactor},
+  { label: '总负载率(%)', align: 'center', prop: 'load_rate' , istrue:true, width: '180px', formatter: formatLoadRateFactor},
+
 
   { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, width: '180px', formatter: formatPower},
   { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, width: '180px', formatter: formatPower},
@@ -517,6 +525,9 @@ function formatPowerFactor(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(2);
 }
 
+function formatLoadRateFactor(_row: any, _column: any, cellValue: number): string {
+  return Number(cellValue).toFixed(0);
+}
 // 最后一页显示数据量过大的提示
 const shouldShowDataExceedMessage = computed(() => {
   const lastPageNo = Math.ceil(total.value / queryParams.pageSize);

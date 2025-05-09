@@ -604,8 +604,8 @@ watch(() => queryParams.granularity, (newValues) => {
 // ]) as any;
 
 /** 查询列表 */
-const getList = async () => {
-  loading.value = true
+const getList = async (needLoading=true) => {
+  loading.value = needLoading;
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化日期范围 加上23:59:59的时分秒 
@@ -614,6 +614,8 @@ const getList = async () => {
       const selectedEndTime = formatDate(selectTimeRange.value[1])
      // selectTimeRange.value = [selectedStartTime, selectedEndTime];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }else{
+      queryParams.timeRange = [];
     }
     const data = await HistoryDataApi.getHistoryEnvData(queryParams)
     for(let i=0;i<data.list.length;i++){
@@ -751,7 +753,7 @@ const disabledDate = (date) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
     queryParams.pageNo = 1
-    getNavNewData();
+    // getNavNewData();
     getList();
 }
 
@@ -800,6 +802,8 @@ const format = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+let intervalId=null as any;
 /** 初始化 **/
 onMounted( () => {
   const now = new Date()
@@ -809,11 +813,18 @@ selectTimeRange.value = [
   dayjs(startOfMonth).format('YYYY-MM-DD HH:mm:ss'),
   dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 ];
+intervalId=setInterval(() => {
+  getList(false);
+}, 60000);
   getNavList()
   getNavNewData()
   getList()
 });
-
+onBeforeUnmount(() => {
+  if(intervalId!=null){
+    clearInterval(intervalId);
+  }
+})
 </script>
 
 <style scoped>

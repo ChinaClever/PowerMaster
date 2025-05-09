@@ -63,7 +63,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.id)" style="background-color: #00778c;color:#ffffff;">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.id)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
           </template>
         </el-table-column>
         

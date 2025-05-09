@@ -60,7 +60,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)" style="background-color: #00778c;color: #ffffff;">详情</el-button>
+            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)" style="background-color: #00778c;color: #ffffff;font-size: 13px;">详情</el-button>
           </template>
         </el-table-column>
         

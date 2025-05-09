@@ -382,7 +382,7 @@ const initLineChart = () => {
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', symbol:"none",data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'}}}}],
+      series: [{name: '耗电量', type: 'line', symbol:"none",data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;

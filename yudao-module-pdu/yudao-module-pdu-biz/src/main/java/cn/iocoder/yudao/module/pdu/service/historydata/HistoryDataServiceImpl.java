@@ -1003,7 +1003,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
         switch (granularity) {
             case "realtime":
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusSeconds(100), LocalDateTime.now().minusSeconds(100), LocalDateTime.now().minusSeconds(100), LocalDateTime.now().minusSeconds(100)};
                 break;
             case "hour":
 //                indices = new String[]{"pdu_hda_total_hour", "pdu_hda_line_hour", "pdu_hda_loop_hour", "pdu_hda_outlet_hour"};

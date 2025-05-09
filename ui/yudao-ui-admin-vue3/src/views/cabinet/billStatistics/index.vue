@@ -235,6 +235,8 @@ const getList = async () => {
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const selectedEndTime = formatDate(addTime(selectTimeRange.value[1],oneDay))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }else{
+      queryParams.timeRange=null
     }
   
     const data = await EnergyConsumptionApi.getBillDataPage(queryParams)
