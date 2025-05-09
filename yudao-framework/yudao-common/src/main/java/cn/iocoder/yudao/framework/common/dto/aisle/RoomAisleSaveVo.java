@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Schema(description = "管理后台 - 柜列新增/编辑 Request VO")
 @Data
-public class AisleSaveVo {
+public class RoomAisleSaveVo {
 
     /**
      * 柜列id
@@ -88,41 +88,41 @@ public class AisleSaveVo {
     @Schema(description = "类型", example = "0")
     private String aisleType;
 
-    /**
-     * A路母线
-     */
-    private AisleBarDTO barA;
-    /**
-     * B路母线
-     */
-    private AisleBarDTO barB;
-
-    @Schema(description = "机柜列表", example = "[]")
-    private List<CabinetVo>  cabinetList;
+//    /**
+//     * A路母线
+//     */
+//    private AisleBarDTO barA;
+//    /**
+//     * B路母线
+//     */
+//    private AisleBarDTO barB;
+//
+//    @Schema(description = "机柜列表", example = "[]")
+//    private List<CabinetVo>  cabinetList;
 
 
     /**
      * 日用能告警开关
-     */
+     */    @Schema(description = "日用能告警开关")
     private  int eleAlarmDay;
 
     /**
      * 月用能告警开关
-     */
+     */@Schema(description = "月用能告警开关")
     private  int eleAlarmMonth;
 
     /**
      * 日用能限制
-     */
+     */@Schema(description = "日用能限制")
     private double eleLimitDay;
 
     /**
      * 月用能限制
-     */
+     */@Schema(description = "月用能限制")
     private double eleLimitMonth;
 
     /**
      * 机柜数据
-     */
+     */@Schema(description = "机柜数据批量添加")
     private CabinetFirstVO cabinetFirstVO;
 }

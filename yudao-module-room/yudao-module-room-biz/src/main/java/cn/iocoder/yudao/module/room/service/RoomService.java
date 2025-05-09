@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.room.service;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.aisle.RoomAisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
@@ -99,7 +100,7 @@ public interface RoomService {
      * @param vo
      * @return
      */
-    Integer roomAisleSave(AisleSaveVo vo);
+    Integer roomAisleSave(RoomAisleSaveVo vo);
 
     /**
      * 新-roomAisleDelete
@@ -140,4 +141,6 @@ public interface RoomService {
     Boolean findAreaById(Integer xLength, Integer yLength, Integer id);
 
     Boolean findAddAisleVerify(AisleSaveVo vo);
+
+    void editAisleExport(Integer roomId, Integer aisleId);
 }

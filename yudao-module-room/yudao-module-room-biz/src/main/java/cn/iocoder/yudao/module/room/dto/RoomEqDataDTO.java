@@ -26,6 +26,12 @@ public class RoomEqDataDTO {
     private Double lastMonthEq;
 
     /**
+     * 上月电量
+     */
+    @Schema(description = "上月现在电量", example = "1")
+    private Double lastMonthEqNow;
+
+    /**
      * 今日电量
      */
     @Schema(description = "今日电量", example = "1")
@@ -48,6 +54,12 @@ public class RoomEqDataDTO {
      */
     @Schema(description = "昨日用能", example = "1")
     private Double yesterdayEq;
+
+    /**
+     * 昨日用能
+     */
+    @Schema(description = "昨日现在用能", example = "1")
+    private Double yesterdayEqNow;
 
     /**
      * 机房iD

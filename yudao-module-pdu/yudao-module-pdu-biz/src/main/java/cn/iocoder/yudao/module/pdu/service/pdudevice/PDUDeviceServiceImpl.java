@@ -42,6 +42,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -2680,7 +2681,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 .filter(vo -> pduKeys.contains(vo.getPduKeyA()))
                 .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduKeyA()));
 
-
         Map<String, List<CabinetPduResVO>> cabinetPduBMap = cabinetPdus.stream()
                 .filter(vo -> pduKeys.contains(vo.getPduKeyB()))
                 .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduKeyB()));
@@ -2693,13 +2693,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (roomIds.isEmpty()) {
             roomIds.add(0);
         }
-        List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(roomIds);
-
+        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete,0));
+        if (CollectionUtils.isEmpty(roomIndices)){
+            return locationMap;
+        }
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         List<Integer> cabIds = cabinetPdus.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetPduResVO::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {
-            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectBatchIds(cabIds);
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().eq(AisleIndex::getId,cabIds).eq(AisleIndex::getIsDelete,0));
             if (!CollectionUtils.isEmpty(aisleIndexList)) {
                 aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
             } else {

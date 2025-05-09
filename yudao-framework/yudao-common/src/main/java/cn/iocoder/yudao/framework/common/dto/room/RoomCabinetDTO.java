@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetEnvSensorDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.alarm.AlarmLogRecord;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -181,9 +182,12 @@ public class RoomCabinetDTO {
     @Schema(description = "A")
     private String cabinetkeya;
 
+    private Object keya;
+
     @Schema(description = "B")
     private String cabinetkeyb;
 
+    private Object keyb;
     /**
      * 昨日电量
      */
