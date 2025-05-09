@@ -1102,19 +1102,6 @@ public class RoomServiceImpl implements RoomService {
         return map;
     }
 
-
-    //柜列删除
-    @Override
-    public Integer roomAisleDeleteById(int id) {
-        try {
-            return aisleIndexMapper.roomAisleDeleteById(id);
-        } finally {
-            log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
-        }
-    }
-
-
     //机房新增根据名称异步查询
     @Override
     public Integer newSelectRoomByName(String name) {
@@ -1140,7 +1127,8 @@ public class RoomServiceImpl implements RoomService {
             List<String> pduKey = new ArrayList<>();
             List<String> pduKeya = cabinetPdus.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
             List<String> pduKeyb = cabinetPdus.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
-            pduKey.addAll(pduKeyb);pduKey.addAll(pduKeya);
+            pduKey.addAll(pduKeyb);
+            pduKey.addAll(pduKeya);
             if (!CollectionUtils.isEmpty(pduKey)) {
                 List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>().in(PduIndexDo::getPduKey, pduKey).eq(PduIndexDo::getIsDeleted, 0));
                 pduIndexMap = pduIndexDos.stream().collect(Collectors.toMap(PduIndexDo::getPduKey, Function.identity()));
@@ -1152,7 +1140,8 @@ public class RoomServiceImpl implements RoomService {
             List<String> boxKey = new ArrayList<>();
             List<String> boxKeya = cabinetBoxs.stream().map(CabinetBox::getBoxKeyA).distinct().collect(Collectors.toList());
             List<String> boxKeyb = cabinetBoxs.stream().map(CabinetBox::getBoxKeyB).distinct().collect(Collectors.toList());
-            boxKey.addAll(boxKeya);boxKey.addAll(boxKeyb);
+            boxKey.addAll(boxKeya);
+            boxKey.addAll(boxKeyb);
             if (!CollectionUtils.isEmpty(boxKey)) {
                 List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getBoxKey, boxKey).eq(BoxIndex::getIsDeleted, 0));
                 boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getBoxKey, Function.identity()));
@@ -1169,10 +1158,10 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(envs)) {
             envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
         }
-        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
+        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId, ids)
                 .eq(AlarmLogRecord::getAlarmStatus, 0).orderByDesc(AlarmLogRecord::getCreateTime));
         Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+        if (!CollectionUtils.isEmpty(alarmLogRecords)) {
             alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
         }
         String startTime = LocalDateTimeUtil.format(LocalDate.now().atTime(LocalTime.MIN), "yyyy-MM-dd HH:mm:ss");
@@ -1206,8 +1195,9 @@ public class RoomServiceImpl implements RoomService {
             List<String> pduKey = new ArrayList<>();
             List<String> pduKeya = cabinetPdus.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
             List<String> pduKeyb = cabinetPdus.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
-            pduKey.addAll(pduKeyb);pduKey.addAll(pduKeya);
-            if(!CollectionUtils.isEmpty(pduKey)) {
+            pduKey.addAll(pduKeyb);
+            pduKey.addAll(pduKeya);
+            if (!CollectionUtils.isEmpty(pduKey)) {
                 List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>().in(PduIndexDo::getPduKey, pduKey).eq(PduIndexDo::getIsDeleted, 0));
                 pduIndexMap = pduIndexDos.stream().collect(Collectors.toMap(PduIndexDo::getPduKey, Function.identity()));
             }
@@ -1218,7 +1208,8 @@ public class RoomServiceImpl implements RoomService {
             List<String> boxKey = new ArrayList<>();
             List<String> boxKeya = cabinetBoxs.stream().map(CabinetBox::getBoxKeyA).distinct().collect(Collectors.toList());
             List<String> boxKeyb = cabinetBoxs.stream().map(CabinetBox::getBoxKeyB).distinct().collect(Collectors.toList());
-            boxKey.addAll(boxKeya);boxKey.addAll(boxKeyb);
+            boxKey.addAll(boxKeya);
+            boxKey.addAll(boxKeyb);
             if (!CollectionUtils.isEmpty(boxKey)) {
                 List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getBoxKey, boxKey).eq(BoxIndex::getIsDeleted, 0));
                 boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getBoxKey, Function.identity()));
@@ -1236,10 +1227,10 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(envs)) {
             envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
         }
-        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId,ids)
+        List<AlarmLogRecord> alarmLogRecords = alarmLogRecordDoMapper.selectList(new LambdaQueryWrapper<AlarmLogRecord>().in(AlarmLogRecord::getCabinetId, ids)
                 .eq(AlarmLogRecord::getAlarmStatus, 0).orderByDesc(AlarmLogRecord::getCreateTime));
         Map<Integer, List<AlarmLogRecord>> alarmMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+        if (!CollectionUtils.isEmpty(alarmLogRecords)) {
             alarmMap = alarmLogRecords.stream().collect(Collectors.groupingBy(AlarmLogRecord::getCabinetId));
         }
 
@@ -1282,7 +1273,7 @@ public class RoomServiceImpl implements RoomService {
 //                .last("limit 1"));
 //        iter.setAlarmLogRecord(alarmLogRecords);
         List<AlarmLogRecord> alarmLogRecords = alarmMap.get(iter.getId());
-        if (!CollectionUtils.isEmpty(alarmLogRecords)){
+        if (!CollectionUtils.isEmpty(alarmLogRecords)) {
             iter.setAlarmLogRecord(alarmLogRecords.get(0));
         }
 
@@ -2003,7 +1994,7 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
             cabinetIndex.setRoomId(index.getRoomId());
-            cabinetIndex.setCabinetName(index.getAisleName() + (i+1));
+            cabinetIndex.setCabinetName(index.getAisleName() + (i + 1));
             cabinetIndex.setAisleId(index.getId());
             cabinetIndex.setAisleX(0);
             cabinetIndex.setCabinetHeight(firstVO.getCabinetHeight());
@@ -2436,6 +2427,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public void editAisleExport(Integer roomId, Integer aisleId) {
 
+        cabinetIndexMapper.findAisleCabinetByRoomId(roomId, aisleId);
     }
 
 

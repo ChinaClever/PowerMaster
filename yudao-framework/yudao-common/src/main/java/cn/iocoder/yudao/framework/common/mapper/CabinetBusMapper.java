@@ -22,4 +22,6 @@ public interface CabinetBusMapper extends BaseMapper<CabinetBox> {
     List<Map<String, String>> findRoomIdB(@Param("busKeys") List<String> busKeys);
 
     List<CabinetBoxResVO> selectCabinetByBoxKey(@Param("keys") List<String> keys);
+
+    List<CabinetBox> selectByAisleId(Integer id);
 }

@@ -52,6 +52,7 @@ public class RoomController {
 
     @Value("${cabinet-refresh-url}")
     public String adderCabinet;
+
     /**
      * 机房详情
      *
@@ -99,9 +100,9 @@ public class RoomController {
     @Operation(summary = "机房编辑x与y")
     @GetMapping("/findAreaById")
     public CommonResult<Boolean> findAreaById(@RequestParam(value = "xLength") @Parameter(description = "x") Integer xLength,
-                                                     @RequestParam(value = "yLength") @Parameter(description = "y") Integer yLength,
+                                              @RequestParam(value = "yLength") @Parameter(description = "y") Integer yLength,
                                               @RequestParam(value = "id") @Parameter(description = "机房id") Integer id) {
-        Boolean i = roomService.findAreaById(xLength,yLength,id);
+        Boolean i = roomService.findAreaById(xLength, yLength, id);
         return success(i);
     }
 
@@ -213,7 +214,7 @@ public class RoomController {
     @PostMapping("/roomAisleSave")
     public CommonResult<Integer> roomAisleSave(@RequestBody RoomAisleSaveVo vo) {
         Integer result = roomService.roomAisleSave(vo);
-        if (result>0){
+        if (result > 0) {
             ThreadPoolConfig.getTHreadPool().execute(() -> {
                 HttpUtil.get(adder);
                 HttpUtil.get(adderAisle);
@@ -229,14 +230,6 @@ public class RoomController {
         Boolean i = roomService.findAddAisleVerify(vo);
         return success(i);
     }
-
-
-    @Operation(summary = "柜类删除")
-    @GetMapping("/roomAisleDelete")
-    public CommonResult<Integer> roomAisleDelete(@Param("id") int id) {
-        return success(roomService.roomAisleDeleteById(id));
-    }
-
 
     @Operation(summary = "机房柜列新增/编辑")
     @PostMapping("/roomCabinetSave")
@@ -283,7 +276,7 @@ public class RoomController {
 
     @Operation(summary = "机房编辑导出")
     @PostMapping("/editAisleExport")
-    public void editAisleExport(Integer roomId,Integer aisleId){
-        roomService.editAisleExport(roomId,aisleId);
+    public void editAisleExport(Integer roomId, Integer aisleId) {
+        roomService.editAisleExport(roomId, aisleId);
     }
 }
