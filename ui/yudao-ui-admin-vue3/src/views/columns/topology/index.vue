@@ -1024,13 +1024,13 @@ const handleInitialDblick = (e, road) => {
   if(chosenBtn.value == 0) {
     push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
   } else if(chosenBtn.value == 1) {
-    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+    push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
   } else if(chosenBtn.value == 2) {
-    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+    push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
   } else if(chosenBtn.value == 3) {
     push({path: '/bus/busmonitor/buspowerfactor', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
   } else if(chosenBtn.value == 4) {
-    push({path: '/bus/busmonitor/buspowerdetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
+    push({path: '/bus/busmonitor/busmonitor/buspowerdetail', query: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId}})
   } else if(chosenBtn.value == 7) {
     push({path: '/bus/busmonitor/busbalancedetail', state: { devKey: machineColInfo[`bar${road}`].devIp + '-' + machineColInfo[`bar${road}`].barId,roomName: machineColInfo.roomName}})
   } else if(chosenBtn.value == 8) {

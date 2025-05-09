@@ -512,12 +512,19 @@ import CurbalanceColorForm from './CurbalanceColorForm.vue';
 import { ElTree } from 'element-plus';
 import { CabinetApi } from '@/api/cabinet/info';
 import { CurbalanceColorApi } from '@/api/bus/buscurbalancecolor';
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 import { EChartsOption } from 'echarts';
 import curUnblance from './component/curUnblance.vue';
 import volUnblance from './component/volUnblance.vue';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' });
+
+const openDetailFlag=ref("0")
 
 const curdevkey = ref();
 const voldevkey = ref();
@@ -1347,7 +1354,7 @@ const toDeatil = (row) =>{
   const busId = row.busId;
   const location = row.location ? row.location : devKey;
   const busName = row.busName;
-  push({path: '/bus/busmonitor/busbalancedetail', state: { devKey, busId ,location,busName }})
+  push({path: '/bus/busmonitor/busmonitor/busbalancedetail', state: { devKey, busId ,location,busName }})
 
 }
 
@@ -1463,6 +1470,13 @@ watch( ()=>typeRadioVol.value, (value)=>{
   }
 })
 
+watch(openDetailFlag,async (val) => {
+  if(val == "1") {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation({devKey: query.devKey});
+    showDialogCur(data)
+  }
+})
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
@@ -1471,6 +1485,7 @@ onMounted(async () => {
   getStatistics()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 onBeforeUnmount(()=>{

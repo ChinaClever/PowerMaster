@@ -94,6 +94,7 @@ public class RoomIndex implements Serializable {
     @TableField(value = "area_y_length")
     private BigDecimal areayLength;
 
+    @TableField(value = "sort",updateStrategy = FieldStrategy.IGNORED)
     @Schema(description = "排序字段")
     private Integer sort;
 
