@@ -26,7 +26,7 @@ const happenCTime = ref()
 
 
 
-console.log('66666666666666', prop.list);
+console.log('curLine666', prop.list);
 
 const curvolAData = ref({ curValueList: [] as number[] });
 const curvolBData = ref({ curValueList: [] as number[] });
@@ -76,12 +76,10 @@ const echartsOptions = computed(() => ({
     trigger: 'axis',
     formatter: function (params) {      
       let result = params[0].name + '<br>';
-      // params.forEach(param => {
              const dataIndex = params[0].dataIndex;
       if(prop.dataType != 0){
         for (var i = 0; i < params.length; i++) {
           result +=  params[i].marker + params[i].seriesName+': &nbsp&nbsp&nbsp&nbsp发生时间:'
-        // result += `${param.marker}${param.seriesName}: &nbsp;&nbsp;&nbsp;&nbsp发生时间:${happenTime.value[0]}&nbsp;&nbsp;&nbsp;&nbsp${param.value}A`;
         if (params[i].seriesName.includes("A")) {
           result += happenATime.value[dataIndex] +'&nbsp&nbsp&nbsp&nbsp' +params[i].value + ' A' ;
         }else if (params[i].seriesName.includes("B")) {
@@ -90,15 +88,11 @@ const echartsOptions = computed(() => ({
           result += happenCTime.value[dataIndex] +'&nbsp&nbsp&nbsp&nbsp' +params[i].value + ' A';
         }
 
-        // if (param.seriesName === 'A相电流' || param.seriesName === 'B相电流' || param.seriesName === 'C相电流') {
-        //   result += 'A';
-        // }
         result += '<br>';
       }
       }else{
         for (var i = 0; i < params.length; i++) {
           result +=  params[i].marker + params[i].seriesName
-        // result += `${param.marker}${param.seriesName}: &nbsp;&nbsp;&nbsp;&nbsp发生时间:${happenTime.value[0]}&nbsp;&nbsp;&nbsp;&nbsp${param.value}A`;
         if (params[i].seriesName.includes("A")) {
           result += '&nbsp&nbsp&nbsp&nbsp' +params[i].value + ' A' ;
         }else if (params[i].seriesName.includes("B")) {
@@ -106,10 +100,6 @@ const echartsOptions = computed(() => ({
         } else if (params[i].seriesName.includes("C")) {
           result += '&nbsp&nbsp&nbsp&nbsp' +params[i].value + ' A';
         }
-
-        // if (param.seriesName === 'A相电流' || param.seriesName === 'B相电流' || param.seriesName === 'C相电流') {
-        //   result += 'A';
-        // }
         result += '<br>';
       }
       }
@@ -118,7 +108,7 @@ const echartsOptions = computed(() => ({
       return result.trimEnd();
     }
   },
-  color:['#E5B849','#C8603A','#5337A9'],  
+  color:['#E5B849','#C8603A','#5337A9'],
   legend: {
     data: [lineAName.value, lineBName.value, lineCName.value],
     selectedMode: 'multiple'

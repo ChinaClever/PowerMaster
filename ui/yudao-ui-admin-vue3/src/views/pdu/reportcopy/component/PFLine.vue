@@ -33,7 +33,7 @@ const happenTime = ref()
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
-  color:['#E5B849','#C8603A','#AD3762'],
+  color:['#E5B849','#C8603A','#5337A9','#614E43','#94B159'],
   legend: { data: legendList,
     type: 'scroll', // 设置为 'single' 或 'multiple'
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
