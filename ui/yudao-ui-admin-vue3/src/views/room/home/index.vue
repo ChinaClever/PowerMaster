@@ -81,7 +81,7 @@
                 <div style="color: #686a70;font-size: 12px">今日能耗</div>
                 <div class="flex items-center justify-center" style="font-size: 18px;font-weight: bold;width: 100%;flex: 1;padding: 18px 0;position: relative">
                   {{EqInfo.todayEq ? EqInfo.todayEq.toFixed(0) : 0}}
-                  <div v-if="EqInfo.todayEq > EqInfo.yesterdayEq" class="flex items-center" style="position: absolute;right: 5px"><Icon icon="ep:top" size="16" color="#298447" /></div>
+                  <div v-if="EqInfo.todayEq > EqInfo.yesterdayEqNow" class="flex items-center" style="position: absolute;right: 5px"><Icon icon="ep:top" size="16" color="#298447" /></div>
                   <div v-else-if="!loading" class="flex items-center" style="position: absolute;right: 5px;"><Icon icon="ep:bottom" size="16" color="#3959b5" /></div>
                 </div>
               </div>
@@ -95,7 +95,7 @@
                 <div style="color: #686a70;font-size: 12px">本月能耗</div>
                 <div class="flex items-center justify-center" style="font-size: 18px;font-weight: bold;width: 100%;flex: 1;padding: 18px 0;position: relative">
                   {{EqInfo.thisMonthEq ? EqInfo.thisMonthEq.toFixed(0) : 0}}
-                  <div v-if="EqInfo.thisMonthEq > EqInfo.lastMonthEq" class="flex items-center" style="position: absolute;right: 5px"><Icon icon="ep:top" size="16" color="#298447" /></div>
+                  <div v-if="EqInfo.thisMonthEq > EqInfo.lastMonthEqNow" class="flex items-center" style="position: absolute;right: 5px"><Icon icon="ep:top" size="16" color="#298447" /></div>
                   <div v-else-if="!loading" class="flex items-center" style="position: absolute;right: 5px;"><Icon icon="ep:bottom" size="16" color="#3959b5" /></div>
                 </div>
               </div>

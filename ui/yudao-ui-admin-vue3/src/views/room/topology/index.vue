@@ -109,7 +109,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">%</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -159,7 +159,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -259,7 +259,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -309,7 +309,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -359,12 +359,12 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">%</div></div>
-                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">kVA</div></div>
+                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
+                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
                               <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
-                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -5px">°C</div></div>
-                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -5px">kWh</div></div>
+                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kWh</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -418,7 +418,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -468,7 +468,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -568,7 +568,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -618,7 +618,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -668,12 +668,12 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">%</div><span v-else style="font-size: 10px;">%</span></div>
-                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                  <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
                                   <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
-                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -5px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
-                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -5px">kWh</div></div> -->
+                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -20px">kWh</div></div> -->
                                 </el-tooltip>
                               </template>
                             </div>
@@ -908,7 +908,7 @@ const {containerInfo, isFromHome} = defineProps({
 let timer = null as any // 定时器
 const switchChartOrTable = ref(0)
 const isAddRoom = ref(false) // 是否为添加机房模式 
-const roomId = ref(0) // 房间id
+const roomId = ref(Number(query.id)) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
 const dragTableViewEle = ref()
@@ -1403,6 +1403,88 @@ const menuOptionsCopy = ref([
         label: 'B路供电平衡',
       }
     ]
+  },
+  {
+    value: '母线 ',
+    label: '母线 ',
+    children: [
+      {
+        value: 'A路母线负荷',
+        label: 'A路母线负荷',
+      },
+      {
+        value: 'A路母线配电',
+        label: 'A路母线配电',
+      },
+      {
+        value: 'A路母线需量',
+        label: 'A路母线需量',
+      },
+      {
+        value: 'B路母线负荷',
+        label: 'B路母线负荷',
+      },
+      {
+        value: 'B路母线配电',
+        label: 'B路母线配电',
+      },
+      {
+        value: 'B路母线需量',
+        label: 'B路母线需量',
+      },
+      {
+        value: 'A路母线三相平衡',
+        label: 'A路母线三相平衡',
+      },
+      {
+        value: 'B路母线三相平衡',
+        label: 'B路母线三相平衡',
+      }
+    ]
+  },
+  {
+    value: 'A路设备 ',
+    label: 'A路设备 ',
+    children: [
+      {
+        value: 'A路插接箱配电',
+        label: 'A路插接箱配电',
+      },
+      {
+        value: 'A路插接箱需量',
+        label: 'A路插接箱需量',
+      },
+      {
+        value: 'A路插接箱设备管理',
+        label: 'A路插接箱设备管理',
+      },
+      {
+        value: 'A路插接箱供电平衡',
+        label: 'A路插接箱供电平衡',
+      }
+    ]
+  },
+  {
+    value: 'B路设备 ',
+    label: 'B路设备 ',
+    children: [
+      {
+        value: 'B路插接箱配电',
+        label: 'B路插接箱配电',
+      },
+      {
+        value: 'B路插接箱需量',
+        label: 'B路插接箱需量',
+      },
+      {
+        value: 'B路插接箱设备管理',
+        label: 'B路插接箱设备管理',
+      },
+      {
+        value: 'B路插接箱供电平衡',
+        label: 'B路插接箱供电平衡',
+      }
+    ]
   }
 ])
 
@@ -1868,6 +1950,7 @@ const handleRightClick = (e) => {
   if (!currentId) return
   console.log(tableData.value,tableData.value[lndexY][formParam.value[lndexX]],lndexY,formParam.value[lndexX])
   
+  menuOptions.value = []
   menuOptions.value[0] = JSON.parse(JSON.stringify(menuOptionsCopy.value[0]));
 
   if(cabinetIndex >= 0) {
@@ -1881,42 +1964,52 @@ const handleRightClick = (e) => {
     menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetName
 
-    menuOptions.value[3] = menuOptionsCopy.value[3]
-    // if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes) {
-    //   let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
-    //   menuOptions.value[3].value = {
-    //     devKey: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
-    //     isBus: true
-    //   }
-    //   menuOptions.value[4].value = {
-    //     devKey: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1],
-    //     isBus: true
-    //   }
-    // }
-    // if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus) {
-    //   let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
-    //   menuOptions.value[3].value = {
-    //     devKey: cabinetBoxes.pduKeyA,
-    //     isBus: false
-    //   }
-    //   menuOptions.value[4].value = {
-    //     devKey: cabinetBoxes.pduKeyB,
-    //     isBus: false
-    //   }
-    // }
-    menuOptions.value[3].value = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
-    menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
+    
 
-    menuOptions.value[4] = menuOptionsCopy.value[4]
-    menuOptions.value[4].value = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
-    menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
+    
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes) {
+      menuOptions.value[3] = menuOptionsCopy.value[5]
+
+      menuOptions.value[4] = menuOptionsCopy.value[6]
+      menuOptions.value[4].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
+
+      menuOptions.value[5] = menuOptionsCopy.value[7]
+      menuOptions.value[5].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
+
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
+      menuOptions.value[3].value = {
+        devKeyA: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+        devKeyB: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1]
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyA
+      }
+      menuOptions.value[5].value = {
+        devKey: cabinetBoxes.boxKeyB
+      }
+    }
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus) {
+      menuOptions.value[3] = menuOptionsCopy.value[3]
+      menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
+
+      menuOptions.value[4] = menuOptionsCopy.value[4]
+      menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
       
-    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
-      menuOptions.value.splice(4,1)
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyA
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.pduKeyB
+      }
     }
-    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
-      menuOptions.value.splice(3,1)
-    }
+      
+    // if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
+    //   menuOptions.value.splice(4,1)
+    // }
+    // if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
+    //   menuOptions.value.splice(3,1)
+    // }
     if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].id) {
       menuOptions.value.splice(2,1)
       menuOptions.value[0]?.children?.splice(0,3)
@@ -2105,11 +2198,135 @@ const handleMenu = (value) => {
       })
       break;
 
-    case 'A路配电':
+    case 'A路母线负荷':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/powerLoadDetail', 
+        state: { 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+      
+    case 'B路母线负荷':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/powerLoadDetail', 
+        state: { 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路母线配电':
       push({ 
         path: '/bus/busmonitor/busmonitor/buspowerdetail', 
         query: { 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+      
+    case 'B路母线配电':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/buspowerdetail', 
+        query: { 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路配电':
+    case 'B路配电':
+      push({ 
+        path: '/pdu/power/pdudisplayscreen', 
+        query: { 
           devKey: value[0].devKey
+        } 
+      });
+      break;
+
+    case 'A路插接箱配电':
+    case 'B路插接箱配电':
+      push({ 
+        path: '/bus/busmonitor/boxmonitor/boxpowerdetail', 
+        query: { 
+          devKey: value[0].devKey,
+          roomName: rowColInfo.roomName,
+        } 
+      });
+      break;
+
+    case 'A路母线需量':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busrequirement', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+
+    case 'B路母线需量':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busrequirement', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路需量':
+    case 'B路需量':
+      push({ 
+        path: '/pdu/power/pdurequirement', 
+        query: { 
+          devKey: value[0].devKey,
+          pduId: 10020,
+          openDetailFlag: 1
+        } 
+      });
+      break;
+
+    case 'A路母线三相平衡':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busbalance', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyA
+        } 
+      });
+      break;
+
+    case 'B路母线三相平衡':
+      push({ 
+        path: '/bus/busmonitor/busmonitor/busbalance', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKeyB
+        } 
+      });
+      break;
+
+    case 'A路插接箱供电平衡':
+    case 'B路插接箱供电平衡':
+      push({ 
+        path: '/bus/busmonitor/boxmonitor/boxbalance', 
+        query: { 
+          openDetailFlag: 1, 
+          devKey: value[0].devKey,
+          roomName: rowColInfo.roomName
+        } 
+      });
+      break;
+
+    case 'A路供电平衡':
+    case 'B路供电平衡':
+      push({ 
+        path: '/pdu/power/curbalance/index', 
+        query: { 
+          devKey: value[0].devKey,
+          pduId: 10020,
+          openDetailFlag: 1
         } 
       });
       break;
@@ -2470,7 +2687,9 @@ const handleChange = async(data) => {
           eleAlarmDay:data.eleAlarmDay,
           eleAlarmMonth:data.eleAlarmMonth,
           eleLimitDay:data.eleLimitDay,
-          eleLimitMonth:data.eleLimitMonth
+          eleLimitMonth:data.eleLimitMonth,
+          cabinetFirstVO: data.cabinetFirstVO,
+          pduBar: data.pduBar
       }
 
       const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)

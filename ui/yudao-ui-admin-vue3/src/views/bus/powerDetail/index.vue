@@ -211,7 +211,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   devKey: query.devKey,
-  busId : query.busId,
+  busId : null,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,

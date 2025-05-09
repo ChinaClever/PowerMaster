@@ -627,6 +627,7 @@ const getBusIdAndLocation =async () => {
       lineChartQueryParams.id = data.busId
       location.value = data.location
       busName.value = data.busName
+      busId.value = data.busId
     }else{
       location.value = null
       busName.value = null
@@ -1546,9 +1547,8 @@ const handleQuery = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
-  if(location.value && devKey.value && busId.value && busName.value) {
-    busLoadDetailStore.updateBusLoadDetail(devKey.value, busId.value, location.value,  busName.value, roomName.value)
-  } else if(busLoadDetailStore.busId != '') {
+  if(busLoadDetailStore.busId != '' && !devKey.value) {
+    console.log(1111)
     location.value = busLoadDetailStore.location
     devKey.value = busLoadDetailStore.devKey 
     busId.value = busLoadDetailStore.busId 
@@ -1575,6 +1575,9 @@ onMounted(async () => {
     }, 5000);
   } catch (error) {
     console.error('onMounted 钩子中的异步操作失败:', error);
+  }
+  if(location.value && devKey.value && busId.value && busName.value) {
+    busLoadDetailStore.updateBusLoadDetail(devKey.value, busId.value, location.value,  busName.value, roomName.value)
   }
 })
 
