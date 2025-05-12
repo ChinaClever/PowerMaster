@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.alarm.elasticsearch.mapping;
+package cn.iocoder.yudao.framework.common.elasticsearch.mapping;
 
 import cn.easyes.annotation.IndexField;
 import cn.easyes.annotation.IndexId;

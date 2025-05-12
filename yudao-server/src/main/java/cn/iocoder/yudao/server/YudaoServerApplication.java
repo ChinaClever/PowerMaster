@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @SuppressWarnings("SpringComponentScan") // 忽略 IDEA 无法识别 ${yudao.info.base-package}
 @SpringBootApplication(scanBasePackages = {"${yudao.info.base-package}.server", "${yudao.info.base-package}.module","cn.clever"})
-@EsMapperScan("cn.iocoder.yudao.module.alarm.elasticsearch.repository")
+@EsMapperScan("cn.iocoder.yudao.framework.common.elasticsearch.repository")
 public class YudaoServerApplication {
 
     public static void main(String[] args) {

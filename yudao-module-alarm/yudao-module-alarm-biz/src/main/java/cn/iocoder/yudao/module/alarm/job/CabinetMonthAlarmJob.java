@@ -2,8 +2,8 @@ package cn.iocoder.yudao.module.alarm.job;
 
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.iocoder.yudao.framework.common.constant.FieldConstant;
-import cn.iocoder.yudao.module.alarm.elasticsearch.repository.CabinetMonthPowerMapper;
-import cn.iocoder.yudao.module.alarm.elasticsearch.mapping.CabinetMonthPower;
+import cn.iocoder.yudao.framework.common.elasticsearch.repository.CabinetMonthPowerMapper;
+import cn.iocoder.yudao.framework.common.elasticsearch.mapping.CabinetMonthPower;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.AlarmLevelEnums;
