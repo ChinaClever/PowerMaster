@@ -99,4 +99,10 @@ public interface AlarmLogRecordService {
      *
      */
     Integer getCountByStatus (Integer status);
+
+    /**
+     * 当cabinet电量定时统计任务发生变更时，同步修改告警定时任务
+     *
+     */
+    void updateCabinetAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
 }

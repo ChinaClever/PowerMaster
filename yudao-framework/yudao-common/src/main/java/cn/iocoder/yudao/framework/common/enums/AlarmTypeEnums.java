@@ -19,9 +19,12 @@ public enum AlarmTypeEnums {
     BUS_OFF_LINE(5, "母线离线"),
     CABINET_CAPACITY_WARNING(6, "机柜电力容量预警"),
     CABINET_CAPACITY_ALARM(7, "机柜电力容量告警"),
-    STATUS(8, "状态告警"),
-    OFF_LINE(9, "离线告警"),
-    ELE(10, "用能告警"),
+    CABINET_DAY_POWER_ALARM(8, "机柜每日电量限额告警"),
+    CABINET_WEEK_POWER_ALARM(9, "机柜每周电量限额告警"),
+    CABINET_MONTH_POWER_ALARM(10, "机柜每月电量限额告警"),
+    STATUS(11, "状态告警"),
+    OFF_LINE(12, "离线告警"),
+    ELE(13, "用能告警"),
     ;
 
     /**

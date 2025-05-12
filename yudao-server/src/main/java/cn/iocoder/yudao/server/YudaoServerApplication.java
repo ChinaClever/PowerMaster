@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.server;
 
+import cn.easyes.starter.register.EsMapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @SuppressWarnings("SpringComponentScan") // 忽略 IDEA 无法识别 ${yudao.info.base-package}
 @SpringBootApplication(scanBasePackages = {"${yudao.info.base-package}.server", "${yudao.info.base-package}.module","cn.clever"})
+@EsMapperScan("cn.iocoder.yudao.module.alarm.elasticsearch.repository")
 public class YudaoServerApplication {
 
     public static void main(String[] args) {

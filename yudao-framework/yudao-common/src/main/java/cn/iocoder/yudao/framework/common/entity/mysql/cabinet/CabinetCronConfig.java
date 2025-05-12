@@ -14,16 +14,16 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName(value = "cabinet_cron_config")
-public class CabinetStatisConfig implements Serializable {
+public class CabinetCronConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 电量计费方式
      */
-    private int billMode;
+    private Integer billMode;
 
 
     /**
@@ -55,13 +55,13 @@ public class CabinetStatisConfig implements Serializable {
     /**
      * 负载限制
      */
-    private int loadLimit;
+    private Integer loadLimit;
 
 
     /**
      * 状态告警开关
      */
-    private int statusAlarm;
+    private Integer statusAlarm;
 
     /**
      * 存储任务
@@ -77,7 +77,7 @@ public class CabinetStatisConfig implements Serializable {
     /**
      * 告警推送开关
      */
-    private int alarmPush;
+    private Integer alarmPush;
 
     /**
      * 告警推送任务
@@ -87,7 +87,7 @@ public class CabinetStatisConfig implements Serializable {
     /**
      * 定时推送开关
      */
-    private int timingPush;
+    private Integer timingPush;
 
     /**
      * 定时推送任务
@@ -115,17 +115,17 @@ public class CabinetStatisConfig implements Serializable {
     /**
      * redis key过期时间
      */
-    private int redisExpire;
+    private Integer redisExpire;
 
     /**
      * 日用能告警开关
      */
-    private  int eleAlarmDay;
+    private  Integer eleAlarmDay;
 
     /**
      * 月用能告警开关
      */
-    private  int eleAlarmMonth;
+    private  Integer eleAlarmMonth;
 
     /**
      * 创建时间

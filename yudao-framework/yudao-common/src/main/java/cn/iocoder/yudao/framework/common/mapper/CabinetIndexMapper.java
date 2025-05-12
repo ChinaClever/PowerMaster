@@ -69,4 +69,6 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     int findAddAisleVerifyy(AisleSaveVo vo);
 
     CabinetIndex selectByPduKey(String pduKey);
+
+    String selectLocationById(Integer id);
 }

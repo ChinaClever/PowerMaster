@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.alarm.service.logrecord;
 
 import cn.iocoder.yudao.framework.common.constant.FieldConstant;
+import cn.iocoder.yudao.framework.common.constant.JobHandlerConstants;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCronConfig;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.enums.*;
@@ -19,6 +21,7 @@ import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecor
 import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordStatisticsVO;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
+import cn.iocoder.yudao.module.infra.api.job.JobApi;
 import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -67,6 +70,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private JobApi jobApi;
 
     @Override
     public Integer saveLogRecord(AlarmLogRecordSaveReqVO createReqVO) {
@@ -363,6 +369,28 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         }
         return result;
     }
+
+    @Override
+    public void updateCabinetAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            List<CabinetCronConfig> cabinetCronConfigsOld = BeanUtils.toBean(oldMaps, CabinetCronConfig.class);
+            List<CabinetCronConfig> cabinetCronConfigsNew = BeanUtils.toBean(newMaps, CabinetCronConfig.class);
+            for (int i = 0; i < cabinetCronConfigsOld.size(); i++) {
+                CabinetCronConfig cabinetCronConfigOld = cabinetCronConfigsOld.get(i);
+                CabinetCronConfig cabinetCronConfigNew = cabinetCronConfigsNew.get(i);
+
+                if (!cabinetCronConfigOld.getEqDayCron().equals(cabinetCronConfigNew.getEqDayCron())) {
+                    // 更新每日定时任务
+                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_DAY_ALARM_JOB,  cabinetCronConfigNew.getEqDayCron());
+                } else if (!cabinetCronConfigOld.getEqMonthCron().equals(cabinetCronConfigNew.getEqMonthCron())) {
+                    // 更新每月定时任务
+                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_MONTH_ALARM_JOB,  cabinetCronConfigNew.getEqMonthCron());
+                }
+            }
+        }
+    }
+
+
 
     public String getLocationByBusId(BusIndex busIndex) {
         String location = busIndex.getBusKey();
