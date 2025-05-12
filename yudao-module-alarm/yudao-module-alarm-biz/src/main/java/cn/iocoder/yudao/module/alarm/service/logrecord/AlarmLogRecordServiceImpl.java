@@ -418,7 +418,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 if (!cabinetCronConfigOld.getEqDayCron().equals(cabinetCronConfigNew.getEqDayCron())) {
                     // 更新每日定时任务
                     jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_DAY_ALARM_JOB,  cabinetCronConfigNew.getEqDayCron());
-                } else if (!cabinetCronConfigOld.getEqMonthCron().equals(cabinetCronConfigNew.getEqMonthCron())) {
+                }
+                if (!cabinetCronConfigOld.getEqMonthCron().equals(cabinetCronConfigNew.getEqMonthCron())) {
                     // 更新每月定时任务
                     jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_MONTH_ALARM_JOB,  cabinetCronConfigNew.getEqMonthCron());
                 }

@@ -141,8 +141,10 @@ public class MySQLTableMonitor {
                                 break;
                             case DBTable.CABINET_INDEX:
                                 result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
+                                break;
                             case DBTable.CABINET_CRON_CONFIG:
                                 alarmLogRecordService.updateCabinetAlarmJob(oldMaps,newMaps);
+                                break;
                             default:
                                 break;
                         }

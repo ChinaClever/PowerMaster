@@ -88,6 +88,7 @@ public class JobServiceImpl implements JobService {
         JobDO jobDO = jobMapper.selectByHandlerName(handlerName);
         if (jobDO != null) {
             JobSaveReqVO updateReqVO = BeanUtils.toBean(jobDO, JobSaveReqVO.class);
+            updateReqVO.setCronExpression(cron);
             updateJob(updateReqVO);
         }
     }
