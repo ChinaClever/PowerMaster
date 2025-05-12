@@ -196,7 +196,7 @@
             <div class="page-conTitle" >
               电量分布
             </div>
-            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大单日用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" :width="computedWidth" height="58vh" :list="eleList"/>
           </div>
@@ -208,53 +208,43 @@
             <Outlet class="Container" :width="computedWidth" height="58vh" :list="currentOutletList"/>
           </div>
 
-
           <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电流历史曲线趋势图
             </div>
-            <div class="power-section single-line">
-  <span class="power-title">A相电流：</span>
-  <span class="power-value">峰值 <span class="highlight">{{vcData.curAMaxValue}}</span> A <span class="time">记录于({{vcData.curAMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{vcData.curAMinValue}}</span> A <span class="time">记录于({{vcData.curAMinTime}})</span></span>
-</div>
-
-<div class="power-section single-line">
+            
+          <div v-for="(sensor, index) in curList?.series" :key="index">
+            <div class="power-section single-line" v-if="index %2 == 0">
+              <span class="power-title">A相电流：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 1}`]}})</span></span>
   <span class="power-title">B相电流：</span>
-  <span class="power-value">峰值 <span class="highlight">{{vcData.curBMaxValue}}</span> A <span class="time">记录于({{vcData.curBMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{vcData.curBMinValue}}</span> A <span class="time">记录于({{vcData.curBMinTime}})</span></span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 2}`]}})</span></span>
 </div>
-
-<div class="power-section single-line" v-if="vcData.curCMaxValue != null">
-  <span class="power-title">C相电流：</span>
-  <span class="power-value">峰值 <span class="highlight">{{vcData.curCMaxValue}}</span> A <span class="time">记录于({{vcData.curCMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{vcData.curCMinValue}}</span> A <span class="time">记录于({{vcData.curCMinTime}})</span></span>
-</div>
-            <CurLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
           </div>
+
+            <CurLine class="adaptiveStyle" :list="curList" :dataType="queryParams.dataType"/>
+          </div>
+
+
           <div class="pageBox" v-if="visControll.flag">
             <div class="page-conTitle">
               相电压历史曲线趋势图
             </div>
-            <div class="power-section single-line">
-  <span class="power-title">A相电压：</span>
-  <span class="power-value">峰值 <span class="highlight">{{vcData.volAMaxValue}}</span> V <span class="time">记录于({{vcData.volAMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{vcData.volAMinValue}}</span> V <span class="time">记录于({{vcData.volAMinTime}})</span></span>
-</div>
-
-<div class="power-section single-line">
+            <div v-for="(sensor, index) in volList?.series" :key="index">
+            <div class="power-section single-line" v-if="index %2 == 0">
+              <span class="power-title">A相电压：</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 1}`]}})</span></span>
   <span class="power-title">B相电压：</span>
-  <span class="power-value">峰值 <span class="highlight">{{vcData.volBMaxValue}}</span> V <span class="time">记录于({{vcData.volBMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{vcData.volBMinValue}}</span> V <span class="time">记录于({{vcData.volBMinTime}})</span></span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 2}`]}})</span></span>
 </div>
 
-<div class="power-section single-line">
-  <span class="power-title">C相电压：</span>
-  <span class="power-value">峰值 <span class="highlight">{{vcData.volCMaxValue}}</span> V <span class="time">记录于({{vcData.volCMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{vcData.volCMinValue}}</span> V <span class="time">记录于({{vcData.volCMinTime}})</span></span>
-</div>
+          </div>
             <!--<div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>-->
-            <VolLine class="adaptiveStyle" :list="curVolData" :dataType="queryParams.dataType"/>
+            <VolLine class="adaptiveStyle" :list="volList" :dataType="queryParams.dataType"/>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -288,6 +278,7 @@
         <span class="power-title">{{pfLineData[`lineName${index+1}`]}}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ pfLineData[`lineMax${index + 1}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ pfLineData[`lineMin${index + 1}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMinTime${index + 1}`] }})</span></span>
+        <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span class="power-title">{{pfLineData[`lineName${index+2}`]}}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ pfLineData[`lineMax${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMaxTime${index + 2}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ pfLineData[`lineMin${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMinTime${index + 2}`] }})</span></span>
@@ -341,6 +332,7 @@
         <span class="power-title">温度传感器{{ index + 1 }}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData[`temMax${index + 1}`] }}</span> °C <span class="time">记录于({{ temData[`temMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData[`temMin${index + 1}`] }}</span> °C <span class="time">记录于({{ temData[`temMinTime${index + 1}`] }})</span></span>
+        
         <span class="power-title">温度传感器{{ index + 2 }}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData[`temMax${index + 2}`] }}</span> °C <span class="time">记录于({{ temData[`temMaxTime${index + 2}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData[`temMin${index + 2}`] }}</span> °C <span class="time">记录于({{ temData[`temMinTime${index + 2}`] }})</span></span>
@@ -363,6 +355,7 @@
         <span class="power-title">温度传感器{{ index + 1 }}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData[`humMax${index + 1}`] }}</span> % <span class="time">记录于({{ temData[`humMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData[`humMin${index + 1}`] }}</span> % <span class="time">记录于({{ temData[`humMinTime${index + 1}`] }})</span></span>
+        <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span class="power-title">温度传感器{{ index + 2 }}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData[`humMax${index + 2}`] }}</span> % <span class="time">记录于({{ temData[`humMaxTime${index + 2}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData[`humMin${index + 2}`] }}</span> % <span class="time">记录于({{ temData[`humMinTime${index + 2}`] }})</span></span>
@@ -387,6 +380,7 @@
         <span class="power-title">回路{{ index + 1 }}电流极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ loopData[`loopMax${index + 1}`] }}</span> A <span class="time">记录于({{ loopData[`loopMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ loopData[`loopMin${index + 1}`] }}</span> A <span class="time">记录于({{ loopData[`loopMinTime${index + 1}`] }})</span></span>
+        <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span class="power-title">回路{{ index + 2 }}电流极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ loopData[`loopMax${index + 2}`] }}</span> A <span class="time">记录于({{ loopData[`loopMaxTime${index + 2}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ loopData[`loopMin${index + 2}`] }}</span> A <span class="time">记录于({{ loopData[`loopMinTime${index + 2}`] }})</span></span>
@@ -401,13 +395,19 @@
             <div class="page-conTitle">
               第{{ getLastChar(index) }}回路中各输出位电流曲线
             </div>
-            <div v-for="(data, index) in sensor?.series" :key="index">
-        <div class="power-section single-line">
-        <span class="power-title">{{ data.projectName }}极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ data.maxValue }}</span> A <span class="time">记录于({{ data.maxTime }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ data.minValue }}</span> A <span class="time">记录于({{ data.minTime }})</span></span>
+            <div v-for="(data, dataIndex) of pairedSeries(sensor.series)" :key="dataIndex">
+        <div class="power-section">
+          <div class="sensor-data-item" v-if="data[dataIndex]">
+            <span class="power-title">{{ data[0].projectName }}极值：</span>
+            <span class="power-value">峰值 <span class="highlight">{{ data[0].maxValue.toFixed(2) }}</span> A <span class="time">记录于({{ data[0].maxTime }})</span></span>
+            <span class="power-value">谷值 <span class="highlight">{{ data[0].minValue.toFixed(2) }}</span> A <span class="time">记录于({{ data[0].minTime }})</span></span>
+            <span v-if="dataIndex + 1 < sensor.series.length" class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span class="power-title">{{ data[1].projectName }}极值：</span>
+            <span class="power-value">峰值 <span class="highlight">{{ data[1].maxValue.toFixed(2) }}</span> A <span class="time">记录于({{ data[1].maxTime }})</span></span>
+            <span class="power-value">谷值 <span class="highlight">{{ data[1].minValue.toFixed(2) }}</span> A <span class="time">记录于({{ data[1].minTime }})</span></span>
+          </div>
+        </div>
       </div>
-            </div>
 
             <OutLetCurLine :width="computedWidth" height="58vh" :list="sensor" :dataType="queryParams.dataType"/>
           </div>
@@ -486,16 +486,28 @@ import Outlet from './component/Outlet.vue';
 import OutLetCurLine from './component/OutLetCurLine.vue';
 
 //import { ElMessageBox, ElMessage } from 'element-plus'
+// 定义传感器数据的接口
 
-// 计算属性：生成成对的传感器索引
-const pairedSensors = computed(() => {
-  const series = temList.value.series;
-  return series.filter((_, index) => index % 2 === 0).map((_, pairIndex) => pairIndex);
-});
+interface SensorData {
+  name: string;
+  data: number[];
+  type: string;
+  symbol: string;
+  happenTime: string[];
+  projectName: string;
+  maxValue: number;
+  minValue: number;
+  maxTime: string;
+  minTime: string;
+}
 
-// 方法：检查是否有第二个传感器
-const hasSecondSensor = (sensorIndex: number) => {
-  return (sensorIndex * 2 + 2) < temList.value.series.length;
+// 方法：生成成对的传感器数据
+const pairedSeries = (series: SensorData[]) => {
+  const pairs: SensorData[][] = [];
+  for (let i = 0; i < series.length; i += 2) {
+    pairs.push([series[i], series[i + 1]]);
+  }
+  return pairs;
 };
 
 const getLastChar = (str) => {
@@ -789,39 +801,41 @@ const filterTimesFromDate = (dateTimeStrings, targetDate) => {
 let currentDate = new Date().toISOString().split('T')[0];
 //获取PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async () => {
-  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: queryParams.timeType,oldTime:queryParams.oldTime,newTime:queryParams.newTime})
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: queryParams.timeType,oldTime:queryParams.oldTime,newTime:queryParams.newTime,dataType:queryParams.dataType})
   curVolData.value = result;
-
-
+  curList.value = curVolData.value.curRes
+  volList.value = curVolData.value.volRes
+  console.log("  curList.value = curVolData.value.curRes",curList.value);
   
+
   if(curVolData.value?.dateTimes != null && curVolData.value?.dateTimes?.length > 0){
     lineNumber = result.lineNumber;
-    vcData.value.curAMaxValue = result.curAMaxValue;
-    vcData.value.curAMaxTime = result.curAMaxTime;
-    vcData.value.curAMinValue = result.curAMinValue;
-    vcData.value.curAMinTime = result.curAMinTime;
-    vcData.value.volAMaxValue = result.volAMaxValue;
-    vcData.value.volAMaxTime = result.volAMaxTime;
-    vcData.value.volAMinValue = result.volAMinValue;
-    vcData.value.volAMinTime = result.volAMinTime;
+   
+    curVolData.value.curRes.series.forEach((_, index) => {
+          const maxKey = `curMaxValue${index + 1}`;
+          const minKey = `curMinValue${index + 1}`;
 
-    vcData.value.curBMaxValue = result.curBMaxValue;
-    vcData.value.curBMaxTime = result.curBMaxTime;
-    vcData.value.curBMinValue = result.curBMinValue;
-    vcData.value.curBMinTime = result.curBMinTime;
-    vcData.value.volBMaxValue = result.volBMaxValue;
-    vcData.value.volBMaxTime = result.volBMaxTime;
-    vcData.value.volBMinValue = result.volBMinValue;
-    vcData.value.volBMinTime = result.volBMinTime;
+          if (curVolData.value[maxKey] != null) {
+            curVolData.value[maxKey] = curVolData.value[maxKey].toFixed(2);
+          }
+          if (curVolData.value[minKey] != null) {
+            curVolData.value[minKey] = curVolData.value[minKey].toFixed(2);
+          }
+        });
 
-    vcData.value.curCMaxValue = result.curCMaxValue;
-    vcData.value.curCMaxTime = result.curCMaxTime;
-    vcData.value.curCMinValue = result.curCMinValue;
-    vcData.value.curCMinTime = result.curCMinTime;
-    vcData.value.volCMaxValue = result.volCMaxValue;
-    vcData.value.volCMaxTime = result.volCMaxTime;
-    vcData.value.volCMinValue = result.volCMinValue;
-    vcData.value.volCMinTime = result.volCMinTime;
+        curVolData.value.volRes.series.forEach((_, index) => {
+          const maxKey = `volMaxValue${index + 1}`;
+          const minKey = `volMinValue${index + 1}`;
+
+          if (curVolData.value[maxKey] != null) {
+            curVolData.value[maxKey] = curVolData.value[maxKey].toFixed(1);
+          }
+          if (curVolData.value[minKey] != null) {
+            curVolData.value[minKey] = curVolData.value[minKey].toFixed(1);
+          }
+        });
+
+
 
     visControll.flag = true;
   }else{
