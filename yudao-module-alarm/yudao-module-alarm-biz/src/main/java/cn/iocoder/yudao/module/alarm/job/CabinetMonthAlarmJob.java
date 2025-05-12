@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.module.alarm.job;
 
-import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
+import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.iocoder.yudao.framework.common.constant.FieldConstant;
 import cn.iocoder.yudao.module.alarm.elasticsearch.repository.CabinetMonthPowerMapper;
 import cn.iocoder.yudao.module.alarm.elasticsearch.mapping.CabinetMonthPower;

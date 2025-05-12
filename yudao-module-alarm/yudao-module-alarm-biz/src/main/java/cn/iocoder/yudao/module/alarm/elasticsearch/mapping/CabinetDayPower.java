@@ -3,7 +3,7 @@ package cn.iocoder.yudao.module.alarm.elasticsearch.mapping;
 import cn.easyes.annotation.IndexField;
 import cn.easyes.annotation.IndexId;
 import cn.easyes.annotation.IndexName;
-import cn.easyes.annotation.rely.FieldType;
+import cn.easyes.common.enums.FieldType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
