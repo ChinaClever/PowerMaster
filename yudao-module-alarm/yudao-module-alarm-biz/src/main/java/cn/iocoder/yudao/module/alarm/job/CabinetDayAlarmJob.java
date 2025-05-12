@@ -49,7 +49,7 @@ public class CabinetDayAlarmJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-        Thread.sleep(1000*60);
+        Thread.sleep(1000*60*5);
         // 获取所有按天统计电量的机柜
         List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                 .eq(CabinetCfg::getEleAlarmDay, 1));
