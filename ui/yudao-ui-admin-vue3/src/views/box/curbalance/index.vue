@@ -499,9 +499,15 @@ import { EChartsOption } from 'echarts';
 import { BoxCurbalanceColorApi } from '@/api/bus/boxcurbalancecolor';
 import curUnblance from './component/curUnblance.vue';
 import volUnblance from './component/volUnblance.vue';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' });
+
+const openDetailFlag=ref("0")
 
 const curdevkey = ref() as any;
 const voldevkey = ref() as any;
@@ -1440,6 +1446,12 @@ watch( ()=>typeRadioVol.value, (value)=>{
   }
 })
 
+watch(openDetailFlag,async (val) => {
+  if(val == "1") {
+    showDialogCur({devKey: query.devKey, roomName: query.roomName})
+  }
+})
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
@@ -1448,6 +1460,7 @@ onMounted(async () => {
   getNavList();
   getStatistics();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 onBeforeUnmount(()=>{

@@ -41,6 +41,10 @@ public class RealtimePageRespVO {
     @NumberFormat("0.00")
     private Double factor_total;
 
+    @ExcelProperty("总负载率(%)")
+    @NumberFormat("0")
+    private Double load_rate;
+
     @ExcelProperty("A路有功功率(kW)")
     @NumberFormat("0.000")
     private Double active_a;

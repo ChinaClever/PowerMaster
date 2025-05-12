@@ -76,4 +76,6 @@ public interface PDUDeviceService {
     Map<String, String> setLocation(List<String> collect1);
 
     Map getReportLoopDataDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getReportOutLetCurDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }

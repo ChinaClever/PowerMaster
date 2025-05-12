@@ -45,4 +45,7 @@ export const AlarmApi = {
   savePhoneConfig: async (data: any) => {
     return await request.post({ url: `/alarm/cfg-sms/batchSave`, data })
   },
+  getPduAlarmRecord: async (data: any) => {
+    return await request.post({ url: `/alarm/log-record/pdu`, data })
+  },
 }

@@ -64,18 +64,18 @@
         </el-form-item>
 
         <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button style="background-color: #00778c;color:#ffffff;" @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
          </el-form-item>
 
         <el-form-item>
           <el-button-group>
-            <el-button @click="changeTime('pre')"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
-            <el-button @click="changeTime('next')">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
+            <el-button style="background-color: #00778c;color:#ffffff;" @click="changeTime('pre')"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
+            <el-button style="background-color: #00778c;color:#ffffff;" @click="changeTime('next')">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
           </el-button-group>
          </el-form-item>
          
          <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
@@ -2083,5 +2083,11 @@ const handleExport = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+/deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
 }
 </style>

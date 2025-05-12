@@ -86,6 +86,13 @@ public class AlarmLogRecordController {
         return success(BeanUtils.toBean(pageResult, AlarmLogRecordRespVO.class));
     }
 
+    @PostMapping("/pdu")
+    @Operation(summary = "获得具体pdu告警信息")
+    public CommonResult<PageResult<AlarmLogRecordRespVO>> getPduLogRecordPage(@Valid @RequestBody AlarmLogRecordPageReqVO pageReqVO) {
+        PageResult<AlarmLogRecordRespVO> pageResult = logRecordService.getPduLogRecordPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, AlarmLogRecordRespVO.class));
+    }
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出系统告警记录 Excel")
     @PreAuthorize("@ss.hasPermission('alarm:log-record:export')")

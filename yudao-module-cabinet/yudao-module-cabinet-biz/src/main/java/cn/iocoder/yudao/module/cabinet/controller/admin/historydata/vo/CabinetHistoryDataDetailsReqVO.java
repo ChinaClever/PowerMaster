@@ -18,4 +18,6 @@ public class CabinetHistoryDataDetailsReqVO extends PageParam {
 
     private String nowAddress;
 
+    private String[] sensor;
+
 }

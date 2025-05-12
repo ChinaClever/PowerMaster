@@ -58,6 +58,7 @@ watchEffect(() => {
     });
   }
   time.value = prop.list.time;
+  console.log('Bartime.value',time.value)
 });
 onUnmounted(() => {
   console.log('onUnmounted******')

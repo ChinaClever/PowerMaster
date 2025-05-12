@@ -28,8 +28,6 @@ const time = ref()
 const legendList = ref()
 const happenTime = ref()
 
-
-
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
@@ -43,20 +41,31 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        if(prop.dataType == 0){
-          result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) ;
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
+        if(prop.dataType !=0){
+         
+          result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(2) +  ' A'; 
+      
+          // result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) + ' kW';
+    
+          // result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) + ' kVar';
+        
         }else{
-          result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp'+'发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp'+ + params[i].value.toFixed(2) ;
+
+          result +=' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(2) +  ' A'; 
+
         }
+
+
         result += '<br>';
       }
       return result;
     } 
   },
   xAxis: {type: 'category', boundaryGap: false, data : time},
+  grid:{left:'3%',right:'3%'},
   yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},  
-  dataView: {
+  toolbox: {feature: {saveAsImage: {}, dataView: {
       optionToContent: function(opt) {
         const axisData = opt.xAxis[0].data;
         const series = opt.series;
@@ -87,7 +96,7 @@ const echartsOption = ref({
         for (let i = 0; i < axisData.length; i++) {
           table += `<tr><td>${axisData[i]}</td>`;
           series.forEach(item => {
-            table += `<td>${item.data[i]?.toFixed(3) || '-'}</td>`;
+            table += `<td>${item.data[i]?.toFixed(2) || '-'}</td>`;
           });
           table += '</tr>';
         }
@@ -101,17 +110,15 @@ const echartsOption = ref({
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
-
-  series.value = prop.list.series;
-  console.log("series.value",  series.value)
+  console.log("outletcur.value",  prop.list)
+  series.value = prop.list?.series;
+  console.log("outletcurseries.value",  series.value)
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
-  } 
+  }
+
   time.value = prop.list.time;
-
   happenTime.value = prop.list.series.map(item => item.happenTime);
-
-  
 });
 
 

@@ -515,6 +515,13 @@ import Bar from './component/Bar.vue'
 import Vol from './component/Vol.vue'
 import curUnblance from './component/curUnblance.vue'
 import volUnblance from './component/volUnblance.vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
+
+const openDetailFlag=ref("0")
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -1518,6 +1525,14 @@ watch( ()=>typeRadioVol.value, (value)=>{
   }
 })
 
+watch(openDetailFlag,async (val) => {
+  if(val == "1") {
+    const data = await PDUDeviceApi.getLocation({devKey: query.devKey});
+    location.value = data
+    showDialogVol({id: query.pduId,devKey: query.devKey})
+  }
+})
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll()
@@ -1534,6 +1549,7 @@ onMounted(async () => {
            getList();
              getNavAList();
       }, 5000);
+  openDetailFlag.value = query.openDetailFlag || "0"
   // flashListTimer.value = setInterval((getList), 5000);
   // flashListTimer.value = setInterval((getNavAList), 5000);
 })

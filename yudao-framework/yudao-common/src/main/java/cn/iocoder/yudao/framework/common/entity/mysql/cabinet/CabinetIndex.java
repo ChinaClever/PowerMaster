@@ -40,12 +40,15 @@ public class CabinetIndex implements Serializable {
      *  柜列的位置 从1开始 0未被分配
      */
     private Integer  aisleX;
+
     /**
      * 机柜类型
      */
     private String cabinetType;
 
-
+    /**
+     * 机柜高度
+     */
     private int  cabinetHeight;
     /**
      * 电力容量

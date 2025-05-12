@@ -14,4 +14,15 @@ public class LineSeries extends SeriesBase {
 
     private List<String> happenTime = new ArrayList<>();
 
+    private String projectName;
+
+    private Float maxValue;
+
+    private Float minValue;
+
+    private String maxTime;
+
+    private String minTime;
+
+
 }

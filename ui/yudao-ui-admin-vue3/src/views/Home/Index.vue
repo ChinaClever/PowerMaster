@@ -157,11 +157,11 @@
             <span class="font-700">环境/告警/设备</span>
             <div class="flex text-12px items-center">
               <div class="flex mr-8px" style="cursor: pointer;" @click="selectedFront = !selectedFront;updateTemChart()">
-                <div class="w-25px mr-2px" :style="{backgroundColor: selectedFront ? '#5470c6' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                <div class="w-25px mr-2px" :style="{backgroundColor: selectedFront ? '#0b758a' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
                 <div>前门</div>
               </div>
               <div class="flex mr-8px" style="cursor: pointer;" @click="selectedBlack = !selectedBlack;updateTemChart()">
-                <div class="w-25px mr-2px" :style="{backgroundColor: selectedBlack ? '#91cc75' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                <div class="w-25px mr-2px" :style="{backgroundColor: selectedBlack ? '#e5b849' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
                 <div>后门</div>
               </div>
               <el-link @click="toggleTable = 2" type="primary">切换</el-link>
@@ -941,6 +941,9 @@ const handleBackData = (data) => {
         show: true,
         position: 'top', // 顶部显示
         formatter: '{c}', // 显示数据值
+      },
+      itemStyle: {
+        color: "#0b758a"
       }
     },
     {
@@ -952,6 +955,9 @@ const handleBackData = (data) => {
         show: true,
         position: 'top', // 顶部显示
         formatter: '{c}', // 显示数据值
+      },
+      itemStyle: {
+        color: "#e5b849"
       }
     }
   ]

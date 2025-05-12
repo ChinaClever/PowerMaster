@@ -164,6 +164,42 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
     }
 
     @Override
+    public PageResult<AlarmLogRecordRespVO> getPduLogRecordPage(AlarmLogRecordPageReqVO pageReqVO) {
+        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Integer alarmLevel = AlarmLevelEnums.getStatusByName(pageReqVO.getLikeName());
+        Integer alarmType = AlarmTypeEnums.getStatusByName(pageReqVO.getLikeName());
+        Page<AlarmLogRecordDO> recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
+                .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
+                .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
+                .inIfPresent(AlarmLogRecordDO::getAlarmType, 1,2,3)
+                        .betweenIfPresent(AlarmLogRecordDO::getStartTime,pageReqVO.getPduStartTime(),pageReqVO.getPduFinishTime())
+                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
+                        .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
+                        .or()
+                        .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
+                        .or()
+                        .like(AlarmLogRecordDO::getAlarmPosition, pageReqVO.getLikeName()))
+                .orderByDesc(AlarmLogRecordDO::getCreateTime));
+
+        List<AlarmLogRecordRespVO> recordRespVOS = new ArrayList<>();
+        if (Objects.nonNull(recordPageResult)) {
+            List<AlarmLogRecordDO> list = recordPageResult.getRecords();
+            if (!CollectionUtils.isEmpty(list)) {
+                list.forEach(record -> {
+                    AlarmLogRecordRespVO recordRespVO = BeanUtils.toBean(record, AlarmLogRecordRespVO.class);
+                    recordRespVO.setAlarmLevelDesc(AlarmLevelEnums.getNameByStatus(record.getAlarmLevel()));
+                    recordRespVO.setAlarmTypeDesc(AlarmTypeEnums.getNameByStatus(record.getAlarmType()));
+                    recordRespVO.setAlarmStatusDesc(AlarmStatusEnums.getNameByStatus(record.getAlarmStatus()));
+                    recordRespVOS.add(recordRespVO);
+                });
+            }
+        }
+        PageResult<AlarmLogRecordRespVO> result = new PageResult<AlarmLogRecordRespVO>().setList(recordRespVOS).setTotal(recordPageResult.getTotal());
+        return result;
+    }
+
+    @Override
     public AlarmLogRecordStatisticsVO levelCount(Integer roomId) {
         return logRecordMapper.levelCount(roomId);
     }
@@ -434,6 +470,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         powApparent = decimalFormat1.format(Double.parseDouble(powApparent));
         return "当前机柜负载率：" + loadFactor + "，机柜的电力容量：" + powerCapacity + "KVA" + "，总视在功率：" + powApparent + "KVA";
     }
+
+
 
 
 }

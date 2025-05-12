@@ -56,7 +56,7 @@ const echartsOption = ref({
     data: Array.from({ length: 24 }, (_, i) => i < 9 ? `0${i + 1}` : `${i + 1}`), // 输出位01-24
     axisLabel: {
       interval: 0,
-      rotate: 45,
+      // rotate: 45,
       color: '#666',
       fontSize: 10,  // 缩小字体
       margin: 8      // 标签与轴线间距

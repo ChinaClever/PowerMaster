@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo;
+package cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
@@ -11,30 +11,28 @@ import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - pdu历史数据详情 导出原始数据")
+
+@Schema(description = "管理后台 - 机柜环境记录 导出数据")
 @Data
 @ExcelIgnoreUnannotated
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class HistoryDataDetailsExportVO {
+public class CabinetRealtimeEnvDetailExcelVO {
 
     @ExcelProperty("位置")
-    private String location;
+    private String address;
 
-    @ExcelProperty("记录时间")
-    private String create_time;
-    @ExcelProperty("总有功功率(kW)")
-    @NumberFormat("0.000")
-    private Double pow_active;
-    @NumberFormat("0.000")
-    @ExcelProperty("总视在功率(kVA)")
-    private Double pow_apparent;
-    @NumberFormat("0.000")
-    @ExcelProperty("无功功率(kVar)")
-    private Double pow_reactive;
-    @NumberFormat("0.00")
-    @ExcelProperty("功率因素")
-    private Double power_factor;
+    @ExcelProperty("时间")
+    private String createTime;
+
+    @NumberFormat("0.0")
+    @ExcelProperty(value = "温度(°C)")
+    private Double temValue;
+
+    @NumberFormat("0")
+    @ExcelProperty(value = "湿度(%RH)")
+    private Double humValue;
+
 }

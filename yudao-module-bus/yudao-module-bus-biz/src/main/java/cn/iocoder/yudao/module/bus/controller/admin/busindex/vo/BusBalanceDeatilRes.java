@@ -27,6 +27,9 @@ public class BusBalanceDeatilRes {
     @Schema(description = "始端箱名字")
     private String busName;
 
+    @Schema(description = "插接箱名字")
+    private String boxName;
+
     @Schema(description = "电流")
     private List<Double> cur_value;
 

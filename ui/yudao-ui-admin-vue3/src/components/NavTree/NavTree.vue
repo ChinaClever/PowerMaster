@@ -18,7 +18,7 @@
         :show-checkbox="showCheckbox"
         :lazy="lazy"
         :load="load"
-        node-key="id"
+        :node-key="nodeKey"
         :current-node-key="currentKey"
         :highlight-current="hightCurrent"
         :default-checked-keys="checkKeys"
@@ -91,7 +91,12 @@ const props = defineProps({
     type:Array,
     default: () => [],
     required: false
-  }
+  },
+  nodeKey:{
+    type:String,
+    default:'id',
+    required: false
+  },
 })
 
 const defaultProps = {
@@ -125,15 +130,20 @@ let lastKey:number=props.currentKey as number;
 const handleNodeClick = async (row: { [key: string]: any }) => {
   console.log('处理部门被点击row', row)
   emits('node-click', row)
-  if(props.highlightTypes!=null&&props.highlightTypes.length>0){
-    console.log('props.highlightTypes', props.highlightTypes)
-    props.highlightTypes.forEach(type=>{
-      if(type==row.type){
-        lastKey=row.id
-      }else{
-        treeRef.value?.setCurrentKey(lastKey)
-      }
-    })
+  // if(props.highlightTypes!=null&&props.highlightTypes.length>0){
+  //   console.log('props.highlightTypes', props.highlightTypes)
+  //   props.highlightTypes.forEach(type=>{
+  //     if(type==row.type){
+  //       lastKey=row[props.nodeKey]
+  //     }
+  //       treeRef.value?.setCurrentKey(lastKey)
+  //   })
+  // }
+  if(props.hightCurrent==true){
+    if((row.children==null||row.children.length==0)&&props.highlightTypes.find((type)=>type==row.type)!=null){
+      lastKey=row[props.nodeKey];
+    }
+    treeRef.value?.setCurrentKey(lastKey)
   }
 }
 
@@ -176,7 +186,7 @@ function search(){
 }
 function addExpandKeys(node){
   if(node==null||node.children==null||node.children.length==0)return;
-  expandKeys.value.push(node.id)
+  expandKeys.value.push(node[props.nodeKey])
   for(let i in node.children){
     addExpandKeys(node.children[i])
   }

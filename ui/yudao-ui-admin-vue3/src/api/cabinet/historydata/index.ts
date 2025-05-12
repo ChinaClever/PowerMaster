@@ -48,4 +48,7 @@ export const HistoryDataApi = {
   exportHistoryEnvData: async (params, axiosConfig) => {
     return await request.downloadPost({ url: `/cabinet/history-data/env-export`, params, ...axiosConfig })
   },
+  exportHistoryEnvDetailData: async (params, axiosConfig) => {
+    return await request.downloadPost({ url: `/cabinet/history-data/env-detail-export`, params, ...axiosConfig })
+  },
 }

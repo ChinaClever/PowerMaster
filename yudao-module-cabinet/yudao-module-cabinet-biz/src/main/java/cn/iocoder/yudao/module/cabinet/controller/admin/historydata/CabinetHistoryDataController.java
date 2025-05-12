@@ -209,11 +209,107 @@ public class CabinetHistoryDataController {
 
     @GetMapping("/env-details")
     @Operation(summary = "获得机柜环境数据详情")
-    public CommonResult<PageResult<Object>> getHistoryEnvDataDetails(CabinetHistoryDataDetailsReqVO reqVO) throws IOException {
-        PageResult<Object> pageResult = cabinetHistoryDataService.getHistoryEnvDataDetails(reqVO.getCabinetId(),reqVO.getGranularity(),reqVO.getTimeRange());
+    public CommonResult<PageResult<CabinetEnvResVO>> getHistoryEnvDataDetails(CabinetHistoryDataDetailsReqVO reqVO) throws IOException {
+        PageResult<CabinetEnvResVO> pageResult = cabinetHistoryDataService.getHistoryEnvDataDetails(reqVO.getCabinetId(),reqVO.getGranularity(),reqVO.getTimeRange(),reqVO.getNowAddress());
         return success(pageResult);
     }
 
+    @PostMapping("/env-detail-export")
+    @Operation(summary = "获得机柜历史环境数据")
+    public void HistoryEnvDetailDataExport(CabinetHistoryDataDetailsReqVO reqVO,HttpServletResponse response) throws IOException {
+        PageResult<CabinetEnvResVO> pageResult = cabinetHistoryDataService.getHistoryEnvDataDetails(reqVO.getCabinetId(),reqVO.getGranularity(),reqVO.getTimeRange(),reqVO.getNowAddress());
+        if(pageResult!=null){
+            if("realtime".equals(reqVO.getGranularity())){
+                List<CabinetRealtimeEnvDetailExcelVO> list = pageResult.getList().stream().map((map) -> {
+                    CabinetRealtimeEnvDetailExcelVO ans = new CabinetRealtimeEnvDetailExcelVO();
+                    ans.setCreateTime(map.getCreateTime());
+                    ans.setAddress(map.getAddress());
+                    if ("front".equals(reqVO.getSensor()[0])) {
+                        map.getFront().forEach((iter) -> {
+                            if (((Map) iter).get("sensorId").toString().equals(reqVO.getSensor()[1])) {
+                                ans.setHumValue((Double) ((Map) iter).get("humValue"));
+                                ans.setTemValue((Double) ((Map) iter).get("temValue"));
+                            }
+                        });
+                    } else if ("black".equals(reqVO.getSensor()[0])) {
+                        map.getBlack().forEach((iter) -> {
+                            if (((Map) iter).get("sensorId").toString().equals(reqVO.getSensor()[1])) {
+                                ans.setHumValue((Double) ((Map) iter).get("humValue"));
+                                ans.setTemValue((Double) ((Map) iter).get("temValue"));
+                            }
+                        });
+                    }
+                    return ans;
+                }).collect(Collectors.toList());
+                boolean hasData=false;
+                for (int i=0;i<list.size();i++){
+                    if(list.get(i).getHumValue()!=null||list.get(i).getTemValue()!=null){
+                        hasData=true;
+                        break;
+                    }
+                }
+                if(!hasData){
+                    list.clear();
+                }
+                ExcelUtils.write(response, "机柜环境详情历史数据.xlsx", "数据", CabinetRealtimeEnvDetailExcelVO.class, list);
+            }else{
+                List<CabinetNotRealtimeEnvDetailExcelVO> list = pageResult.getList().stream().map((map) -> {
+                    CabinetNotRealtimeEnvDetailExcelVO ans = new CabinetNotRealtimeEnvDetailExcelVO();
+                    ans.setCreateTime(map.getCreateTime());
+                    ans.setAddress(map.getAddress());
+                    if ("front".equals(reqVO.getSensor()[0])) {
+                        List front = map.getFront();
+                        if (front != null) {
+                            front.forEach((iter) -> {
+                                if (((Map) iter).get("sensorId").toString().equals(reqVO.getSensor()[1])) {
+                                    ans.setHum_avg_value((Double) ((Map) iter).get("hum_avg_value"));
+                                    ans.setTem_avg_value((Double) ((Map) iter).get("tem_avg_value"));
+                                    ans.setHum_max_value((Double) ((Map) iter).get("hum_max_value"));
+                                    ans.setTem_max_value((Double) ((Map) iter).get("tem_max_value"));
+                                    ans.setHum_max_time((String) ((Map) iter).get("max_time"));
+                                    ans.setTem_max_time((String) ((Map) iter).get("max_time"));
+                                    ans.setTem_min_value((Double) ((Map) iter).get("tem_min_value"));
+                                    ans.setHum_min_value((Double) ((Map) iter).get("hum_min_value"));
+                                    ans.setHum_min_time((String) ((Map) iter).get("min_time"));
+                                    ans.setTem_min_time((String) ((Map) iter).get("min_time"));
+                                }
+                            });
+                        }
+                    } else if ("black".equals(reqVO.getSensor()[0])) {
+                        List black = map.getBlack();
+                        if (black != null) {
+                            black.forEach((iter) -> {
+                                if (((Map) iter).get("sensorId").toString().equals(reqVO.getSensor()[1])) {
+                                    ans.setHum_avg_value((Double) ((Map) iter).get("hum_avg_value"));
+                                    ans.setTem_avg_value((Double) ((Map) iter).get("tem_avg_value"));
+                                    ans.setHum_max_value((Double) ((Map) iter).get("hum_max_value"));
+                                    ans.setTem_max_value((Double) ((Map) iter).get("tem_max_value"));
+                                    ans.setHum_max_time((String) ((Map) iter).get("max_time"));
+                                    ans.setTem_max_time((String) ((Map) iter).get("max_time"));
+                                    ans.setTem_min_value((Double) ((Map) iter).get("tem_min_value"));
+                                    ans.setHum_min_value((Double) ((Map) iter).get("hum_min_value"));
+                                    ans.setHum_min_time((String) ((Map) iter).get("min_time"));
+                                    ans.setTem_min_time((String) ((Map) iter).get("min_time"));
+                                }
+                            });
+                        }
+                    }
+                    return ans;
+                }).collect(Collectors.toList());
+                boolean hasData=false;
+                for (int i=0;i<list.size();i++){
+                    if(list.get(i).getHum_avg_value()!=null||list.get(i).getTem_avg_value()!=null||list.get(i).getHum_max_value()!=null||list.get(i).getTem_max_value()!=null||list.get(i).getHum_min_value()!=null||list.get(i).getTem_min_value()!=null){
+                        hasData=true;
+                        break;
+                    }
+                }
+                if(!hasData){
+                    list.clear();
+                }
+                ExcelUtils.write(response,"机柜环境历史数据.xlsx", "数据", CabinetNotRealtimeEnvDetailExcelVO.class,list);
+            }
+        }
+    }
     private void change(Map map, String position, Object object){
         map.keySet().forEach((key)->{
             if("sensorId".equals(key.toString())) return;
