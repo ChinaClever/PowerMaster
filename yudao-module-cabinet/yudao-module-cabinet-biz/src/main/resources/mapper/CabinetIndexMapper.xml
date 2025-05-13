@@ -350,7 +350,8 @@
         cabinet_index ci
         LEFT JOIN cabinet_pdu cp ON ci.id = cp.cabinet_id
         <where>
-            cp.pdu_key_a = #{pduKey}
+            ci.is_deleted = 0
+            AND cp.pdu_key_a = #{pduKey}
             OR cp.pdu_key_b = #{pduKey}
         </where>
     </select>
