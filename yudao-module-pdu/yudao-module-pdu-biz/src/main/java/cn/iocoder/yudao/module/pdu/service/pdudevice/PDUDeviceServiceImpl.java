@@ -1041,8 +1041,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
                     LineSeries curSeries = new LineSeries();
                     LineSeries volSeries = new LineSeries();
-                    curSeries.setProjectName(lineId == 1 ? "A相电流" : lineId == 2 ? "B相电流" : "C相电流");
-                    volSeries.setProjectName(lineId == 1 ? "A相电压" : lineId == 2 ? "B相电压" : "C相电压");
+                    resultMap.put("curName"+lineId,lineId == 1 ? "A相电流" : lineId == 2 ? "B相电流" : "C相电流");
+                    resultMap.put("volName"+lineId,lineId == 1 ? "A相电压" : lineId == 2 ? "B相电压" : "C相电压");
                     curSeries.setName(getSeriesName("电流", lineId, dataType));
                     volSeries.setName(getSeriesName("电压", lineId, dataType));
 

@@ -208,19 +208,19 @@
             <Outlet class="Container" :width="computedWidth" height="58vh" :list="currentOutletList"/>
           </div>
 
-          <div class="pageBox" v-if="visControll.flag">
+          <div class="pageBox" v-if="visControll.curVolVis">
             <div class="page-conTitle">
               相电流历史曲线趋势图
             </div>
             
           <div v-for="(sensor, index) in curList?.series" :key="index">
             <div class="power-section single-line" v-if="index %2 == 0">
-              <span class="power-title">A相电流：</span>
+              <span class="power-title">{{curVolData[`curName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 1}`]}})</span></span>
-  <span class="power-title">B相电流：</span>
-  <span class="power-value">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 2}`]}})</span></span>
+  <span class="power-title" v-if="index+2<=curList?.series.length-1 "> {{curVolData[`curName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=curList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=curList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 2}`]}})</span></span>
 </div>
           </div>
 
@@ -228,18 +228,18 @@
           </div>
 
 
-          <div class="pageBox" v-if="visControll.flag">
+          <div class="pageBox" v-if="visControll.curVolVis">
             <div class="page-conTitle">
               相电压历史曲线趋势图
             </div>
             <div v-for="(sensor, index) in volList?.series" :key="index">
             <div class="power-section single-line" v-if="index %2 == 0">
-              <span class="power-title">A相电压：</span>
+              <span class="power-title">{{curVolData[`volName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 1}`]}})</span></span>
-  <span class="power-title">B相电压：</span>
-  <span class="power-value">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 2}`]}})</span></span>
+  <span class="power-title" v-if="index+2<=volList?.series.length-1 ">{{curVolData[`volName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=volList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=volList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 2}`]}})</span></span>
 </div>
 
           </div>
@@ -248,7 +248,7 @@
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
-              功率因素曲线分析
+              功率因素曲线
             </div>   
 <!--             
             <div class="power-section single-line">
@@ -289,7 +289,7 @@
 
           <div class="pageBox" v-if="visControll.powVis">
   <div class="page-conTitle">
-    功率曲线分析
+    功率曲线
   </div>
   
   <div class="power-section single-line">
@@ -582,7 +582,7 @@ const visControll = reactive({
   loopVis : false,
   pfVis: false,
   loopOutVis : false,
-  flag: false,
+  curVolVis: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -837,9 +837,9 @@ const PDUHdaLineHisdata = async () => {
 
 
 
-    visControll.flag = true;
+    visControll.curVolVis = true;
   }else{
-    visControll.flag = false;
+    visControll.curVolVis = false;
   }
   //console.log('dateTimes',result.dateTimes)
   console.log('result111111111111',result);
