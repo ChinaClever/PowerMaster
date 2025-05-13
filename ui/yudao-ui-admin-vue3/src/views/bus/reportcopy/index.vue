@@ -84,11 +84,13 @@
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
       </el-form>
-      <el-select v-model="typeRadioShow" placeholder="请选择" style="width: 100px">
-        <el-option label="平均" value="平均" />
-        <el-option label="最大" value="最大" />
-        <el-option label="最小" value="最小" />
-      </el-select>
+      <el-form-item>
+          <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
+            <el-option label="最大" :value="1" />
+            <el-option label="平均" :value="0" />
+            <el-option label="最小" :value="-1" />
+          </el-select>
+        </el-form-item>
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >
@@ -152,11 +154,7 @@
       插接箱基本信息
     </div>
     <el-table :data="tableData" style="width: 100%" :border="true">
-      <el-table-column label="设备编号" align="center">
-        <template #default="scope">
-          {{ scope.$index + 1 }}
-        </template>
-      </el-table-column>
+      <el-table-column prop="devKey" label="设备编号" align="center"/>
       <el-table-column prop="boxName" label="设备名称" align="center"/>
       <el-table-column prop="runStatus" label="状态" align="center">
         <template #default="scope">
@@ -215,29 +213,85 @@
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
               功率因素曲线
+            </div>
+            <div v-for="(sensor, index) in pfLineList?.series" :key="index">
+        <div class="power-section single-line" v-if="index %2 == 0">
+        <span class="power-title">{{pfLineData[`pName${index+1}`]}}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ pfLineData[`powFactorMaxValue${index + 1}`] }}</span>  <span class="time">记录于({{ pfLineData[`powFactorMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ pfLineData[`powFactorMinValue${index + 1}`] }}</span>  <span class="time">记录于({{ pfLineData[`powFactorMinTime${index + 1}`] }})</span></span>
+        <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title">{{pfLineData[`pName${index+2}`]}}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ pfLineData[`powFactorMaxValue${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`powFactorMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ pfLineData[`powFactorMinValue${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`powFactorMinTime${index + 2}`] }})</span></span>
+      </div>
             </div>        
             <PFLine class="Container"  width="70vw" height="58vh" :list="pfLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
-              平均功率曲线
+              功率曲线
             </div>
-            <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
+            <div class="power-section single-line">
+  <span class="power-title">视在功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{powData.apparentPowMaxValue}}</span> kVA <span class="time">记录于({{powData.apparentPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{powData.apparentPowMinValue}}</span> kVA <span class="time">记录于({{powData.apparentPowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">有功功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{powData.activePowMaxValue}}</span> kW，<span class="time">记录于 ({{powData.activePowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{powData.activePowMinValue}}</span> kW，<span class="time">记录于 ({{powData.activePowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">无功功率极值</span>
+  <span class="power-value">峰值 <span class="highlight">{{powData.reactivePowMaxValue}}</span> kVar，<span class="time">记录于 ({{powData.reactivePowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{powData.reactivePowMinValue}}</span> kVar，<span class="time">记录于 ({{powData.reactivePowMinTime}})</span></span>
+</div>
+            <!-- <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVar， 发生时间{{powData.reactivePowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVar， 发生时间{{powData.reactivePowMinTime}}</p> -->
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
-          <div class="pageBox" v-if="visControll.temVis">
+          <div class="pageBox" v-if="visControll.curVolVis">
             <div class="page-conTitle">
-              电流曲线
+              相电流历史曲线趋势图
             </div>
-            <CurLine class="adaptiveStyle" :list="curvolList"/>
+            
+          <div v-for="(sensor, index) in curList?.series" :key="index">
+            <div class="power-section single-line" v-if="index %2 == 0">
+              <span class="power-title">{{curVolData[`curName${index + 1}`]}}</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 1}`]}})</span></span>
+  <span class="power-title" v-if="index+2<=curList?.series.length-1 "> {{curVolData[`curName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=curList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=curList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 2}`]}})</span></span>
+</div>
           </div>
-          <div class="pageBox" v-if="visControll.temVis">
+
+            <CurLine class="adaptiveStyle" :list="curList" :dataType="queryParams.dataType"/>
+          </div>
+
+
+          <div class="pageBox" v-if="visControll.curVolVis">
             <div class="page-conTitle">
-              电压曲线
+              相电压历史曲线趋势图
             </div>
-            <VolLine class="adaptiveStyle" :list="curvolList"/>
+            <div v-for="(sensor, index) in volList?.series" :key="index">
+            <div class="power-section single-line" v-if="index %2 == 0">
+              <span class="power-title">{{curVolData[`volName${index + 1}`]}}</span>
+  <span class="power-value">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 1}`]}})</span></span>
+  <span class="power-title" v-if="index+2<=volList?.series.length-1 ">{{curVolData[`volName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=volList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=volList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 2}`]}})</span></span>
+</div>
+
+          </div>
+            <!--<div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>-->
+            <VolLine class="adaptiveStyle" :list="volList" :dataType="queryParams.dataType"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -247,7 +301,7 @@
             <p v-show="temData.temBMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B相最高温度{{temData.temBMaxValue}}°C， 最高温度发生时间{{temData.temBMaxTime}}&nbsp;&nbsp;最低温度{{temData.temBMinValue}}°C， 最低温度发生时间{{temData.temBMinTime}}</p>        
             <p v-show="temData.temCMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C相最高温度{{temData.temCMaxValue}}°C， 最高温度发生时间{{temData.temCMaxTime}}&nbsp;&nbsp;最低温度{{temData.temCMinValue}}°C， 最低温度发生时间{{temData.temCMinTime}}</p>          
             <p v-show="temData.temNMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N相最高温度{{temData.temNMaxValue}}°C， 最高温度发生时间{{temData.temNMaxTime}}&nbsp;&nbsp;最低温度{{temData.temNMinValue}}°C， 最低温度发生时间{{temData.temNMinTime}}</p>            
-            <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
+            <EnvTemLine  width="70vw" height="58vh" :list="temList"  :dataType="queryParams.dataType"/>
           </div>
         </div>
        
@@ -314,10 +368,13 @@ defineOptions({ name: 'PDUDevice' })
 const parsedData = ref([]) as any
 const tableData = ref([]);
 const temp1 = ref([]) as any
-const curvolList = ref() as any
+const curVolData = ref();
+const volList = ref() as any
+const curList = ref() as any
 const temList = ref() as any
 const eleList = ref() as any
 const totalLineList = ref() as any
+const pfLineData = ref() as any
 const pfLineList = ref() as any
 const now = ref()
 const switchValue = ref(1);
@@ -329,10 +386,13 @@ const visControll = reactive({
   outletVis : false,
   temVis : false,
   pfVis: false,
+  curVolVis: false,
 })
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
+let lineNumber = ref() as any;
+
 
 const typeRadioShow = ref("最大")
 
@@ -394,6 +454,7 @@ const truncateArrays = (data: ServerData): ServerData => {
     powapparent: data.powapparent.slice(0, 12)
   };
 };
+
 
 
 // 时间段快捷选项
@@ -716,8 +777,16 @@ const queryParams = reactive({
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
   timeType: 1,
-  cascadeAddr : 0
+  cascadeAddr : 0,
+  dataType : 1
 }) as any
+
+
+watch( ()=>queryParams.dataType, async()=>{
+  //  queryParams.devKey = queryParams.ipAddr;  
+  getList()
+
+})
 
 const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   if (node.level === 0) {
@@ -858,14 +927,27 @@ const getList = async () => {
     visControll.eqVis = false;
   }
   
-  const data = await IndexApi.getBusPFLine(queryParams);
-  pfLineList.value = data.pfLineRes;
+  pfLineData.value = await IndexApi.getBusPFLine(queryParams);
+  pfLineList.value = pfLineData.value.pfLineRes;
   pfLineList.value.series.forEach(item => {
-    item.data = item.data.map(value => parseFloat(value.toFixed(3)));
+    // item.data = item.data.map(value => parseFloat(value.toFixed(3)));
   });
-  console.log('data.pfLineRes',data.pfLineRes)
+  console.log('data.pfLineRes',pfLineData.value.pfLineRes)
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
+    pfLineData.value.pfLineRes.series.forEach((_, index) => {
+          const maxKey = `powFactorMaxValue${index + 1}`;
+          const minKey = `powFactorMinValue${index + 1}`;
+
+          if (pfLineData.value[maxKey] != null) {
+            pfLineData.value[maxKey] = pfLineData.value[maxKey].toFixed(2);
+          }
+          if (pfLineData.value[minKey] != null) {
+            pfLineData.value[minKey] = pfLineData.value[minKey].toFixed(2);
+          }
+        });
+
+
     visControll.pfVis = true;
   }else {
     visControll.pfVis = false;
@@ -885,8 +967,43 @@ const getList = async () => {
     visControll.powVis = false;
   }
 
-  curvolList.value = await IndexApi.getAvgBusHdaLineForm(queryParams);
-  
+  curVolData.value = await IndexApi.getAvgBusHdaLineForm(queryParams);
+  curList.value = curVolData.value.curRes
+  volList.value = curVolData.value.volRes
+  console.log("  curList.value = curVolData.value.curRes",curList.value);
+  if(curVolData.value?.dateTimes != null && curVolData.value?.dateTimes?.length > 0){
+    // lineNumber = curVolData.value.lineNumber;
+   
+    curVolData.value.curRes.series.forEach((_, index) => {
+          const maxKey = `curMaxValue${index + 1}`;
+          const minKey = `curMinValue${index + 1}`;
+
+          if (curVolData.value[maxKey] != null) {
+            curVolData.value[maxKey] = curVolData.value[maxKey].toFixed(2);
+          }
+          if (curVolData.value[minKey] != null) {
+            curVolData.value[minKey] = curVolData.value[minKey].toFixed(2);
+          }
+        });
+
+        curVolData.value.volRes.series.forEach((_, index) => {
+          const maxKey = `volMaxValue${index + 1}`;
+          const minKey = `volMinValue${index + 1}`;
+
+          if (curVolData.value[maxKey] != null) {
+            curVolData.value[maxKey] = curVolData.value[maxKey].toFixed(1);
+          }
+          if (curVolData.value[minKey] != null) {
+            curVolData.value[minKey] = curVolData.value[minKey].toFixed(1);
+          }
+        });
+        visControll.curVolVis = true;
+      }else{
+      visControll.curVolVis = false;
+
+  }
+
+
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
   if(temList.value?.time != null && temList.value?.time?.length > 0 ){
@@ -1474,4 +1591,40 @@ onMounted( async () =>  {
     height: 42vh;
   }
 }
+
+.power-section {
+  margin-bottom: 15px;
+  background: #f9f9f9;
+  padding: 12px 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.power-title {
+  font-weight: bold;
+  color: #3498db;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.power-value {
+  margin: 5px 0;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 4px;
+  font-size: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.highlight {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.time {
+  color: rgb(55, 169, 173);
+  font-size: 13px;
+  margin-left: 5px;
+}
+
 </style>

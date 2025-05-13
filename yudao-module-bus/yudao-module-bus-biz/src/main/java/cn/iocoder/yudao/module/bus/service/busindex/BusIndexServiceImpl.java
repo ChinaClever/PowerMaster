@@ -17,6 +17,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
+import cn.iocoder.yudao.framework.common.enums.DataTypeEnums;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
@@ -36,6 +37,8 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalan
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
+import cn.iocoder.yudao.module.bus.enums.DataNameType;
+import cn.iocoder.yudao.module.bus.util.PduAnalysisResult;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
 import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 import cn.iocoder.yudao.module.bus.vo.BusNameVO;
@@ -48,6 +51,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -134,6 +138,18 @@ public class BusIndexServiceImpl implements BusIndexService {
     public static final String REDIS_KEY_CABINET = "packet:cabinet:";
 
     public static final String DAY_FORMAT = "dd";
+
+
+    private static final int A_PHASE = 1;
+    private static final int B_PHASE = 2;
+    private static final int C_PHASE = 3;
+
+    private static final int DATA_TYPE_MAX = 1;
+    private static final int DATA_TYPE_AVG = 0;
+    private static final int DATA_TYPE_MIN = -1;
+
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public Long createIndex(BusIndexSaveReqVO createReqVO) {
@@ -643,7 +659,10 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Override
     public Map getAvgBusHdaLineForm(BusIndexPageReqVO pageReqVO) throws IOException {
-        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, Object> resultMap = new HashMap<>();
+        BusLineResBase curResBase = new BusLineResBase();
+        BusLineResBase volResBase = new BusLineResBase();
+        SimpleDateFormat sdfS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getBusKey, pageReqVO.getDevKey()));
         if (busIndexDO != null) {
             Integer Id = busIndexDO.getId();
@@ -653,6 +672,9 @@ public class BusIndexServiceImpl implements BusIndexService {
             } else {
                 index = "bus_hda_line_day";
             }
+            boolean isSameDay = (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate()));
+
+
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
@@ -669,35 +691,74 @@ public class BusIndexServiceImpl implements BusIndexService {
             // 设置搜索条件
             searchRequest.source(builder);
 
-            List<BusHdaLineAvgResVO> dayList1 = new ArrayList<>();
-            List<BusHdaLineAvgResVO> dayList2 = new ArrayList<>();
-            List<BusHdaLineAvgResVO> dayList3 = new ArrayList<>();
-            List<String> dateTimes = new ArrayList<>();
             // 执行ES请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             for (SearchHit hit : searchResponse.getHits()) {
                 BusHdaLineAvgResVO houResVO = JsonUtils.parseObject(hit.getSourceAsString(), BusHdaLineAvgResVO.class);
-                switch (houResVO.getLineId()) {
-                    case 1:
-                        dayList1.add(houResVO);
-                        break;
-                    case 2:
-                        dayList2.add(houResVO);
-                        break;
-                    case 3:
-                        dayList3.add(houResVO);
-                        break;
-                    default:
-                }
-                dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                processHouResVO(houResVO, resultMap, isSameDay, DataTypeEnums.fromValue(pageReqVO.getDataType()));
+
             }
-            map.put("A", dayList1);
-            map.put("B", dayList2);
-            map.put("C", dayList3);
-            map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
+
+
+            for (int lineId = 1; lineId <= 3; lineId++) {
+                String lineKey = "dayList" + lineId;
+                Map<String, Object> lineData = (Map<String, Object>) resultMap.get(lineKey);
+                if (lineData != null && !(((List<BusHdaLineAvgResVO>) lineData.get("data")).isEmpty())) {
+                    LineSeries curSeries = new LineSeries();
+                    LineSeries volSeries = new LineSeries();
+                    resultMap.put("curName" + lineId, lineId == 1 ? "A相电流" : lineId == 2 ? "B相电流" : "C相电流");
+                    resultMap.put("volName" + lineId, lineId == 1 ? "A相电压" : lineId == 2 ? "B相电压" : "C相电压");
+                    curSeries.setName(getSeriesName("电流", lineId, pageReqVO.getDataType()));
+                    volSeries.setName(getSeriesName("电压", lineId, pageReqVO.getDataType()));
+
+                    curSeries.setData((List<Float>) lineData.get("curDataList"));
+                    curSeries.setHappenTime((List<String>) lineData.get("curHappenTime"));
+                    volSeries.setData((List<Float>) lineData.get("volDataList"));
+                    volSeries.setHappenTime((List<String>) lineData.get("volHappenTime"));
+
+                    Map<String, Object> analyzedData = PduAnalysisResult.analyzePduData((List<BusHdaLineAvgResVO>) lineData.get("data"), pageReqVO.getDataType());
+                    PduAnalysisResult.CurrentResult currentResult = (PduAnalysisResult.CurrentResult) analyzedData.get("current");
+                    PduAnalysisResult.VoltageResult voltageResult = (PduAnalysisResult.VoltageResult) analyzedData.get("voltage");
+
+                    if (pageReqVO.getDataType() != 0) {
+                        resultMap.put("curMaxValue" + lineId, currentResult.maxCurValue);
+                        resultMap.put("curMaxTime" + lineId, sdfS.format(currentResult.maxCurTime));
+                        resultMap.put("curMinValue" + lineId, currentResult.minCurValue);
+                        resultMap.put("curMinTime" + lineId, sdfS.format(currentResult.minCurTime));
+                        resultMap.put("volMaxValue" + lineId, voltageResult.maxVolValue);
+                        resultMap.put("volMaxTime" + lineId, sdfS.format(voltageResult.maxVolTime));
+                        resultMap.put("volMinValue" + lineId, voltageResult.minVolValue);
+                        resultMap.put("volMinTime" + lineId, sdfS.format(voltageResult.minVolTime));
+                    } else {
+                        resultMap.put("curMaxValue" + lineId, currentResult.maxCurValue);
+                        resultMap.put("curMaxTime" + lineId, "无");
+                        resultMap.put("curMinValue" + lineId, currentResult.minCurValue);
+                        resultMap.put("curMinTime" + lineId, "无");
+                        resultMap.put("volMaxValue" + lineId, voltageResult.maxVolValue);
+                        resultMap.put("volMaxTime" + lineId, "无");
+                        resultMap.put("volMinValue" + lineId, voltageResult.minVolValue);
+                        resultMap.put("volMinTime" + lineId, "无");
+                    }
+
+
+                    curResBase.getSeries().add(curSeries);
+                    volResBase.getSeries().add(volSeries);
+
+                    // 添加时间轴数据
+                    List<String> uniqueDateTimes = (List<String>) resultMap.getOrDefault("dateTimes", new ArrayList<>());
+                    List<String> xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
+
+                    curResBase.setTime(xTime);
+                    volResBase.setTime(xTime);
+                    resultMap.put("dateTimes", xTime);
+                    resultMap.put("curRes", curResBase);
+                    resultMap.put("volRes", volResBase);
+                }
+            }
         }
-        return map;
+        return resultMap;
     }
+
 
     @Override
     public LineMaxResVO getBusLineMax(BusIndexPageReqVO pageReqVO) throws IOException {
@@ -2459,8 +2520,8 @@ public class BusIndexServiceImpl implements BusIndexService {
             BusActivePowTrendDTO yesterdayMax = yesterdayList.stream().filter(i -> ObjectUtils.isNotEmpty(i.getActivePowMax())).max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
             BusActivePowTrendDTO todayMax = todayList.stream().filter(i -> ObjectUtils.isNotEmpty(i.getActivePowMax())).max(Comparator.comparing(BusActivePowTrendDTO::getActivePow)).orElse(new BusActivePowTrendDTO());
             powDTO.setTodayMax(Float.valueOf(todayMax.getActivePowMax()));
-            powDTO.setTodayMaxTime(DateFormatUtils.format(todayMax.getActivePowMaxTime(),"yyyy-MM-dd HH:mm"));
-            powDTO.setYesterdayMaxTime(DateFormatUtils.format(yesterdayMax.getActivePowMaxTime(),"yyyy-MM-dd HH:mm"));
+            powDTO.setTodayMaxTime(DateFormatUtils.format(todayMax.getActivePowMaxTime(), "yyyy-MM-dd HH:mm"));
+            powDTO.setYesterdayMaxTime(DateFormatUtils.format(yesterdayMax.getActivePowMaxTime(), "yyyy-MM-dd HH:mm"));
             powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePowMax()));
 
             return powDTO;
@@ -2530,7 +2591,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 }
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id), index);
+                List<String> cabinetData = getDataNew(startTime, endTime, Arrays.asList(Id), index);
                 Double firstEq = null;
                 Double lastEq = null;
                 Double totalEq = 0D;
@@ -2591,7 +2652,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
-    public Map getBusPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getBusPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
         Map result = new HashMap<>();
         BusLineResBase totalLineRes = new BusLineResBase();
         result.put("pfLineRes", totalLineRes);
@@ -2600,70 +2661,114 @@ public class BusIndexServiceImpl implements BusIndexService {
 
             if (busIndexDO != null) {
                 String index;
+                String dataIndex;
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     index = "bus_hda_total_hour";
+                    dataIndex = "bus_hda_line_hour";
                     if (oldTime.equals(newTime)) {
                         newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                     }
                 } else {
                     index = "bus_hda_total_day";
+                    dataIndex = "bus_hda_line_day";
                     oldTime = oldTime.plusDays(1);
                     newTime = newTime.plusDays(1);
                 }
 
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<BusTotalHourDo> powList = getData(startTime, endTime, Arrays.asList(busIndexDO.getId()), index,BusTotalHourDo.class);
+                List<BusTotalHourDo> powList = getDataNew(startTime, endTime, Arrays.asList(busIndexDO.getId()), index, BusTotalHourDo.class);
 //                List<BusTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, BusTotalHourDo.class)).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(powList)){
+                if (CollectionUtils.isEmpty(powList)) {
                     return result;
                 }
-                BusTotalHourDo maxApparentPow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowApparentMaxValue));
-                if (maxApparentPow != null) {
-                    result.put("apparentPowMaxValue", maxApparentPow.getPowApparentMaxValue());
-                    result.put("apparentPowMaxTime", maxApparentPow.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                BusTotalHourDo minApparentPow = Collections.min(powList, Comparator.comparing(BusTotalHourDo::getPowApparentMinValue));
-                if (minApparentPow != null) {
-                    result.put("apparentPowMinValue", minApparentPow.getPowApparentMinValue());
-                    result.put("apparentPowMinTime", minApparentPow.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                BusTotalHourDo maxActivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
-                if (maxActivePow != null) {
-                    result.put("activePowMaxValue", maxActivePow.getPowActiveMaxValue());
-                    result.put("activePowMaxTime", maxActivePow.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                BusTotalHourDo minActivePow = Collections.min(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
-                if (minActivePow != null) {
-                    result.put("activePowMinValue", minActivePow.getPowActiveMinValue());
-                    result.put("activePowMinTime", minActivePow.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                BusTotalHourDo maxReactivePow = Collections.max(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
-                if (maxReactivePow != null) {
-                    result.put("reactivePowMaxValue", maxReactivePow.getPowReactiveMaxValue());
-                    result.put("reactivePowMaxTime", maxReactivePow.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                BusTotalHourDo minReactivePow = Collections.min(powList, Comparator.comparing(BusTotalHourDo::getPowActiveMaxValue));
-                if (minReactivePow != null) {
-                    result.put("reactivePowMinValue", minReactivePow.getPowReactiveMinValue());
-                    result.put("reactivePowMinTime", minReactivePow.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
+                //收集数据
                 LineSeries totalPFLine = new LineSeries();
-                totalPFLine.setName("总数据");
+                List<Float> powFactors = new ArrayList<>();
+                List<String> pfHappenTime = new ArrayList<>();
+                Float powFactorMaxValue = 0f;
+                Float powFactorMinValue = 1f;
+                String powFactorMaxTime = "";
+                String powFactorMinTime = "";
 
+                for (BusTotalHourDo busTotalHourDo : powList) {
+                    if (dataType == 1) {
+                        powFactors.add(busTotalHourDo.getPowerFactorMaxValue());
+                        pfHappenTime.add(busTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        if (powFactorMaxValue < busTotalHourDo.getPowerFactorMaxValue()) {
+                            powFactorMaxValue = busTotalHourDo.getPowerFactorMaxValue();
+                            powFactorMaxTime = busTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                        if (powFactorMinValue > busTotalHourDo.getPowerFactorMaxValue()) {
+                            powFactorMinValue = busTotalHourDo.getPowerFactorMaxValue();
+                            powFactorMinTime = busTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                    } else if (dataType == 0) {
+                        powFactors.add(busTotalHourDo.getPowerFactorAvgValue());
+                        pfHappenTime.add("");
+                        if (powFactorMaxValue < busTotalHourDo.getPowerFactorAvgValue()) {
+                            powFactorMaxValue = busTotalHourDo.getPowerFactorAvgValue();
+                            powFactorMaxTime = "";
+                        }
+                        if (powFactorMinValue > busTotalHourDo.getPowerFactorAvgValue()) {
+                            powFactorMinValue = busTotalHourDo.getPowerFactorAvgValue();
+                            powFactorMinTime = "";
+                        }
+                    } else if (dataType == -1) {
+                        powFactors.add(busTotalHourDo.getPowerFactorMinValue());
+                        pfHappenTime.add(busTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        if (powFactorMaxValue < busTotalHourDo.getPowerFactorMinValue()) {
+                            powFactorMaxValue = busTotalHourDo.getPowerFactorMinValue();
+                            powFactorMaxTime = busTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                        if (powFactorMinValue > busTotalHourDo.getPowerFactorMinValue()) {
+                            powFactorMinValue = busTotalHourDo.getPowerFactorMinValue();
+                            powFactorMinTime = busTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                    }
+                }
+
+                totalPFLine.setName("总功率因素曲线");
+                totalPFLine.setData(powFactors);
+                totalPFLine.setHappenTime(pfHappenTime);
                 totalLineRes.getSeries().add(totalPFLine);
-
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     powList.forEach(hourdo -> {
-                        totalPFLine.getData().add(hourdo);
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                     });
                 } else {
                     powList.forEach(hourdo -> {
-                        totalPFLine.getData().add(hourdo);
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
                     });
                 }
+                //处理相功率因素曲线
+                List<BusLineHourDo> lineHourDoList = getDataNew(startTime, endTime, Arrays.asList(busIndexDO.getId()), dataIndex, BusLineHourDo.class);
+                processPFMavMin(lineHourDoList, dataType, result);
+                for (BusLineHourDo busLineHourDo : lineHourDoList) {
+                    processLinePFData(busLineHourDo, dataType, result);
+                }
+                //处理数据
+                for (int lineId = 1; lineId <= 3; lineId++) {
+                    String lineKey = "line" + lineId;
+                    Map<String, Object> lineData = (Map<String, Object>) result.get(lineKey);
+                    if (lineData != null && !(((List<BusLineHourDo>) lineData.get("data")).isEmpty())) {
+                        LineSeries lineSeries = new LineSeries();
+                        lineSeries.setName(getSeriesName("功率因素", lineId, dataType));
+                        lineSeries.setData((List<Float>) lineData.get("powFactorValue"));
+                        lineSeries.setHappenTime((List<String>) lineData.get("powFactorHappenTime"));
+                        totalLineRes.getSeries().add(lineSeries);
+                    }
+
+                }
+                result.put("powFactorMaxValue" + 1, powFactorMaxValue);
+                result.put("powFactorMaxTime" + 1, powFactorMaxTime);
+                result.put("powFactorMinValue" + 1, powFactorMinValue);
+                result.put("powFactorMinTime" + 1, powFactorMinTime);
+                result.put("pName" + 1, "总功率因素");
+                result.put("pName" + 2, "A相功率因素");
+                result.put("pName" + 3, "B相功率因素");
+                result.put("pName" + 4, "C相功率因素");
+
                 result.put("pfLineRes", totalLineRes);
             }
         } catch (Exception e) {
@@ -2672,24 +2777,258 @@ public class BusIndexServiceImpl implements BusIndexService {
         return result;
     }
 
+    public void processLinePFData(BusLineHourDo houResVO, Integer dataType, Map resultMap) {
+
+        int lineId = houResVO.getLineId();
+        String lineKey = "line" + lineId;
+
+        Map<String, Object> lineData = (Map<String, Object>) resultMap.computeIfAbsent(lineKey, k -> new HashMap<>());
+        ((List<BusLineHourDo>) lineData.computeIfAbsent("data", k -> new ArrayList<>())).add(houResVO);
+        ((List<Float>) lineData.computeIfAbsent("powFactorValue", k -> new ArrayList<>())).add(getPFValue(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("powFactorHappenTime", k -> new ArrayList<>())).add(getFormatPFTime(houResVO, dataType));
+
+    }
+
+    private Float getPFValue(BusLineHourDo houResVO, Integer dataType) {
+        switch (dataType) {
+            case 1:
+                return houResVO.getPowerFactorMaxValue();
+            case 0:
+                return houResVO.getPowerFactorAvgValue();
+            case -1:
+                return houResVO.getPowerFactorMinValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    private String getFormatPFTime(BusLineHourDo houResVO, Integer dataType) {
+        switch (dataType) {
+            case DATA_TYPE_MAX:
+                return houResVO.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+            case DATA_TYPE_AVG:
+                return "无";
+            case DATA_TYPE_MIN:
+                return (houResVO.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    private Float getDataValue(BusLineHourDo busLineHourDo, Integer dataType) {
+        switch (dataType) {
+            case DATA_TYPE_MAX:
+                return busLineHourDo.getPowerFactorMaxValue();
+            case DATA_TYPE_AVG:
+                return busLineHourDo.getPowerFactorAvgValue();
+            case DATA_TYPE_MIN:
+                return busLineHourDo.getPowerFactorMinValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    public void processPFMavMin(List<BusLineHourDo> lineHourDoList, Integer dataType, Map<String, Object> resultMap) {
+        Float[] maxValues = new Float[]{0f, 0f, 0f};
+        Float[] minValues = new Float[]{1f, 1f, 1f};
+        String[] maxTimes = new String[]{"", "", ""};
+        String[] minTimes = new String[]{"", "", ""};
+
+        for (BusLineHourDo busLineHourDo : lineHourDoList) {
+            int lineId = busLineHourDo.getLineId() - 1; // Convert to 0-based index
+
+            if (lineId >= 0 && lineId < 3) {
+                Float currentValue = getDataValue(busLineHourDo, dataType);
+                String currentTime = getFormatPFTime(busLineHourDo, dataType);
+
+                if (maxValues[lineId] < currentValue) {
+                    maxValues[lineId] = currentValue;
+                    maxTimes[lineId] = currentTime;
+                }
+
+                if (minValues[lineId] > currentValue) {
+                    minValues[lineId] = currentValue;
+                    minTimes[lineId] = currentTime;
+                }
+            }
+        }
+
+        for (int i = 0; i < 3; i++) {
+            resultMap.put("powFactorMaxValue" + (i + 2), maxValues[i]);
+            resultMap.put("powFactorMaxTime" + (i + 2), maxTimes[i]);
+            resultMap.put("powFactorMinValue" + (i + 2), minValues[i]);
+            resultMap.put("powFactorMinTime" + (i + 2), minTimes[i]);
+        }
+    }
+
+//    private void processMavMin(List<BusLineHourDo> lineHourDoList, Integer dataType, Map resultMap) {
+//        Float powFactorAMaxValue = 0f;
+//        Float powFactorAMinValue = 1f;
+//        String powFactorAMaxTime = "";
+//        String powFactorAMinTime = "";
+//
+//        Float powFactorBMaxValue = 0f;
+//        Float powFactorBMinValue = 1f;
+//        String powFactorBMaxTime = "";
+//        String powFactorBMinTime = "";
+//
+//        Float powFactorCMaxValue = 0f;
+//        Float powFactorCMinValue = 1f;
+//        String powFactorCMaxTime = "";
+//        String powFactorCMinTime = "";
+//
+//
+//        for (BusLineHourDo busLineHourDo : lineHourDoList) {
+//            if (dataType == 1) {
+//                switch (busLineHourDo.getLineId()) {
+//                    case 1:
+//                        if (powFactorAMaxValue < busLineHourDo.getPowerFactorMaxValue()) {
+//                            powFactorAMaxValue = busLineHourDo.getPowerFactorMaxValue();
+//                            powFactorAMaxTime = busLineHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        if (powFactorAMinValue > busLineHourDo.getPowerFactorMaxValue()) {
+//                            powFactorAMinValue = busLineHourDo.getPowerFactorMaxValue();
+//                            powFactorAMinTime = busLineHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        break;
+//                    case 2:
+//                        if (powFactorBMaxValue < busLineHourDo.getPowerFactorMaxValue()) {
+//                            powFactorBMaxValue = busLineHourDo.getPowerFactorMaxValue();
+//                            powFactorBMaxTime = busLineHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        if (powFactorBMinValue > busLineHourDo.getPowerFactorMaxValue()) {
+//                            powFactorBMinValue = busLineHourDo.getPowerFactorMaxValue();
+//                            powFactorBMinTime = busLineHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        break;
+//                    case 3:
+//                        if (powFactorCMaxValue < busLineHourDo.getPowerFactorMaxValue()) {
+//                            powFactorCMaxValue = busLineHourDo.getPowerFactorMaxValue();
+//                            powFactorCMaxTime = busLineHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        if (powFactorCMinValue > busLineHourDo.getPowerFactorMaxValue()) {
+//                            powFactorCMinValue = busLineHourDo.getPowerFactorMaxValue();
+//                            powFactorCMinTime = busLineHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        break;
+//                    default:
+//                }
+//            } else if (dataType == 0) {
+//                switch (busLineHourDo.getLineId()) {
+//                    case 1:
+//                        if (powFactorAMaxValue < busLineHourDo.getPowerFactorAvgValue()) {
+//                            powFactorAMaxValue = busLineHourDo.getPowerFactorAvgValue();
+//
+//                        }
+//                        if (powFactorAMinValue > busLineHourDo.getPowerFactorAvgValue()) {
+//                            powFactorAMinValue = busLineHourDo.getPowerFactorAvgValue();
+//
+//                        }
+//                        break;
+//                    case 2:
+//                        if (powFactorBMaxValue < busLineHourDo.getPowerFactorAvgValue()) {
+//                            powFactorBMaxValue = busLineHourDo.getPowerFactorAvgValue();
+//
+//                        }
+//                        if (powFactorBMinValue > busLineHourDo.getPowerFactorAvgValue()) {
+//                            powFactorBMinValue = busLineHourDo.getPowerFactorAvgValue();
+//
+//                        }
+//                        break;
+//                    case 3:
+//                        if (powFactorCMaxValue < busLineHourDo.getPowerFactorAvgValue()) {
+//                            powFactorCMaxValue = busLineHourDo.getPowerFactorAvgValue();
+//
+//                        }
+//                        if (powFactorCMinValue > busLineHourDo.getPowerFactorAvgValue()) {
+//                            powFactorCMinValue = busLineHourDo.getPowerFactorAvgValue();
+//
+//                        }
+//                        break;
+//                    default:
+//                }
+//
+//            } else if (dataType == -1) {
+//
+//                switch (busLineHourDo.getLineId()) {
+//                    case 1:
+//                        if (powFactorAMaxValue < busLineHourDo.getPowerFactorMinValue()) {
+//                            powFactorAMaxValue = busLineHourDo.getPowerFactorMinValue();
+//                            powFactorAMaxTime = busLineHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        if (powFactorAMinValue > busLineHourDo.getPowerFactorMinValue()) {
+//                            powFactorAMinValue = busLineHourDo.getPowerFactorMinValue();
+//                            powFactorAMinTime = busLineHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        break;
+//                    case 2:
+//                        if (powFactorBMaxValue < busLineHourDo.getPowerFactorMinValue()) {
+//                            powFactorBMaxValue = busLineHourDo.getPowerFactorMinValue();
+//                            powFactorBMaxTime = busLineHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        if (powFactorBMinValue > busLineHourDo.getPowerFactorMinValue()) {
+//                            powFactorBMinValue = busLineHourDo.getPowerFactorMinValue();
+//                            powFactorBMinTime = busLineHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        break;
+//                    case 3:
+//                        if (powFactorCMaxValue < busLineHourDo.getPowerFactorMinValue()) {
+//                            powFactorCMaxValue = busLineHourDo.getPowerFactorMinValue();
+//                            powFactorCMaxTime = busLineHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        if (powFactorCMinValue > busLineHourDo.getPowerFactorMinValue()) {
+//                            powFactorCMinValue = busLineHourDo.getPowerFactorMinValue();
+//                            powFactorCMinTime = busLineHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss");
+//                        }
+//                        break;
+//                    default:
+//                }
+//
+//            }
+//
+//        }
+//
+//        resultMap.put("powFactorMaxValue" + 2, powFactorAMaxValue);
+//        resultMap.put("powFactorMaxTime" + 2, powFactorAMaxTime);
+//        resultMap.put("powFactorMinValue" + 2, powFactorAMinValue);
+//        resultMap.put("powFactorMinTime" + 2, powFactorAMinTime);
+//
+//        resultMap.put("powFactorMaxValue" + 3, powFactorBMaxValue);
+//        resultMap.put("powFactorMaxTime" + 3, powFactorBMaxTime);
+//        resultMap.put("powFactorMinValue" + 3, powFactorBMinValue);
+//        resultMap.put("powFactorMinTime" + 3, powFactorBMinTime);
+//
+//        resultMap.put("powFactorMaxValue" + 4, powFactorCMaxValue);
+//        resultMap.put("powFactorMaxTime" + 4, powFactorCMaxTime);
+//        resultMap.put("powFactorMinValue" + 4, powFactorCMinValue);
+//        resultMap.put("powFactorMinTime" + 4, powFactorCMinTime);
+//
+//
+//    }
+
+    private String getSeriesName(String type, int lineId, int dataType) {
+        String lineName = "";
+        switch (lineId) {
+            case 1:
+                lineName = "A";
+                break;
+            case 2:
+                lineName = "B";
+                break;
+            case 3:
+                lineName = "C";
+                break;
+        }
+
+        return lineName + "相" + DataNameType.fromValue(dataType).name() + type + "曲线";
+    }
+
+
     @Override
-    public Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
         Map result = new HashMap<>();
         BusLineResBase totalLineRes = new BusLineResBase();
-        result.put("totalLineRes", totalLineRes);
 
-        result.put("apparentPowMaxValue", null);
-        result.put("apparentPowMaxTime", null);
-        result.put("apparentPowMinValue", null);
-        result.put("apparentPowMinTime", null);
-        result.put("activePowMaxValue", null);
-        result.put("activePowMaxTime", null);
-        result.put("activePowMinValue", null);
-        result.put("activePowMinTime", null);
-        result.put("reactivePowMaxTime", null);
-        result.put("reactivePowMaxValue", null);
-        result.put("reactivePowMinTime", null);
-        result.put("reactivePowMinValue", null);
         try {
             BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getBusKey, devKey));
 
@@ -2711,67 +3050,97 @@ public class BusIndexServiceImpl implements BusIndexService {
 
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<String> data = getData(startTime, endTime, Arrays.asList(Id), index);
-                List<BusTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, BusTotalHourDo.class)).collect(Collectors.toList());
+                List<BusTotalHourDo> powList = getDataNew(startTime, endTime, Arrays.asList(Id), index, BusTotalHourDo.class);
+//                 = data.stream().map(str -> JsonUtils.parseObject(str, BusTotalHourDo.class)).collect(Collectors.toList());
 
                 LineSeries totalApparentPow = new LineSeries();
-                totalApparentPow.setName("总平均视在功率");
                 LineSeries totalActivePow = new LineSeries();
-                totalActivePow.setName("总平均有功功率");
                 LineSeries totalReactivePow = new LineSeries();
-                totalReactivePow.setName("总平均无功功率");
-                totalLineRes.getSeries().add(totalReactivePow);
-                totalLineRes.getSeries().add(totalApparentPow);
-                totalLineRes.getSeries().add(totalActivePow);
+                List<String> totalApparentPowHappenTime = new ArrayList<>();
+                List<String> totalActivePowHappenTime = new ArrayList<>();
+                List<String> totalReactivePowHappenTime = new ArrayList<>();
 
+                if (dataType == 1) {
+                    totalApparentPowHappenTime = powList.stream().map(BusTotalHourDo -> BusTotalHourDo.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    totalActivePowHappenTime = powList.stream().map(BusTotalHourDo -> BusTotalHourDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    totalReactivePowHappenTime = powList.stream().map(BusTotalHourDo -> BusTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                } else if (dataType == -1) {
+                    totalApparentPowHappenTime = powList.stream().map(BusTotalHourDo -> BusTotalHourDo.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    totalActivePowHappenTime = powList.stream().map(BusTotalHourDo -> BusTotalHourDo.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    totalReactivePowHappenTime = powList.stream().map(BusTotalHourDo -> BusTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                }
+                totalApparentPow.setHappenTime(totalApparentPowHappenTime);
+                totalActivePow.setHappenTime(totalActivePowHappenTime);
+                totalReactivePow.setHappenTime(totalReactivePowHappenTime);
 
-                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                if (dataType == 1) {
+                    totalApparentPow.setName("总最大视在功率");
+                    totalActivePow.setName("总最大有功功率");
+                    totalReactivePow.setName("总最大无功功率");
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getPowApparentMaxValue());
+                            totalActivePow.getData().add(hourdo.getPowActiveMaxValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+
+                        });
+                    } else {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getPowApparentMaxValue());
+                            totalActivePow.getData().add(hourdo.getPowActiveMaxValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+
+                        });
+                    }
+                } else if (dataType == 0) {
+                    totalApparentPow.setName("总平均视在功率");
+                    totalActivePow.setName("总平均有功功率");
+                    totalReactivePow.setName("总平均无功功率");
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
+                            totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+                        });
+                    } else {
+                        powList.forEach(hourdo -> {
+                            totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
+                            totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                            totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                        });
+                    }
+                } else if (dataType == -1) {
+                    totalApparentPow.setName("总最小视在功率");
+                    totalActivePow.setName("总最小有功功率");
+                    totalReactivePow.setName("总最小无功功率");
                     powList.forEach(hourdo -> {
-                        totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
-                        totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
-                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
+                        totalApparentPow.getData().add(hourdo.getPowApparentMinValue());
+                        totalActivePow.getData().add(hourdo.getPowActiveMinValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveMinValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
 
                     });
                 } else {
                     powList.forEach(hourdo -> {
-                        totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
-                        totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
-                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
+                        totalApparentPow.getData().add(hourdo.getPowApparentMinValue());
+                        totalActivePow.getData().add(hourdo.getPowActiveMinValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveMinValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
 
                     });
+
                 }
 
-                String apparentTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "pow_apparent_max_value");
-                BusTotalHourDo totalMaxApparent = JsonUtils.parseObject(apparentTotalMaxValue, BusTotalHourDo.class);
-                String apparentTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_apparent_min_value");
-                BusTotalHourDo totalMinApparent = JsonUtils.parseObject(apparentTotalMinValue, BusTotalHourDo.class);
-
-                String activeTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "pow_active_max_value");
-                BusTotalHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, BusTotalHourDo.class);
-                String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_active_min_value");
-                BusTotalHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, BusTotalHourDo.class);
-
-                String reactiveTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_max_value");
-                BusTotalHourDo totalMaxReactive = JsonUtils.parseObject(reactiveTotalMaxValue, BusTotalHourDo.class);
-                String reactiveTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Id), index, "pow_reactive_min_value");
-                BusTotalHourDo totalMinReactive = JsonUtils.parseObject(reactiveTotalMinValue, BusTotalHourDo.class);
-
+                processPowMavMin(powList, dataType, result);
+                totalLineRes.getSeries().add(totalReactivePow);
+                totalLineRes.getSeries().add(totalApparentPow);
+                totalLineRes.getSeries().add(totalActivePow);
                 result.put("totalLineRes", totalLineRes);
 
-                result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
-                result.put("apparentPowMaxTime", totalMaxApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("apparentPowMinValue", totalMinApparent.getPowApparentMinValue());
-                result.put("apparentPowMinTime", totalMinApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMaxValue", totalMaxActive.getPowActiveMaxValue());
-                result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
-                result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("reactivePowMaxValue", totalMaxReactive.getPowReactiveMaxValue());
-                result.put("reactivePowMaxTime", totalMaxReactive.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("reactivePowMinValue", totalMinReactive.getPowReactiveMinValue());
-                result.put("reactivePowMinTime", totalMinReactive.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
             }
         } catch (Exception e) {
@@ -2780,8 +3149,12 @@ public class BusIndexServiceImpl implements BusIndexService {
         return result;
     }
 
+
+
+
+
     @Override
-    public Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
         Map result = new HashMap<>();
         BusLineResBase lineRes = new BusLineResBase();
         try {
@@ -2804,28 +3177,71 @@ public class BusIndexServiceImpl implements BusIndexService {
                 }
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<String> busData = getData(startTime, endTime, Arrays.asList(Id), index);
+                List<String> busData = getDataNew(startTime, endTime, Arrays.asList(Id), index);
                 List<BusTemHourDo> temList = busData.stream()
                         .map(str -> JsonUtils.parseObject(str, BusTemHourDo.class))
                         .collect(Collectors.toList());
 
                 List<String> time;
                 LineSeries seriesA = new LineSeries();
-                List<Float> temA = temList.stream().map(BusTemHourDo::getTemAAvgValue).collect(Collectors.toList());
-                seriesA.setName("A相平均温度");
-                seriesA.setData(temA);
+                List<Float> temA = new ArrayList<>();
+                List<String> temAHappenTime = new ArrayList<>();
                 LineSeries seriesB = new LineSeries();
-                List<Float> temB = temList.stream().map(BusTemHourDo::getTemBAvgValue).collect(Collectors.toList());
-                seriesB.setName("B相平均温度");
-                seriesB.setData(temB);
+                List<Float> temB = new ArrayList<>();
+                List<String> temBHappenTime = new ArrayList<>();
                 LineSeries seriesC = new LineSeries();
-                List<Float> temC = temList.stream().map(BusTemHourDo::getTemCAvgValue).collect(Collectors.toList());
-                seriesC.setName("C相平均温度");
-                seriesC.setData(temC);
+                List<Float> temC = new ArrayList<>();
+                List<String> temCHappenTime = new ArrayList<>();
                 LineSeries seriesN = new LineSeries();
-                List<Float> temN = temList.stream().map(BusTemHourDo::getTemNAvgValue).collect(Collectors.toList());
-                seriesN.setName("N相平均温度");
+                List<Float> temN = new ArrayList<>();
+                List<String> temNHappenTime = new ArrayList<>();
+
+                if (dataType == 1) {
+                    seriesA.setName("A相最大温度");
+                    seriesB.setName("B相最大温度");
+                    seriesC.setName("C相最大温度");
+                    seriesN.setName("N相最大温度");
+                    temA = temList.stream().map(BusTemHourDo::getTemAMaxValue).collect(Collectors.toList());
+                    temAHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    temB = temList.stream().map(BusTemHourDo::getTemBMaxValue).collect(Collectors.toList());
+                    temBHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemBMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    temC = temList.stream().map(BusTemHourDo::getTemCMaxValue).collect(Collectors.toList());
+                    temCHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemCMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    temN = temList.stream().map(BusTemHourDo::getTemNMaxValue).collect(Collectors.toList());
+                    temNHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemNMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                } else if (dataType == 0) {
+                    seriesA.setName("A相平均温度");
+                    seriesB.setName("B相平均温度");
+                    seriesC.setName("C相平均温度");
+                    seriesN.setName("N相平均温度");
+                    temA = temList.stream().map(BusTemHourDo::getTemAAvgValue).collect(Collectors.toList());
+                    temB = temList.stream().map(BusTemHourDo::getTemBAvgValue).collect(Collectors.toList());
+                    temC = temList.stream().map(BusTemHourDo::getTemCAvgValue).collect(Collectors.toList());
+                    temN = temList.stream().map(BusTemHourDo::getTemNAvgValue).collect(Collectors.toList());
+                } else if (dataType == -1) {
+                    seriesA.setName("A相最小温度");
+                    seriesB.setName("B相最小温度");
+                    seriesC.setName("C相最小温度");
+                    seriesN.setName("N相最小温度");
+                    temA = temList.stream().map(BusTemHourDo::getTemAMinValue).collect(Collectors.toList());
+                    temAHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    temB = temList.stream().map(BusTemHourDo::getTemBMinValue).collect(Collectors.toList());
+                    temBHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemBMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    temC = temList.stream().map(BusTemHourDo::getTemCMinValue).collect(Collectors.toList());
+                    temCHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemCMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    temN = temList.stream().map(BusTemHourDo::getTemNMinValue).collect(Collectors.toList());
+                    temNHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemNMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                }
+
+
+                seriesA.setData(temA);
+                seriesA.setHappenTime(temAHappenTime);
+                seriesB.setData(temB);
+                seriesB.setHappenTime(temBHappenTime);
+                seriesC.setData(temC);
+                seriesC.setHappenTime(temCHappenTime);
                 seriesN.setData(temN);
+                seriesN.setHappenTime(temNHappenTime);
 
                 if (!isSameDay) {
                     time = temList.stream().map(busTemHourDo -> busTemHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
@@ -3553,6 +3969,45 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     }
 
+    /**
+     * 获取数据
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param ids       机柜id列表
+     * @param index     索引表
+     */
+    private List<String> getDataNew(String startTime, String endTime, List<Integer> ids, String index) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termsQuery("bus_id", ids))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(2000);
+
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     /**
      * 获取数据
@@ -3592,6 +4047,41 @@ public class BusIndexServiceImpl implements BusIndexService {
             return null;
         }
     }
+
+    private List getDataNew(String startTime, String endTime, List<Integer> ids, String index, Class cls) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termsQuery("bus_id", ids))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(2000);
+
+            List list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    if (str.length() > 2) {
+                        Object obj = JsonUtils.parseObject(str, cls);
+                        list.add(obj);
+                    }
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     private List getData(String startTime, String endTime, List<Integer> ids, String index, Class cls) {
         try {
@@ -4011,4 +4501,212 @@ public class BusIndexServiceImpl implements BusIndexService {
         ValueOperations ops = redisTemplate.opsForValue();
         return ops.multiGet(devKeys);
     }
+
+
+    /**
+     * 收集相电压电流数据
+     *
+     * @param houResVO
+     * @param resultMap
+     * @param isSameDay
+     * @param dataType
+     */
+    private void processHouResVO(BusHdaLineAvgResVO houResVO, Map<String, Object> resultMap, boolean isSameDay, DataTypeEnums dataType) {
+        int lineId = houResVO.getLineId();
+        String lineKey = "dayList" + lineId;
+
+        Map<String, Object> lineData = (Map<String, Object>) resultMap.computeIfAbsent(lineKey, k -> new HashMap<>());
+        ((List<BusHdaLineAvgResVO>) lineData.computeIfAbsent("data", k -> new ArrayList<>())).add(houResVO);
+        ((List<Float>) lineData.computeIfAbsent("curDataList", k -> new ArrayList<>())).add(getCurValue(houResVO, dataType));
+        ((List<Float>) lineData.computeIfAbsent("volDataList", k -> new ArrayList<>())).add(getVolValue(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("curHappenTime", k -> new ArrayList<>())).add(formatCurTime(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("volHappenTime", k -> new ArrayList<>())).add(formatVolTime(houResVO, dataType));
+
+        List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
+        dateTimes.add(isSameDay ? sdf.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+    }
+
+    /**
+     * 处理相电流值
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private Float getCurValue(BusHdaLineAvgResVO houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getCurMaxValue().floatValue();
+            case AVG:
+                return houResVO.getCurAvgValue().floatValue();
+            case MIN:
+                return houResVO.getCurMinValue().floatValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电压值
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private Float getVolValue(BusHdaLineAvgResVO houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getVolMaxValue().floatValue();
+            case AVG:
+                return houResVO.getVolAvgValue().floatValue();
+            case MIN:
+                return houResVO.getVolMinValue().floatValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电流发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private String formatCurTime(BusHdaLineAvgResVO houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return sdf.format(houResVO.getCurMaxTime());
+            case AVG:
+                return "无";
+            case MIN:
+                return sdf.format(houResVO.getCurMinTime());
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电压发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private String formatVolTime(BusHdaLineAvgResVO houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return sdf.format(houResVO.getVolMaxTime());
+            case AVG:
+                return "无";
+            case MIN:
+                return sdf.format(houResVO.getVolMinTime());
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+
+
+    public void processPowMavMin(List<BusTotalHourDo> powList, Integer dataType, Map<String, Object> result) {
+        PowerData apparentPowData = new PowerData();
+        PowerData activePowData = new PowerData();
+        PowerData reactivePowData = new PowerData();
+
+        for (BusTotalHourDo busTotalHourDo : powList) {
+            updatePowerData(apparentPowData, busTotalHourDo.getPowApparentMaxValue(), busTotalHourDo.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowApparentMinValue(), busTotalHourDo.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(activePowData, busTotalHourDo.getPowActiveMaxValue(), busTotalHourDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowActiveMinValue(), busTotalHourDo.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(reactivePowData, busTotalHourDo.getPowReactiveMaxValue(), busTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowReactiveMinValue(), busTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+        }
+
+        result.put("apparentPowMaxValue", apparentPowData.getMaxValue());
+        result.put("apparentPowMaxTime", apparentPowData.getMaxTime());
+        result.put("apparentPowMinValue", apparentPowData.getMinValue());
+        result.put("apparentPowMinTime", apparentPowData.getMinTime());
+
+        result.put("activePowMaxValue", activePowData.getMaxValue());
+        result.put("activePowMaxTime", activePowData.getMaxTime());
+        result.put("activePowMinValue", activePowData.getMinValue());
+        result.put("activePowMinTime", activePowData.getMinTime());
+
+        result.put("reactivePowMaxValue", reactivePowData.getMaxValue());
+        result.put("reactivePowMaxTime", reactivePowData.getMaxTime());
+        result.put("reactivePowMinValue", reactivePowData.getMinValue());
+        result.put("reactivePowMinTime", reactivePowData.getMinTime());
+    }
+
+    /**
+     * 更新数值
+     *
+     * @param powerData
+     * @param maxValue
+     * @param maxTime
+     * @param minValue
+     * @param minTime
+     * @param dataType
+     */
+    private void updatePowerData(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime, Integer dataType) {
+        if (dataType == 1) {
+            updateExtremes(powerData, maxValue, maxTime, minValue, minTime, true);
+        } else if (dataType == 0) {
+            updateExtremes(powerData, maxValue, "无", minValue, "无", false);
+        } else if (dataType == -1) {
+            updateExtremes(powerData, minValue, minTime, minValue, minTime, true);
+        }
+    }
+
+    private void updateExtremes(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime, boolean initialize) {
+        if (initialize || powerData.getMaxValue() < maxValue) {
+            powerData.setMaxValue(maxValue);
+            powerData.setMaxTime(maxTime);
+        }
+        if (initialize || powerData.getMinValue() > minValue) {
+            powerData.setMinValue(minValue);
+            powerData.setMinTime(minTime);
+        }
+    }
+
+    /**
+     * 数值辅助类
+     */
+    private static class PowerData {
+        private Float maxValue = 0f;
+        private Float minValue = Float.MAX_VALUE;
+        private String maxTime = "";
+        private String minTime = "";
+
+        public Float getMaxValue() {
+            return maxValue;
+        }
+
+        public void setMaxValue(Float maxValue) {
+            this.maxValue = maxValue;
+        }
+
+        public String getMaxTime() {
+            return maxTime;
+        }
+
+        public void setMaxTime(String maxTime) {
+            this.maxTime = maxTime;
+        }
+
+        public Float getMinValue() {
+            return minValue;
+        }
+
+        public void setMinValue(Float minValue) {
+            this.minValue = minValue;
+        }
+
+        public String getMinTime() {
+            return minTime;
+        }
+
+        public void setMinTime(String minTime) {
+            this.minTime = minTime;
+        }
+    }
+
+
 }

@@ -229,7 +229,7 @@ public class BusLineBaseDo extends BusBaseDo {
     private float powerFactorAvgValue;
 
     /**
-     * 平均功率因素
+     * 最大功率因素
      */
     @JsonProperty("power_factor_max_value")
     private float powerFactorMaxValue;
@@ -239,7 +239,7 @@ public class BusLineBaseDo extends BusBaseDo {
     private DateTime powerFactorMaxTime;
 
     /**
-     * 平均功率因素
+     * 最小功率因素
      */
     @JsonProperty("power_factor_min_value")
     private float powerFactorMinValue;
