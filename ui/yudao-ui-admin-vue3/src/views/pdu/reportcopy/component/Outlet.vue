@@ -143,8 +143,8 @@ const echartsOption = ref({
 watchEffect(() => {
   echartsOption.value.series[0].data = prop.list
   echartsOption.value.series[0].itemStyle.color = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-    { offset: 0, color: prop.color },
-    { offset: 1, color: '#00a8a8' } // 从 prop.color 渐变到 #00a8a8
+    { offset: 0, color:  '#00a8a8'},
+    { offset: 1, color:  prop.color} // 从 prop.color 渐变到 #00a8a8
   ])
 })
 </script>

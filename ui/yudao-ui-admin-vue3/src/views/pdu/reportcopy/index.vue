@@ -18,50 +18,23 @@
         :inline="true"
         label-width="120px"
       >      
+    
       <div>
-        <el-form-item  label="IP地址" prop="ipAddr" label-width="70px" >
-          <el-autocomplete
-            v-model="queryParams.ipAddr"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-140px"
-            placeholder="请输入IP地址"
-            @keyup.enter="handleQuery"
-            @select="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
-          <el-input-number
-            v-model="queryParams.cascadeAddr"
-            :min="0"
-            controls-position="right"
-            :value-on-clear="0"
-              class="!w-100px"
-          />
-        </el-form-item>
-      </div>
-      <div>
-        <el-form-item>
-          <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
-            <el-option label="最大" :value="1" />
-            <el-option label="平均" :value="0" />
-            <el-option label="最小" :value="-1" />
-          </el-select>
-        </el-form-item>
+    
         <el-form-item label="时间段" prop="createTime" label-width="100px">
-          <el-button 
+          <el-button :color="switchValue == 0 ? '#00778c' : ''"
             @click="queryParams.timeType = 0;dateTimeName='twentyfourHour';now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报 
           </el-button>
-          <el-button 
+          <el-button :color="switchValue == 1 ? '#00778c' : ''"
             @click="queryParams.timeType = 1;dateTimeName='seventytwoHour';now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
           </el-button>
-          <el-button 
+          <el-button :color="switchValue == 2 ? '#00778c' : ''"
             @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 2;" 
             :type="switchValue == 2 ? 'primary' : ''"
           >
@@ -101,12 +74,42 @@
             class="!w-200px"
           />
         </el-form-item>
+     
         <el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <!-- <el-text size="large">
           报警次数：{{ pduInfo.alarm }}
         </el-text> -->
+      </div>
+      <div>
+        <el-form-item>
+          <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
+            <el-option label="最大" :value="1" />
+            <el-option label="平均" :value="0" />
+            <el-option label="最小" :value="-1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item  label="IP地址" prop="ipAddr" label-width="70px" >
+          <el-autocomplete
+            v-model="queryParams.ipAddr"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-140px"
+            placeholder="请输入IP地址"
+            @keyup.enter="handleQuery"
+            @select="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
+          <el-input-number
+            v-model="queryParams.cascadeAddr"
+            :min="0"
+            controls-position="right"
+            :value-on-clear="0"
+              class="!w-100px"
+          />
+        </el-form-item>
       </div>
       </el-form>
     </template>
@@ -218,6 +221,7 @@
               <span class="power-title">{{curVolData[`curName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 1}`]}})</span></span>
+  <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=curList?.series.length-1 "> {{curVolData[`curName${index + 2}`]}}</span>
   <span class="power-value" v-if="index+2<=curList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 2}`]}})</span></span>
   <span class="power-value" v-if="index+2<=curList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 2}`]}})</span></span>
@@ -237,6 +241,7 @@
               <span class="power-title">{{curVolData[`volName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 1}`]}})</span></span>
+  <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=volList?.series.length-1 ">{{curVolData[`volName${index + 2}`]}}</span>
   <span class="power-value" v-if="index+2<=volList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 2}`]}})</span></span>
   <span class="power-value" v-if="index+2<=volList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 2}`]}})</span></span>
@@ -1543,13 +1548,13 @@ if (lineItemList && lineItemList.cur_alarm_max) {
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
+    baseInfoValue : queryParams.ipAddr.split('-')[0],
     statusInfoName : "总有功功率",
     statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_active.toFixed(3) + "kW" : '/',
     consumeName : "结束电能",
     consumeValue : eqData.value.lastEq+"kWh",
     unbalanceName : "电流不平衡度",
-    unbalanceValue : curUnBalance.toFixed(0),
+    unbalanceValue : curUnBalance.toFixed(0)+"%",
   })
   temp.push({
     baseInfoName : "设备状态",
@@ -1560,7 +1565,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
     consumeName : "电能消耗",
     consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
     unbalanceName : "电压不平衡度",
-    unbalanceValue : volUnBalance.toFixed(0),
+    unbalanceValue : volUnBalance.toFixed(0)+"%",
   })
   temp.push({
     baseInfoName : "额定电流",
@@ -1735,6 +1740,8 @@ const handleQuery = async () => {
   
 }
 
+
+
 // const queryLoading = ref(false)
 const tableLoading = ref(false)
 const preStatus = ref([0])
@@ -1770,7 +1777,7 @@ const getTableData = async(reset = false) => {
       pageNo: 1,
       pageSize: 10,
       alarmStatus: preStatus.value,
-      likeName: null,
+      likeName: queryParams.devKey,
       pduStartTime : queryParams.oldTime,
       pduFinishTime : queryParams.newTime, 
     })

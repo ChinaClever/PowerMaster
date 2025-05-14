@@ -86,7 +86,7 @@ public class PduAnalysisResult {
 
                 // 电压分析
                 if (item.getVolValue() != null && item.getVolValue().compareTo(voltageResult.maxVolValue) > 0) {
-                    voltageResult.maxVolValue = item.getVolMaxValue();
+                    voltageResult.maxVolValue = item.getVolValue();
 
                 }
                 if (item.getVolValue() != null && item.getVolValue().compareTo(voltageResult.minVolValue) < 0) {
@@ -117,13 +117,13 @@ public class PduAnalysisResult {
 
             for (PduHdaLineHouResVO item : dayList1) {
                 // 电压分析
-                if (item.getCurMinValue() != null && item.getCurMinValue().compareTo(voltageResult.maxVolValue) > 0) {
+                if (item.getVolMinValue() != null && item.getVolMinValue().compareTo(voltageResult.maxVolValue) > 0) {
                     voltageResult.maxVolValue = item.getCurMinValue();
                     voltageResult.maxVolTime = item.getVolMinTime();
                 }
-                if (item.getVolMaxValue() != null && item.getVolMaxValue().compareTo(voltageResult.minVolValue) < 0) {
-                    voltageResult.minVolValue = item.getVolMaxValue();
-                    voltageResult.minVolTime = item.getVolMaxTime();
+                if (item.getVolMinValue() != null && item.getVolMinValue().compareTo(voltageResult.minVolValue) < 0) {
+                    voltageResult.minVolValue = item.getVolMinValue();
+                    voltageResult.minVolTime = item.getVolMinTime();
                 }
 
                 // 电流分析
