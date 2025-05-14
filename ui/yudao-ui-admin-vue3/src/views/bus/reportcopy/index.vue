@@ -253,7 +253,7 @@
             <!-- <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大无功功率{{powData.reactivePowMaxValue}}kVar， 发生时间{{powData.reactivePowMaxTime}}。最小无功功率{{powData.reactivePowMinValue}}kVar， 发生时间{{powData.reactivePowMinTime}}</p> -->
-            <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
+            <Line class="Container"  :width="computedWidth" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox" v-if="visControll.curVolVis">
             <div class="page-conTitle">
@@ -407,6 +407,18 @@ const instance = getCurrentInstance();
 let num=0
 let lineNumber = ref() as any;
 
+// 创建一个响应式引用来存储窗口宽度
+const windowWidth = ref(window.innerWidth);
+// 计算属性，根据窗口宽度返回不同的width值
+const computedWidth = computed(() => {
+  if (windowWidth.value >= 2400) {
+    return '90vw';
+  } else if (windowWidth.value >= 1600) {
+    return '70vw';
+  } else {
+    return '80vw';
+  }
+});
 
 const typeRadioShow = ref("最大")
 

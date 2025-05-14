@@ -31,6 +31,7 @@ public class PduAnalysisResult {
 //        public Date avgCurTime;
     }
 
+
     public static Map<String, Object> analyzePduData(List<BusHdaLineAvgResVO> dayList1, Integer dataType) {
         if (dayList1 == null || dayList1.isEmpty()) {
             return Collections.emptyMap();
@@ -86,7 +87,7 @@ public class PduAnalysisResult {
 
                 // 电压分析
                 if (item.getVolAvgValue() != null && item.getVolAvgValue().compareTo(voltageResult.maxVolValue) > 0) {
-                    voltageResult.maxVolValue = item.getVolMaxValue();
+                    voltageResult.maxVolValue = item.getVolAvgValue();
 
                 }
                 if (item.getVolAvgValue() != null && item.getVolAvgValue().compareTo(voltageResult.minVolValue) < 0) {
@@ -102,6 +103,7 @@ public class PduAnalysisResult {
                     currentResult.minCurValue = item.getCurAvgValue();
                 }
             }
+
         } else if (dataType == -1) {
             // 初始化电压结果
             voltageResult.maxVolValue = dayList1.get(0).getVolMinValue();
@@ -117,13 +119,13 @@ public class PduAnalysisResult {
 
             for (BusHdaLineAvgResVO item : dayList1) {
                 // 电压分析
-                if (item.getCurMinValue() != null && item.getCurMinValue().compareTo(voltageResult.maxVolValue) > 0) {
+                if (item.getVolMinValue() != null && item.getVolMinValue().compareTo(voltageResult.maxVolValue) > 0) {
                     voltageResult.maxVolValue = item.getCurMinValue();
                     voltageResult.maxVolTime = item.getVolMinTime();
                 }
-                if (item.getVolMaxValue() != null && item.getVolMaxValue().compareTo(voltageResult.minVolValue) < 0) {
-                    voltageResult.minVolValue = item.getVolMaxValue();
-                    voltageResult.minVolTime = item.getVolMaxTime();
+                if (item.getVolMinValue() != null && item.getVolMinValue().compareTo(voltageResult.minVolValue) < 0) {
+                    voltageResult.minVolValue = item.getVolMinValue();
+                    voltageResult.minVolTime = item.getVolMinTime();
                 }
 
                 // 电流分析
@@ -142,4 +144,5 @@ public class PduAnalysisResult {
         result.put("current", currentResult);
         return result;
     }
+
 }

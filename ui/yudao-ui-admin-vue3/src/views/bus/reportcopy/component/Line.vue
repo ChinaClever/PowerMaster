@@ -206,6 +206,8 @@ watchEffect(() => {
   }
 
   time.value = prop.list.time;
+  console.log('busLineTime', time.value);
+  
   happenTime.value = prop.list.series.map(item => item.happenTime);
   console.log('linehappentime',happenTime.value)
 });
