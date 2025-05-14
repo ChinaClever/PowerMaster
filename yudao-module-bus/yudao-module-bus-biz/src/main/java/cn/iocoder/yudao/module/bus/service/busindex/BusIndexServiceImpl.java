@@ -3051,7 +3051,6 @@ public class BusIndexServiceImpl implements BusIndexService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<BusTotalHourDo> powList = getDataNew(startTime, endTime, Arrays.asList(Id), index, BusTotalHourDo.class);
-//                 = data.stream().map(str -> JsonUtils.parseObject(str, BusTotalHourDo.class)).collect(Collectors.toList());
 
                 LineSeries totalApparentPow = new LineSeries();
                 LineSeries totalActivePow = new LineSeries();
@@ -3073,46 +3072,32 @@ public class BusIndexServiceImpl implements BusIndexService {
                 totalActivePow.setHappenTime(totalActivePowHappenTime);
                 totalReactivePow.setHappenTime(totalReactivePowHappenTime);
 
+                for (BusTotalHourDo busTotalHourDo : powList) {
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        totalLineRes.getTime().add(busTotalHourDo.getCreateTime().toString("HH:mm"));
+                    } else {
+                        totalLineRes.getTime().add(busTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
+                    }
+                }
                 if (dataType == 1) {
                     totalApparentPow.setName("总最大视在功率");
                     totalActivePow.setName("总最大有功功率");
                     totalReactivePow.setName("总最大无功功率");
-                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
-                        powList.forEach(hourdo -> {
-                            totalApparentPow.getData().add(hourdo.getPowApparentMaxValue());
-                            totalActivePow.getData().add(hourdo.getPowActiveMaxValue());
-                            totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
-                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
-
-                        });
-                    } else {
-                        powList.forEach(hourdo -> {
-                            totalApparentPow.getData().add(hourdo.getPowApparentMaxValue());
-                            totalActivePow.getData().add(hourdo.getPowActiveMaxValue());
-                            totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
-                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
-
-                        });
-                    }
+                    powList.forEach(hourdo -> {
+                        totalApparentPow.getData().add(hourdo.getPowApparentMaxValue());
+                        totalActivePow.getData().add(hourdo.getPowActiveMaxValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveMaxValue());
+                    });
                 } else if (dataType == 0) {
                     totalApparentPow.setName("总平均视在功率");
                     totalActivePow.setName("总平均有功功率");
                     totalReactivePow.setName("总平均无功功率");
-                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
-                        powList.forEach(hourdo -> {
-                            totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
-                            totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
-                            totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
-                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
-                        });
-                    } else {
-                        powList.forEach(hourdo -> {
-                            totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
-                            totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
-                            totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
-                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
-                        });
-                    }
+                    powList.forEach(hourdo -> {
+                        totalApparentPow.getData().add(hourdo.getPowApparentAvgValue());
+                        totalActivePow.getData().add(hourdo.getPowActiveAvgValue());
+                        totalReactivePow.getData().add(hourdo.getPowReactiveAvgValue());
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+                    });
                 } else if (dataType == -1) {
                     totalApparentPow.setName("总最小视在功率");
                     totalActivePow.setName("总最小有功功率");
@@ -3122,23 +3107,12 @@ public class BusIndexServiceImpl implements BusIndexService {
                         totalActivePow.getData().add(hourdo.getPowActiveMinValue());
                         totalReactivePow.getData().add(hourdo.getPowReactiveMinValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
-
                     });
-                } else {
-                    powList.forEach(hourdo -> {
-                        totalApparentPow.getData().add(hourdo.getPowApparentMinValue());
-                        totalActivePow.getData().add(hourdo.getPowActiveMinValue());
-                        totalReactivePow.getData().add(hourdo.getPowReactiveMinValue());
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
-
-                    });
-
                 }
-
                 processPowMavMin(powList, dataType, result);
-                totalLineRes.getSeries().add(totalReactivePow);
                 totalLineRes.getSeries().add(totalApparentPow);
                 totalLineRes.getSeries().add(totalActivePow);
+                totalLineRes.getSeries().add(totalReactivePow);
                 result.put("totalLineRes", totalLineRes);
 
 
@@ -3148,9 +3122,6 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         return result;
     }
-
-
-
 
 
     @Override
@@ -3232,7 +3203,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     temN = temList.stream().map(BusTemHourDo::getTemNMinValue).collect(Collectors.toList());
                     temNHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemNMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                 }
-                processTemMavMin(temList,dataType,result);
+                processTemMavMin(temList, dataType, result);
 
                 seriesA.setData(temA);
                 seriesA.setHappenTime(temAHappenTime);
@@ -3264,17 +3235,17 @@ public class BusIndexServiceImpl implements BusIndexService {
         return result;
     }
 
-    public void processTemMavMin( List<BusTemHourDo> temList, Integer dataType, Map<String, Object> result) {
+    public void processTemMavMin(List<BusTemHourDo> temList, Integer dataType, Map<String, Object> result) {
         PowerData temAData = new PowerData();
         PowerData temBData = new PowerData();
         PowerData temCData = new PowerData();
         PowerData temDData = new PowerData();
 
         for (BusTemHourDo busTemHourDo : temList) {
-            updatePowerData(temAData, busTemHourDo.getTemAMaxValue(), busTemHourDo.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemAMinValue(), busTemHourDo.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
-            updatePowerData(temBData, busTemHourDo.getTemBMaxValue(), busTemHourDo.getTemBMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemBMinValue(), busTemHourDo.getTemBMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
-            updatePowerData(temCData, busTemHourDo.getTemCMaxValue(), busTemHourDo.getTemCMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemCMinValue(), busTemHourDo.getTemCMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
-            updatePowerData(temDData, busTemHourDo.getTemNMaxValue(), busTemHourDo.getTemNMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemNMinValue(), busTemHourDo.getTemNMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(temAData, busTemHourDo.getTemAMaxValue(), busTemHourDo.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemAAvgValue(), busTemHourDo.getTemAMinValue(), busTemHourDo.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(temBData, busTemHourDo.getTemBMaxValue(), busTemHourDo.getTemBMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemBAvgValue(), busTemHourDo.getTemBMinValue(), busTemHourDo.getTemBMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(temCData, busTemHourDo.getTemCMaxValue(), busTemHourDo.getTemCMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemCAvgValue(), busTemHourDo.getTemCMinValue(), busTemHourDo.getTemCMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(temDData, busTemHourDo.getTemNMaxValue(), busTemHourDo.getTemNMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemNAvgValue(), busTemHourDo.getTemNMinValue(), busTemHourDo.getTemNMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
         }
         result.put("temAMaxValue", temAData.getMaxValue());
         result.put("temAMaxTime", temAData.getMaxTime());
@@ -3295,7 +3266,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
 
-        @Override
+    @Override
     public String getBusRedisByDevKey(String devKey) {
         if (StringUtils.isEmpty(devKey)) {
             return null;
@@ -4586,16 +4557,15 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
 
-
     public void processPowMavMin(List<BusTotalHourDo> powList, Integer dataType, Map<String, Object> result) {
         PowerData apparentPowData = new PowerData();
         PowerData activePowData = new PowerData();
         PowerData reactivePowData = new PowerData();
 
         for (BusTotalHourDo busTotalHourDo : powList) {
-            updatePowerData(apparentPowData, busTotalHourDo.getPowApparentMaxValue(), busTotalHourDo.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowApparentMinValue(), busTotalHourDo.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
-            updatePowerData(activePowData, busTotalHourDo.getPowActiveMaxValue(), busTotalHourDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowActiveMinValue(), busTotalHourDo.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
-            updatePowerData(reactivePowData, busTotalHourDo.getPowReactiveMaxValue(), busTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowReactiveMinValue(), busTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(apparentPowData, busTotalHourDo.getPowApparentMaxValue(), busTotalHourDo.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"),busTotalHourDo.getPowApparentAvgValue(), busTotalHourDo.getPowApparentMinValue(), busTotalHourDo.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(activePowData, busTotalHourDo.getPowActiveMaxValue(), busTotalHourDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowActiveMinValue(),busTotalHourDo.getPowActiveAvgValue(), busTotalHourDo.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(reactivePowData, busTotalHourDo.getPowReactiveMaxValue(), busTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowReactiveMinValue(),busTotalHourDo.getPowReactiveAvgValue(), busTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
         }
 
         result.put("apparentPowMaxValue", apparentPowData.getMaxValue());
@@ -4624,22 +4594,22 @@ public class BusIndexServiceImpl implements BusIndexService {
      * @param minTime
      * @param dataType
      */
-    private void updatePowerData(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime, Integer dataType) {
+    private void updatePowerData(PowerData powerData, Float maxValue, String maxTime, Float avgValue, Float minValue, String minTime, Integer dataType) {
         if (dataType == 1) {
-            updateExtremes(powerData, maxValue, maxTime, minValue, minTime, true);
+            updateExtremes(powerData, maxValue, maxTime, maxValue, maxTime);
         } else if (dataType == 0) {
-            updateExtremes(powerData, maxValue, "无", minValue, "无", false);
+            updateExtremes(powerData, avgValue, "无", avgValue, "无");
         } else if (dataType == -1) {
-            updateExtremes(powerData, minValue, minTime, minValue, minTime, true);
+            updateExtremes(powerData, minValue, minTime, minValue, minTime);
         }
     }
 
-    private void updateExtremes(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime, boolean initialize) {
-        if (initialize || powerData.getMaxValue() < maxValue) {
+    private void updateExtremes(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime) {
+        if (powerData.getMaxValue() < maxValue) {
             powerData.setMaxValue(maxValue);
             powerData.setMaxTime(maxTime);
         }
-        if (initialize || powerData.getMinValue() > minValue) {
+        if (powerData.getMinValue() > minValue) {
             powerData.setMinValue(minValue);
             powerData.setMinTime(minTime);
         }
@@ -4686,6 +4656,4 @@ public class BusIndexServiceImpl implements BusIndexService {
             this.minTime = minTime;
         }
     }
-
-
 }
