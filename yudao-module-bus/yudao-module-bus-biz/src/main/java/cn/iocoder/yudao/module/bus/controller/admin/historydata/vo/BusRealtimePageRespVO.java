@@ -51,33 +51,11 @@ public class BusRealtimePageRespVO {
     @NumberFormat("0.00")
     @ExcelProperty("零线电流(A)")
     private Double cur_zero;
-
+    @NumberFormat("0.0")
     @ExcelProperty("电压三相不平衡")
     private Double vol_unbalance;
-
+    @NumberFormat("0.00")
     @ExcelProperty("电流三相不平衡")
     private Double cur_unbalance;
-
-    //相
-    @ExcelProperty("相")
-    private Double line_id;
-    @NumberFormat("0.0")
-    @ExcelProperty("电压(V)")
-    private Double vol_value;
-    @NumberFormat("0.0")
-    @ExcelProperty("电流(A)")
-    private Double cur_value;
-    @NumberFormat("0.0")
-    @ExcelProperty("线电压(V)")
-    private Double vol_line;
-
-    @ExcelProperty("负载率(%)")
-    private Double load_rate;
-
-    @ExcelProperty("电流谐波含量")
-    private String cur_thd;
-
-    @ExcelProperty("电压谐波含量")
-    private String vol_thd;
 
 }

@@ -168,6 +168,8 @@
               <el-table-column v-if="headerData.find((item)=>item.name=='总有功功率(kW)')" label="总有功功率(kW)" prop="总有功功率(kW)"/>
               <el-table-column v-if="headerData.find((item)=>item.name=='总视在功率(kVA)')" label="总视在功率(kVA)" prop="总视在功率(kVA)"/>
               <el-table-column v-if="headerData.find((item)=>item.name=='总无功功率(kVar)')" label="总无功功率(kVar)" prop="总无功功率(kVar)"/>
+              <el-table-column v-if="headerData.find((item)=>item.name=='功率因素')" label="功率因素" prop="功率因素"/>
+
 
 
               <el-table-column v-if="headerData.find((item)=>item.name=='电压(V)')" label="电压(V)" prop="电压(V)"/>
@@ -1944,5 +1946,8 @@ const handleExport1 = async () => {
 }
 /deep/ .el-tabs__active-bar {
   background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
 }
 </style>

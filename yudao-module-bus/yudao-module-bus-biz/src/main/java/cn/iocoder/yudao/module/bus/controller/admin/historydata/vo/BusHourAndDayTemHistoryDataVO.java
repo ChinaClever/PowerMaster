@@ -23,45 +23,45 @@ public class BusHourAndDayTemHistoryDataVO {
     private String location;
     @ExcelProperty("记录时间")
     private String create_time;
-    @ExcelProperty("A路平均温度(℃)")
+    @ExcelProperty({"A路温度(℃)","平均值"})
     private Integer tem_a_avg_value;
-    @ExcelProperty({"A路温度最高值","A路温度最高值(℃)"})
+    @ExcelProperty({"A路温度(℃)","最高值"})
     private Integer tem_a_max_value;
-    @ExcelProperty({"A路温度最高值","发生时间"})
+    @ExcelProperty({"A路温度(℃)","发生时间"})
     private String tem_a_max_time;
-    @ExcelProperty({"A路温度最低值","A路温度最低值(℃)"})
+    @ExcelProperty({"A路温度(℃)","最小值"})
     private Integer tem_a_min_value;
-    @ExcelProperty({"A路温度最低值","发生时间"})
+    @ExcelProperty({"A路温度(℃)","发生时间"})
     private String tem_a_min_time;
-    @ExcelProperty("B路平均温度(℃)")
+    @ExcelProperty({"B路温度(℃)","平均值"})
     private Integer tem_b_avg_value;
-    @ExcelProperty({"B路温度最高值","B路温度最高值(℃)"})
+    @ExcelProperty({"B路温度(℃)","最大值"})
     private Integer tem_b_max_value;
-    @ExcelProperty({"B路温度最高值","发生时间"})
+    @ExcelProperty({"B路温度(℃)","发生时间"})
     private String tem_b_max_time;
-    @ExcelProperty({"B路温度最低值","B路温度最低值(℃)"})
+    @ExcelProperty({"B路温度(℃)","最小值"})
     private Integer tem_b_min_value;
-    @ExcelProperty({"B路温度最低值","发生时间"})
+    @ExcelProperty({"B路温度(℃)","发生时间"})
     private String tem_b_min_time;
-    @ExcelProperty("C路平均温度(℃)")
+    @ExcelProperty({"C路温度(℃)","平均值"})
     private Integer tem_c_avg_value;
-    @ExcelProperty({"C路温度最高值","C路温度最高值(℃)"})
+    @ExcelProperty({"C路温度(℃)","最大值"})
     private Integer tem_c_max_value;
-    @ExcelProperty({"C路温度最高值","发生时间"})
+    @ExcelProperty({"C路温度(℃)","发生时间"})
     private String tem_c_max_time;
-    @ExcelProperty({"C路温度最低值","C路温度最低值(℃)"})
+    @ExcelProperty({"C路温度(℃)","最小值"})
     private Integer tem_c_min_value;
-    @ExcelProperty({"C路温度最低值","发生时间"})
+    @ExcelProperty({"C路温度(℃)","发生时间"})
     private String tem_c_min_time;
-    @ExcelProperty("中线平均温度(℃)")
+    @ExcelProperty({"中线温度(℃)","平均值"})
     private Integer tem_n_avg_value;
-    @ExcelProperty({"中线温度最高值","中线温度最高值(℃)"})
+    @ExcelProperty({"中线温度(℃)","最大值"})
     private Integer tem_n_max_value;
-    @ExcelProperty({"中线温度最高值","发生时间"})
+    @ExcelProperty({"中线温度(℃)","发生时间"})
     private String tem_n_max_time;
-    @ExcelProperty({"中线温度最低值","中线温度最低值(℃)"})
+    @ExcelProperty({"中线温度(℃)","最小值"})
     private Integer tem_n_min_value;
-    @ExcelProperty({"中线温度最低值","发生时间"})
+    @ExcelProperty({"中线温度(℃)","发生时间"})
     private String tem_n_min_time;
 
 }

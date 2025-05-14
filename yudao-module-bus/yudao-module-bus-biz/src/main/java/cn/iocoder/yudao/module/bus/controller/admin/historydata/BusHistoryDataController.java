@@ -97,13 +97,35 @@ public class BusHistoryDataController {
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")){
             //处理list
             busHistoryDataService.getNewBoxHistoryList(list);
-            ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
-                    BeanUtils.toBean(list, BoxRealtimePageRespVO.class),null, columnsToExcludeSet);
-
+            if("total".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxTotalRealtimePageRespVO.class,
+                        BeanUtils.toBean(list, BoxTotalRealtimePageRespVO.class),null, columnsToExcludeSet);
+            }else if("line".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxLineRealtimePageRespVO.class,
+                        BeanUtils.toBean(list, BoxLineRealtimePageRespVO.class),null, columnsToExcludeSet);
+            }else if("loop".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxLoopRealtimePageRespVO.class,
+                        BeanUtils.toBean(list, BoxLoopRealtimePageRespVO.class),null, columnsToExcludeSet);
+            }else if("outlet".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxOutletRealtimePageRespVO.class,
+                        BeanUtils.toBean(list, BoxOutletRealtimePageRespVO.class),null, columnsToExcludeSet);
+            }
         }else{
             busHistoryDataService.getNewBoxHistoryList1(list);
-            ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxHourAndDayPageRespVO.class,
-                    BeanUtils.toBean(list, BoxHourAndDayPageRespVO.class),null, columnsToExcludeSet);
+            if("total".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxTotalHourAndDayPageRespVO.class,
+                        BeanUtils.toBean(list, BoxTotalHourAndDayPageRespVO.class),null, columnsToExcludeSet);
+            }else if("line".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxLineHourAndDayPageRespVO.class,
+                        BeanUtils.toBean(list, BoxLineHourAndDayPageRespVO.class),null, columnsToExcludeSet);
+            }else if("loop".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxLoopHourAndDayPageRespVO.class,
+                        BeanUtils.toBean(list, BoxLoopHourAndDayPageRespVO.class),null, columnsToExcludeSet);
+            }else if("outlet".equals(pageReqVO.getType())){
+                ExcelUtils.writeA(response, "母线插接箱历史数据.xlsx", "数据", BoxOutletHourAndDayPageRespVO.class,
+                        BeanUtils.toBean(list, BoxOutletHourAndDayPageRespVO.class),null, columnsToExcludeSet);
+            }
+
         }
 
     }
@@ -116,17 +138,30 @@ public class BusHistoryDataController {
 
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBusHistoryDataPage(pageReqVO).getList();
-
         // 导出 Excel
-        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
-            busHistoryDataService.getNewHistoryList(list);
-            ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusRealtimePageRespVO.class,
-                    BeanUtils.toBean(list, BusRealtimePageRespVO.class));
-        } else {
-            busHistoryDataService.getNewHistoryList1(list);
-            ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusHourAndDayPageRespVO.class,
-                    BeanUtils.toBean(list, BusHourAndDayPageRespVO.class));
+        if("total".equals(pageReqVO.getType())){
+            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                busHistoryDataService.getNewHistoryList(list);
+                ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusRealtimePageRespVO.class,
+                        BeanUtils.toBean(list, BusRealtimePageRespVO.class));
+            } else {
+                busHistoryDataService.getNewHistoryList1(list);
+                ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusHourAndDayPageRespVO.class,
+                        BeanUtils.toBean(list, BusHourAndDayPageRespVO.class));
+            }
+        }else if("line".equals(pageReqVO.getType())){
+            if("realtime".equals(pageReqVO.getGranularity())){
+                busHistoryDataService.getNewHistoryList(list);
+                ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusLineRealtimePageRespVO.class,
+                        BeanUtils.toBean(list, BusLineRealtimePageRespVO.class));
+            }else{
+                busHistoryDataService.getNewHistoryList1(list);
+                ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusHourAndDayLinePageRespVO.class,
+                        BeanUtils.toBean(list, BusHourAndDayLinePageRespVO.class));
+            }
         }
+
+
     }
 
     @PostMapping("/bus-env-page")

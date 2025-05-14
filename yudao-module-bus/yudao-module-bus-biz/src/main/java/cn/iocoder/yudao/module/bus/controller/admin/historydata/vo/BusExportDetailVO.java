@@ -37,12 +37,12 @@ public class BusExportDetailVO {
     @NumberFormat("0.00")
     @ExcelProperty("功率因素")
     private Double power_factor;
-//    @NumberFormat("0.00")
-//    @ExcelProperty("剩余电流(A)")
-//    private Double cur_residual;
-//    @NumberFormat("0.00")
-//    @ExcelProperty("零线电流(A)")
-//    private Double cur_zero;
+    @NumberFormat("0.00")
+    @ExcelProperty("剩余电流(A)")
+    private Double cur_residual;
+    @NumberFormat("0.00")
+    @ExcelProperty("零线电流(A)")
+    private Double cur_zero;
     @NumberFormat("0.00")
     @ExcelProperty("电流三相不平衡")
     private Double cur_unbalance;

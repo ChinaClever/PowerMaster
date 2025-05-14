@@ -1207,4 +1207,7 @@ onMounted( async () => {
 /deep/ .el-tabs__active-bar {
   background-color: #00778c;
 }
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
+}
 </style>
