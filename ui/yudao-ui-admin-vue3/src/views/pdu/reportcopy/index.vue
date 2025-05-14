@@ -250,29 +250,6 @@
             <div class="page-conTitle">
               功率因素曲线
             </div>   
-<!--             
-            <div class="power-section single-line">
-  <span class="power-title">总功率因素极值</span>
-  <span class="power-value">峰值 <span class="highlight">{{factorLineData.totalMax.toFixed(2)}}</span>  <span class="time">记录于({{factorLineData.totalMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{factorLineData.totalMin.toFixed(2)}}</span>  <span class="time">记录于({{factorLineData.totalMinTime}})</span></span>
-</div>
-            <div class="power-section single-line">
-  <span class="power-title">A相功率因素极值</span>
-  <span class="power-value">峰值 <span class="highlight">{{factorLineData.lineAMax}}</span>  <span class="time">记录于({{factorLineData.lineAMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{factorLineData.lineAMin}}</span>  <span class="time">记录于({{factorLineData.lineAMinTime}})</span></span>
-</div>
-
-<div class="power-section single-line">
-  <span class="power-title">B相功率因素极值</span>
-  <span class="power-value">峰值 <span class="highlight">{{factorLineData.lineBMax}}</span>  <span class="time">记录于({{factorLineData.lineBMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{factorLineData.lineBMin}}</span>  <span class="time">记录于({{factorLineData.lineBMinTime}})</span></span>
-</div>
-<div class="power-section single-line">
-  <span class="power-title">C相功率因素极值</span>
-  <span class="power-value">峰值 <span class="highlight">{{factorLineData.lineCMax}}</span>  <span class="time">记录于({{factorLineData.lineCMaxTime}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{factorLineData.lineCMin}}</span>  <span class="time">记录于({{factorLineData.lineCMinTime}})</span></span>
-</div> -->
-
         <div v-for="(sensor, index) in pfLineList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2 == 0">
         <span class="power-title">{{pfLineData[`lineName${index+1}`]}}极值：</span>
