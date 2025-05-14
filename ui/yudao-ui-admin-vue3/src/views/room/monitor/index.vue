@@ -795,7 +795,7 @@ const props = defineProps({
 const openSetting = (item) => {
   roomFlag.value = 2;
   console.log(item)
-  noChange.value = true
+  // noChange.value = true
   Object.assign(rowColInfo, {
     roomName: item.roomName,
     row: item.yLength,
@@ -1050,10 +1050,6 @@ const submitSetting = async() => {
 }
 
 watch(() => rowColInfo.areaFlag, (val) => {
-  if(noChange.value) {
-    noChange.value = false
-    return
-  }
   if(val) {
     rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
     rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))

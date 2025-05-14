@@ -777,7 +777,7 @@ const getBalanceDetail = async (item) => {
 
   balanceObj.imbalanceValueA = res.curUnbalance
   balanceObj.imbalanceValueB = res.volUnbalance
-  balanceObj.colorIndex = res.color - 1
+  balanceObj.colorIndex = (res.color || 1) - 1
 }
 const butColor = ref(0);
 

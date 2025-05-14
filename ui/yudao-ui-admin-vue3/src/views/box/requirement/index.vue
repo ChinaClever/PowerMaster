@@ -439,9 +439,15 @@ import Pie from './component/Pie.vue'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import RequirementLine from './component/RequirementLine.vue'
 import { ElTree } from 'element-plus'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 /** PDU设备 列表 */
 // defineOptions({ name: 'PDUDevice' })
+
+const openDetailFlag=ref("0")
 
 const startTime = ref() as any;
 const endTime = ref() as any;
@@ -881,12 +887,19 @@ const handleExport = async () => {
   }
 }
 
+watch(openDetailFlag,async (val) => {
+  if(val == "1") {
+    openDetail({location: query.roomName, roomName: query.roomName,boxId: query.boxId})
+  }
+})
+
 /** 初始化 **/
 onMounted(async() => {
     devKeyList.value = await loadAll();
   getList()
   getNavList();
   getListAll(0);
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 

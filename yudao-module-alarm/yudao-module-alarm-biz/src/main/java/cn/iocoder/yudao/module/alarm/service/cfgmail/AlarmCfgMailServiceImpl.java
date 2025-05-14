@@ -7,10 +7,10 @@ import cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgprompt.AlarmCfgPromptDO;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
-import cn.iocoder.yudao.module.alarm.rabbitmq.Messages.AlarmMqMessage;
 import cn.iocoder.yudao.module.alarm.rabbitmq.producer.AlarmRabbitMQProducer;
 import cn.iocoder.yudao.module.alarm.service.cfgprompt.AlarmCfgPromptService;
 import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
+import cn.iocoder.yudao.module.alarm.utils.audioplayer.AudioPlayer;
 import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailAccountDO;
 import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailTemplateDO;
 import cn.iocoder.yudao.module.system.mq.message.mail.MailSendMessage;
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
-import javax.sound.sampled.*;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import cn.iocoder.yudao.module.alarm.controller.admin.cfgmail.vo.*;
@@ -33,7 +32,6 @@ import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgmail.AlarmCfgMailDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.dal.mysql.cfgmail.AlarmCfgMailMapper;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -73,6 +71,9 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
 
     @Autowired
     private AlarmRabbitMQProducer alarmRabbitMQProducer;
+
+    @Autowired
+    private AudioPlayer audioPlayer;
 
 
     public AlarmCfgMailServiceImpl(MailAccountService mailAccountService) {
@@ -207,49 +208,6 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
         }
     }
 
-
-    @Override
-    public void playAudio() {
-
-        try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("ALARM.WAV");
-
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(inputStream);
-            AudioFormat format = audioInputStream.getFormat();
-            if (!AudioSystem.isLineSupported(new DataLine.Info(Clip.class, format))) {
-                log.info("Line not supported for this audio format.");
-            } else {
-                Clip clip = AudioSystem.getClip();
-                clip.open(audioInputStream);
-
-                // 获取音频格式
-                AudioFormat audioFormat = audioInputStream.getFormat();
-                // 获取帧长度（如果可用）
-                long frameLength = audioInputStream.getFrameLength();
-
-                // 如果音频流没有指定帧长度，则需要找到音频文件的总字节数
-                if (frameLength == AudioSystem.NOT_SPECIFIED) {
-                    frameLength = audioInputStream.getFrameLength() * audioFormat.getFrameSize();
-                }
-
-                // 计算总播放时间（秒）
-                float frameRate = audioFormat.getFrameRate();
-                // 秒
-                float totalSeconds = frameLength / frameRate;
-
-                clip.start();
-                //开始后睡眠播放时间秒
-                Thread.sleep((long) (totalSeconds * 1000L));
-                //关闭
-                clip.close();
-            }
-        }catch (Exception e){
-            log.error("播放异常：",e);
-        }
-
-    }
-
-
     @Override
     public void pushAlarmMessage(List<Map<String, Object>> mapList) {
         if (!CollectionUtils.isEmpty(mapList)) {
@@ -274,7 +232,7 @@ public class AlarmCfgMailServiceImpl implements AlarmCfgMailService {
             //告警推送
             // 铃声告警
             //if (voiceAlarm == 1) {
-            //    playAudio();
+            //    audioPlayer.playAudio();
             //}
             // 邮件告警
             if (emailAlarm == 1) {

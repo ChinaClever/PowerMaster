@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo;
 
+import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.PduBaseDo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -102,5 +103,41 @@ public class PduHdaLineHouResVO extends PduBaseDo {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("cur_min_time")
     private Date curMinTime;
+
+    /**
+     *最大功率因素
+     */
+    @Schema(description = "最大功率因数")
+    @JsonProperty("power_factor_max_value")
+    private Float powerFactorMaxValue;
+
+    /**
+     * 最大功率因素时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("power_factor_max_time")
+    private DateTime powerFactorMaxTime;
+
+    /**
+     *最小功率因素
+     */
+    @Schema(description = "最小功率因数")
+    @JsonProperty("power_factor_min_value")
+    private Float powerFactorMinValue;
+
+    /**
+     * 最小功率因素时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("power_factor_min_time")
+    private DateTime powerFactorMinTime;
+
+    /**
+     *最大功率因素
+     */
+    @Schema(description = "平均功率因数")
+    @JsonProperty("power_factor_avg_value")
+    private Float powerFactorAvgValue;
+
 
 }
