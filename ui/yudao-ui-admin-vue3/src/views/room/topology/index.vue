@@ -15,8 +15,7 @@
       </div>
       <div class="btns" :style="isFromHome ? 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px' : 'flex: 1;display: flex;justify-content: flex-end;margin-right: 10px'">
         <div style="display: flex;justify-content: flex-end;margin-right:3px;width: 100%;align-items: center;">
-          <el-button v-if="isFromHome" size="small" @click="tableScaleValue = tableScaleValueStart;tableScaleWidth = tableScaleWidthStart;tableScaleHeight = tableScaleHeightStart" circle ><Icon icon="ep:refresh-right" /></el-button>
-          <el-button v-else size="small" @click="tableScaleValue = 1;tableScaleWidth = 100;tableScaleHeight = 100" circle ><Icon icon="ep:refresh-right" /></el-button>
+          <el-button size="small" @click="tableScaleValue = tableScaleValueStart;tableScaleWidth = tableScaleWidthStart;tableScaleHeight = tableScaleHeightStart" circle ><Icon icon="ep:refresh-right" /></el-button>
           <el-button size="small" @click="tableScale(false)" circle ><Icon icon="ep:minus" /></el-button>
           <el-button size="small" @click="tableScale(true)" circle ><Icon icon="ep:plus" /></el-button>
         </div>
@@ -30,7 +29,9 @@
         <!-- <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button> -->
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary" color="black">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary" color="black"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
-        <el-button v-if="editEnable" @click="handleSubmit" plain type="primary" color="black">保存</el-button>
+        <el-button v-if="editEnable" @click="handleExportAisle" plain :loading="exportLoading" type="primary" color="black"><Icon :size="16" icon="ep:download" style="margin-right: 5px" />导出</el-button>
+        <el-button v-if="editEnable" @click="openSetting" plain type="primary" color="black"><Icon :size="16" icon="ep:upload" style="margin-right: 5px" />导入</el-button>
+        <!-- <el-button v-if="editEnable" @click="handleSubmit" plain type="primary" color="black">保存</el-button> -->
         <!-- <el-button v-if="editEnable" @click="handleDelete" type="primary">删除机房</el-button> -->
         
       </div>
@@ -109,7 +110,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
+                              <div v-if="element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -159,7 +160,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
+                              <div v-if="element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -209,11 +210,11 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                              <div v-if="element.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 3 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temFront>=tempList[2]?.min ? tempList[2]?.color : (element.temFront>=tempList[1]?.min ? tempList[1]?.color : (element.temFront>=tempList[0]?.min ? tempList[0]?.color : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -259,7 +260,11 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                              <div v-if="element.temFront != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
+                                <div>{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}</div>
+                                <div>{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}</div>
+                                <!-- <div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span> -->
+                              </div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -418,7 +423,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                  <div v-if="item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -468,7 +473,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                  <div v-if="item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -518,11 +523,11 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                  <div v-if="item.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 3" :style="{background: `linear-gradient(to bottom, ${getColorFromGradient(12)} 50%, ${getColorFromGradient(60)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -568,8 +573,12 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
-                                </el-tooltip>
+                                  <div v-if="item.temFront != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
+                                    <div>{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}</div>
+                                    <div>{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}</div>
+                                    <!-- <div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span> -->
+                                  </div>
+                                  </el-tooltip>
                               </template>
                             </div>
                             <div v-else-if="chosenBtn == 4 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (item.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (item.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
@@ -704,58 +713,100 @@
     </div>
   </el-card>
   <layoutForm ref="machineForm" @success="handleChange" />
-  <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
+<el-dialog v-model="dialogVisible" title="机房配置" width="50%" :before-close="handleDialogCancel">
       <el-form>
         <div style="margin-bottom: 5px">
           <el-text>机房</el-text>
         </div>
         <div class="double-formitem">
-          <el-form-item label="名称" label-width="90">
+          <div style="margin-left: 60px;margin-bottom: 18px">
+            <el-radio-group v-model="addrFlag" fill="#00778c">
+              <el-radio-button :label="false">不分楼层</el-radio-button>
+              <el-radio-button :label="true">分楼层</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-form-item label="名称" label-width="80">
             <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
           </el-form-item>
-          <el-form-item label="楼层" prop="type" label-width="90">
+          <el-form-item label="楼层" prop="type" label-width="80">
             <el-select v-model="rowColInfo.addr" placeholder="请选择">
-              <el-option v-for="(addr_item,addr_index) in addrList" :key="addr_index" :label="addr_item" :value="addr_item" />
+              <el-option v-for="(addr_item,addr_index) in addrList.slice(1)" :key="addr_index" :label="addr_item" :value="addr_item" />
             </el-select>
           </el-form-item>
         </div>
-        <div style="margin-bottom: 10px">
-          <el-text>地砖（地砖按60CM*60CM）</el-text>
+        <div style="margin-bottom: 5px">
+          <el-text>拓扑</el-text>
         </div>
-        <div class="double-formitem">
-          <el-form-item label="行数" label-width="90">
-            <el-input-number v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
+        <div v-if="!rowColInfo.areaFlag" class="double-formitem">
+          <div style="margin-left: 60px;margin-bottom: 18px">
+            <el-radio-group v-model="rowColInfo.areaFlag" fill="#00778c">
+              <el-radio-button :label="true">面积</el-radio-button>
+              <el-radio-button :label="false">地砖</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-form-item label="行数" label-width="80">
+            <el-input type="number" v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
           </el-form-item>
-          <el-form-item label="列数" label-width="90">
-            <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
+          <el-form-item label="列数" label-width="80">
+            <el-input type="number" v-model="rowColInfo.col" :min="1" :max="100" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+        <div v-else class="double-formitem">
+          <div style="margin-left: 60px;margin-bottom: 18px">
+            <el-radio-group v-model="rowColInfo.areaFlag" fill="#00778c">
+              <el-radio-button :label="true">面积</el-radio-button>
+              <el-radio-button :label="false">地砖</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-form-item label="宽度" label-width="80">
+            <el-input type="number" v-model="rowColInfo.width" :min="1" :max="60" placeholder="请输入">
+              <template #append>m</template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="长度" label-width="80">
+            <el-input type="number" v-model="rowColInfo.length" :min="1" :max="60" placeholder="请输入">
+              <template #append>m</template>
+            </el-input>
           </el-form-item>
         </div>
         
         <div style="margin-bottom: 5px">
-          <el-text>容量</el-text>
+          <el-text>负载率</el-text>
         </div>
-        <el-form-item label="机房总电力容量" label-width="160">
-          <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入">
-            <template #append>kVA</template>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="排序" label-width="90">
-            <el-input-number v-model="rowColInfo.sort" controls-position="right" placeholder="请输入" />
-          </el-form-item>
         <!-- <el-form-item label="非IT设备总额定功率" label-width="160">
           <el-input v-model="rowColInfo.airPower" placeholder="包括制冷系统（如空调、冷源设备、新风系统等）">
             <template #append>kVA</template>
           </el-input>
         </el-form-item> -->
-
         <div class="double-formitem">
-          <el-form-item label="显示选择" label-width="90" style="padding-top: 15px">
-            <el-switch v-model="rowColInfo.displayFlag" :active-value="1" :inactive-value="0" />
+          <div style="margin-left: 60px;margin-bottom: 18px">
+            <el-radio-group v-model="rowColInfo.displayFlag" fill="#00778c">
+              <el-radio-button :label="false">不显示</el-radio-button>
+              <el-radio-button :label="true">显示</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-form-item label="电力容量" label-width="80">
+            <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
+              <template #append>kVA</template>
+            </el-input>
           </el-form-item>
-          <el-radio-group v-model="radio" size="large" style="margin-left: 15px;">
-            <el-radio-button label="负载率" value="负载率"/>
-            <!-- <el-radio-button label="PUE" value="PUE"/> -->
-          </el-radio-group>
+        </div>
+
+        
+
+        <div style="margin-bottom: 5px">
+          <el-text>排序</el-text>
+        </div>
+        <div class="double-formitem">
+          <div style="margin-left: 60px;margin-bottom: 18px">
+            <el-radio-group v-model="sortFlag" fill="#00778c">
+              <el-radio-button :label="false">不启用</el-radio-button>
+              <el-radio-button :label="true">启用</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-form-item label="排序序号" label-width="80">
+            <el-input type="number" v-model="rowColInfo.sort" placeholder="请输入" />
+          </el-form-item>
         </div>
 
         <!-- <div class="double-formitem">
@@ -777,7 +828,7 @@
       </el-form>
       <template #footer>
         <el-button @click="handleDialogCancel">取 消</el-button>
-        <el-button type="primary" @click="submitSetting">确 定</el-button>
+        <el-button type="primary" @click="submitSetting" color="black">确 定</el-button>
       </template>
     </el-dialog>
 
@@ -876,6 +927,7 @@ import layoutForm from './component/layoutForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { CabinetApi } from '@/api/cabinet/info'
+import { AisleEnergyApi } from '@/api/aisle/aisleenergy'
 import { IndexApi } from '@/api/cabinet/index'
 import { Console } from "console";
 import MachineForm from './component/MachineForm.vue';
@@ -896,6 +948,9 @@ const queryParams = reactive({
   pageTotal: 0,
 })
 
+const addrFlag = ref(false)
+const sortFlag = ref(false)
+
 const {containerInfo, isFromHome} = defineProps({
   containerInfo: {
     type: Object,
@@ -915,12 +970,12 @@ const dragTableViewEle = ref()
 const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
 
-const tableScaleValue = ref(1)
-const tableScaleWidth = ref(100)
-const tableScaleHeight = ref(100)
-const tableScaleValueStart = ref(1)
-const tableScaleWidthStart = ref(100)
-const tableScaleHeightStart = ref(100)
+const tableScaleValue = ref(0.8)
+const tableScaleWidth = ref(125)
+const tableScaleHeight = ref(125)
+const tableScaleValueStart = ref(0.8)
+const tableScaleWidthStart = ref(125)
+const tableScaleHeightStart = ref(125)
 
 const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(1)
@@ -956,6 +1011,9 @@ const rowColInfo = reactive({
   addr: '未区分', //楼层
   row: 14, // 行
   col: 18, // 列
+  areaFlag: true, //新建类型 砖数 面积
+  width: 8.4, //宽度
+  length: 10.8, //长度
   powerCapacity:0, //电力容量
   airPower: null, //空调额定功率
   displayType: 0, //0负载率 1PUE
@@ -1089,12 +1147,12 @@ const btns = [
   // },
   {
     value: 3,
-    name: '前门温度',
+    name: '温度',
   },
-  {
-    value: 4,
-    name: '后门温度',
-  },
+  // {
+  //   value: 4,
+  //   name: '后门温度',
+  // },
   // {
   //   value: 4,
   //   name: '容量',
@@ -1111,7 +1169,7 @@ const emptyObject = {
     "aisleId": 0,
     "powCapacity": null,
     "cabinetType": null,
-    "pduBox": null,
+    "pduBox": false,
     "isDisabled": null,
     "isDeleted": null,
     "cabinetHeight": 0,
@@ -1200,7 +1258,7 @@ const groupMachineBlank = {
   put: (event) => {
    // //console.log('event', event.el.id)
     const moveBox = movingInfo.value
-    //console.log(moveBox)
+    // console.log(moveBox)
     if (editEnable.value) {
       if(moveBox.type == 2) {
         moveBox.amount = 1
@@ -1217,9 +1275,11 @@ const groupMachineBlank = {
       } else {
         const X = +event.el.id.split('-')[1]
         const Y = +event.el.id.split('-')[0]
+        console.log(X + moveBox.amount,rowColInfo)
         if (X + moveBox.amount > rowColInfo.col) return false
         for(let i = 0;i < moveBox.amount;i++) {
           if((tableData.value[Y][formParam.value[X+i]].length && tableData.value[Y][formParam.value[X+i]][0].id != moveBox.id) || (tableData.value[Y+1][formParam.value[X+i]].length && tableData.value[Y+1][formParam.value[X+i]][0].id != moveBox.id)) {
+            console.log((tableData.value[Y][formParam.value[X+i]].length && tableData.value[Y][formParam.value[X+i]][0].id != moveBox.id) || (tableData.value[Y+1][formParam.value[X+i]].length && tableData.value[Y+1][formParam.value[X+i]][0].id != moveBox.id))
             return false
           }
         }
@@ -1263,8 +1323,8 @@ const getRoomList = async() => {
 
 const menuOptions = ref([
   {
-    value: '拖拽视图',
-    label: '拖拽视图',
+    value: '小抓手',
+    label: '小抓手',
     children: [{}]
   }
 ])
@@ -1274,6 +1334,10 @@ const menuOptionsCopy = ref([
     value: '编辑',
     label: '编辑',
     children: [
+      {
+        value: '新增机柜',
+        label: '新增机柜',
+      },
       {
         value: '机柜编辑',
         label: '机柜编辑',
@@ -1512,6 +1576,9 @@ const getRoomInfo = async() => {
       row: res.y_length,
       col: res.x_length,
       powerCapacity:res.powerCapacity,
+      areaFlag: res.areaFlag, //新建类型 砖数 面积
+      width: res.areayLength, //宽度
+      length: res.areaxLength, //长度
       airPower:res.airPower,
       addr: res.addr,
       displayType: res.displayType, //0负载率 1PUE
@@ -1522,6 +1589,7 @@ const getRoomInfo = async() => {
       eleLimitMonth: res.eleLimitMonth,
       sort: res.sort,
     })
+    console.log(rowColInfo)
     emit('backData', res)
     
     for (let row = 0; row < res.y_length; row++) {
@@ -1539,7 +1607,7 @@ const getRoomInfo = async() => {
       const arr = [] as any
       let canDelete = true
       for(let j=0;j < item.length;j++) {
-        arr.push(emptyObject)
+        arr.push({...emptyObject,index: j+1,aisleId: item.id})
       }
       item.cabinetList && item.cabinetList.forEach(ele => {
         if(ele.index > 0) {
@@ -1611,24 +1679,24 @@ const getRoomInfoNoLoading = async() => {
     }
     res.aisleList = res.aisleList==null ? [] : res.aisleList
     res.cabinetList = res.cabinetList==null ? [] : res.cabinetList
-    updateCfgInfo.value=res;
+    // updateCfgInfo.value=res;
     roomDownValId.value = res.id;
     const data: Record<string, any[]>[] = [];
-    Object.assign(rowColInfo, {
-      roomName: res.roomName,
-      row: res.y_length,
-      col: res.x_length,
-      powerCapacity:res.powerCapacity,
-      airPower:res.airPower,
-      addr: res.addr,
-      displayType: res.displayType, //0负载率 1PUE
-      displayFlag: res.displayFlag, // 显示选择
-      eleAlarmDay: res.eleAlarmDay,
-      eleLimitDay: res.eleLimitDay,
-      eleAlarmMonth: res.eleAlarmMonth,
-      eleLimitMonth: res.eleLimitMonth,
-      sort: res.sort,
-    })
+    // Object.assign(rowColInfo, {
+    //   roomName: res.roomName,
+    //   row: res.y_length,
+    //   col: res.x_length,
+    //   powerCapacity:res.powerCapacity,
+    //   airPower:res.airPower,
+    //   addr: res.addr,
+    //   displayType: res.displayType, //0负载率 1PUE
+    //   displayFlag: res.displayFlag, // 显示选择
+    //   eleAlarmDay: res.eleAlarmDay,
+    //   eleLimitDay: res.eleLimitDay,
+    //   eleAlarmMonth: res.eleAlarmMonth,
+    //   eleLimitMonth: res.eleLimitMonth,
+    //   sort: res.sort,
+    // })
     emit('backData', res)
     
     for (let row = 0; row < res.y_length; row++) {
@@ -1646,7 +1714,7 @@ const getRoomInfoNoLoading = async() => {
       const arr = [] as any
       let canDelete = true
       for(let j=0;j < item.length;j++) {
-        arr.push(emptyObject)
+        arr.push({...emptyObject,index: j+1,aisleId: item.id})
       }
       item.cabinetList && item.cabinetList.forEach(ele => {
         if(ele.index > 0) {
@@ -1724,7 +1792,7 @@ const getRoomStatus = async(res) => {
 }
 
 let lastTime = 0;
-const throttleDelay = 100;
+const throttleDelay = 32;
 const tableScale = (flag) => {
   // if(tableScaleValue.value == 0.4 && !flag) {
   //   return
@@ -1785,9 +1853,9 @@ const handleCssScale = () => {
 // 处理修改机房的事件
 const handleChangeRoom = (val) => {
   roomId.value = val
-  tableScaleValue.value = 1
-  tableScaleWidth.value = 100
-  tableScaleHeight.value = 100
+  tableScaleValue.value = 0.8
+  tableScaleWidth.value = 125
+  tableScaleHeight.value = 125
   getRoomInfo()
 }
 //取消
@@ -1846,6 +1914,9 @@ const resetForm = () => {
     addr: '未区分', //楼层
     row: 14, // 行
     col: 18, // 列,
+    areaFlag: true, //新建类型 砖数 面积
+    width: 8.4, //宽度
+    length: 10.8, //长度
     powerCapacity:0,
     airPower:null,
     displayType: 0, //0负载率 1PUE
@@ -1857,6 +1928,8 @@ const resetForm = () => {
     sort: null,
   })
   radio.value = "负载率"
+  addrFlag.value = false
+  sortFlag.value = false
 }
 // 处理点击删除机房事件
 const handleDelete = () => {
@@ -1887,17 +1960,22 @@ const openSetting = () => {
     roomName: updateCfgInfo.value.roomName,
     row: updateCfgInfo.value.y_length,
     col: updateCfgInfo.value.x_length,
+    areaFlag: updateCfgInfo.value.areaFlag,
+    width: updateCfgInfo.value.areayLength ? updateCfgInfo.value.areayLength : 8.4,
+    length: updateCfgInfo.value.areaxLength ? updateCfgInfo.value.areaxLength : 10.8,
     powerCapacity:updateCfgInfo.value.powerCapacity,
     addr: updateCfgInfo.value.addr,
     airPower:updateCfgInfo.value.airPower ? updateCfgInfo.value.airPower : 0,
-    displayType: updateCfgInfo.value.displayType ? 1 : 0, //0负载率 1PUE
-    displayFlag: updateCfgInfo.value.displayFlag ? 1 : 0,
+    displayType: updateCfgInfo.value.displayType, //0负载率 1PUE
+    displayFlag: updateCfgInfo.value.displayFlag,
     eleAlarmDay: updateCfgInfo.value.eleAlarmDay,
     eleLimitDay: updateCfgInfo.value.eleLimitDay,
     eleAlarmMonth: updateCfgInfo.value.eleAlarmMonth,
     eleLimitMonth: updateCfgInfo.value.eleLimitMonth,
   })
   radio.value = updateCfgInfo.value.displayType ? "PUE" : "负载率"
+  addrFlag.value = updateCfgInfo.value.addr == '未区分' ? false : true
+  sortFlag.value = updateCfgInfo.value.sort ? true : false
   dialogVisible.value = true;
 }
 
@@ -1944,6 +2022,7 @@ const handleRightClick = (e) => {
   const offsetY = e.clientY - Math.ceil(rect.top) + 1
   const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  ((e.target.parentNode.parentNode.id ? e.target.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.parentNode.id :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.id)))))
   console.log('handleRightClick', e.target,e.target.classList,e.target.parentNode.parentNode.parentNode.parentNode.parentNode,e.target.dataset.index, currentId, offsetX, offsetY)
+  console.log(menuOptions.value,currentId)
   const cabinetIndex = e.target.dataset.index ? e.target.dataset.index : (e.target.parentNode.dataset.index ? e.target.parentNode.dataset.index :  ((e.target.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.parentNode.dataset.index :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.index)))))
   const lndexX = currentId.split('-')[1]
   const lndexY = currentId.split('-')[0]
@@ -1954,6 +2033,7 @@ const handleRightClick = (e) => {
   menuOptions.value[0] = JSON.parse(JSON.stringify(menuOptionsCopy.value[0]));
 
   if(cabinetIndex >= 0) {
+    console.log(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList,cabinetIndex)
     menuOptions.value[0].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
 
     menuOptions.value[1] = menuOptionsCopy.value[1]
@@ -1964,10 +2044,7 @@ const handleRightClick = (e) => {
     menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetName
 
-    
-
-    
-    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes) {
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
       menuOptions.value[3] = menuOptionsCopy.value[5]
 
       menuOptions.value[4] = menuOptionsCopy.value[6]
@@ -1979,16 +2056,47 @@ const handleRightClick = (e) => {
       let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
       menuOptions.value[3].value = {
         devKeyA: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyA,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keya?.id
+      }
+      menuOptions.value[5].value = {
+        devKey: cabinetBoxes.boxKeyB,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keyb?.id
+      }
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
+      menuOptions.value[3] = menuOptionsCopy.value[5]
+
+      menuOptions.value[4] = menuOptionsCopy.value[6]
+      menuOptions.value[4].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
+
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
+      menuOptions.value[3].value = {
+        devKeyA: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyA,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keya?.id
+      }
+
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
+      menuOptions.value[3] = menuOptionsCopy.value[5]
+
+      menuOptions.value[4] = menuOptionsCopy.value[7]
+      menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
+
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
+      menuOptions.value[3].value = {
         devKeyB: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1]
       }
       menuOptions.value[4].value = {
-        devKey: cabinetBoxes.boxKeyA
-      }
-      menuOptions.value[5].value = {
-        devKey: cabinetBoxes.boxKeyB
+        devKey: cabinetBoxes.boxKeyB,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keyb?.id
       }
     }
-    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus) {
+
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
       menuOptions.value[3] = menuOptionsCopy.value[3]
       menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
 
@@ -1997,22 +2105,39 @@ const handleRightClick = (e) => {
       
       let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
       menuOptions.value[3].value = {
-        devKey: cabinetBoxes.pduKeyA
+        devKey: cabinetBoxes.pduKeyA,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keya?.id
       }
       menuOptions.value[4].value = {
-        devKey: cabinetBoxes.pduKeyB
+        devKey: cabinetBoxes.pduKeyB,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keyb?.id
+      }
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
+      menuOptions.value[3] = menuOptionsCopy.value[3]
+      menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
+      
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyA,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keya?.id
+      }
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
+      menuOptions.value[3] = menuOptionsCopy.value[4]
+      menuOptions.value[3].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
+      
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyB,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keyb?.id
       }
     }
-      
-    // if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
-    //   menuOptions.value.splice(4,1)
-    // }
-    // if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
-    //   menuOptions.value.splice(3,1)
-    // }
+
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].id) {
+      menuOptions.value[0]?.children?.splice(0,1)
+    }
     if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].id) {
       menuOptions.value.splice(2,1)
-      menuOptions.value[0]?.children?.splice(0,3)
+      menuOptions.value[0]?.children?.splice(1,3)
       console.log(menuOptionsCopy.value[0])
     } else if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetPdus && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].rackIndices) {
       menuOptions.value[0]?.children?.splice(1,1)
@@ -2027,20 +2152,98 @@ const handleRightClick = (e) => {
     menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0]
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].name
 
-    menuOptions.value[3] = menuOptionsCopy.value[3]
-    menuOptions.value[3].value = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
-    menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb) {
+      menuOptions.value[3] = menuOptionsCopy.value[5]
 
-    menuOptions.value[4] = menuOptionsCopy.value[4]
-    menuOptions.value[4].value = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
-    menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
+      menuOptions.value[4] = menuOptionsCopy.value[6]
+      menuOptions.value[4].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
+
+      menuOptions.value[5] = menuOptionsCopy.value[7]
+      menuOptions.value[5].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
+
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes
+      menuOptions.value[3].value = {
+        devKeyA: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyA,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].keya?.id
+      }
+      menuOptions.value[5].value = {
+        devKey: cabinetBoxes.boxKeyB,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].keyb?.id
+      }
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb) {
+      menuOptions.value[3] = menuOptionsCopy.value[5]
+
+      menuOptions.value[4] = menuOptionsCopy.value[6]
+      menuOptions.value[4].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
+
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes
+      menuOptions.value[3].value = {
+        devKeyA: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyA,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].keya?.id
+      }
+
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya) {
+      menuOptions.value[3] = menuOptionsCopy.value[5]
+
+      menuOptions.value[4] = menuOptionsCopy.value[7]
+      menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
+
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes
+      menuOptions.value[3].value = {
+        devKeyB: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1]
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.boxKeyB,
+        boxId: tableData.value[lndexY][formParam.value[lndexX]][0].keyb?.id
+      }
+    }
+
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya) {
+      menuOptions.value[3] = menuOptionsCopy.value[3]
+      menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
+
+      menuOptions.value[4] = menuOptionsCopy.value[4]
+      menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
       
-    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb) {
-      menuOptions.value.splice(4,1)
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyA,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].keya?.id
+      }
+      menuOptions.value[4].value = {
+        devKey: cabinetBoxes.pduKeyB,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].keyb?.id
+      }
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya) {
+      menuOptions.value[3] = menuOptionsCopy.value[3]
+      menuOptions.value[3].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
+      
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyA,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].keya?.id
+      }
+    } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya) {
+      menuOptions.value[3] = menuOptionsCopy.value[4]
+      menuOptions.value[3].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
+      
+      let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetPdus
+      menuOptions.value[3].value = {
+        devKey: cabinetBoxes.pduKeyB,
+        pduId: tableData.value[lndexY][formParam.value[lndexX]][0].keyb?.id
+      }
     }
-    if(!tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya) {
-      menuOptions.value.splice(3,1)
+
+    if(tableData.value[lndexY][formParam.value[lndexX]][0].id) {
+      menuOptions.value[0]?.children?.splice(0,1)
     }
+
     if(!tableData.value[lndexY][formParam.value[lndexX]][0].id) {
       menuOptions.value.splice(2,1)
       console.log(menuOptionsCopy.value[0])
@@ -2054,8 +2257,12 @@ const handleRightClick = (e) => {
     menuOptions.value.splice(1,4)
   }
   console.log(editEnable.value)
-  if(!editEnable.value) {
-    console.log(111111111)
+  if(!editEnable.value && !tableData.value[lndexY][formParam.value[lndexX]].length) {
+    menuOptions.value[0] = {
+      value: '小抓手',
+      label: '小抓手'
+    }
+  } else if(!editEnable.value) {
     menuOptions.value.splice(0,1)
   }
   // let itemId = tableData.value[lndexY][formParam.value[lndexX]]?.[0]?.id
@@ -2091,6 +2298,11 @@ const handleRightClick = (e) => {
 const handleMenu = (value) => {
   //console.log(value)
   operateMenu.value.show = false
+  
+  if(value[0] == '小抓手') {
+    dragTableView()
+    return
+  }
   switch (value[1]) {
     case '柜列配电':
       push({ 
@@ -2275,13 +2487,25 @@ const handleMenu = (value) => {
       });
       break;
 
+    case 'A路插接箱需量':
+    case 'B路插接箱需量':
+      push({ 
+        path: '/bus/busmonitor/boxmonitor/boxrequirement', 
+        query: { 
+          openDetailFlag: 1, 
+          boxId: value[0].boxId,
+          roomName: rowColInfo.roomName,
+        } 
+      });
+      break;
+
     case 'A路需量':
     case 'B路需量':
       push({ 
         path: '/pdu/power/pdurequirement', 
         query: { 
           devKey: value[0].devKey,
-          pduId: 10020,
+          pduId: value[0].pduId,
           openDetailFlag: 1
         } 
       });
@@ -2314,7 +2538,8 @@ const handleMenu = (value) => {
         query: { 
           openDetailFlag: 1, 
           devKey: value[0].devKey,
-          roomName: rowColInfo.roomName
+          roomName: rowColInfo.roomName,
+          boxId: value[0].boxId
         } 
       });
       break;
@@ -2325,14 +2550,21 @@ const handleMenu = (value) => {
         path: '/pdu/power/curbalance/index', 
         query: { 
           devKey: value[0].devKey,
-          pduId: 10020,
+          pduId: value[0].pduId,
           openDetailFlag: 1
         } 
       });
       break;
-    
-    case '拖拽视图':
-      dragTableView();
+
+    case 'A路设备管理':
+    case 'B路设备管理':
+    case 'A路插接箱设备管理':
+    case 'B路插接箱设备管理':
+      window.open('https://172.16.1.9/index.html', '_blank')
+      break;
+
+    case '新增机柜':
+      addCabinet('add', value[0]);
       break;
     
     case '机柜编辑':
@@ -2417,7 +2649,7 @@ const onStart = ({from}) => {
   const Y = from.id.split('-')[0]
   const target = tableData.value[Y][formParam.value[X]][0]
   movingInfo.value = target
-  ////console.log('onStssasrt', target)
+  console.log('onStssasrt', target)
 }
 // 拖拽结束的事件
 const onEnd = ({from, to}) => {
@@ -2462,7 +2694,7 @@ const onEnd = ({from, to}) => {
 const moveMachine = async (data,x,y) => {
   let res
   if(data.type == 1) {
-    res = await MachineRoomApi.saveRoomAisle({
+    let asileObject = {
         id:data.id,
         roomId: roomId.value,
         aisleName:data.name,
@@ -2475,9 +2707,19 @@ const moveMachine = async (data,x,y) => {
         eleAlarmMonth:data.eleAlarmMonth,
         eleLimitDay:data.eleLimitDay,
         eleLimitMonth:data.eleLimitMonth
-    }) 
+    }
+
+    const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
+    return
+
+    if(flagRes) {
+      message.error("移动失败,可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+      return
+    }
+
+    res = await MachineRoomApi.saveRoomAisle(asileObject) 
   } else {
-    res = await MachineRoomApi.saveRoomCabinet({
+    let cabinetObject = {
       id: data.id,
       roomId: roomId.value,
       cabinetName: data.name,
@@ -2489,12 +2731,20 @@ const moveMachine = async (data,x,y) => {
       eleLimitDay: data.eleLimitDay,
       eleAlarmMonth: data.eleAlarmMonth,
       eleLimitMonth: data.eleLimitMonth
-    })
+    }
+
+    const flagRes = await MachineRoomApi.findAddAisleVerify(cabinetObject)
+    return
+
+    if(flagRes) {
+      message.error("移动失败,可能原因如下：该机柜的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+      return
+    }
+
+    res = await MachineRoomApi.saveRoomCabinet(cabinetObject)
   }
   if(res) {
     message.success("移动成功")
-  } else {
-    message.success("移动失败")
   }
   getRoomInfoNoLoading()
 }
@@ -2503,6 +2753,7 @@ const dragTableView = () => {
   dragCursor.value = 'grab';
   operateMenu.value.show = false
 }
+
 const onMouseDown = (e) => {
 
   if (dragCursor.value == 'grab') {
@@ -2552,14 +2803,10 @@ const onSelectStart = (e) => {
 
 // 增加/编辑机柜弹框
 const addCabinet = async (type: string, cabItem?: object) => {
-  if (type == 'add') {
+  if (cabItem) {
+    machineFormCabinet.value.open(type, cabItem,operateMenu.value,tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0])
+  } else if (type == 'add') {
     machineFormCabinet.value.open(type, null,operateMenu.value,null)
-  } else if (type == 'edit' && cabItem) {
-    try {
-      console.log(cabItem)
-      machineFormCabinet.value.open(type, cabItem,operateMenu.value,tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0])
-    } finally {
-    }
   }
   operateMenu.value.show = false
 }
@@ -2631,7 +2878,7 @@ const deleteMachine = () => {
   }).then(async () => {
    
     if (target.type && target.type == 1) {
-      const aisleRes = await MachineRoomApi.deletedRoomAisleInfo({id: target.id})
+      const aisleRes = await AisleEnergyApi.deleteAisle({id: target.id})
       if(aisleRes != null || aisleRes != "") {
         // getRoomInfoNoLoading()
         for (let i = 0; i < target.originAmount; i++) {
@@ -2693,6 +2940,7 @@ const handleChange = async(data) => {
       }
 
       const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
+      return
 
       if(flagRes) {
         message.error(messageAisleFlagError + "可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
@@ -2820,6 +3068,25 @@ const handleDayPick = async () => {
   } 
 }
 
+const handleExportAisle = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm();
+    // 发起导出
+    exportLoading.value = true;
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await MachineRoomApi.exportAisleExcel({roomId: 3391,aisleId: 37},axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '机柜绑定关系表.xls');
+  } catch (error) {
+    console.error('导出失败：', error);
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
 const handleExportXLS = async ()=>{
   try {
     // 导出的二次确认
@@ -2877,23 +3144,70 @@ const getColumnCharCodeToNumber = (columnId: string): number => {
 
 // 处理设置提交
 const submitSetting = async() => {
-   if(rowColInfo.roomName == '') {
-      message.error('机房名称不能为空,请输入!')
-      return
-   }
+  if(rowColInfo.roomName == '') {
+    message.error('机房名称不能为空,请输入!')
+    return
+  } else if(rowColInfo.powerCapacity === "") {
+    message.error('机房电力容量不能为空,请输入!')
+    return
+  }
 
-   let roomFlagId:any = null;
-   let messageRoomFlag = "保存成功！";
-   if(roomFlag.value == 2){
-      roomFlagId = roomId.value; 
-      messageRoomFlag = "修改成功！";
-   }
-   if(radio.value === "PUE") {
-    rowColInfo.displayType = 1
-   }
-   else {
+  if(roomFlag.value == 1){
+    const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
+    if(resSelect != null){
+      message.error('该机房名称已存在,请重新输入!');
+      rowColInfo.roomName = '';
+      return
+    }
+  }
+  
+
+  let roomFlagId:any = null;
+  let messageRoomFlag = "保存成功！";
+  if(roomFlag.value == 2){
+    roomFlagId = roomId.value; 
+    messageRoomFlag = "修改成功！";
+  }
+
+  if(radio.value === "PUE") {
+  rowColInfo.displayType = 1
+  } else {
     rowColInfo.displayType = 0
-   }
+  }
+
+  if(!sortFlag.value) {
+    rowColInfo.sort = null
+  }
+  if(!addrFlag.value) {
+    rowColInfo.addr = '未区分'
+  }
+
+  console.log(rowColInfo)
+    if(rowColInfo.width <= 0 || rowColInfo.length <= 0 || rowColInfo.width > 60 || rowColInfo.length > 60) {
+      message.error('机房面积有误或过大,请重新输入!')
+      return
+    }
+
+    if(rowColInfo.areaFlag == false) {
+      rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
+      rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
+    } else {
+      rowColInfo.width = Number(rowColInfo.width)
+      rowColInfo.length = Number(rowColInfo.length)
+      rowColInfo.row = Math.ceil((rowColInfo.width * 10)/6)
+      rowColInfo.col = Math.ceil((rowColInfo.length * 10)/6)
+    }
+
+    console.log(rowColInfo,roomFlagId)
+
+  if(roomFlag.value == 2) {
+    const resFind = await MachineRoomApi.findAreaById({xLength: rowColInfo.col,yLength: rowColInfo.row,id: roomFlagId});
+    if(resFind) {
+      message.error('减少的行数或列数中有机柜或柜列,请重新设置行数或列数!')
+      return
+    }
+  }
+
    try {
     const res = await MachineRoomApi.saveRoomDetail({
       id: roomFlagId,
@@ -2901,6 +3215,9 @@ const submitSetting = async() => {
       addr: rowColInfo.addr,
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
+      areaFlag: rowColInfo.areaFlag, //新建类型 砖数 面积
+      areayLength: rowColInfo.width, //宽度
+      areaxLength: rowColInfo.length, //长度
       powerCapacity:rowColInfo.powerCapacity, 
       airPower:rowColInfo.airPower, 
       displayType: rowColInfo.displayType, 
@@ -2917,11 +3234,23 @@ const submitSetting = async() => {
     dialogVisible.value = false;
     roomId.value = res;
    } catch (error) {
-    //console.log(error)
+    console.log(error)
    }
    
-   getRoomList();
+   getRoomInfoNoLoading();
 }
+
+watch(() => rowColInfo.areaFlag, (val) => {
+  if(val) {
+    rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
+    rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
+  } else {
+    rowColInfo.width = Number(rowColInfo.width)
+    rowColInfo.length = Number(rowColInfo.length)
+    rowColInfo.row = Math.ceil((rowColInfo.width * 10)/6)
+    rowColInfo.col = Math.ceil((rowColInfo.length * 10)/6)
+  }
+})
 
 
 // 获取表格列label字符
@@ -3236,6 +3565,9 @@ onUnmounted(() => {
 :deep(.el-card__body) {
   padding: 15px;
 }
+:deep(.el-radio-button__inner) {
+  width: 5vw;
+}
 
 :deep(.el-card) {
   margin-top: -5px;
@@ -3284,6 +3616,10 @@ onUnmounted(() => {
 
 :deep(.el-cascader-menu__wrap.el-scrollbar__wrap) {
   height: auto;
+}
+
+:deep(.el-loading-mask) {
+  width: 80%
 }
 
 .crosshair {

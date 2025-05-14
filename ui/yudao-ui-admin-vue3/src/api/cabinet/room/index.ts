@@ -114,6 +114,11 @@ getRoomAddrListAll: async (params: any) => {
 //获取机房设备数量
 getMachineNum: async (params: any) => {
   return await request.get({ url: `/room/index/deviceStatistics`, params })
-}
+},
+
+//导出机柜绑定关系表
+exportAisleExcel: async ( params: any, axiosConfig) => {
+  return await request.downloadPost({ url: `/room/editAisleExport` , params, ...axiosConfig})
+},
 
 }
