@@ -297,10 +297,24 @@
             <div class="page-conTitle">
               温度曲线
             </div>
-            <p v-show="temData.temAMaxValue">本周期内，A相最高温度{{temData.temAMaxValue}}°C， 最高温度发生时间{{temData.temAMaxTime}}&nbsp;&nbsp;最低温度{{temData.temAMinValue}}°C， 最低温度发生时间{{temData.temAMinTime}}</p>        
-            <p v-show="temData.temBMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B相最高温度{{temData.temBMaxValue}}°C， 最高温度发生时间{{temData.temBMaxTime}}&nbsp;&nbsp;最低温度{{temData.temBMinValue}}°C， 最低温度发生时间{{temData.temBMinTime}}</p>        
-            <p v-show="temData.temCMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C相最高温度{{temData.temCMaxValue}}°C， 最高温度发生时间{{temData.temCMaxTime}}&nbsp;&nbsp;最低温度{{temData.temCMinValue}}°C， 最低温度发生时间{{temData.temCMinTime}}</p>          
-            <p v-show="temData.temNMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N相最高温度{{temData.temNMaxValue}}°C， 最高温度发生时间{{temData.temNMaxTime}}&nbsp;&nbsp;最低温度{{temData.temNMinValue}}°C， 最低温度发生时间{{temData.temNMinTime}}</p>            
+            <div class="power-section single-line">
+        <span class="power-title">A相温度极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ temData.temAMaxValue }}</span> °C <span class="time">记录于({{ temData.temAMaxTime }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ temData.temAMinValue }}</span> °C <span class="time">记录于({{ temData.temAMinTime }})</span></span>
+        
+        <span class="power-title">B相温度极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ temData.temBMaxValue }}</span> °C <span class="time">记录于({{ temData.temBMaxTime }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ temData.temBMinValue }}</span> °C <span class="time">记录于({{ temData.temBMinTime }})</span></span>
+      </div>
+      <div class="power-section single-line">
+        <span class="power-title">C相温度极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ temData.temCMaxValue }}</span> °C <span class="time">记录于({{ temData.temCMaxTime }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ temData.temCMinValue }}</span> °C <span class="time">记录于({{ temData.temCMinTime }})</span></span>
+        
+        <span class="power-title">D相温度极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ temData.temNMaxValue }}</span> °C <span class="time">记录于({{ temData.temNMaxTime }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ temData.temNMinValue }}</span> °C <span class="time">记录于({{ temData.temNMinTime }})</span></span>
+      </div>      
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  :dataType="queryParams.dataType"/>
           </div>
         </div>
@@ -322,7 +336,7 @@
                     <el-table-column type="index" width="80" label="序号" align="center" />
                     <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
                     <el-table-column property="devName" label="设备" min-width="100" align="center" />
-                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+                    <!-- <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" /> -->
                     <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
                     <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
                       <template #default="scope">

@@ -3232,7 +3232,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     temN = temList.stream().map(BusTemHourDo::getTemNMinValue).collect(Collectors.toList());
                     temNHappenTime = temList.stream().map(BusTemHourDo -> BusTemHourDo.getTemNMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                 }
-
+                processTemMavMin(temList,dataType,result);
 
                 seriesA.setData(temA);
                 seriesA.setHappenTime(temAHappenTime);
@@ -3255,58 +3255,6 @@ public class BusIndexServiceImpl implements BusIndexService {
                 lineRes.getSeries().add(seriesC);
                 lineRes.getSeries().add(seriesN);
 
-                String temAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_a_max_value");
-                BusTemHourDo temMaxA = JsonUtils.parseObject(temAMaxValue, BusTemHourDo.class);
-                String temAMinValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_a_min_value");
-                BusTemHourDo temMinA = JsonUtils.parseObject(temAMinValue, BusTemHourDo.class);
-                if (temMaxA != null) {
-                    result.put("temAMaxValue", temMaxA.getTemAMaxValue());
-                    result.put("temAMaxTime", temMaxA.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                if (temMinA != null) {
-                    result.put("temAMinValue", temMinA.getTemAMinValue());
-                    result.put("temAMinTime", temMinA.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-
-                String temBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_b_max_value");
-                BusTemHourDo temMaxB = JsonUtils.parseObject(temBMaxValue, BusTemHourDo.class);
-                String temBMinValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_b_min_value");
-                BusTemHourDo temMinB = JsonUtils.parseObject(temBMinValue, BusTemHourDo.class);
-                if (temMaxB != null) {
-                    result.put("temBMaxValue", temMaxB.getTemBMaxValue());
-                    result.put("temBMaxTime", temMaxB.getTemBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                if (temMinB != null) {
-                    result.put("temBMinValue", temMinB.getTemBMinValue());
-                    result.put("temBMinTime", temMinB.getTemBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-
-                String temCMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_c_max_value");
-                BusTemHourDo temMaxC = JsonUtils.parseObject(temCMaxValue, BusTemHourDo.class);
-                String temCMinValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_c_min_value");
-                BusTemHourDo temMinC = JsonUtils.parseObject(temCMinValue, BusTemHourDo.class);
-                if (temMaxC != null) {
-                    result.put("temCMaxValue", temMaxC.getTemCMaxValue());
-                    result.put("temCMaxTime", temMaxC.getTemCMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                if (temMinC != null) {
-                    result.put("temCMinValue", temMinC.getTemCMinValue());
-                    result.put("temCMinTime", temMinC.getTemCMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-
-                String temNMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_n_max_value");
-                BusTemHourDo temMaxN = JsonUtils.parseObject(temNMaxValue, BusTemHourDo.class);
-                String temNMinValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_n_min_value");
-                BusTemHourDo temMinN = JsonUtils.parseObject(temNMinValue, BusTemHourDo.class);
-                if (temMaxN != null) {
-                    result.put("temNMaxValue", temMaxN.getTemNMaxValue());
-                    result.put("temNMaxTime", temMaxN.getTemNMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                if (temMinN != null) {
-                    result.put("temNMinValue", temMinN.getTemNMinValue());
-                    result.put("temNMinTime", temMinN.getTemNMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-
                 result.put("lineRes", lineRes);
                 return result;
             }
@@ -3316,7 +3264,38 @@ public class BusIndexServiceImpl implements BusIndexService {
         return result;
     }
 
-    @Override
+    public void processTemMavMin( List<BusTemHourDo> temList, Integer dataType, Map<String, Object> result) {
+        PowerData temAData = new PowerData();
+        PowerData temBData = new PowerData();
+        PowerData temCData = new PowerData();
+        PowerData temDData = new PowerData();
+
+        for (BusTemHourDo busTemHourDo : temList) {
+            updatePowerData(temAData, busTemHourDo.getTemAMaxValue(), busTemHourDo.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemAMinValue(), busTemHourDo.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(temBData, busTemHourDo.getTemBMaxValue(), busTemHourDo.getTemBMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemBMinValue(), busTemHourDo.getTemBMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(temCData, busTemHourDo.getTemCMaxValue(), busTemHourDo.getTemCMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemCMinValue(), busTemHourDo.getTemCMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(temDData, busTemHourDo.getTemNMaxValue(), busTemHourDo.getTemNMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTemHourDo.getTemNMinValue(), busTemHourDo.getTemNMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+        }
+        result.put("temAMaxValue", temAData.getMaxValue());
+        result.put("temAMaxTime", temAData.getMaxTime());
+        result.put("temAMinValue", temAData.getMinValue());
+        result.put("temAMinTime", temAData.getMinTime());
+        result.put("temBMaxValue", temBData.getMaxValue());
+        result.put("temBMaxTime", temBData.getMaxTime());
+        result.put("temBMinValue", temBData.getMinValue());
+        result.put("temBMinTime", temBData.getMinTime());
+        result.put("temCMaxValue", temCData.getMaxValue());
+        result.put("temCMaxTime", temCData.getMaxTime());
+        result.put("temCMinValue", temCData.getMinValue());
+        result.put("temCMinTime", temCData.getMinTime());
+        result.put("temNMaxValue", temDData.getMaxValue());
+        result.put("temNMaxTime", temDData.getMaxTime());
+        result.put("temNMinValue", temDData.getMinValue());
+        result.put("temNMinTime", temDData.getMinTime());
+    }
+
+
+        @Override
     public String getBusRedisByDevKey(String devKey) {
         if (StringUtils.isEmpty(devKey)) {
             return null;
