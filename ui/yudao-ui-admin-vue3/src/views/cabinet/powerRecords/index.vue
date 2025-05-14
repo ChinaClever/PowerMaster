@@ -17,7 +17,7 @@
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
           <div>
-            <span>全部机柜新增电费记录</span>
+            <span>全部机柜新增电能记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
@@ -45,10 +45,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -343,5 +343,8 @@ onMounted(() => {
 ::v-deep .el-table .el-table__header th {
   background-color: #F5F7FA;
   color: #909399;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
 }
 </style>

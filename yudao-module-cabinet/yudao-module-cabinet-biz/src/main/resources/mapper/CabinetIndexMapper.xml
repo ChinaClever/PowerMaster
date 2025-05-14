@@ -374,4 +374,17 @@
             and x_coordinate BETWEEN #{xCoordinate}  and #{xCoordinate}+1
         </where>
     </select>
+    <select id="findAisleCabinetByRoomId">
+        select
+    </select>
+    <select id="selectLocationById" resultType="java.lang.String">
+        SELECT
+        CONCAT(r.room_name,"-",a.aisle_name,"-",c.cabinet_name)
+        FROM
+        `cabinet_index` c
+        LEFT JOIN room_index r ON c.room_id = r.id
+        LEFT JOIN aisle_index a ON c.aisle_id = a.id
+        WHERE
+        c.id = #{id}
+    </select>
 </mapper>

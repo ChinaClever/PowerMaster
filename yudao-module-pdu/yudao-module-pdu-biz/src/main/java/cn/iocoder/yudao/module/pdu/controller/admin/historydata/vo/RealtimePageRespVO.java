@@ -46,6 +46,10 @@ public class RealtimePageRespVO {
     @NumberFormat("0.000")
     private Double pow_apparent;
 
+    @ExcelProperty("无功功率(kVar)")
+    @NumberFormat("0.000")
+    private Double pow_reactive;
+
     @ExcelProperty("功率因素")
     @NumberFormat("0.00")
     private Double power_factor;

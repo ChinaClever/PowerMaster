@@ -84,6 +84,10 @@ public class HourAndDayPageRespVO {
     @ExcelProperty("总平均功率因素")
     private Double factor_total_avg_value;
 
+    @NumberFormat("0")
+    @ExcelProperty("总平均负载率(%)")
+    private Double load_rate_total_avg_value;
+
     @NumberFormat("0.000")
     @ExcelProperty({"A路有功功率(kW)","平均值"})
     private Double active_a_avg_value;

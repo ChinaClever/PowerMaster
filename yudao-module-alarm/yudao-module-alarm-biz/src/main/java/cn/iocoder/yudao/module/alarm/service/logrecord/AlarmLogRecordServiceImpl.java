@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.alarm.service.logrecord;
 
 import cn.iocoder.yudao.framework.common.constant.FieldConstant;
+import cn.iocoder.yudao.framework.common.constant.JobHandlerConstants;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCronConfig;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.enums.*;
@@ -19,6 +21,7 @@ import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecor
 import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordStatisticsVO;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
+import cn.iocoder.yudao.module.infra.api.job.JobApi;
 import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -67,6 +70,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private JobApi jobApi;
 
     @Override
     public Integer saveLogRecord(AlarmLogRecordSaveReqVO createReqVO) {
@@ -132,6 +138,42 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
                 .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
                 .eqIfPresent(AlarmLogRecordDO::getAlarmType, alarmType)
+                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
+                        .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
+                        .or()
+                        .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
+                        .or()
+                        .like(AlarmLogRecordDO::getAlarmPosition, pageReqVO.getLikeName()))
+                .orderByDesc(AlarmLogRecordDO::getCreateTime));
+
+        List<AlarmLogRecordRespVO> recordRespVOS = new ArrayList<>();
+        if (Objects.nonNull(recordPageResult)) {
+            List<AlarmLogRecordDO> list = recordPageResult.getRecords();
+            if (!CollectionUtils.isEmpty(list)) {
+                list.forEach(record -> {
+                    AlarmLogRecordRespVO recordRespVO = BeanUtils.toBean(record, AlarmLogRecordRespVO.class);
+                    recordRespVO.setAlarmLevelDesc(AlarmLevelEnums.getNameByStatus(record.getAlarmLevel()));
+                    recordRespVO.setAlarmTypeDesc(AlarmTypeEnums.getNameByStatus(record.getAlarmType()));
+                    recordRespVO.setAlarmStatusDesc(AlarmStatusEnums.getNameByStatus(record.getAlarmStatus()));
+                    recordRespVOS.add(recordRespVO);
+                });
+            }
+        }
+        PageResult<AlarmLogRecordRespVO> result = new PageResult<AlarmLogRecordRespVO>().setList(recordRespVOS).setTotal(recordPageResult.getTotal());
+        return result;
+    }
+
+    @Override
+    public PageResult<AlarmLogRecordRespVO> getPduLogRecordPage(AlarmLogRecordPageReqVO pageReqVO) {
+        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Integer alarmLevel = AlarmLevelEnums.getStatusByName(pageReqVO.getLikeName());
+        Integer alarmType = AlarmTypeEnums.getStatusByName(pageReqVO.getLikeName());
+        Page<AlarmLogRecordDO> recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
+                .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
+                .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
+                .inIfPresent(AlarmLogRecordDO::getAlarmType, 1,2,3)
+                        .betweenIfPresent(AlarmLogRecordDO::getStartTime,pageReqVO.getPduStartTime(),pageReqVO.getPduFinishTime())
                 .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
                         .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
                         .or()
@@ -315,25 +357,17 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     alarmRecord.setAlarmKey(alarmKey);
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                     if (cabinetIndexNew.getRunStatus() == CabinetStatusEnum.ALARM.getStatus()) {
-                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_ALARM.getType());
+                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_CAPACITY_ALARM.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
                     } else if (cabinetIndexNew.getRunStatus() == CabinetStatusEnum.EARLY_WARNING.getStatus()) {
-                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_WARNING.getType());
+                        alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_CAPACITY_WARNING.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
                     }
 
                     JSONObject cabinetJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_CABINET + alarmKey);
                     if (cabinetJson != null) {
                         // 告警描述
-                        String loadFactor = cabinetJson.get(FieldConstant.LOAD_FACTOR) + "";
-                        DecimalFormat decimalFormat = new DecimalFormat("0.00%");
-                        decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
-                        loadFactor = decimalFormat.format(Double.parseDouble(loadFactor)/100);
-                        String powerCapacity = cabinetJson.get(FieldConstant.POW_CAPACITY) + "";
-                        JSONObject cabinetPower = (JSONObject) cabinetJson.get(FieldConstant.CABINET_POWER);
-                        JSONObject totalData = (JSONObject) cabinetPower.get(FieldConstant.TOTAL_DATA);
-                        String powApparent = totalData.get(FieldConstant.APPARENT_POW) + "";
-                        String alarmDesc = "当前机柜负载率：" + loadFactor + "，机柜的电力容量：" + powerCapacity + "，总视在功率：" + powApparent;
+                        String alarmDesc = getOverCapacityAlarmDesc(cabinetJson);
                         alarmRecord.setAlarmDesc(alarmDesc);
                         // 告警开始时间
                         Object datetime = cabinetJson.get(FieldConstant.DATETIME);
@@ -372,6 +406,29 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         return result;
     }
 
+    @Override
+    public void updateCabinetAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            List<CabinetCronConfig> cabinetCronConfigsOld = BeanUtils.toBean(oldMaps, CabinetCronConfig.class);
+            List<CabinetCronConfig> cabinetCronConfigsNew = BeanUtils.toBean(newMaps, CabinetCronConfig.class);
+            for (int i = 0; i < cabinetCronConfigsOld.size(); i++) {
+                CabinetCronConfig cabinetCronConfigOld = cabinetCronConfigsOld.get(i);
+                CabinetCronConfig cabinetCronConfigNew = cabinetCronConfigsNew.get(i);
+
+                if (!cabinetCronConfigOld.getEqDayCron().equals(cabinetCronConfigNew.getEqDayCron())) {
+                    // 更新每日定时任务
+                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_DAY_ALARM_JOB,  cabinetCronConfigNew.getEqDayCron());
+                }
+                if (!cabinetCronConfigOld.getEqMonthCron().equals(cabinetCronConfigNew.getEqMonthCron())) {
+                    // 更新每月定时任务
+                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_MONTH_ALARM_JOB,  cabinetCronConfigNew.getEqMonthCron());
+                }
+            }
+        }
+    }
+
+
+
     public String getLocationByBusId(BusIndex busIndex) {
         String location = busIndex.getBusKey();
         //设备位置
@@ -387,6 +444,35 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         }
         return location;
     }
+
+    public Integer getCountByStatus (Integer status) {
+        Long count = logRecordMapper.selectCount(new LambdaQueryWrapper<AlarmLogRecordDO>().eq(AlarmLogRecordDO::getAlarmStatus, status));
+        return Math.toIntExact(count);
+    }
+
+    public String getOverCapacityAlarmDesc (JSONObject cabinetJson) {
+        if (cabinetJson == null) {
+            return "";
+        }
+        // 负载率
+        String loadFactor = cabinetJson.get(FieldConstant.LOAD_FACTOR) + "";
+        DecimalFormat decimalFormat = new DecimalFormat("0.0%");
+        decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
+        loadFactor = decimalFormat.format(Double.parseDouble(loadFactor)/100);
+        // 电力容量
+        String powerCapacity = cabinetJson.get(FieldConstant.POW_CAPACITY) + "";
+        DecimalFormat decimalFormat1 = new DecimalFormat("0.000");
+        decimalFormat1.setRoundingMode(RoundingMode.HALF_UP);
+        powerCapacity = decimalFormat1.format(Double.parseDouble(powerCapacity));
+        // 总视在功率
+        JSONObject cabinetPower = (JSONObject) cabinetJson.get(FieldConstant.CABINET_POWER);
+        JSONObject totalData = (JSONObject) cabinetPower.get(FieldConstant.TOTAL_DATA);
+        String powApparent = totalData.get(FieldConstant.APPARENT_POW) + "";
+        powApparent = decimalFormat1.format(Double.parseDouble(powApparent));
+        return "当前机柜负载率：" + loadFactor + "，机柜的电力容量：" + powerCapacity + "KVA" + "，总视在功率：" + powApparent + "KVA";
+    }
+
+
 
 
 }

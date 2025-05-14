@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.dto.aisle;
 
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetFirstVO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -120,4 +121,8 @@ public class AisleSaveVo {
      */
     private double eleLimitMonth;
 
+    /**
+     * 机柜数据
+     */
+    private CabinetFirstVO cabinetFirstVO;
 }

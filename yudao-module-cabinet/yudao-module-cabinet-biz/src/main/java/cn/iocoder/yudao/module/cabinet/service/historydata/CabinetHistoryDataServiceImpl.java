@@ -36,6 +36,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -141,7 +142,16 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         // 搜索结果
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        hits.forEach(searchHit -> {
+            Map<String,Object> map=searchHit.getSourceAsMap();
+            if(map.get("load_rate")!=null){
+                map.put("load_rate",new BigDecimal((Double) map.get("load_rate")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(map.get("load_rate_total_avg_value") != null){
+                map.put("load_rate_total_avg_value",new BigDecimal( (Double) map.get("load_rate_total_avg_value")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            mapList.add(map);
+        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -187,7 +197,16 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         // 搜索结果
         List<Object> resultList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        hits.forEach(searchHit -> {
+            Map<String, Object> map = searchHit.getSourceAsMap();
+            if(map.get("load_rate")!=null){
+                map.put("load_rate",new BigDecimal((Double) map.get("load_rate")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            if(map.get("load_rate_total_avg_value") != null){
+                map.put("load_rate_total_avg_value",new BigDecimal( (Double) map.get("load_rate_total_avg_value")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
+            }
+            resultList.add(map);
+        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -324,55 +343,69 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
                 break;
             default:
         }
-        String startTime = pageReqVO.getTimeRange()[0];
-        String endTime = pageReqVO.getTimeRange()[1];
+        String startTime = null;
+        String endTime = null;
+        if(pageReqVO.getTimeRange()!=null&&pageReqVO.getTimeRange().length==2){
+            startTime = pageReqVO.getTimeRange()[0];
+            endTime = pageReqVO.getTimeRange()[1];
+        }
         List<CabinetEnvResVO> list = new ArrayList<>();
         SearchResponse searchResponse = getDataEs(startTime, endTime, pageReqVO.getCabinetIds(), index,pageReqVO.getPageNo(),!isPage?10000:pageReqVO.getPageSize());
         if (searchResponse != null){
             searchResponse.getHits().forEach(hit -> {
                 Map<String, Object> map = hit.getSourceAsMap();
-                CabinetEnvResVO resVO = new CabinetEnvResVO();
-                resVO.setId((Integer) map.get("cabinet_id"));
-                resVO.setCreateTime((String) map.get("create_time"));
-                Map<String, Object> sensorList = (Map<String, Object>) map.get("sensor_list");
-                List black = (List) sensorList.get("black");
-                List front = (List) sensorList.get("front");
-                resVO.setFront(front);
-                resVO.setBlack(black);
-                resVO.setAddress("");
-                IndexDO cab = cabIndexMapper.selectOne("id", resVO.getId());
-                if (cab != null){
-                    resVO.setRoomId(cab.getRoomId());
-                    RoomIndex room = roomIndexMapper.selectById(cab.getRoomId());
-                    if(room!=null){
-                        resVO.setRoomName(room.getRoomName());
-                        if(room.getRoomName()!=null&&!"".equals(room.getRoomName())){
-                            resVO.setAddress(room.getRoomName());
-                        }
-                    }
-                }
-                AisleIndex aisle = aisleIndexMapper.selectById(cab.getAisleId());
-                if(aisle!=null&&aisle.getAisleName()!=null&&!"".equals(aisle.getAisleName())){
-                    if(resVO.getAddress().length()>0){
-                        resVO.setAddress(resVO.getAddress()+"-"+aisle.getAisleName());
-                    }else{
-                        resVO.setAddress(aisle.getAisleName());
-                    }
-                }
-                if(cab.getCabinetName()!=null&&!"".equals(cab.getCabinetName())){
-                    if(resVO.getAddress().length()>0){
-                        resVO.setAddress(resVO.getAddress()+"-"+cab.getCabinetName());
-                    }else{
-                        resVO.setAddress(cab.getCabinetName());
-                    }
-                    resVO.setCabinetName(cab.getCabinetName());
-                }
-                list.add(resVO);
+                list.add(mapToCabinetEnvResVO(map,null));
             });
             return new PageResult<>(list,searchResponse.getHits().getTotalHits().value);
         }else {
             return new PageResult<>(new ArrayList(),0L);
         }
+    }
+
+    public CabinetEnvResVO mapToCabinetEnvResVO(Map<String, Object> map,String address) {
+        CabinetEnvResVO resVO = new CabinetEnvResVO();
+        resVO.setId((Integer) map.get("cabinet_id"));
+        resVO.setCreateTime((String) map.get("create_time"));
+        Map<String, Object> sensorList = (Map<String, Object>) map.get("sensor_list");
+        List black = (List) sensorList.get("black");
+        List front = (List) sensorList.get("front");
+        resVO.setFront(front);
+        resVO.setBlack(black);
+        resVO.setAddress("");
+        if(address==null||"".equals(address)){
+            IndexDO cab = cabIndexMapper.selectOne("id", resVO.getId());
+            if (cab != null){
+                resVO.setRoomId(cab.getRoomId());
+                RoomIndex room = roomIndexMapper.selectById(cab.getRoomId());
+                if(room!=null){
+                    resVO.setRoomName(room.getRoomName());
+                    if(room.getRoomName()!=null&&!"".equals(room.getRoomName())){
+                        resVO.setAddress(room.getRoomName());
+                    }
+                }
+            }
+            AisleIndex aisle = aisleIndexMapper.selectById(cab.getAisleId());
+            if(aisle!=null&&aisle.getAisleName()!=null&&!"".equals(aisle.getAisleName())){
+                if(resVO.getAddress().length()>0){
+                    resVO.setAddress(resVO.getAddress()+"-"+aisle.getAisleName());
+                }else{
+                    resVO.setAddress(aisle.getAisleName());
+                }
+            }
+            if(cab.getCabinetName()!=null&&!"".equals(cab.getCabinetName())){
+                if(resVO.getAddress().length()>0){
+                    resVO.setAddress(resVO.getAddress()+"-"+cab.getCabinetName());
+                }else{
+                    resVO.setAddress(cab.getCabinetName());
+                }
+                resVO.setCabinetName(cab.getCabinetName());
+            }
+        }else {
+            resVO.setAddress(address);
+            String[] temp=address.split("-");
+            resVO.setCabinetName(temp[temp.length-1]);
+        }
+        return resVO;
     }
 
     @Override
@@ -402,7 +435,7 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
     }
 
     @Override
-    public PageResult<Object> getHistoryEnvDataDetails(Integer cabinetId, String granularity, String[] timeRange) {
+    public PageResult<CabinetEnvResVO> getHistoryEnvDataDetails(Integer cabinetId, String granularity, String[] timeRange,String address) {
         String index=null;
         switch (granularity){
             case "realtime":
@@ -421,7 +454,9 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
         if(timeRange!=null&&timeRange.length==2){
-            searchSourceBuilder.query(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME+KEYWORD).from(timeRange[0]).to(timeRange[1]))
+            searchSourceBuilder.query(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME+KEYWORD)
+                    .from(timeRange[0]).to(timeRange[1]))
                     .must(QueryBuilders.termQuery(CABINET_ID, cabinetId)));
         }else{
             searchSourceBuilder.query(QueryBuilders.termQuery(CABINET_ID, cabinetId));
@@ -429,19 +464,22 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         searchSourceBuilder.sort(CREATE_TIME+KEYWORD,SortOrder.ASC);
         try {
             searchRequest.indices(index);
+            searchRequest.source(searchSourceBuilder);
             SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
             if (response != null) {
-                List ans=new ArrayList<>();
+                List<Map<String,Object>> ans=new ArrayList<>();
                 SearchHits hits = response.getHits();
                 hits.forEach((hit)->{
                     ans.add(hit.getSourceAsMap());
                 });
-                return new PageResult<>(ans,response.getHits().getTotalHits().value);
+                List<CabinetEnvResVO> collect = ans.stream().map((map) -> mapToCabinetEnvResVO(map, address))
+                        .collect(Collectors.toList());
+                return new PageResult<>(collect,hits.getTotalHits().value);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new PageResult<>(new ArrayList(),0L);
+        return new PageResult<CabinetEnvResVO>(new ArrayList(),0L);
     }
 
 
@@ -464,7 +502,9 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
             }
             //获取需要处理的数据
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            boolQueryBuilder.must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
+            if(startTime!=null&&endTime!=null&&!"".equals(startTime)&&!"".equals(endTime)){
+                boolQueryBuilder.must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
+            }
             if (ObjectUtils.isNotEmpty(ids)) {
                 boolQueryBuilder.must(QueryBuilders.termsQuery(CABINET_ID, ids));
             }

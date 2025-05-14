@@ -9,6 +9,7 @@ import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstant
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import cn.iocoder.yudao.framework.common.util.ThreadPoolConfig;
 import cn.iocoder.yudao.framework.common.vo.CabinetCapacityStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.CabinetRunStatusResVO;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
@@ -165,7 +166,10 @@ public class CabinetController {
     @PostMapping("/cabinet/save")
     public CommonResult saveCabinet(@RequestBody CabinetVo vo) throws Exception {
         CommonResult message = cabinetService.saveCabinet(vo);
-        HttpUtil.get(adder);
+        ThreadPoolConfig.getTHreadPool().execute(()->{
+            HttpUtil.get(adder);
+        });
+
         return message;
     }
 

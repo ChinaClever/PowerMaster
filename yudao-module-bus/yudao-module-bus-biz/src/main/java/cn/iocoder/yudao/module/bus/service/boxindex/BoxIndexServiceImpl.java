@@ -1690,14 +1690,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public BusBalanceDeatilRes getBoxBalanceDetail(String devKey) {
         BusBalanceDeatilRes result = new BusBalanceDeatilRes();
+        BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>().eq(BoxIndex::getBoxKey, devKey).last("limit 1"));
+        result.setBoxName(boxIndex.getBoxName());
         BoxCurbalanceColorDO boxCurbalanceColorDO = boxCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         ValueOperations ops = redisTemplate.opsForValue();
         JSONObject jsonObject = (JSONObject) ops.get("packet:box:" + devKey);
         if (jsonObject == null) {
             return result;
         }
-//        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-
 
         result.setBusName(jsonObject.getString("bus_name"));
         JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
@@ -2406,6 +2406,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Override
     public BusLineResBase getBoxLineCurLine(BoxIndexPageReqVO pageReqVO) {
+        if (Objects.isNull(pageReqVO.getBoxId()) && StringUtils.isNotEmpty(pageReqVO.getDevKey())){
+            BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
+                    .eq(BoxIndex::getBoxKey, pageReqVO.getDevKey())
+                    .eq(BoxIndex::getIsDeleted, 0).last("limit 1"));
+            pageReqVO.setBoxId(boxIndex.getId());
+        }
         BusLineResBase result = new BusLineResBase();
         try {
             String startTime;

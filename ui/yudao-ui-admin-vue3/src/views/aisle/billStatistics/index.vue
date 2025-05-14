@@ -72,10 +72,10 @@
         </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -93,7 +93,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
             <template #default="{ row }" v-if="column.slot === 'actions' && queryParams.granularity == 'day'">
-              <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2" @click="showDetails(row.aisle_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
+              <el-button style="color:#00778c;" link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2" @click="showDetails(row.aisle_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
               <div v-else>固定计费</div>
             </template>
           </el-table-column>
@@ -457,5 +457,9 @@ onMounted(() => {
 ::v-deep .el-table .el-table__header th {
   background-color: #F5F7FA;
   color: #909399;
+}
+
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
 }
 </style>

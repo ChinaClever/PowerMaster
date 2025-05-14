@@ -1,6 +1,9 @@
 package cn.iocoder.yudao.module.alarm.controller.admin.cfgprompt;
 
 import cn.iocoder.yudao.framework.common.enums.AlarmPromptType;
+import cn.iocoder.yudao.framework.common.enums.AlarmStatusEnums;
+import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
+import cn.iocoder.yudao.module.alarm.utils.audioplayer.AudioPlayer;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -8,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
+
+import javax.annotation.security.PermitAll;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.util.*;
@@ -32,6 +37,15 @@ public class AlarmCfgPromptController {
 
     @Resource
     private AlarmCfgPromptService cfgPromptService;
+
+    @Resource
+    private AlarmCfgPromptService alarmCfgPromptService;
+
+    @Resource
+    private AlarmLogRecordService alarmLogRecordService;
+
+    @Resource
+    private AudioPlayer audioPlayer;
 
     @PostMapping("/save")
     @Operation(summary = "创建系统告警配置")
@@ -94,6 +108,26 @@ public class AlarmCfgPromptController {
         }
         return success(alarmPromptConfig);
     }
+
+    /**
+     * 播放声音
+     */
+    @GetMapping("/play")
+    @PermitAll
+    public void playAudio(){
+        Integer voiceEnable = alarmCfgPromptService.getCfgPromptByType(AlarmPromptType.VOICE_ALARM.getCode());
+        Integer count = alarmLogRecordService.getCountByStatus(AlarmStatusEnums.UNTREATED.getStatus());
+        if (voiceEnable == 1 && count > 0) {
+            audioPlayer.playAudio();
+        }
+    }
+
+    @GetMapping("/stop")
+    @PermitAll
+    public void stopAudio () {
+        audioPlayer.stopAudio();
+    }
+
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出系统告警配置 Excel")
