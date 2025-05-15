@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.util;
 
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.enums.DataTypeEnums;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusHdaLineAvgResVO;
 
@@ -116,6 +117,57 @@ public class DataProcessingUtils {
                 return "无";
             case MIN:
                 return sdf.format(houResVO.getVolMinTime());
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    public static void collectLoadRateData(BusLineHourDo houResVO, Map<String, Object> resultMap, boolean isSameDay, DataTypeEnums dataType) {
+        int lineId = houResVO.getLineId();
+        String lineKey = "dayList" + lineId;
+
+        Map<String, Object> lineData = (Map<String, Object>) resultMap.computeIfAbsent(lineKey, k -> new HashMap<>());
+        ((List<BusLineHourDo>) lineData.computeIfAbsent("data", k -> new ArrayList<>())).add(houResVO);
+        ((List<Float>) lineData.computeIfAbsent("loadRateDataList", k -> new ArrayList<>())).add(getCurValue(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("loadRateHappenTime", k -> new ArrayList<>())).add(formatCurTime(houResVO, dataType));
+        List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
+        dateTimes.add(isSameDay ? sdf.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+
+    }
+
+    /**
+     * 获取相负载率
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    public static Float getCurValue(BusLineHourDo houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getLoadRateMaxValue();
+            case AVG:
+                return houResVO.getLoadRateAvgValue();
+            case MIN:
+                return houResVO.getLoadRateMinValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 获取相负载率时间
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    public static String formatCurTime(BusLineHourDo houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return sdf.format(houResVO.getLoadRateMaxTime());
+            case AVG:
+                return "无";
+            case MIN:
+                return sdf.format(houResVO.getLoadRateMinTime());
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }

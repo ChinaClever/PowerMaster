@@ -56,6 +56,7 @@ import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -1122,6 +1123,82 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         return busIndexMapper.findKeys(key, flag);
     }
+
+    @Override
+    public Map getReportLoadRateByBusResVO(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+
+        Map resultMap = new HashMap<>();
+        BusLineResBase loadRateRes = new BusLineResBase();
+        SimpleDateFormat sdfS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getBusKey, devKey));
+            if (busIndexDO != null) {
+                Integer Id = busIndexDO.getId();
+                String index;
+                boolean isSameDay;
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                    index = "bus_hda_line_hour";
+                    if (oldTime.equals(newTime)) {
+                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                    }
+                    isSameDay = true;
+                } else {
+                    index = "bus_hda_line_day";
+                    oldTime = oldTime.plusDays(1);
+                    newTime = newTime.plusDays(1);
+                    isSameDay = false;
+                }
+                String startTime = localDateTimeToString(oldTime);
+                String endTime = localDateTimeToString(newTime);
+                List<String> busLineData = getDataNew(startTime, endTime, Arrays.asList(Id), index);
+                for (String busLineDatum : busLineData) {
+                    BusLineHourDo busLineHourDo = JsonUtils.parseObject(busLineDatum, BusLineHourDo.class);
+                    DataProcessingUtils.collectLoadRateData(busLineHourDo, resultMap, isSameDay, DataTypeEnums.fromValue(dataType));
+                }
+            }
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        // 处理结果
+        for (int lineId = 1; lineId <= 3; lineId++) {
+            String lineKey = "dayList" + lineId;
+            Map<String, Object> lineData = (Map<String, Object>) resultMap.get(lineKey);
+            if (lineData != null && !(((List<BusLineHourDo>) lineData.get("data")).isEmpty())) {
+                LineSeries loadRateSeries = new LineSeries();
+
+                resultMap.put("lineName" + lineId, lineId == 1 ? "A相负载率" : lineId == 2 ? "B相负载率" : "C相负载率");
+                loadRateSeries.setName(getSeriesName("负载率", lineId, dataType));
+                loadRateSeries.setData((List<Float>) lineData.get("loadRateDataList"));
+                loadRateSeries.setHappenTime((List<String>) lineData.get("loadRateHappenTime"));
+
+                Map<String, Object> analyzedData = PduAnalysisResult.analyzeLoadRateData((List<BusLineHourDo>) lineData.get("data"), dataType);
+                PduAnalysisResult.LoadRateResult loadRateResult = (PduAnalysisResult.LoadRateResult) analyzedData.get("loadRateTage");
+                loadRateRes.getSeries().add(loadRateSeries);
+                if (dataType != 0) {
+                    resultMap.put("loadRateMax" + lineId, loadRateResult.loadRateMax);
+                    resultMap.put("loadRateMaxTime" + lineId, sdfS.format(loadRateResult.loadRateMaxTime));
+                    resultMap.put("loadRateMin" + lineId, loadRateResult.loadRateMin);
+                    resultMap.put("loadRateMinTime" + lineId, sdfS.format(loadRateResult.loadRateMinTime));
+                } else {
+                    resultMap.put("loadRateMax" + lineId, loadRateResult.loadRateMax);
+                    resultMap.put("loadRateMaxTime" + lineId, "无");
+                    resultMap.put("loadRateMin" + lineId, loadRateResult.loadRateMin);
+                    resultMap.put("loadRateMinTime" + lineId, "无");
+                }
+            }
+
+            resultMap.put("lineNumber",lineId);
+        }
+        // 添加时间轴数据
+        List<String> uniqueDateTimes = (List<String>) resultMap.getOrDefault("dateTimes", new ArrayList<>());
+        List<String> xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
+        loadRateRes.setTime(xTime);
+        resultMap.put("dateTimes", xTime);
+        resultMap.put("loadRateRes", loadRateRes);
+
+        return resultMap;
+    }
+
 
     @Override
     public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
@@ -2601,6 +2678,8 @@ public class BusIndexServiceImpl implements BusIndexService {
                 String maxEleTime = null;
                 int nowTimes = 0;
                 if (isSameDay) {
+                    List<BusEleTotalDo> busList = new ArrayList<>();
+
                     for (String str : cabinetData) {
                         nowTimes++;
                         BusEleTotalDo eleDO = JsonUtils.parseObject(str, BusEleTotalDo.class);
@@ -2612,13 +2691,22 @@ public class BusIndexServiceImpl implements BusIndexService {
                             barRes.getTime().add(eleDO.getCreateTime().toString("HH:mm"));
                         }
                         lastEq = eleDO.getEleActive();
+
+                        busList.add(eleDO);
                     }
-                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Id), index, "ele_active");
-                    BusEleTotalDo eleMaxValue = JsonUtils.parseObject(eleMax, BusEleTotalDo.class);
-                    if (eleMaxValue != null) {
-                        maxEle = eleMaxValue.getEleActive();
-                        maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    //计算实时用电量
+                    List<BusEleTotalDo> dayEqList = new ArrayList<>();
+                    for (int i = 0; i < cabinetData.size() - 1; i++) {
+                        BusEleTotalDo dayEleDo = new BusEleTotalDo();
+                        totalEq += (float) busList.get(i + 1).getEleActive() - (float) busList.get(i).getEleActive();
+                        dayEleDo.setEleActive(busList.get(i + 1).getEleActive() - busList.get(i).getEleActive());
+                        dayEleDo.setCreateTime(busList.get(i).getCreateTime());
+                        dayEqList.add(dayEleDo);
                     }
+                    dayEqList.sort(Comparator.comparing(BusEleTotalDo::getEleActive));
+
+                    maxEle = dayEqList.get(dayEqList.size() - 1).getEleActive();
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
                     result.put("maxEle", maxEle);
@@ -2627,12 +2715,21 @@ public class BusIndexServiceImpl implements BusIndexService {
                     result.put("lastEq", lastEq);
                     result.put("barRes", barRes);
                 } else {
+                    int dataIndex = 0;
                     for (String str : cabinetData) {
                         nowTimes++;
                         BusEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, BusEqTotalDayDo.class);
                         totalEq += totalDayDo.getEq();
                         barSeries.getData().add((float) totalDayDo.getEq());
                         barRes.getTime().add(totalDayDo.getStartTime().toString("yyyy-MM-dd"));
+
+                        if (dataIndex == 0) {
+                            firstEq = totalDayDo.getStartEle();
+                        }
+                        if (dataIndex == cabinetData.size() - 1) {
+                            lastEq = totalDayDo.getEndEle();
+                        }
+                        dataIndex++;
                     }
                     String eqMax = getMaxData(startTime, endTime, Arrays.asList(Id), index, "eq_value");
                     BusEqTotalDayDo eqMaxValue = JsonUtils.parseObject(eqMax, BusEqTotalDayDo.class);
@@ -2642,6 +2739,8 @@ public class BusIndexServiceImpl implements BusIndexService {
                     }
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
                     result.put("maxEle", maxEle);
                     result.put("maxEleTime", maxEleTime);
                     result.put("barRes", barRes);
@@ -4458,9 +4557,9 @@ public class BusIndexServiceImpl implements BusIndexService {
         PowerData reactivePowData = new PowerData();
 
         for (BusTotalHourDo busTotalHourDo : powList) {
-            updatePowerData(apparentPowData, busTotalHourDo.getPowApparentMaxValue(), busTotalHourDo.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"),busTotalHourDo.getPowApparentAvgValue(), busTotalHourDo.getPowApparentMinValue(), busTotalHourDo.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
-            updatePowerData(activePowData, busTotalHourDo.getPowActiveMaxValue(), busTotalHourDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"),busTotalHourDo.getPowActiveAvgValue(), busTotalHourDo.getPowActiveMinValue(), busTotalHourDo.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
-            updatePowerData(reactivePowData, busTotalHourDo.getPowReactiveMaxValue(), busTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"),busTotalHourDo.getPowReactiveAvgValue(), busTotalHourDo.getPowReactiveMinValue(), busTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(apparentPowData, busTotalHourDo.getPowApparentMaxValue(), busTotalHourDo.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowApparentAvgValue(), busTotalHourDo.getPowApparentMinValue(), busTotalHourDo.getPowApparentMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(activePowData, busTotalHourDo.getPowActiveMaxValue(), busTotalHourDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowActiveAvgValue(), busTotalHourDo.getPowActiveMinValue(), busTotalHourDo.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(reactivePowData, busTotalHourDo.getPowReactiveMaxValue(), busTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), busTotalHourDo.getPowReactiveAvgValue(), busTotalHourDo.getPowReactiveMinValue(), busTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
         }
 
         result.put("apparentPowMaxValue", apparentPowData.getMaxValue());

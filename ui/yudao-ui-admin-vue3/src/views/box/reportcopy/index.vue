@@ -24,18 +24,7 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="网络地址" prop="devKey">
-          <el-autocomplete
-            v-model="queryParams.devKey"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-200px"
-            placeholder="请输入网络地址"
-            @select="handleQuery"
-          />
-        </el-form-item>
-
-        <el-form-item label="时间段" prop="createTime" >
+    <el-form-item label="时间段" prop="createTime" label-width="60px">
           <el-button 
             @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue === 0 ? 'primary' : ''"
@@ -57,7 +46,7 @@
           
           
         </el-form-item>
-        <el-form-item>
+         <el-form-item>
           <el-date-picker
             v-if="switchValue == 0"
             v-model="queryParams.oldTime"
@@ -88,20 +77,35 @@
             class="!w-200px"
           />
         </el-form-item>
-        <el-form-item>
+<el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
-        <!-- <el-text size="large">
-          报警次数：{{ pduInfo.alarm }}
-        </el-text> -->
-      </el-form>
-      <el-form-item>
+            <el-form-item>
           <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
             <el-option label="最大" :value="1" />
             <el-option label="平均" :value="0" />
             <el-option label="最小" :value="-1" />
           </el-select>
         </el-form-item>
+        <el-form-item label="网络地址" prop="devKey">
+          <el-autocomplete
+            v-model="queryParams.devKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
+          />
+        </el-form-item>
+
+    
+       
+        
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+  
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >

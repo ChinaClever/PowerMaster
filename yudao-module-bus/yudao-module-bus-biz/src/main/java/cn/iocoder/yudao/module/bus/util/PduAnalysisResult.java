@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.util;
 
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusHdaLineAvgResVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -15,8 +16,7 @@ public class PduAnalysisResult {
         public BigDecimal minVolValue;
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
         public Date minVolTime;
-        public BigDecimal avgVolValue;
-//        public Date avgVolTime;
+
     }
 
     // 电流分析结果
@@ -28,7 +28,19 @@ public class PduAnalysisResult {
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
         public Date minCurTime;
         public BigDecimal avgCurValue;
-//        public Date avgCurTime;
+
+    }
+
+    // 负载率分析结果
+    public static class LoadRateResult {
+        public Float loadRateMax;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date loadRateMaxTime;
+
+        public Float loadRateMin;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date loadRateMinTime;
+
     }
 
 
@@ -142,6 +154,73 @@ public class PduAnalysisResult {
         }
         result.put("voltage", voltageResult);
         result.put("current", currentResult);
+        return result;
+    }
+
+
+    public static Map<String, Object> analyzeLoadRateData(List<BusLineHourDo> dayList1, Integer dataType) {
+        if (dayList1 == null || dayList1.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> result = new HashMap<>();
+        LoadRateResult loadRateResult = new LoadRateResult();
+
+        if (dataType == 1) {
+            // 初始化
+            loadRateResult.loadRateMax = dayList1.get(0).getLoadRateMaxValue();
+            loadRateResult.loadRateMaxTime = dayList1.get(0).getLoadRateMaxTime();
+            loadRateResult.loadRateMin = dayList1.get(0).getLoadRateMaxValue();
+            loadRateResult.loadRateMinTime = dayList1.get(0).getLoadRateMaxTime();
+
+            for (BusLineHourDo item : dayList1) {
+
+                // 电流分析
+                if (item.getLoadRateMaxValue() > loadRateResult.loadRateMax) {
+                    loadRateResult.loadRateMax = item.getLoadRateMaxValue();
+                    loadRateResult.loadRateMaxTime = item.getLoadRateMaxTime();
+                }
+                if (item.getLoadRateMaxValue() < loadRateResult.loadRateMax) {
+                    loadRateResult.loadRateMin = item.getLoadRateMaxValue();
+                    loadRateResult.loadRateMinTime = item.getLoadRateMaxTime();
+                }
+            }
+
+        } else if (dataType == 0) {
+            for (BusLineHourDo item : dayList1) {
+                // 初始化
+                loadRateResult.loadRateMax = dayList1.get(0).getLoadRateAvgValue();
+                loadRateResult.loadRateMin = dayList1.get(0).getLoadRateAvgValue();
+
+                if (item.getLoadRateAvgValue() > loadRateResult.loadRateMax) {
+                    loadRateResult.loadRateMax = item.getLoadRateAvgValue();
+
+                }
+                if (item.getLoadRateAvgValue() < loadRateResult.loadRateMax) {
+                    loadRateResult.loadRateMin = item.getLoadRateAvgValue();
+                }
+            }
+
+        } else if (dataType == -1) {
+            // 初始化
+            loadRateResult.loadRateMax = dayList1.get(0).getLoadRateMinValue();
+            loadRateResult.loadRateMaxTime = dayList1.get(0).getLoadRateMinTime();
+            loadRateResult.loadRateMin = dayList1.get(0).getLoadRateMinValue();
+            loadRateResult.loadRateMinTime = dayList1.get(0).getLoadRateMinTime();
+
+            for (BusLineHourDo item : dayList1) {
+                // 电压分析
+                if (item.getLoadRateMinValue() > loadRateResult.loadRateMax) {
+                    loadRateResult.loadRateMax = item.getLoadRateMinValue();
+                    loadRateResult.loadRateMaxTime = item.getLoadRateMinTime();
+                }
+                if (item.getLoadRateMinValue() < loadRateResult.loadRateMax) {
+                    loadRateResult.loadRateMin = item.getLoadRateMinValue();
+                    loadRateResult.loadRateMinTime = item.getLoadRateMinTime();
+                }
+            }
+        }
+        result.put("loadRateTage", loadRateResult);
+
         return result;
     }
 

@@ -421,4 +421,11 @@ public class BusIndexController {
     public CommonResult<List<String>> findKeys(@RequestParam(value = "key") String key) {
         return success(indexService.findKeys(key));
     }
+    @PostMapping("/report/loadRate")
+    @Operation(summary = "获得插接箱报表数据-基础数据")
+    public CommonResult<Map> getReportLoadRateByBusResVO(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getReportLoadRateByBusResVO(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
+
+    }
+
 }

@@ -214,6 +214,11 @@ getBalanceStatistics: async () => {
     return await request.post({ url: `/bus/index/avg/busHdaLine/form` ,  data})
   },
 
+    //获得始端箱报表负载率详细信息
+    getLoadRateByDevKey: async (data: any) => {
+      return await request.post({ url: `/bus/index/report/loadRate` ,  data})
+    },
+
   //始端箱温度详情导出
   getBusTemDetailExcel: async ( data: any, axiosConfig) => {
     return await request.downloadPost({ url: `/bus/index/tem/detailExcel` , data, ...axiosConfig })

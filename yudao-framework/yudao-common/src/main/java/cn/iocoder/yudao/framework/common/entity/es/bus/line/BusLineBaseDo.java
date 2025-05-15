@@ -250,33 +250,33 @@ public class BusLineBaseDo extends BusBaseDo {
 
 
     /**
-     * 平均功率因素
+     * 平均负载率
      */
     @JsonProperty("load_rate_avg_value")
     private float loadRateAvgValue;
 
     /**
-     * 平均功率因素
+     * 最大负载率时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("load_rate_max_time")
     private DateTime loadRateMaxTime;
 
     /**
-     * 平均功率因素
+     * 最大负载率
      */
     @JsonProperty("load_rate_max_value")
     private float loadRateMaxValue;
 
     /**
-     * 平均功率因素
+     * 最小负载率时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("load_rate_min_time")
     private DateTime loadRateMinTime;
 
     /**
-     * 平均功率因素
+     * 最小负载率
      */
     @JsonProperty("load_rate_min_value")
     private float loadRateMinValue;

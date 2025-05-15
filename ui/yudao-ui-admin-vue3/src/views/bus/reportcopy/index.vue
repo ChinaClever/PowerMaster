@@ -14,32 +14,21 @@
         label-width="120px"
         style="float: left;"
       >      
-        <el-form-item label="网络地址" prop="devKey">
-          <el-autocomplete
-            v-model="queryParams.devKey"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-200px"
-            placeholder="请输入网络地址"
-            @keyup.enter="handleQuery"
-            @select="handleQuery"
-          />
-        </el-form-item>
-
-        <el-form-item label="时间段" prop="createTime" label-width="100px">
-          <el-button 
+        
+        <el-form-item label="时间段" prop="createTime" label-width="60px">
+          <el-button :color="switchValue == 0 ? '#00778c' : ''"
             @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报
           </el-button>
-          <el-button 
+          <el-button :color="switchValue == 1 ? '#00778c' : ''"
             @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
           </el-button>
-          <el-button 
+          <el-button :color="switchValue == 2 ? '#00778c' : ''"
             @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 2;" 
             :type="switchValue == 2 ? 'primary' : ''"
           >
@@ -77,20 +66,36 @@
             @change="handleDayPick"
           />
         </el-form-item>
+        
         <el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
-        <!-- <el-text size="large">
-          报警次数：{{ pduInfo.alarm }}
-        </el-text> -->
-      </el-form>
-      <el-form-item>
+      
+        <el-form-item>
           <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
             <el-option label="最大" :value="1" />
             <el-option label="平均" :value="0" />
             <el-option label="最小" :value="-1" />
           </el-select>
         </el-form-item>
+        <el-form-item label="网络地址" prop="devKey">
+          <el-autocomplete
+            v-model="queryParams.devKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-200px"
+            placeholder="请输入网络地址"
+            @keyup.enter="handleQuery"
+            @select="handleQuery"
+          />
+    
+        </el-form-item>
+    
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+    
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >
@@ -99,10 +104,14 @@
             <div class="page-conTitle">
               母线基本信息
             </div>
-            <div class="centered-div">
+  
+             <el-row :gutter="24">
+              <el-col :span="24 - serChartContainerWidth">
                   <el-table 
                     :data="PDUTableData" 
-                    :header-cell-style="arraySpanMethod"
+                                    :header-cell-style="arraySpanMethod"
+                        style="width: 100%"
+                    
                     >
                     <el-table-column  align="center" label="基本信息" >
                       <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
@@ -129,13 +138,33 @@
                         </template>
                       </el-table-column>
                     </el-table-column>
-                    <el-table-column  align="center" label="能耗">
-                      <el-table-column  prop="consumeName"  />
-                      <el-table-column  prop="consumeValue" />
-                    </el-table-column>
-                    
+                    <el-table-column align="center" label="当前状态">
+            <el-table-column prop="statusInfoName" />
+            <el-table-column prop="statusInfoValue">
+              <template #default="scope">
+                {{ scope.row.statusInfoValue || '--' }}
+              </template>
+            </el-table-column>
+          </el-table-column> 
+          <el-table-column align="center" label="能耗">
+            <el-table-column prop="consumeName" />
+            <el-table-column prop="consumeValue">
+              <template #default="scope">
+                {{ scope.row.consumeValue || '--' }}
+              </template>
+            </el-table-column>
+          </el-table-column> 
+                    <el-table-column align="center" label="不平衡度">
+            <el-table-column prop="unbalanceName" />
+            <el-table-column prop="unbalanceValue">
+              <template #default="scope">
+                {{ scope.row.unbalanceValue || '--' }}
+              </template>
+            </el-table-column>
+          </el-table-column>  
                   </el-table>
-                </div>
+              </el-col>
+            </el-row> 
             <!-- <el-row :gutter="24" >
               <el-col :span="24 - serChartContainerWidth">
                 
@@ -206,10 +235,38 @@
             <div class="page-conTitle" >
               电量分布
             </div>
-            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大电量发生时间在{{eqData.maxEleTime}}</p>
-            <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
+            <!-- <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大电量发生时间在{{eqData.maxEleTime}}</p>
+            <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p> -->
+            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大单日用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+            <p v-if="visControll.isSameDay">本周期内，共计使用电量{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh，最大用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+           
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
+          
+          <div class="pageBox" v-if="visControll.curVolVis">
+            <div class="page-conTitle">
+              相负载率历史曲线趋势图
+            </div>
+            <div v-for="(sensor, index) in loadRateList?.series" :key="index">
+            <div class="power-section single-line" v-if="index %2 == 0">
+              <span class="power-title">{{loadRateDate[`lineName${index + 1}`]}}</span>
+  <span class="power-value">峰值 <span class="highlight">{{loadRateDate[`loadRateMax${index + 1}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{loadRateDate[`loadRateMin${index + 1}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMinTime${index + 1}`]}})</span></span>
+    <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+  <span class="power-title" v-if="index+2<=loadRateList?.series.length-1 ">{{loadRateDate[`lineName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=loadRateList?.series.length-1 ">峰值 <span class="highlight">{{loadRateDate[`loadRateMax${index + 2}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=loadRateList?.series.length-1 ">谷值 <span class="highlight">{{loadRateDate[`loadRateMin${index + 2}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMinTime${index + 2}`]}})</span></span>
+</div>
+
+          </div>
+            <!-- <LoadRateLine class="adaptiveStyle" :list="loadRateList" :dataType="queryParams.dataType"/> -->
+            <!-- <LoadRateLine :width="computedWidth" height="58vh" :list="loadRateList"  :dataType="queryParams.dataType"/> -->
+                        <LoadRateLine  :list="loadRateList" :dataType="queryParams.dataType"/>
+
+
+          </div>
+
+
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
               功率因素曲线
@@ -265,6 +322,7 @@
               <span class="power-title">{{curVolData[`curName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 1}`]}})</span></span>
+    <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=curList?.series.length-1 "> {{curVolData[`curName${index + 2}`]}}</span>
   <span class="power-value" v-if="index+2<=curList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMaxTime${index + 2}`]}})</span></span>
   <span class="power-value" v-if="index+2<=curList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{curVolData[`curMinTime${index + 2}`]}})</span></span>
@@ -284,6 +342,7 @@
               <span class="power-title">{{curVolData[`volName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 1}`]}})</span></span>
+    <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=volList?.series.length-1 ">{{curVolData[`volName${index + 2}`]}}</span>
   <span class="power-value" v-if="index+2<=volList?.series.length-1 ">峰值 <span class="highlight">{{curVolData[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMaxTime${index + 2}`]}})</span></span>
   <span class="power-value" v-if="index+2<=volList?.series.length-1 ">谷值 <span class="highlight">{{curVolData[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{curVolData[`volMinTime${index + 2}`]}})</span></span>
@@ -301,7 +360,7 @@
         <span class="power-title">A相温度极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData.temAMaxValue }}</span> °C <span class="time">记录于({{ temData.temAMaxTime }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData.temAMinValue }}</span> °C <span class="time">记录于({{ temData.temAMinTime }})</span></span>
-        
+          <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span class="power-title">B相温度极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData.temBMaxValue }}</span> °C <span class="time">记录于({{ temData.temBMaxTime }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData.temBMinValue }}</span> °C <span class="time">记录于({{ temData.temBMinTime }})</span></span>
@@ -310,7 +369,7 @@
         <span class="power-title">C相温度极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData.temCMaxValue }}</span> °C <span class="time">记录于({{ temData.temCMaxTime }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData.temCMinValue }}</span> °C <span class="time">记录于({{ temData.temCMinTime }})</span></span>
-        
+          <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span class="power-title">D相温度极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ temData.temNMaxValue }}</span> °C <span class="time">记录于({{ temData.temNMaxTime }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData.temNMinValue }}</span> °C <span class="time">记录于({{ temData.temNMinTime }})</span></span>
@@ -375,14 +434,18 @@ import CurLine from './component/CurLine.vue'
 import VolLine from './component/VolLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
+import LoadRateLine from './component/LoadRateLine.vue'
 import { AlarmApi } from '@/api/system/notify/alarm'
 //import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 const parsedData = ref([]) as any
+let curValue = ref as any;
 const tableData = ref([]);
 const temp1 = ref([]) as any
 const curVolData = ref();
+const loadRateDate = ref() as any
+const loadRateList = ref() as any
 const volList = ref() as any
 const curList = ref() as any
 const temList = ref() as any
@@ -401,13 +464,13 @@ const visControll = reactive({
   temVis : false,
   pfVis: false,
   curVolVis: false,
+  loadRateVis: false,
 })
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
 let lineNumber = ref() as any;
 
-// 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
 // 计算属性，根据窗口宽度返回不同的width值
 const computedWidth = computed(() => {
@@ -420,7 +483,6 @@ const computedWidth = computed(() => {
   }
 });
 
-const typeRadioShow = ref("最大")
 
 interface RadarData{
   index: number;
@@ -993,6 +1055,18 @@ const getList = async () => {
     visControll.powVis = false;
   }
 
+  loadRateDate.value = await IndexApi.getLoadRateByDevKey(queryParams);
+  loadRateList.value = loadRateDate.value.loadRateRes
+  console.log("  loadRateList.value = loadRateList.value.curRes",loadRateList.value);
+
+  if(loadRateDate.value?.dateTime != null && loadRateDate.value?.dateTime?.length > 0){
+    visControll.loadRateVis = true;
+  }else{
+    visControll.loadRateVis = false;
+  }
+
+
+
   curVolData.value = await IndexApi.getAvgBusHdaLineForm(queryParams);
   curList.value = curVolData.value.curRes
   volList.value = curVolData.value.volRes
@@ -1054,52 +1128,62 @@ const getList = async () => {
   console.log('PDU',PDU)
   PDU = JSON.parse(PDU)
   var temp = [] as any;
-  var resultArray=[] as any;
+  const lineItemList = PDU?.bus_data?.line_item_list;
+  if (lineItemList && lineItemList.cur_value) {
+  var maxCurAlarmMax = Math.max(...lineItemList.cur_value);
+   curValue = maxCurAlarmMax.toFixed(2) + "A";
+  } else {
+  curValue = '/';
+  console.log(curValue); // 输出: /
+}
+  // var resultArray=[] as any;
   //var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
-  var powApparentValueArray = PDU?.bus_data?.line_item_list?.pow_apparent;
-  var powValueArray = PDU?.bus_data?.line_item_list?.pow_value;
-  var curValueArray = PDU?.bus_data?.line_item_list?.cur_value;
+  // var powApparentValueArray = PDU?.bus_data?.line_item_list?.pow_apparent;
+  // var powValueArray = PDU?.bus_data?.line_item_list?.pow_value;
+  // var curValueArray = PDU?.bus_data?.line_item_list?.cur_value;
   
   // console.log(powValueArray)
   // 将值与下标保存到对象数组中
-  if(powValueArray && powValueArray.length >= 0){
-    for (var i = 0; i < powValueArray.length; i++) {
-      result.value.index=i + 1
-      result.value.name = "输出位" + (i + 1)
-      result.value.powApparent = powApparentValueArray[i]
-      result.value.curValue = curValueArray[i]
-      result.value.powValue= powValueArray[i]
-      resultArray.push({ ...result.value });
-    }
-    // 按值进行排序
-    resultArray.sort((a, b) => b.curValue - a.curValue);
-    // 只保留前十个元素
-    resultArray = resultArray.slice(0, 12);
+  // if(powValueArray && powValueArray.length >= 0){
+  //   for (var i = 0; i < powValueArray.length; i++) {
+  //     result.value.index=i + 1
+  //     result.value.name = "输出位" + (i + 1)
+  //     result.value.powApparent = powApparentValueArray[i]
+  //     result.value.curValue = curValueArray[i]
+  //     result.value.powValue= powValueArray[i]
+  //     resultArray.push({ ...result.value });
+  //   }
+  //   // 按值进行排序
+  //   resultArray.sort((a, b) => b.curValue - a.curValue);
+  //   // 只保留前十个元素
+  //   resultArray = resultArray.slice(0, 12);
 
-    for(var i=0;i<resultArray.length;i++){
-      serverData.value.nameAndMax.push({
-        name: resultArray[i].name,
-        max: resultArray[i].curValue+0.001,
-      })
-      serverData1.value.nameAndMax.push({
-        name: resultArray[i].name,
-        max: resultArray[i].powApparent+0.001,
-      })
-      // console.log(serverData1.value.nameAndMax)
-      serverData.value.curvalue.push(resultArray[i].curValue.toFixed(2))
-      serverData.value.powvalue.push(resultArray[i].powValue)
-      serverData.value.powapparent.push(resultArray[i].powApparent)
-    }
-    // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
-    serChartContainerWidth.value = 10;
-    // console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
-    if(resultArray.length==0){
-      serChartContainerWidth.value = 0;
-    }
-  }else{
-    serChartContainerWidth.value = 0;
-  }
+  //   for(var i=0;i<resultArray.length;i++){
+  //     serverData.value.nameAndMax.push({
+  //       name: resultArray[i].name,
+  //       max: resultArray[i].curValue+0.001,
+  //     })
+  //     serverData1.value.nameAndMax.push({
+  //       name: resultArray[i].name,
+  //       max: resultArray[i].powApparent+0.001,
+  //     })
+  //     // console.log(serverData1.value.nameAndMax)
+  //     serverData.value.curvalue.push(resultArray[i].curValue.toFixed(2))
+  //     serverData.value.powvalue.push(resultArray[i].powValue)
+  //     serverData.value.powapparent.push(resultArray[i].powApparent)
+  //   }
+  //   // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
+  //   serChartContainerWidth.value = 10;
+  //   // console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
+  //   if(resultArray.length==0){
+  //     serChartContainerWidth.value = 0;
+  //   }
+  // }else{
+  //   serChartContainerWidth.value = 0;
+  // }
+
+
 
   // var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
   // Bus = JSON.parse(Bus)
@@ -1109,20 +1193,38 @@ const getList = async () => {
   temp.push({
     baseInfoName : "所属位置",
     baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
-    consumeName : "消耗电量",
-    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    statusInfoName : "总视在功率",
+    statusInfoValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_apparent.toFixed(3)+ "kVA" : '/',
+    consumeName : "起始电能",
+    consumeValue : eqData.value.firstEq+"kWh",
+    unbalanceName : "电流不平衡度",
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_unbalance.toFixed(0)+ "%" : '/',
   })
   temp.push({
     baseInfoName : "网络地址",
     baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
-    consumeName : "当前视在功率",
-    consumeValue : baseInfo?.powApparent !=null ? baseInfo?.powApparent.toFixed(3) + "kVA" : '/',
+    statusInfoName : "总有功功率",
+    statusInfoValue :   PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_value.toFixed(3)+ "kW" : '/',
+    consumeName : "结束电能",
+    consumeValue :  eqData.value.lastEq+"kWh",
+    unbalanceName : "电压不平衡度",
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.vol_unbalance.toFixed(0)+ "%" : '/',
   })
   temp.push({
     baseInfoName : "设备状态",
     baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
-    consumeName : "当前功率因素",
-    consumeValue : baseInfo?.powerFactor !=null ? baseInfo?.powerFactor.toFixed(2) : '/'
+    statusInfoName : "总无功功率",
+    statusInfoValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_reactive.toFixed(3)+ "kVar" : '/',
+    consumeName : "电量消耗",
+    consumeValue :  eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    unbalanceName : "零线电流",
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_zero_value.toFixed(2)+ "A" : '/',
+  })
+  temp.push({
+    baseInfoName : "额定电流",
+    baseInfoValue : curValue,
+    statusInfoName : "总功率因数",
+    statusInfoValue :  PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.power_factor.toFixed(2) : '/',
   })
   PDUTableData.value = temp;
   
@@ -1590,7 +1692,6 @@ onMounted( async () =>  {
 :deep(.el-table .el-table__header th) {
   background-color: #f5f7fa;
   color: #909399;
-  height: 80px;
 
 }
 
