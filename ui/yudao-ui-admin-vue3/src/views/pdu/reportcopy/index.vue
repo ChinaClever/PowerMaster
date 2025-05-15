@@ -21,7 +21,7 @@
     
       <div>
     
-        <el-form-item label="时间段" prop="createTime" label-width="100px">
+        <el-form-item label="时间段" prop="createTime" label-width="60px">
           <el-button :color="switchValue == 0 ? '#00778c' : ''"
             @click="queryParams.timeType = 0;dateTimeName='twentyfourHour';now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
@@ -187,13 +187,14 @@
         <div v-else class="empty-tip">暂无数据</div>
       <!-- </div> -->
     </el-col>
+  </el-row>
     <!-- <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">   -->
                  <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
                 <!-- <div >
                  <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
                </div> -->
     <!-- </el-col> -->
-  </el-row>
+  
   
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >

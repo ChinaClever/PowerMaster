@@ -93,6 +93,6 @@ watchEffect(() => {
   
   time.value = prop.list.time;
   happenTime.value = prop.list.series.map(item => item.happenTime);
-  console.log(happenTime.value)
+
 });
 </script>

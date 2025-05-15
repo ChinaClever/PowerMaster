@@ -1079,6 +1079,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     curResBase.getSeries().add(curSeries);
                     volResBase.getSeries().add(volSeries);
                 }
+                resultMap.put("lineNumber",lineId);
             }
 
             // 添加时间轴数据
