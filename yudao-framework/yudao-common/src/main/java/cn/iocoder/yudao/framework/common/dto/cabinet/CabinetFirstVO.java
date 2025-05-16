@@ -113,27 +113,43 @@ public class CabinetFirstVO {
     /**
      * 机柜前后通道 1前2后
      */
-    @Schema(description = "机柜温度-机柜前后通道 1前2后")
-    private int channel;
+//    @Schema(description = "机柜温度-机柜前后通道 1前2后")
+//    private int channel;
 
     /**
      * 位置 1 上 2 中 3下
      */
-    @Schema(description = "机柜温度-位置 1 上 2 中 3下")
-    private int position;
+//    @Schema(description = "机柜温度-位置 1 上 2 中 3下")
+//    private int position;
+    @Schema(description = "机柜温度-前门A/B路")
+    private String frontPath;
 
     /**
      * 传感器id
      */
-    @Schema(description = "机柜温度-传感器id")
-    private int sensorId;
+    @Schema(description = "机柜温度前门-传感器id")
+    private int frontSensorId;
 
     /**
      * 传感器类型
      */
-    @Schema(description = "机柜温度-传感器类型")
-    private int sensorType;
+    @Schema(description = "机柜温度前门-传感器类型")
+    private int frontSensorType;
 
+    @Schema(description = "机柜温度-后门A/B路")
+    private String backPath;
+
+    /**
+     * 传感器id
+     */
+    @Schema(description = "机柜温度后门-传感器id")
+    private int backSensorId;
+
+    /**
+     * 传感器类型
+     */
+    @Schema(description = "机柜温度后门-传感器类型")
+    private int backSensorType;
 
     /**
      * 日用能告警开关

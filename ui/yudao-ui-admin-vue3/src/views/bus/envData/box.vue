@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱温度数据" >
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>   
         <div class="nav_data">
           <!-- <div class="nav_content">
             <el-descriptions title="全部插接箱新增环境记录" direction="vertical" :column="1" width="60px" border >
@@ -79,11 +79,13 @@
 
         <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px"/> 搜索</el-button>
+        </el-form-item> 
+        <el-form-item style="position: absolute;right: -15px;">
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item> 
+        </el-form-item>
         <!-- </div> -->
       </el-form>
     </template>
@@ -100,14 +102,14 @@
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'" >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.box_id, row.dev_key, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.box_id, row.dev_key, row.location)"  style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
               </div>
             </template>
           </el-table-column>
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot=='actions'" fixed="right">
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.box_id, row.dev_key, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.box_id, row.dev_key, row.location)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
               </div>
             </template>
           </el-table-column>
@@ -271,6 +273,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '200%'},
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
 
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData, width: '110px'},
@@ -365,7 +368,7 @@ const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
   { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
   { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '200%'},
-
+  { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData, width: '110px'},
   { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData, width: '110px'},
@@ -408,6 +411,14 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   }
 
   return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
+
+function formatSave(_row: any, _column: any, cellValue: number): string {
+  if(cellValue==0) return '定时记录';
+  if(cellValue==1) return '波动数据';
+  if(cellValue==2) return '突变数据';
+  if(cellValue==3) return '告警数据';
+  return '';
 }
 
 // 格式化温湿度列数据，保留一位小数
@@ -561,5 +572,11 @@ selectTimeRange.value = [
   ::v-deep .el-table .el-table__header th {
     background-color: #F5F7FA;
     color: #909399;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱电力数据">
     <template #NavInfo>
-        <br/>    <br/> 
+        <br/> 
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -112,9 +112,11 @@
         </el-form-item>
         <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+        </el-form-item>
+        <el-form-item style="position: absolute;right: -30px;">
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -133,12 +135,12 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)">详情</el-button>
+              <el-button type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
             </template>
           </el-table-column>
-          <el-table-column fixed="right" :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot === 'actions'" >
+          <el-table-column fixed="right" :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" width="90px" v-if="column.istrue&&column.slot === 'actions'" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)">详情</el-button>
+              <el-button type="primary" @click="toDetails(row.box_id, row.location, row.dev_key)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -171,6 +173,7 @@ import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
 import { IndexApi } from '@/api/bus/busindex'
 import { formatDate, endOfDay, convertDate, addTime, startOfDay} from '@/utils/formatTime'
+import { formatter } from 'element-plus'
 const { push } = useRouter()
 /** 插接箱历史数据 列表 */
 defineOptions({ name: 'BusHistoryData' })
@@ -196,7 +199,7 @@ const queryParams = reactive({
   granularity: 'realtime',
   timeRange: undefined,
   devkeys: [],
-  columnsToExclude: ['outlet_id']
+  columnsToExclude: []
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -344,7 +347,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '所在位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
           { label: '设备地址', align: 'center', prop: 'dev_key', width: '250px', istrue:true},
           { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
-
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
           { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
@@ -378,10 +381,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
               { value: "pow_apparent_min", label: '最小视在功率' },
             ]
           },
+          {value:'power_factor_avg_value', label:"平均功率因数"}
         ] as any;
         originalArray.value =["pow_active_avg_value", "pow_active_max", "pow_active_min", 
                             "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min",
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
+                            "power_factor_avg_value"
                         ],
         // 配置表格列
         tableColumns.value = [
@@ -401,11 +406,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小无功功率(kW)', align: 'center', prop: 'pow_reactive_min_value', istrue:false, width: '160px', formatter: formatPower},
           { label: '最小无功功率时间', align: 'center', prop: 'pow_reactive_min_time', formatter: formatTime, width: '200px', istrue:false},
 
-          { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '160px, formatter: formatPower'},
+          { label: '平均视在功率(kVA)', align: 'center', prop: 'pow_apparent_avg_value', istrue:false, width: '160px', formatter: formatPower},
           { label: '最大视在功率(kVA)', align: 'center', prop: 'pow_apparent_max_value', istrue:false, width: '160px', formatter: formatPower},
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '200px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '160px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '200px', istrue:false},
+
+          { label: '平均功率因素', align: 'center', prop: 'power_factor_avg_value', istrue:false, width: '160px', formatter: formatPowerFactor},
 
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
@@ -436,7 +443,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
-
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -444,8 +451,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor, width: '140px'},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage, width: '140px'},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent, width: '140px'},
-          { label: '负载率', align: 'center', prop: 'load_rate', istrue:true, width: '140px'},
-          { label: '电流谐波含量', align: 'center', prop: 'cur_thd', istrue:true, width: '140px'},
+          { label: '负载率(%)', align: 'center', prop: 'load_rate', istrue:true, width: '140px',formatter: formatLoadRate},
+          { label: '电流谐波含量(%)', align: 'center', prop: 'cur_thd', istrue:true, width: '140px',formatter: formatJB},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '220px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
@@ -475,6 +482,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
               { value: "pow_apparent_min", label: '最小视在功率' },
             ]
           },
+          { value: "power_factor", label: '功率因素', children: [
+              { value: "power_factor_avg_value", label: '平均功率因素' },
+              { value: "power_factor_max", label: '最大功率因素' },
+              { value: "power_factor_min", label: '最小功率因素' },
+            ]
+          },
           { value: "vol_value", label: '电压', children: [
               { value: "vol_avg_value", label: '平均电压' },
               { value: "vol_max", label: '最大电压' },
@@ -500,6 +513,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "pow_active_avg_value", "pow_active_max", "pow_active_min", 
                             "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min", 
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
+                            "power_factor_avg_value", "power_factor_max", "power_factor_min",
                             "cur_thd_avg", "cur_thd_max", "cur_thd_min"],
         // 配置表格列
         tableColumns.value = [
@@ -526,6 +540,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
+
+          { label: '平均功率因素', align: 'center', prop: 'power_factor_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最大功率因素', align: 'center', prop: 'power_factor_max_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最大功率因素时间', align: 'center', prop: 'power_factor_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最小功率因素', align: 'center', prop: 'power_factor_min_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最小功率因素时间', align: 'center', prop: 'power_factor_min_time', formatter: formatTime, width: '230px', istrue:false},
   
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:false, width: '120px', formatter: formatVoltage},
@@ -539,10 +559,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小电流(A)', align: 'center', prop: 'cur_min_value', istrue:false, width: '140px', formatter: formatCurrent},
           { label: '最小电流时间', align: 'center', prop: 'cur_min_time', formatter: formatTime, width: '230px', istrue:false},
 
-          { label: '平均电流谐波含量', align: 'center', prop: 'cur_thd_avg_value', istrue:false, width: '140px'},
-          { label: '最大电流谐波含量', align: 'center', prop: 'cur_thd_max_value', istrue:false, width: '120px'},
+          { label: '平均电流谐波含量(%)', align: 'center', prop: 'cur_thd_avg_value', istrue:false, width: '140px',format:formatJB},
+          { label: '最大电流谐波含量(%)', align: 'center', prop: 'cur_thd_max_value', istrue:false, width: '120px',format:formatJB},
           { label: '最大电流谐波含量时间', align: 'center', prop: 'cur_thd_max_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '最小电流谐波含量', align: 'center', prop: 'cur_thd_min_value', istrue:false, width: '140px'},
+          { label: '最小电流谐波含量(%)', align: 'center', prop: 'cur_thd_min_value', istrue:false, width: '140px',format:formatJB},
           { label: '最小电流谐波含量时间', align: 'center', prop: 'cur_thd_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
@@ -571,7 +591,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
-
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -608,6 +628,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
               { value: "pow_apparent_min", label: '最小视在功率' },
             ]
           },
+          { value: "power_factor", label: '功率因素', children: [
+              { value: "power_factor_avg_value", label: '平均功率因素' },
+              { value: "power_factor_max", label: '最大功率因素' },
+              { value: "power_factor_min", label: '最小功率因素' },
+            ]
+          },
           { value: "vol_value", label: '电压', children: [
               { value: "vol_avg_value", label: '平均电压' },
               { value: "vol_max", label: '最大电压' },
@@ -627,6 +653,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           "pow_active_avg_value", "pow_active_max", "pow_active_min",
           "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min",
           "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
+          "power_factor_avg_value", "power_factor_max", "power_factor_min",
         ],
         // 配置表格列
         tableColumns.value = [
@@ -653,6 +680,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
+
+          { label: '平均功率因素', align: 'center', prop: 'power_factor_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最大功率因素', align: 'center', prop: 'power_factor_max_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最大功率因素时间', align: 'center', prop: 'power_factor_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最小功率因素', align: 'center', prop: 'power_factor_min_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最小功率因素时间', align: 'center', prop: 'power_factor_min_time', formatter: formatTime, width: '230px', istrue:false},
   
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:false, width: '120px', formatter: formatVoltage},
@@ -690,7 +723,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
-
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -725,11 +758,18 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
               { value: "pow_apparent_min", label: '最小视在功率' },
             ]
           },
+          { value: "power_factor", label: '功率因素', children: [
+              { value: "power_factor_avg_value", label: '平均功率因素' },
+              { value: "power_factor_max", label: '最大功率因素' },
+              { value: "power_factor_min", label: '最小功率因素' },
+            ]
+          },
         ] as any;
         originalArray.value =[
           "pow_active_avg_value", "pow_active_max", "pow_active_min",
           "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min",
           "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
+          "power_factor_avg_value", "power_factor_max", "power_factor_min",
         ],
         // 配置表格列
         tableColumns.value = [
@@ -756,6 +796,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
+
+          { label: '平均功率因素', align: 'center', prop: 'power_factor_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最大功率因素', align: 'center', prop: 'power_factor_max_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最大功率因素时间', align: 'center', prop: 'power_factor_max_time', formatter: formatTime, width: '230px', istrue:false},
+          { label: '最小功率因素', align: 'center', prop: 'power_factor_min_value', istrue:false, width: '180px', formatter: formatPowerFactor},
+          { label: '最小功率因素时间', align: 'center', prop: 'power_factor_min_time', formatter: formatTime, width: '230px', istrue:false},
   
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
@@ -770,7 +816,7 @@ const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
   { label: '设备地址', align: 'center', prop: 'dev_key', width: '250px', istrue:true},
 { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
-
+  { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
   { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
   { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
@@ -815,9 +861,24 @@ function formatCurrent(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(2);
 }
 
+function formatLoadRate(_row: any, _column: any, cellValue: number): string {
+  return Number(cellValue).toFixed(0);
+}
+
+function formatJB(_row: any, _column: any, cellValue: number): string {
+  return Number(cellValue).toFixed(2);
+}
+
 // 格式化功率列数据，保留三位小数
 function formatPower(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(3);
+}
+function formatSave(_row: any, _column: any, cellValue: number): string {
+  if(cellValue==0) return '定时记录';
+  if(cellValue==1) return '波动数据';
+  if(cellValue==2) return '突变数据';
+  if(cellValue==3) return '告警数据';
+  return '';
 }
 
 // 格式化功率因素列数据，保留两位小数
@@ -1057,5 +1118,11 @@ selectTimeRange.value = [
   ::v-deep .el-table .el-table__header th {
     background-color: #F5F7FA;
     color: #909399;
+}
+  /deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

@@ -349,6 +349,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value =([
           { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
           { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+          { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '200px'},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
@@ -444,6 +445,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
           { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
@@ -573,6 +575,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
           { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
@@ -701,6 +704,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'address', istrue:true, width: '300%'},
           { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent},
@@ -802,6 +806,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
   { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '200px'},
   { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
@@ -827,6 +832,7 @@ const getList = async (flush=true) => {
     }
     console.log(queryParams,"搜索queryParams");
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
+    data.list.forEach(item=>item.address==null||item.address==''?item.address="未绑定":'')
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -853,6 +859,14 @@ function formatCurrent(_row: any, _column: any, cellValue: number): string {
 // 格式化功率列数据，保留三位小数
 function formatPower(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(3);
+}
+
+function formatSave(_row: any, _column: any, cellValue: number): string {
+  if(cellValue==0) return '定时记录';
+  if(cellValue==1) return '波动数据';
+  if(cellValue==2) return '突变数据';
+  if(cellValue==3) return '告警数据';
+  return '';
 }
 
 // 格式化功率因素列数据，保留两位小数
@@ -1130,5 +1144,8 @@ onBeforeUnmount(() => {
   }
   /deep/ .el-pagination.is-background .el-pager li.is-active {
   background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

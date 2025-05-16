@@ -30,19 +30,19 @@ public class BusExportLineDetailVO {
     @NumberFormat("0.000")
     @ExcelProperty("无功功率(kVar)")
     private Double pow_reactive;
-    @NumberFormat("0.00")
-    @ExcelProperty("功率因素")
-    private Double power_factor;
     @NumberFormat("0.000")
     @ExcelProperty("视在功率(kVA)")
     private Double pow_apparent;
+    @NumberFormat("0.00")
+    @ExcelProperty("功率因素")
+    private Double power_factor;
     @ExcelProperty("电压(V)")
     @NumberFormat("0.0")
     private Double vol_value;
     @ExcelProperty("电流(A)")
     @NumberFormat("0.00")
     private Double cur_value;
-    @ExcelProperty("负载率")
+    @ExcelProperty("负载率(%)")
     @NumberFormat("0.00")
     private Double load_rate;
     @ExcelProperty("线电压(V)")

@@ -582,7 +582,7 @@
             <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
           </el-form-item>
           <el-form-item label="楼层" prop="type" label-width="80">
-            <el-select v-model="rowColInfo.addr" placeholder="请选择">
+            <el-select v-model="rowColInfo.addr" placeholder="请选择" :disabled="!addrFlag">
               <el-option v-for="(addr_item,addr_index) in addrList.slice(1)" :key="addr_index" :label="addr_item" :value="addr_item" />
             </el-select>
           </el-form-item>
@@ -640,7 +640,7 @@
           </div>
           <el-form-item label="电力容量" label-width="80">
             <el-input type="number" v-model="rowColInfo.powerCapacity" placeholder="请输入">
-              <template #append>kVA</template>
+              <template #append>kW</template>
             </el-input>
           </el-form-item>
         </div>
@@ -658,7 +658,7 @@
             </el-radio-group>
           </div>
           <el-form-item label="排序序号" label-width="80">
-            <el-input type="number" v-model="rowColInfo.sort" placeholder="请输入" />
+            <el-input type="number" v-model="rowColInfo.sort" placeholder="请输入" :disabled="!sortFlag" />
           </el-form-item>
         </div>
 
@@ -680,7 +680,7 @@
         </div> -->
       </el-form>
       <template #footer>
-        <el-button @click="handleDialogCancel">取 消</el-button>
+        <el-button @click="handleDialogCancel" color="black" plain>取 消</el-button>
         <el-button type="primary" @click="submitSetting" color="black">确 定</el-button>
       </template>
     </el-dialog>
@@ -795,7 +795,7 @@ const props = defineProps({
 const openSetting = (item) => {
   roomFlag.value = 2;
   console.log(item)
-  noChange.value = true
+  // noChange.value = true
   Object.assign(rowColInfo, {
     roomName: item.roomName,
     row: item.yLength,
@@ -1050,10 +1050,6 @@ const submitSetting = async() => {
 }
 
 watch(() => rowColInfo.areaFlag, (val) => {
-  if(noChange.value) {
-    noChange.value = false
-    return
-  }
   if(val) {
     rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
     rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
@@ -1562,9 +1558,6 @@ const handleChange = async (val: CollapseModelValue) => {
 
 :deep(.el-collapse-item__header) {
   padding: 0 20px;
-}
-:deep(.el-card) {
-  background-color: #fff;
 }
 :deep .el-input-group__append {
   padding: 0 10px; /* 设置为所需的字体大小 */

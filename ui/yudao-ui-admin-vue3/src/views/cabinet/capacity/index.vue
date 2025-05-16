@@ -102,7 +102,8 @@
             <button class="detail" @click.prevent="toDetail(item.id,item.roomId)">详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
+        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData"  border stripe
+      :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}" >
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" >
             <template #default="scope">

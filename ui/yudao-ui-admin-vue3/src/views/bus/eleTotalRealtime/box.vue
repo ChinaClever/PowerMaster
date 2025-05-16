@@ -323,6 +323,7 @@ const getList = async () => {
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getBoxEleTotalRealtime(queryParams)
+    // console.log("data===============",data)
     eqData.value = data.list.map((item) => formatEQ(item.eleActive, 1));
     list.value = data.list
     realTotel.value = data.total
@@ -383,7 +384,7 @@ function formatEle(_row: any, _column: any, cellValue: number): string {
 // 格式化耗电量列数据，保留1位小数
 function formatEQ(value, decimalPlaces){
   if (!isNaN(value)) {
-    return value.toFixed(decimalPlaces);
+    return value?.toFixed(decimalPlaces);
   } else {
       return null; // 或者其他默认值
   }
@@ -553,5 +554,8 @@ const format = (date) => {
 
   /deep/ .el-pagination.is-background .el-pager li.is-active {
   background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

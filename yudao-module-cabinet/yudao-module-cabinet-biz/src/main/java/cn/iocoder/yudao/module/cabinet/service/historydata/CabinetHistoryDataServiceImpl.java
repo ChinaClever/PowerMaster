@@ -144,12 +144,6 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> {
             Map<String,Object> map=searchHit.getSourceAsMap();
-            if(map.get("load_rate")!=null){
-                map.put("load_rate",new BigDecimal((Double) map.get("load_rate")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("load_rate_total_avg_value") != null){
-                map.put("load_rate_total_avg_value",new BigDecimal( (Double) map.get("load_rate_total_avg_value")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
             mapList.add(map);
         });
         // 匹配到的总记录数
@@ -199,12 +193,6 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> {
             Map<String, Object> map = searchHit.getSourceAsMap();
-            if(map.get("load_rate")!=null){
-                map.put("load_rate",new BigDecimal((Double) map.get("load_rate")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
-            if(map.get("load_rate_total_avg_value") != null){
-                map.put("load_rate_total_avg_value",new BigDecimal( (Double) map.get("load_rate_total_avg_value")).multiply(BigDecimal.valueOf(100)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue());
-            }
             resultList.add(map);
         });
         // 匹配到的总记录数

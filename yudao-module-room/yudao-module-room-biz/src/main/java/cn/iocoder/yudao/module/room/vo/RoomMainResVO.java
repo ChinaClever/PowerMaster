@@ -171,6 +171,9 @@ public class RoomMainResVO {
     @Schema(description = "排序字段")
     private Integer sort;
 
+    @Schema(description = "面积类型：0-地砖 1-面积")
+    private Boolean areaFlag;
+
 //    @Schema(description = "设备统计")
 //    private Map<String, EquipmentStatisticsResVO> map;
 

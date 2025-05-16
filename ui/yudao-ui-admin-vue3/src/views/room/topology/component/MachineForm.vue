@@ -30,6 +30,13 @@
                 <el-option label="适配框" value="适配框" />
                 <el-option label="柱子" value="柱子" />
                 <el-option label="占位" value="占位" />
+                <template #footer>
+                  <el-input
+                    v-model="machineFormData.cabinetType"
+                    placeholder="请输入机柜类型"
+                    size="small"
+                  />
+                </template>
               </el-select>
               </el-form-item>
               <el-form-item label="机柜高度(U)：" prop="cabinetHeight">
@@ -48,7 +55,7 @@
                   <el-switch @click="showFlag = !showFlag" v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
                 </el-form-item>
                 <el-form-item v-if="showFlag" label="月用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" controls-position="right" placeholder="请输入" />
                 </el-form-item>
               </div>
               <div class="double-formitem">
@@ -56,7 +63,7 @@
                   <el-switch @click="showFlagCopy = !showFlagCopy" v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
                 </el-form-item>
                 <el-form-item v-if="showFlagCopy" label="日用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" controls-position="right" placeholder="请输入" />
                 </el-form-item>
               </div>
             </div>
@@ -64,7 +71,7 @@
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
           <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox">
-            <el-tab-pane label="PDU" :name=false>
+            <el-tab-pane label="PDU" :name="0">
               <div class="pduBus">
                 <el-form-item label="A路：">
                   <el-col :span="4" class="text-center">
@@ -372,7 +379,7 @@ const machineFormData = ref({
   cabinetName: '',
   cabinetType: 'IT机柜',
   cabinetHeight: 42, //U
-  powCapacity: 8, // kVA
+  powCapacity: 40, // kVA
   company: '',
   pduIpA: '',
   casIdA: '',
@@ -393,7 +400,7 @@ const machineFormData = ref({
   eleAlarmDay: 0, // 日用能告警
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
-  eleLimitMonth: 1000, // 月用能限制
+  eleLimitMonth: 30000, // 月用能限制
 })
 const PDUFormData = ref({
   ipdzA: '',
@@ -574,7 +581,7 @@ const open = async (type: string, data, info, machineColInfo) => {
     roomId: '',
     cabinetType: 'IT机柜',
     cabinetHeight: 42,
-    powCapacity: 8,
+    powCapacity: 40,
     company: '',
     pduIpA: '',
     casIdA: '',
@@ -595,10 +602,24 @@ const open = async (type: string, data, info, machineColInfo) => {
     eleAlarmDay: 0, // 日用能告警
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
-    eleLimitMonth: 1000, // 月用能限制
+    eleLimitMonth: 30000, // 月用能限制
   }
+  machineFormData.value.eleAlarmDay = machineFormData.value.eleAlarmDay ? 1 : 0
+  machineFormData.value.eleAlarmMonth = machineFormData.value.eleAlarmMonth ? 1 : 0
+  if(machineFormData.value.eleAlarmMonth) {
+    showFlag.value = true
+  }
+  if(machineFormData.value.eleAlarmDay) {
+    showFlagCopy.value = true
+  }
+
   if(type == 'add') {
     machineFormData.value.roomId = String(props.roomId)
+    machineFormData.value.cabinetType = 'IT机柜'
+    machineFormData.value.cabinetHeight = 42
+    machineFormData.value.powCapacity = 40
+    machineFormData.value.eleLimitDay = 1000
+    machineFormData.value.eleLimitMonth = 30000
   }
   console.log(machineFormData.value,machineColInfo)
   if (machineColInfo && machineColInfo.barA) {
@@ -613,7 +634,7 @@ const open = async (type: string, data, info, machineColInfo) => {
       barIdB: machineColInfo.barB.barId,
       busIpB: machineColInfo.barB.devIp,
     }
-    console.log(machineFormData)
+    console.log(machineFormData.value,machineColInfo)
   }
   
   // 修改时，设置数据
@@ -696,12 +717,16 @@ const submitForm = async () => {
 
 /** 重置表单 */
 const resetForm = () => {
+  isBusBind.value = false
+  showFlag.value = false
+  showFlagCopy.value = false
+
   machineFormData.value = {
     cabinetName: '',
     roomId: '',
     cabinetType: 'IT机柜',
     cabinetHeight: 42,
-    powCapacity: 8,
+    powCapacity: 40,
     company: '',
     pduIpA: '',
     casIdA: '',
@@ -722,7 +747,7 @@ const resetForm = () => {
     eleAlarmDay: 0, // 日用能告警
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
-    eleLimitMonth: 1000, // 月用能限制
+    eleLimitMonth: 30000, // 月用能限制
   }
   machineForm.value?.resetFields()
 }

@@ -4,17 +4,20 @@ import cn.iocoder.yudao.framework.common.core.KeyValue;
 import cn.iocoder.yudao.framework.excel.core.enums.ExcelColumn;
 import cn.iocoder.yudao.framework.excel.core.handler.SelectSheetWriteHandler;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.converters.longconverter.LongStringConverter;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Excel 工具类
@@ -39,15 +42,47 @@ public class ExcelUtils {
         write(response, filename, sheetName, head, data, null);
     }
 
+    public static List extractedEditAisle(List<Map<Integer, String>> pduList1, Class cls) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        List list = new ArrayList();
+        Field[] fields = cls.getDeclaredFields();
+        for (Map<Integer, String> map : pduList1) {
+            Object obj = cls.getDeclaredConstructor().newInstance(); // 创建实例
+            for (Field field : fields) {
+                ExcelProperty annotation = field.getAnnotation(ExcelProperty.class);
+                if (ObjectUtils.isEmpty(annotation)) {
+                    continue;
+                }
+                int index = annotation.index();
+                String s = map.get(index);
+                if (Objects.isNull(s)){
+                    continue;
+                }
+                field.setAccessible(true); // 确保可以访问私有字段
+                if (field.getType().isAssignableFrom(Integer.class)){
+                    field.set(obj, Integer.parseInt(s)); // 设置值
+                }else {
+                    field.set(obj, s);
+                }
+            }
+            list.add(obj);
+        }
+        return list;
+    }
+
     public static <T> void writeA(HttpServletResponse response, String filename, String sheetName,
                                   Class<T> head, List<T> data, List<KeyValue<ExcelColumn, List<String>>> selectMap, Set<String> columnsToExclude) throws IOException {
         // 输出 Excel
-        EasyExcel.write(response.getOutputStream(), head).excludeColumnFieldNames(columnsToExclude)
-                .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
-                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
-                .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
-                .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
-                .sheet(sheetName).doWrite(data);
+        try (OutputStream outputStream = response.getOutputStream()) {
+            EasyExcel.write(outputStream, head).excludeColumnFieldNames(columnsToExclude)
+                    .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
+                    .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
+                    .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
+                    .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
+                    .sheet(sheetName).doWrite(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // 设置 header 和 contentType。写在最后的原因是，避免报错时，响应 contentType 已经被修改了
         response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
@@ -67,12 +102,16 @@ public class ExcelUtils {
     public static <T> void write(HttpServletResponse response, String filename, String sheetName,
                                  Class<T> head, List<T> data, List<KeyValue<ExcelColumn, List<String>>> selectMap) throws IOException {
         // 输出 Excel
-        EasyExcel.write(response.getOutputStream(), head)
-                .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
-                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
-                .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
-                .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
-                .sheet(sheetName).doWrite(data);
+        try (OutputStream outputStream = response.getOutputStream()) {
+            EasyExcel.write(outputStream, head)
+                    .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
+                    .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
+                    .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
+                    .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
+                    .sheet(sheetName).doWrite(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // 设置 header 和 contentType。写在最后的原因是，避免报错时，响应 contentType 已经被修改了
         response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
@@ -86,13 +125,17 @@ public class ExcelUtils {
 
     public static void write(HttpServletResponse response, String filename, String sheetName, List<String> head, List<Object> data, List<KeyValue<ExcelColumn, List<String>>> selectMap) throws IOException {
         // 输出 Excel
-        EasyExcel.write(response.getOutputStream().toString())
-                .head(generateHead(head))
-                .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
-                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
-                .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
-                .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
-                .sheet(sheetName).doWrite(data);
+        try (OutputStream outputStream = response.getOutputStream()) {
+            EasyExcel.write(outputStream.toString())
+                    .head(generateHead(head))
+                    .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
+                    .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
+                    .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
+                    .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
+                    .sheet(sheetName).doWrite(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // 设置 header 和 contentType。写在最后的原因是，避免报错时，响应 contentType 已经被修改了
         response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");

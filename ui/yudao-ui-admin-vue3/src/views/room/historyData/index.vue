@@ -320,6 +320,7 @@ watch(() => queryParams.granularity, (newValues) => {
  
       tableColumns.value =[
         { label: '位置', align: 'center', prop: 'location' , width: '230px' , istrue:true},
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
         { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
         { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
         { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
@@ -480,6 +481,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , width: '230px' , istrue:true},
+  { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
   { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
@@ -519,6 +521,14 @@ const getList = async (isLoading = true) => {
 // 格式化功率列数据，保留三位小数
 function formatPower(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(3);
+}
+
+function formatSave(_row: any, _column: any, cellValue: number): string {
+  if(cellValue==0) return '定时记录';
+  if(cellValue==1) return '波动数据';
+  if(cellValue==2) return '突变数据';
+  if(cellValue==3) return '告警数据';
+  return '';
 }
 
 // 格式化功率因素列数据，保留两位小数
@@ -655,5 +665,8 @@ function headCellStyle(){
 
 /deep/ .el-pagination.is-background .el-pager li.is-active {
   background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0" :hightCurrent="true" nodeKey="unique" :currentKey="currentKey" :highlightTypes="[6]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
       <div class="nav_data">
         <div  style="font-size: 14px; text-align:center;">
           <span v-if="nowAddress" style="font-size: 14px; text-align:center;">{{nowAddress}}</span>
@@ -134,12 +134,19 @@
         />
                 <!-- @change="handleDayPick" -->
       </el-form-item>
-
         <el-form-item>
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button-group>
+            <el-button @click="changeTime('pre')" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
+            <el-button @click="changeTime('next')" style="background-color: #00778c;color:#ffffff;font-size: 13px;">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
+          </el-button-group>
+        </el-form-item>
+        <el-form-item style="float: right;">
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
         </el-form-item>
 
       </el-form>
@@ -168,8 +175,41 @@
                 </template>
               </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
+              <el-table-column v-if="headerData.find((item)=>item.name.includes('A路最高温度'))" label="A路最高温度(℃)">
+                <el-table-column label="平均值" prop="A路最高温度(℃)"/>
+                <el-table-column label="最大值" prop="A路最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="aTemMaxTimeData"/>
+                <el-table-column label="最小值" prop="A路最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="aTemMinTimeData"/>
+              </el-table-column>
+              <el-table-column v-if="headerData.find((item)=>item.name.includes('B路最高温度'))" label="B路最高温度(℃)">
+                <el-table-column label="平均值" prop="B路最高温度(℃)"/>
+                <el-table-column label="最大值" prop="B路最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="bTemMaxTimeData"/>
+                <el-table-column label="最小值" prop="B路最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="bTemMinTimeData"/>
+              </el-table-column>
+              <el-table-column v-if="headerData.find((item)=>item.name.includes('C路最高温度'))" label="C路最高温度(℃)">
+                <el-table-column label="平均值" prop="C路最高温度(℃)"/>
+                <el-table-column label="最大值" prop="C路最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="cTemMaxTimeData"/>
+                <el-table-column label="最小值" prop="C路最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="cTemMinTimeData"/>
+              </el-table-column>
+              <el-table-column v-if="headerData.find((item)=>item.name.includes('中线最高温度'))" label="中线最高温度(℃)">
+                <el-table-column label="平均值" prop="中线最高温度(℃)"/>
+                <el-table-column label="最大值" prop="中线最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="nTemMaxTimeData"/>
+                <el-table-column label="最小值" prop="中线最高温度(℃)"/>
+                <el-table-column label="发生时间" prop="nTemMinTimeData"/>
+              </el-table-column>
+
+              <el-table-column v-if="headerData.find((item)=>item.name=='A路温度(℃)')" label="A路温度(℃)" prop="A路温度(℃)"/>
+              <el-table-column v-if="headerData.find((item)=>item.name=='B路温度(℃)')" label="B路温度(℃)" prop="B路温度(℃)"/>
+              <el-table-column v-if="headerData.find((item)=>item.name=='C路温度(℃)')" label="C路温度(℃)" prop="C路温度(℃)"/>
+              <el-table-column v-if="headerData.find((item)=>item.name=='中线温度(℃)')" label="中线温度(℃)" prop="中线温度(℃)"/>
               <!-- 动态生成表头 -->
-              <template v-for="item in headerData" :key="item.name">
+              <!-- <template v-for="item in headerData" :key="item.name">
                 <el-table-column v-if="item.name === 'A路最高温度(℃)'" label="A路温度最高值(℃)" >
                   <el-table-column :prop="item.name" label="A路温度最高值(℃)" width="110%"/>   
                   <el-table-column prop="aTemMaxTimeData" label="发生时间" width="110%"/>
@@ -203,7 +243,7 @@
                   <el-table-column prop="nTemMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
                 <el-table-column v-else :prop="item.name" :label="item.name" width="110%"/>   
-              </template>
+              </template> -->
             </el-table>
             </div>
           </el-tab-pane>
@@ -220,6 +260,7 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue';
 import { EnvDataApi } from '@/api/bus/envData';
 import { formatDate } from '@/utils/formatTime';
+import {ArrowLeft,ArrowRight} from '@element-plus/icons-vue'
 import dayjs from 'dayjs';
 import download from '@/utils/download'
 
@@ -228,7 +269,7 @@ import { ElMessage } from 'element-plus'
 import { constant } from 'lodash-es';
 import { styleType } from 'element-plus/es/components/table-v2/src/common';
 defineOptions({ name: 'BusEnvLine' })
-import CommonMenu1 from './component/CommonMenu1.vue';
+// import CommonMenu1 from './component/CommonMenu1.vue';
 const activeName = ref('dayExtremumTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -241,6 +282,8 @@ const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
+const next=ref("下一月");
+const pre=ref("上一月");
 const queryParams = reactive({
   pageNo:1,
   pageSize: 15,
@@ -628,18 +671,18 @@ const initChart = () => {
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: 'A路平均温度(℃)', type: 'line', symbol: 'none', data: aTemAvgValueData.value, },
-              { name: 'A路最高温度(℃)', type: 'line', symbol: 'none', data: aTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'A路最低温度(℃)', type: 'line', symbol: 'none', data: aTemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'B路平均温度(℃)', type: 'line', symbol: 'none', data: bTemAvgValueData.value, },
-              { name: 'B路最高温度(℃)', type: 'line', symbol: 'none', data: bTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'B路最低温度(℃)', type: 'line', symbol: 'none', data: bTemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'C路平均温度(℃)', type: 'line', symbol: 'none', data: cTemAvgValueData.value, },
-              { name: 'C路最高温度(℃)', type: 'line', symbol: 'none', data: cTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'C路最低温度(℃)', type: 'line', symbol: 'none', data: cTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'A路平均温度(℃)', type: 'line', symbol: 'none', data: aTemAvgValueData.value, itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              { name: 'A路最高温度(℃)', type: 'line', symbol: 'none', data: aTemMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              { name: 'A路最低温度(℃)', type: 'line', symbol: 'none', data: aTemMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              { name: 'B路平均温度(℃)', type: 'line', symbol: 'none', data: bTemAvgValueData.value, itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+              { name: 'B路最高温度(℃)', type: 'line', symbol: 'none', data: bTemMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+              { name: 'B路最低温度(℃)', type: 'line', symbol: 'none', data: bTemMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+              { name: 'C路平均温度(℃)', type: 'line', symbol: 'none', data: cTemAvgValueData.value, itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+              { name: 'C路最高温度(℃)', type: 'line', symbol: 'none', data: cTemMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+              { name: 'C路最低温度(℃)', type: 'line', symbol: 'none', data: cTemMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
               { name: '中线平均温度(℃)', type: 'line', symbol: 'none', data: nTemAvgValueData.value, },
-              { name: '中线最高温度(℃)', type: 'line', symbol: 'none', data: nTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '中线最低温度(℃)', type: 'line', symbol: 'none', data: nTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '中线最高温度(℃)', type: 'line', symbol: 'none', data: nTemMaxValueData.value, },
+              { name: '中线最低温度(℃)', type: 'line', symbol: 'none', data: nTemMinValueData.value, },
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -689,21 +732,121 @@ window.addEventListener('resize', function() {
   realtimeChart?.resize(); 
 });
 
+function calculateTime(date1,date2){
+  try{
+    const dateLeft=date1.replace(" ", "T")
+    const dateRight=date2.replace(" ", "T")
+    return new Date(dateLeft).getTime() - new Date(dateRight).getTime()
+  }catch(e){
+    return 1000*60*60*24*32;
+  }
+}
+let lastRaw=null;
+let lastHour=null;
+let lastDate=null;
 // 监听切换原始数据、极值数据tab
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  // if ( newActiveName == 'realtimeTabPane'){
+  //   queryParams.granularity = 'realtime'
+  //   // queryParams.timeRange = defaultHourTimeRange(1)
+  // }else if (newActiveName == 'hourExtremumTabPane'){
+  //   queryParams.granularity = 'hour'
+  //   // queryParams.timeRange = defaultHourTimeRange(24)
+  // }else{
+  //   queryParams.granularity = 'day'
+  //   // queryParams.timeRange = defaultHourTimeRange(24*30)
+  // }
+  if(oldActiveName=="realtimeTabPane"){
+    lastRaw=queryParams.timeRange;
+  }else if(oldActiveName=="hourExtremumTabPane"){
+    lastHour=queryParams.timeRange;
+  }else{
+    lastDate=queryParams.timeRange;
+  }
+
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
+    next.value="下一天";
+    pre.value="上一天";
+    if(lastRaw!=null){
+      queryParams.timeRange=lastRaw;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24){
+        queryParams.timeRange=[preTime(queryParams.timeRange[1],1000*60*60*24),queryParams.timeRange[1]]
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
+    next.value="下一周";
+    pre.value="上一周";
+    if(lastHour!=null){
+      queryParams.timeRange=lastHour;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24*7){
+        queryParams.timeRange = [preTime(queryParams.timeRange[1],1000*60*60*24*7),queryParams.timeRange[1]];
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    // queryParams.timeRange = defaultHourTimeRange(24*30)
+    next.value="下一月";
+    pre.value="上一月";
+    if(lastDate!=null){
+      queryParams.timeRange=lastDate;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>calculateTime(queryParams.timeRange[1],preMonth(queryParams.timeRange[1]))){
+        queryParams.timeRange = [preMonth(queryParams.timeRange[1]),queryParams.timeRange[1]]
+      }
+    }
+    // queryParams.timeRange = defaultMonthTimeRange(1)
   }
   needFlush.value ++;
 });
 
+function preTime(date,time){
+  return dayjs(new Date(new Date(date.replace(" ", "T")).getTime()-time)).format('YYYY-MM-DD HH:mm:ss')
+}
+function nextMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 11){
+  pre.setMonth(0)
+  pre.setFullYear(pre.getFullYear() +1)
+ }else{
+  pre.setMonth(pre.getMonth() +1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function preMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 0){
+  pre.setMonth(11)
+  pre.setFullYear(pre.getFullYear() - 1)
+ }else{
+  pre.setMonth(pre.getMonth() - 1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function changeTime(to){
+  if(to=="next"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24),preTime(queryParams.timeRange[1],-1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24*7),preTime(queryParams.timeRange[1],-1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[nextMonth(queryParams.timeRange[0]),nextMonth(queryParams.timeRange[1])]
+    }
+  }else if(to="pre"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24),preTime(queryParams.timeRange[1],1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24*7),preTime(queryParams.timeRange[1],1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[preMonth(queryParams.timeRange[0]),preMonth(queryParams.timeRange[1])]
+    }
+  }
+  handleQuery();
+}
 // 监听类型颗粒度
 watch(() => [activeName.value, needFlush.value], async (newValues) => {
     const [newActiveName] = newValues;
@@ -726,10 +869,10 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
             yAxis: { type: 'value'},
             series: [
-              {name: 'A路温度(℃)', type: 'line', symbol: 'none', data: aTemValueData.value},
-              {name: 'B路温度(℃)', type: 'line', symbol: 'none', data: bTemValueData.value},
-              {name: 'C路温度(℃)', type: 'line', symbol: 'none', data: cTemValueData.value},
-              {name: '中线温度(℃)', type: 'line', symbol: 'none', data: nTemValueData.value},
+              {name: 'A路温度(℃)', type: 'line', symbol: 'none', data: aTemValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              {name: 'B路温度(℃)', type: 'line', symbol: 'none', data: bTemValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              {name: 'C路温度(℃)', type: 'line', symbol: 'none', data: cTemValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              {name: '中线温度(℃)', type: 'line', symbol: 'none', data: nTemValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -768,18 +911,18 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: 'A路平均温度(℃)', type: 'line', symbol: 'none', data: aTemAvgValueData.value, },
-              { name: 'A路最高温度(℃)', type: 'line', symbol: 'none', data: aTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'A路最低温度(℃)', type: 'line', symbol: 'none', data: aTemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'B路平均温度(℃)', type: 'line', symbol: 'none', data: bTemAvgValueData.value, },
-              { name: 'B路最高温度(℃)', type: 'line', symbol: 'none', data: bTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'B路最低温度(℃)', type: 'line', symbol: 'none', data: bTemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'C路平均温度(℃)', type: 'line', symbol: 'none', data: cTemAvgValueData.value, },
-              { name: 'C路最高温度(℃)', type: 'line', symbol: 'none', data: cTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'C路最低温度(℃)', type: 'line', symbol: 'none', data: cTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'A路平均温度(℃)', type: 'line', symbol: 'none', data: aTemAvgValueData.value, itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              { name: 'A路最高温度(℃)', type: 'line', symbol: 'none', data: aTemMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              { name: 'A路最低温度(℃)', type: 'line', symbol: 'none', data: aTemMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              { name: 'B路平均温度(℃)', type: 'line', symbol: 'none', data: bTemAvgValueData.value, itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+              { name: 'B路最高温度(℃)', type: 'line', symbol: 'none', data: bTemMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+              { name: 'B路最低温度(℃)', type: 'line', symbol: 'none', data: bTemMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+              { name: 'C路平均温度(℃)', type: 'line', symbol: 'none', data: cTemAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}} },
+              { name: 'C路最高温度(℃)', type: 'line', symbol: 'none', data: cTemMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+              { name: 'C路最低温度(℃)', type: 'line', symbol: 'none', data: cTemMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
               { name: '中线平均温度(℃)', type: 'line', symbol: 'none', data: nTemAvgValueData.value, },
-              { name: '中线最高温度(℃)', type: 'line', symbol: 'none', data: nTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '中线最低温度(℃)', type: 'line', symbol: 'none', data: nTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '中线最高温度(℃)', type: 'line', symbol: 'none', data: nTemMaxValueData.value, },
+              { name: '中线最低温度(℃)', type: 'line', symbol: 'none', data: nTemMinValueData.value, },
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -1087,11 +1230,37 @@ function findFullName(data, targetUnique, callback, fullName = '') {
   }
 }
 
+const currentKey=ref()
+const defaultExpandedKeys = ref([])
+if(history.state.devKey!=null){
+  currentKey.value = history.state.devKey;
+}
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getBusMenu();
   navList.value = res;
+  if(history.state.devKey!=null){
+    setDefaultCheckedKeys(res);
+  }
   console.log('navList.value',navList.value);
+}
+
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].children==null||arr[i].children.length==0){
+      if(arr[i].unique==history.state.devKey){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /** 搜索按钮操作 */
@@ -1240,4 +1409,13 @@ onMounted( async () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+  /deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
+}
 </style>

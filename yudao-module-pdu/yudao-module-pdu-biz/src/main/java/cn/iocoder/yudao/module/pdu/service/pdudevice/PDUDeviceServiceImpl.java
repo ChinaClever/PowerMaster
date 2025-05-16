@@ -79,7 +79,6 @@ import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -1984,7 +1983,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         return result;
     }
 
-
     /**
      * 功率曲线数据处理
      *
@@ -2309,7 +2307,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         totalApparentPow.getData().add(pduHdaTotalHourDo.getApparentPowMaxValue());
                         totalActivePow.getData().add(pduHdaTotalHourDo.getActivePowMaxValue());
                         totalReactivePow.getData().add(pduHdaTotalHourDo.getPowReactiveMaxValue());
-
+                        if (timeFlag) {
+                            totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("HH:mm"));
+                        } else {
+                            totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
+                        }
                     }
 
                 } else if (dataType == 0) {
@@ -3784,15 +3786,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (roomIds.isEmpty()) {
             roomIds.add(0);
         }
-        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getId, roomIds).eq(RoomIndex::getIsDelete, 0));
-        if (CollectionUtils.isEmpty(roomIndices)) {
+        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete,0));
+        if (CollectionUtils.isEmpty(roomIndices)){
             return locationMap;
         }
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         List<Integer> cabIds = cabinetPdus.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetPduResVO::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {
-            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().eq(AisleIndex::getId, cabIds).eq(AisleIndex::getIsDelete, 0));
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getId,cabIds).eq(AisleIndex::getIsDelete,0));
             if (!CollectionUtils.isEmpty(aisleIndexList)) {
                 aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
             } else {

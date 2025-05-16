@@ -362,4 +362,7 @@ onMounted(() => {
 /deep/ .el-pagination.is-background .el-pager li.is-active {
   background-color: #00778c;
 }
+    /deep/  .el-pager li:hover {
+    color: #00778c;
+}
 </style>

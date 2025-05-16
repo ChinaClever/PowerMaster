@@ -11,7 +11,10 @@ import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
 import cn.iocoder.yudao.module.room.vo.RoomMainResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import com.alibaba.fastjson2.JSONObject;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -139,5 +142,7 @@ public interface RoomService {
 
     Boolean findAddAisleVerify(AisleSaveVo vo);
 
-    void editAisleExport(Integer roomId, Integer aisleId);
+    void editAisleExport(Integer roomId, Integer aisleId, HttpServletResponse response) throws IOException;
+
+    Boolean editAisleExcel(MultipartFile file, HttpServletRequest request);
 }

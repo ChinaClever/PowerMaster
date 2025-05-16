@@ -343,7 +343,7 @@
         and (x_coordinate > #{xLength}
         or y_coordinate+1 > #{yLength})
     </select>
-    <select id="selectByPduKey"  resultType="cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex">
+    <select id="selectByPduKey" resultType="cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex">
         SELECT
         *
         FROM
@@ -361,8 +361,8 @@
         left join cabinet_cfg cc on ci.id = cc.cabinet_id
         <where>
             room_id = #{roomId} and aisle_id = 0 and is_deleted =0
-            and  x_coordinate  between #{xCoordinate} and  #{xCoordinate}+#{aisleLength}
-            and y_coordinate BETWEEN #{yCoordinate}  and #{yCoordinate}+1
+            and x_coordinate between #{xCoordinate} and #{xCoordinate}+#{aisleLength}
+            and y_coordinate BETWEEN #{yCoordinate} and #{yCoordinate}+1
         </where>
     </select>
 
@@ -371,8 +371,8 @@
         left join cabinet_cfg cc on ci.id = cc.cabinet_id
         <where>
             room_id = #{roomId} and aisle_id = 0 and is_deleted =0
-            and   y_coordinate between #{yCoordinate} and #{yCoordinate} + #{aisleLength}
-            and x_coordinate BETWEEN #{xCoordinate}  and #{xCoordinate}+1
+            and y_coordinate between #{yCoordinate} and #{yCoordinate} + #{aisleLength}
+            and x_coordinate BETWEEN #{xCoordinate} and #{xCoordinate}+1
         </where>
     </select>
     <select id="findAisleCabinetByRoomId">
@@ -387,5 +387,67 @@
         LEFT JOIN aisle_index a ON c.aisle_id = a.id
         WHERE
         c.id = #{id}
+    </select>
+    <select id="findAisleCabinetBoxByRoomId"
+            resultType="cn.iocoder.yudao.framework.common.vo.AisleCabinetBoxEditExcelVO">
+        SELECT
+        ci.id as cabinetId,
+        ci.aisle_id as aisleId,
+        ci.room_id as roomId,
+        ci.cabinet_name as cabinetName,
+        ci.cabinet_type as cabinetType,
+        ai.aisle_name as aisleName,
+        ri.room_name as roomName,
+        cb.box_index_a as boxIndexa,
+        cb.box_index_b as boxIndexb,
+        aba.bus_key as busKeya,
+        abb.bus_key as busKeyb,
+
+        SUBSTRING_INDEX( cb.box_key_a, '-', -1) as boxAddra,
+        SUBSTRING_INDEX( cb.box_key_b, '-', -1) as boxAddrb,
+        cb.outlet_id_a as outletIda,
+        cb.outlet_id_b as outletIdb
+        FROM cabinet_index ci
+        left join aisle_index ai on ai.id=ci.aisle_id
+        left join aisle_bar aba on aba.aisle_id =ai.id and aba.path ='A'
+        left join aisle_bar abb on abb.aisle_id =ai.id and abb.path ='B'
+        left join room_index ri on ri.id =ai.room_id
+        left join cabinet_box cb on cb.cabinet_id=ci.id
+        <where>
+            ci.is_deleted=0 and ai.is_delete=0 and ri.is_delete=0 and ci.pdu_box=1  and ai.pdu_bar =1
+            <if test="roomId !=null">
+                and ci.room_id =#{roomId}
+            </if>
+            <if test="aisleId !=null">
+                and ci.aisle_id=#{aisleId}
+            </if>
+        </where>
+    </select>
+    <!--        SUBSTRING_INDEX( cb.box_key_a, '-', 2) as busKeya,
+        SUBSTRING_INDEX( cb.box_key_b, '-', 2) as busKeyb,-->
+    <select id="findAisleCabinetPduByRoomId"
+            resultType="cn.iocoder.yudao.framework.common.vo.AisleCabinetPduEditExcelVO">
+        SELECT
+        ci.id as cabinetId,
+        ci.aisle_id as aisleId,
+        ci.room_id as roomId,
+        ci.cabinet_name as cabinetName,
+        ci.cabinet_type as cabinetType,
+        ai.aisle_name as aisleName,
+        ri.room_name as roomName,
+        cp.pdu_key_a as pduKeya,
+        cp.pdu_key_b as pduKeyb
+        FROM cabinet_index ci left join aisle_index ai on ai.id=ci.aisle_id
+        left join room_index ri on ri.id =ai.room_id
+        left join cabinet_pdu cp on cp.cabinet_id=ci.id
+        <where>
+            ci.is_deleted=0 and ai.is_delete=0 and ri.is_delete=0 and ci.pdu_box=0
+            <if test="roomId !=null">
+                and ci.room_id =#{roomId}
+            </if>
+            <if test="aisleId !=null">
+                and ci.aisle_id=#{aisleId}
+            </if>
+        </where>
     </select>
 </mapper>

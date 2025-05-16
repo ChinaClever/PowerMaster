@@ -70,7 +70,9 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
 
     CabinetIndex selectByPduKey(String pduKey);
 
-    void findAisleCabinetByRoomId(Integer roomId, Integer aisleId);
+    List<AisleCabinetBoxEditExcelVO> findAisleCabinetBoxByRoomId(@Param("roomId") Integer roomId, @Param("aisleId") Integer aisleId);
+
+    List<AisleCabinetPduEditExcelVO> findAisleCabinetPduByRoomId(@Param("roomId") Integer roomId, @Param("aisleId") Integer aisleId);
 
     String selectLocationById(Integer id);
 }

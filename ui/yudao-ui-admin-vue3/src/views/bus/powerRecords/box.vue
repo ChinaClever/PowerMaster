@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱电能记录">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>  
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -76,8 +76,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <el-form-item style="float: right;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -272,7 +274,7 @@ const typeCascaderChange = (selected) => {
   switch(selected[0]){
     case 'line':
       tableColumns.value = [
-        { label: '所在位置', align: 'center', prop: 'locations' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
         { label: '网络地址', align: 'center', prop: 'dev_key' , istrue:true},
         { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
@@ -542,5 +544,12 @@ const format = (date) => {
 ::v-deep .el-table .el-table__header th {
   background-color: #F5F7FA;
   color: #909399;
+}
+
+::v-deep .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    ::v-deep  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

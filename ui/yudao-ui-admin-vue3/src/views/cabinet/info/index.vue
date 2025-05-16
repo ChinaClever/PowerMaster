@@ -104,7 +104,8 @@
     </template>
     <template #Content>
       <div v-if="switchValue && listPage.length > 0" class="table-height">
-        <el-table v-show="switchValue == 1" :data="listPage" @cell-dblclick="handleDbclick">
+        <el-table v-show="switchValue == 1" :data="listPage" @cell-dblclick="handleDbclick" border stripe
+      :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>

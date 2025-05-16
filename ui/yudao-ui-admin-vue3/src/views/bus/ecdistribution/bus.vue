@@ -68,7 +68,7 @@
         <el-form-item >
           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
-        <el-form-item>
+        <el-form-item style="float: right;">
           <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
@@ -131,6 +131,7 @@ import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } fr
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
+import { ro } from 'element-plus/es/locale';
 // import  CommonMenu1 from './component/CommonMenu1.vue'
 defineOptions({ name: 'ECDistribution' })
 
@@ -361,10 +362,10 @@ loading.value = true
       minEqDataTemp.value = Math.min(...eqData.value);
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = startTimeData.value[index]
+          maxEqDataTimeTemp.value = createTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
-          minEqDataTimeTemp.value = startTimeData.value[index]
+          minEqDataTimeTemp.value = createTimeData.value[index]
         }
         totalEqData.value += Number(num);
       });
@@ -405,7 +406,7 @@ const initLineChart = () => {
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
+      series: [{name: '耗电量', type: 'line', symbol:"none",data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
@@ -514,7 +515,7 @@ window.addEventListener('resize', function() {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-  if(row.type != null  && row.type == 6){
+  if(row.type != null  && row.type == 6&&row.children==null||row.children.length==0){
     queryParams.busId = undefined
     queryParams.devkey = row.unique
     devKey.value = row.unique
@@ -667,5 +668,8 @@ onMounted(async () => {
 }
 /deep/ .el-tabs__active-bar {
   background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
 }
 </style>

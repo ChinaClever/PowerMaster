@@ -323,6 +323,7 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value =([
         { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '180px'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
@@ -386,6 +387,7 @@ watch(() => queryParams.granularity, (newValues) => {
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '230px'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
   { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:true, width: '120px'},
@@ -447,6 +449,14 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   }
 
   return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
+
+function formatSave(_row: any, _column: any, cellValue: number): string {
+  if(cellValue==0) return '定时记录';
+  if(cellValue==1) return '波动数据';
+  if(cellValue==2) return '突变数据';
+  if(cellValue==3) return '告警数据';
+  return '';
 }
 
 // 格式化温湿度列数据，保留一位小数
@@ -630,5 +640,8 @@ dayjs(now).format('YYYY-MM-DD HH:mm:ss')
 }
 /deep/ .el-pagination.is-background .el-pager li.is-active {
   background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

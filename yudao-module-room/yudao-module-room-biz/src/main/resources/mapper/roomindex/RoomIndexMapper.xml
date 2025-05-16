@@ -22,8 +22,8 @@
         from room_index
         <where>
             is_delete = 1
-            <if test="roomName !=null and roomName !=''">
-                room_name like concat('%',#{roomName},'%')
+            <if test="indexVo.roomName !=null and indexVo.roomName !=''">
+                and room_name like concat('%',#{indexVo.roomName},'%')
             </if>
         </where>
         ORDER BY update_time desc
@@ -32,7 +32,7 @@
         select distinct(addr)  from room_index where is_delete = 0
     </select>
     <select id="findRoomIndexCfg" resultType="cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO">
-        select ri.id,ri.room_name,ri.addr,ri.display_flag,ri.display_type,
+        select ri.id,ri.room_name,ri.addr,ri.display_flag,ri.display_type,ri.area_flag,
         ri.is_delete,ri.power_capacity,ri.air_power,ri.x_length,ri.y_length,ri.sort,
         rc.ele_alarm_day,rc.ele_alarm_month,rc.ele_limit_day,rc.ele_limit_month
         from room_index ri

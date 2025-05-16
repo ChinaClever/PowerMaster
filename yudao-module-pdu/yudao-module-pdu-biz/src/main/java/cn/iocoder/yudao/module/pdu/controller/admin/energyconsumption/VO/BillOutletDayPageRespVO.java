@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO;
 
+import cn.iocoder.yudao.framework.excel.core.annotations.EnumFiledConvert;
+import cn.iocoder.yudao.framework.excel.core.util.TypeOptionConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -39,5 +41,9 @@ public class BillOutletDayPageRespVO {
     @NumberFormat("0.00")
     @ExcelProperty("电费(元)")
     private Double bill_value;
+
+    @ExcelProperty(value = "计费方式",converter = TypeOptionConverter.class)
+    @EnumFiledConvert(enumMap = "1|固定计费,2|分段计费")
+    private Integer bill_mode;
 
 }

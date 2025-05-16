@@ -195,7 +195,7 @@
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
+        <!-- <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" />  -->
         <el-table-column label="操作" align="center">
           <template #default="scope">
             <el-button

@@ -53,7 +53,8 @@
                 and id != #{vo.id}
             </if>
             <if test="vo.direction !=null ">
-                and (( x_coordinate + aisle_length - 1 > #{vo.xCoordinate}+#{vo.aisleLength}-1  and x_coordinate <![CDATA[ <= ]]> #{vo.xCoordinate}+#{vo.aisleLength}-1
+                and ((((#{vo.xCoordinate} BETWEEN x_coordinate and  x_coordinate+aisle_length-1)
+                or  (#{vo.xCoordinate}+1 BETWEEN x_coordinate and  x_coordinate+aisle_length-1))
                 and ((y_coordinate BETWEEN #{vo.yCoordinate}  and #{vo.yCoordinate}+1)
                 or (y_coordinate+1 BETWEEN #{vo.yCoordinate}  and #{vo.yCoordinate}+1))
                 AND direction = 'x' )
@@ -66,6 +67,8 @@
             </if>
         </where>
     </select>
+    <!--      and (( x_coordinate + aisle_length - 1 > #{vo.xCoordinate}+#{vo.aisleLength}-1
+                and x_coordinate <![CDATA[ <= ]]> #{vo.xCoordinate}+#{vo.aisleLength}-1-->
     <!--                AND( (( 8+2 )< y_coordinate + aisle_length - 1
                 AND   (x_coordinate+1 BETWEEN 5 AND 6)
                 AND direction = 'y' )
@@ -84,7 +87,8 @@
                 and id != #{vo.id}
             </if>
             <if test="vo.direction !=null ">
-                and ((y_coordinate + aisle_length - 1 > (#{vo.yCoordinate}+#{vo.aisleLength}-1)  and y_coordinate <![CDATA[ <= ]]> (#{vo.yCoordinate}+#{vo.aisleLength}-1)
+                and ((y_coordinate + aisle_length - 1 > (#{vo.yCoordinate}+#{vo.aisleLength}-1)
+                and y_coordinate <![CDATA[ <= ]]> (#{vo.yCoordinate}+#{vo.aisleLength}-1)
                 and ((x_coordinate BETWEEN #{vo.xCoordinate}  and #{vo.xCoordinate}+1)
                 or (x_coordinate+1 BETWEEN #{vo.xCoordinate}  and #{vo.xCoordinate}+1))
                 AND direction = 'y' )
