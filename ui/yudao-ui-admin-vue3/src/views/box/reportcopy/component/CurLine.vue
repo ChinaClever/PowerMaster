@@ -189,17 +189,24 @@ console.log("Initial list", prop.list);
 
 <script lang="ts" setup>
 import 'echarts'
-
 const prop = defineProps({
   list: {
     type: Object,
     required: true
   },
+  height: {
+    type: [Number,String],
+    default: 60
+  },
+  width: {
+    type: [Number,String],
+    default: 60
+  },
   dataType:{
       type : Number,
       default : 1
   }
-});
+})
 
 const series = ref()
 const time = ref()
