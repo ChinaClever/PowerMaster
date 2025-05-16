@@ -13,16 +13,16 @@ const prop = defineProps({
   }
 });
 
-const curvolAData = ref({ curValueList: [] as number[] });
-const curvolBData = ref({ curValueList: [] as number[] });
-const curvolCData = ref({ curValueList: [] as number[] });
+const curvolAData = ref({ volValueList: [] as number[] });
+const curvolBData = ref({ volValueList: [] as number[] });
+const curvolCData = ref({ volValueList: [] as number[] });
 const lineidDateTimes = ref([] as string[]);
 
 const updateChartData = () => {
   lineidDateTimes.value = prop.list.dateTimes;
-  prop.list.A.forEach(item => curvolAData.value.curValueList.push(item.cur_avg_value.toFixed(2)));
-  prop.list.B.forEach(item => curvolBData.value.curValueList.push(item.cur_avg_value.toFixed(2)));
-  prop.list.C.forEach(item => curvolCData.value.curValueList.push(item.cur_avg_value.toFixed(2)));
+  prop.list.A.forEach(item => curvolAData.value.volValueList.push(item.vol_avg_value.toFixed(1)));
+  prop.list.B.forEach(item => curvolBData.value.volValueList.push(item.vol_avg_value.toFixed(1)));
+  prop.list.C.forEach(item => curvolCData.value.volValueList.push(item.vol_avg_value.toFixed(1)));
 };
 
 updateChartData(); // 初始数据填充
@@ -35,8 +35,8 @@ const echartsOptions = computed(() => ({
       let result = params[0].name + '<br>';
       params.forEach(param => {
         result += `${param.marker}${param.seriesName}: &nbsp;&nbsp;&nbsp;&nbsp${param.value}`;
-        if (param.seriesName === 'A相电流' || param.seriesName === 'B相电流' || param.seriesName === 'C相电流') {
-          result += 'A';
+        if (param.seriesName === 'A相电压' || param.seriesName === 'B相电压' || param.seriesName === 'C相电压') {
+          result += 'V';
         }
         result += '<br>';
       });
@@ -44,7 +44,7 @@ const echartsOptions = computed(() => ({
     }
   },
   legend: {
-    data: ['A相电流', 'B相电流', 'C相电流'],
+    data: ['A相电压', 'B相电压', 'C相电压'],
     selectedMode: 'multiple'
   },
   grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
@@ -54,26 +54,26 @@ const echartsOptions = computed(() => ({
   },
   yAxis: { type: 'value' },
   series: [
-    { name: 'A相电流', type: 'line', data: curvolAData.value.curValueList, symbol: 'circle', symbolSize: 4 },
-    { name: 'B相电流', type: 'line', data: curvolBData.value.curValueList, symbol: 'circle', symbolSize: 4 },
-    { name: 'C相电流', type: 'line', data: curvolCData.value.curValueList, symbol: 'circle', symbolSize: 4 }
+    { name: 'A相电压', type: 'line', data: curvolAData.value.volValueList, symbol: 'circle', symbolSize: 4 },
+    { name: 'B相电压', type: 'line', data: curvolBData.value.volValueList, symbol: 'circle', symbolSize: 4 },
+    { name: 'C相电压', type: 'line', data: curvolCData.value.volValueList, symbol: 'circle', symbolSize: 4 }
   ]
 }));
 
 watchEffect(() => {
   // 清空 curvolAData 中的数组
   curvolAData.value = {
-    curValueList: []
+    volValueList: []
   };
   
   // 清空 curvolBData 中的数组
   curvolBData.value = {
-    curValueList: []
+    volValueList: []
   };
   
   // 清空 curvolCData 中的数组
   curvolCData.value = {
-    curValueList: []
+    volValueList: []
   };
   
   // 清空 lineidDateTimes 数组
@@ -129,9 +129,9 @@ const echartsOption = ref({
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
         if(prop.dataType == 0){
-          result +=  params[i].marker + params[i].seriesName+'：'+ params[i].value.toFixed(2)+' A' + '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+ params[0].name  ;
+          result +=  params[i].marker + params[i].seriesName+'：'+ params[i].value.toFixed(2)+' V' + '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+ params[0].name  ;
         }else{
-          result +=  params[i].marker + params[i].seriesName +'：'+ + params[i].value.toFixed(2)+' A'+ '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+happenTime.value[i][params[i].dataIndex] ;
+          result +=  params[i].marker + params[i].seriesName +'：'+ + params[i].value.toFixed(2)+' V'+ '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+happenTime.value[i][params[i].dataIndex] ;
         }
         result += '<br>';
       }
@@ -185,24 +185,20 @@ const echartsOption = ref({
 })
 
 watchEffect(() => {
-  // 直接访问即可，watchEffect会自动跟踪变化
-
   series.value = prop.list.series;
-  console.log("curList.series.value",  series.value)
+  console.log("loadRateLineseries.value",  series.value,prop.list)
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   } 
   time.value = prop.list.time;
 
   happenTime.value = prop.list.series.map(item => item.happenTime);
-
-  
 });
 
 
 
 onUnmounted(() => {
-  console.log('onUnmounted******')
+  console.log('onUnmounted*****')
 })
 
 </script>

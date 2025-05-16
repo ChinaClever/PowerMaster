@@ -3,7 +3,9 @@
 </template>
 
 <script lang="ts" setup>
-import 'echarts'
+import * as echarts from 'echarts'
+import { ref, defineProps, watchEffect } from 'vue'
+
 const prop = defineProps({
   list: {
     type: Array,
@@ -20,7 +22,7 @@ const prop = defineProps({
   },
   color: {
     type: String,
-    default: '#5470C6'
+    default: '#00778c'
   }
 })
 
@@ -32,7 +34,7 @@ const echartsOption = ref({
     axisPointer: {
       type: 'shadow'
     },
-    formatter: function(params) {
+    formatter: function(params: any) {
       let result = `<div style="font-size:12px;font-weight:bold">输出位 ${params[0].name}</div>`;
       for (const param of params) {
         result += `
@@ -56,7 +58,6 @@ const echartsOption = ref({
     data: Array.from({ length: 24 }, (_, i) => i < 9 ? `0${i + 1}` : `${i + 1}`), // 输出位01-24
     axisLabel: {
       interval: 0,
-      // rotate: 45,
       color: '#666',
       fontSize: 10,  // 缩小字体
       margin: 8      // 标签与轴线间距
@@ -94,7 +95,10 @@ const echartsOption = ref({
     barWidth: '40%', // 缩小柱宽
     data: prop.list,
     itemStyle: {
-      color: prop.color,
+      color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 0, color: '#00778c' },
+        { offset: 1, color: '#00a8a8' } // 从 #00778c 渐变到 #00a8a8
+      ]),
       borderRadius: [2, 2, 0, 0], // 缩小圆角
       shadowBlur: 2,             // 缩小阴影
       shadowOffsetY: 1
@@ -102,7 +106,7 @@ const echartsOption = ref({
     label: {
       show: true,
       position: 'top',
-      formatter: (params) => `${params.value.toFixed(2)}`,
+      formatter: (params: any) => `${params.value.toFixed(2)}`,
       fontSize: 9,    // 缩小标签字体
       color: '#333'
     }
@@ -138,7 +142,10 @@ const echartsOption = ref({
 // 监听数据变化
 watchEffect(() => {
   echartsOption.value.series[0].data = prop.list
-  echartsOption.value.series[0].itemStyle.color = prop.color
+  echartsOption.value.series[0].itemStyle.color = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+    { offset: 0, color:  '#00a8a8'},
+    { offset: 1, color:  prop.color} // 从 prop.color 渐变到 #00a8a8
+  ])
 })
 </script>
 

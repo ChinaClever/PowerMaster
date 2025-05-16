@@ -105,7 +105,7 @@ public interface BoxIndexService {
 
     Integer getBoxIdByDevKey(String devKey);
 
-    BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) throws IOException;
+    BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey, String type) throws IOException;
 
     BusLineResBase getBoxLoadRateLine(BoxIndexPageReqVO pageReqVO);
 
@@ -117,9 +117,9 @@ public interface BoxIndexService {
 
     Map getBoxPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
-    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
-    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
     String getBoxRedisByDevKey(String devKey);
 

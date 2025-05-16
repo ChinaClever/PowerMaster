@@ -44,9 +44,9 @@ const echartsOption = ref({
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
         if(prop.dataType == 0){
-          result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) ;
+          result +=  params[i].marker + params[i].seriesName+'：'+ params[i].value.toFixed(2) + '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+ params[0].name  ;
         }else{
-          result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp'+'发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp'+ + params[i].value.toFixed(2) ;
+          result +=  params[i].marker + params[i].seriesName +'：'+ + params[i].value.toFixed(2)+ '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+happenTime.value[i][params[i].dataIndex] ;
         }
         result += '<br>';
       }

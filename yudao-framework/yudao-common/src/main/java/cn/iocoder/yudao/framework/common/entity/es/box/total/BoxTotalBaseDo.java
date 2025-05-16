@@ -113,4 +113,6 @@ public class BoxTotalBaseDo extends BoxBaseDo {
      */
     @JsonProperty("power_factor_avg_value")
     private float powerFactorAvgValue;
+
+
 }

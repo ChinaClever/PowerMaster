@@ -53,10 +53,10 @@ const echartsOption = ref({
       console.log('Tooltip params:', params);
       for (let i = 0; i < params.length; i++) {
         if(prop.dataType != 0){
-          result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp;发生时间: &nbsp;&nbsp;&nbsp;&nbsp;${happenTime.value[i][params[i].dataIndex]} &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(1)}°C`;
+          result += `${params[i].marker} ${params[i].seriesName}： ${params[i].value.toFixed(1)}°C &nbsp;&nbsp;&nbsp;&nbsp;发生时间：${happenTime.value[i][params[i].dataIndex]}`;
 
         }else{
-          result += `${params[i].marker} ${params[i].seriesName}: &nbsp;&nbsp;&nbsp;&nbsp; ${params[i].value.toFixed(1)}°C`;
+          result += `${params[i].marker} ${params[i].seriesName}： ${params[i].value.toFixed(1)}°C &nbsp;&nbsp;&nbsp;&nbsp;发生时间：${params[0].name}`;
 
         }
         result += '<br>';
@@ -93,6 +93,6 @@ watchEffect(() => {
   
   time.value = prop.list.time;
   happenTime.value = prop.list.series.map(item => item.happenTime);
-  console.log(happenTime.value)
+
 });
 </script>

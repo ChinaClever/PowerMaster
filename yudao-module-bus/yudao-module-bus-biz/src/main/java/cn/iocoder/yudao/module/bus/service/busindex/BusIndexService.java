@@ -110,11 +110,11 @@ public interface BusIndexService {
 
     Map getReportConsumeDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
-    Map getBusPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getBusPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
-    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
-    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime,Integer dataType);
 
     String getBusRedisByDevKey(String devKey);
 
@@ -150,5 +150,6 @@ public interface BusIndexService {
     PageResult<BusIndexDTO> getEqPage1(BusIndexPageReqVO pageReqVO);
 
     List<String> findKeys(String key);
-
+    
+    Map getReportLoadRateByBusResVO(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }
