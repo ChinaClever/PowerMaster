@@ -2,9 +2,12 @@ package cn.iocoder.yudao.module.room.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.RoomEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.room.vo.RoomEleExportVO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public interface RoomEnergyConsumptionService {
@@ -54,4 +57,5 @@ public interface RoomEnergyConsumptionService {
      */
     PageResult<Object> getSubBillDetails(RoomEnergyConsumptionPageReqVO reqVO) throws IOException;
 
+    List<RoomEleExportVO> exportRoomEle() throws IOException;
 }

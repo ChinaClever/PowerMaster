@@ -218,11 +218,22 @@ public class AisleServiceImpl implements AisleService {
                         if (!CollectionUtils.isEmpty(list)) {
                             List<Integer> boxIndexA = list.stream().map(CabinetBox::getBoxIndexA).collect(Collectors.toList());
                             Integer max = Collections.max(boxIndexA);
-                            if (barVo.getBoxList().size() > max) {
+                            if (max > barVo.getBoxList().size()) {
                                 BusinessAssert.error(7003, busKey + "更改的始端箱柜列的插接箱数量小于当前已被使用的数量");
                             }
                             editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "A");
                         }
+                    }
+                }else {
+                    //相同母线
+                    if (!CollectionUtils.isEmpty(list)) {
+                        List<Integer> boxIndexA = list.stream().map(CabinetBox::getBoxIndexA).collect(Collectors.toList());
+                        boxIndexA.remove(null);
+                        Integer max = Collections.max(boxIndexA);
+                        if (max > barVo.getBoxList().size()) {
+                            BusinessAssert.error(7003, busKey + "更改的始端箱柜列的插接箱数量小于当前已被使用的数量");
+                        }
+                        editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "A");
                     }
                 }
             }
@@ -248,11 +259,22 @@ public class AisleServiceImpl implements AisleService {
                         if (!CollectionUtils.isEmpty(list)) {
                             List<Integer> boxIndexB = list.stream().map(CabinetBox::getBoxIndexB).collect(Collectors.toList());
                             Integer max = Collections.max(boxIndexB);
-                            if (barVo.getBoxList().size() > max) {
+                            if (max > barVo.getBoxList().size()) {
                                 BusinessAssert.error(7003, busKey + "更改的始端箱柜列的插接箱数量小于当前已被使用的数量");
                             }
                             editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "B");
                         }
+                    }
+                }else {
+                    //相同母线
+                    if (!CollectionUtils.isEmpty(list)) {
+                        List<Integer> boxIndexB = list.stream().map(CabinetBox::getBoxIndexB).collect(Collectors.toList());
+                        boxIndexB.remove(null);
+                        Integer max = Collections.max(boxIndexB);
+                        if (max > barVo.getBoxList().size()) {
+                            BusinessAssert.error(7003, busKey + "更改的始端箱柜列的插接箱数量小于当前已被使用的数量");
+                        }
+                        editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "B");
                     }
                 }
             }

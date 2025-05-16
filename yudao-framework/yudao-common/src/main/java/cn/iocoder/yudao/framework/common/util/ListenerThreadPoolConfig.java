@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @ClassName: ThreadPoolConfig
  * 多线程连接池
  * @Author: jiangjinchi
- * @Date：2021/12/2415:02
+ * @Date：2024/12/2415:02
  **/
 @Configuration
 @EnableAsync

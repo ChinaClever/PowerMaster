@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper">
+    <insert id="insertBatch">
+        INSERT INTO cabinet_pdu (cabinet_id, pdu_key_a ,pdu_key_b)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.cabinetId}, #{item.pduKeyA}, #{item.pduKeyB})
+        </foreach>
+    </insert>
+
+    <update id="updateBatch">
+        <foreach collection="list" item="item" index="index" separator=";">
+            UPDATE cabinet_pdu
+            <set>
+                <if test="item.cabinetId != null">
+                    cabinet_id = #{item.cabinetId},
+                </if>
+                <if test="item.pduKeyA != null">
+                    pdu_key_a = #{item.pduKeyA},
+                </if>
+                <if test="item.pduKeyB != null">
+                    pdu_key_b = #{item.pduKeyB},
+                </if>
+            </set>
+            <where>
+                id = #{item.id}
+            </where>
+        </foreach>
+    </update>
+</mapper>

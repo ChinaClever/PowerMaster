@@ -1,8 +1,17 @@
 package cn.iocoder.yudao.module.room.service.energyconsumption;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.RoomEnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.room.service.historydata.RoomHistoryDataService;
+import cn.iocoder.yudao.module.room.vo.RoomEleExportVO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -17,17 +26,25 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    private RoomIndexMapper roomIndexMapper;
 
     @Autowired
     private RoomHistoryDataService roomHistoryDataService;
@@ -43,9 +60,9 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -57,16 +74,16 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] roomIds = pageReqVO.getRoomIds();
-        if (roomIds != null){
+        if (roomIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("room_id", roomIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("room_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("room_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("room_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -76,16 +93,16 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-        mapList.forEach(map->{
-            if(map.get("start_ele")!=null){
+        mapList.forEach(map -> {
+            if (map.get("start_ele") != null) {
                 map.put("start_ele", new BigDecimal((Double) map.get("start_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
-            if(map.get("end_ele")!=null){
+            if (map.get("end_ele") != null) {
                 map.put("end_ele", new BigDecimal((Double) map.get("end_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
-            if(map.get("start_ele")!=null&&map.get("end_ele")!=null){
+            if (map.get("start_ele") != null && map.get("end_ele") != null) {
                 BigDecimal subtract = new BigDecimal((Double) map.get("end_ele")).subtract(new BigDecimal((Double) map.get("start_ele")));
-                if(subtract.compareTo(BigDecimal.ZERO)==-1){
+                if (subtract.compareTo(BigDecimal.ZERO) == -1) {
                     map.put("eq_value", new BigDecimal((Double) map.get("end_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
                 }
             }
@@ -111,9 +128,9 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -125,16 +142,16 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] roomIds = pageReqVO.getRoomIds();
-        if (roomIds != null){
+        if (roomIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("room_id", roomIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("room_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("room_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("room_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -157,7 +174,7 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
     @Override
     public PageResult<Object> getEQDataDetails(RoomEnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer roomId = reqVO.getRoomId();
-        if (Objects.equals(roomId, null)){
+        if (Objects.equals(roomId, null)) {
             return null;
         }
         // 搜索源构建对象
@@ -165,18 +182,18 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity()) ){
+        if ("day".equals(reqVO.getGranularity())) {
             searchRequest.indices("room_eq_total_day");
-        }else if ("week".equals(reqVO.getGranularity()) ){
+        } else if ("week".equals(reqVO.getGranularity())) {
             searchRequest.indices("room_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("room_eq_total_month");
         }
         searchSourceBuilder.query(QueryBuilders.termQuery("room_id", roomId));
@@ -188,16 +205,16 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
         resultList.forEach(map -> {
-            if(map.get("start_ele")!=null){
+            if (map.get("start_ele") != null) {
                 map.put("start_ele", new BigDecimal((Double) map.get("start_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
-            if(map.get("end_ele")!=null){
+            if (map.get("end_ele") != null) {
                 map.put("end_ele", new BigDecimal((Double) map.get("end_ele")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
-            if(map.get("start_ele")!=null&&map.get("end_ele")!=null){
+            if (map.get("start_ele") != null && map.get("end_ele") != null) {
                 BigDecimal subtract = new BigDecimal((Double) map.get("end_ele")).subtract(new BigDecimal((Double) map.get("start_ele")));
-                if(subtract.compareTo(BigDecimal.ZERO)==1){
-                    map.put("eq_value", subtract.setScale(1,BigDecimal.ROUND_HALF_UP).doubleValue());
+                if (subtract.compareTo(BigDecimal.ZERO) == 1) {
+                    map.put("eq_value", subtract.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
                 }
             }
         });
@@ -221,9 +238,9 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -236,7 +253,7 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] roomIds = pageReqVO.getRoomIds();
-        if (roomIds != null){
+        if (roomIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("room_id", roomIds));
         }
         searchRequest.indices("room_ele_total_realtime");
@@ -248,15 +265,15 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
         mapList.forEach(map -> {
-            if(map.get("ele_a")!=null){
+            if (map.get("ele_a") != null) {
                 map.put("ele_a", new BigDecimal((Double) map.get("ele_a")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
-            if(map.get("ele_b")!=null){
+            if (map.get("ele_b") != null) {
                 map.put("ele_b", new BigDecimal((Double) map.get("ele_b")).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
-            if(map.get("ele_a")!=null&&map.get("ele_b")!=null){
+            if (map.get("ele_a") != null && map.get("ele_b") != null) {
                 BigDecimal subtract = new BigDecimal((Double) map.get("ele_a")).add(new BigDecimal((Double) map.get("ele_b")));
-                map.put("ele_total", subtract.setScale(1,BigDecimal.ROUND_HALF_UP).doubleValue());
+                map.put("ele_total", subtract.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
         });
         // 匹配到的总记录数
@@ -339,7 +356,7 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
     @Override
     public PageResult<Object> getSubBillDetails(RoomEnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer roomId = reqVO.getRoomId();
-        if (Objects.equals(roomId, null)){
+        if (Objects.equals(roomId, null)) {
             return null;
         }
         // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
@@ -379,6 +396,43 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         pageResult.setList(resultList)
                 .setTotal(totalHits);
         return pageResult;
+    }
+
+    @Override
+    public List<RoomEleExportVO> exportRoomEle() throws IOException {
+        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getIsDelete, 0));
+        Map<Integer, RoomIndex> map = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, Function.identity()));
+
+        LocalDateTime startTime = LocalDate.now().minusDays(1).atTime(LocalTime.MIN);
+        LocalDateTime endTime = LocalDate.now().atTime(LocalTime.MIN);
+
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(LocalDateTimeUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"))
+                .to(LocalDateTimeUtil.format(endTime, "yyyy-MM-dd HH:mm:ss")));
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("room_ele_total_realtime");
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        List<RoomEleExportVO> list = new ArrayList<>();
+        for (SearchHit hit : searchResponse.getHits()) {
+            RoomEleExportVO vo = JsonUtils.parseObject(hit.getSourceAsString(), RoomEleExportVO.class);
+            if (Objects.nonNull(vo)) {
+                RoomIndex roomIndex = map.get(vo.getRoomId());
+                vo.setRoomName(roomIndex.getRoomName());
+                list.add(vo);
+            }
+        }
+        return list;
     }
 
 }

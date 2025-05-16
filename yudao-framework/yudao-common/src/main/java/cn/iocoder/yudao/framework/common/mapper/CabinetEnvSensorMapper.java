@@ -3,6 +3,9 @@ package cn.iocoder.yudao.framework.common.mapper;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author luowei
@@ -12,4 +15,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface CabinetEnvSensorMapper extends BaseMapper<CabinetEnvSensor> {
+    void insertBatch(@Param("envSensorList") List<CabinetEnvSensor> envSensorList);
 }

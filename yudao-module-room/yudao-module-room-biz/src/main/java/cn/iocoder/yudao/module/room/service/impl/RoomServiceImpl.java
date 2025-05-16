@@ -35,8 +35,11 @@ import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.vo.AisleCabinetBoxEditExcelVO;
+import cn.iocoder.yudao.framework.common.vo.AisleCabinetPduEditExcelVO;
 import cn.iocoder.yudao.framework.common.vo.EquipmentStatisticsResVO;
 import cn.iocoder.yudao.framework.common.vo.RoomIndexCfgVO;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.aisle.api.AisleApi;
 import cn.iocoder.yudao.module.alarm.api.alarm.AlarmRecordApi;
 import cn.iocoder.yudao.module.cabinet.api.CabinetApi;
@@ -45,6 +48,9 @@ import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomIndexAddrResVO;
 import cn.iocoder.yudao.module.room.vo.RoomMainResVO;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -72,14 +78,21 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -1891,7 +1904,7 @@ public class RoomServiceImpl implements RoomService {
 
     private void extractedSaveAll(RoomAisleSaveVo vo, CabinetFirstVO firstVO, AisleIndex index) {
         List<Integer> airList = firstVO.getAirList();
-        int numAir = 0;
+        Integer numAir = 0;
         if (!CollectionUtils.isEmpty(airList)) {
             airList.remove((Object) 0);
             numAir = airList.size();
@@ -1900,6 +1913,9 @@ public class RoomServiceImpl implements RoomService {
             numAir++;
         }
         Boolean pduBox = firstVO.getPduBox();
+        if (Objects.isNull(pduBox)) {
+            pduBox = false;
+        }
         List<AisleBox> boxa = new ArrayList<>();
         List<AisleBox> boxb = new ArrayList<>();
         Integer aisleLength = index.getAisleLength() - numAir;
@@ -1972,24 +1988,27 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         }
-        int pduAddr = firstVO.getAddr();
+        Integer pduAddr = firstVO.getAddr();
         String pduIp = firstVO.getPduIp();
-        int outletIdA = 1;
-        int outletIdB = 1;
-        int boxAIndex = 0;
-        int boxBIndex = 0;
+        Integer pduIndex = 0;
+        Integer outletIdA = 1;
+        Integer outletIdB = 1;
+        Integer boxAIndex = 0;
+        Integer boxBIndex = 0;
         for (int i = 0; i < index.getAisleLength(); i++) {
             CabinetIndex cabinetIndex = new CabinetIndex();
             if (i == 0 && firstVO.getFirst()) {
                 cabinetIndex.setCabinetType("列头柜");
             } else {
                 cabinetIndex.setCabinetType(firstVO.getCabinetType());
-                Iterator<Integer> iterator = firstVO.getAirList().iterator();
-                while (iterator.hasNext()) {
-                    Integer next = iterator.next();
-                    if (Objects.equals(i, next)) {
-                        cabinetIndex.setCabinetType("空调柜");
-                        iterator.remove();
+                if (!CollectionUtils.isEmpty(airList)) {
+                    Iterator<Integer> iterator = airList.iterator();
+                    while (iterator.hasNext()) {
+                        Integer next = iterator.next();
+                        if (Objects.equals(i, next)) {
+                            cabinetIndex.setCabinetType("空调柜");
+                            iterator.remove();
+                        }
                     }
                 }
             }
@@ -2056,44 +2075,60 @@ public class RoomServiceImpl implements RoomService {
                 if (ObjectUtil.isEmpty(pduIp)) {
                     continue;
                 }
+
                 CabinetPdu cabinetPdu = new CabinetPdu();
                 cabinetPdu.setCabinetId(cabinetIndex.getId());
-                if (pduAddr > firstVO.getAddrNum()) {
-                    pduAddr = 0;
-                    String[] split = pduIp.split(".");
-                    pduIp = split[0] + split[1] + split[2] + Integer.parseInt(split[3]) + 1;
-                } else {
-                    pduAddr = pduAddr + 1;
-                }
-                cabinetPdu.setPduKeyA(pduIp + "-" + pduAddr);
 
-                if (pduAddr > firstVO.getAddrNum()) {
-                    pduAddr = 0;
-                    String[] split = pduIp.split(".");
-                    pduIp = split[0] + split[1] + split[2] + Integer.parseInt(split[3]) + 1;
+                if (pduIndex > firstVO.getAddrNum()) {
+                    pduIndex = 0;
+                    String[] split = pduIp.split("\\.");
+                    StringJoiner sj = new StringJoiner(".");
+                    sj.add(split[0]).add(split[1]).add(split[2]).add(String.valueOf(Integer.parseInt(split[3]) + 1));
+                    pduIp = sj.toString();
+                    int addr = pduAddr + pduIndex;
+                    cabinetPdu.setPduKeyA(pduIp + "-" + addr);
+                    pduIndex++;
                 } else {
-                    pduAddr = pduAddr + 1;
+                    int addr = pduAddr + pduIndex;
+                    cabinetPdu.setPduKeyA(pduIp + "-" + addr);
+                    pduIndex++;
                 }
-                cabinetPdu.setPduKeyB(pduIp + "-" + pduAddr);
+                if (pduIndex > firstVO.getAddrNum()) {
+                    pduIndex = 0;
+                    String[] split = pduIp.split("\\.");
+                    StringJoiner sj = new StringJoiner(".");
+                    sj.add(split[0]).add(split[1]).add(split[2]).add(String.valueOf(Integer.parseInt(split[3]) + 1));
+                    pduIp = sj.toString();
+                    int addr = pduAddr + pduIndex;
+                    cabinetPdu.setPduKeyB(pduIp + "-" + addr);
+                    pduIndex++;
+                } else {
+                    int addr = pduAddr + pduIndex;
+                    cabinetPdu.setPduKeyB(pduIp + "-" + addr);
+                    pduIndex++;
+                }
+
                 int inserted = cabinetPduMapper.insert(cabinetPdu);
-
-                CabinetEnvSensor envSensor = new CabinetEnvSensor();
-                envSensor.setCabinetId(cabinetIndex.getId());
-                envSensor.setChannel(firstVO.getChannel());
-                envSensor.setPosition(firstVO.getPosition());
-                envSensor.setPathPdu("A");
-                envSensor.setSensorId(firstVO.getSensorId());
-                envSensor.setSensorType(firstVO.getSensorType());
-                cabinetEnvSensorMapper.insert(envSensor);
-
-                CabinetEnvSensor envSensorB = new CabinetEnvSensor();
-                envSensor.setCabinetId(cabinetIndex.getId());
-                envSensor.setChannel(firstVO.getChannel());
-                envSensor.setPosition(firstVO.getPosition());
-                envSensor.setPathPdu("B");
-                envSensor.setSensorId(firstVO.getSensorId());
-                envSensor.setSensorType(firstVO.getSensorType());
-                cabinetEnvSensorMapper.insert(envSensorB);
+                if (StringUtils.isNotEmpty(firstVO.getFrontPath())) {
+                    CabinetEnvSensor envSensor = new CabinetEnvSensor();
+                    envSensor.setCabinetId(cabinetIndex.getId());
+                    envSensor.setChannel(1);
+                    envSensor.setPosition(2);
+                    envSensor.setPathPdu(firstVO.getFrontPath());
+                    envSensor.setSensorId(firstVO.getFrontSensorId());
+                    envSensor.setSensorType(0);
+                    cabinetEnvSensorMapper.insert(envSensor);
+                }
+                if (StringUtils.isNotEmpty(firstVO.getBackPath())) {
+                    CabinetEnvSensor envSensorB = new CabinetEnvSensor();
+                    envSensorB.setCabinetId(cabinetIndex.getId());
+                    envSensorB.setChannel(2);
+                    envSensorB.setPosition(2);
+                    envSensorB.setPathPdu(firstVO.getBackPath());
+                    envSensorB.setSensorId(firstVO.getBackSensorId());
+                    envSensorB.setSensorType(0);
+                    cabinetEnvSensorMapper.insert(envSensorB);
+                }
             }
         }
     }
@@ -2425,13 +2460,249 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public void editAisleExport(Integer roomId, Integer aisleId) {
+    public void editAisleExport(Integer roomId, Integer aisleId, HttpServletResponse response) throws IOException {
+        List<AisleCabinetBoxEditExcelVO> boxList = cabinetIndexMapper.findAisleCabinetBoxByRoomId(roomId, aisleId);
 
-        cabinetIndexMapper.findAisleCabinetByRoomId(roomId, aisleId);
+        List<AisleCabinetPduEditExcelVO> pduList = cabinetIndexMapper.findAisleCabinetPduByRoomId(roomId, aisleId);
+        List<Integer> cabinetIds = pduList.stream().map(AisleCabinetPduEditExcelVO::getCabinetId).collect(Collectors.toList());
+        List<CabinetEnvSensor> envs = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
+                .in(CabinetEnvSensor::getCabinetId, cabinetIds).eq(CabinetEnvSensor::getSensorType,0));
+
+        Map<Integer, List<CabinetEnvSensor>> envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
+        for (AisleCabinetPduEditExcelVO iter : pduList) {
+            List<CabinetEnvSensor> envSensorList = envMap.get(iter.getCabinetId());
+            if (CollectionUtils.isEmpty(envSensorList)) {
+                continue;
+            }
+            envSensorList.forEach(env -> {
+                if (Objects.equals(env.getChannel(), 1)) {
+                    switch (env.getPosition()) {
+                        case 0:
+                            iter.setFrontUpper(env.getPathPdu() + "-" + env.getSensorId());
+                            break;
+                        case 1:
+                            iter.setFrontMiddle(env.getPathPdu() + "-" + env.getSensorId());
+                            break;
+                        case 2:
+                            iter.setFrontLower(env.getPathPdu() + "-" + env.getSensorId());
+                            break;
+                        default:
+                    }
+                }
+                if (Objects.equals(env.getChannel(), 2)) {
+                    switch (env.getPosition()) {
+                        case 0:
+                            iter.setBackUpper(env.getPathPdu() + "-" + env.getSensorId());
+                            break;
+                        case 1:
+                            iter.setBackMiddle(env.getPathPdu() + "-" + env.getSensorId());
+                            break;
+                        case 2:
+                            iter.setBackLower(env.getPathPdu() + "-" + env.getSensorId());
+                            break;
+                        default:
+                    }
+                }
+            });
+        }
+
+        ClassPathResource classPathResource = new ClassPathResource("file/机柜绑定关系表.xlsx");
+        InputStream inputStream = classPathResource.getInputStream();
+
+        try (ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream()).withTemplate(inputStream).build()) {
+            WriteSheet writeSheet = EasyExcel.writerSheet(1).build();
+            excelWriter.fill(boxList, writeSheet);
+            WriteSheet writeSheet1 = EasyExcel.writerSheet(0).build();
+            excelWriter.fill(pduList, writeSheet1);
+            response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode("机柜绑定关系表", StandardCharsets.UTF_8.name()));
+            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+        } catch (Exception e) {
+            log.error("导出机柜绑定关系表错误" + e);
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    @Override
+    public Boolean editAisleExcel(MultipartFile file, HttpServletRequest request) {
+        // 写法1
+        try {
+
+            List<Map<Integer, String>> pduList1 = EasyExcel.read(file.getInputStream()).headRowNumber(2).sheet(0).doReadSync();
+            List<Map<Integer, String>> boxList1 = EasyExcel.read(file.getInputStream()).headRowNumber(2).sheet(1).doReadSync();
+            List<AisleCabinetPduEditExcelVO> pduList = ExcelUtils.extractedEditAisle(pduList1, AisleCabinetPduEditExcelVO.class);
+            List<AisleCabinetBoxEditExcelVO> boxList = ExcelUtils.extractedEditAisle(boxList1, AisleCabinetBoxEditExcelVO.class);
+            System.out.println(boxList);
+
+            List<Integer> cabinetIdsPdu = pduList.stream().map(AisleCabinetPduEditExcelVO::getCabinetId).collect(Collectors.toList());
+            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, cabinetIdsPdu));
+            Map<Integer, CabinetPdu> pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
+
+//            List<CabinetEnvSensor> envSensors = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
+//                    .in(CabinetEnvSensor::getCabinetId,cabinetIdsPdu));
+//            Map<Integer, List<CabinetEnvSensor>> envMap = envSensors.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
+
+            List<CabinetPdu> cabinetPduListInert = new ArrayList<>();
+            List<CabinetPdu> cabinetPduListUpdate = new ArrayList<>();
+            List<CabinetEnvSensor> envSensorList = new ArrayList<>();
+            
+            for (AisleCabinetPduEditExcelVO vo : pduList) {
+                //判断AB路pdu是否一样
+                if (Objects.equals(vo.getPduKeya(), vo.getPduKeyb())) {
+                    BusinessAssert.error(10100, vo.getRoomName() + "-" + vo.getAisleName() + "-" + vo.getCabinetName() + "：AB路pdu一致，请重新输入");
+                }
+                Long counta = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
+                        .ne(CabinetPdu::getCabinetId, vo.getCabinetId())
+                        .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, vo.getPduKeya()))
+                                .or(qr -> qr.eq(CabinetPdu::getPduKeyB, vo.getPduKeya())))));
+                if (counta > 0L) {
+                    BusinessAssert.error(10101, vo.getRoomName() + "-" + vo.getAisleName() + "-" + vo.getCabinetName() + "：PDU的A路重复");
+                }
+                Long countb = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
+                        .ne(CabinetPdu::getCabinetId, vo.getCabinetId())
+                        .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, vo.getPduKeyb()))
+                                .or(qr -> qr.eq(CabinetPdu::getPduKeyB, vo.getPduKeyb())))));
+                if (countb > 0L) {
+                    BusinessAssert.error(10101, vo.getRoomName() + "-" + vo.getAisleName() + "-" + vo.getCabinetName() + "：PDU的B路重复");
+                }
+                CabinetPdu cabinetPdu = pduMap.get(vo.getCabinetId());
+                if (Objects.nonNull(cabinetPdu)) {
+                    cabinetPdu.setPduKeyA(vo.getPduKeya());
+                    cabinetPdu.setPduKeyB(vo.getPduKeyb());
+                    cabinetPduListUpdate.add(cabinetPdu);
+                } else {
+                    cabinetPdu = new CabinetPdu();
+                    cabinetPdu.setCabinetId(vo.getCabinetId());
+                    cabinetPdu.setPduKeyA(vo.getPduKeya());
+                    cabinetPdu.setPduKeyB(vo.getPduKeyb());
+                    cabinetPduListInert.add(cabinetPdu);
+                }
+
+                if (StringUtils.isNotEmpty(vo.getFrontUpper())) {
+                    String[] split = vo.getFrontUpper().split("-");
+                    extractedEnv(split, vo, 1, 1, envSensorList);
+                }
+                if (StringUtils.isNotEmpty(vo.getFrontMiddle())) {
+                    String[] split = vo.getFrontMiddle().split("-");
+                    extractedEnv(split, vo, 1, 2, envSensorList);
+                }
+                if (StringUtils.isNotEmpty(vo.getFrontLower())) {
+                    String[] split = vo.getFrontLower().split("-");
+                    extractedEnv(split, vo, 1, 3, envSensorList);
+                }
+                if (StringUtils.isNotEmpty(vo.getBackUpper())) {
+                    String[] split = vo.getBackUpper().split("-");
+                    extractedEnv(split, vo, 2, 1, envSensorList);
+                }
+                if (StringUtils.isNotEmpty(vo.getBackMiddle())) {
+                    String[] split = vo.getBackMiddle().split("-");
+                    extractedEnv(split, vo, 2, 2, envSensorList);
+                }
+                if (StringUtils.isNotEmpty(vo.getBackLower())) {
+                    String[] split = vo.getBackLower().split("-");
+                    extractedEnv(split, vo, 2, 3, envSensorList);
+                }
+            }
+
+            List<Integer> cabinetIdsBox = boxList.stream().map(AisleCabinetBoxEditExcelVO::getCabinetId).collect(Collectors.toList());
+            List<CabinetBox> cabinetBoxes = cabinetBoxMapper.selectList(new LambdaQueryWrapper<CabinetBox>().in(CabinetBox::getCabinetId, cabinetIdsBox));
+            Map<Integer, CabinetBox> boxMap = cabinetBoxes.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
+            List<Integer> aisleIds = boxList.stream().map(AisleCabinetBoxEditExcelVO::getAisleId).collect(Collectors.toList());
+            List<AisleBox> aisleBoxes = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getAisleId, aisleIds));
+            Map<String, AisleBox> aisleBoxMap = aisleBoxes.stream().collect(Collectors.toMap(AisleBox::getBoxKey, Function.identity()));
+
+            List<CabinetBox> cabinetBoxListInsert = new ArrayList<>();
+            List<CabinetBox> cabinetBoxListUpdate = new ArrayList<>();
+            for (AisleCabinetBoxEditExcelVO vo : boxList) {
+                String boxKeya = vo.getBusKeya() + "-" + vo.getBoxAddra();
+                String boxKeyb = vo.getBusKeyb() + "-" + vo.getBoxAddrb();
+                Long counta = cabinetBoxMapper.selectCount(new LambdaQueryWrapper<CabinetBox>().ne(CabinetBox::getCabinetId, vo.getCabinetId())
+                        .and(wq -> wq.and(qr -> qr.eq(CabinetBox::getBoxKeyA, boxKeya).eq(CabinetBox::getOutletIdA, vo.getOutletIda()))
+                                .or(qr -> qr.eq(CabinetBox::getBoxKeyB, boxKeya).eq(CabinetBox::getOutletIdB, vo.getOutletIda()))));
+
+                if (counta > 0L) {
+                    BusinessAssert.error(10101, vo.getRoomName() + "-" + vo.getAisleName() + "-" + vo.getCabinetName() + "：插接箱A路重复");
+                }
+                Long countb = cabinetBoxMapper.selectCount(new LambdaQueryWrapper<CabinetBox>().ne(CabinetBox::getCabinetId, vo.getCabinetId())
+                        .and(wq -> wq.and(qr -> qr.eq(CabinetBox::getBoxKeyA, boxKeyb).eq(CabinetBox::getOutletIdA, vo.getOutletIdb()))
+                                .or(qr -> qr.eq(CabinetBox::getBoxKeyB, boxKeyb).eq(CabinetBox::getOutletIdB, vo.getOutletIdb()))));
+                if (countb > 0L) {
+                    BusinessAssert.error(10101, vo.getRoomName() + "-" + vo.getAisleName() + "-" + vo.getCabinetName() + "：插接箱B路重复");
+                }
+                AisleBox aisleBoxa = aisleBoxMap.get(vo.getBusKeya() + "-" + vo.getBoxAddra());
+                AisleBox aisleBoxb = aisleBoxMap.get(vo.getBusKeyb() + "-" + vo.getBoxAddrb());
+                CabinetBox cabinetBox = boxMap.get(vo.getCabinetId());
+                if (Objects.nonNull(cabinetBox)) {
+                    extractedCabinetBox(vo, aisleBoxa, cabinetBox, aisleBoxb);
+                    cabinetBoxListUpdate.add(cabinetBox);
+                } else {
+                    cabinetBox = new CabinetBox();
+                    extractedCabinetBox(vo, aisleBoxa, cabinetBox, aisleBoxb);
+                    cabinetBoxListInsert.add(cabinetBox);
+                }
+            }
+            if (!CollectionUtils.isEmpty(envSensorList)){
+                cabinetEnvSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
+                        .in(CabinetEnvSensor::getCabinetId, cabinetIdsPdu)
+                        .eq(CabinetEnvSensor::getSensorType,0));
+                cabinetEnvSensorMapper.insertBatch(envSensorList);
+            }
+            if (!CollectionUtils.isEmpty(cabinetBoxListInsert)){
+                cabinetBoxMapper.insertBatch(cabinetBoxListInsert);
+            }
+            if (!CollectionUtils.isEmpty(cabinetBoxListUpdate)){
+                cabinetBoxMapper.updateBatch(cabinetBoxListUpdate);
+            }
+
+            if (!CollectionUtils.isEmpty(cabinetPduListInert)){
+                cabinetPduMapper.insertBatch(cabinetPduListInert);
+            }
+            if (!CollectionUtils.isEmpty(cabinetPduListUpdate)){
+                cabinetPduMapper.updateBatch(cabinetPduListUpdate);
+            }
+        } catch (Exception e) {
+            log.error("导入报错" + e);
+        }
+
+        return true;
+    }
+
+    private static void extractedEnv(String[] split, AisleCabinetPduEditExcelVO vo, int channel, int position, List<CabinetEnvSensor> envSensorList) {
+        if (Objects.equals(split.length, 2)) {
+            CabinetEnvSensor envSensor = new CabinetEnvSensor();
+            envSensor.setCabinetId(vo.getCabinetId());
+            envSensor.setChannel(channel);
+            envSensor.setPosition(position);
+            envSensor.setPathPdu(split[0]);
+            envSensor.setSensorId(Integer.parseInt(split[1]));
+            envSensor.setSensorType(0);
+            envSensorList.add(envSensor);
+        }
+    }
+
+    private static void extractedCabinetBox(AisleCabinetBoxEditExcelVO vo, AisleBox aisleBoxa, CabinetBox cabinetBox, AisleBox aisleBoxb) {
+        if (Objects.nonNull(aisleBoxa)) {
+            cabinetBox.setBoxKeyA(aisleBoxa.getBoxKey());
+            cabinetBox.setBoxIndexA(aisleBoxa.getBoxIndex());
+            cabinetBox.setOutletIdA(vo.getOutletIda());
+        } else {
+            BusinessAssert.error(vo.getBusKeya() + "-" + vo.getBoxAddra() + "：当前插接箱不存在");
+        }
+        if (Objects.nonNull(aisleBoxb)) {
+            cabinetBox.setBoxKeyA(aisleBoxa.getBoxKey());
+            cabinetBox.setBoxIndexA(aisleBoxa.getBoxIndex());
+            cabinetBox.setOutletIdB(vo.getOutletIdb());
+        } else {
+            BusinessAssert.error(vo.getBusKeya() + "-" + vo.getBoxAddra() + "：当前插接箱不存在");
+        }
     }
 
 
-    private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj, List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks, List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks, List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks, List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {
+    private static void aisleExtracted(List<AisleIndex> indices, Map<String, Object> aisleMap, Object obj,
+                                       List<BigDecimal> humAvgFronts, List<BigDecimal> humAvgBlacks,
+                                       List<BigDecimal> humMaxFronts, List<BigDecimal> humMaxBlacks,
+                                       List<BigDecimal> temMaxFronts, List<BigDecimal> temMaxBlacks,
+                                       List<BigDecimal> temAvgFronts, List<BigDecimal> temAvgBlacks) {
         indices.forEach(iter -> {
             Object objAisle = aisleMap.get(iter.getId());
             if (Objects.nonNull(obj)) {
@@ -2608,12 +2879,7 @@ public class RoomServiceImpl implements RoomService {
         index.setAisleName(aisleSaveVo.getAisleName());
         index.setAisleLength(aisleSaveVo.getAisleLength());
         index.setRoomId(aisleSaveVo.getRoomId());
-        //index.setType(aisleSaveVo.getType());
         index.setPduBar(aisleSaveVo.getPduBar());
-//        index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
-//        index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
-//        index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
-//        index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
         index.setDirection(aisleSaveVo.getDirection());
         index.setXCoordinate(aisleSaveVo.getXCoordinate());
         index.setYCoordinate(aisleSaveVo.getYCoordinate());
