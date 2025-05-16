@@ -243,8 +243,9 @@ public class BusEnergyConsumptionController {
     public void exportBoxDetailsDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = busEnergyConsumptionService .getBoxEQDataDetails(pageReqVO).getList();
+        List<Object> list = busEnergyConsumptionService.getBoxEQDataDetails(pageReqVO).getList();
         if(!list.isEmpty()){
+            list.forEach(iter->((Map)iter).put("location",pageReqVO.getNowAddress()));
             //对list进行处理
             busEnergyConsumptionService.getNewDetailList(list);
             // 导出 Excel

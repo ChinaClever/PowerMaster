@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="始端箱电能记录">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>  
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -496,5 +496,8 @@ const format = (date) => {
 }
 /deep/ .el-pagination.is-background .el-pager li.is-active {
   background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

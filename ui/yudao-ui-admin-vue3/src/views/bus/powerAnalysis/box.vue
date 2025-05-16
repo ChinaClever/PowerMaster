@@ -1,7 +1,7 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线插接箱能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线插接箱能耗趋势" :defaultCheckedKeys="defaultCheckedKeys" :defaultExpandedKeys="defaultExpandedKeys" nodeKey="unique">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/> 
         <div class="nav_data">
           <!-- <div class="carousel-container">
             <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -70,8 +70,10 @@
           </el-form-item>
 
          <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+         </el-form-item>
+         <el-form-item style="position: absolute;right: -15px;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
@@ -97,7 +99,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.box_id, row.location,row.dev_key)" style="background-color: #00778c;color:#ffffff;">详情</el-button>
           </template>
         </el-table-column>
         
@@ -239,7 +241,7 @@ const shortcuts = [
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = pageNumber * queryParams.pageSize;
+  const end = Math.min(pageNumber * queryParams.pageSize,total.value);
   const pageNumbers: string[] = [];
   for (let i = start; i <= end; i++) {
     pageNumbers.push('序号'+i);
@@ -262,6 +264,7 @@ const initChart = () => {
     rankChart.setOption({
       title: { text: '各插接箱耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+      barMaxWidth: '30px',
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
       xAxis: {type: 'category', 
@@ -282,7 +285,14 @@ const initChart = () => {
         label: {
                         show: totalPages <= labelThreshold,
                         position: 'top'
-                    }},
+                    },
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(  
+          0, 1, 0, 0, [  
+            { offset: 0, color: '#00778c' },  
+            { offset: 1, color: '#069ab4' }  
+          ]  
+        ) }},
       ],
     });
     rankChart.on('click', function(params) {
@@ -491,13 +501,35 @@ const handleCheck = async (node) => {
     queryParams.devkeys = arr
     handleQuery()
 }
-
+const defaultCheckedKeys=ref([])
+const defaultExpandedKeys = ref([])
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
   navList.value = res
+  if(history.state.devKey!=null){
+    setDefaultCheckedKeys(res)
+  }
 }
-
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].children==null||arr[i].children.length==0){
+      console.log("arr[i].ip================",arr[i].ip)
+      if(arr[i].unique==history.state.devKey){
+        defaultCheckedKeys.value.push(arr[i].unique);
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
+}
 // 获取导航的数据显示
 const getNavNewData = async() => {
   const res = await EnergyConsumptionApi.getBoxNavNewData({})
@@ -622,4 +654,13 @@ onMounted(() => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+    /deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+/deep/  .el-pager li:hover {
+    color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
+}
 </style>
