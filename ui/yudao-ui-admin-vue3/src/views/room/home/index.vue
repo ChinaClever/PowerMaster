@@ -1,7 +1,7 @@
 <template>
    <div class="homeContainer">
     <div class="left">
-      <el-card style="height: 28vh">
+      <el-card style="height: 26vh">
         <template #header>
           <div class="flex justify-between" style="align-item: center">
             <div style="font-weight: bold;">负载率</div>
@@ -10,19 +10,17 @@
             </div>
           </div>
         </template>
-        <div class="progress">
-          <!--<el-progress type="dashboard" :percentage="roomDownVal.powApparent && roomDownVal.powApparent.toFixed()">-->
-          <!-- <el-progress type="dashboard" :percentage="roomDownVal.powActive/roomDownVal.powApparent*100" width="200">
-              <span class="percentage-value">{{ roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(0) : 0 }}</span>
-              <span class="percentage-label">总视在功率</span>
-              <span class="percentage-unit">kVA</span>
-          </el-progress> -->
-          <el-progress type="dashboard" :percentage="roomDownVal.roomLoadFactor ? Math.min(roomDownVal.roomLoadFactor,100).toFixed(0) : 0" width="200" stroke-width="12" :color="roomDownVal.roomLoadFactor>90 ? `rgba(173, 55, 98, ${roomDownVal.roomLoadFactor/100})` : (roomDownVal.roomLoadFactor>=60 ? `rgba(200, 96, 58, ${(roomDownVal.roomLoadFactor+10)/100})` : `rgba(229, 184, 73, ${(roomDownVal.roomLoadFactor+40)/100})`)">
-            <span class="percentage-value">{{roomDownVal.roomLoadFactor ? roomDownVal.roomLoadFactor.toFixed(0) : 0}}</span><br/>
-            <span class="percentage-label">负载率</span>
-            <span class="percentage-unit">%</span>
-          </el-progress>
-        </div>
+        <el-skeleton :loading="loading" animated :rows="4" style="height: 19vh">
+          <div class="progress">
+            <el-progress type="dashboard" :percentage="roomDownVal.roomLoadFactor ? Math.min(roomDownVal.roomLoadFactor,100).toFixed(0) : 0" width="200" stroke-width="16" :color="roomDownVal.roomLoadFactor>90 ? `rgba(173, 55, 98, ${roomDownVal.roomLoadFactor/100})` : (roomDownVal.roomLoadFactor>=60 ? `rgba(200, 96, 58, ${(roomDownVal.roomLoadFactor+10)/100})` : `rgba(229, 184, 73, ${(roomDownVal.roomLoadFactor+40)/100})`)">
+              <span class="percentage-value">
+                {{roomDownVal.roomLoadFactor ? roomDownVal.roomLoadFactor.toFixed(0) : 0}}.<span style="font-size: 28px">{{roomDownVal.roomLoadFactor ? roomDownVal.roomLoadFactor.toFixed(1).split('.')[1] : 0}}</span>
+              </span><br/>
+              <span class="percentage-label">%</span>
+              <span class="percentage-unit">负载率</span>
+            </el-progress>
+          </div>
+        </el-skeleton>
       </el-card>
       <!--<el-card shadow="never">
         <template #header>
@@ -33,21 +31,41 @@
         <div>总空间：{{spaceInfo.totalSpace}}u</div>
         <div>机柜数：{{spaceInfo.cabNum}}</div>
       </el-card>-->
-      <el-card shadow="never" style="height: 38vh">
+      <el-card shadow="never" style="height: 36vh">
         <template #header>
           <div class="flex justify-between">
             <span style="font-weight: bold">柜列功率</span>
+            <div v-show="!loading" class="flex text-12px items-center" style="padding-top: 4px">
+              <div class="flex mr-8px" style="cursor: pointer;" @click="selectedActive = true;selectedApparent = false;selectedReactive = false;updatePowChartOptions()">
+                <div class="w-25px mr-2px" :style="{backgroundColor: selectedActive ? '#c8603a' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                <div>有功</div>
+              </div>
+              <div class="flex mr-8px" style="cursor: pointer;" @click="selectedApparent = true;selectedActive = false;selectedReactive = false;updatePowChartOptions()">
+                <div class="w-25px mr-2px" :style="{backgroundColor: selectedApparent ? '#ad3762' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                <div>视在</div>
+              </div>
+              <div class="flex mr-8px" style="cursor: pointer;" @click="selectedReactive = true;selectedApparent = false;selectedActive = false;updatePowChartOptions()">
+                <div class="w-25px mr-2px" :style="{backgroundColor: selectedReactive ? '#e5b849' : 'rgb(204,204,204)',borderRadius: '3px'}"></div>
+                <div>无功</div>
+              </div>
+              <el-link @click.prevent="toggleRadar = !toggleRadar;" type="primary">{{toggleRadar?'柱形图':'雷达图'}}</el-link>
+            </div>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated :rows="7" style="height: 28vh">
-          <div style="height: 28vh">
-            <Echart v-if="roomDownVal.aisleList.length>= 6" :height="280" :options="powChartOptions" />
+        <el-skeleton :loading="loading" animated :rows="6" style="height: 28vh" />
+        <div :style="computedEnInfo">
+          <div ref="powChartOptionsContainer" id="powChartOptionsContainer" :style="computedEnInfoWidth" style="height:26vh;"></div>
+        </div>
+        <!-- <divref="powChartOptionsBarContainer" id="powChartOptionsBarContainer" style="height:28vh;"></div> -->
+
+          <!-- <div style="height: 28vh">
+            <Echart v-if="roomDownVal.aisleList.length>= 6 && toggleRadar" :height="280" :options="powChartOptions" />
             <Echart v-else :height="280" :options="powChartOptionsBar" />
-          </div>
-        </el-skeleton>
+          </div> -->
+        <!-- </el-skeleton> -->
       </el-card>
 
-      <el-card shadow="never" style="height:24vh;margin-bottom: 15px;">
+      <el-card shadow="never" style="height:28vh;margin-bottom: 15px;">
         <template #header>
           <div class="flex justify-between" style="align-item: center">
             <div style="font-weight: bold;">用能</div>
@@ -56,63 +74,48 @@
             </div>
           </div>
         </template>
-        <div style="height:14vh;display: flex;flex-direction: column;justify-content: space-between">
-          <div class="flex items-center" style="height: 40%;">
-            <div style="height: 100%;margin-right: 0.5vw">
-              <img alt="" src="@/assets/imgs/dn.jpg" style="height: 100%" />
-            </div>
-            <div style="display: flex;flex-direction: column;flex: 1">
-              <div style="font-weight: bold;background: linear-gradient(to right, rgba(30, 144, 255, 0.3), rgba(30, 144, 255, 0));padding-left: 0.2vw">
-                今日能耗
+        <el-skeleton :loading="loading" animated :rows="4" style="height: 20vh">
+          <div class="flex justify-around" style="height: 20vh;flex-direction: column">
+            <div class="flex justify-around">
+              <div class="flex" style="flex-direction: column;background-color: #f0f0f0;width: 40%;padding: 5px;border-radius: 5px">
+                <div style="color: #686a70;font-size: 12px">今日能耗</div>
+                <div class="flex items-center justify-center" style="font-size: 18px;font-weight: bold;width: 100%;flex: 1;padding: 18px 0;position: relative">
+                  {{EqInfo.todayEq ? EqInfo.todayEq.toFixed(0) : 0}}
+                  <div v-if="EqInfo.todayEq > EqInfo.yesterdayEqNow" class="flex items-center" style="position: absolute;right: 5px"><Icon icon="ep:top" size="16" color="#298447" /></div>
+                  <div v-else-if="!loading" class="flex items-center" style="position: absolute;right: 5px;"><Icon icon="ep:bottom" size="16" color="#3959b5" /></div>
+                </div>
               </div>
-              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
-                <div>今日：</div>
-                <div style="font-weight: bold">{{EqInfo.todayEq ? EqInfo.todayEq.toFixed(1) : 0}}</div>
-              </div>
-              <div style="display: flex; align-items: center;">
-                <div style="width: 30%"></div>
-                <el-progress :percentage="EqInfo.todayEq/EqInfo.yesterdayEq*100" :show-text="false" style="width: 70%;" />
-              </div>
-              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
-                <div>昨日：</div>
-                <div style="font-weight: bold">{{EqInfo.yesterdayEq ? EqInfo.yesterdayEq.toFixed(1) : 0}}</div>
+              <div class="flex" style="flex-direction: column;background-color: #f0f0f0;width: 40%;padding: 5px;border-radius: 5px">
+                <div style="color: #686a70;font-size: 12px">昨日能耗</div>
+                <div class="flex items-center justify-center" style="font-size: 18px;font-weight: bold;width: 100%;flex: 1;padding: 18px 0">{{EqInfo.yesterdayEq  ? EqInfo.yesterdayEq .toFixed(0) : 0}}</div>
               </div>
             </div>
-          </div>
-          
-          <div class="flex items-center" style="height: 40%;">
-            <div style="height: 100%;margin-right: 0.5vw">
-              <img alt="" src="@/assets/imgs/dn.jpg" style="height: 100%" />
-            </div>
-            <div style="display: flex;flex-direction: column;flex: 1">
-              <div style="font-weight: bold;background: linear-gradient(to right, rgba(30, 144, 255, 0.3), rgba(30, 144, 255, 0));padding-left: 0.2vw">
-                本月能耗
+            <div class="flex justify-around">
+              <div class="flex" style="flex-direction: column;background-color: #f0f0f0;width: 40%;padding: 5px;border-radius: 5px">
+                <div style="color: #686a70;font-size: 12px">本月能耗</div>
+                <div class="flex items-center justify-center" style="font-size: 18px;font-weight: bold;width: 100%;flex: 1;padding: 18px 0;position: relative">
+                  {{EqInfo.thisMonthEq ? EqInfo.thisMonthEq.toFixed(0) : 0}}
+                  <div v-if="EqInfo.thisMonthEq > EqInfo.lastMonthEqNow" class="flex items-center" style="position: absolute;right: 5px"><Icon icon="ep:top" size="16" color="#298447" /></div>
+                  <div v-else-if="!loading" class="flex items-center" style="position: absolute;right: 5px;"><Icon icon="ep:bottom" size="16" color="#3959b5" /></div>
+                </div>
               </div>
-              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
-                <div>本月：</div>
-                <div style="font-weight: bold">{{EqInfo.thisMonthEq ? EqInfo.thisMonthEq.toFixed(1) : 0}}</div>
-              </div>
-              <div style="display: flex; align-items: center;">
-                <div style="width: 30%"></div>
-                <el-progress :percentage="EqInfo.thisMonthEq/EqInfo.lastMonthEq*100" :show-text="false" style="width: 70%;" />
-              </div>
-              <div style="display: flex; align-items: center;justify-content: space-between;font-size: 14px">
-                <div>上月：</div>
-                <div style="font-weight: bold">{{EqInfo.lastMonthEq ? EqInfo.lastMonthEq.toFixed(1) : 0}}</div>
+              <div class="flex" style="flex-direction: column;background-color: #f0f0f0;width: 40%;padding: 5px;border-radius: 5px">
+                <div style="color: #686a70;font-size: 12px">上月能耗</div>
+                <div class="flex items-center justify-center" style="font-size: 18px;font-weight: bold;width: 100%;flex: 1;padding: 18px 0">{{EqInfo.lastMonthEq  ? EqInfo.lastMonthEq .toFixed(0) : 0}}</div>
               </div>
             </div>
           </div>
-        </div>
+        </el-skeleton>
       </el-card>
       
     </div>
     <div class="center" id="center">
-      <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
-      <el-card shadow="never" style="height: 31vh">
+      <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId"/>
+      <el-card shadow="never" style="height: 35vh">
         <div style="background-color: #ffffff;border-radius: 5px;">
           <el-row>
             <el-col :span="12">
-              <el-radio-group v-model="typeRadio">
+              <el-radio-group v-model="typeRadio" fill="#00778c">
                 <el-radio-button label="功率曲线" value="功率曲线" @click="switchChartContainer =0"/>
                 <el-radio-button label="有效电能" value="有效电能" @click="clickPower()"/>
                 <el-radio-button label="负载率" value="负载率" @click="switchChartContainer =2"/>
@@ -126,8 +129,8 @@
                   <el-option label="最大" value="最大" />
                   <el-option label="最小" value="最小" />
                 </el-select>
-                <el-radio-group v-model="timeRadio">
-                  <el-radio-button label="近一小时" value="近一小时" :disabled="isHourDisabled" />
+                <el-radio-group v-model="timeRadio" fill="#00778c">
+                  <el-radio-button label="近一小时" value="近一小时" :disabled="typeRadio == '有效电能'" />
                   <el-radio-button label="近一天" value="近一天" />
                   <el-radio-button label="近三天" value="近三天" />
                   <el-radio-button label="近一月" value="近一月" />
@@ -136,14 +139,14 @@
             </el-col>
           </el-row>
           <br/>
-          <div ref="chartContainer4" id="chartContainer4" style="width: 55vw;height: 220px;" v-show="switchChartContainer == 2"></div>
-          <div ref="chartContainer2" id="chartContainer2" style="width: 55vw;height: 220px;" v-show="switchChartContainer == 0"></div>
-          <div ref="chartContainer3" id="chartContainer3" style="width: 55vw;height: 220px;" v-show="switchChartContainer == 1"></div>
+          <div ref="chartContainer4" id="chartContainer4" style="height: 27vh;" v-show="switchChartContainer == 2"></div>
+          <div ref="chartContainer2" id="chartContainer2" style="height: 27vh;" v-show="switchChartContainer == 0"></div>
+          <div ref="chartContainer3" id="chartContainer3" style="height: 27vh;" v-show="switchChartContainer == 1"></div>
         </div>
       </el-card>
     </div>
     <div class="right">
-      <el-card shadow="never" style="height: 28vh">
+      <el-card shadow="never" style="height: 26vh">
         <template #header>
           <div style="font-weight: bold">机房功率</div>
         </template>
@@ -152,36 +155,44 @@
             <div class="flex justify-around">
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
-                <div class="bullet" style="background-color:#C8603A;"></div>
                 <div class="flex" style="flex-direction: column">
-                  <div>总有功功率</div>
-                  <div><span style="font-weight: bold">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(3) : '0.000'}}</span>kW</div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(3).split('.')[1] : 0}}</span></div>
+                  <div class="flex items-center">
+                    <div class="bullet" style="background-color:#C8603A;"></div>
+                    <div style="font-size: 14px">总有功功率(kW)</div>
+                  </div>
                 </div>
               </div>
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
-                <div class="bullet" style="background-color:#E5B849;"></div>
                 <div class="flex" style="flex-direction: column">
-                  <div>总无功功率</div>
-                  <div><span style="font-weight: bold">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(3) : '0.000'}}</span>kVar</div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(3).split('.')[1] : 0}}</span></div>
+                  <div class="flex items-center">
+                    <div class="bullet" style="background-color:#E5B849;"></div>
+                    <div style="font-size: 14px">总无功功率(kVar)</div>
+                  </div>
                 </div>
               </div>
             </div>
             <div class="flex justify-around">
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
-                <div class="bullet" style="background-color:#AD3762;"></div>
                 <div class="flex" style="flex-direction: column">
-                  <div>总视在功率</div>
-                  <div><span style="font-weight: bold">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(3) : '0.000'}}</span>kVA</div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(3).split('.')[1] : 0}}</span></div>
+                  <div class="flex items-center">
+                    <div class="bullet" style="background-color:#AD3762;"></div>
+                    <div style="font-size: 14px">总视在功率(kVA)</div>
+                  </div>
                 </div>
               </div>
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
-                <div class="bullet" style="background-color:#614e43;"></div>
                 <div class="flex" style="flex-direction: column">
-                  <div>总电力容量</div>
-                  <div><span style="font-weight: bold">{{roomDownVal.powerCapacity ? roomDownVal.powerCapacity : '-----------'}}</span></div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powerCapacity ? roomDownVal.powerCapacity.toFixed(0) : '-----------'}}</span></div>
+                  <div class="flex items-center">
+                    <div class="bullet" style="background-color:#614e43;"></div>
+                    <div style="font-size: 14px">总电力容量(kVA)</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -191,26 +202,71 @@
           </div>
         </el-skeleton>
       </el-card>
-       <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===false" style="height: 38vh">
+       <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===false" style="height: 36vh">
         <template #header>
           <div class="flex justify-between" style="align-items: center">
             <span style="font-weight: bold">环境/告警</span>
             <div>
-              <el-link @click.prevent="toggleTable = !toggleTable;updateChart();" type="primary">{{!toggleTable?'温度':'湿度'}}</el-link>
+              <!-- <el-link @click.prevent="toggleTable = !toggleTable;" type="primary">{{!toggleTable?'温度':'湿度'}}</el-link> -->
               <el-link @click="toggleAlarm = !toggleAlarm" type="primary" style="margin-left: 5px">切换</el-link>
             </div>
           </div>
         </template>
-        <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:30vh;"></div>
+        <el-skeleton :loading="loading" :rows="6" animated style="height:28vh;">
+          <div class="flex justify-around" style="height: 28vh;flex-direction: column">
+            <div class="flex justify-around">
+              <div class="flex" style="flex-direction: column">
+                <div>前门温度</div>
+                <div>平均：<span style="font-weight: bold">{{roomDownVal.temAvgFront ? roomDownVal.temAvgFront.toFixed(1) : 0}}</span>℃</div>
+                <div>最高：<span style="font-weight: bold">{{roomDownVal.temMaxFront ? roomDownVal.temMaxFront.toFixed(1) : 0}}</span>℃</div>
+              </div>
+              <div class="flex" style="flex-direction: column">
+                <div>前门湿度</div>
+                <div>平均：<span style="font-weight: bold">{{roomDownVal.humAvgFront ? roomDownVal.humAvgFront.toFixed(0) : 0}}</span>%</div>
+                <div>最高：<span style="font-weight: bold">{{roomDownVal.humMaxFront ? roomDownVal.humMaxFront.toFixed(0) : 0}}</span>%</div>
+              </div>
+            </div>
+            <div class="flex justify-around">
+              <div class="flex" style="flex-direction: column">
+                <div>后门温度</div>
+                <div>平均：<span style="font-weight: bold">{{roomDownVal.temAvgBlack ? roomDownVal.temAvgBlack.toFixed(1) : 0}}</span>℃</div>
+                <div>最高：<span style="font-weight: bold">{{roomDownVal.temMaxBlack ? roomDownVal.temMaxBlack.toFixed(1) : 0}}</span>℃</div>
+              </div>
+              <div class="flex" style="flex-direction: column">
+                <div>后门湿度</div>
+                <div>平均：<span style="font-weight: bold">{{roomDownVal.humAvgBlack ? roomDownVal.humAvgBlack.toFixed(0) : 0}}</span>%</div>
+                <div>最高：<span style="font-weight: bold">{{roomDownVal.humMaxBlack ? roomDownVal.humMaxBlack.toFixed(0) : 0}}</span>%</div>
+              </div>
+            </div>
+            <!-- <div class="flex justify-around">
+              <Echart :height="130" :width="130" :options="powRoomChartOptions" />
+            </div> -->
+          </div>
+        </el-skeleton>
+        <!-- <div ref="lineidChartContainer" id="lineidChartContainer" style="height:28vh;"></div> -->
       </el-card>
-      <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===true" style="height: 38vh">
+      <el-card shadow="never" class="mb-8px" v-show="toggleAlarm===true" style="height: 36vh">
         <template #header>
           <div class="flex justify-between" style="align-items: center">
             <span style="font-weight: bold">环境/告警</span>
             <el-link @click="toggleAlarm = !toggleAlarm;" type="primary">切换</el-link>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated>
+        <el-skeleton :loading="loading" :rows="6" animated>
+          <div class="flex justify-around" style="margin-bottom: 15px">
+            <div class="flex" style="flex-direction: column">
+              <div>未处理</div>
+              <div style="font-weight: bold;text-align: center">{{alarmInfo.untreated}}</div>
+            </div>
+            <div class="flex" style="flex-direction: column">
+              <div>已挂起</div>
+              <div style="font-weight: bold;text-align: center">{{alarmInfo.hung}}</div>
+            </div>
+            <div class="flex" style="flex-direction: column">
+              <div>已确认</div>
+              <div style="font-weight: bold;text-align: center">{{alarmInfo.confirm}}</div>
+            </div>
+          </div>
           <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
             <el-table :data="alarmData" style="width: 100%" border class="text-12px" tooltip-formatter="tableRowFormatter">
               <el-table-column prop="alarmTypeDesc" label="告警类型">
@@ -228,12 +284,45 @@
           </div>
         </el-skeleton>
       </el-card>
-      <el-card shadow="never" style="margin-bottom: 15px;height:24vh;">
+      <el-card shadow="never" style="margin-bottom: 15px;height:28vh;">
         <template #header>
-          <div style="font-weight: bold;font-size: 16px;">设备</div>
+          <div class="flex justify-between" style="align-items: center">
+            <span style="font-weight: bold">设备</span>
+            <div class="flex items-center justify-between" style="font-size: 12px;width: 40%">
+              <div class="flex items-center"><div style="width: 12px;height:12px;background-color: #e5b849;border-radius:3px;margin-right:3px;"></div>机柜</div>
+              <div class="flex items-center"><div style="width: 12px;height:12px;background-color: #0b758a;border-radius:3px;margin-right:3px;"></div>{{deviceInfo.pduNum != 0 ? 'PDU' : '母线'}}</div>
+            </div>
+          </div>
         </template>
-        <div style="height:14vh;display: flex;flex-direction: column;justify-content: space-between">
-          <div class="flex items-center" style="height: 40%;">
+        <div style="height:20vh;display: flex;justify-content: space-between;align-items: center">
+          <div class="flex" style="flex-direction: column">
+            <el-progress type="circle" :percentage="deviceInfo.cabUse/deviceInfo.cabNum*100" width="140" stroke-width="24" color="#e5b849" stroke-linecap="butt">
+              <div class="flex" style="flex-direction: column">
+                <span style="font-size: 14px">开通</span>
+                <span style="font-weight: bold;color: black;padding-top: 5px">{{deviceInfo.cabUse}}</span>
+              </div>
+            </el-progress>
+            <div class="flex justify-center" style="color: #71737a;font-size: 14px">机柜总数：{{deviceInfo.cabNum}}</div>
+          </div>
+          <div v-if="deviceInfo.pduNum != 0" class="flex" style="flex-direction: column">
+            <el-progress type="circle" :percentage="deviceInfo.pduOnLine/deviceInfo.pduNum*100" width="140" stroke-width="24" color="#0b758a" stroke-linecap="butt">
+              <div class="flex" style="flex-direction: column">
+                <span style="font-size: 14px">在线</span>
+                <span style="font-weight: bold;color: black;padding-top: 5px">{{deviceInfo.pduOnLine}}</span>
+              </div>
+            </el-progress>
+            <div class="flex justify-center" style="color: #71737a;font-size: 14px">PDU总数：{{deviceInfo.pduNum}}</div>
+          </div>
+          <div v-else class="flex" style="flex-direction: column">
+            <el-progress type="circle" :percentage="deviceInfo.busOnLine/deviceInfo.busNum*100" width="140" stroke-width="24" color="#0b758a" stroke-linecap="butt">
+              <div class="flex" style="flex-direction: column">
+                <span style="font-size: 14px">在线</span>
+                <span style="font-weight: bold;color: black;padding-top: 5px">{{deviceInfo.busOnLine}}</span>
+              </div>
+            </el-progress>
+            <div class="flex justify-center" style="color: #71737a;font-size: 14px">母线总数：{{deviceInfo.busNum}}</div>
+          </div>
+          <!-- <div class="flex items-center" style="height: 40%;">
             <div style="height: 100%;margin-right: 0.5vw">
               <img alt="" src="@/assets/imgs/dn.jpg" style="height: 100%" />
             </div>
@@ -299,7 +388,7 @@
                 <div style="font-weight: bold">{{deviceInfo.busNum}}</div>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
         <!-- <div style="height:14vh;display: flex;flex-direction: column;justify-content: space-around">
           <div style="display: flex; align-items: center;">
@@ -323,6 +412,7 @@
 <script lang="ts" setup>
 import CabTopology from "../topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
+import { MachineHomeApi } from '@/api/cabinet/home'
 import { AlarmApi } from '@/api/system/notify/alarm'
 import { EChartsOption } from 'echarts'
 import { formatDate} from '@/utils/formatTime';
@@ -350,12 +440,14 @@ const containerInfo = reactive({
   roomId: query.roomId
 }) // 机房拓扑容器信息
 const deviceInfo = reactive({}) // 设备信息
+const alarmInfo = reactive({}) // 警告信息
 const EqInfo = reactive({}) // 用能信息
 const roomDownVal = reactive({}) // 机房信息
 const envInfo = reactive({}) // 空间信息
 const echartInfo = reactive<any>({}) //配置图表的数据系列
 const toggleTable = ref(true)
 const toggleAlarm = ref(false)
+const toggleRadar = ref(true)
 const loading = ref(true)
 const alarmData = ref([])
 const tableData = ref([
@@ -506,62 +598,29 @@ const powRoomChartOptions = ref({
   ]
 });
 
-const powChartOptionsBar = ref({
-  title: { text: ''},
-  tooltip: { 
-    trigger: 'item',
-    confine: true,      
-    formatter: function (params) {
-      console.log(params)
-      let result = params.seriesName + "：" + params.value
-      if(params.seriesName == "视在功率") {
-        result += 'kVA'
-      } else if(params.seriesName == "有功功率") {
-        result += 'kW'
-      } else if(params.seriesName == "无功功率") {
-        result += 'kVar'
-      }
-      return result
-    }},
-  grid: {
-    left: '15%'
-  },
-  legend: {
-    data: ['视在功率', '有功功率','无功功率'], // 图例项
-    bottom: '0%'
-  },
-  xAxis: {
-    type: 'category',
-    data:[],
-    axisLabel: {
-      interval: 0, // 显示所有标签（0 表示不跳过任何标签）
+const computedEnInfo = computed(() => {
+  if(roomDownVal.aisleList?.length > 5 && !toggleRadar.value){
+    return {
+      overflowX:'auto',
     }
-  },
-  yAxis: {
-    type: 'value',
-    boundaryGap: false
-  },
-  series: [
-    {
-      name: '视在功率',
-      type: 'bar',
-      data: [],
-    },
-    {
-      name: '有功功率',
-      type: 'bar',
-      data: [],
-    },
-    {
-      name: '无功功率',
-      type: 'bar',
-      data: [],
-    }
-  ]
+  }
 })
 
-const powChartOptions = ref({
-  // tooltip: {
+const computedEnInfoWidth = computed(() => {
+  let num = Math.floor(roomDownVal.aisleList?.length / 20) + 1
+  num = num * 20 + 10
+  if(roomDownVal.aisleList?.length > 5 && toggleRadar.value){
+    return {
+      width:num+'vw',
+    }
+  }
+})
+
+const selectedActive = ref(true)
+const selectedApparent = ref(false)
+const selectedReactive = ref(false)
+
+// tooltip: {
   //   trigger: 'item',
   //   axisPointer: {
   //     type: 'shadow'
@@ -578,36 +637,39 @@ const powChartOptions = ref({
   //     return result;
   //   }
   // },
-  legend: {
-    data: ['视在功率', '有功功率', '无功功率'],
-    bottom: '0%'
-  },
-  radar: {
-    // shape: 'circle',
-    indicator: [
-      '柜列1'
-    ]
-  },
-  series: [
-    {
-      name: '功率',
-      type: 'radar',
-      data: [
-        {
-          value: [0],
-          name: '视在功率'
-        },
-        {
-          value: [0],
-          name: '有功功率'
-        },
-        {
-          value: [0],
-          name: '无功功率'
-        }]
-    }
-  ]
-});
+
+// const powChartOptions = ref({
+//   legend: {
+//     data: ['视在功率', '有功功率', '无功功率'],
+//     bottom: '0%'
+//   },
+//   radar: {
+//     // shape: 'circle',
+//     indicator: [
+//       '柜列1'
+//     ],
+//     radius: '65%'
+//   },
+//   series: [
+//     {
+//       name: '功率',
+//       type: 'radar',
+//       data: [
+//         {
+//           value: [0],
+//           name: '视在功率'
+//         },
+//         {
+//           value: [0],
+//           name: '有功功率'
+//         },
+//         {
+//           value: [0],
+//           name: '无功功率'
+//         }]
+//     }
+//   ]
+// });
 
 const chartContainer2 = ref<HTMLElement | null>(null);
 const chartContainer3 = ref<HTMLElement | null>(null);
@@ -619,6 +681,10 @@ let myChart4 = null as echarts.ECharts | null;
 
 let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainer = ref<HTMLElement | null>(null);
+let powChartOptionsBar = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const powChartOptionsBarContainer = ref<HTMLElement | null>(null);
+let powChartOptions = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const powChartOptionsContainer = ref<HTMLElement | null>(null);
 
 const clickPower = async () => {
   switchChartContainer.value =1
@@ -730,9 +796,9 @@ const initChart2 = () => {
           bottom: '10%', // 设置下侧边距
         },
         series: typeRadio.value === '功率曲线' ? [
-          {name: '总视在功率', type: 'line', symbol: 'none', data: L1Data.value},
-          {name: '总有功功率', type: 'line', symbol: 'none', data: L2Data.value},
-          {name: '总无功功率', type: 'line', symbol: 'none', data: L3Data.value},
+          {name: '总视在功率', type: 'line', symbol: 'none', data: L1Data.value, itemStyle: { color: '#AD3762'}},
+          {name: '总有功功率', type: 'line', symbol: 'none', data: L2Data.value, itemStyle: { color: '#0b758a'}},
+          {name: '总无功功率', type: 'line', symbol: 'none', data: L3Data.value, itemStyle: { color: '#e5b849'}},
         ] : [
           {name: '统计', type: 'line', symbol: 'none', data: L1Data.value},
           {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
@@ -779,45 +845,20 @@ const initChart3 = () => {
         }},
         legend: { orient: 'horizontal', right: '25'},
         dataZoom:[{type: "inside"}],
-        xAxis: {type: 'category', boundaryGap: false, data:eqCreateTimeData.value},
+        xAxis: {type: 'category', data:eqCreateTimeData.value},
         yAxis: { 
           type: 'value',
-          axisLabel: {
-            formatter: function(value) {
-              // 根据 typeRadio 的值添加单位
-              if (typeRadio.value === '电流') {
-                return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-                return value + ' V';
-              } else if (typeRadio.value === '有功功率') {
-                return value + ' kW';
-              } else if (typeRadio.value === '无功功率') {
-                return value + ' kVar';
-              } else if (typeRadio.value === '视在功率') {
-                return value + ' kVA'; 
-              } else if (typeRadio.value === '负载率') {
-                return value + '%';
-              } else if (typeRadio.value === '有效电能') {
-                return value + ' kWh';
-              } else {
-                return value; // 如果没有匹配，返回原值
-              }
-            }
-          }
+          name: 'kWh'
         },
         grid: {
-          left: '10%',   // 设置左侧边距
+          left: '8%',   // 设置左侧边距
           right: '8%',  // 设置右侧边距
           top: '10%',    // 设置上侧边距
           bottom: '10%', // 设置下侧边距
         },
-        series: typeRadio.value === '功率曲线' ? [
-          {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
-        ] : (typeRadio.value === 'PUE' ? [
-          {name: 'PUE', type: 'line', symbol: 'none', data: eqValue.value},
-        ] : [
-          {name: '负载率', type: 'line', symbol: 'none', data: eqValue.value},
-        ]),
+        series: [
+          {name: '电量', type: 'bar', symbol: 'none', data: eqValue.value},
+        ],
       }
     );
 
@@ -935,9 +976,9 @@ const getLineChartData =async () => {
       //L1Data.value = [];
       //L2Data.value = [];
       //L3Data.value = [];
-      await initData();
-      isHaveData.value = true
-      initChart4()
+      // await initData();
+      // isHaveData.value = true
+      // initChart4()
     }else{
     }
 
@@ -1040,6 +1081,13 @@ const initData = () => {
   }
 }
 
+watch( ()=>toggleRadar.value, async()=>{
+  if(powChartOptions) {
+    powChartOptions.dispose()
+  }
+  updatePowChartOptions()
+})
+
 watch( ()=>typeRadioShow.value, async()=>{
   await initData()
   await initChart2()
@@ -1050,219 +1098,13 @@ watch( ()=>typeRadio.value, async(value)=>{
   //L1Data.value = [];
   //L2Data.value = [];
   //L3Data.value = [];
-  await initData();
-  if ( value == '有效电能'){
-     // 选有效电能不能选近一小时
-     isHourDisabled.value = true
-  }else{
-    isHourDisabled.value = false
+  if(value == "有效电能") {
+    return
   }
+  await initData();
   // 更新数据后重新渲染图表
-  myChart2?.setOption({
-        tooltip: { trigger: 'axis' ,formatter: function(params) {
-          var result = params[0].name + '<br>';
-          for (var i = 0; i < params.length; i++) {
-            result +=  params[i].marker + params[i].seriesName;
-            if(dataTime.value.L1DataTime.length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
-              result += '发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
-            }
-            result += '&nbsp&nbsp' + params[i].value
-            //判断是否给鼠标悬停上显示符号
-            if(typeRadio.value === '电流') {
-              result += ' A';
-            }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-              result += ' V';
-            }else if (typeRadio.value === '有功功率') {
-              result += ' kW';
-            }else if (typeRadio.value === '无功功率') {
-              result += ' kVar';
-            }else if(typeRadio.value === '视在功率') {
-              result += ' kVA'; 
-            }else if(typeRadio.value === '功率曲线') {
-              if(params[i].componentIndex == 0) {
-                result += ' kVA'; 
-              }else if(params[i].componentIndex == 1) {
-                result += ' kW';
-              }else if(params[i].componentIndex == 2) {
-                result += ' kVar';
-              }
-            }else if (typeRadio.value === '负载率') {
-              result += '%';
-            }else if (typeRadio.value === '有效电能') {
-              result += ' kWh';
-            }
-            result += '<br>';
-          }
-          return result;
-        }},
-        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-        yAxis: { 
-          type: 'value',
-          axisLabel: {
-            formatter: function(value) {
-              // 根据 typeRadio 的值添加单位
-              if (typeRadio.value === '电流') {
-                return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-                return value + ' V';
-              } else if (typeRadio.value === '有功功率') {
-                return value + ' kW';
-              } else if (typeRadio.value === '无功功率') {
-                return value + ' kVar';
-              } else if (typeRadio.value === '视在功率') {
-                return value + ' kVA'; 
-              } else if (typeRadio.value === '负载率') {
-                return value + '%';
-              } else if (typeRadio.value === '有效电能') {
-                return value + ' kWh';
-              } else {
-                return value; // 如果没有匹配，返回原值
-              }
-            }
-          }
-        },
-                grid: {
-          left: '6%',   // 设置左侧边距
-          right: '6%',  // 设置右侧边距
-          top: '10%',    // 设置上侧边距
-          bottom: '10%', // 设置下侧边距
-        },
-      series: typeRadio.value === '功率曲线' ? [
-        {name: '总视在功率', type: 'line', symbol: 'none', data: L1Data.value},
-        {name: '总有功功率', type: 'line', symbol: 'none', data: L2Data.value},
-        {name: '总无功功率', type: 'line', symbol: 'none', data: L3Data.value},
-      ] : [
-        {name: '统计', type: 'line', symbol: 'none', data: L1Data.value},
-        {name: 'A路', type: 'line', symbol: 'none', data: L2Data.value},
-        {name: 'B路', type: 'line', symbol: 'none', data: L3Data.value},
-      ],
-    });
-  myChart3?.setOption({
-      tooltip: { trigger: 'axis' ,formatter: function(params) {
-        var result = params[0].name + '<br>';
-        for (var i = 0; i < params.length; i++) {
-          result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-          //判断是否给鼠标悬停上显示符号
-          if(typeRadio.value === '电流') {
-            result += ' A';
-          }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-            result += ' V';
-          }else if (typeRadio.value === '有功功率') {
-            result += ' kW';
-          }else if (typeRadio.value === '无功功率') {
-            result += ' kVar';
-          }else if(typeRadio.value === '视在功率') {
-            result += ' kVA'; 
-          }else if (typeRadio.value === '负载率') {
-            result += '%';
-          }else if (typeRadio.value === '有效电能') {
-            result += ' kWh';
-          }
-          result += '<br>';
-        }
-        return result;
-      }},
-      yAxis: { 
-        type: 'value',
-        axisLabel: {
-          formatter: function(value) {
-            // 根据 typeRadio 的值添加单位
-            if (typeRadio.value === '电流') {
-              return value + ' A';
-            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-              return value + ' V';
-            } else if (typeRadio.value === '有功功率') {
-              return value + ' kW';
-            } else if (typeRadio.value === '无功功率') {
-              return value + ' kVar';
-            } else if (typeRadio.value === '视在功率') {
-              return value + ' kVA'; 
-            } else if (typeRadio.value === '负载率') {
-              return value + '%';
-            } else if (typeRadio.value === '有效电能') {
-              return value + ' kWh';
-            } else {
-              return value; // 如果没有匹配，返回原值
-            }
-          }
-        }
-      },            
-              grid: {
-          left: '8%',   // 设置左侧边距
-          right: '8%',  // 设置右侧边距
-          top: '10%',    // 设置上侧边距
-          bottom: '10%', // 设置下侧边距
-        },
-      series: [
-        {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
-      ],
-    });
-    // 更新数据后重新渲染图表
-    myChart4?.setOption({
-      tooltip: { trigger: 'axis' ,formatter: function(params) {
-          var result = params[0].name + '<br>';
-          for (var i = 0; i < params.length; i++) {
-            result +=  params[i].marker + params[i].seriesName;
-            if(dataTime.value.L1DataTime.length && dataTime.value[`L${i+1}DataTime`][params[i].dataIndex] != '') {
-              result += '发生时间:' + dataTime.value[`L${i+1}DataTime`][params[i].dataIndex]
-            }
-            result += '&nbsp&nbsp' + params[i].value
-            //判断是否给鼠标悬停上显示符号
-            if(typeRadio.value === '电流') {
-              result += ' A';
-            }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-              result += ' V';
-            }else if (typeRadio.value === '有功功率') {
-              result += ' kW';
-            }else if (typeRadio.value === '无功功率') {
-              result += ' kVar';
-            }else if(typeRadio.value === '视在功率') {
-              result += ' kVA'; 
-            }else if (typeRadio.value === '负载率') {
-              result += '%';
-            }else if (typeRadio.value === '有效电能') {
-              result += ' kWh';
-            }
-            result += '<br>';
-          }
-          return result;
-        }},
-        xAxis: {type: 'category', boundaryGap: false, data:lpCreateTimeData.value},
-        yAxis: { 
-          type: 'value',
-          axisLabel: {
-            formatter: function(value) {
-              // 根据 typeRadio 的值添加单位
-              if (typeRadio.value === '电流') {
-                return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
-                return value + ' V';
-              } else if (typeRadio.value === '有功功率') {
-                return value + ' kW';
-              } else if (typeRadio.value === '无功功率') {
-                return value + ' kVar';
-              } else if (typeRadio.value === '视在功率') {
-                return value + ' kVA'; 
-              } else if (typeRadio.value === '负载率') {
-                return value + '%';
-              } else if (typeRadio.value === '有效电能') {
-                return value + ' kWh';
-              } else {
-                return value; // 如果没有匹配，返回原值
-              }
-            }
-          }
-        },
-                grid: {
-          left: '5%',   // 设置左侧边距
-          right: '5%',  // 设置右侧边距
-          top: '10%',    // 设置上侧边距
-          bottom: '10%', // 设置下侧边距
-        },
-      series: [
-        {name: typeRadio.value, type: 'line', symbol: 'none', data: L1Data.value},
-      ],
-    });
+  await initChart2()
+  await initChart4()
 });
 
 // 监听切换时间颗粒度
@@ -1372,12 +1214,13 @@ const handleBackData = (data) => {
   console.log('***',data)
   Object.assign(roomDownVal, data)
 
-  
-  updateChart()
+  if(roomDownVal.aisleList?.length <= 5 && loading.value) {
+    toggleRadar.value = false
+  }
+  // updateChart()
   getRoomEqData()
   getHomeAlarmData()
   updatePowChartOptions()
-  loading.value = false
 }
 
 const updatePowChartOptions = () => {
@@ -1385,81 +1228,202 @@ const updatePowChartOptions = () => {
   let powActiveData
   let powReactiveData
   if(roomDownVal.aisleList) {
-    powApparentData = roomDownVal.aisleList.map(item => item.powApparentTotal ? item.powApparentTotal.toFixed(3) : '0.000')
-    powActiveData = roomDownVal.aisleList.map(item => item.powActiveTotal ? item.powActiveTotal.toFixed(3) : '0.000')
-    powReactiveData = roomDownVal.aisleList.map(item => item.powReactiveTotal ? item.powReactiveTotal.toFixed(3) : '0.000')
+    powApparentData = roomDownVal.aisleList.sort((a,b) => b.powApparentTotal - a.powApparentTotal).map(item => item.powApparentTotal ? item.powApparentTotal.toFixed(0) : '0')
+    powActiveData = roomDownVal.aisleList.sort((a,b) => b.powActiveTotal - a.powActiveTotal).map(item => item.powActiveTotal ? item.powActiveTotal.toFixed(0) : '0')
+    powReactiveData = roomDownVal.aisleList.sort((a,b) => b.powReactiveTotal - a.powReactiveTotal).map(item => item.powReactiveTotal ? item.powReactiveTotal.toFixed(0) : '0')
+
+    if(selectedActive.value) {
+      roomDownVal.aisleList.sort((a,b) => b.powActiveTotal - a.powActiveTotal)
+    } else if(selectedApparent.value) {
+      roomDownVal.aisleList.sort((a,b) => b.powApparentTotal - a.powApparentTotal)
+    } else if(selectedReactive.value) {
+      roomDownVal.aisleList.sort((a,b) => b.powReactiveTotal - a.powReactiveTotal)
+    }
   } else {
     powApparentData = []
     powActiveData = []
     powReactiveData = []
   }
-  if(roomDownVal.aisleList.length >= 6) {
-    powChartOptions.value.radar.indicator = roomDownVal.aisleList.map(item => ({name: item.aisleName}))
-  
-    powChartOptions.value.series = [
-      {
-        name: '功率',
-        type: 'radar',
-        data: [
-          {
-            value: powApparentData,
-            name: '视在功率'
-          },
-          {
-            value: powActiveData,
-            name: '有功功率'
-          },
-          {
-            value: powReactiveData,
-            name: '无功功率'
-          }
-        ]
-      }
-    ]
-
-    powRoomChartOptions.value.series = [
-      {
-        type: 'pie',
-        label: {
-          show: false
-        },
-        data: [
-          { value: roomDownVal.powActive ? roomDownVal.powActive.toFixed(3) : '0.000', name: '总有功功率', itemStyle: { color: '#E5B849' } },
-          { value: roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(3) : '0.000', name: '总无功功率', itemStyle: { color: '#C8603A' } },
-          { value: roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(3) : '0.000', name: '总视在功率', itemStyle: { color: '#AD3762' } },
-        ]
-      }
-    ]
+  powChartOptions = echarts.init(document.getElementById('powChartOptionsContainer'));
+  if(toggleRadar.value) {
+    powChartOptions.setOption({
+      legend: {
+        data: ['有功功率', '视在功率', '无功功率'],
+        bottom: '0%',
+        show: false,
+        selected: {
+          '有功功率': selectedActive.value,
+          '视在功率': selectedApparent.value,
+          '无功功率': selectedReactive.value
+        }
+      },
+      radar: {
+        // shape: 'circle',
+        indicator: roomDownVal.aisleList.map(item => ({name: item.aisleName})),
+      },
+      series: [
+        {
+          name: '功率',
+          type: 'radar',
+          symbol: 'none',
+          data: [
+            {
+              value: powApparentData,
+              name: '视在功率',
+              itemStyle: {
+                color: '#ad3762'
+              },
+              areaStyle: {
+                color: '#ad3762'
+              }
+            },
+            {
+              value: powActiveData,
+              name: '有功功率',
+              itemStyle: {
+                color: '#c8603a'
+              },
+              areaStyle: {
+                color: '#c8603a'
+              }
+            },
+            {
+              value: powReactiveData,
+              name: '无功功率',
+              itemStyle: {
+                color: '#e5b849'
+              },
+              areaStyle: {
+                color: '#e5b849'
+              }
+            }
+          ]
+        }
+      ]
+    })
   } else {
-    powChartOptionsBar.value.xAxis = {
-      type: 'category',
-      data: roomDownVal.aisleList.map(item => item.aisleName),
-      axisLabel: {
-        interval: 0, // 显示所有标签（0 表示不跳过任何标签）
-      }
+    powChartOptions.setOption({
+      title: { text: ''},
+      tooltip: { 
+        trigger: 'item',
+        confine: true,      
+        formatter: function (params) {
+          console.log(params)
+          let result = params.seriesName + "：" + params.value
+          if(params.seriesName == "视在功率") {
+            result += 'kVA'
+          } else if(params.seriesName == "有功功率") {
+            result += 'kW'
+          } else if(params.seriesName == "无功功率") {
+            result += 'kVar'
+          }
+          return result
+        }},
+      legend: {
+        data: ['有功功率', '视在功率', '无功功率'],
+        bottom: '0%',
+        show: false,
+        selected: {
+          '有功功率': selectedActive.value,
+          '视在功率': selectedApparent.value,
+          '无功功率': selectedReactive.value
+        }
+      },
+      xAxis: {
+        type: 'category',
+        data: roomDownVal.aisleList.map(item => item.aisleName),
+        axisLabel: {
+          width: 80, // 固定每个标签的宽度
+          overflow: 'truncate', // 超出截断
+          ellipsis: '...', // 显示省略号
+          interval: 0 // 强制显示所有标签
+        }
+      },  
+      yAxis: {
+        type: 'value',
+        boundaryGap: false,
+        name: getCurrentUnit()
+      },
+      series: [
+        {
+          name: '视在功率',
+          type: 'bar',
+          barWidth: '20',
+          data: powApparentData,
+          itemStyle: {
+            color: '#ad3762'
+          },
+          label: {
+            show: true,
+            position: 'top', // 顶部显示
+            formatter: '{c}', // 显示数据值
+          }
+        },
+        {
+          name: '有功功率',
+          type: 'bar',
+          barWidth: '20',
+          data: powActiveData,
+          itemStyle: {
+            color: '#c8603a'
+          },
+          label: {
+            show: true,
+            position: 'top', // 顶部显示
+            formatter: '{c}', // 显示数据值
+          }
+        },
+        {
+          name: '无功功率',
+          type: 'bar',
+          barWidth: '20',
+          data: powReactiveData,
+          itemStyle: {
+            color: '#e5b849'
+          },
+          label: {
+            show: true,
+            position: 'top', // 顶部显示
+            formatter: '{c}', // 显示数据值
+          }
+        }
+      ]
+    })
+
+    if(roomDownVal.aisleList?.length <= 5) {
+      powChartOptions.setOption({
+        grid: {
+          top: '12%',
+          left: '10%',
+          bottom: '8%'
+        },
+      })
+    } else {
+      powChartOptions.setOption({
+        grid: {
+          top: '12%',
+          left: '5%',
+          bottom: '8%'
+        },
+      })
     }
-    powChartOptionsBar.value.series = [
-      {
-        name: '视在功率',
-        type: 'bar',
-        data: powApparentData,
-      },
-      {
-        name: '有功功率',
-        type: 'bar',
-        data: powActiveData,
-      },
-      {
-        name: '无功功率',
-        type: 'bar',
-        data: powReactiveData,
-      }
-    ]
   }
-  console.log(powChartOptionsBar.value)
+}
+
+const getCurrentUnit = () => {
+  if (selectedActive.value) {
+    return 'kW';
+  } else if (selectedReactive.value) {
+    return 'kVar';
+  } else if (selectedApparent.value) {
+    return 'kVA'; 
+  }
 }
 
 const getHomeAlarmData = async() => {
+  const res =  await MachineHomeApi.getHomeAlarmData({roomId: Number(roomId.value)})
+  Object.assign(alarmInfo, res)
+
   //获取告警轮播信息
   const res2 = await AlarmApi.getAlarmRecord({
     pageNo: 1,
@@ -1470,6 +1434,11 @@ const getHomeAlarmData = async() => {
   if (res2.list) {
     alarmData.value = res2.list
   }
+  if(alarmData.value.length) {
+    toggleAlarm.value = true
+  }
+
+  loading.value = false
 }
 
 const initChart = () => {
@@ -1558,9 +1527,6 @@ const updateChart = () => {
         }
       ]
     })
-    if(!roomDownVal.temAvgFront && !roomDownVal.temAvgBlack && !roomDownVal.temMaxFront && !roomDownVal.temMaxBlack && loading.value) {
-      toggleAlarm.value = true
-    }
   }else if(toggleTable.value === false){
     lineidChart.setOption( {
       title: { text: ''},
@@ -1603,9 +1569,6 @@ const updateChart = () => {
         }
       ]
     })
-    if(!roomDownVal.humAvgFront && !roomDownVal.humAvgBlack && !roomDownVal.humMaxFront && !roomDownVal.humMaxBlack && loading.value) {
-      toggleAlarm.value = true
-    }
   }
 }
 
@@ -1749,6 +1712,15 @@ const handleScroll = (event, containerName) => {
   }, 1000); // 延迟时间，单位毫秒，可以根据需要调整
 };
 
+const handleResize = () => {
+  if(lineidChart) {
+    lineidChart.resize()
+  }
+  if(myChart2) {
+    myChart2.resize()
+  }
+}
+
 onMounted(() => {
   const centerEle = document.getElementById('center')
   containerInfo.width = centerEle?.offsetWidth as number
@@ -1756,6 +1728,8 @@ onMounted(() => {
   if (scrollableContainerOne.value) {
     scrollableContainerOne.value.addEventListener('scroll', (event) => handleScroll(event, 'scrollableContainerOne'));
   }
+
+  window.addEventListener('resize', handleResize)
  
   // 初始启动自动滚动
   startScrolling();
@@ -1766,6 +1740,7 @@ onUnmounted(() => {
   if (scrollableContainerOne.value) {
     scrollableContainerOne.value.removeEventListener('scroll', (event) => handleScroll(event, 'scrollableContainerOne'));
   }
+  window.removeEventListener('resize',handleResize);
  
   // 确保在组件卸载时清除定时器
   stopScrolling();
@@ -1778,12 +1753,14 @@ onUnmounted(() => {
   width: 100%;
   // height: calc(100vh - 120px);
   min-height: 550px;
+  height: 100%;
   // max-height: calc(100vh - 120px);
   box-sizing: border-box;
   // background-color: #999;
   display: flex;
   .center {
     flex: 1;
+    width: 60%;
     box-sizing: border-box;
     overflow: auto;
     margin: 0 15px;
@@ -1803,7 +1780,7 @@ onUnmounted(() => {
     }
   }
   .left {
-    width: 300px;
+    width: 20%;
     box-sizing: border-box;
     overflow: hidden;
     box-sizing: border-box;
@@ -1811,7 +1788,7 @@ onUnmounted(() => {
     flex-direction: column;
   }
   .right {
-    width: 300px;
+    width: 20%;
     box-sizing: border-box;
     overflow: hidden;
     box-sizing: border-box;
@@ -1845,8 +1822,8 @@ onUnmounted(() => {
   display: inline-block;
   margin-right: 5px;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
 }
 
 .count_img {
@@ -1905,7 +1882,7 @@ onUnmounted(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .scrollable-container-one{
-    height: 28vh;
+    height: 22vh;
     overflow-y:auto;
   }
 }

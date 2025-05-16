@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.aisle.controller.admin;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import cn.iocoder.yudao.framework.common.util.ThreadPoolConfig;
 import cn.iocoder.yudao.module.aisle.dto.AisleDataDTO;
 import cn.iocoder.yudao.module.aisle.dto.AisleEqDataDTO;
 import cn.iocoder.yudao.module.aisle.dto.AisleListDTO;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -35,6 +38,8 @@ public class AisleController {
     @Autowired
     AisleService aisleService;
 
+    @Value("${aisle-refresh-url}")
+    public String adder;
     /**
      * 柜列列表
      *
@@ -59,6 +64,7 @@ public class AisleController {
     }
 
 
+
     /**
      * 柜列新增/编辑页面
      *
@@ -67,7 +73,15 @@ public class AisleController {
     @Operation(summary = "柜列新增/编辑")
     @PostMapping("/aisle/save")
     public CommonResult<Integer> saveAisle(@RequestBody AisleSaveVo vo) {
-        return CommonResult.success(aisleService.aisleSave(vo));
+        Integer i = aisleService.aisleSave(vo);
+        if (i>0){
+            ThreadPoolConfig.getTHreadPool().execute(()->{
+                //刷新柜列计算服务缓存
+                log.info("刷新计算服务缓存 --- " + adder);
+                HttpUtil.get(adder);
+            });
+        }
+        return CommonResult.success(i);
     }
 
 
@@ -80,6 +94,10 @@ public class AisleController {
     @GetMapping("/aisle/delete")
     public CommonResult<Integer> deleteAisle(@Param("id") int id) {
          aisleService.deleteAisle(id);
+         ThreadPoolConfig.getTHreadPool().execute(()->{
+             log.info("刷新计算服务缓存 --- " + adder);
+             HttpUtil.get(adder);
+         });
         return success(id);
     }
 
@@ -121,12 +139,12 @@ public class AisleController {
      *
      * @param vo
      */
-    @Operation(summary = "柜列母线新增/编辑")
-    @PostMapping("/aisle/bus/save")
-    public CommonResult<Integer> saveBusAisle(@RequestBody AisleBusSaveVo vo)  {
-            aisleService.aisleBusSave(vo);
-        return CommonResult.success(vo.getAisleId());
-    }
+//    @Operation(summary = "柜列母线新增/编辑")
+//    @PostMapping("/aisle/bus/save")
+//    public CommonResult<Integer> saveBusAisle(@RequestBody AisleBusSaveVo vo)  {
+//            aisleService.aisleBusSave(vo);
+//        return CommonResult.success(vo.getAisleId());
+//    }
 
 
 

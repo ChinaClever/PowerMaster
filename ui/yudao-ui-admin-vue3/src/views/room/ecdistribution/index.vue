@@ -61,10 +61,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
           </el-form-item>
@@ -382,7 +382,7 @@ const initLineChart = () => {
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+      series: [{name: '耗电量', type: 'line', data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}},symbol: 'none'}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
@@ -451,11 +451,11 @@ const disabledDate = (date) => {
   // 如果date在今天之后，则禁用
   return date > today;
 }
-
-window.addEventListener('resize', function() {
+function resize() {
   lineChart?.resize();
   // rankChart?.resize();  
-});
+}
+window.addEventListener('resize', resize);
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
@@ -509,6 +509,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   lineChart?.dispose();
   lineChart = null;
+  window.removeEventListener('resize', resize);
 })
 //导出Excel
 const handleExport1 = async () => {
@@ -559,5 +560,15 @@ const handleExport1 = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+
+/deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
 }
 </style>

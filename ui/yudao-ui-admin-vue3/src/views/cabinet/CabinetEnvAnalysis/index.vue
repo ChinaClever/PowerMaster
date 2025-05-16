@@ -1,95 +1,31 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜环境分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜环境分析" :showCheckbox="false" placeholder="如:192.168.1.96-0" :hightCurrent="true" :currentKey="currentKey" :highlightTypes="[3]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <template v-if="queryParams.granularity == 'realtime' && queryParams.timeRange != null">
-          <span>{{queryParams.timeRange[0]}}</span>
-          <span>至</span>
-          <span>{{queryParams.timeRange[1]}}</span>
-        </template>
-        <br/>
-      </div>
-      <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="最高温度 | 发生时间">
-            <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最低温度 | 发生时间">
-            <span>{{ formatNumber(minTemDataTemp, 1) }} kWh</span><br/>
-            <span v-if="minTemDataTimeTemp">{{ minTemDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-    </div> -->
-
-    <div class="nav_header" style="font-size: 14px;">
+        <div class="nav_header" style="font-size: 14px;">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-      </div>
-    <div class="descriptions-container" v-if="maxTemDataTimeTemp" style="font-size: 14px;">
-                <!-- 处理原始数据和小时极值数据的菜单栏 -->
-
-
-          <div  class="description-item" v-if="queryParams.granularity != 'day'" >
-            <span class="label">最高温度 :</span>
-            <span >{{ formatNumber(maxTemDataTemp, 1)}} ℃</span>
-          </div>
-          <div v-if="maxTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
-          </div>
-
-          <div class="description-item" v-if="queryParams.granularity != 'day'">
-              <span class="label">最低温度 :</span>
-              <span >{{ formatNumber(minTemDataTemp, 1)}}℃ </span>
-            </div>
-          <div v-if="minTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
-          </div>
-
-          <!-- 处理天极值数据的菜单栏 -->
-          <div v-if="queryParams.granularity == 'day'&& queryParams.timeRange != null" class="description-item" > 
-            <span class="label">开始时间 :</span>
-            <span class="value">{{   formatTime(queryParams.timeRange[0])}}</span>
-          </div>
-          
-          <div  v-if="queryParams.granularity == 'day'  && queryParams.timeRange != null" class="description-item">
-            <span class="label">结束时间 :</span>
-            <span class="value">{{ formatTime(queryParams.timeRange[1])}}</span>
-          </div>
-          <div  class="description-item" v-if="queryParams.granularity == 'day'" >
+        </div>
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div  class="description-item" v-if="maxTemDataTemp!=null">
             <span class="label">最高温度 :</span>
             <span >{{ maxTemDataTemp}} ℃</span>
           </div>
-          <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
+          <div v-if="maxTemDataTimeTemp!=null" class="description-item">
+            <span class="label">时间 :</span>
+            <span class="value">{{ activeName=='dayExtremumTabPane'?formatTime(maxTemDataTimeTemp):maxTemDataTimeTemp }}</span>
           </div>
 
-          <div class="description-item" v-if="queryParams.granularity == 'day'">
+          <div class="description-item" v-if="minTemDataTemp!=null">
               <span class="label">最低温度 :</span>
               <span >{{minTemDataTemp}}℃ </span>
             </div>
-          <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
+          <div v-if="minTemDataTimeTemp!=null" class="description-item">
+            <span class="label">时间 :</span>
+            <span class="value">{{ activeName=='dayExtremumTabPane'?formatTime(minTemDataTimeTemp):minTemDataTimeTemp }}</span>
           </div>
-          
           <div class="line"></div>
       </div>
     </div>
@@ -109,19 +45,12 @@
         :inline="true"
         label-width="70px"
       >
-      <el-form-item label="传感器" prop="detect">
-        <el-select
-          v-model="detect"
-          class="!w-130px"
-          @change="handleQuery"
-          >
-          <el-option
-            v-for="item in sensorOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+      <el-form-item label="传感器">
+        <el-cascader
+          v-model="nowArray"
+          :options="options"
+          @change="handleChange"
           />
-        </el-select>
       </el-form-item>
 
       <el-form-item label="时间段" prop="timeRange" >
@@ -140,26 +69,32 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
 
-        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+        <el-form-item>
+          <el-button-group>
+            <el-button @click="changeTime('pre')" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
+            <el-button @click="changeTime('next')" style="background-color: #00778c;color:#ffffff;font-size: 13px;">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
+          </el-button-group>
+         </el-form-item>
+
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;position: absolute;top: 54px;right: 30px;">
+          <Icon icon="ep:download" class="mr-5px" /> 导出
+        </el-button>
       </el-form>
     </template>
     
     <template #Content>
       <div v-loading="loading">
-        <el-tabs v-model="activeName1" v-if="loading2">
+        <el-tabs v-model="activeName1" v-show="loading2">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" class="adaptiveStyle"></div>
           </el-tab-pane>
           
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
-              <el-table  
+              <!-- <el-table  
               :stripe="true" 
                 :border="true"
                 :data="tableData"
@@ -169,14 +104,12 @@
                 :row-style="{ fontSize: '14px', textAlign: 'center', }"
                 empty-text="暂无数据" max-height="818"
                 >
-              <!-- 添加行号列 -->
                 <el-table-column label="序号" align="center" width="100px">
                   <template #default="{ $index }">
                     {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
                   </template>
                 </el-table-column>
                 <el-table-column  prop="create_time" label="记录时间" />
-                <!-- 动态生成表头 -->
                 <template v-for="item in headerData" :key="item.name">
                   <el-table-column v-if="item.name === '最高温度'" label="温度最高值">
                     <el-table-column :prop="item.name" label="温度最高值℃"/>   
@@ -197,7 +130,45 @@
                   </el-table-column>
                   <el-table-column v-else :prop="item.name" :label="item.name"/>  
                 </template>
-              </el-table>
+              </el-table> -->
+              
+
+            <el-table 
+                :stripe="true" 
+                :border="true"
+                :data="tableData"
+                style="height: 100%; width: 99.97%;"
+                :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
+                :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+                :row-style="{ fontSize: '14px', textAlign: 'center', }"
+                empty-text="暂无数据" max-height="818">
+              <el-table-column label="序号" align="center" width="100px" fixed="left">
+                <template #default="{ $index }">
+                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                </template>
+              </el-table-column>
+              <el-table-column label="记录时间" align="center"  prop="createTime" min-width="150px"/>
+
+              <template v-if="activeName=='realtimeTabPane'">
+                <el-table-column label="温度(℃)" align="center"  :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].temValue`"/>
+                <el-table-column label="湿度(%RH)" align="center"  :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].humValue`"/>
+              </template>
+
+              <template v-if="activeName!='realtimeTabPane'">
+                <el-table-column label="平均温度(℃)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].tem_avg_value`"/>
+                <el-table-column label="平均湿度(%RH)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].hum_avg_value`"/>
+
+                <el-table-column label="最大温度(℃)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].tem_max_value`"/>
+                <el-table-column label="最大值发生时间" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].max_time`" />
+                <el-table-column label="最大湿度(%RH)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].hum_max_value`"/>
+                <el-table-column label="发生时间" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].max_time`"/>
+
+                <el-table-column label="最小温度(℃)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].tem_min_value`"/>
+                <el-table-column label="发生时间" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].min_time`"/>
+                <el-table-column label="最小湿度(%RH)" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].hum_min_value`"/>
+                <el-table-column label="发生时间" align="center" width="200px" :prop="`${nowArray[0]}[${Number(nowArray[1])-1}].min_time`"/>
+              </template>
+      </el-table>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -213,11 +184,12 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/pdu/envData'
 import { formatDate } from '@/utils/formatTime'
+import { HistoryDataApi } from '@/api/cabinet/historydata'
 import PDUImage from '@/assets/imgs/PDU.jpg'
+import {ArrowLeft,ArrowRight} from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { HistoryDataApi } from '@/api/pdu/historydata'
-import  CommonMenu1 from './CommonMenu1.vue'
+// import  CommonMenu1 from './CommonMenu1.vue'
 
 
 /** pdu曲线 */
@@ -236,11 +208,20 @@ const loading = ref(false) //  列表的加载中
 const detect = ref('') as any// 监测点的值 默认全部
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
+const next=ref("下一月");
+const pre=ref("上一月");
+const sensor=ref()
+const nowArray=ref(['front','2']);
+const currentKey=ref()
+if(history.state.cabinetId!=null){
+  currentKey.value=history.state.cabinetId
+  console.log("currentKey.value==",currentKey.value)
+}
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   pduId: undefined as number | undefined,
-  sensorId: undefined as number | undefined,
+  sensor: undefined as string[] | undefined,
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
   nowAddress: undefined as string | undefined,
@@ -251,22 +232,33 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(24*30)
 })
-// const route=useRoute()
-const carouselItems = ref([
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-    ]);//侧边栏轮播图图片路径
-// 传感器选项
-const sensorOptions = ref([
-  { value: "1", label: '传感器1'},
-  { value: "2", label: '传感器2'},
-  { value: "3", label: '传感器3'},
-  { value: "4", label: '传感器4'},
-  
-]) 
-
+const options=ref([{
+  label:'前门',
+  value:"front",
+  children:[{
+    value:'1',
+    label:'上'
+  },{
+    label:"中",
+    value:"2"
+  },{
+    label:'下',
+    value:"3"
+  }]
+},{
+  label:'后门',
+  value:"black",
+  children:[{
+    value:'1',
+    label:'上'
+  },{
+    label:"中",
+    value:"2"
+  },{
+    label:'下',
+    value:"3"
+  }]
+}])
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -365,6 +357,11 @@ const shortcuts2 = [
   },
 ]
 
+const defaultExpandedKeys = ref([])
+if(history.state.cabinetId!=null){
+  defaultExpandedKeys.value.push(history.state.cabinetId)
+}
+
 // 处理折线图数据
 const humValueData = ref<number[]>([]);
 const temValueData = ref<number[]>([]);
@@ -373,7 +370,7 @@ const createTimeData = ref<string[]>([]);
 const humAvgValueData = ref<number[]>([]);
 const humMaxValueData = ref<number[]>([]);
 const humMaxTimeData = ref<string[]>([]);
-const HumMinValueData = ref<number[]>([]);
+const humMinValueData = ref<number[]>([]);
 const humMinTimeData = ref<string[]>([]);
 
 const temAvgValueData = ref<number[]>([]);
@@ -382,75 +379,112 @@ const temMaxTimeData = ref<string[]>([]);
 const temMinValueData = ref<number[]>([]);
 const temMinTimeData = ref<string[]>([]);
 
-const maxTemDataTemp = ref(0);// 最高温度
+const maxTemDataTemp = ref();// 最高温度
 const maxTemDataTimeTemp = ref();// 最高温度的发生时间 
-const minTemDataTemp = ref(0);// 最低温度 
+const minTemDataTemp = ref();// 最低温度 
 const minTemDataTimeTemp = ref();// 最低温度的发生时间 
 const a=ref(0)
 const b=ref(0)
 const loading2=ref(false)
 
+function handleChange(selected){
+  nowArray.value=selected
+  console.log(nowArray.value,"=======================nowArray.value===========================")
+  initData();
+  initChart();
+}
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => { 
   loading.value = true;
   try {
     // 
-    const data = await EnvDataApi.getEnvDataDetails(queryParams);
+    const data = await HistoryDataApi.getHistoryEnvDetailData(queryParams);
     if (data != null && data.total != 0){
       loading2.value=true
       isHaveData.value = true
-      temValueData.value = data.list.map((item) => formatNumber(item.tem_value, 1));
-      humValueData.value = data.list.map((item) => formatNumber(item.hum_value, 0));
-      if (activeName.value === 'dayExtremumTabPane'){
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-      }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time,"YYYY-MM-DD HH:mm"));
+      for(let i=0;i<data.list.length;i++){
+      data.list[i].front?.forEach((item:any) => {
+        item.temValue = item.temValue?.toFixed(1)
+        item.humValue = item.humValue?.toFixed(0)
+        item.hum_avg_value=item.hum_avg_value?.toFixed(0)
+        item.hum_max_value=item.hum_max_value?.toFixed(0)
+        item.hum_min_value=item.hum_min_value?.toFixed(0)
+        item.tem_avg_value=item.tem_avg_value?.toFixed(1)
+        item.tem_max_value=item.tem_max_value?.toFixed(1)
+        item.tem_min_value=item.tem_min_value?.toFixed(1)
+      })
+      data.list[i].black?.forEach((item:any) => {
+        item.temValue = item.temValue?.toFixed(1)
+        item.humValue = item.humValue?.toFixed(0)
+        item.hum_avg_value=item.hum_avg_value?.toFixed(0)
+        item.hum_max_value=item.hum_max_value?.toFixed(0)
+        item.hum_min_value=item.hum_min_value?.toFixed(0)
+        item.tem_avg_value=item.tem_avg_value?.toFixed(1)
+        item.tem_max_value=item.tem_max_value?.toFixed(1)
+        item.tem_min_value=item.tem_min_value?.toFixed(1)
+      })
+    }
+    for(let i = 0;i<data.list.length;i++){
+      let frontHave=[];
+      data.list[i].front=data.list[i].front==null?[]:data.list[i].front;
+      data.list[i]?.front?.sort((a:any, b:any) => a.sensorId - b.sensorId);
+      for(let j=0;j<data.list[i].front.length;j++){
+        frontHave.push(data.list[i].front[j].sensorId)
       }
-      humAvgValueData.value = data.list.map((item) => formatNumber(item.hum_avg_value, 0));
-      humMaxValueData.value = data.list.map((item) => formatNumber(item.hum_max_value, 0));
-      humMaxTimeData.value = data.list.map((item) => formatDate(item.hum_max_time,"YYYY-MM-DD HH:mm"));
-      HumMinValueData.value = data.list.map((item) => formatNumber(item.hum_min_value, 0));
-      humMinTimeData.value = data.list.map((item) => formatDate(item.hum_min_time,"YYYY-MM-DD HH:mm"));
-
-      temAvgValueData.value = data.list.map((item) => formatNumber(item.tem_avg_value, 1));
-      temMaxValueData.value = data.list.map((item) => formatNumber(item.tem_max_value, 1));
-      temMaxTimeData.value = data.list.map((item) => formatDate(item.tem_max_time,"YYYY-MM-DD HH:mm"));
-      temMinValueData.value = data.list.map((item) => formatNumber(item.tem_min_value, 1));
-      temMinTimeData.value = data.list.map((item) => formatDate(item.tem_min_time,"YYYY-MM-DD HH:mm"));
-      
-      if(activeName.value == "realtimeTabPane"){
-      maxTemDataTemp.value = Math.max(...temValueData.value);
-      minTemDataTemp.value = Math.min(...temValueData.value);
-      temValueData.value.forEach(function(num, index) {
-        if (num == maxTemDataTemp.value&&a.value==0){
-          maxTemDataTimeTemp.value = createTimeData.value[index]
-          a.value=1;
+      for(let j=1;j<=3;j++){
+        if(!frontHave.includes(j)){
+          data.list[i].front.splice(j-1,0,null)
         }
-          if (num == minTemDataTemp.value&&b.value==0){
-          minTemDataTimeTemp.value = createTimeData.value[index]
-          b.value=1;
-        }});
       }
-      else if(activeName.value != "realtimeTabPane"){
-      maxTemDataTemp.value = Math.max(...temMaxValueData.value);
-      minTemDataTemp.value = Math.min(...temMinValueData.value);
-      temMaxValueData.value.forEach(function(num, index) {
-        if (num == maxTemDataTemp.value&&a.value==0){
-          
-          maxTemDataTimeTemp.value = createTimeData.value[index]
-          a.value=1;
 
-        }});
-      temMinValueData.value.forEach(function(num, index) {
-          if (num == minTemDataTemp.value&&b.value==0){
-          
-          minTemDataTimeTemp.value = createTimeData.value[index]
-          b.value=1;     
-        }});
+      let blackHave=[];
+      data.list[i].black=data.list[i].black==null?[]:data.list[i].black;
+      data.list[i].black?.sort((a:any, b:any) => a.sensorId - b.sensorId);
+      for(let j=0;j<data.list[i].black?.length||0;j++){
+        blackHave.push(data.list[i].black[j].sensorId)
       }
+      for(let j=1;j<=3;j++){
+        if(!blackHave.includes(j)){
+          data.list[i].black?.splice(j-1,0,null)
+        }
+      }
+    }
+    tableData.value = data.list;
+    console.log("tableData.value===================",tableData.value);
+      
+      // if(activeName.value == "realtimeTabPane"){
+      // maxTemDataTemp.value = Math.max(...temValueData.value);
+      // minTemDataTemp.value = Math.min(...temValueData.value);
+      // temValueData.value.forEach(function(num, index) {
+      //   if (num == maxTemDataTemp.value&&a.value==0){
+      //     maxTemDataTimeTemp.value = createTimeData.value[index]
+      //     a.value=1;
+      //   }
+      //     if (num == minTemDataTemp.value&&b.value==0){
+      //     minTemDataTimeTemp.value = createTimeData.value[index]
+      //     b.value=1;
+      //   }});
+      // }
+      // else if(activeName.value != "realtimeTabPane"){
+      // maxTemDataTemp.value = Math.max(...temMaxValueData.value);
+      // minTemDataTemp.value = Math.min(...temMinValueData.value);
+      // temMaxValueData.value.forEach(function(num, index) {
+      //   if (num == maxTemDataTemp.value&&a.value==0){
+          
+      //     maxTemDataTimeTemp.value = createTimeData.value[index]
+      //     a.value=1;
+
+      //   }});
+      // temMinValueData.value.forEach(function(num, index) {
+      //     if (num == minTemDataTemp.value&&b.value==0){
+          
+      //     minTemDataTimeTemp.value = createTimeData.value[index]
+      //     b.value=1;     
+      //   }});
+      // }
       // 图表显示的ip变化
-     // nowLocation.value = data.ipAddr     
+    //  nowLocation.value = data.ipAddr     
     }else{
       isHaveData.value = false;
       loading2.value=false
@@ -477,49 +511,82 @@ const chartContainer = ref<HTMLElement | null>(null);
 let realtimeChart = null as echarts.ECharts | null; 
 const initChart = () => {
   if ( isHaveData.value == true ){
-    if (chartContainer.value && instance) {
-      realtimeChart = echarts.init(chartContainer.value);
-      if (realtimeChart) {
-          realtimeChart.setOption({     
-            title: {text: ''},
-            tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-            legend: { data: ['平均温度', '最高温度', '最低温度','平均湿度', '最大湿度', '最小湿度'],
-                      selected: { 平均温度: true, 最高温度: true, 最低温度: true, 
-                      平均湿度: false, 最大湿度: false, 最小湿度: false, }
-            },
-            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-            xAxis: [
-              {type: 'category', boundaryGap: false, data: createTimeData.value}
-            ],
-            yAxis: { type: 'value'},
-            series: [
-              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
-              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
-              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value, lineStyle: {type: 'dashed'}},
-            ],
-            dataZoom:[{type: "inside"}],
-          });
-        }
-      // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    if(createTimeData.value==null||createTimeData.value.length==0){
+      loading2.value=false
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+      return;
+    }else{
+      loading2.value=true
+    }
+    realtimeChart?.off("legendselectchanged");
+    realtimeChart?.dispose();
+    realtimeChart = echarts.init(chartContainer.value);
+    if(activeName.value == 'realtimeTabPane'){
+      realtimeChart.setOption({     
+        title: {text: ''},
+        tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+        legend: { data: ['温度', '湿度'],
+                  selected: { '温度': true,'湿度': false}
+        },
+        grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+        xAxis: [
+          {type: 'category', boundaryGap: false, data: createTimeData.value}
+        ],
+        yAxis: { type: 'value'},
+        series: [
+          { name: '温度', type: 'line', symbol: 'none', data: temValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}} },
+          { name: '湿度', type: 'line', symbol: 'none', data: humValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+        ],
+        dataZoom:[{type: "inside"}],
+      });
+      setupLegendListener(realtimeChart);
+    }else{
+      realtimeChart.setOption({     
+        title: {text: ''},
+        tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+        legend: { data: ['平均温度', '最高温度', '最低温度','平均湿度', '最大湿度', '最小湿度'],
+                  selected: { 平均温度: true, 最高温度: true, 最低温度: true, 
+                  平均湿度: false, 最大湿度: false, 最小湿度: false, }
+        },
+        grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+        xAxis: [
+          {type: 'category', boundaryGap: false, data: createTimeData.value}
+        ],
+        yAxis: { type: 'value'},
+        series: [
+          { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}} },
+          { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+          { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}} },
+          { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}} },
+          { name: '最小湿度', type: 'line', symbol: 'none', data: humMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}} },
+        ],
+        dataZoom:[{type: "inside"}],
+      });
+      // 图例切换监听
+      setupLegendListener1(realtimeChart);
+    }
+    if (realtimeChart) {
+    // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
-    // 图例切换监听
-    setupLegendListener1(realtimeChart);
   }
+  
   // 每次切换图就要动态生成数据表头
   //debugger
   headerData.value = realtimeChart?.getOption().series as any[];
-  updateTableData();
+  // updateTableData();
 };
 
 // 表格映射图数据
 const updateTableData = () => {
   const data: any[] = [];
-  const length = headerData.value[0]?.data?.length || 0;
+  const length = headerData.value?.[0]?.data?.length || 0;
   for (let i = 0; i < length; i++) {
     const rowData: { [key: string]: any } = {};
     rowData['create_time'] = createTimeData.value[i];
@@ -540,103 +607,155 @@ const updateTableData = () => {
 const beforeUnmount = () => {
   realtimeChart?.dispose();
 };
-// 折线图随着窗口大小改变
-window.addEventListener('resize', function() {
+function resize() {
   realtimeChart?.resize(); 
-});
+}
+
+// 折线图随着窗口大小改变
+window.addEventListener('resize', resize);
+
+let lastRaw=null;
+let lastHour=null;
+let lastDate=null;
+
+function calculateTime(date1,date2){
+  try{
+    const dateLeft=date1.replace(" ", "T")
+    const dateRight=date2.replace(" ", "T")
+    return new Date(dateLeft).getTime() - new Date(dateRight).getTime()
+  }catch(e){
+    return 1000*60*60*24*32;
+  }
+}
 
 // 监听切换原始数据、极值数据tab
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+
+  if(oldActiveName=="realtimeTabPane"){
+    lastRaw=queryParams.timeRange;
+  }else if(oldActiveName=="hourExtremumTabPane"){
+    lastHour=queryParams.timeRange;
+  }else{
+    lastDate=queryParams.timeRange;
+  }
+
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
+    next.value="下一天";
+    pre.value="上一天";
+    if(lastRaw!=null){
+      queryParams.timeRange=lastRaw;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24){
+        queryParams.timeRange=[preTime(queryParams.timeRange[1],1000*60*60*24),queryParams.timeRange[1]]
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(1)
   }else if (newActiveName == 'hourExtremumTabPane'){
     queryParams.granularity = 'hour'
+    next.value="下一周";
+    pre.value="上一周";
+    if(lastHour!=null){
+      queryParams.timeRange=lastHour;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>1000*60*60*24*7){
+        queryParams.timeRange = [preTime(queryParams.timeRange[1],1000*60*60*24*7),queryParams.timeRange[1]];
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
+    next.value="下一月";
+    pre.value="上一月";
+    if(lastDate!=null){
+      queryParams.timeRange=lastDate;
+    }else{
+      if(calculateTime(queryParams.timeRange[1],queryParams.timeRange[0])>calculateTime(queryParams.timeRange[1],preMonth(queryParams.timeRange[1]))){
+        queryParams.timeRange = [preMonth(queryParams.timeRange[1]),queryParams.timeRange[1]]
+      }
+    }
     // queryParams.timeRange = defaultHourTimeRange(24*30)
   }
-  needFlush.value ++;
+  handleQuery();
 });
 
 // 监听类型颗粒度
-watch(() => [activeName.value, needFlush.value], async (newValues) => {
-    const [newActiveName] = newValues;
-    // 处理参数变化
-    if ( newActiveName == 'realtimeTabPane'){
-        await getList();
-        // 销毁原有的图表实例
-        beforeUnmount()
-        if ( isHaveData.value == true ){
-          // 创建新的图表实例
-          realtimeChart = echarts.init(document.getElementById('chartContainer'));
-          // 设置新的配置对象
-          if (realtimeChart) {
-            realtimeChart.setOption({
-              title: { text: ''},
-              tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-              legend: { data: ['温度','湿度'], selected: { 温度: true, 湿度: false}},
-              grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-              xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-              yAxis: { type: 'value'},
-              series: [
-                {name: '温度', type: 'line', symbol: 'none', data: temValueData.value},
-                {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value},
-              ],
-              dataZoom:[{type: "inside"}],
-            });
-          }
-          // 图例切换监听
-          setupLegendListener(realtimeChart);
-        } 
-        // 每次切换图就要动态生成数据表头
-        //debugger
-        headerData.value = realtimeChart?.getOption().series as any[];
-        updateTableData();
-    }else{
-      await getList();
-      // 销毁原有的图表实例
-      beforeUnmount()
-      if ( isHaveData.value == true ){
-        // 创建新的图表实例
-        realtimeChart = echarts.init(document.getElementById('chartContainer'));
-        // 设置新的配置对象
-        if (realtimeChart) {
-          realtimeChart.setOption({     
-            title: {text: ''},
-            tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-            legend: { data: ['平均温度', '最高温度', '最低温度','平均湿度', '最大湿度', '最小湿度'],
-                      selected: { 平均温度: true, 最高温度: true, 最低温度: true, 
-                      平均湿度: false, 最大湿度: false, 最小湿度: false, }
-            },
-            grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-            xAxis: [
-              {type: 'category', boundaryGap: false, data: createTimeData.value}
-            ],
-            yAxis: { type: 'value'},
-            series: [
-              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
-              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
-              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value, lineStyle: {type: 'dashed'}},
-            ],
-            dataZoom:[{type: "inside"}],
-          });
-        }
-        // 图例切换监听
-        setupLegendListener1(realtimeChart);          
-      }
-      // 每次切换图就要动态生成数据表头
-      //debugger
-      headerData.value = realtimeChart?.getOption().series as any[];
-      updateTableData();
-    }
-});
+// watch(() => [activeName.value, needFlush.value], async (newValues) => {
+//     const [newActiveName] = newValues;
+//     // 处理参数变化
+//     if ( newActiveName == 'realtimeTabPane'){
+//         await getList();
+//         // 销毁原有的图表实例
+//         beforeUnmount()
+//         if ( isHaveData.value == true ){
+//           // 创建新的图表实例
+//           realtimeChart = echarts.init(document.getElementById('chartContainer'));
+//           // 设置新的配置对象
+//           if (realtimeChart) {
+//             realtimeChart.setOption({
+//               title: { text: ''},
+//               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+//               legend: { data: ['温度','湿度'], selected: { 温度: true, 湿度: false}},
+//               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+//               toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+//               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+//               yAxis: { type: 'value'},
+//               series: [
+//                 {name: '温度', type: 'line', symbol: 'none', data: temValueData.value},
+//                 {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value},
+//               ],
+//               dataZoom:[{type: "inside"}],
+//             });
+//           }
+//           // 图例切换监听
+//           setupLegendListener(realtimeChart);
+//         } 
+//         // 每次切换图就要动态生成数据表头
+//         //debugger
+//         headerData.value = realtimeChart?.getOption().series as any[];
+//         updateTableData();
+//     }else{
+//       await getList();
+//       // 销毁原有的图表实例
+//       beforeUnmount()
+//       if ( isHaveData.value == true ){
+//         // 创建新的图表实例
+//         realtimeChart = echarts.init(document.getElementById('chartContainer'));
+//         // 设置新的配置对象
+//         if (realtimeChart) {
+//           realtimeChart.setOption({     
+//             title: {text: ''},
+//             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+//             legend: { data: ['平均温度', '最高温度', '最低温度','平均湿度', '最大湿度', '最小湿度'],
+//                       selected: { 平均温度: true, 最高温度: true, 最低温度: true, 
+//                       平均湿度: false, 最大湿度: false, 最小湿度: false, }
+//             },
+//             grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
+//             toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+//             xAxis: [
+//               {type: 'category', boundaryGap: false, data: createTimeData.value}
+//             ],
+//             yAxis: { type: 'value'},
+//             series: [
+//               { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
+//               { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
+//               { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
+//               { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
+//               { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
+//               { name: '最小湿度', type: 'line', symbol: 'none', data: humMinValueData.value, lineStyle: {type: 'dashed'}},
+//             ],
+//             dataZoom:[{type: "inside"}],
+//           });
+//         }
+//         // 图例切换监听
+//         setupLegendListener1(realtimeChart);          
+//       }
+//       // 每次切换图就要动态生成数据表头
+//       //debugger
+//       headerData.value = realtimeChart?.getOption().series as any[];
+//       updateTableData();
+//     }
+// });
 
 // 实时图例切换函数
 function setupLegendListener(realtimeChart) {
@@ -794,7 +913,15 @@ const handleExport1 = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await HistoryDataApi.exportEnvHistorydetailsPageData(queryParams, axiosConfig)
+    queryParams.sensor=nowArray.value;
+    if(queryParams.cabinetId==null){
+      ElMessage({
+        message: '请选择机柜',
+        type: 'warning',
+      });
+      return;
+    }
+    const data = await HistoryDataApi.exportHistoryEnvDetailData(queryParams, axiosConfig)
     await download.excel(data, '机柜环境分析.xlsx')
   } catch (error) {
     // 处理异常
@@ -861,16 +988,15 @@ const handleExport1 = async () => {
 const handleClick = async (row) => {
    if(row.type != null  && row.type == 3){
     nowLocation.value = ''
-    maxTemDataTemp.value = 0
-    minTemDataTemp.value = 0
+    // maxTemDataTemp.value = 0
+    // minTemDataTemp.value = 0
     //切换机柜要把初始化sensorId， 不然传到接口报错
-    queryParams.sensorId = undefined
     queryParams.cabinetId = row.id
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
     });
+    queryParams.nowAddress=nowAddress.value;
     let data: any[] = [];
-    
     tableData.value = data;
     handleQuery();
   }
@@ -889,40 +1015,150 @@ function findFullName(data, targetUnique, callback, fullName = '') {
   }
 }
 
+let tempId=-1;
+function setNavList(list) {
+  if(list==null||list.length==0) return;
+  list.forEach(item => {
+    if(item.type!=3){
+      item.id=tempId--;
+    }
+    if(item.children!=null&&item.children.length>0){
+      setNavList(item.children);
+    }
+  });
+}
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
+  setNavList(res)
+  setDefaultExpandedKeys(res)
   navList.value = res
 }
+function setDefaultExpandedKeys(list):boolean {
+  if(list==null||list.length==0) return false;
+   for(let item of list){
+    if(defaultExpandedKeys.value.includes(item.id)) {
+      return true;
+    }
+    if(item.children!=null&&item.children.length>0){
+      if(setDefaultExpandedKeys(item.children)==true){
+        defaultExpandedKeys.value.push(item.id)
+        return true;
+      }
+    }
+  }
+  return false;
+}
 import { useRoute, useRouter } from 'vue-router';
+import { func } from 'vue-types';
+import { max, min, now } from 'lodash-es';
+import { cr } from 'dist-prod/assets/installCanvasRenderer-WHaFMoQ9';
 const route = useRoute();
 const router = useRouter();
 if(route.query.start!=null&&route.query.end!=null){
   queryParams.timeRange=[route.query.start as string,route.query.end as string]
 }
 /** 搜索按钮操作 */
-const handleQuery = () => {
-  
-    
-   // const firstChar = detect.value[0];
-    const secondChar = detect.value[0];
-    if (secondChar != null){    
-    // queryParams.channel = Number(firstChar);
-    queryParams.sensorId = Number(secondChar);
-    // 更新路由查询参数
-    const querySensorId = String(Number(secondChar));
-        router.push({
-            query: {
-                ...route.query, // 保留现有查询参数
-                sensorId: querySensorId // 添加或更新 sensorId 参数
-            }
-        });
+const handleQuery = async() => {
+  if(queryParams.cabinetId==null){
+    ElMessage({
+      message: '请选择机柜',
+      type: 'warning',
+    })
+  }
+  await getList();
+  initData();
+  initChart();
+}
+
+const initData = () => {
+  console.log("tableData.value===============",tableData.value)
+  if(activeName.value=="realtimeTabPane"){
+    humValueData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['humValue'])
+    temValueData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['temValue'])
+    createTimeData.value=tableData.value.map((item)=> item["createTime"])
+    let isNull=humValueData.value.length==0;
+    for(let i=0;i<humValueData.value.length;i++){
+      if(humValueData.value[i]==null){
+        isNull=true;
+        break;
+      }
     }
-    needFlush.value++;
+    if(isNull){
+      humValueData.value=[];
+      temValueData.value=[];
+      createTimeData.value=[]
+      maxTemDataTemp.value = null;
+      minTemDataTemp.value = null;
+      maxTemDataTimeTemp.value = null;
+      minTemDataTimeTemp.value = null;
+    }else{
+      maxTemDataTemp.value = Math.max(...temValueData.value);
+      minTemDataTemp.value = Math.min(...temValueData.value);
+      for(let i=0;i<temValueData.value.length;i++){
+        if(temValueData.value[i]==maxTemDataTemp.value){
+          maxTemDataTimeTemp.value = createTimeData.value[i]
+        }
+        if(temValueData.value[i]==minTemDataTemp.value){
+          minTemDataTimeTemp.value = createTimeData.value[i]
+        }
+      }
+    }
+  }else{
+    humAvgValueData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['hum_avg_value'])
+    humMaxValueData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['hum_max_value'])
+    humMaxTimeData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['max_time'])
+    humMinValueData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['hum_min_value'])
+    humMinTimeData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['min_time'])
+    temAvgValueData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['tem_avg_value'])
+    temMaxValueData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['tem_max_value'])
+    temMaxTimeData.value=tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['max_time'])
+    temMinValueData.value = tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['tem_min_value'])
+    temMinTimeData.value = tableData.value.map((item)=> item[nowArray.value[0]]?.[Number(nowArray.value[1])-1]?.['min_time'])
+    createTimeData.value=tableData.value.map((item)=> item["createTime"])
+    let isNull=humAvgValueData.value.length==0;
+    for(let i=0;i<humAvgValueData.value.length;i++){
+      if(humAvgValueData.value[i]==null){
+        console.log("i==============",i);
+        isNull=true;
+        break;
+      }
+    }
+    if(isNull){
+      humAvgValueData.value=[];
+      humMaxValueData.value=[];
+      humMaxTimeData.value=[];
+      humMinValueData.value=[];
+      humMinTimeData.value=[];
+      temAvgValueData.value=[];
+      temMaxValueData.value=[];
+      temMaxTimeData.value=[];
+      temMinValueData.value=[];
+      temMinTimeData.value=[];
+      createTimeData.value=[];
+      maxTemDataTemp.value = null;
+      minTemDataTemp.value = null;
+      maxTemDataTimeTemp.value = null;
+      minTemDataTimeTemp.value = null;
+    }else{
+      maxTemDataTemp.value = Math.max(...temMaxValueData.value);
+      minTemDataTemp.value = Math.min(...temMinValueData.value);
+      for(let i=0;i<temMaxValueData.value.length;i++){
+        if(temMaxValueData.value[i]==maxTemDataTemp.value){
+          maxTemDataTimeTemp.value = temMaxTimeData.value[i]
+        }
+      }
+      for(let i=0;i<temMinValueData.value.length;i++){
+        if(temMinValueData.value[i]==minTemDataTemp.value){
+          minTemDataTimeTemp.value = temMinTimeData.value[i]
+        }
+      }
+    }
+  }
 }
 /** 初始化 **/
 onMounted( async () => {
-  console.log('22231');
   getNavList()
   // 获取路由参数中的 pdu_id
   let queryPduId = useRoute().query.pduId as string | undefined;
@@ -932,7 +1168,6 @@ onMounted( async () => {
       console.log(detect.value); // 打印最新的值
   let queryLocation = useRoute().query.location as string;
   let queryAddress = useRoute().query.address as string;
-  let queryDetectValue = useRoute().query.detectValue as string;
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
   queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : undefined;
   if (queryParams.pduId != undefined){
@@ -948,8 +1183,65 @@ onMounted( async () => {
   }
 })
 
+function preTime(date,time){
+  return dayjs(new Date(new Date(date.replace(" ", "T")).getTime()-time)).format('YYYY-MM-DD HH:mm:ss')
+}
+function nextMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 11){
+  pre.setMonth(0)
+  pre.setFullYear(pre.getFullYear() +1)
+ }else{
+  pre.setMonth(pre.getMonth() +1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function preMonth(date){
+ const pre = new Date(date.replace(" ", "T"))
+ if(pre.getMonth() == 0){
+  pre.setMonth(11)
+  pre.setFullYear(pre.getFullYear() - 1)
+ }else{
+  pre.setMonth(pre.getMonth() - 1)
+ }
+ return dayjs(pre).format('YYYY-MM-DD HH:mm:ss')
+}
+function changeTime(to){
+  if(to=="next"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24),preTime(queryParams.timeRange[1],-1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],-1000*60*60*24*7),preTime(queryParams.timeRange[1],-1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[nextMonth(queryParams.timeRange[0]),nextMonth(queryParams.timeRange[1])]
+    }
+  }else if(to="pre"){
+    if ( activeName.value == 'realtimeTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24),preTime(queryParams.timeRange[1],1000*60*60*24)]
+    }else if (activeName.value == 'hourExtremumTabPane'){
+      queryParams.timeRange=[preTime(queryParams.timeRange[0],1000*60*60*24*7),preTime(queryParams.timeRange[1],1000*60*60*24*7)]
+    }else{
+      queryParams.timeRange=[preMonth(queryParams.timeRange[0]),preMonth(queryParams.timeRange[1])]
+    }
+  }
+  handleQuery();
+}
 
+console.log("history.state==",history.state);
+if(history.state.cabinetId!=null){
+  queryParams.cabinetId=history.state.cabinetId;
+  queryParams.nowAddress=history.state.address;
+  nowAddress.value=history.state.address;
+  if(history.state.start!=null&&history.state.start!=''&&history.state.end!=null&&history.state.end!=''){
+    queryParams.timeRange=[history.state.start,history.state.end];
+  }
+  handleQuery();
+}
 
+onBeforeUnmount(()=>{
+  realtimeChart?.dispose();
+  window.removeEventListener('resize', resize);
+})
 </script>
 
 <style scoped>
@@ -1081,5 +1373,14 @@ onMounted( async () => {
     width: 85vw;
     height: 65vh;
   }
+}
+/deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
 }
 </style>

@@ -64,4 +64,10 @@ public interface AlarmCfgPromptService {
      */
     void initAlarmPrompt();
 
+
+    /**
+     * 根据code获取告警配置
+     *
+     */
+    Integer getCfgPromptByType(Integer code);
 }

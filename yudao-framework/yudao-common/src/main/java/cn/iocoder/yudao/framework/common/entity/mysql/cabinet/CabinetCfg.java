@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -28,19 +27,19 @@ public class CabinetCfg implements Serializable {
     /**
      * 机柜id
      */
-    private int cabinetId;
+    private Integer cabinetId;
 
     /**
      * x坐标
      */
     @JsonProperty(value = "x_coordinate")
-    private int xCoordinate;
+    private Integer xCoordinate;
 
     /**
      * y坐标
      */
     @JsonProperty(value = "y_coordinate")
-    private int yCoordinate;
+    private Integer yCoordinate;
 
     /**
      * 所属于公司

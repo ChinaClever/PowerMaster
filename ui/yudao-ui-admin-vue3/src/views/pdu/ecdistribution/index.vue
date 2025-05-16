@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="PDU能耗趋势" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1  :dataList="navList" @node-click="handleClick" navTitle="PDU能耗趋势" :showCheckbox="false" placeholder="如:192.168.1.96-0" :hightCurrent="true" nodeKey="unique" :currentKey="currentKey" :highlightTypes="[4]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
       <br/>   
       <div class="nav_data">
@@ -87,10 +87,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
 
         </el-form-item>
-        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;margin-right: 10px;">
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;margin-right: 10px;background-color: #00778c;color:#ffffff;font-size: 13px;" >
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
       </el-form>
@@ -150,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -161,16 +161,18 @@ import PDUImage from '@/assets/imgs/PDU.jpg';
 import { pa } from 'element-plus/es/locale';
 import download from '@/utils/download'
 defineOptions({ name: 'ECDistribution' })
-import  CommonMenu1 from './CommonMenu1.vue'
+// import  CommonMenu1 from './CommonMenu1.vue'
 import { now } from 'lodash-es';
+import { unique } from 'element-plus/es/utils';
+import { cu } from 'dist-prod/assets/installCanvasRenderer-WHaFMoQ9';
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref()// 导航栏的位置信息
 const nowLocation = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-if(useRoute().query.location!=null){
-  nowLocationTemp.value = useRoute().query.location
+if(history.state.location!=null){
+  nowLocationTemp.value = history.state.location
 }
 const activeName = ref('dayTabPane')
 const activeName1 = ref('lineChart')
@@ -294,21 +296,54 @@ const typeCascaderChange = async (selected) => {
   initLineChart();
 }
 
+let lastdate=null;
+let lastWeekOrMonth=null;
+function defaultYear(){
+  const preYear=new Date();
+  preYear.setFullYear(preYear.getFullYear()-1)
+  return [dayjs(preYear).format("YYYY-MM-DD HH:mm:ss"),dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")]
+}
 // 监听切换日周月tab切换
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="dayTabPane"){
+    lastdate=selectTimeRange.value;
+  }else{
+    lastWeekOrMonth=selectTimeRange.value;
+  }
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    // selectTimeRange.value = defaultDayTimeRange(14)
+    // selectTimeRange.value = defaultDayTimeRange(7)
+    if(lastdate!=null){
+      selectTimeRange.value=lastdate;
+    }
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    // selectTimeRange.value = defaultMonthTimeRange(3)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }else{
     queryParams.granularity = 'month'
-    // selectTimeRange.value = defaultMonthTimeRange(12)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }
+  // if ( newActiveName == 'dayTabPane'){
+  //   queryParams.granularity = 'day'
+  //   // selectTimeRange.value = defaultDayTimeRange(14)
+  // }else if (newActiveName == 'weekTabPane'){
+  //   queryParams.granularity = 'week'
+  //   // selectTimeRange.value = defaultMonthTimeRange(3)
+  // }else{
+  //   queryParams.granularity = 'month'
+  //   // selectTimeRange.value = defaultMonthTimeRange(12)
+  // }
   handleQuery();
 });
-
+console.log("history===",history.state)
 // 表格映射图数据
 const updateTableData = () => {
   const data: any[] = [];
@@ -370,10 +405,10 @@ loading.value = true
  
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = startTimeData.value[index]
+          maxEqDataTimeTemp.value = createTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
-          minEqDataTimeTemp.value = startTimeData.value[index]
+          minEqDataTimeTemp.value = createTimeData.value[index]
         }
         totalEqData.value += Number(num);
       });
@@ -450,9 +485,9 @@ const initLineChart = () => {
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+      series: [{name: '耗电量', type: 'line', symbol:"none",data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
@@ -575,15 +610,21 @@ function formatNumber(value, decimalPlaces) {
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = '';
-  console.log(params)
-  params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '耗电量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
-        break;
-    }
-  });
-  tooltipContent += '<br/>时间: ' + params[0].name;
+  // console.log(params)
+  // params.forEach(function(item) {
+  //   switch( item.seriesName ){
+  //     case '耗电量':
+  //       tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
+  //       break;
+  //   }
+  // });
+  tooltipContent += params[0].marker + ' ' +'记录时间: ' + params[0].name;
+  tooltipContent += "&nbsp;&nbsp;&nbsp;&nbsp;" + params[0].seriesName + ': ' + params[0].value + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'开始时间: ' + tableData.value[params[0].dataIndex].startTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;开始电能: ' + tableData.value[params[0].dataIndex].startEleData + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'结束时间: ' + tableData.value[params[0].dataIndex].endTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;结束电能: ' + tableData.value[params[0].dataIndex].endEleData + ' kWh';
+  // tooltipContent += '<br/>时间: ' + params[0].name;
   return tooltipContent;
 }
 
@@ -649,10 +690,11 @@ const disabledDate = (date) => {
   return date > today;
 }
 
-window.addEventListener('resize', function() {
+function resize() {
   lineChart?.resize();
   rankChart?.resize();  
-});
+}
+window.addEventListener('resize', resize);
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
@@ -687,6 +729,35 @@ const getNavList = async() => {
   var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
   navList.value = arr
+  if(history.state.location!=null){
+    console.log(arr,"=================arr")
+    console.log(defaultExpandedKeys.value,"=================defaultExpandedKeys")
+    setDefaultCheckedKeys(arr);
+    console.log("currentKey================",currentKey.value)
+  }
+}
+
+const currentKey=ref()
+const defaultExpandedKeys = ref([])
+if(history.state.location!=null){
+  currentKey.value = history.state.location;
+}
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].type==4){
+      if(arr[i].ip==history.state.location){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /** 搜索按钮操作 */
@@ -705,14 +776,19 @@ const end = ref('')
 onMounted(async () => {
   getNavList()
   getTypeMaxValue();
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
-      const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
-       selectTimeRange.value = [selectedStartTime, selectedEndTime];
+  start.value = history.state.start as string;
+  end.value = history.state.end as string;
+  if(start.value!=null&&end.value!=null&&start.value!=''&&end.value!=''){
+    const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
+    const selectedEndTime = formatDate(endOfDay(convertDate(end.value)))
+    selectTimeRange.value = [selectedStartTime, selectedEndTime];
+  }else{
+    selectTimeRange.value = defaultDayTimeRange(7);
+  }
+  
   // 获取路由参数中的 pdu_id
-  const queryPduId = useRoute().query.pduId as string | undefined;
-  const queryAddress = useRoute().query.address as string;
+  const queryPduId = history.state.pduId as string | undefined;
+  const queryAddress = history.state.address as string;
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
   console.log('11111撒大声地',queryParams.pduId)
   if (queryParams.pduId != undefined){
@@ -725,6 +801,11 @@ onMounted(async () => {
   }
 })
 
+onBeforeUnmount(() => {
+  rankChart?.dispose()
+  lineChart?.dispose()
+  window.removeEventListener('resize', resize)
+})
 //导出Excel
 const handleExport1 = async () => {
   try {
@@ -797,4 +878,13 @@ const handleExport1 = async () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+  /deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
+}
 </style>

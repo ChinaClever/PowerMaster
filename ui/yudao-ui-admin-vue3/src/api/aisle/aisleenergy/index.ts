@@ -14,5 +14,9 @@ export const AisleEnergyApi = {
   getEleTrend: async (params: any) => {
     return await request.get({ url: `/aisle/index/eleTrend`, params })
   },
+  //删除柜列
+  deleteAisle: async (params: any) => {
+    return await request.get({ url: `/aisle/delete`, params })
+  },
 
 }

@@ -33,10 +33,10 @@
           </el-form-item>
 
          <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
          </el-form-item>
          <el-form-item style="position: absolute;right: 0px;">
-          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color: #ffffff;position: absolute;right: -20px;top: 2px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>         
           </el-form-item>
@@ -65,7 +65,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
+            <el-button v-if="row.eleActive!=null" type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)" style="background-color: #00778c;font-size: 13px;">详情</el-button>
           </template>
         </el-table-column>
         
@@ -102,6 +102,7 @@
       </el-table>
       <!-- 分页 -->
       <Pagination
+        background
         :total="total"
         :page-size-arr="pageSizeArr"
         layout = "sizes, prev, pager, next, jumper"
@@ -234,8 +235,14 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }}
-      ],
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' },itemStyle: {
+          color: new echarts.graphic.LinearGradient(  
+          0, 1, 0, 0, [  
+            { offset: 0, color: '#00778c' },  
+            { offset: 1, color: '#069ab4' }  
+          ]  
+        ) }}
+      ]
     });
     rankChart.on('click', function(params) {
       // 控制台打印数据的名称
@@ -246,10 +253,10 @@ const initChart = () => {
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
-
-window.addEventListener('resize', function() {
+function resize() {
   rankChart?.resize(); 
-});
+}
+window.addEventListener('resize', resize);
 
 watch(() => queryParams.granularity, () => {
   handleQuery();
@@ -486,6 +493,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   rankChart?.off("click");
   rankChart?.dispose();
+  window.removeEventListener("resize", resize);
 });
 let now = new Date()
 selectTimeRange.value = [dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")]
@@ -518,5 +526,11 @@ getList();
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

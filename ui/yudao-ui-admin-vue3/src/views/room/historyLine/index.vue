@@ -64,18 +64,18 @@
         </el-form-item>
 
         <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button style="background-color: #00778c;color:#ffffff;" @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
          </el-form-item>
 
         <el-form-item>
           <el-button-group>
-            <el-button @click="changeTime('pre')"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
-            <el-button @click="changeTime('next')">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
+            <el-button style="background-color: #00778c;color:#ffffff;" @click="changeTime('pre')"><el-icon class="el-icon--right"><ArrowLeft /></el-icon>{{pre}}</el-button>
+            <el-button style="background-color: #00778c;color:#ffffff;" @click="changeTime('next')">{{next}}<el-icon class="el-icon--right"><ArrowRight /></el-icon></el-button>
           </el-button-group>
          </el-form-item>
          
          <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
@@ -674,10 +674,10 @@ const initChart = () => {
             xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
             yAxis: { type: 'value'},
             series: [
-              {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
-              {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
-              {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value},
-              {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value},
+              {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value, itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -694,17 +694,17 @@ const initChart = () => {
             xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
             yAxis: { type: 'value'},
             series: [
-              { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
-              { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-              { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value},
-              { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '总平均有功功率', type: 'line',symbol: 'none',data: totalActivePowAvgValueData.value, itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              { name: '总最大有功功率', type: 'line',symbol: 'none',data: totalActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+              { name: '总最小有功功率',type: 'line',symbol: 'none',data: totalActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              { name: '总平均视在功率',type: 'line',symbol: 'none',data:  totalApparentPowAvgValueData.value, itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+              { name: '总最大视在功率', type: 'line',symbol: 'none', data: totalApparentPowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+              { name: '总最小视在功率',type: 'line',symbol: 'none',data:  totalApparentPowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
 
-              { name: '总平均无功功率',type: 'line',data:  totalReactivePowAvgValueData.value},
-              { name: '总最大无功功率', type: 'line', data: totalReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '总最小无功功率',type: 'line',data:  totalReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '总平均功率因素',type: 'line',data:  factorTotalAvgValueData.value},
+              { name: '总平均无功功率',type: 'line',symbol: 'none',data:  totalReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+              { name: '总最大无功功率', type: 'line',symbol: 'none', data: totalReactivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+              { name: '总最小无功功率',type: 'line',symbol: 'none',data:  totalReactivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
+              { name: '总平均功率因素',type: 'line',symbol: 'none',data:  factorTotalAvgValueData.value},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -752,10 +752,12 @@ const initChart = () => {
 const beforeUnmount = () => {
   realtimeChart?.off("legendselectchanged")
   realtimeChart?.dispose(); // 销毁图表实例
+  window.removeEventListener('resize', resize);
 };
-window.addEventListener('resize', function() {
+function resize() {
     realtimeChart?.resize(); 
-});
+}
+window.addEventListener('resize', resize);
 
 function preMonth(date){
  const pre = new Date(date.replace(" ", "T"))
@@ -915,10 +917,10 @@ watch(() => paramType.value , (newValues) => {
           ,selected:{"总有功功率":true,"总视在功率":true,"总无功功率":true,"总功率因素":false}
         },
         series: [
-          {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
-          {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
-          {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value},
-          {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value},
+          {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+          {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
         ],
       })
     }else if( newParamType == 'a' ){
@@ -927,10 +929,10 @@ watch(() => paramType.value , (newValues) => {
           selected:{"A路有功功率":true,"A路视在功率":true,"A路无功功率":true,"A路功率因素":false}
          },
         series: [
-          {name: 'A路有功功率', type: 'line', symbol: 'none', data: aActivePowData.value},
-          {name: 'A路视在功率', type: 'line', symbol: 'none', data: aApparentPowData.value},
-          {name: 'A路无功功率', type: 'line', symbol: 'none', data: aReactivePowData.value},
-          {name: 'A路功率因素', type: 'line', symbol: 'none', data: factorAData.value},
+          {name: 'A路有功功率', type: 'line', symbol: 'none', data: aActivePowData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          {name: 'A路视在功率', type: 'line', symbol: 'none', data: aApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+          {name: 'A路无功功率', type: 'line', symbol: 'none', data: aReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          {name: 'A路功率因素', type: 'line', symbol: 'none', data: factorAData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
         ],
       })
     }else{
@@ -939,10 +941,10 @@ watch(() => paramType.value , (newValues) => {
           selected:{"B路有功功率":true,"B路视在功率":true,"B路无功功率":true,"B路功率因素":false}
          },
         series: [
-          {name: 'B路有功功率', type: 'line', symbol: 'none', data: bActivePowData.value},
-          {name: 'B路视在功率', type: 'line', symbol: 'none', data: bApparentPowData.value},
-          {name: 'B路无功功率', type: 'line', symbol: 'none', data: bReactivePowData.value},
-          {name: 'B路功率因素', type: 'line', symbol: 'none', data: factorBData.value},
+          {name: 'B路有功功率', type: 'line', symbol: 'none', data: bActivePowData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          {name: 'B路视在功率', type: 'line', symbol: 'none', data: bApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+          {name: 'B路无功功率', type: 'line', symbol: 'none', data: bReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          {name: 'B路功率因素', type: 'line', symbol: 'none', data: factorBData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
         ],
       })
     }
@@ -1004,17 +1006,17 @@ watch(() => paramType.value , (newValues) => {
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
-            { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-            { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value},
-            { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+            { name: '总平均有功功率',symbol: 'none', type: 'line',data: totalActivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+            { name: '总最大有功功率',symbol: 'none', type: 'line',data: totalActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+            { name: '总最小有功功率',symbol: 'none',type: 'line',data: totalActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+            { name: '总平均视在功率',symbol: 'none',type: 'line',data:  totalApparentPowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+            { name: '总最大视在功率',symbol: 'none', type: 'line', data: totalApparentPowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+            { name: '总最小视在功率',symbol: 'none',type: 'line',data:  totalApparentPowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
 
-            { name: '总平均无功功率',type: 'line',data:  totalReactivePowAvgValueData.value},
-            { name: '总最大无功功率', type: 'line', data: totalReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最小无功功率',type: 'line',data:  totalReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总平均功率因素',type: 'line',data:  factorTotalAvgValueData.value},
+            { name: '总平均无功功率',symbol: 'none',type: 'line',data:  totalReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+            { name: '总最大无功功率',symbol: 'none', type: 'line', data: totalReactivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+            { name: '总最小无功功率',symbol: 'none',type: 'line',data:  totalReactivePowMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
+            { name: '总平均功率因素',symbol: 'none',type: 'line',data:  factorTotalAvgValueData.value},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -1031,14 +1033,14 @@ watch(() => paramType.value , (newValues) => {
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-          { name: 'A路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
-          { name: 'A路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-          { name: 'A路最小有功功率', type: 'line', data: aActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'A路平均视在功率', type: 'line', data: aApparentPowAvgValueData.value},
-          { name: 'A路最大视在功率', type: 'line', data: aApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'A路最小视在功率', type: 'line', data: aApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'A路平均无功功率',type: 'line',data:  aReactivePowAvgValueData.value},
-          { name: 'A路平均功率因素',type: 'line',data:  factorAAvgValueData.value},
+          { name: 'A路平均有功功率',symbol: 'none', type: 'line', data: aActivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          { name: 'A路最大有功功率',symbol: 'none', type: 'line', data: aActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+          { name: 'A路最小有功功率',symbol: 'none', type: 'line', data: aActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          { name: 'A路平均视在功率',symbol: 'none', type: 'line', data: aApparentPowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+          { name: 'A路最大视在功率',symbol: 'none', type: 'line', data: aApparentPowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+          { name: 'A路最小视在功率',symbol: 'none', type: 'line', data: aApparentPowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+          { name: 'A路平均无功功率',symbol: 'none',type: 'line',data:  aReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+          { name: 'A路平均功率因素',symbol: 'none',type: 'line',data:  factorAAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -1055,14 +1057,14 @@ watch(() => paramType.value , (newValues) => {
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-          { name: 'B路平均有功功率', type: 'line', data: bActivePowAvgValueData.value},
-          { name: 'B路最大有功功率', type: 'line', data: bActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-          { name: 'B路最小有功功率', type: 'line', data: bActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路平均视在功率', type: 'line', data: bApparentPowAvgValueData.value},
-          { name: 'B路最大视在功率', type: 'line', data: bApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路最小视在功率', type: 'line', data: bApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路平均无功功率',type: 'line',data:  bReactivePowAvgValueData.value},
-          { name: 'B路平均功率因素',type: 'line',data:  factorBAvgValueData.value},
+          { name: 'B路平均有功功率',symbol: 'none', type: 'line', data: bActivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          { name: 'B路最大有功功率',symbol: 'none', type: 'line', data: bActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+          { name: 'B路最小有功功率',symbol: 'none', type: 'line', data: bActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          { name: 'B路平均视在功率',symbol: 'none', type: 'line', data: bApparentPowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+          { name: 'B路最大视在功率',symbol: 'none', type: 'line', data: bApparentPowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+          { name: 'B路最小视在功率',symbol: 'none', type: 'line', data: bApparentPowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+          { name: 'B路平均无功功率',symbol: 'none',type: 'line',data:  bReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+          { name: 'B路平均功率因素',symbol: 'none',type: 'line',data:  factorBAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -1134,10 +1136,10 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
         yAxis: { type: 'value'},
         series: [
-          {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
-          {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
-          {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value},
-          {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value},
+          {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+          {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
         ],
         dataZoom:[{type: "inside"}],
         });
@@ -1198,17 +1200,17 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
-            { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-            { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value},
-            { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+            { name: '总平均有功功率', type: 'line',symbol: 'none',data: totalActivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+            { name: '总最大有功功率', type: 'line',symbol: 'none',data: totalActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+            { name: '总最小有功功率',type: 'line',symbol: 'none',data: totalActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+            { name: '总平均视在功率',type: 'line',symbol: 'none',data:  totalApparentPowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+            { name: '总最大视在功率', type: 'line',symbol: 'none', data: totalApparentPowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+            { name: '总最小视在功率',type: 'line',symbol: 'none',data:  totalApparentPowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
 
-            { name: '总平均无功功率',type: 'line',data:  totalReactivePowAvgValueData.value},
-            { name: '总最大无功功率', type: 'line', data: totalReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最小无功功率',type: 'line',data:  totalReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总平均功率因素',type: 'line',data:  factorTotalAvgValueData.value},
+            { name: '总平均无功功率',type: 'line',symbol: 'none',data:  totalReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+            { name: '总最大无功功率', type: 'line',symbol: 'none', data: totalReactivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+            { name: '总最小无功功率',type: 'line',symbol: 'none',data:  totalReactivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
+            { name: '总平均功率因素',type: 'line',symbol: 'none',data:  factorTotalAvgValueData.value},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -1284,99 +1286,81 @@ function customTooltipFormatter(params: any[]) {
   console.log("提示的params",params)
   var tooltipContent = ''; // X 轴数值
   params.forEach(function(item) {
-    // switch( item.seriesName ){
-    //   case '总有功功率':
-    //     // console.log("总有功功率",item);
-    //     tooltipContent += item.marker + ' 记录时间: ' +item.name + ' ' + item.seriesName + ': ' + item.value + ' kW  <br/>';
-    //     break;
-    //   case 'A路有功功率':
-    //   case 'B路有功功率':
-    //   case '总平均有功功率':
-    //     tooltipContent += item.marker + ' 记录时间: ' +item.name + ' ' + item.seriesName + ': ' + item.value + ' kW  <br/>';
-    //   case 'A路平均有功功率':
-    //   case 'B路平均有功功率':
-    //   case '总无功功率':
-    //     tooltipContent += item.marker + ' 记录时间: ' +item.name + ' ' + item.seriesName + ': ' + item.value + ' kVar  <br/>';
-    //     break;
-    //   case 'A路无功功率':
-    //   case 'B路无功功率':
-    //   case '总平均无功功率':
-    //   case 'A路平均无功功率':
-    //   case 'B路平均无功功率':
-    //     tooltipContent += item.marker + ' 记录时间: ' +params[0].name +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    //   case '总最大有功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    //   case '总最小有功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    //   case 'A路最大有功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    //   case 'A路最小有功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    //   case 'B路最大有功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    //   case 'B路最小有功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    //   // 
-    //   case '总最大无功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVar  <br/>';
-    //     break;
-    //   case '总最小无功功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] +' ' + item.seriesName + ': ' + item.value + 'kVar  <br/>';
-    //     break;
-    //   case '总视在功率':
-    //     tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + ' kVA  <br/>';
-    //     break;
-    //   case 'A路视在功率':
-    //   case 'B路视在功率':
-    //   case '总平均视在功率':
-    //   case 'A路平均视在功率':
-    //   case 'B路平均视在功率':
-    //     tooltipContent += item.marker + ' 记录时间: ' +params[0].name +' ' +  item.seriesName + ': ' + item.value + ' kVA  <br/>';
-    //     break;
-    //  case '总最大视在功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] +' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-    //     break;
-    //   case '总最小视在功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] +' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
-    //     break;
-    //   case 'A路最大视在功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
-    //     break;
-    //   case 'A路最小视在功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
-    //     break;
-    //   case 'B路最大视在功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
-    //     break;
-    //   case 'B路最小视在功率':
-    //     tooltipContent += item.marker + ' 发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
-    //     break;
-    //   case '总功率因素':
-    //     tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + '<br/>';
-    //     break;
-    //   case 'A路功率因素':
-    //   case 'B路功率因素':
-    //   case '总平均功率因素':
-    //   case 'A路平均功率因素':
-    //   case 'B路平均功率因素':
-    //     tooltipContent += item.marker + '  记录时间: ' +params[0].name + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
-    //     break;
-    // }
-    if(item.seriesName.includes('有功')){
-      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' kW  <br/>';
-    }else if(item.seriesName.includes('无功')){
-      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' kVar  <br/>';
-    }else if(item.seriesName.includes('视在')){
-      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' kVA  <br/>';
-    }else if(item.seriesName.includes('功率因素')){
-      tooltipContent += item.marker + ' 记录时间: ' +item.name +' ' +  item.seriesName + ': ' + item.value + ' <br/>';
+    switch( item.seriesName ){
+      case '总有功功率':
+      case 'A路有功功率':
+      case 'B路有功功率':
+      case '总平均有功功率':
+      case 'A路平均有功功率':
+      case 'B路平均有功功率':
+        tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' kW  <br/>';
+        break;
+      case '总视在功率':
+      case 'A路视在功率':
+      case 'B路视在功率':
+      case '总平均视在功率':
+      case 'A路平均视在功率':
+      case 'B路平均视在功率':
+      tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + ' kVA  <br/>';
+      break;
+      case '总无功功率':
+      case 'A路无功功率':
+      case 'B路无功功率':
+      case '总平均无功功率':
+      case 'A路平均无功功率':
+      case 'B路平均无功功率':
+        tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' kVar  <br/>';
+        break;
+      case 'A路功率因素':
+      case 'B路功率因素':
+      case '总功率因素':
+      case '总平均功率因素':
+      case 'A路平均功率因素':
+      case 'B路平均功率因素':
+      tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      break;
+      case '总最大有功功率':
+        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+        break;
+      case '总最小有功功率':
+        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+        break;
+      case 'A路最大有功功率':
+        tooltipContent += item.marker +' 发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+        break;
+      case 'A路最小有功功率':
+        tooltipContent += item.marker +' 发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+        break;
+      case 'B路最大有功功率':
+        tooltipContent += item.marker +' 发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+        break;
+      case 'B路最小有功功率':
+        tooltipContent += item.marker +' 发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
+        break;
+      case '总最大无功功率':
+        tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVar  <br/>';
+        break;
+      case '总最小无功功率':
+        tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVar  <br/>';
+        break;
+     case '总最大视在功率':
+        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+        break;
+      case '总最小视在功率':
+        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+        break;
+      case 'A路最大视在功率':
+        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+        break;
+      case 'A路最小视在功率':
+        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+        break;
+      case 'B路最大视在功率':
+        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+        break;
+      case 'B路最小视在功率':
+        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
+        break;
     }
   });
   return tooltipContent;
@@ -1501,10 +1485,10 @@ const handleQuery = async() => {
           ,selected:{"总有功功率":true,"总视在功率":true,"总无功功率":true,"总功率因素":false}
         },
         series: [
-          {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
-          {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
-          {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value},
-          {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value},
+          {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+          {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
         ],
       })
     }else if( newParamType == 'a' ){
@@ -1520,10 +1504,10 @@ const handleQuery = async() => {
           selected:{"A路有功功率":true,"A路视在功率":true,"A路无功功率":true,"A路功率因素":false}
          },
         series: [
-          {name: 'A路有功功率', type: 'line', symbol: 'none', data: aActivePowData.value},
-          {name: 'A路视在功率', type: 'line', symbol: 'none', data: aApparentPowData.value},
-          {name: 'A路无功功率', type: 'line', symbol: 'none', data: aReactivePowData.value},
-          {name: 'A路功率因素', type: 'line', symbol: 'none', data: factorAData.value},
+          {name: 'A路有功功率', type: 'line', symbol: 'none', data: aActivePowData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          {name: 'A路视在功率', type: 'line', symbol: 'none', data: aApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+          {name: 'A路无功功率', type: 'line', symbol: 'none', data: aReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          {name: 'A路功率因素', type: 'line', symbol: 'none', data: factorAData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
         ],
       })
     }else{
@@ -1539,10 +1523,10 @@ const handleQuery = async() => {
           selected:{"B路有功功率":true,"B路视在功率":true,"B路无功功率":true,"B路功率因素":false}
          },
         series: [
-          {name: 'B路有功功率', type: 'line', symbol: 'none', data: bActivePowData.value},
-          {name: 'B路视在功率', type: 'line', symbol: 'none', data: bApparentPowData.value},
-          {name: 'B路无功功率', type: 'line', symbol: 'none', data: bReactivePowData.value},
-          {name: 'B路功率因素', type: 'line', symbol: 'none', data: factorBData.value},
+          {name: 'B路有功功率', type: 'line', symbol: 'none', data: bActivePowData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          {name: 'B路视在功率', type: 'line', symbol: 'none', data: bApparentPowData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+          {name: 'B路无功功率', type: 'line', symbol: 'none', data: bReactivePowData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          {name: 'B路功率因素', type: 'line', symbol: 'none', data: factorBData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
         ],
       })
     }
@@ -1604,17 +1588,17 @@ const handleQuery = async() => {
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
-            { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-            { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value},
-            { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+            { name: '总平均有功功率',symbol: 'none', type: 'line',data: totalActivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+            { name: '总最大有功功率',symbol: 'none', type: 'line',data: totalActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+            { name: '总最小有功功率',symbol: 'none',type: 'line',data: totalActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+            { name: '总平均视在功率',symbol: 'none',type: 'line',data:  totalApparentPowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+            { name: '总最大视在功率',symbol: 'none', type: 'line', data: totalApparentPowMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+            { name: '总最小视在功率',symbol: 'none',type: 'line',data:  totalApparentPowMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
 
-            { name: '总平均无功功率',type: 'line',data:  totalReactivePowAvgValueData.value},
-            { name: '总最大无功功率', type: 'line', data: totalReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最小无功功率',type: 'line',data:  totalReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总平均功率因素',type: 'line',data:  factorTotalAvgValueData.value},
+            { name: '总平均无功功率',symbol: 'none',type: 'line',data:  totalReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+            { name: '总最大无功功率',symbol: 'none', type: 'line', data: totalReactivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+            { name: '总最小无功功率',symbol: 'none',type: 'line',data:  totalReactivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
+            { name: '总平均功率因素',symbol: 'none',type: 'line',data:  factorTotalAvgValueData.value},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -1631,14 +1615,14 @@ const handleQuery = async() => {
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-          { name: 'A路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
-          { name: 'A路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-          { name: 'A路最小有功功率', type: 'line', data: aActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'A路平均视在功率', type: 'line', data: aApparentPowAvgValueData.value},
-          { name: 'A路最大视在功率', type: 'line', data: aApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'A路最小视在功率', type: 'line', data: aApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'A路平均无功功率',type: 'line',data:  aReactivePowAvgValueData.value},
-          { name: 'A路平均功率因素',type: 'line',data:  factorAAvgValueData.value},
+          { name: 'A路平均有功功率',symbol: 'none', type: 'line', data: aActivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          { name: 'A路最大有功功率',symbol: 'none', type: 'line', data: aActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+          { name: 'A路最小有功功率',symbol: 'none', type: 'line', data: aActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          { name: 'A路平均视在功率',symbol: 'none', type: 'line', data: aApparentPowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+          { name: 'A路最大视在功率',symbol: 'none', type: 'line', data: aApparentPowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+          { name: 'A路最小视在功率',symbol: 'none', type: 'line', data: aApparentPowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+          { name: 'A路平均无功功率',symbol: 'none',type: 'line',data:  aReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+          { name: 'A路平均功率因素',symbol: 'none',type: 'line',data:  factorAAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -1655,14 +1639,14 @@ const handleQuery = async() => {
           xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-          { name: 'B路平均有功功率', type: 'line', data: bActivePowAvgValueData.value},
-          { name: 'B路最大有功功率', type: 'line', data: bActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
-          { name: 'B路最小有功功率', type: 'line', data: bActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路平均视在功率', type: 'line', data: bApparentPowAvgValueData.value},
-          { name: 'B路最大视在功率', type: 'line', data: bApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路最小视在功率', type: 'line', data: bApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路平均无功功率',type: 'line',data:  bReactivePowAvgValueData.value},
-          { name: 'B路平均功率因素',type: 'line',data:  factorBAvgValueData.value},
+          { name: 'B路平均有功功率',symbol: 'none', type: 'line', data: bActivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+          { name: 'B路最大有功功率',symbol: 'none', type: 'line', data: bActivePowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}} },
+          { name: 'B路最小有功功率',symbol: 'none', type: 'line', data: bActivePowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+          { name: 'B路平均视在功率',symbol: 'none', type: 'line', data: bApparentPowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+          { name: 'B路最大视在功率',symbol: 'none', type: 'line', data: bApparentPowMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+          { name: 'B路最小视在功率',symbol: 'none', type: 'line', data: bApparentPowMinValueData.value, itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+          { name: 'B路平均无功功率',symbol: 'none',type: 'line',data:  bReactivePowAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+          { name: 'B路平均功率因素',symbol: 'none',type: 'line',data:  factorBAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -2099,5 +2083,14 @@ const handleExport = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+/deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
 }
 </style>

@@ -58,6 +58,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -1014,18 +1015,11 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         List<RoomEleTotalRealtimeResVO> list = new ArrayList<>();
         List<RoomIndexDO> records = null;
         Long total = 0L;
-        LambdaQueryWrapper<RoomIndexDO> queryWrapper = new LambdaQueryWrapper<RoomIndexDO>().eq(RoomIndexDO::getIsDelete, 0)
-                .orderByDesc(RoomIndexDO::getCreateTime);
+        LambdaQueryWrapper<RoomIndexDO> queryWrapper = new LambdaQueryWrapper<RoomIndexDO>().eq(RoomIndexDO::getIsDelete, 0);
         if (reqDTO.getRoomIds() != null && reqDTO.getRoomIds().length != 0) {
             queryWrapper.in(RoomIndexDO::getId, reqDTO.getRoomIds());
         }
-        if (flag) {
-            IPage<RoomIndexDO> iPage = roomIndexCopyMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
-            records = iPage.getRecords();
-            total = iPage.getTotal();
-        } else {
-            records = roomIndexCopyMapper.selectList(queryWrapper);
-        }
+        records = roomIndexCopyMapper.selectList(queryWrapper);
         for (RoomIndexDO record : records) {
             RoomEleTotalRealtimeResVO resVO = new RoomEleTotalRealtimeResVO();
             resVO.setRoomId(record.getId()).setName(record.getRoomName());
@@ -1049,7 +1043,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             for (SearchHit hit : hits) {
                 resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(resVO.getCreateTimeMax())) {
-                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    resVO.setEleActiveEnd(new BigDecimal((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue() );
                 }
             }
             SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
@@ -1067,7 +1061,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             for (SearchHit hit : hits2) {
                 resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(resVO.getCreateTimeMin())) {
-                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    resVO.setEleActiveStart(new BigDecimal((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0)).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue());
                     double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
                     resVO.setEleActive(sub);
                     if (sub < 0) {
@@ -1076,6 +1070,19 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
             }
             list.add(resVO);
+        }
+        list.sort(((o1, o2) -> {
+            if(o2==null||o2.getEleActive()==null) return -1;
+            if(o1==null||o1.getEleActive()==null) return 1;
+            if(o1.getEleActive() > o2.getEleActive()){
+                return -1;
+            }else {
+                return 1;
+            }
+        }));
+        if(flag){
+            total=Long.valueOf (list.size());
+            list=list.stream().skip((reqDTO.getPageNo()-1)*reqDTO.getPageSize()).limit(reqDTO.getPageSize()).collect(Collectors.toList());
         }
         pageResult.setTotal(total).setList(list);
         return pageResult;

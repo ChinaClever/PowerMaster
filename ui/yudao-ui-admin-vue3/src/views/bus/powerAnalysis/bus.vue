@@ -1,7 +1,7 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗数据">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗数据" :defaultCheckedKeys="defaultCheckedKeys" :defaultExpandedKeys="defaultExpandedKeys" nodeKey="unique">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/>  
         <div class="nav_data">
           <!-- <div class="carousel-container">
             <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -70,10 +70,12 @@
           </el-form-item>
 
          <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+         </el-form-item>
+         <el-form-item style="position: absolute;top:2px;right: -20px;">  
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
          </el-form-item>
       </el-form> 
     </template>
@@ -97,7 +99,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.bus_id, row.location?row.location:'',row.dev_key)">详情</el-button>
+            <el-button style="background-color: #00778c;color:#ffffff;" type="primary" @click="toDetails(row.bus_id, row.location?row.location:'',row.dev_key)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -239,7 +241,7 @@ const shortcuts = [
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = pageNumber * queryParams.pageSize;
+  const end = Math.min(pageNumber * queryParams.pageSize,total.value);
   const pageNumbers: string[] = [];
   for (let i = start; i <= end; i++) {
     pageNumbers.push('序号'+i);
@@ -263,15 +265,16 @@ const eqData = ref<number[]>([]);
       title: { text: '各始端箱耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
+      barMaxWidth: '30px',
       toolbox: {feature: {saveAsImage:{}}},
       xAxis: {type: 'category', 
       data: getPageNumbers(queryParams.pageNo),
       axisLabel: {
-          interval: 0, // 根据实际情况调整
-          formatter: function (value, index) {
-            // 如果超过阈值，则只显示索引
-            return totalPages > labelThreshold ? '' : value;
-          },  // 如果需要，可以旋转标签
+          // interval: 0, // 根据实际情况调整
+          // formatter: function (value, index) {
+          //   // 如果超过阈值，则只显示索引
+          //   return totalPages > labelThreshold ? '' : value;
+          // },  // 如果需要，可以旋转标签
         }},
       yAxis: { type: 'value', name: "kWh"},
       series: [
@@ -280,9 +283,16 @@ const eqData = ref<number[]>([]);
         data: eqData.value, 
         barWidth: 'auto', // 自动调整宽度，或指定一个合适的固定宽度
         label: {
-                        show: totalPages <= labelThreshold,
-                        position: 'top'
-                    }},
+          show: true,
+          position: 'top'
+        },
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(  
+          0, 1, 0, 0, [  
+            { offset: 0, color: '#00778c' },  
+            { offset: 1, color: '#069ab4' }  
+          ]  
+        ) }},
       ],
     });
     rankChart.on('click', function(params) {
@@ -488,6 +498,7 @@ const handleQuery = () => {
 // 导航栏选择后触发
 const handleCheck = async (node) => {
   let arr = [] as any
+  console.log("node============",node)
   node.forEach(item => { 
     if(item.type == 6){
       arr.push(item.unique);
@@ -506,13 +517,41 @@ const handleCheck = async (node) => {
     handleQuery()
 }
 
+const defaultCheckedKeys=ref([])
+const defaultExpandedKeys = ref([])
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getBusMenu();
   console.log('接口获取机房导航列表',res);
   navList.value = res;
+  if(history.state.devKey!=null){
+    console.log("res==============",res);
+    setDefaultCheckedKeys(res)
+    console.log("defaultCheckedKeys============",defaultCheckedKeys.value);
+    console.log("defaultExpandedKeys==============",defaultExpandedKeys.value);
+  }
 }
 
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].children==null||arr[i].children.length==0){
+      console.log("arr[i].ip================",arr[i].ip)
+      if(arr[i].unique==history.state.devKey){
+        defaultCheckedKeys.value.push(arr[i].unique);
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
+}
 // 获取导航的数据显示
 const getNavNewData = async() => {
   const res = await EnergyConsumptionApi.getNavNewData({});
@@ -637,4 +676,10 @@ onMounted(() => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+  /deep/ .el-pagination.is-background .el-pager li.is-active {
+    background-color: #00778c;
+    }
+        /deep/  .el-pager li:hover {
+    color: #00778c;
+}
 </style>

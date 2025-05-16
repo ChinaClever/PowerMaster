@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="插接箱能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="插接箱能耗排名" :showCheckbox="false"  :hightCurrent="true" nodeKey="unique" :currentKey="currentKey" :highlightTypes="[7]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
       <div class="nav_data">
       <div class="nav_header">       
@@ -65,8 +65,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <el-form-item style="float:right;">
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
         </el-form-item>
@@ -121,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
+import { dayjs, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { IndexApi } from '@/api/bus/busindex'
@@ -129,7 +131,7 @@ import { formatDate, endOfDay, convertDate, addTime, betweenDay, startOfDay } fr
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
-import CommonMenu1 from './component/CommonMenu1.vue';
+// import CommonMenu1 from './component/CommonMenu1.vue';
 defineOptions({ name: 'ECDistribution' })
 
 const message = useMessage() // 消息弹窗
@@ -155,6 +157,7 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
   devkey: undefined as string | undefined,
+  nowAddress:null
 })
 const carouselItems = ref([
       { imgUrl: PDUImage},
@@ -240,18 +243,51 @@ const shortcuts = [
   },
 ]
 
+let lastdate=null;
+let lastWeekOrMonth=null;
+function defaultYear(){
+  const preYear=new Date();
+  preYear.setFullYear(preYear.getFullYear()-1)
+  return [dayjs(preYear).format("YYYY-MM-DD HH:mm:ss"),dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")]
+}
 // 监听切换日周月tab切换
-watch( ()=>activeName.value, async(newActiveName)=>{
+watch( ()=>activeName.value, async(newActiveName,oldActiveName)=>{
+  if(oldActiveName=="dayTabPane"){
+    lastdate=selectTimeRange.value;
+  }else{
+    lastWeekOrMonth=selectTimeRange.value;
+  }
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    // selectTimeRange.value = defaultDayTimeRange(14)
+    // selectTimeRange.value = defaultDayTimeRange(7)
+    if(lastdate!=null){
+      selectTimeRange.value=lastdate;
+    }
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    // selectTimeRange.value = defaultMonthTimeRange(3)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }else{
     queryParams.granularity = 'month'
-    // selectTimeRange.value = defaultMonthTimeRange(12)
+    if(lastWeekOrMonth!=null){
+      selectTimeRange.value=lastWeekOrMonth
+    }else{
+      selectTimeRange.value = defaultYear()
+    }
   }
+  // if ( newActiveName == 'dayTabPane'){
+  //   queryParams.granularity = 'day'
+  //   // selectTimeRange.value = defaultDayTimeRange(14)
+  // }else if (newActiveName == 'weekTabPane'){
+  //   queryParams.granularity = 'week'
+  //   // selectTimeRange.value = defaultMonthTimeRange(3)
+  // }else{
+  //   queryParams.granularity = 'month'
+  //   // selectTimeRange.value = defaultMonthTimeRange(12)
+  // }
   handleQuery();
 });
 
@@ -315,10 +351,10 @@ const getLineChartData =async () => {
       minEqDataTemp.value = Math.min(...eqData.value);
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = startTimeData.value[index]
+          maxEqDataTimeTemp.value = createTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
-          minEqDataTimeTemp.value = startTimeData.value[index]
+          minEqDataTimeTemp.value = createTimeData.value[index]
         }
         totalEqData.value += Number(num);
       });
@@ -352,9 +388,9 @@ const initLineChart = () => {
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
-      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+      series: [{name: '耗电量', type: 'line',symbol:"none", data: eqData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
@@ -367,7 +403,7 @@ const initLineChart = () => {
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {
-        return Number(value).toFixed(decimalPlaces);
+        return Number(value)?.toFixed(decimalPlaces);
     } else {
         return null; // 或者其他默认值
     }
@@ -376,14 +412,20 @@ function formatNumber(value, decimalPlaces) {
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = '';
-  params.forEach(function(item) {
-    switch( item.seriesName ){
-      case '耗电量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
-        break;
-    }
-  });
-  tooltipContent += '<br/>时间: ' + params[0].name;
+  // params.forEach(function(item) {
+  //   switch( item.seriesName ){
+  //     case '耗电量':
+  //       tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
+  //       break;
+  //   }
+  // });
+  // tooltipContent += '<br/>时间: ' + params[0].name;
+  tooltipContent += params[0].marker + ' ' +'记录时间: ' + params[0].name;
+  tooltipContent += "&nbsp;&nbsp;&nbsp;&nbsp;" + params[0].seriesName + ': ' + params[0].value + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'开始时间: ' + tableData.value[params[0].dataIndex].startTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;开始电能: ' + tableData.value[params[0].dataIndex].startEleData + ' kWh';
+  tooltipContent += '<br/>&nbsp;&nbsp;&nbsp;&nbsp;'+'结束时间: ' + tableData.value[params[0].dataIndex].endTimeData;
+  tooltipContent += '&nbsp;&nbsp;&nbsp;&nbsp;结束电能: ' + tableData.value[params[0].dataIndex].endEleData + ' kWh';
   return tooltipContent;
 }
 
@@ -455,10 +497,36 @@ function findFullName(data, targetUnique, callback, fullName = '') {
   }
 }
 
+const currentKey=ref()
+const defaultExpandedKeys = ref([])
+if(history.state.devKey!=null){
+  currentKey.value = history.state.devKey;
+}
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
   navList.value = res
+  if(history.state.devKey!=null){
+    setDefaultCheckedKeys(res);
+  }
+}
+
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].children==null||arr[i].children.length==0){
+      if(arr[i].unique==history.state.devKey){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 //导出Excel
@@ -472,6 +540,7 @@ const handleExport1 = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
+    queryParams.nowAddress = nowAddress.value;
     const data = await EnergyConsumptionApi.exportBoxDetailsPageData(queryParams, axiosConfig)
     await download.excel(data, '插接箱能耗排名历史数据.xlsx')
   } catch (error) {
@@ -561,5 +630,13 @@ if (boxId !== undefined && boxId !== null) {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-  
+    /deep/ .el-tabs__item.is-active {
+  color:#00778c;
+}
+/deep/ .el-tabs__active-bar {
+  background-color: #00778c;
+}
+/deep/ .el-tabs__item:hover{
+  color:#00778c;
+}
 </style>

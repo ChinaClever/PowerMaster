@@ -38,7 +38,7 @@ public interface PDUDeviceService {
 
     Map getReportOutLetDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
-    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime,Integer dataType);
 
     PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO);
 
@@ -47,7 +47,7 @@ public interface PDUDeviceService {
 
     List<String> getIpList();
 
-    Map getPDUPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getPDUPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime,Integer dataType);
 
     int deletePDU(String devKey) throws Exception;
 
@@ -59,7 +59,7 @@ public interface PDUDeviceService {
 
     String getLocationByDevKey(String devKey);
 
-    Map getPduHdaLineHisdataKey(String devKey, String type);
+    Map getPduHdaLineHisdataKey(String devKey, Integer type,LocalDateTime oldTime,LocalDateTime newTime);
 
     Map getPduHdaLineHisdataKeyByCabinet(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime);
 
@@ -75,4 +75,7 @@ public interface PDUDeviceService {
 
     Map<String, String> setLocation(List<String> collect1);
 
+    Map getReportLoopDataDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getReportOutLetCurDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }

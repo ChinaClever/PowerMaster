@@ -70,7 +70,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("start_time.keyword")
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
@@ -421,13 +421,9 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         if (reqDTO.getCabinetIds() != null && reqDTO.getCabinetIds().length != 0) {
             queryWrapper.in(IndexDO::getId, reqDTO.getCabinetIds());
         }
-        if (flag) {
-            IPage<IndexDO> iPage = cabIndexMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
-            records = iPage.getRecords();
-            total = iPage.getTotal();
-        } else {
-            records = cabIndexMapper.selectList(queryWrapper);
-        }
+
+        records = cabIndexMapper.selectList(queryWrapper);
+
         List<Integer> roomIds = records.stream().map(IndexDO::getRoomId).distinct().collect(Collectors.toList());
         Map<Integer, RoomIndex> mapRoom = cabinetHistoryDataService.getRoomById(roomIds);
         List<Integer> aisleIds = records.stream().map(IndexDO::getAisleId).distinct().collect(Collectors.toList());
@@ -509,6 +505,19 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                 }
             }
             list.add(resVO);
+        }
+        list.sort(((o1, o2) -> {
+            if(o2==null||o2.getEleActive()==null) return -1;
+            if(o1==null||o1.getEleActive()==null) return 1;
+            if(o1.getEleActive() > o2.getEleActive()){
+                return -1;
+            }else {
+                return 1;
+            }
+        }));
+        if(flag){
+            total=Long.valueOf (list.size());
+            list=list.stream().skip((reqDTO.getPageNo()-1)*reqDTO.getPageSize()).limit(reqDTO.getPageSize()).collect(Collectors.toList());
         }
         pageResult.setTotal(total).setList(list);
         return pageResult;

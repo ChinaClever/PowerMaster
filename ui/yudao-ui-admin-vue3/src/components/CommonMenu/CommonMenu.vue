@@ -10,7 +10,7 @@
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
           <div v-show="showNavTree" >
-            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :defaultExpandedKeys="defaultExpandedKeys" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" :defaultCheckedKeys="defaultCheckedKeys"/>
+            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :defaultExpandedKeys="defaultExpandedKeys" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" :defaultCheckedKeys="defaultCheckedKeys" :nodeKey="nodeKey"/>
           </div>
         </div>
         <div v-show="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
@@ -85,6 +85,11 @@ const props = defineProps({
   defaultExpandedKeys:{
     type: Array,
     default: () => [],
+    required: false
+  },
+  nodeKey:{
+    type: String,
+    default: 'id',
     required: false
   }
 })
@@ -206,7 +211,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #eef4fc;
+  background-color: #f7f7f7;
   font-size: 14px;
 }
 .nav-left {

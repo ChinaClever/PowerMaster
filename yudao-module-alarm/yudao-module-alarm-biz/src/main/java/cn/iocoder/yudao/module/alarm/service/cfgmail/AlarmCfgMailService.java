@@ -79,11 +79,5 @@ public interface AlarmCfgMailService {
      */
     void sendAlarmMail(List<AlarmLogRecordDO> records);
 
-    /**
-     * 播放声音
-     */
-    void playAudio();
-
-
     void pushAlarmMessage(List<Map<String, Object>> mapList);
 }

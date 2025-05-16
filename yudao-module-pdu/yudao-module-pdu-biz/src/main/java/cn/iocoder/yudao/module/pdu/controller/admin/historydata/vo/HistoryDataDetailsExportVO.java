@@ -31,6 +31,9 @@ public class HistoryDataDetailsExportVO {
     @NumberFormat("0.000")
     @ExcelProperty("总视在功率(kVA)")
     private Double pow_apparent;
+    @NumberFormat("0.000")
+    @ExcelProperty("无功功率(kVar)")
+    private Double pow_reactive;
     @NumberFormat("0.00")
     @ExcelProperty("功率因素")
     private Double power_factor;

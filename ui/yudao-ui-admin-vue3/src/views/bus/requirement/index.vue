@@ -366,14 +366,20 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 import Pie from './component/Pie.vue'
 import RequirementLine from './component/RequirementLine.vue'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const openDetailFlag=ref("0")
 // const { push } = useRouter()
 const startTime = ref() as any;
 const endTime = ref() as any;
@@ -650,6 +656,7 @@ const queryParams = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds:[],
+  lineType: 0,
   timeType : 0,
   timeArr:[],
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
@@ -777,12 +784,20 @@ const handleExport = async () => {
   }
 }
 
+watch(openDetailFlag,async (val) => {
+  if(val == "1") {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation({devKey: query.devKey});
+    openDetail(data)
+  }
+})
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
   getList();
   getNavList();
   getListAll(0);
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 

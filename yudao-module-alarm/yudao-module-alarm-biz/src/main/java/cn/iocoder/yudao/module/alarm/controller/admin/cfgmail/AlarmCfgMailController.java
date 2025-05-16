@@ -100,17 +100,6 @@ public class AlarmCfgMailController {
         cfgMailService.sendAlarmMail(records);
     }
 
-    /**
-     * 播放声音
-     */
-    @GetMapping("/play")
-    @PermitAll
-    public void playVoice(){
-        cfgMailService.playAudio();
-
-    }
-
-
     @GetMapping("/export-excel")
     @Operation(summary = "导出告警邮件接收人配置 Excel")
     @PreAuthorize("@ss.hasPermission('alarm:cfg-mail:export')")

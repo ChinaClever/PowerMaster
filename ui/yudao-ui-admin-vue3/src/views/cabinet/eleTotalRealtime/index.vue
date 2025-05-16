@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜实时能耗">
     <template #NavInfo>
-    <br/>    <br/> 
+    <br/>
         <div class="nav_data">
 <div class="descriptions-container" style="font-size: 14px;">
           <div >
@@ -29,14 +29,15 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
+            :clearable="false"
           />
           </el-form-item>
 
          <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
          </el-form-item>
-         <el-form-item style="position: absolute;right: 0px">
-          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+         <el-form-item style="position: absolute;right: -6px;">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;position: absolute;top:2px;right: -10px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
           </el-form-item>
@@ -62,7 +63,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.id,selectTimeRange!=null?selectTimeRange[0]:null,selectTimeRange!=null?selectTimeRange[1]:null)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.id)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
           </template>
         </el-table-column>
         
@@ -82,7 +83,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.id,selectTimeRange!=null?selectTimeRange[0]:null,selectTimeRange!=null?selectTimeRange[1]:null)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.id)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -202,9 +203,9 @@ const shortcuts = [
 ]
 
 // 返回当前页的序号数组
-const getPageNumbers = (pageNumber) => {
+const getPageNumbers = (pageNumber: number) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = pageNumber * queryParams.pageSize;
+  const end = Math.min(pageNumber * queryParams.pageSize,total.value);
   const pageNumbers: string[] = [];
   for (let i = start; i <= end; i++) {
     pageNumbers.push('序号'+i);
@@ -218,31 +219,38 @@ let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
 const initChart = () => {
   if (rankChartContainer.value && instance) {
+    rankChart?.off("click");
+    rankChart?.dispose();
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各机柜耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+      barMaxWidth: '30px',
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' },itemStyle: {
+          color: new echarts.graphic.LinearGradient(  
+          0, 1, 0, 0, [  
+            { offset: 0, color: '#00778c' },  
+            { offset: 1, color: '#069ab4' }  
+          ]  
+        ) }},
       ],
     });
     rankChart.on('click', function(params) {
       // 控制台打印数据的名称
-      toDetails(list.value[params.dataIndex].id,
-      list.value[params.dataIndex].createTimeMin,
-      list.value[params.dataIndex].createTimeMax);
+      toDetails(list.value[params.dataIndex].id);
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
-
-window.addEventListener('resize', function() {
+function resize() {
   rankChart?.resize(); 
-});
+}
+window.addEventListener('resize', resize);
 
 watch(() => queryParams.granularity, () => {
   handleQuery();
@@ -427,9 +435,14 @@ const handleExport = async () => {
 
 
 /** 详情操作*/
-const toDetails = (id: number, createTimeMin : any,createTimeMax : any) => {
-  push('/cabinet/nenghao/powerAnalysis?id='+id+(createTimeMax!=null&&createTimeMax!=''&&createTimeMin!=null&&createTimeMin!=''?"&start="+createTimeMin+
-  '&end='+createTimeMax:''));
+const toDetails = (id: number) => {
+  let createTimeMin = selectTimeRange.value?.[0];
+  let createTimeMax = selectTimeRange.value?.[1];
+  if(createTimeMax!=null&&createTimeMax!=''&&createTimeMin!=null&&createTimeMin!=''){
+    push({path:"/cabinet/nenghao/powerAnalysis",state:{id,start:createTimeMin,end:createTimeMax}});
+  }else{
+    push({path:"/cabinet/nenghao/powerAnalysis",state:{id}});
+  }
 }
 const format = (date) => {
   const year = date.getFullYear();
@@ -443,17 +456,19 @@ watch(() => selectTimeRange.value, (newValue) => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavNewData()
   const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
-selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
-];
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  selectTimeRange.value = [
+    format(startOfMonth),
+    format(now)
+  ];
    getList();
 });
-
+onBeforeUnmount(() => {
+  rankChart?.off("click");
+  rankChart?.dispose();
+  window.removeEventListener("resize", resize);
+});
 </script>
 
 <style scoped>
@@ -500,4 +515,10 @@ selectTimeRange.value = [
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+  /deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
+}
 </style>

@@ -87,4 +87,9 @@ public class AlarmCfgPromptServiceImpl implements AlarmCfgPromptService {
         cfgPromptMapper.insertBatch(Arrays.asList(voice, mail, sms, mq));
     }
 
+    @Override
+    public Integer getCfgPromptByType(Integer code) {
+        return cfgPromptMapper.getCfgPromptByType(code);
+    }
+
 }

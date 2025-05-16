@@ -44,17 +44,22 @@ const echartsOption = ref({
 })
 
 watchEffect(() => {
-  // 直接访问即可，watchEffect会自动跟踪变化
-
   series.value = prop.list.series;
-  if(  series.value != null && series.value?.length > 0){
-    legendList.value =  series.value?.map(item => item.name)
+  if (series.value != null && series.value?.length > 0) {
+    legendList.value = series.value?.map(item => item.name);
+    series.value.forEach(item => {
+      item.label = {
+        show: true,
+        position: 'top',
+        formatter: (params) => `${params.value.toFixed(1)} `, // 保留1位小数
+        color: '#333',
+        fontSize: 12,
+      };
+    });
   }
   time.value = prop.list.time;
+  console.log('Bartime.value',time.value)
 });
-
-
-
 onUnmounted(() => {
   console.log('onUnmounted******')
 })

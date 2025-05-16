@@ -109,6 +109,40 @@ public class HourAndDayLoopPageRespVO {
     @ExcelProperty("最小视在功率时间")
     private String pow_apparent_min_time;
 //
+    @ExcelProperty("平均无功功率(kVar)")
+    @NumberFormat("0.000")
+    private Double pow_reactive_avg_value;
 
+    @ExcelProperty("最大无功功率(kVar)")
+    @NumberFormat("0.000")
+    private Double pow_reactive_max_value;
+
+    @ExcelProperty("最大无功功率时间")
+    private String pow_reactive_max_time;
+
+    @ExcelProperty("最小无功功率(kVar)")
+    @NumberFormat("0.000")
+    private Double pow_reactive_min_value;
+
+    @ExcelProperty("最小无功功率时间")
+    private String pow_reactive_min_time;
+
+    @ExcelProperty("平均功率因素")
+    @NumberFormat("0.00")
+    private Double power_factor_avg_value;
+
+    @ExcelProperty("最大功率因素")
+    @NumberFormat("0.00")
+    private Double power_factor_max_value;
+
+    @ExcelProperty("最大功率因素时间")
+    private String power_factor_max_time;
+
+    @ExcelProperty("最小功率因素")
+    @NumberFormat("0.00")
+    private Double power_factor_min_value;
+
+    @ExcelProperty("最小功率因素时间")
+    private String power_factor_min_time;
 
 }

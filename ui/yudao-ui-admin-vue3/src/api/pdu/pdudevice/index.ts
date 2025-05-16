@@ -110,6 +110,14 @@ export const PDUDeviceApi = {
     return await request.post({ url: `/pdu/PDU-device/report/outlet`,data})
   },
 
+  getOutLetCurData: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/report/outletNew`,data})
+  },
+
+  getLoopData: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/report/loop`,data})
+  },
+
   getTemData: async (data) => {
     return await request.post({ url: `/pdu/PDU-device/report/tem`,data})
   },

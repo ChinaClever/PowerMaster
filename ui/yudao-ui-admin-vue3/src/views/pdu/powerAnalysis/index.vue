@@ -1,7 +1,7 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗数据" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗数据" placeholder="如:192.168.1.96-0" :defaultCheckedKeys="defaultCheckedKeys" :defaultExpandedKeys="defaultExpandedKeys" nodeKey="unique">
     <template #NavInfo>
-        <br/>    <br/> 
+        <br/>
         <div class="nav_data">
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
@@ -15,7 +15,7 @@
           <div class="description-item">
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
-          </div>    <br/>
+          </div>  
           <div ><span>全部PDU新增能耗记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
@@ -54,11 +54,23 @@
             </el-select>
           </el-form-item>
 
-         <el-form-item label="时间段" prop="timeRange">
-            <el-date-picker
+         <el-form-item label="时间段" prop="timeRange" v-if="queryParams.granularity !== 'month'">
+          <el-date-picker
             value-format="YYYY-MM-DD"
-            v-model="selectTimeRange"
+            v-model="selectTimeRangeHaveDay"
             type="daterange"
+            :shortcuts="shortcuts"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :disabled-date="disabledDate"
+          />
+          </el-form-item>
+          <el-form-item label="时间段" prop="timeRange" v-else>
+            <el-date-picker
+            value-format="YYYY-MM"
+            v-model="selectTimeRangeNoDay"
+            type="monthrange"
             :shortcuts="shortcuts"
             range-separator="-"
             start-placeholder="开始日期"
@@ -68,10 +80,10 @@
           </el-form-item>
 
          <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
            
          </el-form-item>
-         <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="float: right;margin-right: 10px;">
+         <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;position: absolute;top:2px;right: 15px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
       </el-form>
@@ -97,7 +109,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button type="primary" @click="toDetails(row.pdu_id,row.address,row.location)">详情</el-button>
+            <el-button type="primary" @click="toDetails(row.pdu_id,row.address,row.location)" style="background-color: #00778c;color:#ffffff;font-size: 13px;" >详情</el-button>
           </template>
         </el-table-column>
         
@@ -163,6 +175,7 @@ import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
 import router from '@/router'
+import { IFrame } from '@/components/IFrame'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -198,6 +211,8 @@ const queryParams = reactive({
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
+const selectTimeRangeHaveDay = ref()
+const selectTimeRangeNoDay = ref()
 
 // 时间段快捷选项
 const shortcuts = [
@@ -274,7 +289,7 @@ const getPageNumber = (pageNumber) => {
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = pageNumber * queryParams.pageSize;
+  const end = Math.min(pageNumber * queryParams.pageSize,total.value);
   const pageNumbers: string[] = [];
   for (let i = start; i <= end; i++) {
     pageNumbers.push('序号'+i);
@@ -287,51 +302,68 @@ const rankChartContainer = ref<HTMLElement | null>(null);
 let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
 const initChart = () => {
-  if (rankChartContainer.value && instance) {
-
-    // 假设这是您的分页阈值
-    const labelThreshold = 30; // 您可以根据需要调整这个值
-
-    // 计算当前分页数量
-    const totalPages = getPageNumber(queryParams.pageNo);
+    rankChart?.off("click");
+    rankChart?.dispose();
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各PDU耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
+      barMaxWidth: '30px',
       toolbox: {feature: {saveAsImage:{}}},
-      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo),
-      axisLabel: {
-          interval: 0, // 根据实际情况调整
-          formatter: function (value, index) {
-            // 如果超过阈值，则只显示索引
-            return totalPages > labelThreshold ? '' : value;
-          },  // 如果需要，可以旋转标签
-        }
-      },
+      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
         {name:"耗电量",  
         type: 'bar', 
-        data: eqData.value.map(num => formatEQ(num,1)), 
-        label: { 
-          show: totalPages <= labelThreshold, position: 'top' 
-        },
+        data: eqData.value,
+        label: { show: true, position: 'top' },
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(  
+          0, 1, 0, 0, [  
+            { offset: 0, color: '#00778c' },  
+            { offset: 1, color: '#069ab4' }  
+          ]  
+        ) }
       },
       ],
     });
     rankChart.on("click",(params)=>{
       toDetails(list.value[params.dataIndex].pdu_id, list.value[params.dataIndex].address,list.value[params.dataIndex].location)
     })
-    instance.appContext.config.globalProperties.rankChart = rankChart;
-  }
+    if(instance){
+      instance.appContext.config.globalProperties.rankChart = rankChart;
+    }
 };
 
-window.addEventListener('resize', function() {
+function resize() {
   rankChart?.resize(); 
-});
+}
+window.addEventListener('resize', resize);
 
-watch(() => queryParams.granularity, () => {
+function startOfMonth(date: Date): Date {
+  return dayjs(new Date(date.getFullYear(), date.getMonth(), 1)).format("YYYY-MM-DD HH:mm:ss");
+}
+function endOfMonth(date: Date): Date {
+  const bigMonth=[1,3,5,7,8,10,12]
+  if(date.getMonth() === 1){
+    if((date.getFullYear() % 4 === 0&&date.getFullYear() % 100 !== 0)||date.getFullYear() % 400 === 0){
+      return dayjs(new Date(date.getFullYear(), date.getMonth(), 29,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+    }else{
+      return dayjs(new Date(date.getFullYear(), date.getMonth(), 28,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+    }
+  }else if(bigMonth.includes(date.getMonth()+1)){
+    return dayjs(new Date(date.getFullYear(), date.getMonth(), 31,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+  }else{
+    return dayjs(new Date(date.getFullYear(), date.getMonth(), 30,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+  }
+}
+watch(() => queryParams.granularity, (newValue) => {
+  if(newValue == "month"){
+    if(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2){
+      selectTimeRangeNoDay.value=[dayjs(startOfMonth(convertDate(selectTimeRangeHaveDay.value[0]))).format("YYYY-MM"),dayjs(endOfMonth(convertDate(selectTimeRangeHaveDay.value[1]))).format("YYYY-MM")]
+    }
+  }
   handleQuery();
 });
 
@@ -357,14 +389,20 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
-    if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),1000*60*60*24)))
+    if ( queryParams.granularity!="month" && selectTimeRangeHaveDay.value!=null){
+      console.log("noMonth===>",selectTimeRangeHaveDay.value)
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRangeHaveDay.value[0])))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRangeHaveDay.value[1])))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    if(queryParams.granularity=="month"&&selectTimeRangeNoDay.value!=null){
+      console.log("month===>",selectTimeRangeNoDay.value)
+      const selectedStartTime = formatDate(startOfMonth(convertDate(selectTimeRangeNoDay.value[0])))
+      const selectedEndTime = formatDate(endOfMonth(convertDate(selectTimeRangeNoDay.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(selectTimeRange.value == null){
+    if(( queryParams.granularity!="month" && selectTimeRangeHaveDay.value==null)||(queryParams.granularity=="month"&&selectTimeRangeNoDay.value==null)){
       queryParams.timeRange = undefined
     }
     // if (ip.value != undefined){
@@ -372,18 +410,23 @@ const getList = async () => {
     // }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    eqData.value = data.list.map((item) => {
-       const difference = item.end_ele - item.start_ele;
-       return difference < 0 ? item.end_ele : formatEQ(difference, 1);
-    });
-    list.value = data.list
+    // eqData.value = data.list.map((item) => {
+    //    const difference = item.end_ele - item.start_ele;
+    //    return difference < 0 ? formatEQ(item.end_ele,1) : formatEQ(difference, 1);
+    // });
+    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    list.value = data.list;
     if (data.total > 10000){
       total.value = 10000
     }else{
       total.value = data.total
     }
     realTotel.value = data.total
+  }catch{
+    eqData.value = [];
+    list.value = [];
   }finally{
+    initChart();
     loading.value = false;
   }
 }
@@ -588,11 +631,39 @@ const handleCheck = async (node) => {
 //   }
 //   navList.value = arr
 // }
+const defaultCheckedKeys=ref([])
+const defaultExpandedKeys = ref([])
+
 const getNavList = async() => {
   let arr = [] as any
   var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
   navList.value = arr
+  console.log(navList.value,"=================navlist.value")
+  if(history.state.ip!=null){
+    setDefaultCheckedKeys(arr);
+    console.log("defaultCheckedKeys================",defaultCheckedKeys.value);
+    console.log("defaultExpandedKeys================",defaultExpandedKeys.value);
+  }
+}
+function setDefaultCheckedKeys(arr) {
+  if(arr==null||arr.length == 0)return false;
+  for(let i = 0; i < arr.length; i++) {
+    if(arr[i].type==4){
+      console.log("arr[i].ip================",arr[i].ip)
+      if(arr[i].ip==history.state.ip){
+        defaultCheckedKeys.value.push(arr[i].unique);
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }else{
+      if(setDefaultCheckedKeys(arr[i].children)){
+        defaultExpandedKeys.value.push(arr[i].unique);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 // 获取导航的数据显示
@@ -605,8 +676,12 @@ const getNavNewData = async() => {
 
 /** 详情操作*/
 const toDetails = (pduId: number, address: string, location: string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address+"&location="+location+
-  (selectTimeRange.value!=null&&selectTimeRange.value.length==2?'&start='+selectTimeRange.value[0]+'&end='+selectTimeRange.value[1]:''));
+  if(queryParams.granularity!='month'){
+    push({path:"/pdu/nenghao/ecdistribution",state:{pduId,location,address,start:(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2?selectTimeRangeHaveDay.value[0]:null),end:(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2?selectTimeRangeHaveDay.value[1]:null)}});
+  }else{
+    // console.log(selectTimeRangeNoDay.value,"==============selectTimeRangeNoDay.value")
+    push({path:"/pdu/nenghao/ecdistribution",state:{pduId,location,address,start:(selectTimeRangeNoDay.value!=null&&selectTimeRangeNoDay.value.length==2?dayjs(startOfMonth(convertDate(selectTimeRangeNoDay.value[0]))).format("YYYY-MM-DD"):''),end:(selectTimeRangeNoDay.value!=null&&selectTimeRangeNoDay.value.length==2?dayjs(endOfMonth(convertDate(selectTimeRangeNoDay.value[1]))).format("YYYY-MM-DD"):'')}});
+  }
 }
 
 /** 导出按钮操作 */
@@ -639,16 +714,31 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  ip.value = useRoute().query.ip as string;
-  getLists();
+  start.value = history.state.start as string;
+  end.value = history.state.end as string;
+  if(history.state.start!=null&&history.state.end!=null&&history.state.start!=''&&history.state.end!=''){
+    selectTimeRangeHaveDay.value = [history.state.start, history.state.end]
+  }else{
+    let now = new Date();
+    selectTimeRangeHaveDay.value=[dayjs(new Date(now.getFullYear(),now.getMonth(),1)).format("YYYY-MM-DD"),dayjs(now).format("YYYY-MM-DD")]
+  }
+  ip.value = history.state.ip as string;
+  if(history.state.ip!=null){
+    queryParams.ipArray = [ip.value]
+  }
+  getList();
   
   // if (start.value != null){
   // 	console.log('详情页', start);
 	// console.log('详情页1', ip);
   // getLists();
   // }
+});
+
+onBeforeUnmount(() => {
+  rankChart?.off("click");
+  rankChart?.dispose();
+  window.removeEventListener("resize", resize);
 });
 
 /** 清空按钮操作 */
@@ -719,4 +809,10 @@ const clearQuery = () => {
    ::v-deep .el-table td{
     border-right: none;
    } */
+   /deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
+}
 </style>

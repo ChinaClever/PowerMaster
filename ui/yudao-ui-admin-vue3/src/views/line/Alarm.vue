@@ -213,7 +213,14 @@ const saveAlarmConfig = async() => {
       smsAlarm: queryParams.openMessage ? 1 : 0,
     })
     console.log('保存警告配置', res)
-    if (res) message.success('配置修改成功')
+    if (res) {
+      message.success('配置修改成功')
+      if (queryParams.openVoice) {
+        playAudio()
+      } else {
+        stopAudio()
+      }
+    } 
   } finally {
     queryLoading.value = false
   }
@@ -293,8 +300,21 @@ const handleChange = () => {
   console.log('表单确认完成处理')
 }
 
+// 播放音频
+const playAudio = async() => {
+  AlarmApi.playAudio({})
+  console.log('播放音频')
+}
+
+// 关闭音频
+const stopAudio = async() => {
+  AlarmApi.stopAudio({})
+  console.log('关闭音频')
+}
+
 getTableData()
 getAlarmConfig()
+playAudio()
 </script>
 
 <style lang="scss" scoped>

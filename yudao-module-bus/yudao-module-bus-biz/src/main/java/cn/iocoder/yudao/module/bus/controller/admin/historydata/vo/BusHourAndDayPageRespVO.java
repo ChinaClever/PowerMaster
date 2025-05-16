@@ -78,14 +78,27 @@ public class BusHourAndDayPageRespVO {
     @NumberFormat("0.000")
     @ExcelProperty("最大视在功率(kVA)")
     private Double pow_apparent_max_value;
-
     @ExcelProperty("最小视在功率时间")
     private String pow_apparent_min_time;
     @NumberFormat("0.000")
-
     @ExcelProperty("最小视在功率(kVA)")
     private Double pow_apparent_min_value;
     @NumberFormat("0.00")
+    @ExcelProperty("平均功率因素")
+    private Double power_factor_avg_value;
+    @ExcelProperty("最大功率因素时间")
+    private String power_factor_max_time;
+    @NumberFormat("0.00")
+    @ExcelProperty("最大功率因素")
+    private Double power_factor_max_value;
+    @ExcelProperty("最小功率因素时间")
+    private String power_factor_min_time;
+    @NumberFormat("0.00")
+    @ExcelProperty("最小功率因素")
+    private Double power_factor_min_value;
+    @NumberFormat("0.00")
+
+
     @ExcelProperty("平均剩余电流(A)")
     private Double cur_residual_avg_value;
 
@@ -115,54 +128,5 @@ public class BusHourAndDayPageRespVO {
     @NumberFormat("0.00")
     @ExcelProperty("最小零线电流(A)")
     private Double cur_zero_min_value;
-
-    // 相
-    @ExcelProperty("相")
-    private String line_id;
-    @NumberFormat("0.0")
-    @ExcelProperty("平均电压(V)")
-    private Double vol_avg_value;
-
-    @ExcelProperty("最大电压时间")
-    private String vol_max_time;
-    @NumberFormat("0.0")
-    @ExcelProperty("最大电压(V)")
-    private Double vol_max_value;
-
-    @ExcelProperty("最小电压时间")
-    private String vol_min_time;
-    @NumberFormat("0.0")
-    @ExcelProperty("最小电压(V)")
-    private Double vol_min_value;
-    @NumberFormat("0.00")
-    @ExcelProperty("平均电流(A)")
-    private Double cur_avg_value;
-
-    @ExcelProperty("最大电流时间")
-    private String cur_max_time;
-    @NumberFormat("0.00")
-    @ExcelProperty("最大电流(A)")
-    private Double cur_max_value;
-
-    @ExcelProperty("最小电流时间")
-    private String cur_min_time;
-    @NumberFormat("0.00")
-    @ExcelProperty("最小电流(A)")
-    private Double cur_min_value;
-    @NumberFormat("0.0")
-    @ExcelProperty("平均线电压(V)")
-    private Double vol_line_avg_value;
-
-    @ExcelProperty("最大线电压时间")
-    private String vol_line_max_time;
-    @NumberFormat("0.0")
-    @ExcelProperty("最大线电压(V)")
-    private Double vol_line_max_value;
-
-    @ExcelProperty("最小线电压时间")
-    private String vol_line_min_time;
-    @NumberFormat("0.0")
-    @ExcelProperty("最小线电压(V)")
-    private Double vol_line_min_value;
 
 }

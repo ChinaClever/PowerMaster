@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="始端箱温度数据" >
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>  
         <div class="nav_data">
           <!-- <div class="nav_content">
             <el-descriptions title="全部始端箱新增环境记录" direction="vertical" :column="1" width="60px" border >
@@ -78,11 +78,13 @@
 
         <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item> 
+        <el-form-item style="position: absolute;right: -18px;">
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item> 
+        </el-form-item>
         <!-- </div> -->
       </el-form>
     </template>
@@ -99,14 +101,14 @@
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :min-width="column.width" v-if="column.istrue&&column.slot !== 'actions'" >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
               </div>
             </template>
           </el-table-column>
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue&&column.slot == 'actions'" fixed="right">
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)">详情</el-button>
+                <el-button type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)" style="background-color: #00778c;color:#ffffff;font-size: 13px;">详情</el-button>
               </div>
             </template>
           </el-table-column>
@@ -289,6 +291,7 @@ watch(() => queryParams.granularity, (newValues) => {
         ["tem_b_value", "tem_b_avg_value"],["tem_b_value", "tem_b_max"], ["tem_b_value", "tem_b_min"],
         ["tem_c_value", "tem_c_avg_value"],["tem_c_value", "tem_c_max"], ["tem_c_value", "tem_c_min"],
         ["tem_n_value", "tem_n_avg_value"],["tem_n_value", "tem_n_max"], ["tem_n_value", "tem_n_min"],
+        ["dev_key"],
       ];
       optionsCol.value = [
         { value: "tem_a_value", label: 'A路温度', children: [
@@ -563,5 +566,11 @@ selectTimeRange.value = [
   ::v-deep .el-table .el-table__header th {
     background-color: #F5F7FA;
     color: #909399;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

@@ -2,8 +2,7 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电能记录" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
 
-      <br/>    <br/> 
-    
+      <br/>
       <div class="nav_data">
 
 
@@ -65,10 +64,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           
         </el-form-item>
-        <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="float: right;margin-right: 10px;">
+        <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="float: right;margin-right: 10px;background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
       </el-form>
@@ -511,5 +510,11 @@ onMounted(() => {
     background-color: #f7f7f7;
     color: #909399;
     height: 60px;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

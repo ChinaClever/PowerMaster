@@ -1,32 +1,26 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜电能记录">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>
-        <div class="nav_content">
-          <el-descriptions title="全部机柜最近一天新增记录" direction="vertical" :column="1" width="80px" border >
-            <el-descriptions-item label="电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
-          </el-descriptions>
-        </div> -->
-
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">总电能 :</span>
-            <span class="value">{{ navTotalData }}条</span>
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
           <div>
-            <span>全部机柜最近一天新增记录</span>
+            <span>全部机柜新增电能记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
-
       </div>
     </template>
     <template #ActionBar>
@@ -51,10 +45,10 @@
       </el-form-item>
 
         <el-form-item >
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;font-size: 13px;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <el-form-item style="position: absolute; right: 0;">
-          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport" style="background-color: #00778c;color:#ffffff;font-size: 13px;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -109,6 +103,9 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
+const lastDayTotalData = ref(0)
+const lastWeekTotalData = ref(0)
+const lastMonthTotalData = ref(0)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -269,9 +266,15 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
-  navTotalData.value = res.total
+// const getNavOneDayData = async() => {
+//   const res = await EnergyConsumptionApi.getNavOneDayData({})
+//   navTotalData.value = res.total
+// }
+const getNavNewData = async() => {
+  const res = await EnergyConsumptionApi.getNavNewData({})
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
+  lastMonthTotalData.value = res.month
 }
 
 /** 搜索按钮操作 */
@@ -283,7 +286,8 @@ const handleQuery = () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData()
+  getNavNewData()
+  // getNavOneDayData()
   getList();
 })
 </script>
@@ -322,7 +326,7 @@ onMounted(() => {
 
 .label {
   text-align: left;
-  margin-right: 20px; /* 控制冒号后的间距 */
+  /* margin-right: 20px; 控制冒号后的间距 */
 }
 
 .value {
@@ -339,5 +343,11 @@ onMounted(() => {
 ::v-deep .el-table .el-table__header th {
   background-color: #F5F7FA;
   color: #909399;
+}
+/deep/ .el-pagination.is-background .el-pager li.is-active {
+  background-color: #00778c;
+}
+    /deep/  .el-pager li:hover {
+    color: #00778c;
 }
 </style>

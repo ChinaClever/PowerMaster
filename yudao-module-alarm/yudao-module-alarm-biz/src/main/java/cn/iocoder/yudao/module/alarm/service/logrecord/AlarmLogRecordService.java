@@ -79,11 +79,39 @@ public interface AlarmLogRecordService {
      * 当pdu报警时，插入/修改告警记录
      *
      */
-    void insertOrUpdateAlarmRecordWhenPduAlarm( List<Map<String, Object>> oldMaps , List<Map<String, Object>> newMaps);
+    Integer insertOrUpdateAlarmRecordWhenPduAlarm( List<Map<String, Object>> oldMaps , List<Map<String, Object>> newMaps);
 
     /**
      * 当bus报警时，插入告警记录
      *
      */
-    void insertOrUpdateAlarmRecordWhenBusAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+    Integer insertOrUpdateAlarmRecordWhenBusAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
+
+    /**
+     * 当cabinet报警时，插入告警记录
+     *
+     */
+    Integer insertOrUpdateAlarmRecordWhenCabinetAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
+    /**
+     * 根据告警处理类型获取告警数量
+     *
+     */
+    Integer getCountByStatus (Integer status);
+
+    /**
+     * 获取具体pdu的告警信息
+     * @param pageReqVO
+     * @return
+     */
+    PageResult<AlarmLogRecordRespVO> getPduLogRecordPage(AlarmLogRecordPageReqVO pageReqVO);
+
+
+    /**
+     * 当cabinet电量定时统计任务发生变更时，同步修改告警定时任务
+     *
+     */
+    void updateCabinetAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
 }

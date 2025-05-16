@@ -113,6 +113,8 @@ public class MySQLTableMonitor {
                     List<String> tableList = new ArrayList<>();
                     tableList.add(DBTable.PDU_INDEX);
                     tableList.add(DBTable.BUS_INDEX);
+                    tableList.add(DBTable.CABINET_INDEX);
+                    tableList.add(DBTable.CABINET_CRON_CONFIG);
                     if (columns != null && tableList.contains(tableName)) {
                         if (!repeatMessage(event)) {
                             return;
@@ -122,25 +124,34 @@ public class MySQLTableMonitor {
                         for (Map.Entry<Serializable[], Serializable[]> row : updateData.getRows()) {
                             Map<String, Object> oldData = parseRowData(row.getKey(), columns);
                             Map<String, Object> newData = parseRowData(row.getValue(), columns);
-                            if (!oldData.get("run_status").equals(newData.get("run_status"))) {
+                            if (validateData(oldData, newData)) {
                                 oldMaps.add(oldData);
                                 newMaps.add(newData);
-                                log.info("[UPDATE] 旧数据：" + oldData);
-                                log.info("[UPDATE] 新数据：" + newData);
+                                log.info(tableName + " [UPDATE] 旧数据：" + oldData);
+                                log.info(tableName + " [UPDATE] 新数据：" + newData);
                             }
                         }
+                        Integer result = null;
                         switch (tableName) {
                             case DBTable.PDU_INDEX:
-                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenPduAlarm(oldMaps,newMaps);
                                 break;
                             case DBTable.BUS_INDEX:
-                                alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenBusAlarm(oldMaps,newMaps);
+                                break;
+                            case DBTable.CABINET_INDEX:
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
+                                break;
+                            case DBTable.CABINET_CRON_CONFIG:
+                                alarmLogRecordService.updateCabinetAlarmJob(oldMaps,newMaps);
                                 break;
                             default:
                                 break;
                         }
-                        // 向前端发送消息
-                        webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
+                        // 告警记录表发生改变，向前端发送消息
+                        if (result != null) {
+                            webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
+                        }
                     }
                 }
             });
@@ -230,6 +241,25 @@ public class MySQLTableMonitor {
                 return value; // 其他类型按需扩展
 
         }
+    }
+
+    private boolean validateData ( Map<String, Object> oldData , Map<String, Object> newData) {
+        if (Objects.isNull(oldData) || Objects.isNull(newData)) {
+            return false;
+        }
+        if (Objects.nonNull(oldData.get("run_status")) && !oldData.get("run_status").equals(newData.get("run_status"))) {
+            return true;
+        }
+        if (Objects.nonNull(oldData.get("eq_day_cron")) && !oldData.get("eq_day_cron").equals(newData.get("eq_day_cron"))) {
+            return true;
+        }
+        if (Objects.nonNull(oldData.get("eq_week_cron")) && !oldData.get("eq_week_cron").equals(newData.get("eq_week_cron"))) {
+            return true;
+        }
+        if (Objects.nonNull(oldData.get("eq_month_cron")) && !oldData.get("eq_month_cron").equals(newData.get("eq_month_cron"))) {
+            return true;
+        }
+        return false;
     }
 
 }

@@ -499,9 +499,15 @@ import { EChartsOption } from 'echarts';
 import { BoxCurbalanceColorApi } from '@/api/bus/boxcurbalancecolor';
 import curUnblance from './component/curUnblance.vue';
 import volUnblance from './component/volUnblance.vue';
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const query = route.query;
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' });
+
+const openDetailFlag=ref("0")
 
 const curdevkey = ref() as any;
 const voldevkey = ref() as any;
@@ -901,11 +907,9 @@ const toDeatil = (row) =>{
 const colorFlag = ref(0);
 
 const showDialogCur = (item) => {
-  colorFlag.value = item.color-1;
   dialogVisibleCur.value = true;
   curdevkey.value = item.devKey;
   curRoomName.value = item.roomName;
-  boxName.value = item.boxName;
   typeRadioCur.value = "最大"
   typeRadioVol.value = "最大"
   getBalanceDetail(item);
@@ -913,11 +917,9 @@ const showDialogCur = (item) => {
 }
 
 const showDialogVol = (item) => {
-  colorFlag.value = item.color-1;
   dialogVisibleVol.value = true;
   voldevkey.value = item.devKey;
   volRoomName.value = item.roomName;
-  boxName.value = item.boxName;
   typeRadioCur.value = "最大"
   typeRadioVol.value = "最大"
   getBalanceDetail(item);
@@ -929,6 +931,8 @@ const vol_valueACopy = ref([]);
 
 const getBalanceDetail = async(item) => {
   const res = await IndexApi.getBoxBalanceDetail({devKey: item.devKey});
+
+
   // 定义默认值
   const defaultCurrentValue = [0.00, 0.00, 0.00];
   const defaultVoltageValue = [0.0, 0.0, 0.0];
@@ -1012,6 +1016,8 @@ const getBalanceDetail = async(item) => {
   balanceObj.imbalanceValueA = res.curUnbalance || 0;
   balanceObj.imbalanceValueB = res.volUnbalance || 0;
   balanceObj.colorIndex = (res.color || 1) - 1;
+  colorFlag.value = (res.color || 1)-1;
+  boxName.value = res.boxName;
   busName.value = res.busName || '未知';
 }
 
@@ -1440,6 +1446,12 @@ watch( ()=>typeRadioVol.value, (value)=>{
   }
 })
 
+watch(openDetailFlag,async (val) => {
+  if(val == "1") {
+    showDialogCur({devKey: query.devKey, roomName: query.roomName,boxId: query.boxId})
+  }
+})
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
@@ -1448,6 +1460,7 @@ onMounted(async () => {
   getNavList();
   getStatistics();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  openDetailFlag.value = query.openDetailFlag || "0"
 })
 
 onBeforeUnmount(()=>{

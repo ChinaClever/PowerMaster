@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.service.historydata;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
+import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetEnvResVO;
@@ -13,10 +14,12 @@ import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
+import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -33,7 +36,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,6 +66,8 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
 
     @Autowired
     private RestHighLevelClient client;
+
+    private DateTimeFormatter dateTimeFormat= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public List<Object> getLocationsByCabinetIds(List<Map<String, Object>> mapList) {
@@ -135,7 +142,10 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         // 搜索结果
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        hits.forEach(searchHit -> {
+            Map<String,Object> map=searchHit.getSourceAsMap();
+            mapList.add(map);
+        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -181,7 +191,10 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         // 搜索结果
         List<Object> resultList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        hits.forEach(searchHit -> {
+            Map<String, Object> map = searchHit.getSourceAsMap();
+            resultList.add(map);
+        });
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -198,17 +211,15 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         String[] key = new String[]{"total"};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
+        indices = new String[]{"cabinet_hda_pow_realtime"};
         switch (granularity){
             case "realtime":
-                indices = new String[]{"cabinet_hda_pow_realtime"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1)};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusSeconds(100)};
                 break;
             case "hour":
-                indices = new String[]{"cabinet_hda_pow_hour"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"cabinet_hda_pow_day"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
                 break;
             default:
@@ -309,7 +320,7 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
     }
 
     @Override
-    public PageResult<CabinetEnvResVO> getHistoryDataPageEnv(CabinetHistoryDataPageReqVO pageReqVO) {
+    public PageResult<CabinetEnvResVO> getHistoryDataPageEnv(CabinetHistoryDataPageReqVO pageReqVO,boolean isPage) {
         String index = null;
         switch (pageReqVO.getGranularity()){
             case "realtime":index="cabinet_env_realtime";
@@ -320,25 +331,143 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
                 break;
             default:
         }
-        String startTime = pageReqVO.getTimeRange()[0];
-        String endTime = pageReqVO.getTimeRange()[1];
+        String startTime = null;
+        String endTime = null;
+        if(pageReqVO.getTimeRange()!=null&&pageReqVO.getTimeRange().length==2){
+            startTime = pageReqVO.getTimeRange()[0];
+            endTime = pageReqVO.getTimeRange()[1];
+        }
         List<CabinetEnvResVO> list = new ArrayList<>();
-        SearchResponse searchResponse = getDataEs(startTime, endTime, pageReqVO.getCabinetIds(), index,pageReqVO.getPageNo(),pageReqVO.getPageSize());
+        SearchResponse searchResponse = getDataEs(startTime, endTime, pageReqVO.getCabinetIds(), index,pageReqVO.getPageNo(),!isPage?10000:pageReqVO.getPageSize());
         if (searchResponse != null){
             searchResponse.getHits().forEach(hit -> {
                 Map<String, Object> map = hit.getSourceAsMap();
-                CabinetEnvResVO resVO = new CabinetEnvResVO();
-                resVO.setId((Integer) map.get("cabinet_id"));
-                resVO.setCreateTime((String) map.get("create_time"));
-                Map<String, Object> sensorList = (Map<String, Object>) map.get("sensor_list");
-                List black = (List) sensorList.get("black");
-                List front = (List) sensorList.get("front");
-                resVO.setFront(front);
-                resVO.setBlack(black);
-                list.add(resVO);
+                list.add(mapToCabinetEnvResVO(map,null));
             });
+            return new PageResult<>(list,searchResponse.getHits().getTotalHits().value);
+        }else {
+            return new PageResult<>(new ArrayList(),0L);
         }
-        return new PageResult<>(list,searchResponse.getHits().getTotalHits().value);
+    }
+
+    public CabinetEnvResVO mapToCabinetEnvResVO(Map<String, Object> map,String address) {
+        CabinetEnvResVO resVO = new CabinetEnvResVO();
+        resVO.setId((Integer) map.get("cabinet_id"));
+        resVO.setCreateTime((String) map.get("create_time"));
+        Map<String, Object> sensorList = (Map<String, Object>) map.get("sensor_list");
+        List black = (List) sensorList.get("black");
+        List front = (List) sensorList.get("front");
+        resVO.setFront(front);
+        resVO.setBlack(black);
+        resVO.setAddress("");
+        if(address==null||"".equals(address)){
+            IndexDO cab = cabIndexMapper.selectOne("id", resVO.getId());
+            if (cab != null){
+                resVO.setRoomId(cab.getRoomId());
+                RoomIndex room = roomIndexMapper.selectById(cab.getRoomId());
+                if(room!=null){
+                    resVO.setRoomName(room.getRoomName());
+                    if(room.getRoomName()!=null&&!"".equals(room.getRoomName())){
+                        resVO.setAddress(room.getRoomName());
+                    }
+                }
+            }
+            AisleIndex aisle = aisleIndexMapper.selectById(cab.getAisleId());
+            if(aisle!=null&&aisle.getAisleName()!=null&&!"".equals(aisle.getAisleName())){
+                if(resVO.getAddress().length()>0){
+                    resVO.setAddress(resVO.getAddress()+"-"+aisle.getAisleName());
+                }else{
+                    resVO.setAddress(aisle.getAisleName());
+                }
+            }
+            if(cab.getCabinetName()!=null&&!"".equals(cab.getCabinetName())){
+                if(resVO.getAddress().length()>0){
+                    resVO.setAddress(resVO.getAddress()+"-"+cab.getCabinetName());
+                }else{
+                    resVO.setAddress(cab.getCabinetName());
+                }
+                resVO.setCabinetName(cab.getCabinetName());
+            }
+        }else {
+            resVO.setAddress(address);
+            String[] temp=address.split("-");
+            resVO.setCabinetName(temp[temp.length-1]);
+        }
+        return resVO;
+    }
+
+    @Override
+    public Map<String, Object> getEnvNewData() {
+        String[] indices = new String[]{"cabinet_env_realtime", "cabinet_env_realtime", "cabinet_env_realtime"};
+        String[] name = new String[]{"min", "hour", "day"};
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusSeconds(100),LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1)};
+        Map<String, Object> map = new HashMap<>(3);
+        for (int i=0;i<3;i++){
+            SearchRequest searchRequest = new SearchRequest();
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword").from(timeAgo[i].format(dateTimeFormat)).to(LocalDateTime.now().format(dateTimeFormat)));
+            searchSourceBuilder.trackTotalHits(true);
+            searchRequest.indices(indices[i]);
+            searchRequest.source(searchSourceBuilder);
+            try {
+                SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (response != null) {
+                    map.put(name[i],response.getHits().getTotalHits().value);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        return map;
+    }
+
+    @Override
+    public PageResult<CabinetEnvResVO> getHistoryEnvDataDetails(Integer cabinetId, String granularity, String[] timeRange,String address) {
+        String index=null;
+        switch (granularity){
+            case "realtime":
+                index="cabinet_env_realtime";
+                break;
+            case "hour":
+                index ="cabinet_env_hour";
+                break;
+            case "day":
+                index ="cabinet_env_day";
+                break;
+            default:
+        }
+        SearchRequest searchRequest = new SearchRequest();
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        if(timeRange!=null&&timeRange.length==2){
+            searchSourceBuilder.query(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME+KEYWORD)
+                    .from(timeRange[0]).to(timeRange[1]))
+                    .must(QueryBuilders.termQuery(CABINET_ID, cabinetId)));
+        }else{
+            searchSourceBuilder.query(QueryBuilders.termQuery(CABINET_ID, cabinetId));
+        }
+        searchSourceBuilder.sort(CREATE_TIME+KEYWORD,SortOrder.ASC);
+        try {
+            searchRequest.indices(index);
+            searchRequest.source(searchSourceBuilder);
+            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (response != null) {
+                List<Map<String,Object>> ans=new ArrayList<>();
+                SearchHits hits = response.getHits();
+                hits.forEach((hit)->{
+                    ans.add(hit.getSourceAsMap());
+                });
+                List<CabinetEnvResVO> collect = ans.stream().map((map) -> mapToCabinetEnvResVO(map, address))
+                        .collect(Collectors.toList());
+                return new PageResult<>(collect,hits.getTotalHits().value);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new PageResult<CabinetEnvResVO>(new ArrayList(),0L);
     }
 
 
@@ -361,11 +490,14 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
             }
             //获取需要处理的数据
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            boolQueryBuilder.must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
+            if(startTime!=null&&endTime!=null&&!"".equals(startTime)&&!"".equals(endTime)){
+                boolQueryBuilder.must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
+            }
             if (ObjectUtils.isNotEmpty(ids)) {
                 boolQueryBuilder.must(QueryBuilders.termsQuery(CABINET_ID, ids));
             }
             builder.query(QueryBuilders.constantScoreQuery(boolQueryBuilder));
+            builder.sort(CREATE_TIME+KEYWORD, SortOrder.DESC);
             // 设置搜索条件
             searchRequest.source(builder);
 

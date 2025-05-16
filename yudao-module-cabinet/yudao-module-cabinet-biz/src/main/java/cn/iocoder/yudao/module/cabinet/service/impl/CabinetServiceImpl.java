@@ -1430,8 +1430,14 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setPowerFactor(total.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
         }
         if (Objects.nonNull(apath)) {
-            vo.setCurA(apath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setVolA(apath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            List<BigDecimal> curValue = apath.getList("cur_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(curValue)) {
+                vo.setCurA(curValue.stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
+            List<BigDecimal> volValue = apath.getList("vol_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(volValue)) {
+                vo.setVolA(volValue.stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
             vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentA(apath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveA(apath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
@@ -1439,8 +1445,14 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentA(), vo.getPowApparentTotal()), 100));
         }
         if (Objects.nonNull(bpath)) {
-            vo.setCurB(bpath.getList("cur_value", BigDecimal.class).stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
-            vo.setVolB(bpath.getList("vol_value", BigDecimal.class).stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            List<BigDecimal> curValue = bpath.getList("cur_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(curValue)) {
+                vo.setCurB(curValue.stream().map(i -> i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
+            List<BigDecimal> volValue = bpath.getList("vol_value", BigDecimal.class);
+            if (!CollectionUtils.isEmpty(volValue)) {
+                vo.setVolB(volValue.stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            }
             vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率

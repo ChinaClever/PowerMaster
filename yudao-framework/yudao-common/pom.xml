@@ -15,6 +15,13 @@
     <description>定义基础 pojo 类、枚举、工具类等等</description>
     <url>https://github.com/YunaiV/ruoyi-vue-pro</url>
 
+    <properties>
+        <elasticsearch.version>7.6.2</elasticsearch.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
     <dependencies>
         <!-- Spring 核心 -->
         <dependency>
@@ -131,6 +138,41 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>transmittable-thread-local</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Web（排除 ES 依赖） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.elasticsearch.client</groupId>
+                    <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.elasticsearch</groupId>
+                    <artifactId>elasticsearch</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- 手动引入 Elasticsearch 7.6.2 客户端 -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>7.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>7.6.2</version>
+        </dependency>
+
+        <!-- Easy-ES 依赖 -->
+        <dependency>
+            <groupId>cn.easy-es</groupId>
+            <artifactId>easy-es-boot-starter</artifactId>
+            <version>0.9.90</version>
         </dependency>
 
         <!-- Test 测试相关 -->

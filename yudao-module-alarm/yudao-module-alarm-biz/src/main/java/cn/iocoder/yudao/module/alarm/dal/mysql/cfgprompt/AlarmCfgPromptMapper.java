@@ -23,4 +23,10 @@ public interface AlarmCfgPromptMapper extends BaseMapperX<AlarmCfgPromptDO> {
                 .betweenIfPresent(AlarmCfgPromptDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(AlarmCfgPromptDO::getId));
     }
+
+    default Integer getCfgPromptByType(Integer code) {
+        return selectOne(new LambdaQueryWrapperX<AlarmCfgPromptDO>()
+                .eq(AlarmCfgPromptDO::getPromptType, code)
+                .last("limit 1")).getIsEnable();
+    }
 }

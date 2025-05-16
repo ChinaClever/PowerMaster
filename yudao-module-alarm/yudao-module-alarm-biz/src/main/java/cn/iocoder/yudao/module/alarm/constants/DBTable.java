@@ -6,6 +6,10 @@ public class DBTable {
 
     public static final String BUS_INDEX = "bus_index";
 
+    public static final String CABINET_INDEX = "cabinet_index";
+
     public static final String ALARM_LOG_RECORD = "alarm_log_record";
+
+    public static final String CABINET_CRON_CONFIG = "cabinet_cron_config";
 
 }
