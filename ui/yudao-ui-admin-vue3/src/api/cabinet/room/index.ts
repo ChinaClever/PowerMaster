@@ -121,4 +121,9 @@ exportAisleExcel: async ( params: any, axiosConfig) => {
   return await request.downloadPost({ url: `/room/editAisleExport` , params, ...axiosConfig})
 },
 
+//导入机柜绑定关系表
+importAisleExcel: async ( params: any) => {
+  return await request.upload({ url: `/room/editAisleExport` , params})
+},
+
 }

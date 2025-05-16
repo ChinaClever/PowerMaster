@@ -1559,9 +1559,6 @@ const handleChange = async (val: CollapseModelValue) => {
 :deep(.el-collapse-item__header) {
   padding: 0 20px;
 }
-:deep(.el-card) {
-  background-color: #fff;
-}
 :deep .el-input-group__append {
   padding: 0 10px; /* 设置为所需的字体大小 */
 }

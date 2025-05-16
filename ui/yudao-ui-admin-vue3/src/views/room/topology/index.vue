@@ -8,7 +8,12 @@
           <el-option v-for="item in roomList" :key="item.id" :label="item.roomName" :value="item.id" />
         </el-select>
       </div>
-      <div class="status">
+      <div v-if="chosenBtn == 3" class="status" style="margin-left: 10px;height: 100%">
+        温度条：
+        <div class="temStatus" style="background: linear-gradient(to right, rgb(244,229,162), rgb(191,68,76))">
+        </div>
+      </div>
+      <div v-else class="status">
         <template v-for="item in statusInfo[chosenBtn]" :key="item.value">
           <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
         </template>
@@ -23,14 +28,27 @@
           <el-button @click="switchBtn(item.value)" round color="#00778c" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
         </template>
       </div>
-      <div style="display: flex;align-items: center">
+      <div style="display: flex;align-items: center;">
         <!-- <el-button @click="handleAdd" type="primary">新建机房</el-button> -->
         <el-button v-if="!editEnable" @click="handleEdit" :size="isFromHome ? 'small' : ''" type="primary" color="black">编辑</el-button>
         <!-- <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button> -->
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary" color="black">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary" color="black"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleExportAisle" plain :loading="exportLoading" type="primary" color="black"><Icon :size="16" icon="ep:download" style="margin-right: 5px" />导出</el-button>
-        <el-button v-if="editEnable" @click="openSetting" plain type="primary" color="black"><Icon :size="16" icon="ep:upload" style="margin-right: 5px" />导入</el-button>
+        <div style="margin-left: 12px">
+          <el-upload
+            v-if="editEnable"
+            action=""
+            :auto-upload="false"
+            :on-change="handleFileChange"
+            :show-file-list="false"
+            accept=".xlsx,.xls"
+          >
+            <template #trigger>
+              <el-button plain :loading="importLoading" type="primary" color="black"><Icon :size="16" icon="ep:upload" style="margin-right: 5px" />导入</el-button>
+            </template>
+          </el-upload>
+        </div>
         <!-- <el-button v-if="editEnable" @click="handleSubmit" plain type="primary" color="black">保存</el-button> -->
         <!-- <el-button v-if="editEnable" @click="handleDelete" type="primary">删除机房</el-button> -->
         
@@ -47,7 +65,7 @@
           :style="isFromHome ? `transform-origin: 0 0;height: 49vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
           <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
           <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
-            <el-table-column fixed type="index" align="center" :resizable="false" />
+            <el-table-column fixed type="index" min-width="21" align="center" :resizable="false" />
             <template v-for="(formItem, index) in formParam" :key="index">
               <el-table-column :label="formItem" min-width="41" align="center" :resizable="false">
                 <template #default="scope">
@@ -64,7 +82,7 @@
                   >
                     <template #item="{ element }">
                       <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)">
-                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.loadRate>90 ? `rgba(212, 32, 35, ${element.loadRate/100})` : (element.loadRate>=60 ? `rgba(229, 184, 73, ${(element.loadRate+40)/100})` : `rgba(124, 255, 178, ${(element.loadRate+10)/100})`)) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.loadRate ? (element.loadRate>=85.5 ? `rgba(232, 18, 36, ${element.loadRate/100})` : (element.loadRate>=70.5 ? `rgba(255, 241, 0, ${(element.loadRate+15)/100})` : (element.loadRate>=40.5 ? `rgba(22, 198, 12, ${(141-element.loadRate)/100})` : `rgba(0, 120, 215, ${(element.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -164,7 +182,7 @@
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName ? (element.powerFactor>=0.75 ? `rgba(124, 255, 178, ${element.powerFactor})` : (element.powerFactor>=0.5 ? `rgba(88, 217, 249, ${element.powerFactor+0.25})` : (element.powerFactor>=0.25 ? `rgba(253, 221, 96, ${element.powerFactor+0.5})` : `rgba(255, 110, 118, ${element.powerFactor+0.75})`))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.powerFactor ? (element.powerFactor>=0.945 ? `#16c60c` : (element.powerFactor>=0.845 ? `#0078d7` : (element.powerFactor>=0.695 ? `rgba(252, 225, 0, ${element.powerFactor+0.16})` : `rgba(240, 58, 23, ${element.powerFactor+0.31})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -214,7 +232,7 @@
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4" :style="{background: `linear-gradient(to bottom, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -260,7 +278,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div v-if="element.temFront != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
+                              <div v-if="element.temFront != 0 || element.temBlack != 0" style="display: flex;flex-direction: column;justify-content: space-around;width: 100%">
                                 <div>{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}</div>
                                 <div>{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}</div>
                                 <!-- <div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span> -->
@@ -377,7 +395,7 @@
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
                           <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
-                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.loadRate>90 ? `rgba(212, 32, 35, ${item.loadRate/100})` : (item.loadRate>=60 ? `rgba(229, 184, 73, ${(item.loadRate+40)/100})` : `rgba(124, 255, 178, ${(item.loadRate+10)/100})`)) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.loadRate ? (item.loadRate>=85.5 ? `rgba(232, 18, 36, ${item.loadRate/100})` : (item.loadRate>=70.5 ? `rgba(255, 241, 0, ${(item.loadRate+15)/100})` : (item.loadRate>=40.5 ? `rgba(22, 198, 12, ${(141-item.loadRate)/100})` : `rgba(0, 120, 215, ${(item.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -477,7 +495,7 @@
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName ? (item.powerFactor>=0.75 ? `rgba(124, 255, 178, ${item.powerFactor})` : (item.powerFactor>=0.5 ? `rgba(88, 217, 249, ${item.powerFactor+0.25})` : (item.powerFactor>=0.25 ? `rgba(253, 221, 96, ${item.powerFactor+0.5})` : `rgba(255, 110, 118, ${item.powerFactor+0.75})`))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.powerFactor ? (item.powerFactor>=0.945 ? `#16c60c` : (item.powerFactor>=0.845 ? `#0078d7` : (item.powerFactor>=0.695 ? `rgba(252, 225, 0, ${item.powerFactor+0.16})` : `rgba(240, 58, 23, ${item.powerFactor+0.31})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -573,7 +591,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div v-if="item.temFront != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
+                                  <div v-if="item.temFront != 0 || item.temBlack != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
                                     <div>{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}</div>
                                     <div>{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}</div>
                                     <!-- <div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span> -->
@@ -700,14 +718,14 @@
           </el-table>
           
         <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
-          <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-            <!-- <div class="menu_item" v-if="!editEnable" @click="dragTableView">拖拽</div> -->
+          <div ref="menuViewEle" class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
+            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="dragTableView">小抓手</div>
             <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addAisle">新增柜列</div>
             <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addCabinet('add')">新增机柜</div>
             <!-- <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div> -->
-            <el-cascader-panel class="menu_item_panel" v-if="(!showMenuAdd || !editEnable) && menuOptions.length" style="width: fit-content" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" />
+            <el-cascader-panel class="menu_item_panel" v-if="(!showMenuAdd || !editEnable) && menuOptions.length" style="width: fit-content;" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" />
           </div>
         </div>
     </div>
@@ -827,7 +845,7 @@
         </div> -->
       </el-form>
       <template #footer>
-        <el-button @click="handleDialogCancel">取 消</el-button>
+        <el-button @click="handleDialogCancel" color="black" plain>取 消</el-button>
         <el-button type="primary" @click="submitSetting" color="black">确 定</el-button>
       </template>
     </el-dialog>
@@ -917,6 +935,16 @@
     </el-table>
     </div>
   </el-dialog>
+  <aisleRequire ref="aisleRequirement" />
+  <aisleBalance ref="aisleBalanceDetail" />
+  <aisleFactor ref="aisleFactorDetail" />
+  <cabinetBalance ref="cabinetBalanceDetail" />
+  <busRequire ref="busRequirement" />
+  <busBalance ref="busBalanceDetail" />
+  <boxRequire ref="boxRequirement" />
+  <boxBalance ref="boxBalanceDetail" />
+  <pduRequire ref="pduRequirement" />
+  <pduBalance ref="pduBalanceDetail" />
   <MachineForm ref="machineFormCabinet" @success="saveMachine" :roomList="roomList" :roomId="roomId" />
 <!-- </div> -->
 </template>
@@ -929,10 +957,15 @@ import { MachineRoomApi } from '@/api/cabinet/room'
 import { CabinetApi } from '@/api/cabinet/info'
 import { AisleEnergyApi } from '@/api/aisle/aisleenergy'
 import { IndexApi } from '@/api/cabinet/index'
-import { Console } from "console";
 import MachineForm from './component/MachineForm.vue';
+import aisleRequire from './component/aisleRequire.vue';
+import aisleBalance from './component/aisleBalance.vue';
+import cabinetBalance from './component/cabinetBalance.vue';
+import busRequire from './component/busRequire.vue';
+import busBalance from './component/busBalance.vue';
 import download from '@/utils/download'
 import PFDetail from './component/PFDetail.vue'
+import { debounce } from 'lodash-es'
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
@@ -967,15 +1000,16 @@ const roomId = ref(Number(query.id)) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
 const dragTableViewEle = ref()
+const menuViewEle = ref()
 const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
 
-const tableScaleValue = ref(0.8)
-const tableScaleWidth = ref(125)
-const tableScaleHeight = ref(125)
-const tableScaleValueStart = ref(0.8)
-const tableScaleWidthStart = ref(125)
-const tableScaleHeightStart = ref(125)
+const tableScaleValue = ref(0.7)
+const tableScaleWidth = ref(142.8)
+const tableScaleHeight = ref(142.8)
+const tableScaleValueStart = ref(0.7)
+const tableScaleWidthStart = ref(142.8)
+const tableScaleHeightStart = ref(142.8)
 
 const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(1)
@@ -1029,19 +1063,24 @@ const tableData = ref<Record<string, any[]>[]>([]);
 const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量','机柜告警'])
 const statusInfo = ref([[
   {
-    name: '0%<负载率<60%',
-    color: '#7cffb2',
+    name: '0%~40%',
+    color: '#0078d7',
     value: 0,
   },
   {
-    name: '60%<=负载率<=90%',
-    color: '#e5b849',
+    name: '41%~70%',
+    color: '#16c60c',
     value: 1,
   },
   {
-    name: '90%<负载率',
-    color: '#d42023',
+    name: '71%~85%',
+    color: '#fff100',
     value: 2,
+  },
+  {
+    name: '86%~100%+',
+    color: '#e81224',
+    value: 3,
   }
 ],[
   {
@@ -1076,23 +1115,23 @@ const statusInfo = ref([[
   },
 ],[
   {
-    name: '功数<0.25',
-    color: '#ff6e76',
+    name: '0~0.69',
+    color: '#f03a17',
     value: 0,
   },
   {
-    name: '0.25<=功数<0.50',
-    color: '#fddd60',
+    name: '0.7~0.84',
+    color: '#fce100',
     value: 1,
   },
   {
-    name: '0.50<=功数<0.75',
-    color: '#58d9f9',
+    name: '0.85~0.94',
+    color: '#0078d7',
     value: 2,
   },
   {
-    name: '0.75<=功数',
-    color: '#7cffb2',
+    name: '0.95~1',
+    color: '#16c60c',
     value: 3,
   }
 ]])
@@ -1244,6 +1283,17 @@ const startX = ref(0);
 const startY = ref(0);
 const scrollLeft = ref(0);
 const scrollTop = ref(0);
+
+const aisleRequirement = ref()
+const aisleBalanceDetail = ref()
+const aisleFactorDetail = ref()
+const cabinetBalanceDetail = ref()
+const busRequirement = ref()
+const busBalanceDetail = ref()
+const boxRequirement = ref()
+const boxBalanceDetail = ref()
+const pduRequirement = ref()
+const pduBalanceDetail = ref()
 
 const groupMachineFill = {
   name: 'MachineFill',
@@ -1667,6 +1717,9 @@ const getRoomInfo = async() => {
 
 const getRoomInfoNoLoading = async() => {
   try {
+    if(!roomList.value?.length) {
+      getRoomList()
+    }
     const result = await MachineRoomApi.getRoomDataNewDetail({id: roomId.value});
     const res = result;
     // const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
@@ -1679,24 +1732,10 @@ const getRoomInfoNoLoading = async() => {
     }
     res.aisleList = res.aisleList==null ? [] : res.aisleList
     res.cabinetList = res.cabinetList==null ? [] : res.cabinetList
-    // updateCfgInfo.value=res;
+    updateCfgInfo.value=res;
     roomDownValId.value = res.id;
     const data: Record<string, any[]>[] = [];
-    // Object.assign(rowColInfo, {
-    //   roomName: res.roomName,
-    //   row: res.y_length,
-    //   col: res.x_length,
-    //   powerCapacity:res.powerCapacity,
-    //   airPower:res.airPower,
-    //   addr: res.addr,
-    //   displayType: res.displayType, //0负载率 1PUE
-    //   displayFlag: res.displayFlag, // 显示选择
-    //   eleAlarmDay: res.eleAlarmDay,
-    //   eleLimitDay: res.eleLimitDay,
-    //   eleAlarmMonth: res.eleAlarmMonth,
-    //   eleLimitMonth: res.eleLimitMonth,
-    //   sort: res.sort,
-    // })
+    
     emit('backData', res)
     
     for (let row = 0; row < res.y_length; row++) {
@@ -1823,7 +1862,7 @@ const updateScale = () => {
   const containerHeight = dragTableViewEle.value.clientHeight;
 
   // 计算缩放比例（取宽高中较小的比例，确保完整显示）
-  tableScaleValueStart.value = Math.min(Math.floor(containerHeight/(rowColInfo.row*2.4))/10,Math.floor(containerWidth/(rowColInfo.col*5.4))/10)
+  tableScaleValueStart.value = Math.min(Math.floor(containerHeight/(rowColInfo.row*4))/10,Math.floor(containerWidth/(rowColInfo.col*4))/10)
   tableScaleWidthStart.value = 1/tableScaleValueStart.value*100
   tableScaleHeightStart.value = 1/tableScaleValueStart.value*100
   
@@ -1853,9 +1892,9 @@ const handleCssScale = () => {
 // 处理修改机房的事件
 const handleChangeRoom = (val) => {
   roomId.value = val
-  tableScaleValue.value = 0.8
-  tableScaleWidth.value = 125
-  tableScaleHeight.value = 125
+  tableScaleValue.value = 0.7
+  tableScaleWidth.value = 142.8
+  tableScaleHeight.value = 142.8
   getRoomInfo()
 }
 //取消
@@ -2016,13 +2055,7 @@ const arraySpanMethod = ({
 // 右击弹出菜单
 const handleRightClick = (e) => {
   e.preventDefault()
-  const container = e.currentTarget;
-  const rect = container.getBoundingClientRect()
-  const offsetX = e.clientX - Math.ceil(rect.left) + 1
-  const offsetY = e.clientY - Math.ceil(rect.top) + 1
   const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  ((e.target.parentNode.parentNode.id ? e.target.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.id :  (e.target.parentNode.parentNode.parentNode.parentNode.id ? e.target.parentNode.parentNode.parentNode.parentNode.id :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.id)))))
-  console.log('handleRightClick', e.target,e.target.classList,e.target.parentNode.parentNode.parentNode.parentNode.parentNode,e.target.dataset.index, currentId, offsetX, offsetY)
-  console.log(menuOptions.value,currentId)
   const cabinetIndex = e.target.dataset.index ? e.target.dataset.index : (e.target.parentNode.dataset.index ? e.target.parentNode.dataset.index :  ((e.target.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.dataset.index :  (e.target.parentNode.parentNode.parentNode.parentNode.dataset.index ? e.target.parentNode.parentNode.parentNode.parentNode.dataset.index :  e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.dataset.index)))))
   const lndexX = currentId.split('-')[1]
   const lndexY = currentId.split('-')[0]
@@ -2044,7 +2077,9 @@ const handleRightClick = (e) => {
     menuOptions.value[2].value = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex]
     menuOptions.value[2].label = "机柜：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetName
 
+    console.log(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex])
     if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
+      console.log(11111)
       menuOptions.value[3] = menuOptionsCopy.value[5]
 
       menuOptions.value[4] = menuOptionsCopy.value[6]
@@ -2056,6 +2091,7 @@ const handleRightClick = (e) => {
       let cabinetBoxes = tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes
       menuOptions.value[3].value = {
         devKeyA: cabinetBoxes.boxKeyA.split("-")[0] + "-" + cabinetBoxes.boxKeyA.split("-")[1],
+        devKeyB: cabinetBoxes.boxKeyB.split("-")[0] + "-" + cabinetBoxes.boxKeyB.split("-")[1]
       }
       menuOptions.value[4].value = {
         devKey: cabinetBoxes.boxKeyA,
@@ -2066,6 +2102,7 @@ const handleRightClick = (e) => {
         boxId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keyb?.id
       }
     } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
+      console.log(2222)
       menuOptions.value[3] = menuOptionsCopy.value[5]
 
       menuOptions.value[4] = menuOptionsCopy.value[6]
@@ -2274,13 +2311,43 @@ const handleRightClick = (e) => {
   //     break
   //   }
   // }
-  // for(let i = 0;i < rowColInfo.row-(+lndexY);i++) {
+  // for(let i = 0;i < rowColInfo.row-(menuViewEle+lndexY);i++) {
   //   if(+lndexX+1 == rowColInfo.col || (!itemId && (tableData.value[+lndexY+i][formParam.value[+lndexX]].length || tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length)) || (tableData.value[+lndexY+i][formParam.value[+lndexX]].length && tableData.value[+lndexY+i][formParam.value[+lndexX]][0].id != itemId) || (tableData.value[+lndexY+i][formParam.value[+lndexX+1]].length && tableData.value[+lndexY+i][formParam.value[+lndexX+1]][0].id != itemId)) {
   //     maxY = i
   //     break
   //   }
   // }
   // //console.log(maxX,maxY)
+
+  // 获取鼠标位置
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+
+  // 获取视口尺寸
+  const viewportWidth = window.innerWidth - 200;
+  const viewportHeight = window.innerHeight - 200;
+  
+  // 获取菜单尺寸
+  const menuWidth = menuViewEle.value?.clientWidth ? menuViewEle.value.clientWidth : 0;
+  const menuHeight = menuViewEle.value?.clientHeight ? menuViewEle.value.clientHeight : 0;
+
+  const container = e.currentTarget;
+  const rect = container.getBoundingClientRect()
+  let offsetX = mouseX - Math.ceil(rect.left) + 1
+  let offsetY = mouseY - Math.ceil(rect.top) + 1
+
+  // // 如果菜单会超出视口右侧，则向左调整
+  // if (mouseX + menuWidth > viewportWidth) {
+  //     offsetX = Math.max(0, offsetX - menuWidth);
+  // }
+  
+  // // 如果菜单会超出视口底部，则向上调整
+  // if (mouseY + menuHeight > viewportHeight) {
+  //     offsetY = Math.max(0, offsetY - menuHeight);
+  // }
+  
+  // console.log(mouseX,mouseY,viewportWidth,viewportHeight,menuWidth,menuHeight,offsetX,offsetY)
+
   operateMenu.value = {
     left: offsetX + 'px',
     top: offsetY + 'px',
@@ -2319,32 +2386,34 @@ const handleMenu = (value) => {
       break;
     
     case '柜列需量':
-      push({ 
-        path: '/aisle/aislemonitor/aislerequirement', 
-        query: { 
-          openDetailFlag: 1, 
-          id: value[0], 
-          location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
-        } 
-      });
+      aisleRequirement.value.open({ 
+        id: value[0], 
+        location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
+      })
+      // openDetailAisleRequire({ id: value[0] })
       break;
     
     case '柜列供电平衡':
-      push({ 
-        path: '/aisle/aislemonitor/aislebalance', 
-        query: { openDetailFlag: 1, id: value[0] } 
-      });
+      aisleBalanceDetail.value.open({id: value[0]})
+      // push({ 
+      //   path: '/aisle/aislemonitor/aislebalance', 
+      //   query: { openDetailFlag: 1, id: value[0] } 
+      // });
       break;
 
     case '柜列功率因数':
-      push({ 
-        path: '/aisle/aislemonitor/aislepowerfactor', 
-        query: { 
-          openDetailFlag: 1, 
-          id: value[0], 
-          location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
-        } 
-      });
+      aisleFactorDetail.value.open({ 
+        id: value[0], 
+        location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
+      })
+      // push({ 
+      //   path: '/aisle/aislemonitor/aislepowerfactor', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     id: value[0], 
+      //     location: `${rowColInfo.roomName}-${tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]][0].name}`
+      //   } 
+      // });
       break;
 
     case '机柜负荷':
@@ -2394,13 +2463,16 @@ const handleMenu = (value) => {
       break;
 
     case '机柜供电平衡':
-      push({ 
-        path: '/cabinet/cab/balance', 
-        query: { 
-          openDetailFlag: 1, 
-          id: value[0].id
-        } 
-      });
+      cabinetBalanceDetail.value.open({
+        id: value[0].id
+      })
+      // push({ 
+      //   path: '/cabinet/cab/balance', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     id: value[0].id
+      //   } 
+      // });
       break;
 
     case '机柜功率因数':
@@ -2468,92 +2540,123 @@ const handleMenu = (value) => {
       break;
 
     case 'A路母线需量':
-      push({ 
-        path: '/bus/busmonitor/busmonitor/busrequirement', 
-        query: { 
-          openDetailFlag: 1, 
-          devKey: value[0].devKeyA
-        } 
-      });
+      busRequirement.value.open({
+        devKey: value[0].devKeyA
+      })
+      // push({ 
+      //   path: '/bus/busmonitor/busmonitor/busrequirement', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     devKey: value[0].devKeyA
+      //   } 
+      // });
       break;
 
     case 'B路母线需量':
-      push({ 
-        path: '/bus/busmonitor/busmonitor/busrequirement', 
-        query: { 
-          openDetailFlag: 1, 
-          devKey: value[0].devKeyB
-        } 
-      });
+      console.log(value[0])
+      busRequirement.value.open({
+        devKey: value[0].devKeyB
+      })
+      // push({ 
+      //   path: '/bus/busmonitor/busmonitor/busrequirement', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     devKey: value[0].devKeyB
+      //   } 
+      // });
       break;
 
     case 'A路插接箱需量':
     case 'B路插接箱需量':
-      push({ 
-        path: '/bus/busmonitor/boxmonitor/boxrequirement', 
-        query: { 
-          openDetailFlag: 1, 
-          boxId: value[0].boxId,
-          roomName: rowColInfo.roomName,
-        } 
-      });
+      boxRequirement.value.open({
+        boxId: value[0].boxId,
+        location: rowColInfo.roomName
+      })
+      // push({ 
+      //   path: '/bus/busmonitor/boxmonitor/boxrequirement', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     boxId: value[0].boxId,
+      //     roomName: rowColInfo.roomName,
+      //   } 
+      // });
       break;
 
     case 'A路需量':
     case 'B路需量':
-      push({ 
-        path: '/pdu/power/pdurequirement', 
-        query: { 
-          devKey: value[0].devKey,
-          pduId: value[0].pduId,
-          openDetailFlag: 1
-        } 
-      });
+      pduRequirement.value.open({
+        devKey: value[0].devKey,
+        pduId: value[0].pduId,
+        openDetailFlag: 1
+      })
+      // push({ 
+      //   path: '/pdu/power/pdurequirement', 
+      //   query: { 
+      //     devKey: value[0].devKey,
+      //     pduId: value[0].pduId,
+      //     openDetailFlag: 1
+      //   } 
+      // });
       break;
 
     case 'A路母线三相平衡':
-      push({ 
-        path: '/bus/busmonitor/busmonitor/busbalance', 
-        query: { 
-          openDetailFlag: 1, 
-          devKey: value[0].devKeyA
-        } 
-      });
+      busBalanceDetail.value.open({
+        devKey: value[0].devKeyA
+      })
+      // push({ 
+      //   path: '/bus/busmonitor/busmonitor/busbalance', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     devKey: value[0].devKeyA
+      //   } 
+      // });
       break;
 
     case 'B路母线三相平衡':
-      push({ 
-        path: '/bus/busmonitor/busmonitor/busbalance', 
-        query: { 
-          openDetailFlag: 1, 
-          devKey: value[0].devKeyB
-        } 
-      });
+      busBalanceDetail.value.open({
+        devKey: value[0].devKeyB
+      })
+      // push({ 
+      //   path: '/bus/busmonitor/busmonitor/busbalance', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     devKey: value[0].devKeyB
+      //   } 
+      // });
       break;
 
     case 'A路插接箱供电平衡':
     case 'B路插接箱供电平衡':
-      push({ 
-        path: '/bus/busmonitor/boxmonitor/boxbalance', 
-        query: { 
-          openDetailFlag: 1, 
-          devKey: value[0].devKey,
-          roomName: rowColInfo.roomName,
-          boxId: value[0].boxId
-        } 
-      });
+      boxBalanceDetail.value.open({
+        devKey: value[0].devKey,
+        roomName: rowColInfo.roomName,
+        boxId: value[0].boxId
+      })
+      // push({ 
+      //   path: '/bus/busmonitor/boxmonitor/boxbalance', 
+      //   query: { 
+      //     openDetailFlag: 1, 
+      //     devKey: value[0].devKey,
+      //     roomName: rowColInfo.roomName,
+      //     boxId: value[0].boxId
+      //   } 
+      // });
       break;
 
     case 'A路供电平衡':
     case 'B路供电平衡':
-      push({ 
-        path: '/pdu/power/curbalance/index', 
-        query: { 
-          devKey: value[0].devKey,
-          pduId: value[0].pduId,
-          openDetailFlag: 1
-        } 
-      });
+      pduBalanceDetail.value.open({
+        devKey: value[0].devKey,
+        pduId: value[0].pduId
+      })
+      // push({ 
+      //   path: '/pdu/power/curbalance/index', 
+      //   query: { 
+      //     devKey: value[0].devKey,
+      //     pduId: value[0].pduId,
+      //     openDetailFlag: 1
+      //   } 
+      // });
       break;
 
     case 'A路设备管理':
@@ -2710,10 +2813,10 @@ const moveMachine = async (data,x,y) => {
     }
 
     const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
-    return
 
     if(flagRes) {
       message.error("移动失败,可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+      getRoomInfoNoLoading()
       return
     }
 
@@ -2734,10 +2837,10 @@ const moveMachine = async (data,x,y) => {
     }
 
     const flagRes = await MachineRoomApi.findAddAisleVerify(cabinetObject)
-    return
 
     if(flagRes) {
       message.error("移动失败,可能原因如下：该机柜的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+      getRoomInfoNoLoading()
       return
     }
 
@@ -2939,8 +3042,37 @@ const handleChange = async(data) => {
           pduBar: data.pduBar
       }
 
+      // console.log(data)
+
+      // if(data.type == 2) {
+      //   data.amount = 1
+      // }
+      // if (data.direction == 2) {
+      //   const X = data.xCoordinate-1
+      //   const Y = data.yCoordinate-1
+      //   if (Y + data.amount > rowColInfo.row) return false
+      //   for(let i = 0;i < data.amount;i++) {
+      //     if((tableData.value[Y+i][formParam.value[X]].length && tableData.value[Y+i][formParam.value[X]][0].id != data.id) || (tableData.value[Y+i][formParam.value[X+1]].length && tableData.value[Y+i][formParam.value[X+1]][0].id != data.id)) {
+      //       console.log(false)
+      //       return
+      //     }
+      //   }
+      // } else {
+      //   const X = data.xCoordinate-1
+      //   const Y = data.yCoordinate-1
+      //   console.log(X + data.amount,rowColInfo)
+      //   if (X + data.amount > rowColInfo.col) return false
+      //   for(let i = 0;i < data.amount;i++) {
+      //     if((tableData.value[Y][formParam.value[X+i]].length && tableData.value[Y][formParam.value[X+i]][0].id != data.id) || (tableData.value[Y+1][formParam.value[X+i]].length && tableData.value[Y+1][formParam.value[X+i]][0].id != data.id)) {
+      //       console.log(false)
+      //       return
+      //     }
+      //   }
+      // }
+
+      // console.log(true)
+
       const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
-      return
 
       if(flagRes) {
         message.error(messageAisleFlagError + "可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
@@ -3010,6 +3142,7 @@ const queryParamsPF = reactive({
 const pfESList = ref({}) as any
 const pfTableList = ref([]) as any
 const exportLoading = ref(false) // 导出的加载中
+const importLoading = ref(false) // 导入的加载中
 const detailVis = ref(false)
 
 const openPFDetail = async (row) =>{
@@ -3068,6 +3201,39 @@ const handleDayPick = async () => {
   } 
 }
 
+const fileRaw = ref(null);
+
+// 文件选择回调
+const handleFileChange = async (file) => {
+  fileRaw.value = file.raw;  // 保存文件对象
+  console.log(fileRaw.value)
+  await message.exportConfirm("是否确认导入数数据项？");
+  handleImportAisle()
+};
+
+
+const handleImportAisle = async () => {
+  if (!fileRaw.value) {
+    ElMessage.warning('请先选择excel文件');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileRaw.value);  // 文件转为二进制流
+
+  console.log(formData)
+
+  try {
+    importLoading.value = true
+    const data = await MachineRoomApi.importAisleExcel(formData);
+    ElMessage.success('导入成功');
+  } catch (error) {
+    ElMessage.error('导入失败');
+  } finally {
+    importLoading.value = false
+  }
+}
+
 const handleExportAisle = async () => {
   try {
     // 导出的二次确认
@@ -3077,9 +3243,9 @@ const handleExportAisle = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await MachineRoomApi.exportAisleExcel({roomId: 3391,aisleId: 37},axiosConfig);
+    const data = await MachineRoomApi.exportAisleExcel({roomId: roomId.value},axiosConfig);
     console.log("data",data);
-    await download.excel(data, '机柜绑定关系表.xls');
+    await download.excel(data, rowColInfo?.roomName + '的机柜绑定关系表.xlsx');
   } catch (error) {
     console.error('导出失败：', error);
   } finally {
@@ -3244,7 +3410,7 @@ watch(() => rowColInfo.areaFlag, (val) => {
   if(val) {
     rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
     rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
-  } else {
+  } else if(rowColInfo.width && rowColInfo.length) {
     rowColInfo.width = Number(rowColInfo.width)
     rowColInfo.length = Number(rowColInfo.length)
     rowColInfo.row = Math.ceil((rowColInfo.width * 10)/6)
@@ -3252,6 +3418,22 @@ watch(() => rowColInfo.areaFlag, (val) => {
   }
 })
 
+watch(() => operateMenu.value.show, (val) => {
+  const tableBodyWrapper = dragTable.value.$el.querySelector('.el-scrollbar__wrap')
+  if (!tableBodyWrapper) {
+    return
+  }
+
+  if(val) {
+    tableBodyWrapper.addEventListener('scroll', handleScroll)
+  } else {
+    tableBodyWrapper.removeEventListener('scroll',handleScroll)
+  }
+})
+
+const handleScroll = debounce(() => {
+  operateMenu.value.show = false;
+}, 30);
 
 // 获取表格列label字符
 const getTableColCharCode = (num: number): string => {
@@ -3396,6 +3578,10 @@ onUnmounted(() => {
 .btns {
   margin-left: 25px;
 }
+.temStatus {
+  width: 10vw;
+  height: 100%;
+}
 .status {
   font-size: 14px;
   display: flex;
@@ -3446,8 +3632,9 @@ onUnmounted(() => {
       color: #606266;
     }
     .menu_item:hover {
-      background-color: rgb(231, 245, 255);
-      color: rgb(82, 177, 255);
+      background-color: rgba(0, 119, 140, 0.1);
+      color: rgba(0, 119, 140, 1);
+      font-weight: 700;
       cursor: pointer;
     }
   }
@@ -3599,10 +3786,10 @@ onUnmounted(() => {
   }
 }
 
-:deep(.dragTable .el-table__header .el-table__cell) {
+//:deep(.dragTable .el-table__header .el-table__cell) {
   // background-color: #ddd;
   // box-shadow: 0 1px 0px #ddd;
-}
+//}
 
 :deep(.dragTable .el-table__body) {
   height: 100%;
@@ -3614,15 +3801,28 @@ onUnmounted(() => {
   // box-shadow: 0 1px 0px #ddd;
 }
 
+:deep(.el-cascader-node:not(.is-disabled):focus, .el-cascader-node:not(.is-disabled):hover) {
+  background: rgba(0, 119, 140, 0.1);
+}
+
+:deep(.el-cascader-node.in-active-path, .el-cascader-node.is-active, .el-cascader-node.is-selectable.in-checked-path) {
+  color: rgba(0, 119, 140, 1);
+}
+
 :deep(.el-cascader-menu__wrap.el-scrollbar__wrap) {
   height: auto;
 }
 
 :deep(.el-loading-mask) {
-  width: 80%
+  width: 70%
 }
 
 .crosshair {
   cursor: crosshair; /* 当正在拖动时显示十字图标 */
+}
+.tagInDialog{
+  position: absolute;
+  left: 30%;
+  top: 22px;
 }
 </style>

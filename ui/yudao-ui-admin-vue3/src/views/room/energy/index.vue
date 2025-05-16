@@ -18,15 +18,15 @@
         label-width="68px"
       >
         <el-form-item label="用能排序"  label-width="100px" style="margin-left: -30px;">
-            <el-button @click="changeTimeGranularity('yesterday');timeButton=1" :type="timeButton==1?'primary':''"
+            <el-button color="#00778c" :plain="timeButton!=1" @click="changeTimeGranularity('yesterday');timeButton=1"
             >
               昨日
             </el-button>
-            <el-button @click="changeTimeGranularity('lastWeek');timeButton=2" :type="timeButton==2?'primary':''"
+            <el-button color="#00778c" :plain="timeButton!=2" @click="changeTimeGranularity('lastWeek');timeButton=2"
             >
               上周
             </el-button>
-            <el-button @click="changeTimeGranularity('lastMonth');timeButton=3" :type="timeButton==3?'primary':''"
+            <el-button color="#00778c" :plain="timeButton!=3" @click="changeTimeGranularity('lastMonth');timeButton=3"
             >
               上月
             </el-button>
@@ -43,13 +43,13 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
-            <el-button @click="resetSearch()" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button style="margin-left: 12px" @click="getTableData(true)" color="black" plain><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="resetSearch()" color="black" plain ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="handleSwitchModal(0)" color="#00778c" :plain="switchValue"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button @click="handleSwitchModal(1)" color="#00778c" :plain="!switchValue"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -69,25 +69,27 @@
               <el-table-column prop="lastMonthEq" label="上月用能(kW·h)" align="center" />
               <el-table-column label="详情" align="center" width="100px">
                 <template #default="s">
-                  <el-button type="primary" @click="toDetail(s.row.roomId,s.row.id,s.row.location)">详情</el-button>
+                  <el-button color="#00778c" @click="toDetail(s.row.roomId,s.row.id,s.row.location)">详情</el-button>
                 </template>
               </el-table-column>
             </el-table>
           </div>
           <div v-show="switchValue == 0 && tableData?.length" class="matrixContainer">
-          <div class="item" v-for="item in tableData" :key="item.key">
-            <div class="content">
-              <div class="info">
-                <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
-                <div>上周用能：{{item.lastWeekEq}}kW·h</div>
-                <div>上月用能：{{item.lastMonthEq}}kW·h</div>
+              <div class="item" v-for="item in tableData" :key="item.key">
+                <el-card shadow="hover">
+                  <div class="room">{{item.location}}</div>
+                  <div class="content">
+                    <div class="info">
+                      <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
+                      <div>上周用能：{{item.lastWeekEq}}kW·h</div>
+                      <div>上月用能：{{item.lastMonthEq}}kW·h</div>
+                    </div>
+                    <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                  </div>
+                  <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
+                </el-card>
               </div>
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            </div>
-            <div class="room">{{item.location}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
           </div>
-        </div>
         </div>
         <Pagination
           :total="pageTotal"
@@ -388,13 +390,9 @@ handleNavTree();
   align-content: flex-start;
   .item {
     width: 25%;
-    min-width: 275px;
-    height: 130px;
     font-size: 12px;
     box-sizing: border-box;
-    background-color: #eef4fc;
     border: 5px solid #fff;
-    padding-top: 36px;
     position: relative;
     .content {
       padding-left: 20px;
@@ -411,10 +409,8 @@ handleNavTree();
       }
     }
     .room {
-      position: absolute;
-      left: 10px;
-      top: 8px;
       font-size: 13px;
+      margin: -10px 0 0 -10px;
     }
     .detail {
       width: 35px;
@@ -435,6 +431,9 @@ handleNavTree();
 }
 .dataShow{
   width: 100%;
+}
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background-color: #00778c;
 }
 
 </style>
