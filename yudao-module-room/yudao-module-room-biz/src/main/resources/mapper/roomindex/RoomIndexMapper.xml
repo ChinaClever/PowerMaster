@@ -22,8 +22,8 @@
         from room_index
         <where>
             is_delete = 1
-            <if test="roomName !=null and roomName !=''">
-                room_name like concat('%',#{roomName},'%')
+            <if test="indexVo.roomName !=null and indexVo.roomName !=''">
+                and room_name like concat('%',#{indexVo.roomName},'%')
             </if>
         </where>
         ORDER BY update_time desc

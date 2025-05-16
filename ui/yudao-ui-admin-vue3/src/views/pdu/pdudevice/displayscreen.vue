@@ -719,7 +719,7 @@ const initChart = async () => {
   chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
   chartDataF.value = chartData.value
 
-  chartData.value.apparentList.forEach((obj,index) => {
+  chartData.value?.apparentList?.forEach((obj,index) => {
     chartData.value.apparentList[index] = obj?.toFixed(3);
     chartData.value.apparentListMin[index] = chartData.value.apparentListMin[index]?.toFixed(3);
     chartData.value.apparentListMax[index] = chartData.value.apparentListMax[index]?.toFixed(3);
@@ -767,14 +767,14 @@ const initChart = async () => {
   });
 
   if(queryParams.powGranularity === 'oneHour'){
-    chartData.value.dateTimes = chartData.value.dateTimes
-    chartDataF.value.dateTimes = chartDataF.value.dateTimes
+    chartData.value.dateTimes = chartData.value?.dateTimes
+    chartDataF.value.dateTimes = chartDataF.value?.dateTimes
   }else if(queryParams.powGranularity === 'twentyfourHour'){
-    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
-    chartDataF.value.dateTimes = chartDataF.value.dateTimes.map(item => item.slice(5, item.length));
+    chartData.value.dateTimes = chartData.value?.dateTimes?.map(item => item.slice(5, item.length));
+    chartDataF.value.dateTimes = chartDataF.value?.dateTimes?.map(item => item.slice(5, item.length));
   }else if(queryParams.powGranularity === 'seventytwoHour'){
-    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
-    chartDataF.value.dateTimes = chartDataF.value.dateTimes.map(item => item.slice(0, 16));
+    chartData.value.dateTimes = chartData.value?.dateTimes?.map(item => item.slice(0, 16));
+    chartDataF.value.dateTimes = chartDataF.value?.dateTimes?.map(item => item.slice(0, 16));
   }
 
   let timeArr = [itemActiveType + 'Time',itemApparentType + 'Time',itemReactiveType + 'Time']
