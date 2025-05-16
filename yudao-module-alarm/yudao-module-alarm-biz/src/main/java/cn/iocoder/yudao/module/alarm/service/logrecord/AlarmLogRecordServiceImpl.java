@@ -464,12 +464,12 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         DecimalFormat decimalFormat1 = new DecimalFormat("0.000");
         decimalFormat1.setRoundingMode(RoundingMode.HALF_UP);
         powerCapacity = decimalFormat1.format(Double.parseDouble(powerCapacity));
-        // 总视在功率
+        // 有功功率
         JSONObject cabinetPower = (JSONObject) cabinetJson.get(FieldConstant.CABINET_POWER);
         JSONObject totalData = (JSONObject) cabinetPower.get(FieldConstant.TOTAL_DATA);
-        String powApparent = totalData.get(FieldConstant.APPARENT_POW) + "";
-        powApparent = decimalFormat1.format(Double.parseDouble(powApparent));
-        return "当前机柜负载率：" + loadFactor + "，机柜的电力容量：" + powerCapacity + "KVA" + "，总视在功率：" + powApparent + "KVA";
+        String activePow = totalData.get(FieldConstant.ACTIVE_POW) + "";
+        activePow = decimalFormat1.format(Double.parseDouble(activePow));
+        return "当前机柜有功负载率：" + loadFactor + "，机柜额定有功容量：" + powerCapacity + "KW" + "，实际有功功率：" + activePow + "KW";
     }
 
 
