@@ -16,6 +16,10 @@ const prop = defineProps({
   width: {
     type: [Number, String],
     default: 60
+  },
+    dataType:{
+      type : Number,
+      default : 1
   }
 })
 
@@ -35,7 +39,7 @@ if (Object.keys(prop.list).length === 0) {
   for (let i = 0; i < length; i++) {
     count.value.push([]);
     if (Array.isArray(prop.list[keys[i]])) {
-      count.value[i].push(...prop.list[keys[i]].map(item => item.pow_active_avg_value));
+      count.value[i].push(...prop.list[keys[i]].map(item => item.eq_value));
     }
   }
 

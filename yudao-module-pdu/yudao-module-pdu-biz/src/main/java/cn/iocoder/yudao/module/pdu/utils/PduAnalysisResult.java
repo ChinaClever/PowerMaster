@@ -75,15 +75,14 @@ public class PduAnalysisResult {
             }
 
         } else if (dataType == 0) {
+            // 初始化电压结果
+            voltageResult.maxVolValue = dayList1.get(0).getVolValue();
+            voltageResult.minVolValue = dayList1.get(0).getVolValue();
+
+            // 初始化电流结果
+            currentResult.maxCurValue = dayList1.get(0).getCurValue();
+            currentResult.minCurValue = dayList1.get(0).getCurValue();
             for (PduHdaLineHouResVO item : dayList1) {
-                // 初始化电压结果
-                voltageResult.maxVolValue = dayList1.get(0).getVolValue();
-                voltageResult.minVolValue = dayList1.get(0).getVolValue();
-
-                // 初始化电流结果
-                currentResult.maxCurValue = dayList1.get(0).getCurValue();
-                currentResult.minCurValue = dayList1.get(0).getCurValue();
-
                 // 电压分析
                 if (item.getVolValue() != null && item.getVolValue().compareTo(voltageResult.maxVolValue) > 0) {
                     voltageResult.maxVolValue = item.getVolValue();

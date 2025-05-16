@@ -88,14 +88,15 @@ public class PduAnalysisResult {
             }
 
         } else if (dataType == 0) {
-            for (BusHdaLineAvgResVO item : dayList1) {
-                // 初始化电压结果
-                voltageResult.maxVolValue = dayList1.get(0).getVolAvgValue();
-                voltageResult.minVolValue = dayList1.get(0).getVolAvgValue();
+            // 初始化电压结果
+            voltageResult.maxVolValue = dayList1.get(0).getVolAvgValue();
+            voltageResult.minVolValue = dayList1.get(0).getVolAvgValue();
 
-                // 初始化电流结果
-                currentResult.maxCurValue = dayList1.get(0).getCurAvgValue();
-                currentResult.minCurValue = dayList1.get(0).getCurAvgValue();
+            // 初始化电流结果
+            currentResult.maxCurValue = dayList1.get(0).getCurAvgValue();
+            currentResult.minCurValue = dayList1.get(0).getCurAvgValue();
+            for (BusHdaLineAvgResVO item : dayList1) {
+
 
                 // 电压分析
                 if (item.getVolAvgValue() != null && item.getVolAvgValue().compareTo(voltageResult.maxVolValue) > 0) {
@@ -222,6 +223,81 @@ public class PduAnalysisResult {
         result.put("loadRateTage", loadRateResult);
 
         return result;
+    }
+
+
+
+    /**
+     * 更新数值
+     *
+     * @param powerData
+     * @param maxValue
+     * @param maxTime
+     * @param minValue
+     * @param minTime
+     * @param dataType
+     */
+    private static void updatePowerData(PowerData powerData, Float maxValue, String maxTime, Float avgValue, Float minValue, String minTime, Integer dataType) {
+        if (dataType == 1) {
+            updateExtremes(powerData, maxValue, maxTime, maxValue, maxTime);
+        } else if (dataType == 0) {
+            updateExtremes(powerData, avgValue, "无", avgValue, "无");
+        } else if (dataType == -1) {
+            updateExtremes(powerData, minValue, minTime, minValue, minTime);
+        }
+    }
+
+    private static void updateExtremes(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime) {
+        if (powerData.getMaxValue() < maxValue) {
+            powerData.setMaxValue(maxValue);
+            powerData.setMaxTime(maxTime);
+        }
+        if (powerData.getMinValue() > minValue) {
+            powerData.setMinValue(minValue);
+            powerData.setMinTime(minTime);
+        }
+    }
+
+    /**
+     * 数值辅助类
+     */
+    private static class PowerData {
+        private Float maxValue = 0f;
+        private Float minValue = Float.MAX_VALUE;
+        private String maxTime = "";
+        private String minTime = "";
+
+        public Float getMaxValue() {
+            return maxValue;
+        }
+
+        public void setMaxValue(Float maxValue) {
+            this.maxValue = maxValue;
+        }
+
+        public String getMaxTime() {
+            return maxTime;
+        }
+
+        public void setMaxTime(String maxTime) {
+            this.maxTime = maxTime;
+        }
+
+        public Float getMinValue() {
+            return minValue;
+        }
+
+        public void setMinValue(Float minValue) {
+            this.minValue = minValue;
+        }
+
+        public String getMinTime() {
+            return minTime;
+        }
+
+        public void setMinTime(String minTime) {
+            this.minTime = minTime;
+        }
     }
 
 }

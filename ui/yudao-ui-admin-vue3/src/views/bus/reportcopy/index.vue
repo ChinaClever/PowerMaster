@@ -243,27 +243,22 @@
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
           
-          <div class="pageBox" v-if="visControll.curVolVis">
+          <div class="pageBox" v-if="visControll.loadRateVis">
             <div class="page-conTitle">
               相负载率历史曲线趋势图
             </div>
             <div v-for="(sensor, index) in loadRateList?.series" :key="index">
             <div class="power-section single-line" v-if="index %2 == 0">
               <span class="power-title">{{loadRateDate[`lineName${index + 1}`]}}</span>
-  <span class="power-value">峰值 <span class="highlight">{{loadRateDate[`loadRateMax${index + 1}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMaxTime${index + 1}`]}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{loadRateDate[`loadRateMin${index + 1}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMinTime${index + 1}`]}})</span></span>
+  <span class="power-value">峰值 <span class="highlight">{{loadRateDate[`loadRateMax${index + 1}`]}}</span> % <span class="time">记录于({{loadRateDate[`loadRateMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{loadRateDate[`loadRateMin${index + 1}`]}}</span> % <span class="time">记录于({{loadRateDate[`loadRateMinTime${index + 1}`]}})</span></span>
     <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=loadRateList?.series.length-1 ">{{loadRateDate[`lineName${index + 2}`]}}</span>
-  <span class="power-value" v-if="index+2<=loadRateList?.series.length-1 ">峰值 <span class="highlight">{{loadRateDate[`loadRateMax${index + 2}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value" v-if="index+2<=loadRateList?.series.length-1 ">谷值 <span class="highlight">{{loadRateDate[`loadRateMin${index + 2}`]}}</span> V <span class="time">记录于({{loadRateDate[`loadRateMinTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=loadRateList?.series.length-1 ">峰值 <span class="highlight">{{loadRateDate[`loadRateMax${index + 2}`]}}</span> % <span class="time">记录于({{loadRateDate[`loadRateMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=loadRateList?.series.length-1 ">谷值 <span class="highlight">{{loadRateDate[`loadRateMin${index + 2}`]}}</span> % <span class="time">记录于({{loadRateDate[`loadRateMinTime${index + 2}`]}})</span></span>
 </div>
-
           </div>
-            <!-- <LoadRateLine class="adaptiveStyle" :list="loadRateList" :dataType="queryParams.dataType"/> -->
-            <!-- <LoadRateLine :width="computedWidth" height="58vh" :list="loadRateList"  :dataType="queryParams.dataType"/> -->
-                        <LoadRateLine  :list="loadRateList" :dataType="queryParams.dataType"/>
-
-
+                        <LoadRateLine class="adaptiveStyle" :list="loadRateList" :dataType="queryParams.dataType"/>
           </div>
 
 
@@ -1059,7 +1054,7 @@ const getList = async () => {
   loadRateList.value = loadRateDate.value.loadRateRes
   console.log("  loadRateList.value = loadRateList.value.curRes",loadRateList.value);
 
-  if(loadRateDate.value?.dateTime != null && loadRateDate.value?.dateTime?.length > 0){
+  if(loadRateDate.value?.dateTimes != null && loadRateDate.value?.dateTimes?.length > 0){
     visControll.loadRateVis = true;
   }else{
     visControll.loadRateVis = false;
