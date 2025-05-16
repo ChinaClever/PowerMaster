@@ -108,6 +108,7 @@ const prop = defineProps({
   }
 });
 
+
 const series = ref()
 const time = ref()
 const legendList = ref()
@@ -129,9 +130,9 @@ const echartsOption = ref({
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
         if(prop.dataType == 0){
-          result +=  params[i].marker + params[i].seriesName+'：'+ params[i].value.toFixed(2)+' V' + '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+ params[0].name  ;
+          result +=  params[i].marker + params[i].seriesName+'：'+ params[i].value.toFixed(2)+' %' + '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+ params[0].name  ;
         }else{
-          result +=  params[i].marker + params[i].seriesName +'：'+ + params[i].value.toFixed(2)+' V'+ '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+happenTime.value[i][params[i].dataIndex] ;
+          result +=  params[i].marker + params[i].seriesName +'：'+ + params[i].value.toFixed(2)+' %'+ '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+happenTime.value[i][params[i].dataIndex] ;
         }
         result += '<br>';
       }

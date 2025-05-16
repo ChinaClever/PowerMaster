@@ -2749,13 +2749,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .collect(Collectors.groupingBy(PduHdaLoopBaseDo::getLoopId));
                 boolean isFisrt = false;
                 List<String> time = null;
-                List<String> happenTime = null;
+
 
                 for (int i = 1; i < envMap.size() + 1; i++) {
                     if (CollectionUtil.isEmpty(envMap.get(i))) {
                         continue;
                     }
-
+                    List<String> happenTime = new ArrayList<>();
                     List<PduHdaLoopBaseDo> hourDoList = envMap.get(i);
                     //数据收集
                     LineSeries lineSeries = new LineSeries();
@@ -2764,7 +2764,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     //收集描述信息（峰值、谷值、发生时间）
                     Float loopMax = 0f;
                     Float loopMin = Float.MAX_VALUE;
-                    ;
+
                     String loopMaxTime = "";
                     String loopMinTime = "";
                     //收集曲线数据（dataType（1=最大值,0=平均值,-1=最小值））
