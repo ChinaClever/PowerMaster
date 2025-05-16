@@ -3921,7 +3921,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (roomIds.isEmpty()) {
             roomIds.add(0);
         }
-        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete,0));
+        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete,0));
         if (CollectionUtils.isEmpty(roomIndices)){
             return locationMap;
         }
@@ -3929,7 +3929,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         List<Integer> cabIds = cabinetPdus.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetPduResVO::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {
-            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().eq(AisleIndex::getId,cabIds).eq(AisleIndex::getIsDelete,0));
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getId,cabIds).eq(AisleIndex::getIsDelete,0));
             if (!CollectionUtils.isEmpty(aisleIndexList)) {
                 aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
             } else {

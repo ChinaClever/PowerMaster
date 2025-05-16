@@ -1275,10 +1275,10 @@ function customTooltipFormatter(params: any[]) {
       tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最大剩余电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' 发生时间：' + curResidualMaxTimeData.value[item.dataIndex] + ': ' + item.value   + '<br/>';
       break;
       case '最小剩余电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' 发生时间：' + curResidualMinTimeData.value[item.dataIndex] + ': ' + item.value   + '<br/>';
       break;
 
       case '零相电流(A)':
@@ -1325,6 +1325,24 @@ function customTooltipFormatter(params: any[]) {
       case '总视在功率(kVA)':
       tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
       break;
+       case '平均功率因素':
+        tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最大功率因素':
+        tooltipContent += item.marker +' 发生时间：'  +powerFactorMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最小功率因素':
+        tooltipContent += item.marker +' 发生时间：'  +powerFactorMinTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '平均负载率(%)':
+        tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最大负载率(%)':
+        tooltipContent += item.marker +' 发生时间：'  +loadRateMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最小负载率(%)':
+        tooltipContent += item.marker +' 发生时间：'  +loadRateMinTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
     }
     
   })

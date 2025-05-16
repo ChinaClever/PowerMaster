@@ -23,17 +23,17 @@
             <div class="h-70px flex items-center justify-end lt-sm:mt-10px">
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">机柜数</div>
-                <span class="text-20px" style="font-weight: bold">{{devInfo.cabNum}}</span>
+                <span class="text-26px" style="font-weight: bold">{{devInfo.cabNum}}</span>
               </div>
               <el-divider direction="vertical" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">已开通</div>
-                <span class="text-20px" style="font-weight: bold">{{devInfo.cabUse}}</span>
+                <span class="text-26px" style="font-weight: bold">{{devInfo.cabUse}}</span>
               </div>
               <el-divider direction="vertical" border-style="dashed" />
               <div class="px-8px text-right">
                 <div class="mb-16px text-14px text-gray-400">未启用</div>
-                <span class="text-20px" style="font-weight: bold">{{devInfo.cabUnused}}</span>
+                <span class="text-26px" style="font-weight: bold">{{devInfo.cabUnused}}</span>
               </div>
             </div>
           </el-col>

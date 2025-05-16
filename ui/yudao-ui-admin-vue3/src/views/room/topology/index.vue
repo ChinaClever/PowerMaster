@@ -62,7 +62,7 @@
           v-loading="loading" 
           style="z-index: 100"
           @click.right="handleRightClick"
-          :style="isFromHome ? `transform-origin: 0 0;height: 49vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 230px);width:${tableScaleWidth}%;`">
+          :style="isFromHome ? `transform-origin: 0 0;height: 49vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 180px);width:${tableScaleWidth}%;`">
           <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
           <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
             <el-table-column fixed type="index" min-width="21" align="center" :resizable="false" />
@@ -82,7 +82,7 @@
                   >
                     <template #item="{ element }">
                       <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)">
-                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.loadRate ? (element.loadRate>=85.5 ? `rgba(232, 18, 36, ${element.loadRate/100})` : (element.loadRate>=70.5 ? `rgba(255, 241, 0, ${(element.loadRate+15)/100})` : (element.loadRate>=40.5 ? `rgba(22, 198, 12, ${(141-element.loadRate)/100})` : `rgba(0, 120, 215, ${(element.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.loadRate ? (element.loadRate>=89.5 ? `rgba(240, 58, 23, ${element.loadRate/100})` : (element.loadRate>=74.5 ? `rgba(255, 225, 0, ${(element.loadRate+15)/100})` : (element.loadRate>=49.5 ? `rgba(0, 120, 215, ${(141-element.loadRate)/100})` : `rgba(22, 198, 12, ${(element.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -178,7 +178,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div v-if="element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
+                              <div v-if="element.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kW</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -383,7 +383,7 @@
                                 </div>
                               </template>
                               <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
-                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powApparent ? element.powApparent.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kVA</div></div>
+                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kW</div></div>
                               <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
                               <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
                               <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
@@ -395,7 +395,7 @@
                       <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                         <template v-if="element.cabinetList.length > 0">
                           <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
-                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.loadRate ? (item.loadRate>=85.5 ? `rgba(232, 18, 36, ${item.loadRate/100})` : (item.loadRate>=70.5 ? `rgba(255, 241, 0, ${(item.loadRate+15)/100})` : (item.loadRate>=40.5 ? `rgba(22, 198, 12, ${(141-item.loadRate)/100})` : `rgba(0, 120, 215, ${(item.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.loadRate ? (item.loadRate>=89.5 ? `rgba(240, 58, 23, ${item.loadRate/100})` : (item.loadRate>=74.5 ? `rgba(255, 225, 0, ${(item.loadRate+15)/100})` : (item.loadRate>=49.5 ? `rgba(0, 120, 215, ${(141-item.loadRate)/100})` : `rgba(22, 198, 12, ${(item.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -491,11 +491,11 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div v-if="item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                  <div v-if="item.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kW</div><span v-else style="font-size: 10px;">kW</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.powerFactor ? (item.powerFactor>=0.945 ? `#16c60c` : (item.powerFactor>=0.845 ? `#0078d7` : (item.powerFactor>=0.695 ? `rgba(252, 225, 0, ${item.powerFactor+0.16})` : `rgba(240, 58, 23, ${item.powerFactor+0.31})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.powerFactor ? (item.powerFactor>=0.895 ? `#16c60c` : (item.powerFactor>=0.845 ? `#0078d7` : (item.powerFactor>=0.745 ? `rgba(252, 225, 0, ${item.powerFactor+0.16})` : `rgba(240, 58, 23, ${item.powerFactor+0.25})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -696,7 +696,7 @@
                                     </div>
                                   </template>
                                   <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
-                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powApparent != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powApparent ? item.powApparent.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kVA</div><span v-else style="font-size: 10px;">kVA</span></div>
+                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kW</div><span v-else style="font-size: 10px;">kW</span></div>
                                   <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
                                   <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
                                   <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
@@ -1063,23 +1063,23 @@ const tableData = ref<Record<string, any[]>[]>([]);
 const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量','机柜告警'])
 const statusInfo = ref([[
   {
-    name: '0%~40%',
-    color: '#0078d7',
+    name: '0%~50%',
+    color: '#16c60c',
     value: 0,
   },
   {
-    name: '41%~70%',
-    color: '#16c60c',
+    name: '50%~75%',
+    color: '#0078d7',
     value: 1,
   },
   {
-    name: '71%~85%',
-    color: '#fff100',
+    name: '75%~90%',
+    color: '#fce100',
     value: 2,
   },
   {
-    name: '86%~100%+',
-    color: '#e81224',
+    name: '90%~100%+',
+    color: '#f03a17',
     value: 3,
   }
 ],[
@@ -1115,22 +1115,22 @@ const statusInfo = ref([[
   },
 ],[
   {
-    name: '0~0.69',
+    name: '0~0.75',
     color: '#f03a17',
     value: 0,
   },
   {
-    name: '0.7~0.84',
+    name: '0.75~0.84',
     color: '#fce100',
     value: 1,
   },
   {
-    name: '0.85~0.94',
+    name: '0.85~0.89',
     color: '#0078d7',
     value: 2,
   },
   {
-    name: '0.95~1',
+    name: '0.90~1',
     color: '#16c60c',
     value: 3,
   }
@@ -1170,7 +1170,7 @@ const statusColor = ref([
 const btns = [
   {
     value: 1,
-    name: '视在功率',
+    name: '有功功率',
   },
   {
     value: 0,

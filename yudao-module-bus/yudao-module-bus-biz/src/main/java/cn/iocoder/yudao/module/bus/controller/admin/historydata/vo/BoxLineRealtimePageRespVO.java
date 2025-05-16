@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.historydata.vo;
 
+import cn.iocoder.yudao.framework.excel.core.util.DataSourceConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -33,7 +34,8 @@ public class BoxLineRealtimePageRespVO {
     @ExcelProperty("相")
     private Integer line_id;
 
-
+    @ExcelProperty(value = "保存策略",converter = DataSourceConverter.class)
+    private Integer data_source;
     @ExcelProperty("记录时间")
     private String create_time;
 

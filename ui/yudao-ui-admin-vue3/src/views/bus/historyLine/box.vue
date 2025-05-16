@@ -186,6 +186,8 @@
               <el-table-column v-if="headerData.find((item)=>item.name=='功率因素')" label="功率因素" prop="功率因素"/>
               <el-table-column v-if="headerData.find((item)=>item.name=='电流(A)')" label="电流(A)" prop="电流(A)"/>
               <el-table-column v-if="headerData.find((item)=>item.name=='电压(V)')" label="电压(V)" prop="电压(V)"/>
+                <el-table-column v-if="headerData.find((item)=>item.name=='负载率(%)')" label="负载率(%)" prop="负载率(%)"/>
+              <el-table-column v-if="headerData.find((item)=>item.name=='电流谐波含量(%)')" label="电流谐波含量(%)" prop="电流谐波含量(%)"/>
               <!-- 动态生成表头 -->
               <!-- <template v-for="item in headerData" :key="item.name">
                 <el-table-column v-if="item.name === '最大有功功率(kW)'" label="有功功率最大值">
@@ -555,10 +557,10 @@ const getList = async () => {
       volMinValueData.value = data.list.map((item) => formatNumber(item.vol_min_value, 1));
       volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time,"YYYY-MM-DD HH:mm"));
 
-      curThdAvgValueData.value = data.list.map((item) => formatNumber(item.cur_thd_avg_value, 1));
-      curThdMaxValueData.value = data.list.map((item) => formatNumber(item.cur_thd_max_value, 1));
+      curThdAvgValueData.value = data.list.map((item) => formatNumber(item.cur_thd_avg_value, 2));
+      curThdMaxValueData.value = data.list.map((item) => formatNumber(item.cur_thd_max_value, 2));
       curThdMaxTimeData.value = data.list.map((item) => formatDate(item.cur_thd_max_time,"YYYY-MM-DD HH:mm"));
-      curThdMinValueData.value = data.list.map((item) => formatNumber(item.cur_thd_min_value, 1));
+      curThdMinValueData.value = data.list.map((item) => formatNumber(item.cur_thd_min_value, 2));
       curThdMinTimeData.value = data.list.map((item) => formatDate(item.cur_thd_min_time,"YYYY-MM-DD HH:mm"));
 
       powActiveAvgValueData.value = data.list.map((item) => formatNumber(item.pow_active_avg_value, 3));
@@ -641,15 +643,15 @@ const initChart = () => {
               ],
               yAxis: { type: 'value'},
               series: [
-                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
-                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
-                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
-                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}} },
+                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
                 { name: '平均功率因素', type: 'line', symbol: 'none', data: powerFactorAvgValueData.value, },
               ],
               dataZoom:[{type: "inside"}],
@@ -848,10 +850,10 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
-                {name: '总有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
-                {name: '总无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
-                {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
-                {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
+                {name: '总有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+                {name: '总无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+                {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+                {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
             
             ],
               dataZoom:[{type: "inside"}],
@@ -886,16 +888,16 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               ],
               yAxis: { type: 'value'},
               series: [
-                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
-                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
-                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
-                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均功率因素', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
+                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}} },
+                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
+                { name: '平均功率因素', type: 'line', symbol: 'none', data: powerFactorAvgValueData.value, },
               ],
               dataZoom:[{type: "inside"}],
             });
@@ -932,14 +934,14 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
-                  {name: '有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
-                  {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
-                  {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
-                  {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
-                  {name: '电压(V)', type: 'line', symbol: 'none', data: volValue.value},
-                  {name: '电流(A)', type: 'line', symbol: 'none', data: curValue.value},
-                  {name: '负载率(%)', type: 'line', symbol: 'none', data: loadRateData.value},
-                  {name: '电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdData.value},
+                  {name: '有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+                  {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+                  {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+                  {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+                  {name: '电压(V)', type: 'line', symbol: 'none', data: volValue.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+                  {name: '电流(A)', type: 'line', symbol: 'none', data: curValue.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+                  {name: '负载率(%)', type: 'line', symbol: 'none', data: loadRateData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+                  {name: '电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
                 ],
                 dataZoom:[{type: "inside"}],
               });
@@ -977,25 +979,25 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: '平均电流(A)', type: 'line', symbol: 'none', data: curAvgValueData.value, },
-              { name: '最大电流(A)', type: 'line', symbol: 'none', data: curMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小电流(A)', type: 'line', symbol: 'none', data: curMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均电压(V)', type: 'line', symbol: 'none', data: volAvgValueData.value, },
-              { name: '最大电压(V)', type: 'line', symbol: 'none', data: volMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小电压(V)', type: 'line', symbol: 'none', data: volMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdAvgValueData.value, },
-              { name: '最大电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均电流(A)', type: 'line', symbol: 'none', data: curAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              { name: '最大电流(A)', type: 'line', symbol: 'none', data: curMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              { name: '最小电流(A)', type: 'line', symbol: 'none', data: curMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              { name: '平均电压(V)', type: 'line', symbol: 'none', data: volAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+              { name: '最大电压(V)', type: 'line', symbol: 'none', data: volMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+              { name: '最小电压(V)', type: 'line', symbol: 'none', data: volMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+              { name: '平均电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+              { name: '最大电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+              { name: '最小电流谐波含量(%)', type: 'line', symbol: 'none', data: curThdMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
 
               { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
-              { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, },
+              { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, },
               { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
-              { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, },
+              { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, },
               { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
-              { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, },
+              { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, },
 
               { name: '平均功率因素', type: 'line', symbol: 'none', data: powerFactorAvgValueData.value, },
               { name: '最大功率因素', type: 'line', symbol: 'none', data: powerFactorMaxValueData.value, },
@@ -1038,12 +1040,12 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
-                  {name: '有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
-                  {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
-                  {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
-                  {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
-                  {name: '电压(V)', type: 'line', symbol: 'none', data: volValueData.value},
-                  {name: '电流(A)', type: 'line', symbol: 'none', data: curValueData.value},
+                  {name: '有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+                  {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+                  {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+                  {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
+                  {name: '电压(V)', type: 'line', symbol: 'none', data: volValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+                  {name: '电流(A)', type: 'line', symbol: 'none', data: curValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
                 ],
                 dataZoom:[{type: "inside"}],
               });
@@ -1079,22 +1081,22 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: '平均电流(A)', type: 'line', symbol: 'none', data: curAvgValueData.value, },
-              { name: '最大电流(A)', type: 'line', symbol: 'none', data: curMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小电流(A)', type: 'line', symbol: 'none', data: curMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均电压(V)', type: 'line', symbol: 'none', data: volAvgValueData.value, },
-              { name: '最大电压(V)', type: 'line', symbol: 'none', data: volMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小电压(V)', type: 'line', symbol: 'none', data: volMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均电流(A)', type: 'line', symbol: 'none', data: curAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+              { name: '最大电流(A)', type: 'line', symbol: 'none', data: curMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+              { name: '最小电流(A)', type: 'line', symbol: 'none', data: curMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+              { name: '平均电压(V)', type: 'line', symbol: 'none', data: volAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}} },
+              { name: '最大电压(V)', type: 'line', symbol: 'none', data: volMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+              { name: '最小电压(V)', type: 'line', symbol: 'none', data: volMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
         
-              { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
-              { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}}},
+              { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+              { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
               { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
-              { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, },
+              { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, },
               { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
-              { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, },
+              { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value,},
               { name: '平均功率因素', type: 'line', symbol: 'none', data: powerFactorAvgValueData.value, },
               { name: '最大功率因素', type: 'line', symbol: 'none', data: powerFactorMaxValueData.value, },
               { name: '最小功率因素', type: 'line', symbol: 'none', data: powerFactorMinValueData.value, },
@@ -1132,10 +1134,10 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
-                {name: '有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
-                {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
-                {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
-                {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
+                {name: '有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+                {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+                {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+                {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}}},
             
             ],
               dataZoom:[{type: "inside"}],
@@ -1170,15 +1172,15 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               ],
               yAxis: { type: 'value'},
               series: [
-                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
-                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
-                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
-                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#E5B849'},color:'#E5B849'}}},
+                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#C8603A'},color:'#C8603A'}}},
+                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#AD3762'},color:'#AD3762'}}},
+                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#B47660'},color:'#B47660'}} },
+                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#614E43'},color:'#614E43'}}},
+                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#5337A9'},color:'#5337A9'}}},
+                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value,itemStyle:{normal:{lineStyle:{color:'#5D82DB'},color:'#5D82DB'}} },
+                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value,itemStyle:{normal:{lineStyle:{color:'#6899DC'},color:'#6899DC'}}},
+                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value,itemStyle:{normal:{lineStyle:{color:'#94B159'},color:'#94B159'}}},
                 { name: '平均功率因素', type: 'line', symbol: 'none', data: powerFactorAvgValueData.value, },
                 { name: '最大功率因素', type: 'line', symbol: 'none', data: powerFactorMaxValueData.value, },
                 { name: '最小功率因素', type: 'line', symbol: 'none', data: powerFactorMinValueData.value, },
@@ -1240,370 +1242,469 @@ function totalRealtimeLegendListener(realtimeChart) {
   });
 }
 
+function LegendListener(realtimeChart){
+  realtimeChart?.on('legendselectchanged', function (params) {
+    console.log(params.name)
+        const selectedSeries = params.selected;
+        const option = realtimeChart.getOption();
+        console.log(option)
+        if(params.name.includes ('功率因素')&& selectedSeries[params.name] == true){
+          option.legend[0].data.forEach(function(item, index) {
+            if (!item.includes ('功率因素')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }else if(params.name.includes ('谐波含量')&& selectedSeries[params.name] == true){
+          option.legend[0].data.forEach(function(item, index) {
+            if (!item.includes ('谐波含量')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }else if(params.name.includes ('电压')&& selectedSeries[params.name] == true){
+          option.legend[0].data.forEach(function(item, index) {
+            if (!item.includes ('电压')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }else if(params.name.includes ('电流')&& selectedSeries[params.name] == true){
+          option.legend[0].data.forEach(function(item, index) {
+            if (!item.includes ('电流')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }else if(params.name.includes ('负载率')&& selectedSeries[params.name] == true){
+          option.legend[0].data.forEach(function(item, index) {
+            if (!item.includes ('负载率')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }else if(selectedSeries[params.name] == true){
+          option.legend[0].data.forEach(function(item, index) {
+            if (item.includes ('功率因素')|| item.includes('电流')||item.includes('电压')){
+              option.legend[0].selected[item] = false;
+            }
+          });
+        }
+        realtimeChart.setOption(option);
+  });
+}
+
+// function hourAndDayLegendListener(realtimeChart){
+//   realtimeChart?.on('legendselectchanged', function (params) {
+//     console.log(params.name)
+//         const selectedSeries = params.selected;
+//         const option = realtimeChart.getOption();
+//         console.log(option)
+//         if(params.name.includes ('功率因素')&& selectedSeries[params.name] == true){
+//           option.legend[0].data.forEach(function(item, index) {
+//             if (!item.includes ('功率因素')){
+//               option.legend[0].selected[item] = false;
+//             }
+//           });
+//         }else if(params.name.includes ('谐波含量')&& selectedSeries[params.name] == true){
+//           option.legend[0].data.forEach(function(item, index) {
+//             if (!item.includes ('谐波含量')){
+//               option.legend[0].selected[item] = false;
+//             }
+//           });
+//         }else if(params.name.includes ('电压')&& selectedSeries[params.name] == true){
+//           option.legend[0].data.forEach(function(item, index) {
+//             if (!item.includes ('电压')){
+//               option.legend[0].selected[item] = false;
+//             }
+//           });
+//         }else if(params.name.includes ('电流')&& selectedSeries[params.name] == true){
+//           option.legend[0].data.forEach(function(item, index) {
+//             if (!item.includes ('电流')){
+//               option.legend[0].selected[item] = false;
+//             }
+//           });
+//         }else if(params.name.includes ('负载率')&& selectedSeries[params.name] == true){
+//           option.legend[0].data.forEach(function(item, index) {
+//             if (!item.includes ('负载率')){
+//               option.legend[0].selected[item] = false;
+//             }
+//           });
+//         }else if(selectedSeries[params.name] == true){
+//           option.legend[0].data.forEach(function(item, index) {
+//             if (item.includes ('功率因素')|| item.includes('电流')||item.includes('电压')){
+//               option.legend[0].selected[item] = false;
+//             }
+//           });
+//         }
+//         realtimeChart.setOption(option);
+//   });
+// }
 // 总和输出位数据小时、天 图例切换函数
 function totalAndOutletHourAndDayLegendListener(realtimeChart) {
-  realtimeChart?.on('legendselectchanged', function (params) {
-    var legendName = params.name;
-    var optionsToUpdate = {};
-    switch (legendName) {
-      case '平均视在功率(kVA)':
-      case '最大视在功率(kVA)':
-      case '最小视在功率(kVA)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true};
-      }
-        break;
+  LegendListener(realtimeChart)
+  // realtimeChart?.on('legendselectchanged', function (params) {
+  //   var legendName = params.name;
+  //   var optionsToUpdate = {};
+  //   switch (legendName) {
+  //     case '平均视在功率(kVA)':
+  //     case '最大视在功率(kVA)':
+  //     case '最小视在功率(kVA)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true};
+  //     }
+  //       break;
 
-      case '平均有功功率(kW)':
-      case '最大有功功率(kW)':
-      case '最小有功功率(kW)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true};
-      }
-        break;
+  //     case '平均有功功率(kW)':
+  //     case '最大有功功率(kW)':
+  //     case '最小有功功率(kW)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true};
+  //     }
+  //       break;
 
-      case '平均无功功率(kVar)':
-      case '最大无功功率(kVar)':
-      case '最小无功功率(kVar)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true };
-      }
-        break;
+  //     case '平均无功功率(kVar)':
+  //     case '最大无功功率(kVar)':
+  //     case '最小无功功率(kVar)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true };
+  //     }
+  //       break;
 
-      default:
-        break;
-    }
+  //     default:
+  //       break;
+  //   }
 
-    realtimeChart?.setOption({
-      legend: {
-        data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
-                '平均剩余电流(A)', '最大剩余电流(A)', '最小剩余电流(A)', '平均零线电流(A)', '最大零线电流(A)', '最小零线电流(A)'],
-        selected: optionsToUpdate
-      },
-    });
-  });
+  //   realtimeChart?.setOption({
+  //     legend: {
+  //       data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
+  //               '平均剩余电流(A)', '最大剩余电流(A)', '最小剩余电流(A)', '平均零线电流(A)', '最大零线电流(A)', '最小零线电流(A)'],
+  //       selected: optionsToUpdate
+  //     },
+  //   });
+  // });
 }
 
 // 相数据实时图例切换函数
 function lineRealtimeLegendListener(realtimeChart) {
-  realtimeChart?.on('legendselectchanged', function (params) {
-    var legendName = params.name;
-    var optionsToUpdate = {};
-    switch (legendName) {
-      case '有功功率(kW)':
-     if (params.selected[legendName]){
-          optionsToUpdate = { "有功功率(kW)": true,  "功率因素": false , "电压(V)": false, 
-                            "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
-        }
-        break;
+  LegendListener(realtimeChart)
+  // realtimeChart?.on('legendselectchanged', function (params) {
+  //   var legendName = params.name;
+  //   var optionsToUpdate = {};
+  //   switch (legendName) {
+  //     case '有功功率(kW)':
+  //    if (params.selected[legendName]){
+  //         optionsToUpdate = { "有功功率(kW)": true,  "功率因素": false , "电压(V)": false, 
+  //                           "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
+  //       }
+  //       break;
 
-      case '视在功率(kVA)':
-      if (params.selected[legendName]){
-          optionsToUpdate = { "视在功率(kVA)": true,  "功率因素": false , "电压(V)": false, 
-                            "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
-      }
-        break;
+  //     case '视在功率(kVA)':
+  //     if (params.selected[legendName]){
+  //         optionsToUpdate = { "视在功率(kVA)": true,  "功率因素": false , "电压(V)": false, 
+  //                           "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
+  //     }
+  //       break;
 
-      case '无功功率(kVar)':
-      if (params.selected[legendName]){
-          optionsToUpdate = { "无功功率(kVar)": true,  "功率因素": false , "电压(V)": false, 
-                            "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
-      }
-        break;
+  //     case '无功功率(kVar)':
+  //     if (params.selected[legendName]){
+  //         optionsToUpdate = { "无功功率(kVar)": true,  "功率因素": false , "电压(V)": false, 
+  //                           "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
+  //     }
+  //       break;
 
-      case '功率因素':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "功率因素": true,  "有功功率(kW)": false,  "视在功率(kVA)": false,  
-                           "无功功率(kVar)": false , "电压(V)": false, "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
-      }
-        break;
+  //     case '功率因素':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "功率因素": true,  "有功功率(kW)": false,  "视在功率(kVA)": false,  
+  //                          "无功功率(kVar)": false , "电压(V)": false, "电流(A)": false, "负载率(%)": false, "电流谐波含量(%)": false }
+  //     }
+  //       break;
 
-      case '电流(A)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "电流(A)": true, "功率因素": false , "有功功率(kW)": false,  "视在功率(kVA)": false,  
-                             "无功功率(kVar)": false , "电压(V)": false,  "负载率(%)": false, "电流谐波含量(%)": false }
-      }
-        break;
+  //     case '电流(A)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "电流(A)": true, "功率因素": false , "有功功率(kW)": false,  "视在功率(kVA)": false,  
+  //                            "无功功率(kVar)": false , "电压(V)": false,  "负载率(%)": false, "电流谐波含量(%)": false }
+  //     }
+  //       break;
 
-      case '电压(V)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "电压(V)": true, "功率因素": false , "有功功率(kW)": false, "电流(A)": false, 
-                          "视在功率(kVA)": false,  "无功功率(kVar)": false, "负载率(%)": false, "电流谐波含量(%)": false}
-      }
-        break;
+  //     case '电压(V)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "电压(V)": true, "功率因素": false , "有功功率(kW)": false, "电流(A)": false, 
+  //                         "视在功率(kVA)": false,  "无功功率(kVar)": false, "负载率(%)": false, "电流谐波含量(%)": false}
+  //     }
+  //       break;
 
-      case '负载率(%)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "负载率(%)": true, "电压(V)": false, "电流谐波含量(%)": false, "功率因素": false ,"电流(A)": false,  
-                            "有功功率(kW)": false,  "视在功率(kVA)": false,  "无功功率(kVar)": false}
-      }
-        break;
+  //     case '负载率(%)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "负载率(%)": true, "电压(V)": false, "电流谐波含量(%)": false, "功率因素": false ,"电流(A)": false,  
+  //                           "有功功率(kW)": false,  "视在功率(kVA)": false,  "无功功率(kVar)": false}
+  //     }
+  //       break;
 
-      case '电流谐波含量(%)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "电流谐波含量(%)": true, "电压(V)": false, "功率因素": false ,"电流(A)": false,  
-                            "有功功率(kW)": false,  "视在功率(kVA)": false, "无功功率(kVar)": false, "负载率(%)": false, }
-      }
-        break;
+  //     case '电流谐波含量(%)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "电流谐波含量(%)": true, "电压(V)": false, "功率因素": false ,"电流(A)": false,  
+  //                           "有功功率(kW)": false,  "视在功率(kVA)": false, "无功功率(kVar)": false, "负载率(%)": false, }
+  //     }
+  //       break;
         
-      default:
-        break;
-    }
+  //     default:
+  //       break;
+  //   }
 
-    realtimeChart?.setOption({
-      legend: {
-        data: ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)', '负载率(%)', '电流谐波含量(%)'],
-        selected: optionsToUpdate
-      },
-    });
-  });
+  //   realtimeChart?.setOption({
+  //     legend: {
+  //       data: ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)', '负载率(%)', '电流谐波含量(%)'],
+  //       selected: optionsToUpdate
+  //     },
+  //   });
+  // });
 }
 
 // 相数据小时、天 图例切换函数
 function lineHourAndDayLegendListener(realtimeChart) {
-  realtimeChart?.on('legendselectchanged', function (params) {
-    var legendName = params.name;
-    var optionsToUpdate = {};
-    switch (legendName) {
-      case '平均视在功率(kVA)':
-      case '最大视在功率(kVA)':
-      case '最小视在功率(kVA)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-                            "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false };
-      }
-        break;
+  LegendListener(realtimeChart)
+  // realtimeChart?.on('legendselectchanged', function (params) {
+  //   var legendName = params.name;
+  //   var optionsToUpdate = {};
+  //   switch (legendName) {
+  //     case '平均视在功率(kVA)':
+  //     case '最大视在功率(kVA)':
+  //     case '最小视在功率(kVA)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+  //                           "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false };
+  //     }
+  //       break;
 
-      case '平均有功功率(kW)':
-      case '最大有功功率(kW)':
-      case '最小有功功率(kW)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-                          "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false };
-      }
-        break;
+  //     case '平均有功功率(kW)':
+  //     case '最大有功功率(kW)':
+  //     case '最小有功功率(kW)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+  //                         "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false };
+  //     }
+  //       break;
 
-      case '平均无功功率(kVar)':
-      case '最大无功功率(kVar)':
-      case '最小无功功率(kVar)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-                         "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false };
-      }
-        break;
+  //     case '平均无功功率(kVar)':
+  //     case '最大无功功率(kVar)':
+  //     case '最小无功功率(kVar)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+  //                        "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false };
+  //     }
+  //       break;
 
-      case '平均电流(A)':
-      case '最大电流(A)':
-      case '最小电流(A)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
-                          "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
-                           "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false};
-      }
-        break;
+  //     case '平均电流(A)':
+  //     case '最大电流(A)':
+  //     case '最小电流(A)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+  //                         "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+  //                          "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false};
+  //     }
+  //       break;
 
-      case '平均电压(V)':
-      case '最大电压(V)':
-      case '最小电压(V)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均电压(V)": true, "最大电压(V)": true, "最小电压(V)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
-                 "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
-                 "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false }
-          }
-        break;
+  //     case '平均电压(V)':
+  //     case '最大电压(V)':
+  //     case '最小电压(V)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均电压(V)": true, "最大电压(V)": true, "最小电压(V)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+  //                "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+  //                "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, "平均电流谐波含量(%)": false, "最大电流谐波含量(%)": false, "最小电流谐波含量(%)": false }
+  //         }
+  //       break;
 
-      case '平均电流谐波含量(%)':
-      case '最大电流谐波含量(%)':
-      case '最小电流谐波含量(%)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均电流谐波含量(%)": true, "最大电流谐波含量(%)": true, "最小电流谐波含量(%)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
-                 "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
-                 "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false }
-          }
-        break;
+  //     case '平均电流谐波含量(%)':
+  //     case '最大电流谐波含量(%)':
+  //     case '最小电流谐波含量(%)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均电流谐波含量(%)": true, "最大电流谐波含量(%)": true, "最小电流谐波含量(%)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+  //                "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+  //                "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false }
+  //         }
+  //       break;
 
 
-      default:
-        break;
-    }
+  //     default:
+  //       break;
+  //   }
 
-    realtimeChart?.setOption({
-      legend: {
-        data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
-                '平均电流(A)', '最大电流(A)', '最小电流(A)', '平均电压(V)', '最大电压(V)', '最小电压(V)', '平均电流谐波含量(%)', '最大电流谐波含量(%)', '最小电流谐波含量(%)'],
-        selected: optionsToUpdate
-      },
-    });
-  });
+  //   realtimeChart?.setOption({
+  //     legend: {
+  //       data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
+  //               '平均电流(A)', '最大电流(A)', '最小电流(A)', '平均电压(V)', '最大电压(V)', '最小电压(V)', '平均电流谐波含量(%)', '最大电流谐波含量(%)', '最小电流谐波含量(%)'],
+  //       selected: optionsToUpdate
+  //     },
+  //   });
+  // });
 }
 
 // 回路数据实时图例切换函数
 function loopRealtimeLegendListener(realtimeChart) {
-  realtimeChart?.on('legendselectchanged', function (params) {
-    var legendName = params.name;
-    var optionsToUpdate = {};
-    switch (legendName) {
-      case '有功功率(kW)':
-     if (params.selected[legendName]){
-          optionsToUpdate = { "有功功率(kW)": true,  "功率因素": false , "电压(V)": false, "电流(A)": false}
-        }
-        break;
+  LegendListener(realtimeChart)
+  // realtimeChart?.on('legendselectchanged', function (params) {
+  //   var legendName = params.name;
+  //   var optionsToUpdate = {};
+  //   switch (legendName) {
+  //     case '有功功率(kW)':
+  //    if (params.selected[legendName]){
+  //         optionsToUpdate = { "有功功率(kW)": true,  "功率因素": false , "电压(V)": false, "电流(A)": false}
+  //       }
+  //       break;
 
-      case '视在功率(kVA)':
-      if (params.selected[legendName]){
-          optionsToUpdate = { "视在功率(kVA)": true,  "功率因素": false , "电压(V)": false, "电流(A)": false}
-      }
-        break;
+  //     case '视在功率(kVA)':
+  //     if (params.selected[legendName]){
+  //         optionsToUpdate = { "视在功率(kVA)": true,  "功率因素": false , "电压(V)": false, "电流(A)": false}
+  //     }
+  //       break;
 
-      case '无功功率(kVar)':
-      if (params.selected[legendName]){
-          optionsToUpdate = { "无功功率(kVar)": true,  "功率因素": false , "电压(V)": false, "电流(A)": false}
-      }
-        break;
+  //     case '无功功率(kVar)':
+  //     if (params.selected[legendName]){
+  //         optionsToUpdate = { "无功功率(kVar)": true,  "功率因素": false , "电压(V)": false, "电流(A)": false}
+  //     }
+  //       break;
 
-      case '功率因素':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "功率因素": true,  "有功功率(kW)": false,  "视在功率(kVA)": false,  
-                           "无功功率(kVar)": false , "电压(V)": false, "电流(A)": false}
-      }
-        break;
+  //     case '功率因素':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "功率因素": true,  "有功功率(kW)": false,  "视在功率(kVA)": false,  
+  //                          "无功功率(kVar)": false , "电压(V)": false, "电流(A)": false}
+  //     }
+  //       break;
 
-      case '电流(A)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "电流(A)": true, "功率因素": false , "有功功率(kW)": false,  "视在功率(kVA)": false,  
-                             "无功功率(kVar)": false , "电压(V)": false}
-      }
-        break;
+  //     case '电流(A)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "电流(A)": true, "功率因素": false , "有功功率(kW)": false,  "视在功率(kVA)": false,  
+  //                            "无功功率(kVar)": false , "电压(V)": false}
+  //     }
+  //       break;
 
-      case '电压(V)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "电压(V)": true, "功率因素": false , "有功功率(kW)": false, "电流(A)": false, 
-                          "视在功率(kVA)": false,  "无功功率(kVar)": false}
-      }
-        break;
+  //     case '电压(V)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "电压(V)": true, "功率因素": false , "有功功率(kW)": false, "电流(A)": false, 
+  //                         "视在功率(kVA)": false,  "无功功率(kVar)": false}
+  //     }
+  //       break;
         
-      default:
-        break;
-    }
+  //     default:
+  //       break;
+  //   }
 
-    realtimeChart?.setOption({
-      legend: {
-        data: ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)'],
-        selected: optionsToUpdate
-      },
-    });
-  });
+  //   realtimeChart?.setOption({
+  //     legend: {
+  //       data: ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)'],
+  //       selected: optionsToUpdate
+  //     },
+  //   });
+  // });
 }
 
 // 回路数据小时、天 图例切换函数
 function loopHourAndDayLegendListener(realtimeChart) {
-  realtimeChart?.on('legendselectchanged', function (params) {
-    var legendName = params.name;
-    var optionsToUpdate = {};
-    switch (legendName) {
-      case '平均视在功率(kVA)':
-      case '最大视在功率(kVA)':
-      case '最小视在功率(kVA)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-                            "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false };
-      }
-        break;
+  LegendListener(realtimeChart)
+  // realtimeChart?.on('legendselectchanged', function (params) {
+  //   var legendName = params.name;
+  //   var optionsToUpdate = {};
+  //   switch (legendName) {
+  //     case '平均视在功率(kVA)':
+  //     case '最大视在功率(kVA)':
+  //     case '最小视在功率(kVA)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+  //                           "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false };
+  //     }
+  //       break;
 
-      case '平均有功功率(kW)':
-      case '最大有功功率(kW)':
-      case '最小有功功率(kW)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-                          "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false};
-      }
-        break;
+  //     case '平均有功功率(kW)':
+  //     case '最大有功功率(kW)':
+  //     case '最小有功功率(kW)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+  //                         "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false};
+  //     }
+  //       break;
 
-      case '平均无功功率(kVar)':
-      case '最大无功功率(kVar)':
-      case '最小无功功率(kVar)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
-                         "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false };
-      }
-        break;
+  //     case '平均无功功率(kVar)':
+  //     case '最大无功功率(kVar)':
+  //     case '最小无功功率(kVar)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+  //                        "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false };
+  //     }
+  //       break;
 
-      case '平均电流(A)':
-      case '最大电流(A)':
-      case '最小电流(A)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
-                          "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
-                           "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false };
-      }
-        break;
+  //     case '平均电流(A)':
+  //     case '最大电流(A)':
+  //     case '最小电流(A)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+  //                         "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+  //                          "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false };
+  //     }
+  //       break;
 
-      case '平均电压(V)':
-      case '最大电压(V)':
-      case '最小电压(V)':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均电压(V)": true, "最大电压(V)": true, "最小电压(V)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
-                 "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
-                 "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false }
-          }
-        break;
+  //     case '平均电压(V)':
+  //     case '最大电压(V)':
+  //     case '最小电压(V)':
+  //     if (params.selected[legendName]){
+  //       optionsToUpdate = { "平均电压(V)": true, "最大电压(V)": true, "最小电压(V)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+  //                "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+  //                "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false }
+  //         }
+  //       break;
 
-      default:
-        break;
-    }
+  //     default:
+  //       break;
+  //   }
 
-    realtimeChart?.setOption({
-      legend: {
-        data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
-                '平均电流(A)', '最大电流(A)', '最小电流(A)', '平均电压(V)', '最大电压(V)', '最小电压(V)'],
-        selected: optionsToUpdate
-      },
-    });
-  });
+  //   realtimeChart?.setOption({
+  //     legend: {
+  //       data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
+  //               '平均电流(A)', '最大电流(A)', '最小电流(A)', '平均电压(V)', '最大电压(V)', '最小电压(V)'],
+  //       selected: optionsToUpdate
+  //     },
+  //   });
+  // });
 }
 
 // 总数据实时图例切换函数
 function outletRealtimeLegendListener(realtimeChart) {
-  realtimeChart?.on('legendselectchanged', function (params) {
-    var legendName = params.name;
-    var optionsToUpdate = {};
-    switch (legendName) {
-      case '有功功率(kW)':
-     if (params.selected[legendName]){
-          optionsToUpdate = {  "有功功率(kW)": true , "功率因素": false};
-        }
-        break;
+  LegendListener(realtimeChart)
+  // realtimeChart?.on('legendselectchanged', function (params) {
+  //   var legendName = params.name;
+  //   var optionsToUpdate = {};
+  //   switch (legendName) {
+  //     case '有功功率(kW)':
+  //    if (params.selected[legendName]){
+  //         optionsToUpdate = {  "有功功率(kW)": true , "功率因素": false};
+  //       }
+  //       break;
 
-      case '视在功率(kVA)':
-      if (params.selected[legendName]){
-          optionsToUpdate = {  "视在功率(kVA)": true , "功率因素": false};
-      }
-        break;
+  //     case '视在功率(kVA)':
+  //     if (params.selected[legendName]){
+  //         optionsToUpdate = {  "视在功率(kVA)": true , "功率因素": false};
+  //     }
+  //       break;
 
-      case '无功功率(kVar)':
-      if (params.selected[legendName]){
-          optionsToUpdate = {  "无功功率(kVar)": true , "功率因素": false};
-      }
-        break;
+  //     case '无功功率(kVar)':
+  //     if (params.selected[legendName]){
+  //         optionsToUpdate = {  "无功功率(kVar)": true , "功率因素": false};
+  //     }
+  //       break;
 
-      case '功率因素':
-      if (params.selected[legendName]){
-          optionsToUpdate = {  "功率因素": true , "有功功率(kW)": false, "无功功率(kVar)": false, "视在功率(kVA)": false};
-      }
-        break;
+  //     case '功率因素':
+  //     if (params.selected[legendName]){
+  //         optionsToUpdate = {  "功率因素": true , "有功功率(kW)": false, "无功功率(kVar)": false, "视在功率(kVA)": false};
+  //     }
+  //       break;
 
         
-      default:
-        break;
-    }
+  //     default:
+  //       break;
+  //   }
 
-    realtimeChart?.setOption({
-      legend: {
-        data: ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素'],
-        selected: optionsToUpdate
-      },
-    });
-  });
+  //   realtimeChart?.setOption({
+  //     legend: {
+  //       data: ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素'],
+  //       selected: optionsToUpdate
+  //     },
+  //   });
+  // });
 }
 
 // 给折线图提示框的数据加单位
@@ -1666,7 +1767,7 @@ function customTooltipFormatter(params: any[]) {
       break;
 
       case '最大电流谐波含量(%)':
-      tooltipContent += item.marker +' '+curThdMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+      tooltipContent += item.marker +' 发生时间：'+curThdMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最小电流谐波含量(%)':
       tooltipContent += item.marker +" 发生时间："+curThdMinTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value + '<br/>';
@@ -1686,6 +1787,24 @@ function customTooltipFormatter(params: any[]) {
       case '总视在功率(kVA)':
       tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
       break;
+      case '平均功率因素':
+        tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最大功率因素':
+        tooltipContent += item.marker +' 发生时间：'  +powerFactorMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最小功率因素':
+        tooltipContent += item.marker +' 发生时间：'  +powerFactorMinTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '平均负载率(%)':
+        tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最大负载率(%)':
+        tooltipContent += item.marker +' 发生时间：'  +loadRateMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
+      case '最小负载率(%)':
+        tooltipContent += item.marker +' 发生时间：'  +loadRateMinTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
+        break;
     }
     
   })
