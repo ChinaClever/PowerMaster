@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱电能记录">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>  
       <div class="nav_data">
         <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -274,7 +274,7 @@ const typeCascaderChange = (selected) => {
   switch(selected[0]){
     case 'line':
       tableColumns.value = [
-        { label: '所在位置', align: 'center', prop: 'locations' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
         { label: '网络地址', align: 'center', prop: 'dev_key' , istrue:true},
         { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},

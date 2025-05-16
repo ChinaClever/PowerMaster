@@ -1622,8 +1622,8 @@ public class CabinetServiceImpl implements CabinetService {
     }
 
     @Override
-    public Map<String, List<CabinetLoadPageChartResVO>> getLineChartDetailData(CabinetPowerLoadDetailReqVO reqVO) {
-        Map<String, List<CabinetLoadPageChartResVO>> resultMap = new HashMap<>();
+    public Map<String, List> getLineChartDetailData(CabinetPowerLoadDetailReqVO reqVO) {
+        Map<String, List> resultMap = new HashMap<>();
         String str = StrUtils.redisKeyByLoginId(null, "/cabinet/loadPage/chart-detail", reqVO);
         Object obj = redisTemplate.opsForValue().get(str);
         if (ObjectUtil.isNotEmpty(obj)) {
@@ -1667,52 +1667,50 @@ public class CabinetServiceImpl implements CabinetService {
                 heads = new String[]{"cabinet_id", "apparent_total", "apparent_a", "apparent_b", "active_total", "active_a",
                         "active_b", "reactive_a", "reactive_b", "reactive_total", "factor_a", "factor_b", "factor_total", "load_rate", "create_time"};
             }else {
-                heads = new String[]{"cabinet_id", "apparent_a_avg_value", "apparent_b_avg_value", "active_a_avg_value", "active_b_avg_value",
-                        "apparent_total_avg_value", "active_total_avg_value", "reactive_a_avg_value", "reactive_b_avg_value", "reactive_total_avg_value",
-                        "factor_a_avg_value", "factor_b_avg_value", "factor_total_avg_value", "load_rate_total_avg_value", "create_time"};
+                heads = new String[]{};
             }
 
             List<Map<String, Object>> mapList = getDataEsChart(start, end, idKey, cabinet, index, heads);
-            mapList.forEach(map -> {
-                // 获取文档内容，假设它以 Map 的形式存储
-                CabinetLoadPageChartResVO vo = new CabinetLoadPageChartResVO();
-                if (Objects.equals(reqVO.getGranularity(), "realtime")) {
-                    vo.setCabinetId((Integer) map.get("cabinet_id"));
-                    vo.setCreateTime(String.valueOf(map.get("create_time")));
-                    vo.setPowActiveA((Double) map.get("active_a"));
-                    vo.setPowApparentA((Double) map.get("apparent_a"));
-                    vo.setPowActiveTotal((Double) map.get("active_total"));
-                    vo.setPowActiveB((Double) map.get("active_b"));
-                    vo.setPowApparentB((Double) map.get("apparent_b"));
-                    vo.setPowApparentTotal((Double) map.get("apparent_total"));
-                    vo.setLoadRateTotal((Double) map.get("load_rate"));
-                    vo.setPowReactiveA((Double) map.get("reactive_a"));
-                    vo.setPowReactiveB((Double) map.get("reactive_b"));
-                    vo.setPowReactiveTotal((Double) map.get("reactive_total"));
-                    vo.setPowerFactorA((Double) map.get("factor_a"));
-                    vo.setPowerFactorB((Double) map.get("factor_b"));
-                    vo.setPowerFactorTotal((Double) map.get("factor_total"));
-                    aPath.add(vo);
-                } else {
-                    vo.setCabinetId((Integer) map.get("cabinet_id"));
-                    vo.setCreateTime(String.valueOf(map.get("create_time")));
-                    vo.setPowActiveA((Double) map.get("active_a_avg_value"));
-                    vo.setPowApparentA((Double) map.get("apparent_a_avg_value"));
-                    vo.setPowApparentTotal((Double) map.get("apparent_total_avg_value"));
-                    vo.setPowActiveTotal((Double) map.get("active_total_avg_value"));
-                    vo.setPowActiveB((Double) map.get("active_b_avg_value"));
-                    vo.setPowApparentB((Double) map.get("apparent_b_avg_value"));
-                    vo.setLoadRateTotal((Double) map.get("load_rate_total_avg_value"));
-                    vo.setPowReactiveA((Double) map.get("reactive_a_avg_value"));
-                    vo.setPowReactiveB((Double) map.get("reactive_b_avg_value"));
-                    vo.setPowReactiveTotal((Double) map.get("reactive_total_avg_value"));
-                    vo.setPowerFactorA((Double) map.get("factor_a_avg_value"));
-                    vo.setPowerFactorB((Double) map.get("factor_b_avg_value"));
-                    vo.setPowerFactorTotal((Double) map.get("factor_total_avg_value"));
-                    aPath.add(vo);
-                }
-            });
-            resultMap.put("aPath", aPath);
+//            mapList.forEach(map -> {
+//                // 获取文档内容，假设它以 Map 的形式存储
+//                CabinetLoadPageChartResVO vo = new CabinetLoadPageChartResVO();
+//                if (Objects.equals(reqVO.getGranularity(), "realtime")) {
+//                    vo.setCabinetId((Integer) map.get("cabinet_id"));
+//                    vo.setCreateTime(String.valueOf(map.get("create_time")));
+//                    vo.setPowActiveA((Double) map.get("active_a"));
+//                    vo.setPowApparentA((Double) map.get("apparent_a"));
+//                    vo.setPowActiveTotal((Double) map.get("active_total"));
+//                    vo.setPowActiveB((Double) map.get("active_b"));
+//                    vo.setPowApparentB((Double) map.get("apparent_b"));
+//                    vo.setPowApparentTotal((Double) map.get("apparent_total"));
+//                    vo.setLoadRateTotal((Double) map.get("load_rate"));
+//                    vo.setPowReactiveA((Double) map.get("reactive_a"));
+//                    vo.setPowReactiveB((Double) map.get("reactive_b"));
+//                    vo.setPowReactiveTotal((Double) map.get("reactive_total"));
+//                    vo.setPowerFactorA((Double) map.get("factor_a"));
+//                    vo.setPowerFactorB((Double) map.get("factor_b"));
+//                    vo.setPowerFactorTotal((Double) map.get("factor_total"));
+//                    aPath.add(vo);
+//                } else {
+//                    vo.setCabinetId((Integer) map.get("cabinet_id"));
+//                    vo.setCreateTime(String.valueOf(map.get("create_time")));
+//                    vo.setPowActiveA((Double) map.get("active_a_avg_value"));
+//                    vo.setPowApparentA((Double) map.get("apparent_a_avg_value"));
+//                    vo.setPowApparentTotal((Double) map.get("apparent_total_avg_value"));
+//                    vo.setPowActiveTotal((Double) map.get("active_total_avg_value"));
+//                    vo.setPowActiveB((Double) map.get("active_b_avg_value"));
+//                    vo.setPowApparentB((Double) map.get("apparent_b_avg_value"));
+//                    vo.setLoadRateTotal((Double) map.get("load_rate_total_avg_value"));
+//                    vo.setPowReactiveA((Double) map.get("reactive_a_avg_value"));
+//                    vo.setPowReactiveB((Double) map.get("reactive_b_avg_value"));
+//                    vo.setPowReactiveTotal((Double) map.get("reactive_total_avg_value"));
+//                    vo.setPowerFactorA((Double) map.get("factor_a_avg_value"));
+//                    vo.setPowerFactorB((Double) map.get("factor_b_avg_value"));
+//                    vo.setPowerFactorTotal((Double) map.get("factor_total_avg_value"));
+//                    aPath.add(vo);
+//                }
+//            });
+            resultMap.put("aPath", mapList);
         } else {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>().eq(CabinetPdu::getCabinetId, cabinet).last("limit 1"));
             if (Objects.isNull(cabinetPdu)) {
@@ -1941,7 +1939,9 @@ public class CabinetServiceImpl implements CabinetService {
             searchSourceBuilder.query(QueryBuilders.termQuery(idKey, id));
 
             searchRequest.indices(index);
-            searchSourceBuilder.fetchSource(heads, null);
+            if(heads!=null&&heads.length!=0){
+                searchSourceBuilder.fetchSource(heads, null);
+            }
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(startTime)
                     .to(endTime));

@@ -359,3 +359,6 @@ easy-es:
   banner: false
   global-config:
     process-index-mode: manual  # 索引托管模式（手动/自动）
+
+
+

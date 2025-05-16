@@ -253,7 +253,15 @@ const createFilter = (queryString: string) => {
     )
   }
 }
-
+function fromZeroTo100(precision){
+  let ans=[]
+  let now=0;
+  for(let i=0;i<=100/precision;i++){
+    now+=i/precision;
+    ans.push(now);
+  }
+  return ans;
+}
 const chartContainer = ref<HTMLElement | null>(null);
 let myChart = null as echarts.ECharts | null; 
 const initChart = () => {
@@ -265,12 +273,13 @@ const initChart = () => {
             orient: 'horizontal',
             left: 80,
             top: 5,
-            data: ['正常运行', '经济运行', '高损耗运行'],
+            data: ['安全', '正常', '预警', '危险'],
             icon: 'rect',
             selected: {
-              正常运行: true,
-              经济运行: true,
-              高损耗运行: true
+              安全: true,
+              正常: true,
+              预警: true,
+              危险: true
             },
             selectedMode: false, // 禁用选中模式
         },
@@ -282,8 +291,10 @@ const initChart = () => {
             min: 0,
             max: 100,
             type: 'value',
-            interval: 10,
-            data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 
+            interval: 5,
+            // data:[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            // data: [0,5, 10,15, 20,25, 30,35, 40,45, 50,55, 60,65, 70,75, 80,85, 90,95, 100],
+            // data: fromZeroTo100(0.01), 
             axisTick: { alignWithLabel: true, show: false },
             axisLabel: {
               interval: 0,
@@ -299,12 +310,14 @@ const initChart = () => {
                 lineStyle: {
                       color: function(value) {
                           // 根据 value 返回不同的颜色
-                          if (value <= 40) {
-                              return 'rgb(223, 196, 43)'; 
+                          if (value <= 50) {
+                              return '#16c60c'; 
                           } else if (value <= 75) {
-                              return 'rgb(56,201,73)'; 
-                          } else {
-                              return 'rgb(230,93,93)'; 
+                              return '#0078d7'; 
+                          } else if(value<=90){
+                              return '#fff100'; 
+                          }else{
+                            return '#e81224';
                           }
                       },
                       width: 1, // 设置粗细
@@ -316,30 +329,39 @@ const initChart = () => {
         },
         series: [
           {
-              name: '正常运行',
+              name: '安全',
               type: 'line',
               data: [],
               itemStyle: {
-                  color: 'rgb(223, 196, 43)', // 设置颜色
+                  color: '#16c60c', // 设置颜色
               },
               show: false,  // 设置为 false 隐藏该系列数据
               
           },
           {
-              name: '经济运行',
+              name: '正常',
               type: 'line',
               data: [],
               itemStyle: {
-                  color: 'rgb(56,201,73)', // 设置颜色
+                  color: '#0078d7', // 设置颜色
               },
               show: false,  // 设置为 false 隐藏该系列数据
           },
           {
-              name: '高损耗运行',
+              name: '预警',
               type: 'line',
               data: [],
               itemStyle: {
-                  color: 'rgb(230,93,93)', // 设置颜色
+                  color: '#fff100', // 设置颜色
+              },
+              show: false,  // 设置为 false 隐藏该系列数据
+          },
+          {
+              name: '危险',
+              type: 'line',
+              data: [],
+              itemStyle: {
+                  color: '#e81224', // 设置颜色
               },
               show: false,  // 设置为 false 隐藏该系列数据
           },
@@ -472,12 +494,14 @@ const getDetailData =async () => {
       powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
       //loadPercentage.value = 76 测试数据
-      if (loadPercentage.value <= 40){
-        xAxisLabel.value = '正常运行'
+      if (loadPercentage.value <= 50){
+        xAxisLabel.value = '安全'
       }else if (loadPercentage.value <= 75){
-        xAxisLabel.value = '经济运行'
-      }else{
-        xAxisLabel.value = '高损耗运行'
+        xAxisLabel.value = '正常'
+      }else if (loadPercentage.value <= 90){
+        xAxisLabel.value = '预警'
+      }else {
+        xAxisLabel.value = '危险'
       }
     }else{
         hasData.value = false;

@@ -328,6 +328,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
           { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
           { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+          { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
           { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
@@ -464,8 +465,9 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '190px'},
           { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+          { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '220px'},
-
+          
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '120px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -614,6 +616,7 @@ const tableColumns = ref([
     { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
     { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
     { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+    { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
     { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
     { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
@@ -671,6 +674,13 @@ function formatLoadRate(_row: any, _column: any, cellValue: number): string {
 // 格式化功率列数据，保留三位小数
 function formatPower(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(3);
+}
+function formatSave(_row: any, _column: any, cellValue: number): string {
+  if(cellValue==0) return '定时记录';
+  if(cellValue==1) return '波动数据';
+  if(cellValue==2) return '突变数据';
+  if(cellValue==3) return '告警数据';
+  return '';
 }
 
 // 格式化功率因素列数据，保留两位小数
