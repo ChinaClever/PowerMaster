@@ -1055,6 +1055,18 @@ const getList = async () => {
   console.log("  loadRateList.value = loadRateList.value.curRes",loadRateList.value);
 
   if(loadRateDate.value?.dateTimes != null && loadRateDate.value?.dateTimes?.length > 0){
+    loadRateDate.value.loadRateRes.series.forEach((_, index) => {
+          const maxKey = `loadRateMax${index + 1}`;
+          const minKey = `loadRateMin${index + 1}`;
+
+          if (loadRateDate.value[maxKey] != null) {
+            loadRateDate.value[maxKey] = loadRateDate.value[maxKey].toFixed(0);
+          }
+          if (loadRateDate.value[minKey] != null) {
+            loadRateDate.value[minKey] = loadRateDate.value[minKey].toFixed(0);
+          }
+        });
+
     visControll.loadRateVis = true;
   }else{
     visControll.loadRateVis = false;
@@ -1378,7 +1390,7 @@ const generateDailyReport = (devKey) => {
   new1.value = getFullTimeByDate(new1.value);
       // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
       console.log('生成月报报告', devKey);
-      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+1+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
     };
 // 表格行选择处理
 const handleCurrentChange = (val) => {

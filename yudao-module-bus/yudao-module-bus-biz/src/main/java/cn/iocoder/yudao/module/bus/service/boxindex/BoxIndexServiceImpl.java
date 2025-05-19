@@ -19,6 +19,7 @@ import cn.iocoder.yudao.framework.common.entity.es.box.outlet.BoxOutletHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
@@ -2319,7 +2320,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
                 for (int i = 0; i < boxEleOutletDos3.size()-1; i++) {
                     EleCost eleCost = new EleCost();
-                    eleCost.setOutletId(2);
+                    eleCost.setOutletId(3);
                     eleCost.setEq(boxEleOutletDos3.get(dataIndex3+1).getEleActive()-boxEleOutletDos3.get(dataIndex3).getEleActive());
                     eleCosts.add(eleCost);
                     dataIndex2++;
@@ -2764,6 +2765,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 String maxEleTime = null;
                 int nowTimes = 0;
                 if (isSameDay) {
+                    List<BoxEleTotalDo> busList = new ArrayList<>();
+
                     for (String str : cabinetData) {
                         nowTimes++;
                         BoxEleTotalDo eleDO = JsonUtils.parseObject(str, BoxEleTotalDo.class);
@@ -2775,13 +2778,22 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                             barRes.getTime().add(eleDO.getCreateTime().toString("HH:mm"));
                         }
                         lastEq = eleDO.getEleActive();
+
+                        busList.add(eleDO);
                     }
-                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Id), index, "ele_active");
-                    BoxEleTotalDo eleMaxValue = JsonUtils.parseObject(eleMax, BoxEleTotalDo.class);
-                    if (eleMaxValue != null) {
-                        maxEle = eleMaxValue.getEleActive();
-                        maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    //计算实时用电量
+                    List<BoxEleTotalDo> dayEqList = new ArrayList<>();
+                    for (int i = 0; i < cabinetData.size() - 1; i++) {
+                        BoxEleTotalDo dayEleDo = new BoxEleTotalDo();
+                        totalEq += (float) busList.get(i + 1).getEleActive() - (float) busList.get(i).getEleActive();
+                        dayEleDo.setEleActive(busList.get(i + 1).getEleActive() - busList.get(i).getEleActive());
+                        dayEleDo.setCreateTime(busList.get(i).getCreateTime());
+                        dayEqList.add(dayEleDo);
                     }
+                    dayEqList.sort(Comparator.comparing(BoxEleTotalDo::getEleActive));
+
+                    maxEle = dayEqList.get(dayEqList.size() - 1).getEleActive();
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
                     result.put("maxEle", maxEle);
@@ -2789,7 +2801,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     result.put("firstEq", firstEq);
                     result.put("lastEq", lastEq);
                     result.put("barRes", barRes);
-                } else {
+                }
+               else {
                     for (String str : cabinetData) {
                         nowTimes++;
                         BoxEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
