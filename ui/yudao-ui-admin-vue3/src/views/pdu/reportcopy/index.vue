@@ -784,7 +784,7 @@ const filterTimesFromDate = (dateTimeStrings, targetDate) => {
 let currentDate = new Date().toISOString().split('T')[0];
 //获取PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async () => {
-  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: queryParams.timeType,oldTime:queryParams.oldTime,newTime:queryParams.newTime,dataType:queryParams.dataType})
+  const result = await PDUDeviceApi.getPduHdaLineHisdataReportKey({ devKey : queryParams.devKey, type: queryParams.timeType,oldTime:queryParams.oldTime,newTime:queryParams.newTime,dataType:queryParams.dataType})
   curVolData.value = result;
   curList.value = curVolData.value.curRes
   volList.value = curVolData.value.volRes
@@ -853,13 +853,13 @@ const PDUHdaLineHisdata = async () => {
     visControll.flag = false;
   }
 
-  if (dateTimeName.value === 'twentyfourHour') {
-    lineidDateTimes.value = filterTimesFromDate(result.dateTimes, currentDate).map(item => item.substring(11, 16))
-  } else if (dateTimeName.value === 'seventytwoHour') {
+  // if (dateTimeName.value === 'twentyfourHour') {
+  //   lineidDateTimes.value = filterTimesFromDate(result.dateTimes, currentDate).map(item => item.substring(11, 16))
+  // } else if (dateTimeName.value === 'seventytwoHour') {
 
-    console.log('result.dateTimes'+result.dateTimes);
-    lineidDateTimes.value = result.dateTimes.map(item => item.substring(0, 10))
-  }
+  //   console.log('result.dateTimes'+result.dateTimes);
+  //   lineidDateTimes.value = result.dateTimes.map(item => item.substring(0, 10))
+  // }
 
   console.log('lineidDateTimes111111111111111')
 }
