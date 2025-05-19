@@ -329,7 +329,7 @@
             <div class="page-conTitle">
               回路电压曲线
             </div>
-                                 <div v-for="(sensor, index) in curLoopList?.series" :key="index">
+                                 <div v-for="(sensor, index) in volLoopList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2 == 0">
         <span class="power-title" v-if="curvolLoopData[`VPName${index+1}`]!=null">{{curvolLoopData[`VPName${index+1}`]}}极值：</span>
         <span class="power-value" v-if="curvolLoopData[`VPName${index+1}`]!=null">峰值 <span class="highlight">{{ curvolLoopData[`loopVolMax${index + 1}`] }}</span> V <span class="time">记录于({{ curvolLoopData[`loopVolMaxTime${index + 1}`] }})</span></span>
@@ -465,6 +465,8 @@ const visControll = reactive({
   pfVis: false,
   flag: false,
   curVolVis: false,
+  curLoopVis : false,
+  volLoopVis : false,
 })
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
@@ -1007,6 +1009,16 @@ const getList = async () => {
           if (pfLineData.value[minKey] != null) {
             pfLineData.value[minKey] = pfLineData.value[minKey].toFixed(2);
           }
+
+          // const maxFKey = `powFactorMax${4}`;
+          // const minFKey = `powFactorMin${4}`;
+          // if(pfLineData.value[maxFKey] != null){
+          // pfLineData.value[maxFKey] = pfLineData.value[maxFKey].toFixed(2);
+          // }
+          //  if (pfLineData.value[minFKey] != null) {
+          //   pfLineData.value[minFKey] = pfLineData.value[minFKey].toFixed(2);
+          // }
+
         });
     visControll.pfVis = true;
   }else {
@@ -1074,8 +1086,45 @@ const getList = async () => {
   curvolLoopData.value = await IndexApi.getAvgBoxHdaLoopForm(queryParams);
   curLoopList.value = curvolLoopData.value.linCureRes
   volLoopList.value = curvolLoopData.value.linVoleRes
-  console.log('curLoopList.value',curLoopList.value);
-  console.log('volLoopList.value',volLoopList.value);
+
+  if(curLoopList.value?.time != null && curLoopList.value?.time?.length > 0){
+    curLoopList.value.series.forEach((_, index) => {
+          const maxKey = `loopCurMax${index + 1}`;
+          const minKey = `loopCurMin${index + 1}`;
+
+          if (curvolLoopData.value[maxKey] != null) {
+            curvolLoopData.value[maxKey] = curvolLoopData.value[maxKey].toFixed(2);
+          }
+          if (curvolLoopData.value[minKey] != null) {
+            curvolLoopData.value[minKey] = curvolLoopData.value[minKey].toFixed(2);
+          }
+        }); 
+        visControll.curLoopVis = true;
+  }else{
+    visControll.curLoopVis = false;
+  }
+
+  
+  if(volLoopList.value?.time != null && volLoopList.value?.time?.length > 0){
+    volLoopList.value.series.forEach((_, index) => {
+          const maxKey = `loopVolMax${index + 1}`;
+          const minKey = `loopVolMin${index + 1}`;
+
+          if (curvolLoopData.value[maxKey] != null) {
+            curvolLoopData.value[maxKey] = curvolLoopData.value[maxKey].toFixed(1);
+          }
+          if (curvolLoopData.value[minKey] != null) {
+            curvolLoopData.value[minKey] = curvolLoopData.value[minKey].toFixed(1);
+          }
+        }); 
+        visControll.volLoopVis = true;
+  }else{
+    visControll.volLoopVis = false;
+  }
+
+
+
+
   
   
 

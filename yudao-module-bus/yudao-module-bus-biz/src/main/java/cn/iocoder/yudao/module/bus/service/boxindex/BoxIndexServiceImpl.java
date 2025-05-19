@@ -24,6 +24,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo
 import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.loop.PduHdaLoopBaseDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
@@ -1461,8 +1462,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 if (pageReqVO.getDataType() == 1) {
                     linCureSeries.setName(getCurVolSeriesName("电流",i,pageReqVO.getDataType()));
                     linVoleSeries.setName(getCurVolSeriesName("电压",i,pageReqVO.getDataType()));
-//                    String name = "回路" + i + PduDataTypeEnum.CURRENT_MAX.getDataType();
-//                    lineSeries.setName(name);
                     loopCur = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurMaxValue).collect(Collectors.toList());
                     loopVol = hourDoList.stream().map(BusHdaLoopAvgResVO::getVolMaxValue).collect(Collectors.toList());
 
@@ -1491,8 +1490,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 } else if (pageReqVO.getDataType() == 0) {
                     linCureSeries.setName(getCurVolSeriesName("电流",i,pageReqVO.getDataType()));
                     linVoleSeries.setName(getCurVolSeriesName("电压",i,pageReqVO.getDataType()));
-//                    String name = "回路" + i + PduDataTypeEnum.CURRENT_AVG.getDataType();
-//                    lineSeries.setName(name);
                     loopCur = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurAvgValue).collect(Collectors.toList());
                     loopVol = hourDoList.stream().map(BusHdaLoopAvgResVO::getVolAvgValue).collect(Collectors.toList());
                     for (BusHdaLoopAvgResVO pduHdaLoopBaseDo : hourDoList) {
@@ -1517,8 +1514,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 } else if (pageReqVO.getDataType() == -1) {
                     linCureSeries.setName(getCurVolSeriesName("电流",i,pageReqVO.getDataType()));
                     linVoleSeries.setName(getCurVolSeriesName("电压",i,pageReqVO.getDataType()));
-//                    String name = "回路" + i + PduDataTypeEnum.CURRENT_MIN.getDataType();
-//                    lineSeries.setName(name);
                     loopCur = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurMinValue).collect(Collectors.toList());
                     loopVol = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurMinValue).collect(Collectors.toList());
                     curHappenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
@@ -2302,29 +2297,36 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 int dataIndex1 = 0;
                 int dataIndex2 = 0;
                 int dataIndex3 = 0;
-                for (int i = 0; i < boxEleOutletDos1.size()-1; i++) {
-                    EleCost eleCost = new EleCost();
-                    eleCost.setOutletId(1);
-                    eleCost.setEq(boxEleOutletDos1.get(dataIndex1+1).getEleActive()-boxEleOutletDos1.get(dataIndex1).getEleActive());
-                    eleCosts.add(eleCost);
-                    dataIndex1++;
+                if (!CollectionUtils.isEmpty(boxEleOutletDos1)){
+                    for (int i = 0; i < boxEleOutletDos1.size()-1; i++) {
+                        EleCost eleCost = new EleCost();
+                        eleCost.setOutletId(1);
+                        eleCost.setEq(boxEleOutletDos1.get(dataIndex1+1).getEleActive()-boxEleOutletDos1.get(dataIndex1).getEleActive());
+                        eleCosts.add(eleCost);
+                        dataIndex1++;
+                    }
                 }
 
-                for (int i = 0; i < boxEleOutletDos2.size()-1; i++) {
-                    EleCost eleCost = new EleCost();
-                    eleCost.setOutletId(2);
-                    eleCost.setEq(boxEleOutletDos2.get(dataIndex2+1).getEleActive()-boxEleOutletDos2.get(dataIndex2).getEleActive());
-                    eleCosts.add(eleCost);
-                    dataIndex2++;
+                if (!CollectionUtils.isEmpty(boxEleOutletDos2)) {
+                    for (int i = 0; i < boxEleOutletDos2.size()-1; i++) {
+                        EleCost eleCost = new EleCost();
+                        eleCost.setOutletId(2);
+                        eleCost.setEq(boxEleOutletDos2.get(dataIndex2+1).getEleActive()-boxEleOutletDos2.get(dataIndex2).getEleActive());
+                        eleCosts.add(eleCost);
+                        dataIndex2++;
+                    }
                 }
 
-                for (int i = 0; i < boxEleOutletDos3.size()-1; i++) {
-                    EleCost eleCost = new EleCost();
-                    eleCost.setOutletId(3);
-                    eleCost.setEq(boxEleOutletDos3.get(dataIndex3+1).getEleActive()-boxEleOutletDos3.get(dataIndex3).getEleActive());
-                    eleCosts.add(eleCost);
-                    dataIndex2++;
+                if (!CollectionUtils.isEmpty(boxEleOutletDos3)) {
+                    for (int i = 0; i < boxEleOutletDos3.size()-1; i++) {
+                        EleCost eleCost = new EleCost();
+                        eleCost.setOutletId(3);
+                        eleCost.setEq(boxEleOutletDos3.get(dataIndex3+1).getEleActive()-boxEleOutletDos3.get(dataIndex3).getEleActive());
+                        eleCosts.add(eleCost);
+                        dataIndex2++;
+                    }
                 }
+
                 map = eleCosts.stream().collect(Collectors.groupingBy(EleCost::getOutletId));
                 List<String> collect1 = baseDos.stream().map(i -> DateUtil.format(i.getCreateTime(), "yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList());
                 map.put("time", collect1);
@@ -2803,12 +2805,20 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     result.put("barRes", barRes);
                 }
                else {
+                    int dataIndex = 0;
                     for (String str : cabinetData) {
                         nowTimes++;
-                        BoxEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
-                        totalEq += totalDayDo.getEq();
+                        PduEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, PduEqTotalDayDo.class);
+                        if (dataIndex == 0) {
+                            firstEq = totalDayDo.getStartEle();
+                        }
+                        if (dataIndex == cabinetData.size() - 1) {
+                            lastEq = totalDayDo.getEndEle();
+                        }
+                        totalEq += (float) totalDayDo.getEq();
                         barSeries.getData().add((float) totalDayDo.getEq());
                         barRes.getTime().add(totalDayDo.getStartTime().toString("yyyy-MM-dd"));
+                        dataIndex++;
                     }
                     String eqMax = getMaxData(startTime, endTime, Arrays.asList(Id), index, "eq_value");
                     BoxEqTotalDayDo eqMaxValue = JsonUtils.parseObject(eqMax, BoxEqTotalDayDo.class);
@@ -2818,6 +2828,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     }
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
                     result.put("maxEle", maxEle);
                     result.put("maxEleTime", maxEleTime);
                     result.put("barRes", barRes);
@@ -2928,31 +2940,31 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
                 if (!CollectionUtils.isEmpty(totalPFLine.getData())) {
                     totalPFLine.setName(getPfSeriesName("功率因素", 0, dataType));
-                    processPfMavMin(powList, dataType, result, 1);
+                    processPfMavMin(powList, dataType, result, 4);
                     totalPFLine.setHappenTime(pfHappenTime);
                     totalLineRes.getSeries().add(totalPFLine);
-                    result.put("pName" + 1, "总功率因素");
+                    result.put("pName" + 4, "总功率因素");
                 }
                 if (!CollectionUtils.isEmpty(PFOutOne.getData())) {
                     PFOutOne.setName(getPfSeriesName("功率因素", 1, dataType));
-                    processOutLetMavMin(collect1, dataType, result, 2);
+                    processOutLetMavMin(collect1, dataType, result, 1);
                     PFOutOne.setHappenTime(out1HappenTime);
                     totalLineRes.getSeries().add(PFOutOne);
-                    result.put("pName" + 2, "输出位一功率因素");
+                    result.put("pName" + 1, "输出位一功率因素");
                 }
                 if (!CollectionUtils.isEmpty(PFOutTwo.getData())) {
                     PFOutTwo.setName(getPfSeriesName("功率因素", 2, dataType));
-                    processOutLetMavMin(collect2, dataType, result, 3);
+                    processOutLetMavMin(collect2, dataType, result, 2);
                     PFOutTwo.setHappenTime(out2HappenTime);
                     totalLineRes.getSeries().add(PFOutTwo);
-                    result.put("pName" + 3, "输出位二功率因素");
+                    result.put("pName" + 2, "输出位二功率因素");
                 }
                 if (!CollectionUtils.isEmpty(PFOutThree.getData())) {
                     PFOutThree.setName(getPfSeriesName("功率因素", 3, dataType));
-                    processOutLetMavMin(collect3, dataType, result, 4);
+                    processOutLetMavMin(collect3, dataType, result, 3);
                     PFOutThree.setHappenTime(out3HappenTime);
                     totalLineRes.getSeries().add(PFOutThree);
-                    result.put("pName" + 4, "输出位三功率因素");
+                    result.put("pName" + 3, "输出位三功率因素");
                 }
 
                 result.put("pfLineRes", totalLineRes);
@@ -2993,7 +3005,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     public void processOutLetMavMin(List<BoxOutletBaseDo> powList, Integer dataType, Map<String, Object> result, Integer index) {
         PowerData pfData = new PowerData();
         for (BoxOutletBaseDo boxOutletBaseDo : powList) {
-            updatePowerData(pfData, boxOutletBaseDo.getPowerFactorMaxValue(), boxOutletBaseDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"), boxOutletBaseDo.getPowerFactorAvgValue(), boxOutletBaseDo.getPowerFactorMinValue(), boxOutletBaseDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+            updatePowerData(pfData, boxOutletBaseDo.getPowerFactorMaxValue(), boxOutletBaseDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss")
+                    , boxOutletBaseDo.getPowerFactorAvgValue(), boxOutletBaseDo.getPowerFactorMinValue()
+                    , boxOutletBaseDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
         }
         result.put("powFactorMax" + index, pfData.getMaxValue());
         result.put("powFactorMaxTime" + index, pfData.getMaxTime());
@@ -3328,21 +3342,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 lineRes.getSeries().add(seriesB);
                 lineRes.getSeries().add(seriesC);
                 lineRes.getSeries().add(seriesN);
-
-                String temAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_a_max_value");
-                BoxTemHourDo temMaxA = JsonUtils.parseObject(temAMaxValue, BoxTemHourDo.class);
-                String temAMinValue = getMaxData(startTime, endTime, Arrays.asList(Id), index, "tem_a_min_value");
-                BoxTemHourDo temMinA = JsonUtils.parseObject(temAMinValue, BoxTemHourDo.class);
-                if (temMaxA != null) {
-                    result.put("temAMaxValue", temMaxA.getTemAMaxValue());
-                    result.put("temAMaxTime", temMaxA.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-                if (temMinA != null) {
-                    result.put("temAMinValue", temMinA.getTemAMinValue());
-                    result.put("temAMinTime", temMinA.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                }
-
-
+                
                 result.put("lineRes", lineRes);
                 return result;
             }
@@ -3354,10 +3354,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     private void processTemMavMin(List<BoxTemHourDo> temList, Integer dataType, Map<String, Object> result) {
         PowerData temAData = new PowerData();
+        temAData.setMaxValue(Float.MIN_VALUE);
         PowerData temBData = new PowerData();
+        temBData.setMaxValue(Float.MIN_VALUE);
         PowerData temCData = new PowerData();
+        temCData.setMaxValue(Float.MIN_VALUE);
         PowerData temDData = new PowerData();
-
+        temDData.setMaxValue(Float.MIN_VALUE);
         for (BoxTemHourDo boxTemHourDo : temList) {
             updatePowerData(temAData, boxTemHourDo.getTemAMaxValue(), boxTemHourDo.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss"), boxTemHourDo.getTemAAvgValue(), boxTemHourDo.getTemAMinValue(), boxTemHourDo.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
             updatePowerData(temBData, boxTemHourDo.getTemBMaxValue(), boxTemHourDo.getTemBMaxTime().toString("yyyy-MM-dd HH:mm:ss"), boxTemHourDo.getTemBAvgValue(), boxTemHourDo.getTemBMinValue(), boxTemHourDo.getTemBMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
@@ -3403,11 +3406,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     private void updateExtremes(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime) {
-        if (powerData.getMaxValue() < maxValue) {
+        if (powerData.getMaxValue() <= maxValue) {
             powerData.setMaxValue(maxValue);
             powerData.setMaxTime(maxTime);
         }
-        if (powerData.getMinValue() > minValue) {
+        if (powerData.getMinValue() >= minValue) {
             powerData.setMinValue(minValue);
             powerData.setMinTime(minTime);
         }
