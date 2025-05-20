@@ -1778,6 +1778,7 @@ const getTableData = async(reset = false) => {
       pageNo: 1,
       pageSize: 10,
       alarmStatus: preStatus.value,
+         alarmType: 1,
       likeName: queryParams.devKey,
       pduStartTime : queryParams.oldTime,
       pduFinishTime : queryParams.newTime, 
