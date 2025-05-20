@@ -1539,9 +1539,9 @@ if (lineItemList && lineItemList.cur_alarm_max) {
   // }
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
+    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "--",
     statusInfoName : "总视在功率",
-    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/',
+    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '--',
     consumeName : "起始电能",
     consumeValue : eqData.value.firstEq+"kWh",
     unbalanceName : "设备类型",
@@ -1551,7 +1551,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
     baseInfoName : "网络地址",
     baseInfoValue : queryParams.ipAddr.split('-')[0],
     statusInfoName : "总有功功率",
-    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_active.toFixed(3) + "kW" : '/',
+    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_active.toFixed(3) + "kW" : '--',
     consumeName : "结束电能",
     consumeValue : eqData.value.lastEq+"kWh",
     unbalanceName : "电流不平衡度",
@@ -1559,12 +1559,12 @@ if (lineItemList && lineItemList.cur_alarm_max) {
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : PDU?.status != null ? PDU.status : '/',
+    baseInfoValue : PDU?.status != null ? PDU.status : '--',
     pduAlarm : PDU?.pdu_alarm,
     statusInfoName : "总无功功率",
-    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_reactive.toFixed(3) + "kVar" : '/',
+    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_reactive.toFixed(3) + "kVar" : '--',
     consumeName : "电能消耗",
-    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '--',
     unbalanceName : "电压不平衡度",
     unbalanceValue : volUnBalance.toFixed(0)+"%",
   })
@@ -1573,7 +1573,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
     baseInfoValue : curValue,
     pduAlarm : PDU?.pdu_alarm,
     statusInfoName : "总功率因数",
-    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/',
+    statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '--',
   })
 
   PDUTableData.value = temp;
@@ -1778,6 +1778,7 @@ const getTableData = async(reset = false) => {
       pageNo: 1,
       pageSize: 10,
       alarmStatus: preStatus.value,
+         alarmType: 1,
       likeName: queryParams.devKey,
       pduStartTime : queryParams.oldTime,
       pduFinishTime : queryParams.newTime, 

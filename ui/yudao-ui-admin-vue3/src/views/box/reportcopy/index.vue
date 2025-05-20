@@ -295,19 +295,7 @@
           </div>
 
 
-          <!-- <div class="pageBox" v-if="visControll.temVis">
-            <div class="page-conTitle">
-              相电流曲线
-            </div>
-            <CurLine class="adaptiveStyle" :list="curvolList"/>
-          </div>
-          <div class="pageBox" v-if="visControll.temVis">
-            <div class="page-conTitle">
-              相电压曲线
-            </div>
-            <VolLine class="adaptiveStyle" :list="curvolList"/>
-          </div> -->
-          <div class="pageBox" v-if="visControll.temVis">
+          <div class="pageBox" v-if="visControll.curLoopVis">
             <div class="page-conTitle">
               回路电流曲线
             </div>
@@ -325,11 +313,11 @@
             <LoopCurLine :width="computedWidth" height="58vh" :list="curLoopList" :dataType="queryParams.dataType"/>
           </div>
 
-          <div class="pageBox" v-if="visControll.temVis">
+          <div class="pageBox" v-if="visControll.volLoopVis">
             <div class="page-conTitle">
               回路电压曲线
             </div>
-                                 <div v-for="(sensor, index) in curLoopList?.series" :key="index">
+                                 <div v-for="(sensor, index) in volLoopList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2 == 0">
         <span class="power-title" v-if="curvolLoopData[`VPName${index+1}`]!=null">{{curvolLoopData[`VPName${index+1}`]}}极值：</span>
         <span class="power-value" v-if="curvolLoopData[`VPName${index+1}`]!=null">峰值 <span class="highlight">{{ curvolLoopData[`loopVolMax${index + 1}`] }}</span> V <span class="time">记录于({{ curvolLoopData[`loopVolMaxTime${index + 1}`] }})</span></span>
@@ -368,13 +356,51 @@
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  :dataType="queryParams.dataType"/>
           </div>
 
-          <div class="pageBox" v-if="visControll.flag">
+          <div class="pageBox" v-if="visControll.outletEleVis">
             <div class="page-conTitle">
               输出位电量消耗
             </div>
+                <div class="power-section single-line">
+        <span class="power-title" v-if="outletList[`pName${1}`]!=null">{{outletList[`pName${1}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${1}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${1}`].toFixed(3) }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${1}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${1}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${1}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${1}`] }})</span></span>
+        <span  class="separator" v-if="outletList[`pName${2}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="outletList[`pName${2}`]!=null">{{outletList[`pName${2}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${2}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${2}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${2}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${2}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${2}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${2}`] }})</span></span>
+      </div>
+                <div class="power-section single-line">
+        <span class="power-title" v-if="outletList[`pName${3}`]!=null">{{outletList[`pName${3}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${3}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${3}`].toFixed(3) }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${3}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${3}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${3}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${3}`] }})</span></span>
+        <span  class="separator" v-if="outletList[`pName${4}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="outletList[`pName${4}`]!=null">{{outletList[`pName${4}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${4}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${4}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${4}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${4}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${24}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${4}`] }})</span></span>
+      </div>
             <HorizontalBar :width="computedWidth" height="58vh" :list="outletList" :dataType="queryParams.dataType"/>
           </div>
+
+            <div class="pageBox" v-if="visControll.outLetActiveVis">
+            <div class="page-conTitle">
+              输出位有功功率
+            </div>
+                     <div v-for="(sensor, index) in outLetActiveList?.series" :key="index">
+        <div class="power-section single-line" v-if="index %2 == 0">
+        <span class="power-title" v-if="outletActiveData[`pName${index+1}`]!=null">{{outletActiveData[`pName${index+1}`]}}极值：</span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+1}`]!=null">峰值 <span class="highlight">{{ outletActiveData[`activePowMaxValue${index + 1}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+1}`]!=null">谷值 <span class="highlight">{{ outletActiveData[`activePowMinValue${index + 1}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMinTime${index + 1}`] }})</span></span>
+        <span  class="separator" v-if="outletActiveData[`pName${index+1}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="outletActiveData[`pName${index+2}`]!=null">{{outletActiveData[`pName${index+2}`]}}极值：</span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+2}`]!=null">峰值 <span class="highlight">{{ outletActiveData[`activePowMaxValue${index + 2}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+2}`]!=null">谷值 <span class="highlight">{{ outletActiveData[`activePowMinValue${index + 2}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMinTime${index + 2}`] }})</span></span>
+      </div>
+            </div>  
+            <OutLetActiveLine width="70vw" height="58vh" :list="outLetActiveList" :dataType="queryParams.dataType"/>
+          </div>
         </div>
+
+        
 
         <div class="pageBox"  v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -405,8 +431,16 @@
                         </el-tooltip>
                       </template>
                     </el-table-column>
-                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
-                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+    <el-table-column label="开始时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.startTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.endTime) }}
+        </template>
+      </el-table-column>
                     <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
                     <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
                 </el-table>
@@ -435,6 +469,7 @@ import EnvTemLine from './component/EnvTemLine.vue';
 import LoopCurLine from './component/LoopCurLine.vue';
 import LoopVolLine from './component/LoopVolLine.vue';
 import HorizontalBar from './component/HorizontalBar.vue';
+import OutLetActiveLine from './component/OutLetActiveLine.vue';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' });
@@ -448,6 +483,8 @@ const curvolLoopData = ref() as any;
 const curLoopList = ref() as any;
 const volLoopList = ref() as any;
 const outletList = ref() as any;
+const outletActiveData = ref() as any;
+const outLetActiveList = ref() as any;
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
@@ -465,11 +502,23 @@ const visControll = reactive({
   pfVis: false,
   flag: false,
   curVolVis: false,
+  curLoopVis : false,
+  volLoopVis : false,
+  outLetActiveVis : false,
+  outletEleVis : false,
 })
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
 
+   // 格式化时间戳的方法
+const formatTime = (timestamp) => {
+    if(timestamp == null){
+    return ''
+  }
+  const date = new Date(timestamp);
+  return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
 
 // 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
@@ -953,44 +1002,46 @@ const getList = async () => {
   // })
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
+    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "--",
     statusInfoName : "总视在功率",
-    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_apparent.toFixed(3)+ "kVA" : '/',
+    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_apparent.toFixed(3)+ "kVA" : '--',
     consumeName : "起始电能",
-    consumeValue : eqData.value.firstEq+"kWh",
+    consumeValue : eqData.value.firstEq !=null ?eqData.value.firstEq+"kWh":'--',
     unbalanceName : "电流不平衡度",
-    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_unbalance.toFixed(0)+ "%" : '/',
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_unbalance.toFixed(0)+ "%" : '--',
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
+    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "--",
     statusInfoName : "总有功功率",
-    statusInfoValue :   PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_active.toFixed(3)+ "kW" : '/',
+    statusInfoValue :   PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_active.toFixed(3)+ "kW" : '--',
     consumeName : "结束电能",
-    consumeValue :  eqData.value.lastEq+"kWh",
+    consumeValue :  eqData.value.lastEq != null ?eqData.value.lastEq+"kWh":'--',
     unbalanceName : "电压不平衡度",
-    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.vol_unbalance.toFixed(0)+ "%" : '/',
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.vol_unbalance.toFixed(0)+ "%" : '--',
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
+    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "--",
     statusInfoName : "总无功功率",
-    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_reactive.toFixed(3)+ "kVar" : '/',
+    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_reactive.toFixed(3)+ "kVar" : '--',
     consumeName : "电量消耗",
-    consumeValue :  eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    consumeValue :  eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '--',
     // unbalanceName : "零线电流",
     // unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_zero_value.toFixed(2)+ "A" : '/',
   })
   temp.push({
     baseInfoName : "额定电流",
-    baseInfoValue : '/',
+    baseInfoValue : '--',
     statusInfoName : "总功率因数",
-    statusInfoValue :  PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.power_factor.toFixed(2) : '/',
+    statusInfoValue :  PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.power_factor.toFixed(2) : '--',
   })
   PDUTableData.value = temp;
 
   pfLineData.value  = await IndexApi.getBoxPFLine(queryParams);
   pfLineList.value = pfLineData.value.pfLineRes;
+  console.log('pfLineListpfLineList',pfLineList.value);
+  
   pfLineList.value.series.forEach(item => {
     item.data = item.data.map(value => parseFloat(value.toFixed(3)));
   });
@@ -1007,6 +1058,16 @@ const getList = async () => {
           if (pfLineData.value[minKey] != null) {
             pfLineData.value[minKey] = pfLineData.value[minKey].toFixed(2);
           }
+
+          // const maxFKey = `powFactorMax${4}`;
+          // const minFKey = `powFactorMin${4}`;
+          // if(pfLineData.value[maxFKey] != null){
+          // pfLineData.value[maxFKey] = pfLineData.value[maxFKey].toFixed(2);
+          // }
+          //  if (pfLineData.value[minFKey] != null) {
+          //   pfLineData.value[minFKey] = pfLineData.value[minFKey].toFixed(2);
+          // }
+
         });
     visControll.pfVis = true;
   }else {
@@ -1027,11 +1088,11 @@ const getList = async () => {
     visControll.powVis = false;
   }
 
-  outletList.value = await IndexApi.getAvgBoxHdaOutletForm(queryParams);
+  outletList.value = await IndexApi.getAvgBoxHdaOutletEleForm(queryParams);
   if(outletList.value.time != null && outletList.value.time.length > 0){
-    visControll.flag = true;
+    visControll.outletEleVis = true;
   }else{
-    visControll.flag = false;
+    visControll.outletEleVis = false;
   }
   console.log('outletRankData.value',outletList.value);
   
@@ -1071,19 +1132,65 @@ const getList = async () => {
 
   }
 
+  outletActiveData.value =  await IndexApi.getAvgBoxHdaOutletForm(queryParams);
+  outLetActiveList.value =   outletActiveData.value.totalLineRes;
+    if(outLetActiveList.value?.time != null && outLetActiveList.value?.time?.length > 0){
+        visControll.outLetActiveVis = true;
+    }else{
+      visControll.outLetActiveVis = false;
+    }
+  
+
+
   curvolLoopData.value = await IndexApi.getAvgBoxHdaLoopForm(queryParams);
   curLoopList.value = curvolLoopData.value.linCureRes
   volLoopList.value = curvolLoopData.value.linVoleRes
-  console.log('curLoopList.value',curLoopList.value);
-  console.log('volLoopList.value',volLoopList.value);
+
+  if(curLoopList.value?.time != null && curLoopList.value?.time?.length > 0){
+    curLoopList.value.series.forEach((_, index) => {
+          const maxKey = `loopCurMax${index + 1}`;
+          const minKey = `loopCurMin${index + 1}`;
+
+          if (curvolLoopData.value[maxKey] != null) {
+            curvolLoopData.value[maxKey] = curvolLoopData.value[maxKey].toFixed(2);
+          }
+          if (curvolLoopData.value[minKey] != null) {
+            curvolLoopData.value[minKey] = curvolLoopData.value[minKey].toFixed(2);
+          }
+        }); 
+        visControll.curLoopVis = true;
+  }else{
+    visControll.curLoopVis = false;
+  }
+
+  
+  if(volLoopList.value?.time != null && volLoopList.value?.time?.length > 0){
+    volLoopList.value.series.forEach((_, index) => {
+          const maxKey = `loopVolMax${index + 1}`;
+          const minKey = `loopVolMin${index + 1}`;
+
+          if (curvolLoopData.value[maxKey] != null) {
+            curvolLoopData.value[maxKey] = curvolLoopData.value[maxKey].toFixed(1);
+          }
+          if (curvolLoopData.value[minKey] != null) {
+            curvolLoopData.value[minKey] = curvolLoopData.value[minKey].toFixed(1);
+          }
+        }); 
+        visControll.volLoopVis = true;
+  }else{
+    visControll.volLoopVis = false;
+  }
+
+
+
+
   
   
 
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
-
-
-    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(0);
+  if(temList.value?.time != null && temList.value?.time?.length > 0){
+        temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(0);
     temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(0);
 
     temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(0);
@@ -1095,6 +1202,13 @@ const getList = async () => {
     temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(0);
     temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(0);
     visControll.temVis = true;
+
+  }else{
+    visControll.temVis = false;
+  }
+
+
+
 
 
 
@@ -1155,11 +1269,13 @@ const getList = async () => {
     //清除temp1的缓存数据
   temp1.value=[]
   //获得告警信息
-  const temp1Data = await IndexApi.getRecordPage({
+  const temp1Data = await IndexApi.getBoxRecordPage({
     pageNo: 1,
     pageSize: 10,
     devKey: queryParams.devKey,
-    devType: 7
+    devType: 7,
+    alarmType: 4,
+    likeName: queryParams.devKey,
   })
   //处理告警信息数据
   // //debugger

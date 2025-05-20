@@ -153,9 +153,11 @@ public interface BoxIndexService {
 
     Map getBoxPFDetailNow(BoxIndexPageReqVO pageReqVO);
 
-    Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+    Map getAvgBoxHdaOutletEleForm(BoxIndexPageReqVO pageReqVO) throws IOException;
 
     Map<String, BoxNameVO> getRoomByKeys(List<String> keys);
 
     void getHarmonicLineExcel(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    Map getAvgBoxHdaOutletForm(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime,Integer dataType);
 }

@@ -234,6 +234,11 @@ getBalanceStatistics: async () => {
     return await request.post({ url: `/alarm/log-record/page`, data})
   },
 
+    //获得告警记录分页
+  getBusRecordPage: async (data: any) => {
+    return await request.post({ url: `/alarm/log-record/pdu`, data})
+  },
+
   //获得始端箱设备统计
   getBusIndexStatistics: async () => {
     return await request.get({ url: `/bus/index/statistics` })

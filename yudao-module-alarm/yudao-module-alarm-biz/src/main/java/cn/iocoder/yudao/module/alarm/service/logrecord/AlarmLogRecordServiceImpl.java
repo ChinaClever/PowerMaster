@@ -168,20 +168,36 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
         Integer alarmLevel = AlarmLevelEnums.getStatusByName(pageReqVO.getLikeName());
         Integer alarmType = AlarmTypeEnums.getStatusByName(pageReqVO.getLikeName());
-        Page<AlarmLogRecordDO> recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
-                .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
-                .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
-                .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
-                .inIfPresent(AlarmLogRecordDO::getAlarmType, 1,2,3)
-                        .betweenIfPresent(AlarmLogRecordDO::getStartTime,pageReqVO.getPduStartTime(),pageReqVO.getPduFinishTime())
-                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
-                        .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
-                        .or()
-                        .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
-                        .or()
-                        .like(AlarmLogRecordDO::getAlarmPosition, pageReqVO.getLikeName()))
-                .orderByDesc(AlarmLogRecordDO::getCreateTime));
-
+        Page<AlarmLogRecordDO> recordPageResult = new Page<>();
+        if (pageReqVO.getAlarmType() == 4) {
+            recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
+                    .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
+                    .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                    .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
+                    .inIfPresent(AlarmLogRecordDO::getAlarmType, 4, 5)
+                    .betweenIfPresent(AlarmLogRecordDO::getStartTime, pageReqVO.getPduStartTime(), pageReqVO.getPduFinishTime())
+                    .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
+                            .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
+                            .or()
+                            .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
+                            .or()
+                            .like(AlarmLogRecordDO::getAlarmPosition, pageReqVO.getLikeName()))
+                    .orderByDesc(AlarmLogRecordDO::getCreateTime));
+        } else {
+            recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
+                    .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
+                    .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                    .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
+                    .inIfPresent(AlarmLogRecordDO::getAlarmType, 1, 2, 3)
+                    .betweenIfPresent(AlarmLogRecordDO::getStartTime, pageReqVO.getPduStartTime(), pageReqVO.getPduFinishTime())
+                    .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
+                            .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
+                            .or()
+                            .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
+                            .or()
+                            .like(AlarmLogRecordDO::getAlarmPosition, pageReqVO.getLikeName()))
+                    .orderByDesc(AlarmLogRecordDO::getCreateTime));
+        }
         List<AlarmLogRecordRespVO> recordRespVOS = new ArrayList<>();
         if (Objects.nonNull(recordPageResult)) {
             List<AlarmLogRecordDO> list = recordPageResult.getRecords();
@@ -417,16 +433,15 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
                 if (!cabinetCronConfigOld.getEqDayCron().equals(cabinetCronConfigNew.getEqDayCron())) {
                     // 更新每日定时任务
-                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_DAY_ALARM_JOB,  cabinetCronConfigNew.getEqDayCron());
+                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_DAY_ALARM_JOB, cabinetCronConfigNew.getEqDayCron());
                 }
                 if (!cabinetCronConfigOld.getEqMonthCron().equals(cabinetCronConfigNew.getEqMonthCron())) {
                     // 更新每月定时任务
-                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_MONTH_ALARM_JOB,  cabinetCronConfigNew.getEqMonthCron());
+                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_MONTH_ALARM_JOB, cabinetCronConfigNew.getEqMonthCron());
                 }
             }
         }
     }
-
 
 
     public String getLocationByBusId(BusIndex busIndex) {
@@ -445,12 +460,12 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         return location;
     }
 
-    public Integer getCountByStatus (Integer status) {
+    public Integer getCountByStatus(Integer status) {
         Long count = logRecordMapper.selectCount(new LambdaQueryWrapper<AlarmLogRecordDO>().eq(AlarmLogRecordDO::getAlarmStatus, status));
         return Math.toIntExact(count);
     }
 
-    public String getOverCapacityAlarmDesc (JSONObject cabinetJson) {
+    public String getOverCapacityAlarmDesc(JSONObject cabinetJson) {
         if (cabinetJson == null) {
             return "";
         }
@@ -458,7 +473,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         String loadFactor = cabinetJson.get(FieldConstant.LOAD_FACTOR) + "";
         DecimalFormat decimalFormat = new DecimalFormat("0.0%");
         decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
-        loadFactor = decimalFormat.format(Double.parseDouble(loadFactor)/100);
+        loadFactor = decimalFormat.format(Double.parseDouble(loadFactor) / 100);
         // 电力容量
         String powerCapacity = cabinetJson.get(FieldConstant.POW_CAPACITY) + "";
         DecimalFormat decimalFormat1 = new DecimalFormat("0.000");
@@ -471,8 +486,6 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         activePow = decimalFormat1.format(Double.parseDouble(activePow));
         return "当前机柜有功负载率：" + loadFactor + "，机柜额定有功容量：" + powerCapacity + "KW" + "，实际有功功率：" + activePow + "KW";
     }
-
-
 
 
 }

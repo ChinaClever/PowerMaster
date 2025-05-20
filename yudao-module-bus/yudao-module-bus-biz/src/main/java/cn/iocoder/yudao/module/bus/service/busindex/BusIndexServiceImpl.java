@@ -3121,7 +3121,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 break;
         }
 
-        return lineName + "相" + DataNameType.fromValue(dataType).name() + type + "曲线";
+        return lineName + "相" + DataNameType.fromValue(dataType).name() + type;
     }
 
 
