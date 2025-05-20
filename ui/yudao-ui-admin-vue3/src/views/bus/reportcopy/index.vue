@@ -402,8 +402,16 @@
                         </el-tooltip>
                       </template>
                     </el-table-column>
-                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
-                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+    <el-table-column label="开始时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.startTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.endTime) }}
+        </template>
+      </el-table-column>
                     <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
                     <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
                 </el-table>
@@ -465,6 +473,17 @@ const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
 let lineNumber = ref() as any;
+
+
+   // 格式化时间戳的方法
+const formatTime = (timestamp) => {
+  if(timestamp == null){
+    return ''
+  }
+  const date = new Date(timestamp);
+  return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
 
 const windowWidth = ref(window.innerWidth);
 // 计算属性，根据窗口宽度返回不同的width值
@@ -1273,11 +1292,14 @@ console.log('tableData.value', tableData.value);
   //清除temp1的缓存数据
   temp1.value=[]
   //获得告警信息
-  const temp1Data = await IndexApi.getRecordPage({
+  const temp1Data = await IndexApi.getBusRecordPage({
     pageNo: 1,
     pageSize: 10,
     devKey: queryParams.devKey,
-    devType: 6
+    devType: 6,
+    alarmType: 4,
+    likeName: queryParams.devKey,
+    
   })
   //处理告警信息数据
   //处理时间信息
