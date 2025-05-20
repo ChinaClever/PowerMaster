@@ -41,23 +41,23 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
+        result +=  params[i].marker + params[i].seriesName;
         if(prop.dataType !=0){
           if (params[i].seriesName.includes("视在功率")) {
-          result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) +  ' kVA'; 
+          result +='：'+ params[i].value.toFixed(3) +  ' kVA'+' &nbsp&nbsp&nbsp发生时间：'+happenTime.value[i][params[i].dataIndex]; 
         } else if (params[i].seriesName.includes("有功功率")) {
-          result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) + ' kW';
+          result +='：'+ params[i].value.toFixed(3) + ' kW'+' &nbsp&nbsp&nbsp发生时间：'+happenTime.value[i][params[i].dataIndex];
         } else if (params[i].seriesName.includes("无功功率")) {
-          result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) + ' kVar';
+          result +='：'+ params[i].value.toFixed(3) + ' kVar'+' &nbsp&nbsp&nbsp发生时间：'+happenTime.value[i][params[i].dataIndex];
         }
         }else{
         
         if (params[i].seriesName.includes("视在功率")) {
-          result +=' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) +  ' kVA'; 
+          result +='：'+ params[i].value.toFixed(3) +  ' kVA'+' &nbsp&nbsp&nbsp发生时间：'+params[0].name; 
         } else if (params[i].seriesName.includes("有功功率")) {
-          result +=' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) + ' kW';
+          result +='：'+ params[i].value.toFixed(3) + ' kW'+' &nbsp&nbsp&nbsp发生时间：'+params[0].name;
         } else if (params[i].seriesName.includes("无功功率")) {
-          result +=' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) + ' kVar';
+          result +='：'+ params[i].value.toFixed(3) + ' kVar'+' &nbsp&nbsp&nbsp发生时间：'+params[0].name;
         }
         }
 

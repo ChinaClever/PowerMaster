@@ -123,7 +123,7 @@ public interface CabinetService {
 
     CabinetPowerLoadDetailRespVO getDetailData(CabinetPowerLoadDetailReqVO reqVO);
 
-    Map<String, List<CabinetLoadPageChartResVO>> getLineChartDetailData(CabinetPowerLoadDetailReqVO reqVO);
+    Map<String, List> getLineChartDetailData(CabinetPowerLoadDetailReqVO reqVO);
 
     List<CabinetEnergyMaxResVO> getEnergyMax();
 

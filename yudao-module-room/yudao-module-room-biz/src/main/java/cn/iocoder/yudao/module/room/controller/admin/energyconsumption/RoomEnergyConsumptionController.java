@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
 import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.room.service.energyconsumption.RoomEnergyConsumptionService;
+import cn.iocoder.yudao.module.room.vo.RoomEleExportVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
@@ -127,6 +128,14 @@ public class RoomEnergyConsumptionController {
     public CommonResult<PageResult<Object>> getSubBillDetails(RoomEnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = roomEnergyConsumptionService.getSubBillDetails(reqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/exportRoomEle")
+    @Operation(summary = "导出机房一天电量数据 Excel")
+    public void  exportRoomEle(HttpServletResponse response) throws IOException {
+        List<RoomEleExportVO> list =  roomEnergyConsumptionService.exportRoomEle();
+        ExcelUtils.write(response, "机房一天电量数据.xlsx", "数据", RoomEleExportVO.class,
+                BeanUtils.toBean(list, RoomEleExportVO.class));
     }
 
 }

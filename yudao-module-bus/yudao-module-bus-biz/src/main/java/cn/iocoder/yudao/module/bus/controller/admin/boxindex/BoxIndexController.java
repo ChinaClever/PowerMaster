@@ -357,19 +357,19 @@ public class BoxIndexController {
     @PostMapping("/report/pfline")
     @Operation(summary = "获得插接箱报表数据")
     public CommonResult<Map> getBoxPFLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        return success(indexService.getBoxPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getBoxPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/pow")
     @Operation(summary = "获得插接箱报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportPowDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getReportPowDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/tem")
     @Operation(summary = "获得插接箱报表数据")
     public CommonResult<Map> getReportTemDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportTemDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getReportTemDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/redisbydevkey")

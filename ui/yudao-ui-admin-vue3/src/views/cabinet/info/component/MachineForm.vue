@@ -258,7 +258,7 @@ const sensorBIds = ref([1, 2, 3, 4])
 const leftRight = ref([0, 0])
 const sensorListLeft = reactive([
   {
-    type: 1,
+    sensorType: 0,
     sensorId: null,
     position: 1,
     pathPdu: '',
@@ -266,21 +266,21 @@ const sensorListLeft = reactive([
     id: null
   },
   {
-    type: 3,
+    sensorType: 2,
     sensorId: null,
     pathPdu: '',
     channel: 1,
     id: null
   },
   {
-    type: 4,
+    sensorType: 3,
     sensorId: null,
     pathPdu: '',
     channel: 1,
     id: null
   },
   {
-    type: 1,
+    sensorType: 0,
     sensorId: null,
     position: 2,
     pathPdu: '',
@@ -288,14 +288,14 @@ const sensorListLeft = reactive([
     id: null
   },
   {
-    type: 2,
+    sensorType: 1,
     sensorId: null,
     pathPdu: '',
     channel: 1,
     id: null
   },
   {
-    type: 1,
+    sensorType: 0,
     sensorId: null,
     position: 3,
     pathPdu: '',
@@ -305,7 +305,7 @@ const sensorListLeft = reactive([
 ])
 const sensorListRight = reactive([
   {
-    type: 1,
+    sensorType: 0,
     sensorId: null,
     position: 1,
     pathPdu: '',
@@ -313,21 +313,21 @@ const sensorListRight = reactive([
     id: null
   },
   {
-    type: 3,
+    sensorType: 2,
     sensorId: null,
     pathPdu: '',
     channel: 2,
     id: null
   },
   {
-    type: 4,
+    sensorType: 3,
     sensorId: null,
     pathPdu: '',
     channel: 2,
     id: null
   },
   {
-    type: 1,
+    sensorType: 0,
     sensorId: null,
     position: 2,
     pathPdu: '',
@@ -335,14 +335,14 @@ const sensorListRight = reactive([
     id: null
   },
   {
-    type: 2,
+    sensorType: 1,
     sensorId: null,
     pathPdu: '',
     channel: 2,
     id: null
   },
   {
-    type: 1,
+    sensorType: 0,
     sensorId: null,
     position: 3,
     pathPdu: '',

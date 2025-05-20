@@ -70,28 +70,32 @@ public class AlarmInit {
     }
 
     public void initCabinetAlarmJob(){
-        // 定时任务共同属性
-        Map<String, Object> map = new HashMap<>();
-        map.put("retryCount", 3);
-        map.put("retryInterval", 1000);
-        map.put("monitorTimeout", 1000);
+        try {
+            // 定时任务共同属性
+            Map<String, Object> map = new HashMap<>();
+            map.put("retryCount", 3);
+            map.put("retryInterval", 1000);
+            map.put("monitorTimeout", 1000);
 
-        CabinetCronConfig cabinetCronConfig = cabinetCronCfgMapper.selectOne(null);
+            CabinetCronConfig cabinetCronConfig = cabinetCronCfgMapper.selectOne(null);
 
-        // 创建每日定时job
-        if (jobApi.existJobByHandler(JobHandlerConstants.CABINET_DAY_ALARM_JOB)) {
-            map.put("name", "机柜电量每天限额告警Job");
-            map.put("handlerName", JobHandlerConstants.CABINET_DAY_ALARM_JOB);
-            map.put("cronExpression", cabinetCronConfig.getEqDayCron());
-            jobApi.createJob(map);
-        }
+            // 创建每日定时job
+            if (jobApi.existJobByHandler(JobHandlerConstants.CABINET_DAY_ALARM_JOB)) {
+                map.put("name", "机柜电量每天限额告警Job");
+                map.put("handlerName", JobHandlerConstants.CABINET_DAY_ALARM_JOB);
+                map.put("cronExpression", cabinetCronConfig.getEqDayCron());
+                jobApi.createJob(map);
+            }
 
-        // 创建每月定时job
-        if (jobApi.existJobByHandler(JobHandlerConstants.CABINET_MONTH_ALARM_JOB)) {
-            map.put("name", "机柜电量每月限额告警Job");
-            map.put("handlerName", JobHandlerConstants.CABINET_MONTH_ALARM_JOB);
-            map.put("cronExpression", cabinetCronConfig.getEqMonthCron());
-            jobApi.createJob(map);
+            // 创建每月定时job
+            if (jobApi.existJobByHandler(JobHandlerConstants.CABINET_MONTH_ALARM_JOB)) {
+                map.put("name", "机柜电量每月限额告警Job");
+                map.put("handlerName", JobHandlerConstants.CABINET_MONTH_ALARM_JOB);
+                map.put("cronExpression", cabinetCronConfig.getEqMonthCron());
+                jobApi.createJob(map);
+            }
+        } catch (Exception e) {
+            log.error("初始化机柜电量限额告警定时任务异常", e);
         }
     }
 

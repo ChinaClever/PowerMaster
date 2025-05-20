@@ -22,8 +22,14 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.beans.IntrospectionException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -276,7 +282,14 @@ public class RoomController {
 
     @Operation(summary = "机房编辑导出")
     @PostMapping("/editAisleExport")
-    public void editAisleExport(Integer roomId, Integer aisleId) {
-        roomService.editAisleExport(roomId, aisleId);
+    public void editAisleExport(Integer roomId, Integer aisleId, HttpServletResponse response) throws IOException {
+        roomService.editAisleExport(roomId, aisleId,response);
+    }
+
+    @PostMapping("/editAisleExcel")
+    @Operation(summary = "柜列导入")
+    public CommonResult<Boolean> editAisleExcel(@RequestParam(value = "file") MultipartFile file, HttpServletRequest request) throws Exception{
+        Boolean flag = roomService.editAisleExcel(file, request);
+        return CommonResult.success(flag);
     }
 }

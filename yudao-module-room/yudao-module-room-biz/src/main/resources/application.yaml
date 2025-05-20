@@ -5,6 +5,8 @@ spring:
       connection-timeout: 1s
       read-timeout: 30s
 
+#basePath: F:/Temp
+#ip: http://10.10.5.130:8051/downloadFile
 
 #定时任务配置
 cron:

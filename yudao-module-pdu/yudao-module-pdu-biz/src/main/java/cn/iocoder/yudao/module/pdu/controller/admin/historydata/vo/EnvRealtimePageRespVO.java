@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo;
 
+import cn.iocoder.yudao.framework.excel.core.util.DataSourceConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
@@ -32,6 +33,9 @@ public class EnvRealtimePageRespVO {
 
     @ExcelProperty("传感器")
     private Integer sensor_id;
+
+    @ExcelProperty(value = "保存策略",converter = DataSourceConverter.class)
+    private Integer data_source;
 
     @ExcelProperty("时间")
     private String create_time;

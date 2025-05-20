@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -47,11 +48,13 @@ public class CabinetBox implements Serializable {
     /**
      * 标记位-
      */
+    @TableField("box_index_a")
     private Integer boxIndexA;
 
     /**
      * 标记位-
      */
+    @TableField("box_index_b")
     private Integer boxIndexB;
 
     /**

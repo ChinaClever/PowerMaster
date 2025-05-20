@@ -137,7 +137,8 @@
           </div>
         </el-dialog>
 
-        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" class="matrixContainer">
+        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableCopyData" class="matrixContainer" border stripe
+      :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}">
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="所在位置" min-width="90" align="center" prop="roomName" />
           <el-table-column label="总视在功率(kVA)" min-width="90" align="center" prop="powApparentTotal" :formatter="formatEle"/>

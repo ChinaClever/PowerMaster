@@ -56,7 +56,32 @@
             </el-select>
           </el-form-item>
 
-         <el-form-item label="时间段" prop="timeRange">
+          <el-form-item label="时间段" prop="timeRange" v-if="queryParams.granularity !== 'month'">
+          <el-date-picker
+            value-format="YYYY-MM-DD"
+            v-model="selectTimeRangeHaveDay"
+            type="daterange"
+            :shortcuts="shortcuts"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :disabled-date="disabledDate"
+          />
+          </el-form-item>
+          <el-form-item label="时间段" prop="timeRange" v-else>
+            <el-date-picker
+            value-format="YYYY-MM"
+            v-model="selectTimeRangeNoDay"
+            type="monthrange"
+            :shortcuts="shortcuts"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :disabled-date="disabledDate"
+          />
+          </el-form-item>
+
+         <!-- <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
             value-format="YYYY-MM-DD"
             v-model="selectTimeRange"
@@ -67,7 +92,7 @@
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
           />
-          </el-form-item>
+          </el-form-item> -->
 
          <el-form-item >
            <el-button @click="handleQuery" style="background-color: #00778c;color:#ffffff;"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -172,7 +197,9 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+// const selectTimeRange = ref(undefined)
+const selectTimeRangeHaveDay = ref()
+const selectTimeRangeNoDay = ref()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -307,7 +334,29 @@ window.addEventListener('resize', function() {
   rankChart?.resize(); 
 });
 
-watch(() => queryParams.granularity, () => {
+function startOfMonth(date: Date): Date {
+  return dayjs(new Date(date.getFullYear(), date.getMonth(), 1)).format("YYYY-MM-DD HH:mm:ss");
+}
+function endOfMonth(date: Date): Date {
+  const bigMonth=[1,3,5,7,8,10,12]
+  if(date.getMonth() === 1){
+    if((date.getFullYear() % 4 === 0&&date.getFullYear() % 100 !== 0)||date.getFullYear() % 400 === 0){
+      return dayjs(new Date(date.getFullYear(), date.getMonth(), 29,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+    }else{
+      return dayjs(new Date(date.getFullYear(), date.getMonth(), 28,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+    }
+  }else if(bigMonth.includes(date.getMonth()+1)){
+    return dayjs(new Date(date.getFullYear(), date.getMonth(), 31,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+  }else{
+    return dayjs(new Date(date.getFullYear(), date.getMonth(), 30,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+  }
+}
+watch(() => queryParams.granularity, (newValue) => {
+  if(newValue == "month"){
+    if(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2){
+      selectTimeRangeNoDay.value=[dayjs(startOfMonth(convertDate(selectTimeRangeHaveDay.value[0]))).format("YYYY-MM"),dayjs(endOfMonth(convertDate(selectTimeRangeHaveDay.value[1]))).format("YYYY-MM")]
+    }
+  }
   handleQuery();
 });
 
@@ -342,16 +391,32 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
-    if ( selectTimeRange.value != undefined){
+    // if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
+    //   const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+    //   // 结束时间的天数多加一天 ，  一天的毫秒数
+    //   const oneDay = 24 * 60 * 60 * 1000;
+    //   const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]),oneDay)))
+    //   queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    // }
+    // // 时间段清空后值会变成null 此时搜索不能带上时间段
+    // if(selectTimeRange.value == null){
+    //   queryParams.timeRange = undefined
+    // }
+    if ( queryParams.granularity!="month" && selectTimeRangeHaveDay.value!=null){
+      console.log("noMonth===>",selectTimeRangeHaveDay.value)
+      const selectedStartTime = formatDate(startOfDay(convertDate(selectTimeRangeHaveDay.value[0])))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRangeHaveDay.value[1])))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    if(queryParams.granularity=="month"&&selectTimeRangeNoDay.value!=null){
+      console.log("month===>",selectTimeRangeNoDay.value)
+      const selectedStartTime = formatDate(startOfMonth(convertDate(selectTimeRangeNoDay.value[0])))
+      const selectedEndTime = formatDate(endOfMonth(convertDate(selectTimeRangeNoDay.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(selectTimeRange.value == null){
+    if(( queryParams.granularity!="month" && selectTimeRangeHaveDay.value==null)||(queryParams.granularity=="month"&&selectTimeRangeNoDay.value==null)){
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getBoxEQDataPage(queryParams)
@@ -382,7 +447,7 @@ const getList1 = async () => {
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value),oneDay)))
-      selectTimeRange.value = [start.value, end.value];
+      selectTimeRangeHaveDay.value = [start.value, end.value];
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     queryParams.devkeys = [devKey.value];
@@ -575,11 +640,24 @@ const toDetails = (boxId: number, location: string,devkey: string) => {
   const id = boxId
   const devKey = devkey;
   const locationName = location;
-  if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
-    push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName,"start":selectTimeRange.value[0],"end":selectTimeRange.value[1]}})
-  }else{
-    push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName}})
-  }
+  // if(selectTimeRange.value!=null&&selectTimeRange.value.length==2){
+  //   push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName,"start":selectTimeRange.value[0],"end":selectTimeRange.value[1]}})
+  // }else{
+  //   push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,devKey,locationName}})
+  // }
+  if(queryParams.granularity!='month'){
+    if(selectTimeRangeHaveDay.value!=null&&selectTimeRangeHaveDay.value.length==2){
+      push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,locationName,devKey,"start":selectTimeRangeHaveDay.value[0],"end":selectTimeRangeHaveDay.value[1]}})
+    }else{
+      push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,locationName,devKey}})
+    }
+    }else{
+      if(selectTimeRangeNoDay.value!=null&&selectTimeRangeNoDay.value.length==2){
+      push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,locationName,devKey,"start":dayjs(startOfMonth(convertDate(selectTimeRangeNoDay.value[0]))).format("YYYY-MM-DD"),"end":dayjs(endOfMonth(convertDate(selectTimeRangeNoDay.value[1]))).format("YYYY-MM-DD")}})
+    }else{
+      push({path: '/bus/nenghao/boxnenghao/ecdistribution', state: {id,locationName,devKey}})
+    }
+    }
 }
 
 
@@ -596,7 +674,7 @@ onMounted(() => {
   if (start.value != null&&end.value != null&&start.value != ''&&end.value != ''){
   getList1();
   }else{
-      selectTimeRange.value = [dayjs(startOfMonth).format("YYYY-MM-DD"), dayjs(now).format("YYYY-MM-DD")];
+      selectTimeRangeHaveDay.value = [dayjs(startOfMonth).format("YYYY-MM-DD"), dayjs(now).format("YYYY-MM-DD")];
       getList();
   }
 });

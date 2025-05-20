@@ -12,4 +12,6 @@ public class LineSeries extends  SeriesBase{
 
     private String symbol = "none";
 
+    private List<String> happenTime;
+
 }

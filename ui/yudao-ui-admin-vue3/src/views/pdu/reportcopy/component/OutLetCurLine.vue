@@ -41,10 +41,10 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
+        result +=  params[i].marker + params[i].seriesName + '：' ;
         if(prop.dataType !=0){
          
-          result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(2) +  ' A'; 
+          result +=params[i].value.toFixed(2) +  ' A'+' &nbsp&nbsp&nbsp发生时间：'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'; 
       
           // result +=' &nbsp&nbsp&nbsp发生时间:'+happenTime.value[i][params[i].dataIndex]+' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(3) + ' kW';
     
@@ -52,7 +52,7 @@ const echartsOption = ref({
         
         }else{
 
-          result +=' &nbsp&nbsp&nbsp;'+ params[i].value.toFixed(2) +  ' A'; 
+          result +=params[i].value.toFixed(2) +  ' A'+' &nbsp&nbsp&nbsp;发生时间：'+ params[0].name; 
 
         }
 

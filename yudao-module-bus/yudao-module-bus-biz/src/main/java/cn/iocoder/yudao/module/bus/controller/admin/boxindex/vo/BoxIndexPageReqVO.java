@@ -92,4 +92,9 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "1-相电流 2-相有功功率 3-输出位功率")
     private Integer boxType;
 
+    /**
+     * 数据类型（最大值=1，最小值=-1，平均值=0）
+     */
+    private Integer dataType;
+
 }

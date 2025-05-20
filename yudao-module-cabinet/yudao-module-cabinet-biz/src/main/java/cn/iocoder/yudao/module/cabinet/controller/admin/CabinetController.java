@@ -259,8 +259,8 @@ public class CabinetController {
 
     @PostMapping("/cabinet/loadPage/chart-detail")
     @Operation(summary = "查询电力负荷详情 折线图数据")
-    public CommonResult<Map<String, List<CabinetLoadPageChartResVO>>> getBusLineChartDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
-        Map<String, List<CabinetLoadPageChartResVO>> resultMap = cabinetService.getLineChartDetailData(reqVO);
+    public CommonResult<Map<String, List>> getBusLineChartDetailData(@RequestBody @Valid CabinetPowerLoadDetailReqVO reqVO) throws IOException {
+        Map<String, List> resultMap = cabinetService.getLineChartDetailData(reqVO);
         return success(resultMap);
     }
 

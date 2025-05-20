@@ -95,13 +95,14 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 2" style="width: 100%;" :data="listPage" class="loadContainer">
+      <el-table v-show="switchValue == 2" style="width: 100%;" :data="listPage" class="loadContainer" border stripe
+      :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}">
         <el-table-column label="位置" min-width="110" align="center" prop="roomName,cabinetName" >
           <template #default="scope">
             {{ scope.row.roomName }}-{{ scope.row.cabinetName }}
           </template>
         </el-table-column>
-        <el-table-column label="负载率" min-width="80" align="center" prop="loadFactor" :formatter="formatApparentPower" />
+        <el-table-column label="负载率(%)" min-width="80" align="center" prop="loadFactor" :formatter="formatApparentPower" />
         <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" :formatter="formatnumOne" />
         <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" :formatter="formatnumThree" />
         <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="powApparentb" :formatter="formatnumThree" />

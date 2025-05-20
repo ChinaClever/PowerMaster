@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.framework.common.mapper.CabinetBoxMapper">
+    <insert id="insertBatch">
+        INSERT INTO cabinet_box (
+        cabinet_id,
+        box_key_a,
+        box_key_b,
+        box_index_a,
+        box_index_b,
+        outlet_id_a,
+        outlet_id_b) VALUES
+        <foreach collection="list" item="item" separator=",">
+            ( #{item.cabinetId},
+            #{item.boxKeyA},
+            #{item.boxKeyB},
+            #{item.boxIndexA},
+            #{item.boxIndexB},
+            #{item.outletIdA},
+            #{item.outletIdB})
+        </foreach>
+
+    </insert>
+
+    <update id="updateBatch">
+        <foreach collection="list" item="item" index="index" separator=";">
+            UPDATE cabinet_box
+            <set>
+                <if test="item.cabinetId != null">
+                    cabinet_id = #{item.cabinetId},
+                </if>
+                <if test="item.boxKeyA != null">
+                    box_key_a = #{item.boxKeyA},
+                </if>
+                <if test="item.boxKeyB != null">
+                    box_key_b = #{item.boxKeyB},
+                </if>
+                <if test="item.boxIndexA != null">
+                    box_index_a = #{item.boxIndexA},
+                </if>
+                <if test="item.boxIndexB != null">
+                    box_index_b = #{item.boxIndexB},
+                </if>
+                <if test="item.outletIdA != null">
+                    outlet_id_a = #{item.outletIdA},
+                </if>
+                <if test="item.outletIdB != null">
+                    outlet_id_b = #{item.outletIdB},
+                </if>
+            </set>
+            <where>
+                id = #{item.id}
+            </where>
+        </foreach>
+    </update>
+</mapper>

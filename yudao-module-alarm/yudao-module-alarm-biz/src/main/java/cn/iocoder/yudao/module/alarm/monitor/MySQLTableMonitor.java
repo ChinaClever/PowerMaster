@@ -186,15 +186,20 @@ public class MySQLTableMonitor {
 
 
     // 使用自定义SQL获取binlog信息（示例使用show binary log status）
-    // 使用show binary log status替换SHOW MASTER STATUS(mysql8.0.22后被替换)
+    // 使用SHOW MASTER STATUS 替代 SHOW BINARY LOG STATUS。(mysql8.0.22后被替换)
     public String[] fetchLatestBinlog(Connection conn) throws Exception {
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SHOW BINARY LOG STATUS");
         String latestFile = "";
         long latestPosition = 0;
-        if (rs.next()) {
-            latestFile = rs.getString("File");
-            latestPosition = rs.getLong("Position");
+        Statement stmt = conn.createStatement();
+        try {
+            ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS;");
+            if (rs.next()) {
+                latestFile = rs.getString("File");
+                latestPosition = rs.getLong("Position");
+            }
+        } catch (Exception e) {
+            log.error("获取binlog状态失败", e);
+            // 设置默认值或重试策略
         }
         return new String[]{latestFile, String.valueOf(latestPosition)};
     }

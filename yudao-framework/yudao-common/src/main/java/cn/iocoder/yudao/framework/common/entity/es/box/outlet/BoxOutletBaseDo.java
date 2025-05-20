@@ -127,4 +127,24 @@ public class BoxOutletBaseDo extends BoxBaseDo {
      */
     @JsonProperty("power_factor_avg_value")
     private float powerFactorAvgValue;
+
+    /**
+     * 最大功率因素
+     */
+    @JsonProperty("power_factor_max_value")
+    private float powerFactorMaxValue;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("power_factor_max_time")
+    private DateTime powerFactorMaxTime;
+
+    /**
+     * 最小功率因素
+     */
+    @JsonProperty("power_factor_min_value")
+    private float powerFactorMinValue;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonProperty("power_factor_min_time")
+    private DateTime powerFactorMinTime;
 }

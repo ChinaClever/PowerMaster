@@ -273,7 +273,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '200%'},
-
+        { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData ,width: '110px'},
         { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData,width: '110px'},
@@ -368,7 +368,7 @@ const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
   { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
   { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '200%'},
-
+  { label: '保存策略',align: 'center',prop: 'data_source', istrue:true, width: '100px',formatter:formatSave},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData, width: '110px'},
   { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData, width: '110px'},
@@ -413,6 +413,13 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
+function formatSave(_row: any, _column: any, cellValue: number): string {
+  if(cellValue==0) return '定时记录';
+  if(cellValue==1) return '波动数据';
+  if(cellValue==2) return '突变数据';
+  if(cellValue==3) return '告警数据';
+  return '';
+}
 // 格式化温湿度列数据，保留一位小数
 function formatData(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(0);

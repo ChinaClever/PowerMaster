@@ -116,11 +116,18 @@ public class PDUDeviceController {
     //pdu_hda_line_realtime
     @GetMapping("/pduHdaLineHisdata")
     @Operation(summary = "获得机柜PDU相历史数据")
-    public CommonResult<Map> getPduHdaLineHisdataKey(String devKey, Integer type,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+    public CommonResult<Map> getPduHdaLineHisdataKey(String devKey, String type) {
+        return success(pDUDeviceService.getPduHdaLineHisdataKey(devKey, type));
+    }
+
+    @GetMapping("/pduHdaLineHisdataReport")
+    @Operation(summary = "获得机柜PDU相历史数据")
+    public CommonResult<Map> pduHdaLineHisdataReportKey(String devKey, Integer type,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
         System.out.println("oldTime"+oldTime);
         System.out.println("newTime"+newTime);
-        return success(pDUDeviceService.getPduHdaLineHisdataKey(devKey, type,oldTime,newTime));
+        return success(pDUDeviceService.pduHdaLineHisdataReportKey(devKey, type,oldTime,newTime,dataType));
     }
+
 
     @GetMapping("/pduHdaLineHisdataByCabinet")
     @Operation(summary = "获得PDU相历史数据")

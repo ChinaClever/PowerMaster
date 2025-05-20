@@ -358,19 +358,19 @@ public class BusIndexController {
     @PostMapping("/report/pfline")
     @Operation(summary = "获得始端箱报表数据-功率因素")
     public CommonResult<Map> getBusPFLine(@RequestBody BusIndexPageReqVO pageReqVO) {
-        return success(indexService.getBusPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getBusPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/pow")
     @Operation(summary = "获得始端箱报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportPowDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getReportPowDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/report/tem")
     @Operation(summary = "获得始端箱报表数据")
     public CommonResult<Map> getReportTemDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportTemDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getReportTemDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/redisbydevkey")
@@ -421,4 +421,11 @@ public class BusIndexController {
     public CommonResult<List<String>> findKeys(@RequestParam(value = "key") String key) {
         return success(indexService.findKeys(key));
     }
+    @PostMapping("/report/loadRate")
+    @Operation(summary = "获得插接箱报表数据-基础数据")
+    public CommonResult<Map> getReportLoadRateByBusResVO(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getReportLoadRateByBusResVO(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime(),pageReqVO.getDataType()));
+
+    }
+
 }
