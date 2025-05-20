@@ -295,19 +295,7 @@
           </div>
 
 
-          <!-- <div class="pageBox" v-if="visControll.temVis">
-            <div class="page-conTitle">
-              相电流曲线
-            </div>
-            <CurLine class="adaptiveStyle" :list="curvolList"/>
-          </div>
-          <div class="pageBox" v-if="visControll.temVis">
-            <div class="page-conTitle">
-              相电压曲线
-            </div>
-            <VolLine class="adaptiveStyle" :list="curvolList"/>
-          </div> -->
-          <div class="pageBox" v-if="visControll.temVis">
+          <div class="pageBox" v-if="visControll.curLoopVis">
             <div class="page-conTitle">
               回路电流曲线
             </div>
@@ -325,7 +313,7 @@
             <LoopCurLine :width="computedWidth" height="58vh" :list="curLoopList" :dataType="queryParams.dataType"/>
           </div>
 
-          <div class="pageBox" v-if="visControll.temVis">
+          <div class="pageBox" v-if="visControll.volLoopVis">
             <div class="page-conTitle">
               回路电压曲线
             </div>
@@ -368,7 +356,7 @@
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  :dataType="queryParams.dataType"/>
           </div>
 
-          <div class="pageBox" v-if="visControll.flag">
+          <div class="pageBox" v-if="visControll.outletEleVis">
             <div class="page-conTitle">
               输出位电量消耗
             </div>
@@ -393,7 +381,7 @@
             <HorizontalBar :width="computedWidth" height="58vh" :list="outletList" :dataType="queryParams.dataType"/>
           </div>
 
-            <div class="pageBox" v-if="visControll.flag">
+            <div class="pageBox" v-if="visControll.outLetActiveVis">
             <div class="page-conTitle">
               输出位有功功率
             </div>
@@ -516,6 +504,8 @@ const visControll = reactive({
   curVolVis: false,
   curLoopVis : false,
   volLoopVis : false,
+  outLetActiveVis : false,
+  outletEleVis : false,
 })
 const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
@@ -1012,39 +1002,39 @@ const getList = async () => {
   // })
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
+    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "--",
     statusInfoName : "总视在功率",
-    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_apparent.toFixed(3)+ "kVA" : '/',
+    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_apparent.toFixed(3)+ "kVA" : '--',
     consumeName : "起始电能",
-    consumeValue : eqData.value.firstEq+"kWh",
+    consumeValue : eqData.value.firstEq !=null ?eqData.value.firstEq+"kWh":'--',
     unbalanceName : "电流不平衡度",
-    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_unbalance.toFixed(0)+ "%" : '/',
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_unbalance.toFixed(0)+ "%" : '--',
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
+    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "--",
     statusInfoName : "总有功功率",
-    statusInfoValue :   PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_active.toFixed(3)+ "kW" : '/',
+    statusInfoValue :   PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_active.toFixed(3)+ "kW" : '--',
     consumeName : "结束电能",
-    consumeValue :  eqData.value.lastEq+"kWh",
+    consumeValue :  eqData.value.lastEq != null ?eqData.value.lastEq+"kWh":'--',
     unbalanceName : "电压不平衡度",
-    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.vol_unbalance.toFixed(0)+ "%" : '/',
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.vol_unbalance.toFixed(0)+ "%" : '--',
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
+    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "--",
     statusInfoName : "总无功功率",
-    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_reactive.toFixed(3)+ "kVar" : '/',
+    statusInfoValue : PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.pow_reactive.toFixed(3)+ "kVar" : '--',
     consumeName : "电量消耗",
-    consumeValue :  eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    consumeValue :  eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '--',
     // unbalanceName : "零线电流",
     // unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_zero_value.toFixed(2)+ "A" : '/',
   })
   temp.push({
     baseInfoName : "额定电流",
-    baseInfoValue : '/',
+    baseInfoValue : '--',
     statusInfoName : "总功率因数",
-    statusInfoValue :  PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.power_factor.toFixed(2) : '/',
+    statusInfoValue :  PDU?.box_data?.box_total_data != null ?PDU?.box_data?.box_total_data?.power_factor.toFixed(2) : '--',
   })
   PDUTableData.value = temp;
 
@@ -1100,9 +1090,9 @@ const getList = async () => {
 
   outletList.value = await IndexApi.getAvgBoxHdaOutletEleForm(queryParams);
   if(outletList.value.time != null && outletList.value.time.length > 0){
-    visControll.flag = true;
+    visControll.outletEleVis = true;
   }else{
-    visControll.flag = false;
+    visControll.outletEleVis = false;
   }
   console.log('outletRankData.value',outletList.value);
   
@@ -1144,7 +1134,11 @@ const getList = async () => {
 
   outletActiveData.value =  await IndexApi.getAvgBoxHdaOutletForm(queryParams);
   outLetActiveList.value =   outletActiveData.value.totalLineRes;
-  console.log("outLetActiveList.value",outLetActiveList.value);
+    if(outLetActiveList.value?.time != null && outLetActiveList.value?.time?.length > 0){
+        visControll.outLetActiveVis = true;
+    }else{
+      visControll.outLetActiveVis = false;
+    }
   
 
 
@@ -1195,9 +1189,8 @@ const getList = async () => {
 
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
-
-
-    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(0);
+  if(temList.value?.time != null && temList.value?.time?.length > 0){
+        temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(0);
     temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(0);
 
     temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(0);
@@ -1209,6 +1202,13 @@ const getList = async () => {
     temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(0);
     temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(0);
     visControll.temVis = true;
+
+  }else{
+    visControll.temVis = false;
+  }
+
+
+
 
 
 

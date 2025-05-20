@@ -1218,39 +1218,39 @@ const getList = async () => {
 
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
+    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "--",
     statusInfoName : "总视在功率",
-    statusInfoValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_apparent.toFixed(3)+ "kVA" : '/',
+    statusInfoValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_apparent.toFixed(3)+ "kVA" : '--',
     consumeName : "起始电能",
     consumeValue : eqData.value.firstEq+"kWh",
     unbalanceName : "电流不平衡度",
-    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_unbalance.toFixed(0)+ "%" : '/',
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_unbalance.toFixed(0)+ "%" : '--',
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
+    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "--",
     statusInfoName : "总有功功率",
-    statusInfoValue :   PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_value.toFixed(3)+ "kW" : '/',
+    statusInfoValue :   PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_value.toFixed(3)+ "kW" : '--',
     consumeName : "结束电能",
     consumeValue :  eqData.value.lastEq+"kWh",
     unbalanceName : "电压不平衡度",
-    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.vol_unbalance.toFixed(0)+ "%" : '/',
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.vol_unbalance.toFixed(0)+ "%" : '--',
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
+    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "--",
     statusInfoName : "总无功功率",
-    statusInfoValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_reactive.toFixed(3)+ "kVar" : '/',
+    statusInfoValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.pow_reactive.toFixed(3)+ "kVar" : '--',
     consumeName : "电量消耗",
-    consumeValue :  eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    consumeValue :  eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '--',
     unbalanceName : "零线电流",
-    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_zero_value.toFixed(2)+ "A" : '/',
+    unbalanceValue : PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.cur_zero_value.toFixed(2)+ "A" : '--',
   })
   temp.push({
     baseInfoName : "额定电流",
     baseInfoValue : curValue,
     statusInfoName : "总功率因数",
-    statusInfoValue :  PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.power_factor.toFixed(2) : '/',
+    statusInfoValue :  PDU?.bus_data?.bus_total_data != null ?PDU?.bus_data?.bus_total_data?.power_factor.toFixed(2) : '--',
   })
   PDUTableData.value = temp;
   
@@ -1397,7 +1397,7 @@ const generateDailyReport = (devKey) => {
   
       // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
       console.log('生成日报报告', devKey);
-      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
+      push('/report/report/boxreport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
     };
 
     const generateMonthlyReport = (devKey) => {
@@ -1412,7 +1412,7 @@ const generateDailyReport = (devKey) => {
   new1.value = getFullTimeByDate(new1.value);
       // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
       console.log('生成月报报告', devKey);
-      push('/bus/report/boxreport?devKey='+devKey+'&timeType='+1+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+      push('/report/report/boxreport?devKey='+devKey+'&timeType='+1+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
     };
 // 表格行选择处理
 const handleCurrentChange = (val) => {
