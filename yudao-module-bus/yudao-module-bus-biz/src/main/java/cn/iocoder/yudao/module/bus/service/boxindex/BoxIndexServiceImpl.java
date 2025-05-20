@@ -469,7 +469,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 break;
         }
 
-        return lineName + "相" + DataNameType.fromValue(dataType).name() + type + "曲线";
+        return lineName + "相" + DataNameType.fromValue(dataType).name() + type;
     }
 
 
@@ -2314,7 +2314,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         eleCosts.add(eleCost);
                         dataIndex1++;
                     }
-                    map.put(1,eleCosts);
+                    map.put(1, eleCosts);
                     for (EleCost cost : eleCosts) {
                         if (outLetMax < cost.getEq()) {
                             outLetMax = cost.getEq();
@@ -2338,10 +2338,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         EleCost eleCost = new EleCost();
                         eleCost.setOutletId(2);
                         eleCost.setEq(boxEleOutletDos2.get(dataIndex2 + 1).getEleActive() - boxEleOutletDos2.get(dataIndex2).getEleActive());
+                        eleCost.setCreateTime(boxEleOutletDos2.get(dataIndex1).getCreateTime());
                         eleCosts.add(eleCost);
                         dataIndex2++;
                     }
-                    map.put(2,eleCosts);
+                    map.put(2, eleCosts);
                     for (EleCost cost : eleCosts) {
                         if (outLetMax < cost.getEq()) {
                             outLetMax = cost.getEq();
@@ -2365,10 +2366,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         EleCost eleCost = new EleCost();
                         eleCost.setOutletId(3);
                         eleCost.setEq(boxEleOutletDos3.get(dataIndex3 + 1).getEleActive() - boxEleOutletDos3.get(dataIndex3).getEleActive());
+                        eleCost.setCreateTime(boxEleOutletDos3.get(dataIndex1).getCreateTime());
                         eleCosts.add(eleCost);
                         dataIndex2++;
                     }
-                    map.put(3,eleCosts);
+                    map.put(3, eleCosts);
                     for (EleCost cost : eleCosts) {
                         if (outLetMax < cost.getEq()) {
                             outLetMax = cost.getEq();
@@ -2988,8 +2990,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         if (dataType == 0) {
                             totalPFLine.getData().add(getPfValue(hourdo, DataTypeEnums.fromValue(dataType)));
                             pfHappenTime.add(formatPFTime(hourdo, DataTypeEnums.fromValue(dataType)));
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
                         }
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+
 
                     });
                     collect1.forEach(hourdo -> {
@@ -3009,10 +3012,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         if (dataType == 0) {
                             totalPFLine.getData().add(getPfValue(hourdo, DataTypeEnums.fromValue(dataType)));
                             pfHappenTime.add(formatPFTime(hourdo, DataTypeEnums.fromValue(dataType)));
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
                         }
 
 
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
                     });
                     collect1.forEach(hourdo -> {
                         PFOutOne.getData().add(getOutLetValue(hourdo, DataTypeEnums.fromValue(dataType)));
@@ -3027,6 +3030,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         out3HappenTime.add(formatOutLetTime(hourdo, DataTypeEnums.fromValue(dataType)));
                     });
                 }
+                Boolean flag = false;
 
                 if (!CollectionUtils.isEmpty(totalPFLine.getData())) {
                     totalPFLine.setName(getPfSeriesName("功率因素", 0, dataType));
@@ -3034,6 +3038,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     totalPFLine.setHappenTime(pfHappenTime);
                     totalLineRes.getSeries().add(totalPFLine);
                     result.put("pName" + 4, "总功率因素");
+                    flag = true;
                 }
                 if (!CollectionUtils.isEmpty(PFOutOne.getData())) {
                     PFOutOne.setName(getPfSeriesName("功率因素", 1, dataType));
@@ -3048,6 +3053,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     PFOutTwo.setHappenTime(out2HappenTime);
                     totalLineRes.getSeries().add(PFOutTwo);
                     result.put("pName" + 2, "输出位二功率因素");
+                    flag = true;
                 }
                 if (!CollectionUtils.isEmpty(PFOutThree.getData())) {
                     PFOutThree.setName(getPfSeriesName("功率因素", 3, dataType));
@@ -3055,6 +3061,16 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     PFOutThree.setHappenTime(out3HappenTime);
                     totalLineRes.getSeries().add(PFOutThree);
                     result.put("pName" + 3, "输出位三功率因素");
+                    flag = true;
+                }
+                if (flag && (dataType == 0)){
+                    for (BoxTotalHourDo hourdo : powList) {
+                        if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+                        }else{
+                            totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                        }
+                    }
                 }
 
                 result.put("pfLineRes", totalLineRes);
@@ -3123,7 +3139,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 break;
         }
 
-        return lineName + DataNameType.fromValue(dataType).name() + type + "曲线";
+        return lineName + DataNameType.fromValue(dataType).name() + type;
     }
 
     /**
@@ -4945,7 +4961,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 break;
         }
 
-        return lineName + DataNameType.fromValue(dataType).name() + type + "曲线";
+        return lineName + DataNameType.fromValue(dataType).name() + type;
     }
 
     /**
