@@ -3976,7 +3976,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 break;
         }
 
-        return lineName + "相" + DataNameType.fromValue(dataType).name() + type + "曲线";
+        return lineName + "相" + DataNameType.fromValue(dataType).name() + type;
     }
 
 
