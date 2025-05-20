@@ -156,7 +156,7 @@
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
                 <div class="flex" style="flex-direction: column">
-                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(3).split('.')[1] : 0}}</span></div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 28px">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powActive ? roomDownVal.powActive.toFixed(3).split('.')[1] : 0}}</span></div>
                   <div class="flex items-center">
                     <div class="bullet" style="background-color:#C8603A;"></div>
                     <div style="font-size: 14px">总有功功率(kW)</div>
@@ -166,7 +166,7 @@
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
                 <div class="flex" style="flex-direction: column">
-                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(3).split('.')[1] : 0}}</span></div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 28px">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powReactive ? roomDownVal.powReactive.toFixed(3).split('.')[1] : 0}}</span></div>
                   <div class="flex items-center">
                     <div class="bullet" style="background-color:#E5B849;"></div>
                     <div style="font-size: 14px">总无功功率(kVar)</div>
@@ -178,7 +178,7 @@
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
                 <div class="flex" style="flex-direction: column">
-                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(3).split('.')[1] : 0}}</span></div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 28px">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(0) : 0}}.</span><span style="font-weight: bold;font-size: 21px">{{roomDownVal.powApparent ? roomDownVal.powApparent.toFixed(3).split('.')[1] : 0}}</span></div>
                   <div class="flex items-center">
                     <div class="bullet" style="background-color:#AD3762;"></div>
                     <div style="font-size: 14px">总视在功率(kVA)</div>
@@ -188,7 +188,7 @@
               <div class="flex items-center" style="width: 50%">
                 <!-- <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" /> -->
                 <div class="flex" style="flex-direction: column">
-                  <div style="text-align: center"><span style="font-weight: bold;font-size: 30px">{{roomDownVal.powerCapacity ? roomDownVal.powerCapacity.toFixed(0) : '-----------'}}</span></div>
+                  <div style="text-align: center"><span style="font-weight: bold;font-size: 28px">{{roomDownVal.powerCapacity ? roomDownVal.powerCapacity.toFixed(0) : '-----------'}}</span></div>
                   <div class="flex items-center">
                     <div class="bullet" style="background-color:#614e43;"></div>
                     <div style="font-size: 14px">总电力容量(kVA)</div>

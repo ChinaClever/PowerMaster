@@ -8,12 +8,12 @@
           <el-option v-for="item in roomList" :key="item.id" :label="item.roomName" :value="item.id" />
         </el-select>
       </div>
-      <div v-if="chosenBtn == 3" class="status" style="margin-left: 10px;height: 100%">
+      <!-- <div v-if="chosenBtn == 6" class="status" style="margin-left: 10px;height: 100%">
         温度条：
         <div class="temStatus" style="background: linear-gradient(to right, rgb(244,229,162), rgb(191,68,76))">
         </div>
-      </div>
-      <div v-else class="status">
+      </div> -->
+      <div class="status" :style="isFromHome ? 'font-size: 8px' : ''">
         <template v-for="item in statusInfo[chosenBtn]" :key="item.value">
           <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
         </template>
@@ -65,9 +65,9 @@
           :style="isFromHome ? `transform-origin: 0 0;height: 49vh;width:${tableScaleWidth}%;` : `height:calc(100vh - 180px);width:${tableScaleWidth}%;`">
           <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
           <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :style="{width: '100%',height: `${tableScaleHeight}%`,transform: `translateZ(0) scale(${tableScaleValue})`, transformOrigin: '0 0',transition: 'none'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow">
-            <el-table-column fixed type="index" min-width="21" align="center" :resizable="false" />
+            <el-table-column fixed type="index" min-width="31" align="center" :resizable="false" />
             <template v-for="(formItem, index) in formParam" :key="index">
-              <el-table-column :label="formItem" min-width="41" align="center" :resizable="false">
+              <el-table-column :label="formItem" min-width="31" align="center" :resizable="false">
                 <template #default="scope">
                   <draggable
                     :id="`${scope.$index}-${index}`"
@@ -128,7 +128,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div v-if="element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
+                              <div v-if="element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -15px">%</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -178,7 +178,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div v-if="element.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kW</div></div>
+                              <div v-if="element.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -15px">kW</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -232,7 +232,7 @@
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4" :style="{background: `linear-gradient(to bottom, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
+                        <!-- <div v-else-if="chosenBtn == 6 && element.runStatus != 0 && element.runStatus != 4" :style="{background: `linear-gradient(to bottom, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -281,12 +281,61 @@
                               <div v-if="element.temFront != 0 || element.temBlack != 0" style="display: flex;flex-direction: column;justify-content: space-around;width: 100%">
                                 <div>{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}</div>
                                 <div>{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}</div>
-                                <!-- <div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span> -->
                               </div>
                             </el-tooltip>
                           </template>
+                        </div> -->
+                        <div v-else-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.temFront ? (element.temFront>=35 ? `rgba(232, 18, 36, ${element.temFront})` : (element.temFront>=30 ? `rgba(247, 99, 12, ${(element.temFront+65)/100})` : (element.temFront>=27 ? `rgba(252, 225, 0, ${(element.temFront+70)/100})` : (element.temFront>=24 ? `rgba(50, 205, 50, ${(124-element.temFront)/100})` : (element.temFront>20 ? `rgba(0, 128, 0, ${(element.temFront+76)/100})` : `rgba(0, 120, 215, ${element.temFront+80})`))))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                          <template v-if="element.id > 0">
+                            <el-tooltip effect="light">
+                              <template #content>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    机柜状态：{{statusColor[element.runStatus].name}} <br/>
+                                    机柜名称：{{element.cabinetName}} <br/>
+                                    机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                    昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                  </div>
+                                  <div style="width: 50%">
+                                    总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                    总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                    总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                    总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                    A路设备：{{element.cabinetkeya}}
+                                  </div>
+                                  <div style="width: 50%">
+                                    B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                    B路设备：{{element.cabinetkeyb}}
+                                  </div>
+                                </div>
+                                <hr/>
+                                <div class="flex justify-between" style="width: 20vw">
+                                  <div style="width: 50%">
+                                    前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                  </div>
+                                  <div style="width: 50%">
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                  </div>
+                                </div>
+                                <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                  <hr/>
+                                  告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                  告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                                </div>
+                              </template>
+                              <div v-if="element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -15px">°C</div></div>
+                            </el-tooltip>
+                          </template>
                         </div>
-                        <div v-else-if="chosenBtn == 4 && element.runStatus==1" :style="{backgroundColor: element.cabinetName ? (element.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (element.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (element.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.temBlack ? (element.temBlack>=45 ? `rgba(232, 18, 36, ${element.temBlack})` : (element.temBlack>=40 ? `rgba(247, 99, 12, ${(element.temBlack+55)/100})` : (element.temBlack>=35 ? `rgba(252, 225, 0, ${(element.temBlack+60)/100})` : (element.temBlack>30 ? `rgba(50, 205, 50, ${(130-element.temBlack)/100})` : `rgba(0, 128, 0, ${(element.temBlack+70)/100})`)))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -332,7 +381,7 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
+                              <div :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -15px">°C</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -382,12 +431,12 @@
                                   告警描述：{{element.alarmLogRecord?.alarmDesc}}
                                 </div>
                               </template>
-                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">%</div></div>
-                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kW</div></div>
+                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -15px">%</div></div>
+                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -15px">kW</div></div>
                               <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
-                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -20px">°C</div></div>
-                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -20px">kWh</div></div>
+                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -15px">°C</div></div>
+                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 10px;margin-top: -15px">°C</div></div>
+                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<div style="font-size: 10px;margin-top: -15px">kWh</div></div>
                             </el-tooltip>
                           </template>
                         </div>
@@ -441,7 +490,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div v-if="item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                  <div v-if="item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">%</div><span v-else style="font-size: 10px;">%</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -491,7 +540,7 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div v-if="item.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kW</div><span v-else style="font-size: 10px;">kW</span></div>
+                                  <div v-if="item.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">kW</div><span v-else style="font-size: 10px;">kW</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -545,7 +594,7 @@
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
+                            <!-- <div v-else-if="chosenBtn == 6 && item.runStatus != 0 && item.runStatus != 4" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -594,12 +643,11 @@
                                   <div v-if="item.temFront != 0 || item.temBlack != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
                                     <div>{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}</div>
                                     <div>{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}</div>
-                                    <!-- <div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span> -->
                                   </div>
                                   </el-tooltip>
                               </template>
-                            </div>
-                            <div v-else-if="chosenBtn == 4 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? (item.temBlack>=tempList[2]?.hotMin ? tempList[2]?.hotColor : (item.temBlack>=tempList[1]?.hotMin ? tempList[1]?.hotColor : (item.temBlack>=tempList[0]?.hotMin ? tempList[0]?.hotColor : 'red'))) : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                            </div> -->
+                            <div v-else-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.temFront ? (item.temFront>=35 ? `rgba(232, 18, 36, ${item.temFront})` : (item.temFront>=30 ? `rgba(247, 99, 12, ${(item.temFront+65)/100})` : (item.temFront>=27 ? `rgba(252, 225, 0, ${(item.temFront+70)/100})` : (item.temFront>=24 ? `rgba(50, 205, 50, ${(124-item.temFront)/100})` : (item.temFront>20 ? `rgba(0, 128, 0, ${(item.temFront+76)/100})` : `rgba(0, 120, 215, ${item.temFront+80})`))))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -645,7 +693,57 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div v-if="item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                </el-tooltip>
+                              </template>
+                            </div>
+                            <div v-else-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.temBlack ? (item.temBlack>=45 ? `rgba(232, 18, 36, ${item.temBlack})` : (item.temBlack>=40 ? `rgba(247, 99, 12, ${(item.temBlack+55)/100})` : (item.temBlack>=35 ? `rgba(252, 225, 0, ${(item.temBlack+60)/100})` : (item.temBlack>30 ? `rgba(50, 205, 50, ${(130-item.temBlack)/100})` : `rgba(0, 128, 0, ${(item.temBlack+70)/100})`)))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                              <template v-if="item.id > 0">
+                                <el-tooltip effect="light">
+                                  <template #content>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        机柜状态：{{statusColor[item.runStatus].name}} <br/>
+                                        机柜名称：{{item.cabinetName}} <br/>
+                                        机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                        昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                      </div>
+                                      <div style="width: 50%">
+                                        总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                        总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                        总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                        总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                        A路设备：{{item.cabinetkeya}}
+                                      </div>
+                                      <div style="width: 50%">
+                                        B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                        B路设备：{{item.cabinetkeyb}}
+                                      </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="flex justify-between" style="width: 20vw">
+                                      <div style="width: 50%">
+                                        前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                      </div>
+                                      <div style="width: 50%">
+                                        后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                      </div>
+                                    </div>
+                                    <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                      <hr/>
+                                      告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                      告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                    </div>
+                                  </template>
+                                  <div v-if="item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
                                 </el-tooltip>
                               </template>
                             </div>
@@ -695,12 +793,12 @@
                                       告警描述：{{item.alarmLogRecord?.alarmDesc}}
                                     </div>
                                   </template>
-                                  <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">%</div><span v-else style="font-size: 10px;">%</span></div>
-                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">kW</div><span v-else style="font-size: 10px;">kW</span></div>
+                                  <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? 'font-size: 20px;' : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">%</div><span v-else style="font-size: 10px;">%</span></div>
+                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powActive != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">kW</div><span v-else style="font-size: 10px;">kW</span></div>
                                   <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
-                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -20px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
-                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -20px">kWh</div></div> -->
+                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 10px;margin-top: -15px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? 'font-size: 20px' : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 10px;margin-top: -15px">kWh</div></div> -->
                                 </el-tooltip>
                               </template>
                             </div>
@@ -719,13 +817,13 @@
           
         <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
           <div ref="menuViewEle" class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-            <div class="menu_item" v-if="showMenuAdd && editEnable" @click="dragTableView">小抓手</div>
+            <div class="menu_item" v-if="showMenuAdd" @click="dragTableView">小抓手</div>
             <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addAisle">新增柜列</div>
             <div class="menu_item" v-if="showMenuAdd && editEnable" @click="addCabinet('add')">新增机柜</div>
             <!-- <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div> -->
-            <el-cascader-panel class="menu_item_panel" v-if="(!showMenuAdd || !editEnable) && menuOptions.length" style="width: fit-content;" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" />
+            <el-cascader-panel ref="areaIdsCascader" class="menu_item_panel" v-if="(!showMenuAdd || !editEnable) && menuOptions.length" style="width: fit-content;" model-value="['编辑']" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" @expand-change="expandChange" />
           </div>
         </div>
     </div>
@@ -1004,12 +1102,12 @@ const menuViewEle = ref()
 const tableContainer = ref()
 const scaleValue = ref(1) // 缩放比例
 
-const tableScaleValue = ref(0.7)
-const tableScaleWidth = ref(142.8)
-const tableScaleHeight = ref(142.8)
-const tableScaleValueStart = ref(0.7)
-const tableScaleWidthStart = ref(142.8)
-const tableScaleHeightStart = ref(142.8)
+const tableScaleValue = ref(1)
+const tableScaleWidth = ref(100)
+const tableScaleHeight = ref(100)
+const tableScaleValueStart = ref(1)
+const tableScaleWidthStart = ref(100)
+const tableScaleHeightStart = ref(100)
 
 const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(1)
@@ -1134,6 +1232,63 @@ const statusInfo = ref([[
     color: '#16c60c',
     value: 3,
   }
+],[
+  {
+    name: '<=20°C',
+    color: '#0078d7',
+    value: 0,
+  },
+  {
+    name: '20°C~24°C',
+    color: '#008000',
+    value: 1,
+  },
+  {
+    name: '24°C~27°C',
+    color: '#32cd32',
+    value: 2,
+  },
+  {
+    name: '27°C~30°C',
+    color: '#fff100',
+    value: 3,
+  },
+  {
+    name: '30°C~35°C',
+    color: '#f7630c',
+    value: 4,
+  },
+  {
+    name: '>35°C',
+    color: '#e81224',
+    value: 5,
+  }
+],[
+  {
+    name: '<=30°C',
+    color: '#008000',
+    value: 0,
+  },
+  {
+    name: '30°C~35°C',
+    color: '#32cd32',
+    value: 1,
+  },
+  {
+    name: '35°C~40°C',
+    color: '#fff100',
+    value: 2,
+  },
+  {
+    name: '40°C~45°C',
+    color: '#f7630c',
+    value: 3,
+  },
+  {
+    name: '>45°C',
+    color: '#e81224',
+    value: 4,
+  }
 ]])
 const statusColor = ref([
   {
@@ -1184,14 +1339,18 @@ const btns = [
   //   value: 5,
   //   name: '昨日用能',
   // },
+  // {
+  //   value: 6,
+  //   name: '温度',
+  // },
   {
     value: 3,
-    name: '温度',
+    name: '前门温度',
   },
-  // {
-  //   value: 4,
-  //   name: '后门温度',
-  // },
+  {
+    value: 4,
+    name: '后门温度',
+  },
   // {
   //   value: 4,
   //   name: '容量',
@@ -1279,6 +1438,7 @@ const editEnable = ref(false);
 const dragCursor = ref();
 const machineForm = ref();
 const machineFormCabinet = ref();
+const areaIdsCascader = ref()
 const startX = ref(0);
 const startY = ref(0);
 const scrollLeft = ref(0);
@@ -1892,9 +2052,9 @@ const handleCssScale = () => {
 // 处理修改机房的事件
 const handleChangeRoom = (val) => {
   roomId.value = val
-  tableScaleValue.value = 0.7
-  tableScaleWidth.value = 142.8
-  tableScaleHeight.value = 142.8
+  tableScaleValue.value = tableScaleValueStart.value
+  tableScaleWidth.value = tableScaleWidth.value
+  tableScaleHeight.value = tableScaleHeight.value
   getRoomInfo()
 }
 //取消
@@ -2051,6 +2211,11 @@ const arraySpanMethod = ({
   }
   return [1, 1]
 }
+
+const mouseX = ref(0)
+const mouseY = ref(0)
+const rect = ref()
+
 
 // 右击弹出菜单
 const handleRightClick = (e) => {
@@ -2294,12 +2459,7 @@ const handleRightClick = (e) => {
     menuOptions.value.splice(1,4)
   }
   console.log(editEnable.value)
-  if(!editEnable.value && !tableData.value[lndexY][formParam.value[lndexX]].length) {
-    menuOptions.value[0] = {
-      value: '小抓手',
-      label: '小抓手'
-    }
-  } else if(!editEnable.value) {
+  if(!editEnable.value) {
     menuOptions.value.splice(0,1)
   }
   // let itemId = tableData.value[lndexY][formParam.value[lndexX]]?.[0]?.id
@@ -2318,49 +2478,123 @@ const handleRightClick = (e) => {
   //   }
   // }
   // //console.log(maxX,maxY)
+  showMenuAdd.value = !(tableData.value[lndexY][formParam.value[lndexX]].length > 0)
+  operateMenu.value.show = true
+    // const firstMenuItem = document.querySelector('.el-cascader-node') as HTMLElement;
+    // console.log(firstMenuItem,areaIdsCascader.value)
+    // if (firstMenuItem) {
+    //   firstMenuItem.classList.add('in-active-path') // 触发点击展开子菜单
+    //   firstMenuItem.ariaExpanded = 'true';
+    // }
+  nextTick(() => {
+    // 获取鼠标位置
+    mouseX.value = e.clientX;
+    mouseY.value = e.clientY;
 
-  // 获取鼠标位置
-  const mouseX = e.clientX;
-  const mouseY = e.clientY;
+    // 获取视口尺寸
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-  // 获取视口尺寸
-  const viewportWidth = window.innerWidth - 200;
-  const viewportHeight = window.innerHeight - 200;
-  
-  // 获取菜单尺寸
-  const menuWidth = menuViewEle.value?.clientWidth ? menuViewEle.value.clientWidth : 0;
-  const menuHeight = menuViewEle.value?.clientHeight ? menuViewEle.value.clientHeight : 0;
+    // 获取菜单尺寸
+    const menuWidth = menuViewEle.value?.clientWidth ? menuViewEle.value.clientWidth : 0;
+    const menuHeight = menuViewEle.value?.clientHeight ? menuViewEle.value.clientHeight : 0;
 
-  const container = e.currentTarget;
-  const rect = container.getBoundingClientRect()
-  let offsetX = mouseX - Math.ceil(rect.left) + 1
-  let offsetY = mouseY - Math.ceil(rect.top) + 1
+    const container = e.currentTarget;
+    rect.value = container.getBoundingClientRect()
+    let offsetX = mouseX.value - Math.ceil(rect.value.left) + 1
+    let offsetY = mouseY.value - Math.ceil(rect.value.top) + 1
 
-  // // 如果菜单会超出视口右侧，则向左调整
-  // if (mouseX + menuWidth > viewportWidth) {
-  //     offsetX = Math.max(0, offsetX - menuWidth);
-  // }
-  
-  // // 如果菜单会超出视口底部，则向上调整
-  // if (mouseY + menuHeight > viewportHeight) {
-  //     offsetY = Math.max(0, offsetY - menuHeight);
-  // }
-  
-  // console.log(mouseX,mouseY,viewportWidth,viewportHeight,menuWidth,menuHeight,offsetX,offsetY)
+    // 如果菜单会超出视口右侧，则向左调整
+    if (mouseX.value + menuWidth > viewportWidth) {
+        offsetX = Math.max(0, offsetX - menuWidth);
+    }
+    
+    // 如果菜单会超出视口底部，则向上调整
+    if (mouseY.value + menuHeight > viewportHeight) {
+        offsetY = Math.max(0, offsetY - menuHeight);
+    }
+    
+    console.log(mouseX.value,mouseY.value,viewportWidth,viewportHeight,menuWidth,menuHeight,offsetX,offsetY)
 
-  operateMenu.value = {
-    left: offsetX + 'px',
-    top: offsetY + 'px',
-    show: true,
-    lndexX, // 当前列
-    lndexY, // 当前行
-    maxlndexX: 26,
-    maxlndexY: 26,
-    xLength: rowColInfo.col,
-    yLength: rowColInfo.row
-  }
-  //console.log('editEnable.value', editEnable.value)
+    operateMenu.value = {
+      left: offsetX + 'px',
+      top: offsetY + 'px',
+      show: true,
+      lndexX, // 当前列
+      lndexY, // 当前行
+      maxlndexX: 26,
+      maxlndexY: 26,
+      xLength: rowColInfo.col,
+      yLength: rowColInfo.row
+    }
+  })
+    
+    
+    //console.log('editEnable.value', editEnable.value)
 }
+
+const expandChange = () => {
+  nextTick(() => {
+    // 获取视口尺寸
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // 获取菜单尺寸
+    const menuWidth = menuViewEle.value?.clientWidth ? menuViewEle.value.clientWidth : 0;
+    const menuHeight = menuViewEle.value?.clientHeight ? menuViewEle.value.clientHeight : 0;
+    
+    let offsetX = mouseX.value - Math.ceil(rect.value.left) + 1
+    let offsetY = mouseY.value - Math.ceil(rect.value.top) + 1
+
+    // 如果菜单会超出视口右侧，则向左调整
+    if (mouseX.value + menuWidth > viewportWidth) {
+        offsetX = Math.max(0, offsetX - menuWidth);
+    }
+    
+    // 如果菜单会超出视口底部，则向上调整
+    if (mouseY.value + menuHeight > viewportHeight) {
+        offsetY = Math.max(0, offsetY - menuHeight);
+    }
+    
+    console.log(mouseX.value,mouseY.value,viewportWidth,viewportHeight,menuWidth,menuHeight,offsetX,offsetY)
+
+    operateMenu.value = {
+      left: offsetX + 'px',
+      top: offsetY + 'px',
+      show: true,
+      lndexX: operateMenu.value.lndexX, // 当前列
+      lndexY: operateMenu.value.lndexY, // 当前行
+      maxlndexX: 26,
+      maxlndexY: 26,
+      xLength: rowColInfo.col,
+      yLength: rowColInfo.row
+    }
+  })
+}
+
+// const toClickSecondCascaderCollect = (index, number?) => {
+
+//   const el = document.querySelectorAll(`.el-cascader-menu`)[number].querySelectorAll(`.el-cascader-node`)
+
+//   if (el && el[index]) {
+
+//     return new Promise((resolve) => {
+
+//       el[index].click()   // 触发点击事件，展开传过来的index对应的节点
+
+//       time.value = setTimeout(() => {
+
+//         resolve()     // 延迟1秒执行，防止执行过快，防止上一级没有展示出来就点击而导致找不到click报错
+
+//       }, 1000)
+
+//     })
+
+//   }
+
+//   return Promise.resolve()
+
+// }
 
 const handleMenu = (value) => {
   //console.log(value)
@@ -2740,12 +2974,7 @@ const deleteCabinet = (cabItem,flag) => {
 }
 
 // 判断是否展示添加菜单项
-const showMenuAdd = computed(() => {
-  const lndexX = operateMenu.value.lndexX
-  const lndexY = operateMenu.value.lndexY
-  //console.log('tableData.value[lndexY][formParam.value[lndexX]]', tableData.value[lndexY][formParam.value[lndexX]], lndexX, lndexY)
-  return !(tableData.value[lndexY][formParam.value[lndexX]].length > 0)
-})
+const showMenuAdd = ref(false)
 // 拖拽开始的事件
 const onStart = ({from}) => {
   const X = from.id.split('-')[1]
@@ -3246,7 +3475,9 @@ const handleExportAisle = async () => {
     const data = await MachineRoomApi.exportAisleExcel({roomId: roomId.value},axiosConfig);
     console.log("data",data);
     await download.excel(data, rowColInfo?.roomName + '的机柜绑定关系表.xlsx');
+    ElMessage.success('导出成功');
   } catch (error) {
+    ElMessage.success('导出失败');
     console.error('导出失败：', error);
   } finally {
     exportLoading.value = false;
@@ -3583,7 +3814,7 @@ onUnmounted(() => {
   height: 100%;
 }
 .status {
-  font-size: 14px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   .box {
@@ -3644,7 +3875,7 @@ onUnmounted(() => {
     .dragChild {
       width: 100%;
       height: 100%;
-      min-height: 39px;
+      min-height: 29px;
       box-sizing: border-box;
       display: flex;
       border: 1px solid #000;
@@ -3653,7 +3884,7 @@ onUnmounted(() => {
       }
       // align-items: center;
       .dragSon {
-        min-height: 39px;
+        min-height: 29px;
         flex: 1;
         display: flex;
         align-items: center;
@@ -3662,7 +3893,7 @@ onUnmounted(() => {
         background-color: #f5f7fa;
         border-right: 1px solid #bed1ff;
         &>div {
-          min-height: 39px;
+          min-height: 29px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -3675,7 +3906,7 @@ onUnmounted(() => {
     .dragChildCol {
       width: 100%;
       height: 100%;
-      min-height: 39px;
+      min-height: 29px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -3685,7 +3916,7 @@ onUnmounted(() => {
       }
       .dragSon {
         flex: 1;
-        min-height: 39px;
+        min-height: 29px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
@@ -3693,7 +3924,7 @@ onUnmounted(() => {
         background-color: #f5f7fa;
         border-bottom: 1px solid #bed1ff;
         &>div {
-          min-height: 39px;
+          min-height: 29px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -3705,7 +3936,7 @@ onUnmounted(() => {
     }
   }
   .warnDrag {
-    min-height: 39px;
+    min-height: 29px;
     height: 100%;
     width: 100%;
     display: flex;
@@ -3715,7 +3946,7 @@ onUnmounted(() => {
     background-color: rgb(255, 219, 12);
   }
   .normalDrag {
-    min-height: 39px;
+    min-height: 29px;
     height: 100%;
     width: 100%;
     // height: 40px;
@@ -3731,7 +3962,7 @@ onUnmounted(() => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      min-height: 39px;
+      min-height: 29px;
     }
   }
 }
@@ -3772,11 +4003,11 @@ onUnmounted(() => {
 :deep(.dragTable .el-table__cell .cell) {
   width: 100%;
   height: 100%;
-  min-height: 39px;
+  min-height: 29px;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 40px;
+  line-height: 30px;
   padding: 0;
   & > div {
     height: 100%;
@@ -3807,14 +4038,6 @@ onUnmounted(() => {
 
 :deep(.el-cascader-node.in-active-path, .el-cascader-node.is-active, .el-cascader-node.is-selectable.in-checked-path) {
   color: rgba(0, 119, 140, 1);
-}
-
-:deep(.el-cascader-menu__wrap.el-scrollbar__wrap) {
-  height: auto;
-}
-
-:deep(.el-loading-mask) {
-  width: 70%
 }
 
 .crosshair {
