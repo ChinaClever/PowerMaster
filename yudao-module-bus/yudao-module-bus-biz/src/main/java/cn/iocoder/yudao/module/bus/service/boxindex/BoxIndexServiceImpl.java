@@ -68,6 +68,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -1460,8 +1461,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
                 //收集曲线数据（dataType（1=最大值,0=平均值,-1=最小值））
                 if (pageReqVO.getDataType() == 1) {
-                    linCureSeries.setName(getCurVolSeriesName("电流",i,pageReqVO.getDataType()));
-                    linVoleSeries.setName(getCurVolSeriesName("电压",i,pageReqVO.getDataType()));
+                    linCureSeries.setName(getCurVolSeriesName("电流", i, pageReqVO.getDataType()));
+                    linVoleSeries.setName(getCurVolSeriesName("电压", i, pageReqVO.getDataType()));
                     loopCur = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurMaxValue).collect(Collectors.toList());
                     loopVol = hourDoList.stream().map(BusHdaLoopAvgResVO::getVolMaxValue).collect(Collectors.toList());
 
@@ -1469,70 +1470,70 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     volHappenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getVolMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
 
                     for (BusHdaLoopAvgResVO pduHdaLoopBaseDo : hourDoList) {
-                        if (loopMax < pduHdaLoopBaseDo.getCurMaxValue()) {
+                        if (loopMax <= pduHdaLoopBaseDo.getCurMaxValue()) {
                             loopMax = pduHdaLoopBaseDo.getCurMaxValue();
                             loopMaxTime = pduHdaLoopBaseDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
-                        if (loopMin > pduHdaLoopBaseDo.getCurMaxValue()) {
+                        if (loopMin >= pduHdaLoopBaseDo.getCurMaxValue()) {
                             loopMin = pduHdaLoopBaseDo.getCurMaxValue();
                             loopMinTime = pduHdaLoopBaseDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
 
-                        if (loopVolMax < pduHdaLoopBaseDo.getVolMaxValue()) {
+                        if (loopVolMax <= pduHdaLoopBaseDo.getVolMaxValue()) {
                             loopVolMax = pduHdaLoopBaseDo.getVolMaxValue();
                             loopVolMaxTime = pduHdaLoopBaseDo.getVolMaxTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
-                        if (loopVolMin > pduHdaLoopBaseDo.getVolMaxValue()) {
+                        if (loopVolMin >= pduHdaLoopBaseDo.getVolMaxValue()) {
                             loopVolMin = pduHdaLoopBaseDo.getVolMaxValue();
                             loopVolMinTime = pduHdaLoopBaseDo.getVolMaxTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
                     }
                 } else if (pageReqVO.getDataType() == 0) {
-                    linCureSeries.setName(getCurVolSeriesName("电流",i,pageReqVO.getDataType()));
-                    linVoleSeries.setName(getCurVolSeriesName("电压",i,pageReqVO.getDataType()));
+                    linCureSeries.setName(getCurVolSeriesName("电流", i, pageReqVO.getDataType()));
+                    linVoleSeries.setName(getCurVolSeriesName("电压", i, pageReqVO.getDataType()));
                     loopCur = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurAvgValue).collect(Collectors.toList());
                     loopVol = hourDoList.stream().map(BusHdaLoopAvgResVO::getVolAvgValue).collect(Collectors.toList());
                     for (BusHdaLoopAvgResVO pduHdaLoopBaseDo : hourDoList) {
-                        if (loopMax < pduHdaLoopBaseDo.getCurAvgValue()) {
+                        if (loopMax <= pduHdaLoopBaseDo.getCurAvgValue()) {
                             loopMax = pduHdaLoopBaseDo.getCurAvgValue();
                             loopMaxTime = "无";
                         }
-                        if (loopMin > pduHdaLoopBaseDo.getCurAvgValue()) {
+                        if (loopMin >= pduHdaLoopBaseDo.getCurAvgValue()) {
                             loopMin = pduHdaLoopBaseDo.getCurAvgValue();
                             loopMinTime = "无";
                         }
 
-                        if (loopVolMax < pduHdaLoopBaseDo.getVolAvgValue()) {
+                        if (loopVolMax <= pduHdaLoopBaseDo.getVolAvgValue()) {
                             loopVolMax = pduHdaLoopBaseDo.getVolAvgValue();
                             loopVolMaxTime = "无";
                         }
-                        if (loopVolMin > pduHdaLoopBaseDo.getVolAvgValue()) {
+                        if (loopVolMin >= pduHdaLoopBaseDo.getVolAvgValue()) {
                             loopVolMin = pduHdaLoopBaseDo.getVolAvgValue();
                             loopVolMinTime = "无";
                         }
                     }
                 } else if (pageReqVO.getDataType() == -1) {
-                    linCureSeries.setName(getCurVolSeriesName("电流",i,pageReqVO.getDataType()));
-                    linVoleSeries.setName(getCurVolSeriesName("电压",i,pageReqVO.getDataType()));
+                    linCureSeries.setName(getCurVolSeriesName("电流", i, pageReqVO.getDataType()));
+                    linVoleSeries.setName(getCurVolSeriesName("电压", i, pageReqVO.getDataType()));
                     loopCur = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurMinValue).collect(Collectors.toList());
                     loopVol = hourDoList.stream().map(BusHdaLoopAvgResVO::getCurMinValue).collect(Collectors.toList());
                     curHappenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                     volHappenTime = hourDoList.stream().map(PduHdaLoopBaseDo -> PduHdaLoopBaseDo.getVolMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
 
                     for (BusHdaLoopAvgResVO pduHdaLoopBaseDo : hourDoList) {
-                        if (loopMax < pduHdaLoopBaseDo.getCurMinValue()) {
+                        if (loopMax <= pduHdaLoopBaseDo.getCurMinValue()) {
                             loopMax = pduHdaLoopBaseDo.getCurMinValue();
                             loopMaxTime = pduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
-                        if (loopMin > pduHdaLoopBaseDo.getCurMinValue()) {
+                        if (loopMin >= pduHdaLoopBaseDo.getCurMinValue()) {
                             loopMin = pduHdaLoopBaseDo.getCurMinValue();
                             loopMinTime = pduHdaLoopBaseDo.getCurMinTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
-                        if (loopVolMax < pduHdaLoopBaseDo.getVolMinValue()) {
+                        if (loopVolMax <= pduHdaLoopBaseDo.getVolMinValue()) {
                             loopVolMax = pduHdaLoopBaseDo.getVolMinValue();
                             loopVolMaxTime = pduHdaLoopBaseDo.getVolMinTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
-                        if (loopVolMin > pduHdaLoopBaseDo.getVolMinValue()) {
+                        if (loopVolMin >= pduHdaLoopBaseDo.getVolMinValue()) {
                             loopVolMin = pduHdaLoopBaseDo.getVolMinValue();
                             loopVolMinTime = pduHdaLoopBaseDo.getVolMinTime().toString("yyyy-MM-dd HH:mm:ss");
                         }
@@ -1555,27 +1556,27 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 linCureRes.getSeries().add(linCureSeries);
                 linVoleRes.getSeries().add(linVoleSeries);
 
-                result.put("linCureRes",linCureRes);
-                result.put("linVoleRes",linVoleRes);
+                result.put("linCureRes", linCureRes);
+                result.put("linVoleRes", linVoleRes);
 
                 result.put("loopVolMax" + i, loopVolMax);
                 result.put("loopVolMaxTime" + i, loopVolMaxTime);
                 result.put("loopVolMin" + i, loopVolMin);
                 result.put("loopVolMinTime" + i, loopVolMinTime);
-                result.put("VPName"+i,"回路"+i+"电压");
+                result.put("VPName" + i, "回路" + i + "电压");
 
                 result.put("loopCurMax" + i, loopMax);
                 result.put("loopCurMin" + i, loopMin);
                 result.put("loopCurMaxTime" + i, loopMaxTime);
                 result.put("loopCurMinTime" + i, loopMinTime);
-                result.put("CPName"+i,"回路"+i+"电流");
+                result.put("CPName" + i, "回路" + i + "电流");
             }
         }
         return result;
     }
 
     private String getCurVolSeriesName(String type, int Id, int dataType) {
-        String lineName = "C"+Id;
+        String lineName = "C" + Id;
 //        return lineName+ Id + DataNameType.fromValue(dataType).name() + type + "曲线";
         return lineName;
     }
@@ -2267,7 +2268,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     @Override
-    public Map getAvgBoxHdaOutletForm(BoxIndexPageReqVO pageReqVO) {
+    public Map getAvgBoxHdaOutletEleForm(BoxIndexPageReqVO pageReqVO) {
         Map map = new HashMap<>();
         BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
         if (boxIndex != null) {
@@ -2286,53 +2287,132 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (CollectionUtils.isEmpty(list)) {
                 return map;
             }
-            if (isSameDay){
+
+            Double outLetMax = 0d;
+            Double outLetMin = Double.MAX_VALUE;
+            String outLetMaxTime = "";
+            String outLetMinTime = "";
+
+            if (isSameDay) {
                 List<BoxEleOutletDo> baseDos = list.stream().map(i -> JsonUtils.parseObject(i, BoxEleOutletDo.class)).collect(Collectors.toList());
                 Map<Integer, List<BoxEleOutletDo>> groupedByOutletId = baseDos.stream()
                         .collect(Collectors.groupingBy(BoxEleOutletDo::getOutletId));
                 List<BoxEleOutletDo> boxEleOutletDos1 = groupedByOutletId.get(1);
                 List<BoxEleOutletDo> boxEleOutletDos2 = groupedByOutletId.get(2);
                 List<BoxEleOutletDo> boxEleOutletDos3 = groupedByOutletId.get(3);
-                List<EleCost> eleCosts = new ArrayList<>();
+
                 int dataIndex1 = 0;
                 int dataIndex2 = 0;
                 int dataIndex3 = 0;
-                if (!CollectionUtils.isEmpty(boxEleOutletDos1)){
-                    for (int i = 0; i < boxEleOutletDos1.size()-1; i++) {
+                if (!CollectionUtils.isEmpty(boxEleOutletDos1)) {
+                    List<EleCost> eleCosts = new ArrayList<>();
+                    for (int i = 0; i < boxEleOutletDos1.size() - 1; i++) {
                         EleCost eleCost = new EleCost();
                         eleCost.setOutletId(1);
-                        eleCost.setEq(boxEleOutletDos1.get(dataIndex1+1).getEleActive()-boxEleOutletDos1.get(dataIndex1).getEleActive());
+                        eleCost.setEq(boxEleOutletDos1.get(dataIndex1 + 1).getEleActive() - boxEleOutletDos1.get(dataIndex1).getEleActive());
+                        eleCost.setCreateTime(boxEleOutletDos1.get(dataIndex1).getCreateTime());
                         eleCosts.add(eleCost);
                         dataIndex1++;
                     }
+                    map.put(1,eleCosts);
+                    for (EleCost cost : eleCosts) {
+                        if (outLetMax < cost.getEq()) {
+                            outLetMax = cost.getEq();
+                            outLetMaxTime = cost.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                        if (outLetMin > cost.getEq()) {
+                            outLetMin = cost.getEq();
+                            outLetMinTime = cost.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                    }
+                    map.put("pName" + 1, "输出位1电量消耗极值");
+                    map.put("outLetMax" + 1, outLetMax);
+                    map.put("outLetMaxTime" + 1, outLetMaxTime);
+                    map.put("outLetMin" + 1, outLetMin);
+                    map.put("outLetMinTime" + 1, outLetMinTime);
                 }
 
                 if (!CollectionUtils.isEmpty(boxEleOutletDos2)) {
-                    for (int i = 0; i < boxEleOutletDos2.size()-1; i++) {
+                    List<EleCost> eleCosts = new ArrayList<>();
+                    for (int i = 0; i < boxEleOutletDos2.size() - 1; i++) {
                         EleCost eleCost = new EleCost();
                         eleCost.setOutletId(2);
-                        eleCost.setEq(boxEleOutletDos2.get(dataIndex2+1).getEleActive()-boxEleOutletDos2.get(dataIndex2).getEleActive());
+                        eleCost.setEq(boxEleOutletDos2.get(dataIndex2 + 1).getEleActive() - boxEleOutletDos2.get(dataIndex2).getEleActive());
                         eleCosts.add(eleCost);
                         dataIndex2++;
                     }
+                    map.put(2,eleCosts);
+                    for (EleCost cost : eleCosts) {
+                        if (outLetMax < cost.getEq()) {
+                            outLetMax = cost.getEq();
+                            outLetMaxTime = cost.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                        if (outLetMin > cost.getEq()) {
+                            outLetMin = cost.getEq();
+                            outLetMinTime = cost.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                    }
+                    map.put("pName" + 2, "输出位2电量消耗极值");
+                    map.put("outLetMax" + 2, outLetMax);
+                    map.put("outLetMaxTime" + 2, outLetMaxTime);
+                    map.put("outLetMin" + 2, outLetMin);
+                    map.put("outLetMinTime" + 2, outLetMinTime);
                 }
 
                 if (!CollectionUtils.isEmpty(boxEleOutletDos3)) {
-                    for (int i = 0; i < boxEleOutletDos3.size()-1; i++) {
+                    List<EleCost> eleCosts = new ArrayList<>();
+                    for (int i = 0; i < boxEleOutletDos3.size() - 1; i++) {
                         EleCost eleCost = new EleCost();
                         eleCost.setOutletId(3);
-                        eleCost.setEq(boxEleOutletDos3.get(dataIndex3+1).getEleActive()-boxEleOutletDos3.get(dataIndex3).getEleActive());
+                        eleCost.setEq(boxEleOutletDos3.get(dataIndex3 + 1).getEleActive() - boxEleOutletDos3.get(dataIndex3).getEleActive());
                         eleCosts.add(eleCost);
                         dataIndex2++;
                     }
+                    map.put(3,eleCosts);
+                    for (EleCost cost : eleCosts) {
+                        if (outLetMax < cost.getEq()) {
+                            outLetMax = cost.getEq();
+                            outLetMaxTime = cost.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                        if (outLetMin > cost.getEq()) {
+                            outLetMin = cost.getEq();
+                            outLetMinTime = cost.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                    }
+                    map.put("pName" + 3, "输出位3电量消耗极值");
+                    map.put("outLetMax" + 3, outLetMax);
+                    map.put("outLetMaxTime" + 3, outLetMaxTime);
+                    map.put("outLetMin" + 3, outLetMin);
+                    map.put("outLetMinTime" + 3, outLetMinTime);
                 }
 
-                map = eleCosts.stream().collect(Collectors.groupingBy(EleCost::getOutletId));
+//                map = eleCosts.stream().collect(Collectors.groupingBy(EleCost::getOutletId));
                 List<String> collect1 = baseDos.stream().map(i -> DateUtil.format(i.getCreateTime(), "yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList());
                 map.put("time", collect1);
-            }else {
+            } else {
                 List<BoxEqOutletDayDo> baseDos = list.stream().map(i -> JsonUtils.parseObject(i, BoxEqOutletDayDo.class)).collect(Collectors.toList());
                 map = baseDos.stream().collect(Collectors.groupingBy(BoxEqOutletDayDo::getOutletId));
+                //处理极值
+                for (int i = 1; i < 4; i++) {
+                    List<BoxEqOutletDayDo> eleList = (List<BoxEqOutletDayDo>) map.get(i);
+                    for (BoxEqOutletDayDo boxEqOutletDayDo : eleList) {
+                        if (outLetMax < boxEqOutletDayDo.getEq()) {
+                            outLetMax = boxEqOutletDayDo.getEq();
+                            outLetMaxTime = boxEqOutletDayDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                        if (outLetMin > boxEqOutletDayDo.getEq()) {
+                            outLetMin = boxEqOutletDayDo.getEq();
+                            outLetMinTime = boxEqOutletDayDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                        }
+                    }
+                    map.put("pName" + i, "输出位" + i + "电量消耗极值");
+                    map.put("outLetMax" + i, outLetMax);
+                    map.put("outLetMaxTime" + i, outLetMaxTime);
+                    map.put("outLetMin" + i, outLetMin);
+                    map.put("outLetMinTime" + i, outLetMinTime);
+                }
+
+
                 List<String> collect1 = baseDos.stream().map(i -> DateUtil.format(i.getCreateTime(), "yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList());
                 map.put("time", collect1);
 
@@ -2340,6 +2420,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         return map;
     }
+
     private static class EleCost {
         @Setter
         @Getter
@@ -2352,6 +2433,16 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         @Getter
         @JsonProperty("eq_value")
         private double eq;
+
+        /**
+         * 创建时间
+         */
+        @Getter
+        @Setter
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        @JsonProperty("create_time")
+        private DateTime createTime;
+
 
     }
 
@@ -2803,8 +2894,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     result.put("firstEq", firstEq);
                     result.put("lastEq", lastEq);
                     result.put("barRes", barRes);
-                }
-               else {
+                } else {
                     int dataIndex = 0;
                     for (String str : cabinetData) {
                         nowTimes++;
@@ -2991,7 +3081,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (powFactorMax < boxTotalHourDo.getPowerFactorAvgValue()) {
                 powFactorMax = boxTotalHourDo.getPowerFactorAvgValue();
             }
-            if (powFactorMin > boxTotalHourDo.getPowerFactorAvgValue()){
+            if (powFactorMin > boxTotalHourDo.getPowerFactorAvgValue()) {
                 powFactorMin = boxTotalHourDo.getPowerFactorAvgValue();
             }
         }
@@ -3342,7 +3432,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 lineRes.getSeries().add(seriesB);
                 lineRes.getSeries().add(seriesC);
                 lineRes.getSeries().add(seriesN);
-                
+
                 result.put("lineRes", lineRes);
                 return result;
             }
@@ -4758,6 +4848,180 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         ExcelUtils.write(SpringHttpUtils.getResponse(), "插接箱谐波监测详情.xlsx", "数据", BoxHarmonicLineDetailResVO.class, list);
     }
+
+    @Override
+    public Map getAvgBoxHdaOutletForm(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+
+        Map<String, Object> resultMap = new HashMap<>();
+        BusLineResBase totalLineRes = new BusLineResBase();
+        try {
+            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
+            if (boxIndex != null) {
+                String index;
+                Integer Id = boxIndex.getId();
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                    index = "box_hda_outlet_hour";
+                    if (oldTime.equals(newTime)) {
+                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                    }
+
+                } else {
+                    index = "box_hda_outlet_day";
+                    oldTime = oldTime.plusDays(1);
+                    newTime = newTime.plusDays(1);
+                }
+                String startTime = localDateTimeToString(oldTime);
+                String endTime = localDateTimeToString(newTime);
+                List<String> data = getDataNew(startTime, endTime, Arrays.asList(Id), index);
+                List<BoxOutletBaseDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, BoxOutletBaseDo.class)).collect(Collectors.toList());
+                Map<Integer, List<BoxOutletBaseDo>> powMap = powList.stream().collect(Collectors.groupingBy(BoxOutletBaseDo::getOutletId));
+                // 使用 Set 去重
+                Set<String> uniqueTimeSet = new HashSet<>();
+
+                for (BoxOutletBaseDo boxOutletBaseDo : powList) {
+                    if (timeType == 0 || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        String time = boxOutletBaseDo.getCreateTime().toString("HH:mm");
+                        uniqueTimeSet.add(time);
+                    } else {
+                        String time = boxOutletBaseDo.getCreateTime().toString("yyyy-MM-dd");
+                        uniqueTimeSet.add(time);
+                    }
+                }
+
+                // 将 Set 转换为 List
+                List<String> uniqueTimeList = new ArrayList<>(uniqueTimeSet);
+                uniqueTimeList.sort(String::compareTo);
+                // 添加到 totalLineRes 的时间列表
+                totalLineRes.getTime().addAll(uniqueTimeList);
+
+                for (int i = 1; i <= 3; i++) {
+                    //数据处理
+                    List<BoxOutletBaseDo> boxOutletBaseDos = powMap.get(i);
+                    if (!CollectionUtils.isEmpty(boxOutletBaseDos)) {
+
+                        switch (i) {
+                            case 1:
+                                resultMap.put("pName" + i, "输出位一有功功率极值");
+                                break;
+                            case 2:
+                                resultMap.put("pName" + i, "输出位二有功功率极值");
+                                break;
+                            case 3:
+                                resultMap.put("pName" + i, "输出位三有功功率极值");
+                                break;
+                            default:
+                        }
+                        processBoxHdaOutlet(totalLineRes, resultMap, boxOutletBaseDos, dataType, i);
+                        processOutLetActiveMavMin(boxOutletBaseDos, dataType, resultMap, i);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
+        }
+        resultMap.put("totalLineRes", totalLineRes);
+        return resultMap;
+    }
+
+    /**
+     * 获取曲线名称
+     *
+     * @param type
+     * @param outLetId
+     * @param dataType
+     * @return
+     */
+    private String getOutLetSeriesName(String type, int outLetId, int dataType) {
+        String lineName = "";
+        switch (outLetId) {
+            case 1:
+                lineName = "输出位一";
+                break;
+            case 2:
+                lineName = "输出位二";
+                break;
+            case 3:
+                lineName = "输出位三";
+                break;
+        }
+
+        return lineName + DataNameType.fromValue(dataType).name() + type + "曲线";
+    }
+
+    /**
+     * 处理输出位有功功率数据
+     *
+     * @param totalLineRes
+     * @param resultMap
+     * @param boxOutletBaseDos
+     * @param dataType
+     */
+    private void processBoxHdaOutlet(BusLineResBase totalLineRes, Map<String, Object> resultMap, List<BoxOutletBaseDo> boxOutletBaseDos, Integer dataType, Integer index) {
+        LineSeries activePow = new LineSeries();
+        List<String> happenTime = new ArrayList<>();
+        activePow.setName(getOutLetSeriesName("有功功率", index, dataType));
+        for (BoxOutletBaseDo boxOutletBaseDo : boxOutletBaseDos) {
+            activePow.getData().add(getOutLetActiveValue(boxOutletBaseDo, DataTypeEnums.fromValue(dataType)));
+            happenTime.add(formatOutLetActiveTime(boxOutletBaseDo, DataTypeEnums.fromValue(dataType)));
+        }
+        activePow.setHappenTime(happenTime);
+        totalLineRes.getSeries().add(activePow);
+    }
+
+    /**
+     * 获取总功率因素
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private Float getOutLetActiveValue(BoxOutletBaseDo houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getPowActiveMaxValue();
+            case AVG:
+                return houResVO.getPowActiveAvgValue();
+            case MIN:
+                return houResVO.getPowActiveMinValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 获取总功率因素发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private String formatOutLetActiveTime(BoxOutletBaseDo houResVO, DataTypeEnums dataType) {
+        System.out.println("===BoxOutletBaseDo===" + houResVO);
+        switch (dataType) {
+            case MAX:
+                return sdf.format(houResVO.getPowActiveMaxTime());
+            case AVG:
+                return "无";
+            case MIN:
+                return sdf.format(houResVO.getPowActiveMinTime());
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+
+    public void processOutLetActiveMavMin(List<BoxOutletBaseDo> powList, Integer dataType, Map<String, Object> result, Integer index) {
+        PowerData activePowData = new PowerData();
+
+        for (BoxOutletBaseDo boxOutletBaseDo : powList) {
+            updatePowerData(activePowData, boxOutletBaseDo.getPowActiveMaxValue(), boxOutletBaseDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"), boxOutletBaseDo.getPowActiveAvgValue(), boxOutletBaseDo.getPowActiveMinValue(), boxOutletBaseDo.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
+        }
+        result.put("activePowMaxValue" + index, activePowData.getMaxValue());
+        result.put("activePowMaxTime" + index, activePowData.getMaxTime());
+        result.put("activePowMinValue" + index, activePowData.getMinValue());
+        result.put("activePowMinTime" + index, activePowData.getMinTime());
+    }
+
 
     public Map<String, String> getPositionByKeys(List<String> keys) {
         Map<String, String> map = new HashMap<>();

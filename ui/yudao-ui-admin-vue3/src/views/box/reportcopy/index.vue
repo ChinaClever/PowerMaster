@@ -372,9 +372,47 @@
             <div class="page-conTitle">
               输出位电量消耗
             </div>
+                <div class="power-section single-line">
+        <span class="power-title" v-if="outletList[`pName${1}`]!=null">{{outletList[`pName${1}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${1}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${1}`].toFixed(3) }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${1}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${1}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${1}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${1}`] }})</span></span>
+        <span  class="separator" v-if="outletList[`pName${2}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="outletList[`pName${2}`]!=null">{{outletList[`pName${2}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${2}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${2}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${2}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${2}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${2}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${2}`] }})</span></span>
+      </div>
+                <div class="power-section single-line">
+        <span class="power-title" v-if="outletList[`pName${3}`]!=null">{{outletList[`pName${3}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${3}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${3}`].toFixed(3) }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${3}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${3}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${3}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${3}`] }})</span></span>
+        <span  class="separator" v-if="outletList[`pName${4}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="outletList[`pName${4}`]!=null">{{outletList[`pName${4}`]}}：</span>
+        <span class="power-value" v-if="outletList[`pName${4}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${4}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${4}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${4}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${24}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${4}`] }})</span></span>
+      </div>
             <HorizontalBar :width="computedWidth" height="58vh" :list="outletList" :dataType="queryParams.dataType"/>
           </div>
+
+            <div class="pageBox" v-if="visControll.flag">
+            <div class="page-conTitle">
+              输出位有功功率
+            </div>
+                     <div v-for="(sensor, index) in outLetActiveList?.series" :key="index">
+        <div class="power-section single-line" v-if="index %2 == 0">
+        <span class="power-title" v-if="outletActiveData[`pName${index+1}`]!=null">{{outletActiveData[`pName${index+1}`]}}极值：</span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+1}`]!=null">峰值 <span class="highlight">{{ outletActiveData[`activePowMaxValue${index + 1}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+1}`]!=null">谷值 <span class="highlight">{{ outletActiveData[`activePowMinValue${index + 1}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMinTime${index + 1}`] }})</span></span>
+        <span  class="separator" v-if="outletActiveData[`pName${index+1}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="outletActiveData[`pName${index+2}`]!=null">{{outletActiveData[`pName${index+2}`]}}极值：</span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+2}`]!=null">峰值 <span class="highlight">{{ outletActiveData[`activePowMaxValue${index + 2}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="outletActiveData[`pName${index+2}`]!=null">谷值 <span class="highlight">{{ outletActiveData[`activePowMinValue${index + 2}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMinTime${index + 2}`] }})</span></span>
+      </div>
+            </div>  
+            <OutLetActiveLine width="70vw" height="58vh" :list="outLetActiveList" :dataType="queryParams.dataType"/>
+          </div>
         </div>
+
+        
 
         <div class="pageBox"  v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -405,8 +443,16 @@
                         </el-tooltip>
                       </template>
                     </el-table-column>
-                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
-                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+    <el-table-column label="开始时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.startTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.endTime) }}
+        </template>
+      </el-table-column>
                     <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
                     <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
                 </el-table>
@@ -435,6 +481,7 @@ import EnvTemLine from './component/EnvTemLine.vue';
 import LoopCurLine from './component/LoopCurLine.vue';
 import LoopVolLine from './component/LoopVolLine.vue';
 import HorizontalBar from './component/HorizontalBar.vue';
+import OutLetActiveLine from './component/OutLetActiveLine.vue';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' });
@@ -448,6 +495,8 @@ const curvolLoopData = ref() as any;
 const curLoopList = ref() as any;
 const volLoopList = ref() as any;
 const outletList = ref() as any;
+const outletActiveData = ref() as any;
+const outLetActiveList = ref() as any;
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
@@ -472,6 +521,14 @@ const serChartContainerWidth = ref(0)
 const instance = getCurrentInstance();
 let num=0
 
+   // 格式化时间戳的方法
+const formatTime = (timestamp) => {
+    if(timestamp == null){
+    return ''
+  }
+  const date = new Date(timestamp);
+  return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
 
 // 创建一个响应式引用来存储窗口宽度
 const windowWidth = ref(window.innerWidth);
@@ -993,6 +1050,8 @@ const getList = async () => {
 
   pfLineData.value  = await IndexApi.getBoxPFLine(queryParams);
   pfLineList.value = pfLineData.value.pfLineRes;
+  console.log('pfLineListpfLineList',pfLineList.value);
+  
   pfLineList.value.series.forEach(item => {
     item.data = item.data.map(value => parseFloat(value.toFixed(3)));
   });
@@ -1039,7 +1098,7 @@ const getList = async () => {
     visControll.powVis = false;
   }
 
-  outletList.value = await IndexApi.getAvgBoxHdaOutletForm(queryParams);
+  outletList.value = await IndexApi.getAvgBoxHdaOutletEleForm(queryParams);
   if(outletList.value.time != null && outletList.value.time.length > 0){
     visControll.flag = true;
   }else{
@@ -1082,6 +1141,12 @@ const getList = async () => {
       visControll.curVolVis = false;
 
   }
+
+  outletActiveData.value =  await IndexApi.getAvgBoxHdaOutletForm(queryParams);
+  outLetActiveList.value =   outletActiveData.value.totalLineRes;
+  console.log("outLetActiveList.value",outLetActiveList.value);
+  
+
 
   curvolLoopData.value = await IndexApi.getAvgBoxHdaLoopForm(queryParams);
   curLoopList.value = curvolLoopData.value.linCureRes
@@ -1204,11 +1269,13 @@ const getList = async () => {
     //清除temp1的缓存数据
   temp1.value=[]
   //获得告警信息
-  const temp1Data = await IndexApi.getRecordPage({
+  const temp1Data = await IndexApi.getBoxRecordPage({
     pageNo: 1,
     pageSize: 10,
     devKey: queryParams.devKey,
-    devType: 7
+    devType: 7,
+    alarmType: 4,
+    likeName: queryParams.devKey,
   })
   //处理告警信息数据
   // //debugger
