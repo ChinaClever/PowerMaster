@@ -71,14 +71,12 @@ public class MySQLTableMonitor {
                 if (data instanceof TableMapEventData) {
                     TableMapEventData tableMap = (TableMapEventData) data;
                     if (binLogConstants.getDb().equals(tableMap.getDatabase()) && binLogConstants.getTableList().contains(tableMap.getTable())) {
-                        if (redisTemplate.opsForValue().get("table:" + tableMap.getTable()) != null) {
-                            tableSchemaCache = (Map<String, List<ColumnInfo>>) redisTemplate.opsForValue().get("table:" + tableMap.getTable());
-                        } else {
-                            // 查询表结构并缓存
+                        // 查询表结构
+                        // 不缓存表结构，避免表结构改变tableId也发生改变时，获得不到正确的数据，且性能消耗很小
+                        if (tableSchemaCache.size() == 0 || tableSchemaCache.get(tableMap.getTableId()+"") == null) {
                             String connectionUrl = "jdbc:mysql://" + binLogConstants.getHost() + ":" + binLogConstants.getPort() + "/" + binLogConstants.getDb() + "?useSSL=false";
                             columns = JdbcUtils.getTableColumns(connectionUrl,binLogConstants.getUsername(),binLogConstants.getPasswd(),tableMap.getDatabase(), tableMap.getTable());
                             tableSchemaCache.put(tableMap.getTableId()+"", columns);
-                            redisTemplate.opsForValue().set("table:" + tableMap.getTable(), tableSchemaCache);
                         }
                         if (tableIdToName.size() == 0 || tableIdToName.get(tableMap.getTableId()+"") == null) {
                             tableIdToName.put(tableMap.getTableId()+"", tableMap.getTable());
