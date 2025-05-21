@@ -1085,6 +1085,10 @@ import aisleBalance from './component/aisleBalance.vue';
 import cabinetBalance from './component/cabinetBalance.vue';
 import busRequire from './component/busRequire.vue';
 import busBalance from './component/busBalance.vue';
+import boxRequire from './component/boxRequire.vue';
+import boxBalance from './component/boxBalance.vue';
+import pduRequire from './component/pduRequire.vue';
+import pduBalance from './component/pduBalance.vue';
 import download from '@/utils/download'
 import PFDetail from './component/PFDetail.vue'
 import { debounce } from 'lodash-es'
@@ -1850,6 +1854,7 @@ const getRoomInfo = async() => {
         }
       })
       item.cabinetList = arr
+      if(item.xCoordinate && item.yCoordinate)
       for(let i=0; i < item.length; i++) {
         const dataItem =  {
           id: item.id,
@@ -1946,6 +1951,7 @@ const getRoomInfoNoLoading = async() => {
         }
       })
       item.cabinetList = arr
+      if(item.xCoordinate && item.yCoordinate)
       for(let i=0; i < item.length; i++) {
         const dataItem =  {
           id: item.id,
@@ -3093,14 +3099,6 @@ const moveMachine = async (data,x,y) => {
       eleLimitDay: data.eleLimitDay,
       eleAlarmMonth: data.eleAlarmMonth,
       eleLimitMonth: data.eleLimitMonth
-    }
-
-    const flagRes = await MachineRoomApi.findAddAisleVerify(cabinetObject)
-
-    if(flagRes) {
-      message.error("移动失败,可能原因如下：该机柜的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
-      getRoomInfoNoLoading()
-      return
     }
 
     res = await MachineRoomApi.saveRoomCabinet(cabinetObject)

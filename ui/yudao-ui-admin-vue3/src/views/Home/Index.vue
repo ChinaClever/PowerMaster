@@ -640,7 +640,6 @@ const getHomeEqData = async() => {
 //   return item; // 如果item不存在或name不是字符串，保持原样
 // }) : [];
 
-  res.roomEqList = [...res.roomEqList] //添加了模拟数据
   //.slice(0, 12)
   
   Object.assign(eqInfo, res)
@@ -889,7 +888,7 @@ const getAllApi = async () => {
 getAllApi()
 
 const computedEnInfo = computed(() => {
-  if(eqInfo.roomEqList?.length > 12){
+  if(temChartOptions.value.xAxis.data?.length > 10){
     return {
       overflowX:'auto',
     }
@@ -897,9 +896,9 @@ const computedEnInfo = computed(() => {
 })
 
 const computedEnInfoWidth = computed(() => {
-  let num = Math.floor(eqInfo.roomEqList.length / 10) + 1
+  let num = Math.floor(temChartOptions.value.xAxis.data?.length / 10) + 1
   num = num * 20 + 45
-  if(eqInfo.roomEqList.length > 10){
+  if(temChartOptions.value.xAxis.data?.length > 10){
     return {
       width:num+'vw',
     }

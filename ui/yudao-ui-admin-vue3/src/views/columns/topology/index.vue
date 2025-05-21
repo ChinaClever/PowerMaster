@@ -1228,7 +1228,7 @@ const handleOperate = (type) => {
       }
     }
     const data = type == 'add' ? null : cabinetList.value[index]
-    console.log("data",data)
+    console.log("cabinetList.value[index]",cabinetList.value[index])
     cabinetForm.value.open(type, data, null, machineColInfo)
   } else if (type == 'delete') {
     ElMessageBox.confirm('确认删除吗？', '提示', {
@@ -2129,7 +2129,11 @@ const handleCabinetList = async(data) => {
   console.log('处理机柜列表', data)
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
-    arr.push({})
+    arr.push({
+      roomId: data.roomId,
+      aisleId: data.id,
+      index: i+1
+    })
   }
   // 给机柜要连接的插接箱 找到对应的下标
   data.cabinetList && data.cabinetList.forEach(item => {
@@ -2154,7 +2158,11 @@ const handleCabinetListReal = async(data) => {
   console.log('处理机柜列表', data)
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
-    arr.push({})
+    arr.push({
+      roomId: data.roomId,
+      aisleId: data.id,
+      index: i+1
+    })
   }
   // 给机柜要连接的插接箱 找到对应的下标
   data.cabinetList && data.cabinetList.forEach(item => {
@@ -2168,10 +2176,20 @@ const handleCabinetListReal = async(data) => {
   updateCabinetConnect()
 }
 // 增加空机柜
-const addMachine = () => {
+const addMachine = async () => {
   console.log('addMachine')
   cabinetList.value.push({})
   updateCabinetConnect()
+  // const res = await MachineColumnApi.saveAisleDetail({
+  //   id: machineColInfo.id,
+  //   length: cabinetList.value.length + 1,
+  // })
+  // if(res) {
+  //   message.success('增加成功！')
+  // } else {
+  //   message.error('增加失败！')
+  // }
+  // getMachineColInfoReal()
 }
 // 删除空机柜
 const deleteMachine = () => {
