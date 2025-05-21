@@ -108,10 +108,22 @@ public class IndexController {
         return success(indexService.getReportPowDataById(Id,timeType,oldTime,newTime));
     }
 
+    @GetMapping("/report/powByType")
+    @Operation(summary = "获得机柜报表数据")
+    public CommonResult<Map> getReportPowDataByIdAndType(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(indexService.getReportPowDataByIdAndType(Id,timeType,oldTime,newTime,dataType));
+    }
+
     @GetMapping("/report/pfline")
     @Operation(summary = "获得机柜报表数据")
     public CommonResult<Map> getCabinetPFLine(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
         return success(indexService.getCabinetPFLine(Id,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/report/pfLineByType")
+    @Operation(summary = "获得机柜报表数据")
+    public CommonResult<Map> getCabinetPFLineByType(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(indexService.getCabinetPFLineByType(Id,timeType,oldTime,newTime,dataType));
     }
 
     @GetMapping("/env/ice")

@@ -70,4 +70,8 @@ public interface IndexService {
     List<CabinetRackRspVO> getRackByCabinet(Integer id);
 
     Map<String, Double> getEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) throws IOException;
+
+    Map getCabinetPFLineByType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getReportPowDataByIdAndType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }
