@@ -97,7 +97,7 @@ public class MySQLTableMonitor {
                         for (Serializable[] row : writeData.getRows()) {
                             Map<String, Object> rowData = parseRowData(row, columns);
                             mapList.add(rowData);
-                            log.info("[INSERT] 数据内容：" + rowData);
+//                            log.info("[INSERT] 数据内容：" + rowData);
                         }
 //                        alarmCfgMailService.pushAlarmMessage(mapList);
                     }
@@ -190,14 +190,25 @@ public class MySQLTableMonitor {
         long latestPosition = 0;
         Statement stmt = conn.createStatement();
         try {
-            ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS;");
+            ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS");
             if (rs.next()) {
                 latestFile = rs.getString("File");
                 latestPosition = rs.getLong("Position");
             }
         } catch (Exception e) {
-            log.error("获取binlog状态失败", e);
+            log.info("获取binlog状态异常: "+ e.getMessage());
+            log.info("更换DQL语句重新获取");
             // 设置默认值或重试策略
+            try {
+                ResultSet rs = stmt.executeQuery("SHOW BINARY LOG STATUS");
+                if (rs.next()) {
+                    latestFile = rs.getString("File");
+                    latestPosition = rs.getLong("Position");
+                }
+            } catch (Exception exception) {
+                log.info("重新获取binlog异常：" + e.getMessage());
+            }
+
         }
         return new String[]{latestFile, String.valueOf(latestPosition)};
     }
