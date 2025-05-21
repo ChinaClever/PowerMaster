@@ -432,6 +432,11 @@ public class FieldConstant {
     public static final String LOAD_FACTOR = "load_factor";
 
     /**
+     * 机房负载率
+     */
+    public static final String ROOM_LOAD_FACTOR = "room_load_factor";
+
+    /**
      * 机柜数据
      */
     public static final String CABINET_POWER = "cabinet_power";

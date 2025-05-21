@@ -108,11 +108,13 @@ public class MySQLTableMonitor {
                     tableId = updateData.getTableId();
                     columns = tableSchemaCache.get(tableId+"");
                     tableName = tableIdToName.get(tableId+"");
-                    List<String> tableList = new ArrayList<>();
-                    tableList.add(DBTable.PDU_INDEX);
-                    tableList.add(DBTable.BUS_INDEX);
-                    tableList.add(DBTable.CABINET_INDEX);
-                    tableList.add(DBTable.CABINET_CRON_CONFIG);
+                    List<String> tableList = new ArrayList<>(Arrays.asList(
+                            DBTable.PDU_INDEX,
+                            DBTable.BUS_INDEX,
+                            DBTable.CABINET_INDEX,
+                            DBTable.ROOM_INDEX,
+                            DBTable.CABINET_CRON_CONFIG
+                    ));
                     if (columns != null && tableList.contains(tableName)) {
                         if (!repeatMessage(event)) {
                             return;
@@ -125,8 +127,8 @@ public class MySQLTableMonitor {
                             if (validateData(oldData, newData)) {
                                 oldMaps.add(oldData);
                                 newMaps.add(newData);
-                                log.info(tableName + " [UPDATE] 旧数据：" + oldData);
-                                log.info(tableName + " [UPDATE] 新数据：" + newData);
+//                                log.info(tableName + " [UPDATE] 旧数据：" + oldData);
+//                                log.info(tableName + " [UPDATE] 新数据：" + newData);
                             }
                         }
                         Integer result = null;
@@ -140,6 +142,9 @@ public class MySQLTableMonitor {
                             case DBTable.CABINET_INDEX:
                                 result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
                                 break;
+                            case DBTable.ROOM_INDEX:
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenRoomAlarm(oldMaps,newMaps);
+                                break;
                             case DBTable.CABINET_CRON_CONFIG:
                                 alarmLogRecordService.updateCabinetAlarmJob(oldMaps,newMaps);
                                 break;
@@ -148,7 +153,7 @@ public class MySQLTableMonitor {
                         }
                         // 告警记录表发生改变，向前端发送消息
                         if (result != null) {
-                            webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
+//                            webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
                         }
                     }
                 }
@@ -175,7 +180,7 @@ public class MySQLTableMonitor {
         long nextPosition = binlogEventHeader.getNextPosition();
         String sign = "sign:" + timestamp+":"+ nextPosition;
         if (redisTemplate.opsForValue().get(sign) == null) {
-            redisTemplate.opsForValue().set(sign,sign, 1, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set("sign:" + timestamp,nextPosition, 1, TimeUnit.MINUTES);
             return true;
         } else {
             return false;
@@ -271,6 +276,9 @@ public class MySQLTableMonitor {
             return true;
         }
         if (Objects.nonNull(oldData.get("eq_month_cron")) && !oldData.get("eq_month_cron").equals(newData.get("eq_month_cron"))) {
+            return true;
+        }
+        if (Objects.nonNull(oldData.get("load_rate_status")) && !oldData.get("load_rate_status").equals(newData.get("load_rate_status"))) {
             return true;
         }
         return false;

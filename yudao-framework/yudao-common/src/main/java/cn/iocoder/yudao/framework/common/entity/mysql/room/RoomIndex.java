@@ -63,6 +63,11 @@ public class RoomIndex implements Serializable {
     @Schema(description = "电力容量", example = "0")
     private float powerCapacity;
 
+    /**
+     * 负载率状态
+     */
+    @TableField(value = "load_rate_status")
+    private Integer loadRateStatus;
 
     /**
      * 空调额定功率

@@ -58,7 +58,14 @@ public class AlarmInit {
 
     public void ListenTableChange() {
         ListenerThreadPoolConfig.getThreadPool().execute(() -> {
-            List<String> tableList = new ArrayList<>(Arrays.asList(DBTable.PDU_INDEX, DBTable.BUS_INDEX, DBTable.CABINET_INDEX, DBTable.ALARM_LOG_RECORD, DBTable.CABINET_CRON_CONFIG));
+            List<String> tableList = new ArrayList<>(Arrays.asList(
+                    DBTable.PDU_INDEX,
+                    DBTable.BUS_INDEX,
+                    DBTable.CABINET_INDEX,
+                    DBTable.ROOM_INDEX,
+                    DBTable.ALARM_LOG_RECORD,
+                    DBTable.CABINET_CRON_CONFIG
+            ));
             binLogConstants.setTableList(tableList);
             try {
                 log.info("开始监听数据库表结构变化");

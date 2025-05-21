@@ -22,9 +22,11 @@ public enum AlarmTypeEnums {
     CABINET_DAY_POWER_ALARM(8, "机柜每日电量限额告警"),
     CABINET_WEEK_POWER_ALARM(9, "机柜每周电量限额告警"),
     CABINET_MONTH_POWER_ALARM(10, "机柜每月电量限额告警"),
-    STATUS(11, "状态告警"),
-    OFF_LINE(12, "离线告警"),
-    ELE(13, "用能告警"),
+    ROOM_CAPACITY_WARNING(11, "机柜电力容量预警"),
+    ROOM_CAPACITY_ALARM(12, "机柜电力容量告警"),
+    STATUS(13, "状态告警"),
+    OFF_LINE(14, "离线告警"),
+    ELE(15, "用能告警"),
     ;
 
     /**
