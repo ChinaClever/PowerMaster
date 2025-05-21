@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -50,7 +51,12 @@ public class RoomMonthAlarmJob implements JobHandler {
             Double eleLimitMonth = roomCfg.getEleLimitMonth();
             LambdaEsQueryWrapper<RoomMonthPower> wrapper = new LambdaEsQueryWrapper<>();
             wrapper.eq(RoomMonthPower::getRoom_id, roomCfg.getRoomId());
-            wrapper.orderByDesc("start_time.keyword");
+            // 获取当前时间
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String nowTime = now.format(formatter);
+            wrapper.lt("end_time.keyword",  nowTime);
+            wrapper.gt("end_time.keyword",  now.minusHours(1).format(formatter));
             wrapper.limit(1);
             RoomMonthPower roomMonthPower = roomMonthPowerMapper.selectOne(wrapper);
             if (roomMonthPower != null && roomMonthPower.getEq_value() > eleLimitMonth) {

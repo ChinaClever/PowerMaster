@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -58,7 +59,12 @@ public class CabinetMonthAlarmJob implements JobHandler {
             Double eleLimitMonth = cabinetCfg.getEleLimitMonth();
             LambdaEsQueryWrapper<CabinetMonthPower> wrapper = new LambdaEsQueryWrapper<>();
             wrapper.eq(CabinetMonthPower::getCabinet_id, cabinetCfg.getCabinetId());
-            wrapper.orderByDesc("start_time.keyword");
+            // 获取当前时间
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String nowTime = now.format(formatter);
+            wrapper.lt("end_time.keyword",  nowTime);
+            wrapper.gt("end_time.keyword",  now.minusHours(1).format(formatter));
             wrapper.limit(1);
             CabinetMonthPower cabinetMonthPower = cabinetMonthPowerMapper.selectOne (wrapper);
             if (cabinetMonthPower != null && cabinetMonthPower.getEq_value() > eleLimitMonth) {
@@ -90,7 +96,7 @@ public class CabinetMonthAlarmJob implements JobHandler {
                 DecimalFormat decimalFormat = new DecimalFormat("0.0");
                 decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
                 String powEqValueMonth = decimalFormat.format(cabinetMonthPower.getEq_value());
-                String alarmDesc = "每月用电量超额！月用电量限制：" +  eleLimitMonth + "KWh，实际用电量：" + powEqValueMonth + "KWh";
+                String alarmDesc = "机柜上个月用电量超额！月用电量限制：" +  eleLimitMonth + "KWh，实际用电量：" + powEqValueMonth + "KWh";
                 alarmRecord.setAlarmDesc(alarmDesc);
                 alarmRecord.setStartTime(LocalDateTime.now());
                 alarmLogRecordMapper.insert(alarmRecord);

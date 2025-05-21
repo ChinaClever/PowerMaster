@@ -14,7 +14,6 @@ import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.quartz.core.handler.JobHandler;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
-import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -37,9 +37,6 @@ public class CabinetDayAlarmJob implements JobHandler {
 
     @Autowired
     private RedisTemplate redisTemplate;
-
-    @Autowired
-    private AlarmLogRecordService alarmLogRecordService;
 
     @Autowired
     private AlarmLogRecordMapper alarmLogRecordMapper;
@@ -58,7 +55,12 @@ public class CabinetDayAlarmJob implements JobHandler {
             Double eleLimitDay = cabinetCfg.getEleLimitDay();
             LambdaEsQueryWrapper<CabinetDayPower> wrapper = new LambdaEsQueryWrapper<>();
             wrapper.eq(CabinetDayPower::getCabinet_id, cabinetCfg.getCabinetId());
-            wrapper.orderByDesc("start_time.keyword");
+            // 获取当前时间
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String nowTime = now.format(formatter);
+            wrapper.lt("end_time.keyword",  nowTime);
+            wrapper.gt("end_time.keyword",  now.minusHours(1).format(formatter));
             wrapper.limit(1);
             CabinetDayPower cabinetDayPower = cabinetDayPowerMapper.selectOne(wrapper);
             if (cabinetDayPower != null && cabinetDayPower.getEq_value() > eleLimitDay) {
@@ -90,7 +92,7 @@ public class CabinetDayAlarmJob implements JobHandler {
                 DecimalFormat decimalFormat = new DecimalFormat("0.0");
                 decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
                 String powEqValueDay = decimalFormat.format(cabinetDayPower.getEq_value());
-                String alarmDesc = "每日用电量超额！日用电量限制：" +  eleLimitDay + "KWh，实际用电量：" + powEqValueDay + "KWh";
+                String alarmDesc = "机柜上一日用电量超额！该机柜日用电量限制：" +  eleLimitDay + "KWh，实际用电量：" + powEqValueDay + "KWh";
                 alarmRecord.setAlarmDesc(alarmDesc);
                 alarmRecord.setStartTime(LocalDateTime.now());
                 alarmLogRecordMapper.insert(alarmRecord);

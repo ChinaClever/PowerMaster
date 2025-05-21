@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -38,7 +39,7 @@ public class RoomDayAlarmJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-        Thread.sleep(1000*60*5);
+//        Thread.sleep(1000*60*5);
         // 获取所有按天统计电量的机房
         List<RoomCfg> roomCfgList = roomCfgMapper.selectList(new LambdaQueryWrapper<RoomCfg>()
                 .eq(RoomCfg::getEleAlarmDay, 1));
@@ -47,7 +48,12 @@ public class RoomDayAlarmJob implements JobHandler {
             Double eleLimitDay = roomCfg.getEleLimitDay();
             LambdaEsQueryWrapper<RoomDayPower> wrapper = new LambdaEsQueryWrapper<>();
             wrapper.eq(RoomDayPower::getRoom_id, roomCfg.getRoomId());
-            wrapper.orderByDesc("start_time.keyword");
+            // 获取当前时间
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String nowTime = now.format(formatter);
+            wrapper.lt("end_time.keyword",  nowTime);
+            wrapper.gt("end_time.keyword",  now.minusHours(1).format(formatter));
             wrapper.limit(1);
             RoomDayPower roomDayPower = roomDayPowerMapper.selectOne(wrapper);
             if (roomDayPower != null && roomDayPower.getEq_value() > eleLimitDay) {
