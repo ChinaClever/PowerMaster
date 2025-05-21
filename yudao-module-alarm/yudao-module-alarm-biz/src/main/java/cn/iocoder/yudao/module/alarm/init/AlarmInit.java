@@ -2,7 +2,9 @@ package cn.iocoder.yudao.module.alarm.init;
 
 import cn.iocoder.yudao.framework.common.constant.JobHandlerConstants;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCronConfig;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomStatisConfig;
 import cn.iocoder.yudao.framework.common.mapper.CabinetCronCfgMapper;
+import cn.iocoder.yudao.framework.common.mapper.RoomCronCfgMapper;
 import cn.iocoder.yudao.module.alarm.constants.DBTable;
 import cn.iocoder.yudao.framework.common.util.ListenerThreadPoolConfig;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.cfgprompt.AlarmCfgPromptDO;
@@ -36,6 +38,9 @@ public class AlarmInit {
     @Autowired
     private CabinetCronCfgMapper cabinetCronCfgMapper;
 
+    @Autowired
+    private RoomCronCfgMapper roomCronCfgMapper;
+
     @PostConstruct
     public void init() throws InterruptedException {
         // 初始化告警配置
@@ -46,6 +51,9 @@ public class AlarmInit {
 
         // 初始化机柜电量限额告警定时任务
         initCabinetAlarmJob();
+
+        // 初始化机房电量限额告警定时任务
+        initRoomAlarmJob();
 
     }
 
@@ -86,7 +94,7 @@ public class AlarmInit {
 
             CabinetCronConfig cabinetCronConfig = cabinetCronCfgMapper.selectOne(null);
 
-            // 创建每日定时job
+            // 创建机柜每日定时job
             if (jobApi.existJobByHandler(JobHandlerConstants.CABINET_DAY_ALARM_JOB)) {
                 map.put("name", "机柜电量每天限额告警Job");
                 map.put("handlerName", JobHandlerConstants.CABINET_DAY_ALARM_JOB);
@@ -94,7 +102,7 @@ public class AlarmInit {
                 jobApi.createJob(map);
             }
 
-            // 创建每月定时job
+            // 创建机柜每月定时job
             if (jobApi.existJobByHandler(JobHandlerConstants.CABINET_MONTH_ALARM_JOB)) {
                 map.put("name", "机柜电量每月限额告警Job");
                 map.put("handlerName", JobHandlerConstants.CABINET_MONTH_ALARM_JOB);
@@ -103,6 +111,36 @@ public class AlarmInit {
             }
         } catch (Exception e) {
             log.error("初始化机柜电量限额告警定时任务异常", e);
+        }
+    }
+
+    public void initRoomAlarmJob(){
+        try {
+            // 定时任务共同属性
+            Map<String, Object> map = new HashMap<>();
+            map.put("retryCount", 3);
+            map.put("retryInterval", 1000);
+            map.put("monitorTimeout", 1000);
+
+            RoomStatisConfig roomStatisConfig = roomCronCfgMapper.selectOne(null);
+
+            // 创建机柜每日定时job
+            if (jobApi.existJobByHandler(JobHandlerConstants.ROOM_DAY_ALARM_JOB)) {
+                map.put("name", "机房电量每天限额告警Job");
+                map.put("handlerName", JobHandlerConstants.ROOM_DAY_ALARM_JOB);
+                map.put("cronExpression", roomStatisConfig.getEqDayCron());
+                jobApi.createJob(map);
+            }
+
+            // 创建机柜每月定时job
+            if (jobApi.existJobByHandler(JobHandlerConstants.ROOM_MONTH_ALARM_JOB)) {
+                map.put("name", "机房电量每月限额告警Job");
+                map.put("handlerName", JobHandlerConstants.ROOM_MONTH_ALARM_JOB);
+                map.put("cronExpression", roomStatisConfig.getEqMonthCron());
+                jobApi.createJob(map);
+            }
+        } catch (Exception e) {
+            log.error("初始化机房电量限额告警定时任务异常", e);
         }
     }
 
