@@ -26,10 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -374,7 +371,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
             Map<String, PduIndexDo> pduMap = pduIndexDos.stream().collect(Collectors.toMap(PduIndexDo::getPduKey, Function.identity()));
             pduMap.keySet().removeAll(pduKeys);
 
-            List<RoomMenuDTO> boxIndices = new ArrayList<>();
+            List<RoomMenuDTO> pduList = new ArrayList<>();
             pduMap.keySet().forEach(pduKey -> {
                 PduIndexDo pduIndexDo = pduMap.get(pduKey);
 
@@ -385,10 +382,9 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                 pduMenuDTO.setType(4);
                 pduMenuDTO.setParentType(3);
                 pduMenuDTO.setUnique(pduIndexDo.getPduKey());
-                boxIndices.add(pduMenuDTO);
+                pduList.add(pduMenuDTO);
             });
-
-            roomMenuDTO.setChildren(boxIndices);
+            roomMenuDTO.setChildren(pduList.stream().sorted(Comparator.comparing(RoomMenuDTO::getUnique).reversed()).collect(Collectors.toList()));
             roomPduMenuDTOS.add(roomMenuDTO);
 
             return roomPduMenuDTOS;

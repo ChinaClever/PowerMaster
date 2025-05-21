@@ -13,7 +13,7 @@
         VALUES
         <foreach collection="envSensorList" item="envSensor" separator=",">
             (#{envSensor.cabinetId},#{envSensor.channel} ,#{envSensor.pathPdu},
-            #{envSensor.position}, #{envSensor.envSensorId},#{envSensor.sensorType})
+            #{envSensor.position}, #{envSensor.sensorId},#{envSensor.sensorType})
         </foreach>
     </insert>
 </mapper>
