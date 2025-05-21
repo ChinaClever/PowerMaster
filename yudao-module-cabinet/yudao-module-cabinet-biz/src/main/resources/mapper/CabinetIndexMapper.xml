@@ -354,6 +354,8 @@
             AND cp.pdu_key_a = #{pduKey}
             OR cp.pdu_key_b = #{pduKey}
         </where>
+        ORDER BY cp.update_time DESC
+        LIMIT 1
     </select>
 
     <select id="findAddAisleVerifyx" resultType="java.lang.Integer">
