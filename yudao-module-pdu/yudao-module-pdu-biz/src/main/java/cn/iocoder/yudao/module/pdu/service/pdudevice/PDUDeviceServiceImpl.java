@@ -799,45 +799,45 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     SearchHits hits = searchResponse.getHits();
                     for (SearchHit hit : hits) {
                         String str = hit.getSourceAsString();
-                                switch (type) {
-                                    case "oneHour":
-                                        PduHdaLineRealtimeResVO realtimeDO = JsonUtils.parseObject(str, PduHdaLineRealtimeResVO.class);
-                                        switch (realtimeDO.getLineId()) {
-                                            case 1:
-                                                oneHourList1.add(realtimeDO);
-                                                result.put("l", oneHourList1);
-                                                break;
-                                            case 2:
-                                                oneHourList2.add(realtimeDO);
-                                                result.put("ll", oneHourList2);
-                                                break;
-                                            case 3:
-                                                oneHourList3.add(realtimeDO);
-                                                result.put("lll", oneHourList3);
-                                                break;
-                                            default:
-                                        }
-                                        dateTimes.add(realtimeDO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        switch (type) {
+                            case "oneHour":
+                                PduHdaLineRealtimeResVO realtimeDO = JsonUtils.parseObject(str, PduHdaLineRealtimeResVO.class);
+                                switch (realtimeDO.getLineId()) {
+                                    case 1:
+                                        oneHourList1.add(realtimeDO);
+                                        result.put("l", oneHourList1);
+                                        break;
+                                    case 2:
+                                        oneHourList2.add(realtimeDO);
+                                        result.put("ll", oneHourList2);
+                                        break;
+                                    case 3:
+                                        oneHourList3.add(realtimeDO);
+                                        result.put("lll", oneHourList3);
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(realtimeDO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                                 break;
-                                    case "twentyfourHour":
-                                    case "seventytwoHour":
-                                        PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
-                                        switch (houResVO.getLineId()) {
-                                            case 1:
-                                                dayList1.add(houResVO);
+                            case "twentyfourHour":
+                            case "seventytwoHour":
+                                PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
+                                switch (houResVO.getLineId()) {
+                                    case 1:
+                                        dayList1.add(houResVO);
 
-                                                break;
-                                            case 2:
-                                                dayList2.add(houResVO);
+                                        break;
+                                    case 2:
+                                        dayList2.add(houResVO);
 
-                                                break;
-                                            case 3:
-                                                dayList3.add(houResVO);
+                                        break;
+                                    case 3:
+                                        dayList3.add(houResVO);
 
-                                                break;
-                                            default:
-                                        }
-                                        dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                                 break;
                             default:
                         }
@@ -854,7 +854,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 try {
                     curMaxValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())), index, "cur_max_value");
                     totalCurMax = JsonUtils.parseObject(curMaxValue, PduHdaLineHouResVO.class);
-                    curMinValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())),index, "cur_min_value");
+                    curMinValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())), index, "cur_min_value");
                     totalCurMin = JsonUtils.parseObject(curMinValue, PduHdaLineHouResVO.class);
                     volMaxValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())), index, "vol_max_value");
                     totalVolMax = JsonUtils.parseObject(volMaxValue, PduHdaLineHouResVO.class);
@@ -871,13 +871,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     result.put("volAMinValue", totalVolMin.getVolMinValue());
                     result.put("volAMinTime", sdf.format(totalVolMin.getVolMinTime()));
 
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.error("获取数据失败", e);
                 }
             }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
             redisTemplate.opsForValue().set(key, JSONObject.toJSONString(result), 5, TimeUnit.MINUTES);
-
 
 
             return result;
@@ -903,7 +902,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (pduIndex != null) {
             Integer id = pduIndex.getId();
             String index = (type == 0 || oldTime.toLocalDate().equals(newTime.toLocalDate())) ? "pdu_hda_line_hour" : "pdu_hda_line_day";
-            boolean isSameDay = (type == 0|| oldTime.toLocalDate().equals(newTime.toLocalDate()));
+            boolean isSameDay = (type == 0 || oldTime.toLocalDate().equals(newTime.toLocalDate()));
 
             if (!isSameDay) {
                 oldTime = oldTime.plusDays(1).withHour(0).withMinute(0).withSecond(0);
@@ -982,7 +981,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     curResBase.getSeries().add(curSeries);
                     volResBase.getSeries().add(volSeries);
                 }
-                resultMap.put("lineNumber",lineId);
+                resultMap.put("lineNumber", lineId);
             }
 
             // 添加时间轴数据
@@ -1225,6 +1224,216 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         return resultAB;
 
+    }
+
+    @Override
+    public Map getPduHdaLineHisdataKeyByCabinetByType(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+        HashMap resultAB = new HashMap<>();
+        CabinetIndex cabinetIndex = cabinetIndexMapper.selectOne(new LambdaQueryWrapperX<CabinetIndex>().eq(CabinetIndex::getId, cabinetId));
+        if (cabinetIndex.getPduBox().equals(true)) {
+            throw exception(NOT_PDU);
+        }
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, cabinetId));
+        String pduKeyA = cabinetPdu.getPduKeyA();
+        HashMap resultA = new HashMap<>();
+        HashMap resultB = new HashMap<>();
+
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKeyA));
+        if (pduIndex != null) {
+            Integer id = pduIndex.getId();
+            // 构建查询请求
+            String index = ("twentyfourHour".equals(type) || oldTime.toLocalDate().equals(newTime.toLocalDate())) ? "pdu_hda_line_hour" : "pdu_hda_line_day";
+            boolean isSameDay = ("twentyfourHour".equals(type) || oldTime.toLocalDate().equals(newTime.toLocalDate()));
+            if (!isSameDay) {
+                oldTime = oldTime.plusDays(1).withHour(0).withMinute(0).withSecond(0);
+                newTime = newTime.plusDays(1).withHour(23).withMinute(59).withSecond(59);
+            }
+            CabinetChartResBase curAResBase = new CabinetChartResBase();
+            CabinetChartResBase volAResBase = new CabinetChartResBase();
+            String startTime = localDateTimeToString(oldTime);
+            String endTime = localDateTimeToString(newTime);
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 构建查询请求
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", id));
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from((startTime))
+                    .to((endTime)));
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+            searchSourceBuilder.size(1000); // 设置返回的最大结果数
+
+            searchRequest.source(searchSourceBuilder);
+
+            // 执行查询请求
+            try {
+                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (searchResponse != null) {
+                    SearchHits hits = searchResponse.getHits();
+                    for (SearchHit hit : hits) {
+                        String str = hit.getSourceAsString();
+                        PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
+                        processLineHisData(houResVO, resultA, isSameDay, DataType.fromValue(dataType));
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // 处理结果
+            for (int lineId = 1; lineId <= 3; lineId++) {
+                String lineKey = "dayList" + lineId;
+                Map<String, Object> lineData = (Map<String, Object>) resultA.get(lineKey);
+                if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
+                    LineSeries curSeries = new LineSeries();
+                    LineSeries volSeries = new LineSeries();
+                    resultA.put("curName" + lineId, lineId == 1 ? "A相电流" : lineId == 2 ? "B相电流" : "C相电流");
+                    resultA.put("volName" + lineId, lineId == 1 ? "A相电压" : lineId == 2 ? "B相电压" : "C相电压");
+                    curSeries.setName(getSeriesName("电流", lineId, dataType));
+                    volSeries.setName(getSeriesName("电压", lineId, dataType));
+                    curSeries.setData((List<Float>) lineData.get("curDataList"));
+                    curSeries.setHappenTime((List<String>) lineData.get("curHappenTime"));
+                    volSeries.setData((List<Float>) lineData.get("volDataList"));
+                    volSeries.setHappenTime((List<String>) lineData.get("volHappenTime"));
+                    Map<String, Object> analyzedData = PduAnalysisResult.analyzePduData((List<PduHdaLineHouResVO>) lineData.get("data"), dataType);
+                    PduAnalysisResult.CurrentResult currentResult = (PduAnalysisResult.CurrentResult) analyzedData.get("current");
+                    PduAnalysisResult.VoltageResult voltageResult = (PduAnalysisResult.VoltageResult) analyzedData.get("voltage");
+                    if (dataType != 0) {
+                        resultA.put("curMaxValue" + lineId, currentResult.maxCurValue);
+                        resultA.put("curMaxTime" + lineId, sdf.format(currentResult.maxCurTime));
+                        resultA.put("curMinValue" + lineId, currentResult.minCurValue);
+                        resultA.put("curMinTime" + lineId, sdf.format(currentResult.minCurTime));
+                        resultA.put("volMaxValue" + lineId, voltageResult.maxVolValue);
+                        resultA.put("volMaxTime" + lineId, sdf.format(voltageResult.maxVolTime));
+                        resultA.put("volMinValue" + lineId, voltageResult.minVolValue);
+                        resultA.put("volMinTime" + lineId, sdf.format(voltageResult.minVolTime));
+                    } else {
+                        resultA.put("curMaxValue" + lineId, currentResult.maxCurValue);
+                        resultA.put("curMaxTime" + lineId, "无");
+                        resultA.put("curMinValue" + lineId, currentResult.minCurValue);
+                        resultA.put("curMinTime" + lineId, "无");
+                        resultA.put("volMaxValue" + lineId, voltageResult.maxVolValue);
+                        resultA.put("volMaxTime" + lineId, "无");
+                        resultA.put("volMinValue" + lineId, voltageResult.minVolValue);
+                        resultA.put("volMinTime" + lineId, "无");
+                    }
+
+
+                    curAResBase.getSeries().add(curSeries);
+                    volAResBase.getSeries().add(volSeries);
+                }
+                resultA.put("lineNumber", lineId);
+
+            }
+            // 添加时间轴数据
+            List<String> uniqueDateTimes = (List<String>) resultA.getOrDefault("dateTimes", new ArrayList<>());
+            List<String> xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
+
+            curAResBase.setTime(xTime);
+            volAResBase.setTime(xTime);
+            resultA.put("dateTimes", xTime);
+            resultA.put("curRes", curAResBase);
+            resultA.put("volRes", volAResBase);
+            resultAB.put("resA",resultA);
+        } else {
+            return resultAB;
+        }
+
+        String pduKeyB = cabinetPdu.getPduKeyB();
+        PduIndex pduIndex1 = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKeyB));
+        if (pduIndex1 != null) {
+            Integer id = pduIndex1.getId();
+            // 构建查询请求
+            String index = ("twentyfourHour".equals(type) || oldTime.toLocalDate().equals(newTime.toLocalDate())) ? "pdu_hda_line_hour" : "pdu_hda_line_day";
+            boolean isSameDay = ("twentyfourHour".equals(type) || oldTime.toLocalDate().equals(newTime.toLocalDate()));
+            SearchRequest searchRequest = new SearchRequest(index);
+            CabinetChartResBase curAResBase = new CabinetChartResBase();
+            CabinetChartResBase volAResBase = new CabinetChartResBase();
+            String startTime = localDateTimeToString(oldTime);
+            String endTime = localDateTimeToString(newTime);
+            // 构建查询请求
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", id));
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(startTime)
+                    .to(endTime));
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+            searchSourceBuilder.size(1000); // 设置返回的最大结果数
+            searchRequest.source(searchSourceBuilder);
+
+            // 执行查询请求
+            try {
+                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (searchResponse != null) {
+                    SearchHits hits = searchResponse.getHits();
+                    for (SearchHit hit : hits) {
+                        String str = hit.getSourceAsString();
+                        PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
+                        processLineHisData(houResVO, resultB, isSameDay, DataType.fromValue(dataType));
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            for (int lineId = 1; lineId <= 3; lineId++) {
+                String lineKey = "dayList" + lineId;
+                Map<String, Object> lineData = (Map<String, Object>) resultB.get(lineKey);
+                if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
+                    LineSeries curSeries = new LineSeries();
+                    LineSeries volSeries = new LineSeries();
+                    resultB.put("curName" + lineId, lineId == 1 ? "A相电流" : lineId == 2 ? "B相电流" : "C相电流");
+                    resultB.put("volName" + lineId, lineId == 1 ? "A相电压" : lineId == 2 ? "B相电压" : "C相电压");
+                    curSeries.setName(getSeriesName("电流", lineId, dataType));
+                    volSeries.setName(getSeriesName("电压", lineId, dataType));
+
+                    curSeries.setData((List<Float>) lineData.get("curDataList"));
+                    curSeries.setHappenTime((List<String>) lineData.get("curHappenTime"));
+                    volSeries.setData((List<Float>) lineData.get("volDataList"));
+                    volSeries.setHappenTime((List<String>) lineData.get("volHappenTime"));
+
+                    Map<String, Object> analyzedData = PduAnalysisResult.analyzePduData((List<PduHdaLineHouResVO>) lineData.get("data"), dataType);
+                    PduAnalysisResult.CurrentResult currentResult = (PduAnalysisResult.CurrentResult) analyzedData.get("current");
+                    PduAnalysisResult.VoltageResult voltageResult = (PduAnalysisResult.VoltageResult) analyzedData.get("voltage");
+
+                    if (dataType != 0) {
+                        resultB.put("curMaxValue" + lineId, currentResult.maxCurValue);
+                        resultB.put("curMaxTime" + lineId, sdf.format(currentResult.maxCurTime));
+                        resultB.put("curMinValue" + lineId, currentResult.minCurValue);
+                        resultB.put("curMinTime" + lineId, sdf.format(currentResult.minCurTime));
+                        resultB.put("volMaxValue" + lineId, voltageResult.maxVolValue);
+                        resultB.put("volMaxTime" + lineId, sdf.format(voltageResult.maxVolTime));
+                        resultB.put("volMinValue" + lineId, voltageResult.minVolValue);
+                        resultB.put("volMinTime" + lineId, sdf.format(voltageResult.minVolTime));
+                    } else {
+                        resultB.put("curMaxValue" + lineId, currentResult.maxCurValue);
+                        resultB.put("curMaxTime" + lineId, "无");
+                        resultB.put("curMinValue" + lineId, currentResult.minCurValue);
+                        resultB.put("curMinTime" + lineId, "无");
+                        resultB.put("volMaxValue" + lineId, voltageResult.maxVolValue);
+                        resultB.put("volMaxTime" + lineId, "无");
+                        resultB.put("volMinValue" + lineId, voltageResult.minVolValue);
+                        resultB.put("volMinTime" + lineId, "无");
+                    }
+
+                    curAResBase.getSeries().add(curSeries);
+                    volAResBase.getSeries().add(volSeries);
+                }
+                resultB.put("lineNumber", lineId);
+            }
+            // 添加时间轴数据
+            List<String> uniqueDateTimes = (List<String>) resultB.getOrDefault("dateTimes", new ArrayList<>());
+            List<String> xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
+            curAResBase.setTime(xTime);
+            volAResBase.setTime(xTime);
+            resultA.put("dateTimes", xTime);
+            resultA.put("curRes", curAResBase);
+            resultA.put("volRes", volAResBase);
+            resultAB.put("resB",resultB);
+        } else {
+            return resultAB;
+        }
+
+
+
+        return resultAB;
     }
 
     @Override
@@ -2174,9 +2383,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             , pduHdaTotalHourDo.getActivePowMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
 
 
-                    updatePowerData(reactivePow,pduHdaTotalHourDo.getPowReactiveMaxValue(),pduHdaTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss")
-                            ,pduHdaTotalHourDo.getPowReactiveAvgValue(),pduHdaTotalHourDo.getPowReactiveMinValue()
-                            ,pduHdaTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"),dataType);
+                    updatePowerData(reactivePow, pduHdaTotalHourDo.getPowReactiveMaxValue(), pduHdaTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss")
+                            , pduHdaTotalHourDo.getPowReactiveAvgValue(), pduHdaTotalHourDo.getPowReactiveMinValue()
+                            , pduHdaTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
 
                     if (timeFlag) {
                         totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("HH:mm"));
@@ -3690,15 +3899,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (roomIds.isEmpty()) {
             roomIds.add(0);
         }
-        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete,0));
-        if (CollectionUtils.isEmpty(roomIndices)){
+        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().in(RoomIndex::getId, roomIds).eq(RoomIndex::getIsDelete, 0));
+        if (CollectionUtils.isEmpty(roomIndices)) {
             return locationMap;
         }
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         List<Integer> cabIds = cabinetPdus.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetPduResVO::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {
-            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getId,cabIds).eq(AisleIndex::getIsDelete,0));
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getId, cabIds).eq(AisleIndex::getIsDelete, 0));
             if (!CollectionUtils.isEmpty(aisleIndexList)) {
                 aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
             } else {

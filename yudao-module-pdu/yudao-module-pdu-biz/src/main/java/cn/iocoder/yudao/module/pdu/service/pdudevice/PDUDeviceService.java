@@ -80,4 +80,6 @@ public interface PDUDeviceService {
     Map getReportOutLetCurDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
     Map getPduHdaLineHisdataKey(String devKey, String type);
+
+    Map getPduHdaLineHisdataKeyByCabinetByType(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }
