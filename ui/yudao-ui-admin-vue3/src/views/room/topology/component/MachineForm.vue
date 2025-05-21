@@ -70,7 +70,7 @@
           </div>
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
-          <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox">
+          <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox" @tab-change="tabClick">
             <el-tab-pane label="PDU" :name="0">
               <div class="pduBus">
                 <el-form-item label="A路：">
@@ -531,6 +531,7 @@ const toggleFull = () => {
 const machineForm = ref() // 机柜表单 Ref
 const sensorForm = ref() // 传感器表单 Ref
 const operateInfo = ref<any>({})
+const machineColIf = ref()
 // const deptList = ref<Tree[]>([]) // 树形结构
 // const postList = ref([] as PostApi.PostVO[]) // 岗位列表
 
@@ -541,6 +542,7 @@ const open = async (type: string, data, info, machineColInfo) => {
   dialogTitle.value = type == 'edit' ? '编辑': '添加';
   formType.value = type;
   operateInfo.value = info
+  machineColIf.value = machineColInfo
   resetForm();
   
   // sensorListLeft.forEach(item => {
@@ -621,7 +623,7 @@ const open = async (type: string, data, info, machineColInfo) => {
     machineFormData.value.eleLimitDay = 1000
     machineFormData.value.eleLimitMonth = 30000
   }
-  console.log(machineFormData.value,machineColInfo)
+  console.log(machineColInfo?.barA == null && machineColInfo?.barB == null)
   if (machineColInfo && machineColInfo.barA) {
     isBusBind.value = true
     boxListA.value = machineColInfo.barA.boxList
@@ -654,6 +656,10 @@ watch(() => machineFormData.value.powCapacity, (newValue) => {
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
+  if(machineColIf.value && machineColIf.value.barA == null && machineColIf.value.barB == null && machineFormData.value.pduBox) {
+    message.warning('请先给柜列绑定母线')
+    return
+  }
   // 校验表单
   if (!machineForm) return
   const valid = await machineForm.value.validate()

@@ -115,11 +115,13 @@
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
                                   </div>
                                   <div style="width: 50%">
                                     后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
+                                    后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -165,11 +167,13 @@
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
                                   </div>
                                   <div style="width: 50%">
                                     后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
+                                    后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -182,7 +186,7 @@
                             </el-tooltip>
                           </template>
                         </div>
-                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.powerFactor ? (element.powerFactor>=0.945 ? `#16c60c` : (element.powerFactor>=0.845 ? `#0078d7` : (element.powerFactor>=0.695 ? `rgba(252, 225, 0, ${element.powerFactor+0.16})` : `rgba(240, 58, 23, ${element.powerFactor+0.31})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                        <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.powerFactor ? (element.powerFactor>=0.945 ? `#16c60c` : (element.powerFactor>=0.845 ? `#0078d7` : (element.powerFactor>=0.745 ? `rgba(252, 225, 0, ${1.75-element.powerFactor})` : `rgba(240, 58, 23, ${1.3-element.powerFactor})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                           <template v-if="element.name">
                             <el-tooltip effect="light">
                               <template #content>
@@ -215,11 +219,13 @@
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
                                   </div>
                                   <div style="width: 50%">
                                     后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
+                                    后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -318,11 +324,13 @@
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
                                   </div>
                                   <div style="width: 50%">
                                     后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
-                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%
+                                    后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                    后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -368,11 +376,13 @@
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
                                   </div>
                                   <div style="width: 50%">
                                     后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
+                                    后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -418,11 +428,13 @@
                                 <div class="flex justify-between" style="width: 20vw">
                                   <div style="width: 50%">
                                     前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%
+                                    前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                    前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
                                   </div>
                                   <div style="width: 50%">
                                     后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
-                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C
+                                    后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
+                                    后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
                                   </div>
                                 </div>
                                 <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -477,11 +489,13 @@
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
                                       </div>
                                       <div style="width: 50%">
                                         后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                        后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
                                       </div>
                                     </div>
                                     <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -527,11 +541,13 @@
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
                                       </div>
                                       <div style="width: 50%">
                                         后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                        后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
                                       </div>
                                     </div>
                                     <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -544,7 +560,7 @@
                                 </el-tooltip>
                               </template>
                             </div>
-                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.powerFactor ? (item.powerFactor>=0.895 ? `#16c60c` : (item.powerFactor>=0.845 ? `#0078d7` : (item.powerFactor>=0.745 ? `rgba(252, 225, 0, ${item.powerFactor+0.16})` : `rgba(240, 58, 23, ${item.powerFactor+0.25})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                            <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.powerFactor ? (item.powerFactor>=0.895 ? `#16c60c` : (item.powerFactor>=0.845 ? `#0078d7` : (item.powerFactor>=0.745 ? `rgba(252, 225, 0, ${1.75-item.powerFactor})` : `rgba(240, 58, 23, ${1.3-item.powerFactor})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                               <template v-if="item.id > 0">
                                 <el-tooltip effect="light">
                                   <template #content>
@@ -577,11 +593,13 @@
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
                                       </div>
                                       <div style="width: 50%">
                                         后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                        后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
                                       </div>
                                     </div>
                                     <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -680,11 +698,13 @@
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
                                       </div>
                                       <div style="width: 50%">
                                         后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                        后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
                                       </div>
                                     </div>
                                     <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -730,11 +750,13 @@
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
                                       </div>
                                       <div style="width: 50%">
                                         后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                        后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
                                       </div>
                                     </div>
                                     <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -780,11 +802,13 @@
                                     <div class="flex justify-between" style="width: 20vw">
                                       <div style="width: 50%">
                                         前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%
+                                        前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                        前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
                                       </div>
                                       <div style="width: 50%">
                                         后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%
+                                        后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                        后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
                                       </div>
                                     </div>
                                     <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -845,7 +869,7 @@
             <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
           </el-form-item>
           <el-form-item label="楼层" prop="type" label-width="80">
-            <el-select v-model="rowColInfo.addr" placeholder="请选择">
+            <el-select v-model="rowColInfo.addr" placeholder="请选择" :disabled="!addrFlag">
               <el-option v-for="(addr_item,addr_index) in addrList.slice(1)" :key="addr_index" :label="addr_item" :value="addr_item" />
             </el-select>
           </el-form-item>
@@ -921,7 +945,7 @@
             </el-radio-group>
           </div>
           <el-form-item label="排序序号" label-width="80">
-            <el-input type="number" v-model="rowColInfo.sort" placeholder="请输入" />
+            <el-input type="number" v-model="rowColInfo.sort" placeholder="请输入"  :disabled="!sortFlag"/>
           </el-form-item>
         </div>
 
@@ -1158,7 +1182,7 @@ const rowColInfo = reactive({
 })
 const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<Record<string, any[]>[]>([]);
-const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量','机柜告警'])
+const alarmTypeDesc = ref(['','PDU离线','PDU告警','PDU预警','母线告警','母线离线','机柜容量','机柜电力容量告警','机柜每日电量限额告警'])
 const statusInfo = ref([[
   {
     name: '0%~50%',
@@ -2244,7 +2268,6 @@ const handleRightClick = (e) => {
 
     console.log(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex])
     if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
-      console.log(11111)
       menuOptions.value[3] = menuOptionsCopy.value[5]
 
       menuOptions.value[4] = menuOptionsCopy.value[6]
@@ -2267,8 +2290,9 @@ const handleRightClick = (e) => {
         boxId: tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].keyb?.id
       }
     } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb) {
-      console.log(2222)
-      menuOptions.value[3] = menuOptionsCopy.value[5]
+      menuOptions.value[3] = JSON.parse(JSON.stringify(menuOptionsCopy.value[5]))
+      menuOptions.value[3]?.children?.splice(7,1)
+      menuOptions.value[3]?.children?.splice(3,3)
 
       menuOptions.value[4] = menuOptionsCopy.value[6]
       menuOptions.value[4].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya
@@ -2283,7 +2307,9 @@ const handleRightClick = (e) => {
       }
 
     } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeya) {
-      menuOptions.value[3] = menuOptionsCopy.value[5]
+      menuOptions.value[3] = JSON.parse(JSON.stringify(menuOptionsCopy.value[5]))
+      menuOptions.value[3]?.children?.splice(6,1)
+      menuOptions.value[3]?.children?.splice(0,3)
 
       menuOptions.value[4] = menuOptionsCopy.value[7]
       menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetList[cabinetIndex].cabinetkeyb
@@ -2376,7 +2402,9 @@ const handleRightClick = (e) => {
         boxId: tableData.value[lndexY][formParam.value[lndexX]][0].keyb?.id
       }
     } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb) {
-      menuOptions.value[3] = menuOptionsCopy.value[5]
+      menuOptions.value[3] = JSON.parse(JSON.stringify(menuOptionsCopy.value[5]))
+      menuOptions.value[3]?.children?.splice(7,1)
+      menuOptions.value[3]?.children?.splice(3,3)
 
       menuOptions.value[4] = menuOptionsCopy.value[6]
       menuOptions.value[4].label = "A路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya
@@ -2391,7 +2419,9 @@ const handleRightClick = (e) => {
       }
 
     } else if(tableData.value[lndexY][formParam.value[lndexX]][0].cabinetBoxes && tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb && !tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeya) {
-      menuOptions.value[3] = menuOptionsCopy.value[5]
+      menuOptions.value[3] = JSON.parse(JSON.stringify(menuOptionsCopy.value[5]))
+      menuOptions.value[3]?.children?.splice(6,1)
+      menuOptions.value[3]?.children?.splice(0,3)
 
       menuOptions.value[4] = menuOptionsCopy.value[7]
       menuOptions.value[4].label = "B路设备：" + tableData.value[lndexY][formParam.value[lndexX]][0].cabinetkeyb
@@ -2492,8 +2522,8 @@ const handleRightClick = (e) => {
     mouseY.value = e.clientY;
 
     // 获取视口尺寸
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const viewportWidth = dragTableViewEle.value?.clientWidth ? dragTableViewEle.value.clientWidth : 0;
+    const viewportHeight = dragTableViewEle.value?.clientHeight ? dragTableViewEle.value.clientHeight : 0;
 
     // 获取菜单尺寸
     const menuWidth = menuViewEle.value?.clientWidth ? menuViewEle.value.clientWidth : 0;
@@ -2505,12 +2535,12 @@ const handleRightClick = (e) => {
     let offsetY = mouseY.value - Math.ceil(rect.value.top) + 1
 
     // 如果菜单会超出视口右侧，则向左调整
-    if (mouseX.value + menuWidth > viewportWidth) {
+    if (offsetX + menuWidth > viewportWidth) {
         offsetX = Math.max(0, offsetX - menuWidth);
     }
     
     // 如果菜单会超出视口底部，则向上调整
-    if (mouseY.value + menuHeight > viewportHeight) {
+    if (offsetY + menuHeight > viewportHeight) {
         offsetY = Math.max(0, offsetY - menuHeight);
     }
     
@@ -2536,8 +2566,8 @@ const handleRightClick = (e) => {
 const expandChange = () => {
   nextTick(() => {
     // 获取视口尺寸
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const viewportWidth = dragTableViewEle.value?.clientWidth ? dragTableViewEle.value.clientWidth : 0;
+    const viewportHeight = dragTableViewEle.value?.clientHeight ? dragTableViewEle.value.clientHeight : 0;
 
     // 获取菜单尺寸
     const menuWidth = menuViewEle.value?.clientWidth ? menuViewEle.value.clientWidth : 0;
@@ -2547,12 +2577,12 @@ const expandChange = () => {
     let offsetY = mouseY.value - Math.ceil(rect.value.top) + 1
 
     // 如果菜单会超出视口右侧，则向左调整
-    if (mouseX.value + menuWidth > viewportWidth) {
+    if (offsetX + menuWidth > viewportWidth) {
         offsetX = Math.max(0, offsetX - menuWidth);
     }
     
     // 如果菜单会超出视口底部，则向上调整
-    if (mouseY.value + menuHeight > viewportHeight) {
+    if (offsetY + menuHeight > viewportHeight) {
         offsetY = Math.max(0, offsetY - menuHeight);
     }
     
@@ -2989,36 +3019,36 @@ const onEnd = ({from, to}) => {
   if (from.id != to.id) { // 发生移动才处理
     const X = +to.id.split('-')[1]
     const Y = +to.id.split('-')[0]
-    const X1 = +from.id.split('-')[1]
-    const Y1 = +from.id.split('-')[0]
+    // const X1 = +from.id.split('-')[1]
+    // const Y1 = +from.id.split('-')[0]
     const targetTo = tableData.value[Y][formParam.value[X]][0]
-    //console.log('value*******', targetTo,X+1,Y+1)
+    // console.log('value*******', targetTo,X+1,Y+1)
     
-    if (targetTo.type == 1) {
-      if (targetTo.direction == 1) {
-        tableData.value[Y1+1][formParam.value[X1]] = []
-        tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
-      } else {
-        tableData.value[Y1][formParam.value[X1+1]] = []
-        tableData.value[Y][formParam.value[X+1]] = [{...targetTo,first: false}]
-      }
-      for (let i=  1; i < targetTo.amount; i++) {
-        if (targetTo.direction == 1) {
-          tableData.value[Y1][formParam.value[X1+i]] = []
-          tableData.value[Y1+1][formParam.value[X1+i]] = []
-          tableData.value[Y][formParam.value[X+i]] = [{...targetTo,first: false}]
-          tableData.value[Y+1][formParam.value[X+i]] = [{...targetTo,first: false}]
-        } else {
-          tableData.value[Y1+i][formParam.value[X1]] = []
-          tableData.value[Y1+i][formParam.value[X1+1]] = []
-          tableData.value[Y+i][formParam.value[X]] = [{...targetTo,first: false}]
-          tableData.value[Y+i][formParam.value[X+1]] = [{...targetTo,first: false}]
-        }
-      }
-    } else if (targetTo.type == 2) {
-      tableData.value[Y1+1][formParam.value[X1]] = []
-      tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
-    }
+    // if (targetTo.type == 1) {
+    //   if (targetTo.direction == 1) {
+    //     tableData.value[Y1+1][formParam.value[X1]] = []
+    //     tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
+    //   } else {
+    //     tableData.value[Y1][formParam.value[X1+1]] = []
+    //     tableData.value[Y][formParam.value[X+1]] = [{...targetTo,first: false}]
+    //   }
+    //   for (let i=  1; i < targetTo.amount; i++) {
+    //     if (targetTo.direction == 1) {
+    //       tableData.value[Y1][formParam.value[X1+i]] = []
+    //       tableData.value[Y1+1][formParam.value[X1+i]] = []
+    //       tableData.value[Y][formParam.value[X+i]] = [{...targetTo,first: false}]
+    //       tableData.value[Y+1][formParam.value[X+i]] = [{...targetTo,first: false}]
+    //     } else {
+    //       tableData.value[Y1+i][formParam.value[X1]] = []
+    //       tableData.value[Y1+i][formParam.value[X1+1]] = []
+    //       tableData.value[Y+i][formParam.value[X]] = [{...targetTo,first: false}]
+    //       tableData.value[Y+i][formParam.value[X+1]] = [{...targetTo,first: false}]
+    //     }
+    //   }
+    // } else if (targetTo.type == 2) {
+    //   tableData.value[Y1+1][formParam.value[X1]] = []
+    //   tableData.value[Y+1][formParam.value[X]] = [{...targetTo,first: false}]
+    // }
     //console.log('tableData.value*******', tableData.value)
     moveMachine(targetTo,X+1,Y+1)
   }

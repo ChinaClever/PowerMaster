@@ -213,26 +213,26 @@
           </div>
         </template>
         <el-skeleton :loading="loading" :rows="6" animated style="height:28vh;">
-          <div class="flex justify-around" style="height: 28vh;flex-direction: column">
+          <div class="flex justify-around" style="height: 28vh;flex-direction: column;">
             <div class="flex justify-around">
-              <div class="flex" style="flex-direction: column">
+              <div class="flex" style="flex-direction: column;width: 40%">
                 <div>前门温度</div>
                 <div>平均：<span style="font-weight: bold">{{roomDownVal.temAvgFront ? roomDownVal.temAvgFront.toFixed(1) : 0}}</span>℃</div>
                 <div>最高：<span style="font-weight: bold">{{roomDownVal.temMaxFront ? roomDownVal.temMaxFront.toFixed(1) : 0}}</span>℃</div>
               </div>
-              <div class="flex" style="flex-direction: column">
+              <div class="flex" style="flex-direction: column;">
                 <div>前门湿度</div>
                 <div>平均：<span style="font-weight: bold">{{roomDownVal.humAvgFront ? roomDownVal.humAvgFront.toFixed(0) : 0}}</span>%</div>
                 <div>最高：<span style="font-weight: bold">{{roomDownVal.humMaxFront ? roomDownVal.humMaxFront.toFixed(0) : 0}}</span>%</div>
               </div>
             </div>
             <div class="flex justify-around">
-              <div class="flex" style="flex-direction: column">
+              <div class="flex" style="flex-direction: column;width: 40%">
                 <div>后门温度</div>
                 <div>平均：<span style="font-weight: bold">{{roomDownVal.temAvgBlack ? roomDownVal.temAvgBlack.toFixed(1) : 0}}</span>℃</div>
                 <div>最高：<span style="font-weight: bold">{{roomDownVal.temMaxBlack ? roomDownVal.temMaxBlack.toFixed(1) : 0}}</span>℃</div>
               </div>
-              <div class="flex" style="flex-direction: column">
+              <div class="flex" style="flex-direction: column;">
                 <div>后门湿度</div>
                 <div>平均：<span style="font-weight: bold">{{roomDownVal.humAvgBlack ? roomDownVal.humAvgBlack.toFixed(0) : 0}}</span>%</div>
                 <div>最高：<span style="font-weight: bold">{{roomDownVal.humMaxBlack ? roomDownVal.humMaxBlack.toFixed(0) : 0}}</span>%</div>
@@ -1434,7 +1434,7 @@ const getHomeAlarmData = async() => {
   if (res2.list) {
     alarmData.value = res2.list
   }
-  if(alarmData.value.length) {
+  if(alarmData.value.length && loading.value) {
     toggleAlarm.value = true
   }
 
