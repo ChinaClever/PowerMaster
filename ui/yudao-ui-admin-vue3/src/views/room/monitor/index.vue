@@ -1078,7 +1078,7 @@ const getRoomAddrList = async() => {
         getAddrAllRoomList(res[item],index)
       }
     })
-
+    loading.value = false
     emit('backData', res)
   }
 }
@@ -1339,7 +1339,6 @@ const getAllApi = async () => {
   roomAddrList.value.forEach(async (item,index) => {
     activeNames.value.push(index)
   })
-  loading.value = false
 }
 
 const openAllCollapse = () => {
@@ -1574,5 +1573,10 @@ const handleChange = async (val: CollapseModelValue) => {
 }
 :deep(.el-radio-button__inner) {
   width: 5vw;
+}
+:deep(.el-button:hover) {
+  color: #00778c;
+  border-color: #80bbc6;
+  background-color: #e6f1f4;
 }
 </style>
