@@ -67,6 +67,11 @@ export const IndexApi = {
     return await request.get({ url: `/cabinet/index/report/pow`,params})
   },
 
+    getPowDataByType: async (params) => {
+    return await request.get({ url: `/cabinet/index/report/powByType`,params})
+  },
+
+
   getTemData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/tem`,params})
   },
@@ -82,7 +87,9 @@ export const IndexApi = {
   getCabinetPFLine : async (params) => {
     return await request.get({ url: `/cabinet/index/report/pfline`, params })
   },
-
+    getCabinetPFLineByType : async (params) => {
+    return await request.get({ url: `/cabinet/index/report/pfLineByType`, params })
+  },
   getEleByCabinet : async (params) => {
     return await request.get({ url: `/cabinet/index/getEleByCabinet`, params })
   },

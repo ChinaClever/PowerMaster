@@ -112,6 +112,13 @@
         </el-form-item>
         <el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+              <el-form-item>
+          <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
+            <el-option label="最大" :value="1" />
+            <el-option label="平均" :value="0" />
+            <el-option label="最小" :value="-1" />
+          </el-select>
+        </el-form-item>
           <!-- <el-button @click="handleExport"  ><Icon icon="ep:search" class="mr-5px" :loading="true" /> 导出</el-button> -->
         </el-form-item>
         <!-- <el-text size="large">
@@ -225,29 +232,29 @@
             <p class="paragraph" v-if="visControll.isSameDay && eqData.firstEq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
-          <div class="pageBox" v-if="isPDU">
+          <div class="pageBox" v-if="visControll.lineACurVis">
             <div class="page-conTitle">
               A路相电流历史曲线趋势图
             </div>
-            <ACurLine class="adaptiveStyle" :list="AcurVolData" v-if="dataLoaded"/>
+            <ACurLine class="adaptiveStyle" :list="lineACurList"  :dataType="queryParams.dataType"/>
           </div>
-          <div class="pageBox" v-if="isPDU">
+          <div class="pageBox" v-if="visControll.lineAVolVis">
             <div class="page-conTitle">
               A路相电压历史曲线趋势图
             </div>
-            <AVolLine class="adaptiveStyle" :list="AcurVolData" v-if="dataLoaded"/>
+            <AVolLine class="adaptiveStyle" :list="lineAVolList"  :dataType="queryParams.dataType"/>
           </div>
-          <div class="pageBox" v-if="isPDU">
+          <div class="pageBox" v-if="visControll.lineBCurVis">
             <div class="page-conTitle">
               B路相电流历史曲线趋势图
             </div>
-            <BBCurLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
+            <BBCurLine class="adaptiveStyle" :list="lineBCurList"  :dataType="queryParams.dataType"/>
           </div>
-          <div class="pageBox" v-if="isPDU">
+          <div class="pageBox" v-if="visControll.lineBVolVis">
             <div class="page-conTitle">
               B路相电压历史曲线趋势图
             </div>
-            <BVolLine class="adaptiveStyle" :list="BcurVolData" v-if="dataLoaded"/>
+            <BVolLine class="adaptiveStyle" :list="lineBVolList"  :dataType="queryParams.dataType"/>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -381,6 +388,13 @@ const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 const ele = ref();
+const lineCurVolData = ref() as any;
+const lineACurList = ref() as any;
+const lineAVolList = ref() as any;
+const lineBCurList = ref() as any;
+const lineBVolList = ref() as any;
+
+
 const factor = ref();
 let lineidChartA = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainerA = ref<HTMLElement | null>(null);
@@ -405,6 +419,10 @@ const visControll = reactive({
   BpowVis : false,
   pfVis: false,
   flag: false,
+  lineACurVis : false,
+  lineAVolVis : false,
+  lineBCurVis : false,
+  lineBVolVis : false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -544,10 +562,17 @@ const queryParams = reactive({
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
   timeType: 1,
-  cascadeAddr : 0
+  cascadeAddr : 0,
+    dataType : 1
 }) as any
 
 const serverRoomArr =  ref([]) as any
+
+watch( ()=>queryParams.dataType, async()=>{
+  //  queryParams.devKey = queryParams.ipAddr;  
+  getList()
+
+})
 
 //折叠功能
 
@@ -719,7 +744,11 @@ const handlePFLineQuery = async () => {
   }else {
     visControll.pfVis = false;
   }
+  const result = await IndexApi.getCabinetPFLineByType(queryParams);
 }
+
+    
+
 
 const handleEleQuery = async () => {
   const data = await IndexApi.getEleByCabinet(queryParams);
@@ -774,14 +803,40 @@ const isPDU = ref(true);
 
 const PDUHdaLineHisdata = async () => {
   try {
-    const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime });
+    // const result = await PDUDeviceApi.getPDUHdaLineHisdataByCabinet({ CabinetId: queryParams.Id, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime });
+    lineCurVolData.value = await PDUDeviceApi.getPDUHdaLineHisdataByCabinetByType({ CabinetId: queryParams.Id, type: dateTimeName.value,oldTime:queryParams.oldTime,newTime:queryParams.newTime,dataType:queryParams.dataType });
+    
+    
 
-    AcurVolData.value = result.A;
-    BcurVolData.value = result.B;
-    console.log('BBBBBBBBBBBBBBBBBBBBBBBB', BcurVolData.value);
-    console.log('BBBBBBBBBBBBBBBBBBBBBBBB', BcurVolData.value);
+    lineBCurList.value = lineCurVolData.value.resA.curRes;
+    lineBVolList.value = lineCurVolData.value.resA.volRes;
+    if(lineCurVolData.value?.resA?.curRes?.time != null && lineCurVolData.value?.resA?.curRes?.time.length > 0){
+    lineACurList.value = lineCurVolData.value.resA.curRes;
+    lineAVolList.value = lineCurVolData.value.resA.volRes;
+    visControll.lineACurVis = true;
+    visControll.lineAVolVis = true;
+        dataLoaded.value = true;
+    }else{
+    visControll.lineACurVis = false;
+    visControll.lineAVolVis = false;
+    }
 
-    dataLoaded.value = true;
+       if(lineCurVolData.value?.resB?.curRes?.time != null && lineCurVolData.value?.resB?.curRes?.time.length > 0){
+    lineBCurList.value = lineCurVolData.value.resB.curRes;
+    lineBVolList.value = lineCurVolData.value.resB.volRes;
+    visControll.lineBCurVis = true;
+    visControll.lineBVolVis = true;
+        dataLoaded.value = true;
+    }else{
+    visControll.lineBCurVis = false;
+    visControll.lineBVolVis = false;
+    }
+
+    
+    // AcurVolData.value = result.A;
+    // BcurVolData.value = result.B;
+
+
   }catch (error) {
     isPDU.value = false;
   }
@@ -858,6 +913,9 @@ const handleHotQuery = async () => {
 
 const handlePowQuery = async () => {
   powData.value = await IndexApi.getPowData(queryParams);
+   const result = await IndexApi.getPowDataByType(queryParams);
+
+
   totalLineList.value = powData.value.totalLineRes;
   aLineList.value = powData.value.aLineRes;
   bLineList.value = powData.value.bLineRes;
