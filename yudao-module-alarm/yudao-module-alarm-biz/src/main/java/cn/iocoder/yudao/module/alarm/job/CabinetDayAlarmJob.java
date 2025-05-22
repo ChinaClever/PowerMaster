@@ -46,7 +46,7 @@ public class CabinetDayAlarmJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-        Thread.sleep(1000*60*5);
+//        Thread.sleep(1000*60*5);
         // 获取所有按天统计电量的机柜
         List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                 .eq(CabinetCfg::getEleAlarmDay, 1));
@@ -68,12 +68,13 @@ public class CabinetDayAlarmJob implements JobHandler {
                 // 用电超额，存入告警记录
                 CabinetIndex cabinetIndex = cabinetIndexMapper.selectById(cabinetCfg.getCabinetId());
                 AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
-                String alarmKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
+                String alarmKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getAisleId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
                 alarmRecord.setAlarmKey(alarmKey);
                 alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                 alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_DAY_POWER_ALARM.getType());
                 // 告警位置
-                JSONObject cabinetJson = (JSONObject)redisTemplate.opsForValue().get(FieldConstant.REDIS_KEY_CABINET + alarmKey);
+                String redisKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
+                JSONObject cabinetJson = (JSONObject)redisTemplate.opsForValue().get(FieldConstant.REDIS_KEY_CABINET + redisKey);
                 if (cabinetJson != null) {
                     String roomName = cabinetJson.get(FieldConstant.ROOM_NAME) + "";
                     String aisleName = cabinetJson.get(FieldConstant.AISLE_NAME) + "";
