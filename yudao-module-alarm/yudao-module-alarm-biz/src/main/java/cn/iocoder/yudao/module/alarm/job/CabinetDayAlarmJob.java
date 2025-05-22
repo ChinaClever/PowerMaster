@@ -60,7 +60,8 @@ public class CabinetDayAlarmJob implements JobHandler {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String nowTime = now.format(formatter);
             wrapper.lt("end_time.keyword",  nowTime);
-            wrapper.gt("end_time.keyword",  now.minusHours(1).format(formatter));
+            wrapper.gt("end_time.keyword",  now.minusDays(1).format(formatter));
+            wrapper.orderByDesc("start_time.keyword");
             wrapper.limit(1);
             CabinetDayPower cabinetDayPower = cabinetDayPowerMapper.selectOne(wrapper);
             if (cabinetDayPower != null && cabinetDayPower.getEq_value() > eleLimitDay) {

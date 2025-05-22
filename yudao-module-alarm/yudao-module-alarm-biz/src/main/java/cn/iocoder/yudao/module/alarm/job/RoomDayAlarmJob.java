@@ -39,7 +39,7 @@ public class RoomDayAlarmJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-//        Thread.sleep(1000*60*5);
+        Thread.sleep(1000*60*5);
         // 获取所有按天统计电量的机房
         List<RoomCfg> roomCfgList = roomCfgMapper.selectList(new LambdaQueryWrapper<RoomCfg>()
                 .eq(RoomCfg::getEleAlarmDay, 1));
@@ -53,7 +53,8 @@ public class RoomDayAlarmJob implements JobHandler {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String nowTime = now.format(formatter);
             wrapper.lt("end_time.keyword",  nowTime);
-            wrapper.gt("end_time.keyword",  now.minusHours(1).format(formatter));
+            wrapper.gt("end_time.keyword",  now.minusDays(1).format(formatter));
+            wrapper.orderByDesc("start_time.keyword");
             wrapper.limit(1);
             RoomDayPower roomDayPower = roomDayPowerMapper.selectOne(wrapper);
             if (roomDayPower != null && roomDayPower.getEq_value() > eleLimitDay) {
