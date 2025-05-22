@@ -1,8 +1,10 @@
 package cn.iocoder.yudao.module.alarm.init;
 
 import cn.iocoder.yudao.framework.common.constant.JobHandlerConstants;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleStatisConfig;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCronConfig;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomStatisConfig;
+import cn.iocoder.yudao.framework.common.mapper.AisleCronCfgMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetCronCfgMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomCronCfgMapper;
 import cn.iocoder.yudao.module.alarm.constants.DBTable;
@@ -39,6 +41,9 @@ public class AlarmInit {
     private CabinetCronCfgMapper cabinetCronCfgMapper;
 
     @Autowired
+    private AisleCronCfgMapper aisleCronCfgMapper;
+
+    @Autowired
     private RoomCronCfgMapper roomCronCfgMapper;
 
     @PostConstruct
@@ -51,6 +56,9 @@ public class AlarmInit {
 
         // 初始化机柜电量限额告警定时任务
         initCabinetAlarmJob();
+
+        // 初始化柜列电量限额告警定时任务
+        initAisleAlarmJob();
 
         // 初始化机房电量限额告警定时任务
         initRoomAlarmJob();
@@ -112,6 +120,36 @@ public class AlarmInit {
             }
         } catch (Exception e) {
             log.error("初始化机柜电量限额告警定时任务异常", e);
+        }
+    }
+
+    public void initAisleAlarmJob(){
+        try {
+            // 定时任务共同属性
+            Map<String, Object> map = new HashMap<>();
+            map.put("retryCount", 3);
+            map.put("retryInterval", 1000);
+            map.put("monitorTimeout", 1000);
+
+            AisleStatisConfig aisleStatisConfig = aisleCronCfgMapper.selectOne(null);
+
+            // 创建柜列每日定时job
+            if (jobApi.existJobByHandler(JobHandlerConstants.AISLE_DAY_ALARM_JOB)) {
+                map.put("name", "柜列电量每天限额告警Job");
+                map.put("handlerName", JobHandlerConstants.AISLE_DAY_ALARM_JOB);
+                map.put("cronExpression", aisleStatisConfig.getEqDayCron());
+                jobApi.createJob(map);
+            }
+
+            // 创建柜列每月定时job
+            if (jobApi.existJobByHandler(JobHandlerConstants.AISLE_MONTH_ALARM_JOB)) {
+                map.put("name", "柜列电量每月限额告警Job");
+                map.put("handlerName", JobHandlerConstants.AISLE_MONTH_ALARM_JOB);
+                map.put("cronExpression", aisleStatisConfig.getEqMonthCron());
+                jobApi.createJob(map);
+            }
+        } catch (Exception e) {
+            log.error("初始化柜列电量限额告警定时任务异常", e);
         }
     }
 

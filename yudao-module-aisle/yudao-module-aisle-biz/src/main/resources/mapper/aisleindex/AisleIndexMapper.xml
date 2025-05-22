@@ -111,6 +111,15 @@
             ab.bus_key = #{busKey}
         </where>
     </select>
+    <select id="selectLocationById" resultType="java.lang.String">
+        SELECT
+        CONCAT( ri.room_name, "-", ai.aisle_name ) AS `name`
+        FROM
+        `aisle_index` ai
+        LEFT JOIN room_index ri ON ai.room_id = ri.id
+        WHERE
+        ai.id = #{id}
+    </select>
     <update id="roomAisleDeleteById">
         update aisle_index ai set ai.is_delete = 1 where ai.id = #{aisleId}
     </update>
