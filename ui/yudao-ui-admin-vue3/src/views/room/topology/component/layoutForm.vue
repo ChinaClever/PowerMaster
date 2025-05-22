@@ -24,7 +24,7 @@
         </div>
         <div style="flex: 1;">
           <el-form-item v-if="formData.type == 1" label="机柜数量" prop="amount">
-            <el-input-number v-model="formData.amount" :min="minAmount" :max="formData.direction == 1 ? operateInfo.maxlndexX : operateInfo.maxlndexY" style="width: 80%" />
+            <el-input-number v-model="formData.amount" :max="formData.direction == 1 ? operateInfo.maxlndexX : operateInfo.maxlndexY" style="width: 80%" @change="handleChange" />
           </el-form-item>
         </div>
         <div style="flex: 1;">
@@ -39,10 +39,10 @@
       <div style="display: flex;">
         <div>
           <el-form-item label="柜列用能" label-width="130">
-            <el-switch v-model="isAutoCreate.aisleAlram" :active-value="1" :inactive-value="0" style="width: 100px;--el-switch-on-color: #00778c;" />
+            <el-switch v-model="isAutoCreate.aisleAlarm" :active-value="1" :inactive-value="0" style="width: 100px;--el-switch-on-color: #00778c;" />
           </el-form-item>
         </div>
-        <div v-if="isAutoCreate.aisleAlram" style="flex: 1;">
+        <div v-if="isAutoCreate.aisleAlarm" style="flex: 1;">
           <el-form-item label="日用能告警" label-width="130">
             <el-switch v-model="formData.eleAlarmDay" :active-value="1" :inactive-value="0" style="width: 15%;--el-switch-on-color: #00778c;" />
             <el-input type="number" v-if="formData.eleAlarmDay" v-model="formData.eleLimitDay" :min="0" controls-position="right" placeholder="请输入柜列日用能限制" style="width: 65%">
@@ -50,7 +50,7 @@
             </el-input>
           </el-form-item>
         </div>
-        <div v-if="isAutoCreate.aisleAlram" style="flex: 1;">
+        <div v-if="isAutoCreate.aisleAlarm" style="flex: 1;">
           <el-form-item label="月用能告警" label-width="130">
             <el-switch v-model="formData.eleAlarmMonth" :active-value="1" :inactive-value="0" style="width: 15%;--el-switch-on-color: #00778c;" />
             <el-input type="number" v-if="formData.eleAlarmMonth" v-model="formData.eleLimitMonth" :min="0" controls-position="right" placeholder="请输入柜列月用能限制" style="width: 65%">
@@ -208,11 +208,11 @@
           </div>
           <div v-if="isAutoCreate.sensor && isAutoCreate.pdu" style="flex: 1;">
             <el-form-item label="前门-中" label-width="130">
-              <el-select v-model="machineFormData.frontPath" placeholder="请选择AB路" @change="machineFormData.sensorId = null" style="width: 40%">
+              <el-select clearable v-model="machineFormData.frontPath" placeholder="请选择AB路" @change="machineFormData.sensorId = null" style="width: 40%">
                 <el-option label="A路" value="A" />
                 <el-option label="B路" value="B" />
               </el-select>
-              <el-select v-model="machineFormData.frontSensorId " placeholder="请选择传感器id" style="width: 40%">
+              <el-select clearable v-model="machineFormData.frontSensorId " placeholder="请选择传感器id" style="width: 40%">
                 <template v-if="machineFormData.frontPath == 'A'">
                   <el-option v-for="id in sensorAIds" :key="id" :label="id" :value="id" />
                 </template>
@@ -225,11 +225,11 @@
           </div>
           <div v-if="isAutoCreate.sensor && isAutoCreate.pdu" style="flex: 1;">
             <el-form-item  label="后门-中" label-width="130">
-              <el-select v-model="machineFormData.frontPath" placeholder="请选择AB路" @change="machineFormData.sensorId = null" style="width: 40%">
+              <el-select clearable v-model="machineFormData.backPath" placeholder="请选择AB路" @change="machineFormData.sensorId = null" style="width: 40%">
                 <el-option label="A路" value="A" />
                 <el-option label="B路" value="B" />
               </el-select>
-              <el-select v-model="machineFormData.backSensorId " placeholder="请选择传感器id" style="width: 40%">
+              <el-select clearable v-model="machineFormData.backSensorId " placeholder="请选择传感器id" style="width: 40%">
                 <template v-if="machineFormData.frontPath == 'A'">
                   <el-option v-for="id in sensorAIds" :key="id" :label="id" :value="id" />
                 </template>
@@ -319,7 +319,7 @@ const isAutoCreate = ref({
   pdu: false,
   sensor: false,
   bus: false,
-  aisleAlram: false,
+  aisleAlarm: false,
   cabinetAlarm: false
 })
 const sensorFormData = reactive({
@@ -418,7 +418,7 @@ const open = async (type: string, data, info) => {
   formData.value.yCoordinate = Number(operateInfo.value.lndexY)+1
   console.log('formData.value', formData.value)
   if(type == 'edit' && (formData.value.eleAlarmDay || formData.value.eleAlarmMonth)) {
-    isAutoCreate.value.aisleAlram = 1
+    isAutoCreate.value.aisleAlarm = 1
   }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -451,7 +451,6 @@ const submitForm = async () => {
   if(isAutoCreate.value.pdu) {
     machineFormData.value.pduBox = false 
     formData.value.pduBar = false
-    machineFormData.value.backPath = machineFormData.value.frontPath
   } else {
     machineFormData.value.pduBox = true 
     formData.value.pduBar = true
@@ -463,6 +462,21 @@ const submitForm = async () => {
     machineFormData.value.airList.forEach((element,index) => {
       machineFormData.value.airList[index] = Number(element)
     })
+  }
+
+  if(!isAutoCreate.value.aisleAlarm) {
+    formData.value.eleAlarmDay = 0
+    formData.value.eleAlarmMonth = 0
+  }
+  if(!isAutoCreate.value.cabinetAlarm) {
+    machineFormData.value.eleAlarmDay = false
+    machineFormData.value.eleAlarmMonth = false
+  }
+  if(!isAutoCreate.value.sensor) {
+    machineFormData.value.frontPath = ""
+    machineFormData.value.frontSensorId = ""
+    machineFormData.value.backPath = ""
+    machineFormData.value.backSensorId = ""
   }
   console.log({...formData.value,cabinetFirstVO: machineFormData.value })
   
@@ -491,6 +505,13 @@ const submitForm = async () => {
     console.log('error', error)
   } finally {
     formLoading.value = false
+  }
+}
+
+const handleChange = (currentValue: number | undefined, oldValue: number | undefined) => {
+  if(currentValue < minAmount.value) {
+    formData.value.amount = 12
+    message.warning("当前柜列中机柜数量为" + minAmount.value + ",要减少的位置不能为空")
   }
 }
 
@@ -554,7 +575,7 @@ const resetForm = () => {
     pdu: false,
     sensor: false,
     bus: false,
-    aisleAlram: false,
+    aisleAlarm: false,
     cabinetAlarm: false
   }
   console.log(typeof(operateInfo.value.lndexX))

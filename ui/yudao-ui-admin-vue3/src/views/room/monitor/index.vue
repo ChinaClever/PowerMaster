@@ -566,7 +566,7 @@
       </el-table>
     </div>
     
-    <el-dialog v-model="dialogVisible" title="机房配置" width="50%" :before-close="handleDialogCancel">
+    <el-dialog v-model="dialogVisible" title="机房配置" width="50%" :before-close="handleDialogCancel" align-center>
       <el-form>
         <div style="margin-bottom: 5px">
           <el-text>机房</el-text>
@@ -682,6 +682,14 @@
       <template #footer>
         <el-button @click="handleDialogCancel" color="black" plain>取 消</el-button>
         <el-button type="primary" @click="submitSetting" color="black">确 定</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="huiFuRoomVis" title="恢复机房" width="30%" align-center>
+      该机房已存在，是否恢复？
+      <template #footer>
+        <el-button @click="rowColInfo.roomName = '';huiFuRoomVis = false" color="black" plain>不 恢 复</el-button>
+        <el-button type="primary" @click="huiFuRoom(huiFuRoomId)" color="black">恢 复</el-button>
       </template>
     </el-dialog>
   </div>
@@ -926,6 +934,22 @@ const handleRestore = async (flagRoomid) => {
   })
 }
 
+const huiFuRoomId = ref()
+const huiFuRoomVis = ref(false)
+
+const huiFuRoom = async (resSelect) => {
+  const res = await MachineRoomApi.restoreRoomInfo({id: resSelect});
+  if(res != null || res != "") {
+    message.success('恢复成功')
+    deletedList.value = deletedList.value.filter(item => item.id != resSelect)
+    getRoomAddrList()
+  } else {
+    message.error('恢复失败')
+  }
+  dialogVisible.value = false;
+  huiFuRoomVis.value = false
+}
+
 // 重置表单
 const resetForm = () => {
   Object.assign(rowColInfo, {
@@ -964,8 +988,8 @@ const submitSetting = async() => {
   if(roomFlag.value == 1){
     const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
     if(resSelect != null){
-      message.error('该机房名称已存在,请重新输入!');
-      rowColInfo.roomName = '';
+      huiFuRoomId.value = resSelect
+      huiFuRoomVis.value = true
       return
     }
   }
@@ -1574,9 +1598,9 @@ const handleChange = async (val: CollapseModelValue) => {
 :deep(.el-radio-button__inner) {
   width: 5vw;
 }
-:deep(.el-button:hover) {
-  color: #00778c;
-  border-color: #80bbc6;
-  background-color: #e6f1f4;
-}
+// :deep(.el-button:hover) {
+//   color: #00778c;
+//   border-color: #80bbc6;
+//   background-color: #e6f1f4;
+// }
 </style>

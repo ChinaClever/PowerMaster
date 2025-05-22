@@ -362,12 +362,12 @@
             </div>
                 <div class="power-section single-line">
         <span class="power-title" v-if="outletList[`pName${1}`]!=null">{{outletList[`pName${1}`]}}：</span>
-        <span class="power-value" v-if="outletList[`pName${1}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${1}`].toFixed(3) }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${1}`] }})</span></span>
-        <span class="power-value" v-if="outletList[`pName${1}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${1}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${1}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${1}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${1}`].toFixed(3) }}</span> kWh <span class="time">记录于({{ outletList[`outLetMaxTime${1}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${1}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${1}`].toFixed(3)  }}</span> kWh <span class="time">记录于({{ outletList[`outLetMinTime${1}`] }})</span></span>
         <span  class="separator" v-if="outletList[`pName${2}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span class="power-title" v-if="outletList[`pName${2}`]!=null">{{outletList[`pName${2}`]}}：</span>
-        <span class="power-value" v-if="outletList[`pName${2}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${2}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMaxTime${2}`] }})</span></span>
-        <span class="power-value" v-if="outletList[`pName${2}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${2}`].toFixed(3)  }}</span>  <span class="time">记录于({{ outletList[`outLetMinTime${2}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${2}`]!=null">峰值 <span class="highlight">{{ outletList[`outLetMax${2}`].toFixed(3)  }}</span> kWh <span class="time">记录于({{ outletList[`outLetMaxTime${2}`] }})</span></span>
+        <span class="power-value" v-if="outletList[`pName${2}`]!=null">谷值 <span class="highlight">{{ outletList[`outLetMin${2}`].toFixed(3)  }}</span> kWh <span class="time">记录于({{ outletList[`outLetMinTime${2}`] }})</span></span>
       </div>
                 <div class="power-section single-line">
         <span class="power-title" v-if="outletList[`pName${3}`]!=null">{{outletList[`pName${3}`]}}：</span>
@@ -387,11 +387,11 @@
             </div>
                      <div v-for="(sensor, index) in outLetActiveList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2 == 0">
-        <span class="power-title" v-if="outletActiveData[`pName${index+1}`]!=null">{{outletActiveData[`pName${index+1}`]}}极值：</span>
+        <span class="power-title" v-if="outletActiveData[`pName${index+1}`]!=null">{{outletActiveData[`pName${index+1}`]}}：</span>
         <span class="power-value" v-if="outletActiveData[`pName${index+1}`]!=null">峰值 <span class="highlight">{{ outletActiveData[`activePowMaxValue${index + 1}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMaxTime${index + 1}`] }})</span></span>
         <span class="power-value" v-if="outletActiveData[`pName${index+1}`]!=null">谷值 <span class="highlight">{{ outletActiveData[`activePowMinValue${index + 1}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMinTime${index + 1}`] }})</span></span>
         <span  class="separator" v-if="outletActiveData[`pName${index+1}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span class="power-title" v-if="outletActiveData[`pName${index+2}`]!=null">{{outletActiveData[`pName${index+2}`]}}极值：</span>
+        <span class="power-title" v-if="outletActiveData[`pName${index+2}`]!=null">{{outletActiveData[`pName${index+2}`]}}：</span>
         <span class="power-value" v-if="outletActiveData[`pName${index+2}`]!=null">峰值 <span class="highlight">{{ outletActiveData[`activePowMaxValue${index + 2}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMaxTime${index + 2}`] }})</span></span>
         <span class="power-value" v-if="outletActiveData[`pName${index+2}`]!=null">谷值 <span class="highlight">{{ outletActiveData[`activePowMinValue${index + 2}`] }}</span>  <span class="time">记录于({{ outletActiveData[`activePowMinTime${index + 2}`] }})</span></span>
       </div>

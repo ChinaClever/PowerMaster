@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.room.service.energyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.FileManage;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.RoomEnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.room.vo.RoomEleExportVO;
@@ -58,4 +59,6 @@ public interface RoomEnergyConsumptionService {
     PageResult<Object> getSubBillDetails(RoomEnergyConsumptionPageReqVO reqVO) throws IOException;
 
     List<RoomEleExportVO> exportRoomEle() throws IOException;
+
+    void saveFileManage(FileManage fileManage);
 }

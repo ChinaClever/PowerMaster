@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.room.controller.admin.energyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.FileManage;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -134,8 +135,18 @@ public class RoomEnergyConsumptionController {
     @Operation(summary = "导出机房一天电量数据 Excel")
     public void  exportRoomEle(HttpServletResponse response) throws IOException {
         List<RoomEleExportVO> list =  roomEnergyConsumptionService.exportRoomEle();
+        String name = System.currentTimeMillis() + ".xlsx";
+        String path = "F:\\Temp\\"+name;
+        ExcelUtils.writePath(path, "数据", RoomEleExportVO.class,
+                list);
         ExcelUtils.write(response, "机房一天电量数据.xlsx", "数据", RoomEleExportVO.class,
                 BeanUtils.toBean(list, RoomEleExportVO.class));
+        FileManage  fileManage = new FileManage();
+        fileManage.setFileName(name);
+        fileManage.setFileUrl(path);
+        fileManage.setSysType(1);
+        roomEnergyConsumptionService.saveFileManage(fileManage);
+
     }
 
 }

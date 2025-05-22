@@ -425,8 +425,7 @@
             </if>
         </where>
     </select>
-    <!--        SUBSTRING_INDEX( cb.box_key_a, '-', 2) as busKeya,
-        SUBSTRING_INDEX( cb.box_key_b, '-', 2) as busKeyb,-->
+
     <select id="findAisleCabinetPduByRoomId"
             resultType="cn.iocoder.yudao.framework.common.vo.AisleCabinetPduEditExcelVO">
         SELECT

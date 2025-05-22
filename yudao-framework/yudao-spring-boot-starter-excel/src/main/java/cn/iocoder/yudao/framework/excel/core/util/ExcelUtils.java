@@ -152,4 +152,8 @@ public class ExcelUtils {
         }
         return head;
     }
+
+    public static void writePath(String path, String sheetName, Class cls, List list) {
+        EasyExcel.write(path, cls).sheet(sheetName).doWrite(list);
+    }
 }
