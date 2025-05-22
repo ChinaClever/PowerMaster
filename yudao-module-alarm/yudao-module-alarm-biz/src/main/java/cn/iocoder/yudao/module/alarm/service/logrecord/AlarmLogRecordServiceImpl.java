@@ -422,7 +422,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
                             .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
                             .eq(AlarmLogRecordDO::getAlarmKey, cabinetIndexNew.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndexNew.getAisleId() + FieldConstant.SPLIT_KEY + cabinetIndexNew.getId())
-                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
+                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus())
+                            .in(AlarmLogRecordDO::getAlarmType, AlarmTypeEnums.CABINET_CAPACITY_WARNING.getType(), AlarmTypeEnums.CABINET_CAPACITY_ALARM.getType()));
                 }
             }
         }
@@ -484,8 +485,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
                             .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
                             .eq(AlarmLogRecordDO::getAlarmKey, aisleIndexNew.getRoomId() + FieldConstant.SPLIT_KEY + aisleIndexNew.getId())
-                            .in(AlarmLogRecordDO::getAlarmType,  AlarmTypeEnums.AISLE_CAPACITY_ALARM.getType(), AlarmTypeEnums.AISLE_CAPACITY_WARNING.getType())
-                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
+                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus())
+                            .in(AlarmLogRecordDO::getAlarmType,  AlarmTypeEnums.AISLE_CAPACITY_WARNING.getType(), AlarmTypeEnums.AISLE_CAPACITY_ALARM.getType()));
                 }
             }
         }
@@ -545,7 +546,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
                             .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
                             .eq(AlarmLogRecordDO::getAlarmKey, roomIndexNew.getId().toString())
-                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
+                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus())
+                            .in(AlarmLogRecordDO::getAlarmType,  AlarmTypeEnums.ROOM_CAPACITY_WARNING.getType(), AlarmTypeEnums.ROOM_CAPACITY_ALARM.getType()));
                 }
             }
         }
