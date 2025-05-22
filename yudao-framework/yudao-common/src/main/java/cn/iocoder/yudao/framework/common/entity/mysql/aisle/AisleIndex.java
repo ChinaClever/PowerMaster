@@ -47,7 +47,7 @@ public class AisleIndex implements Serializable {
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private Integer isDelete;
+    private Boolean isDelete;
 
 
     /**
@@ -56,7 +56,11 @@ public class AisleIndex implements Serializable {
     private Integer aisleLength;
 
 
-
+    /**
+     * 负载率状态
+     */
+    @Schema(description = "负载率状态", example = "10")
+    private Integer loadRateStatus;
 
     /**
      * 起始x坐标

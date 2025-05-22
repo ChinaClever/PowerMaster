@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.alarm.service.logrecord;
 import cn.iocoder.yudao.framework.common.constant.FieldConstant;
 import cn.iocoder.yudao.framework.common.constant.JobHandlerConstants;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCronConfig;
@@ -10,10 +11,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.*;
-import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
-import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
-import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -77,6 +75,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Autowired
     private RoomIndexMapper roomIndexMapper;
+
+    @Autowired
+    private AisleCfgMapper aisleCfgMapper;
 
     @Autowired
     private JobApi jobApi;
@@ -431,6 +432,68 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
 
     @Override
+    public Integer insertOrUpdateAlarmRecordWhenAisleAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        Integer result = null;
+        if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            ValueOperations ops = redisTemplate.opsForValue();
+            List<AisleIndex> aisleIndexListOld = BeanUtils.toBean(oldMaps, AisleIndex.class);
+            List<AisleIndex> aisleIndexListNew = BeanUtils.toBean(newMaps, AisleIndex.class);
+            for (int i = 0; i < aisleIndexListOld.size(); i++) {
+                AisleIndex aisleIndexOld = aisleIndexListOld.get(i);
+                AisleIndex aisleIndexNew = aisleIndexListNew.get(i);
+                List<Integer> alarmCodeList = new ArrayList<>();
+                alarmCodeList.add(AisleStatusEnum.EARLY_WARNING.getStatus());
+                alarmCodeList.add(AisleStatusEnum.ALARM.getStatus());
+                if (alarmCodeList.contains(aisleIndexNew.getLoadRateStatus()) && !Objects.equals(aisleIndexOld.getLoadRateStatus(), aisleIndexNew.getLoadRateStatus())) {
+                    AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
+                    String alarmKey = aisleIndexNew.getId()+"";
+                    alarmRecord.setAlarmKey(alarmKey);
+                    alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
+                    if (Objects.equals(aisleIndexNew.getLoadRateStatus(), AisleStatusEnum.ALARM.getStatus())) {
+                        alarmRecord.setAlarmType(AlarmTypeEnums.AISLE_CAPACITY_ALARM.getType());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.TWO.getStatus());
+                    } else if (Objects.equals(aisleIndexNew.getLoadRateStatus(), AisleStatusEnum.EARLY_WARNING.getStatus())) {
+                        alarmRecord.setAlarmType(AlarmTypeEnums.AISLE_CAPACITY_WARNING.getType());
+                        alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
+                    }
+
+                    JSONObject aisleJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_AISLE + alarmKey);
+                    if (aisleJson != null) {
+                        // 告警描述
+                        String alarmDesc = getOverCapacityAlarmDesc(aisleJson,DBTable.AISLE_INDEX);
+                        alarmRecord.setAlarmDesc(alarmDesc);
+                        // 告警开始时间
+                        Object datetime = aisleJson.get(FieldConstant.DATETIME);
+                        if (datetime != null) {
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            LocalDateTime startTime = LocalDateTime.parse(datetime.toString(), formatter);
+                            alarmRecord.setStartTime(startTime);
+                        } else {
+                            alarmRecord.setStartTime(LocalDateTime.now());
+                        }
+                        // 告警位置
+                        alarmRecord.setAlarmPosition(aisleJson.getString(FieldConstant.ROOM_NAME) + FieldConstant.SPLIT_KEY + aisleIndexNew.getAisleName());
+                        // 级联关系id
+                        alarmRecord.setAisleId(aisleIndexNew.getId());
+                        alarmRecord.setRoomId(aisleIndexNew.getRoomId());
+                        result = logRecordMapper.insert(alarmRecord);
+                    }
+                } else if (alarmCodeList.contains(aisleIndexOld.getLoadRateStatus())
+                        && (Objects.equals(RoomStatusEnum.NORMAL.getStatus(), aisleIndexNew.getLoadRateStatus())
+                        || Objects.equals(RoomStatusEnum.SAFE.getStatus(), aisleIndexNew.getLoadRateStatus()))) {
+                    result = logRecordMapper.update(new LambdaUpdateWrapper<AlarmLogRecordDO>()
+                            .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
+                            .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
+                            .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
+                            .eq(AlarmLogRecordDO::getAlarmKey, aisleIndexNew.getRoomId() + FieldConstant.SPLIT_KEY + aisleIndexNew.getId())
+                            .in(AlarmLogRecordDO::getAlarmType,  AlarmTypeEnums.AISLE_CAPACITY_ALARM.getType(), AlarmTypeEnums.AISLE_CAPACITY_WARNING.getType())
+                            .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
+                }
+            }
+        }
+        return result;
+    }
+    @Override
     public Integer insertOrUpdateAlarmRecordWhenRoomAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
         Integer result = null;
         if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
@@ -483,7 +546,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
                             .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
-                            .eq(AlarmLogRecordDO::getAlarmKey, roomIndexNew.getId())
+                            .eq(AlarmLogRecordDO::getAlarmKey, roomIndexNew.getId().toString())
                             .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
                 }
             }
@@ -547,6 +610,11 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
             loadFactor  = json.get(FieldConstant.LOAD_FACTOR) + "";
             powerCapacity = json.get(FieldConstant.POW_CAPACITY) + "";
             power  = (JSONObject) json.get(FieldConstant.CABINET_POWER);
+        } else if (DBTable.AISLE_INDEX.equals(dbName)) {
+            loadFactor  = json.get(FieldConstant.LOAD_FACTOR) + "";
+            AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>().eq(AisleCfg::getAisleId, json.get(FieldConstant.AISLE_KEY)));
+            powerCapacity = aisleCfg.getPowerCapacity() + "";
+            power  = (JSONObject) json.get(FieldConstant.AISLE_POWER);
         } else if (DBTable.ROOM_INDEX.equals(dbName)){
             loadFactor = json.get(FieldConstant.ROOM_LOAD_FACTOR) + "";
             RoomIndex roomIndex = roomIndexMapper.selectById((Serializable) json.get(FieldConstant.ROOM_KEY));
@@ -572,6 +640,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         String desc = "";
         if (DBTable.CABINET_INDEX.equals(dbName)) {
             desc = "当前机柜有功负载率：" + loadFactor + "，机柜额定有功容量：" + powerCapacity + "KW" + "，实际有功功率：" + activePow + "KW";
+        } else if (DBTable.AISLE_INDEX.equals(dbName)) {
+            desc = "当前柜列有功负载率：" + loadFactor + "，柜列额定有功容量：" + powerCapacity + "KW" + "，实际有功功率：" + activePow + "KW";
         } else {
             desc = "当前机房有功负载率：" + loadFactor + "，机房额定有功容量：" + powerCapacity + "KW" + "，实际有功功率：" + activePow + "KW";
         }

@@ -112,6 +112,7 @@ public class MySQLTableMonitor {
                             DBTable.PDU_INDEX,
                             DBTable.BUS_INDEX,
                             DBTable.CABINET_INDEX,
+                            DBTable.AISLE_INDEX,
                             DBTable.ROOM_INDEX,
                             DBTable.CABINET_CRON_CONFIG
                     ));
@@ -141,6 +142,9 @@ public class MySQLTableMonitor {
                                 break;
                             case DBTable.CABINET_INDEX:
                                 result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
+                                break;
+                            case DBTable.AISLE_INDEX:
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenAisleAlarm(oldMaps,newMaps);
                                 break;
                             case DBTable.ROOM_INDEX:
                                 result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenRoomAlarm(oldMaps,newMaps);

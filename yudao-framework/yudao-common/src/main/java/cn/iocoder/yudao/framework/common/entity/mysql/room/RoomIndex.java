@@ -55,7 +55,7 @@ public class RoomIndex implements Serializable {
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private int isDelete;
+    private Boolean isDelete;
 
     /**
      * 电力容量
@@ -66,7 +66,7 @@ public class RoomIndex implements Serializable {
     /**
      * 负载率状态
      */
-    @TableField(value = "load_rate_status")
+    @Schema(description = "负载率状态", example = "10")
     private Integer loadRateStatus;
 
     /**

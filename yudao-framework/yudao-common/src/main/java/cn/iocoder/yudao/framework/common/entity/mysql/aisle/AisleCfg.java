@@ -32,11 +32,6 @@ public class AisleCfg implements Serializable {
     @Schema(description = "电力容量", example = "0")
     private float powerCapacity;
 
-    /**
-     * 是否删除
-     */
-    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private Integer isDelete;
 
     /**
      * 类型

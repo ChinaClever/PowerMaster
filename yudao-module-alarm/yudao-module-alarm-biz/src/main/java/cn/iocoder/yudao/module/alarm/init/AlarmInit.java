@@ -70,6 +70,7 @@ public class AlarmInit {
                     DBTable.PDU_INDEX,
                     DBTable.BUS_INDEX,
                     DBTable.CABINET_INDEX,
+                    DBTable.AISLE_INDEX,
                     DBTable.ROOM_INDEX,
                     DBTable.ALARM_LOG_RECORD,
                     DBTable.CABINET_CRON_CONFIG

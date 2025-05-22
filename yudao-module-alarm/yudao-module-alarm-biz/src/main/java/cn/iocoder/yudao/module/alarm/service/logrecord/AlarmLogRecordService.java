@@ -114,6 +114,13 @@ public interface AlarmLogRecordService {
      */
     void updateCabinetAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
 
+
+    /**
+     * 当柜列报警时，插入告警记录
+     *
+     */
+    Integer insertOrUpdateAlarmRecordWhenAisleAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
     /**
      * 当机房报警时，插入告警记录
      *

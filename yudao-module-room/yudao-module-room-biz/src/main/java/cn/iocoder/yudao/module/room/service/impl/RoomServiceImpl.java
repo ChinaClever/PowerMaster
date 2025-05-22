@@ -426,7 +426,7 @@ public class RoomServiceImpl implements RoomService {
                 }
 
                 //逻辑删除
-                if (roomIndex.getIsDelete() == (DelEnums.NO_DEL.getStatus())) {
+                if (!roomIndex.getIsDelete()) {
                     roomIndexMapper.update(new LambdaUpdateWrapper<RoomIndex>()
                             .eq(RoomIndex::getId, roomId)
                             .set(RoomIndex::getIsDelete, DelEnums.DELETE.getStatus()));

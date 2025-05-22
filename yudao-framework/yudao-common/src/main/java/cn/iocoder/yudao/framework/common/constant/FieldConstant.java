@@ -471,6 +471,11 @@ public class FieldConstant {
     public static final String AISLE_ID = "aisle_id";
 
     /**
+     * 柜列id
+     */
+    public static final String AISLE_KEY = "aisle_key";
+
+    /**
      * 通道总电能表(实时)
      */
     public static final String AISLE_ELE_TOTAL_REALTIME = "aisle_ele_total_realtime";

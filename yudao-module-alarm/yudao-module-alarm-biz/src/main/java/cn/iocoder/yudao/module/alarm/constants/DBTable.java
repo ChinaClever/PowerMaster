@@ -13,6 +13,8 @@ public class DBTable {
 
     public static final String CABINET_INDEX = "cabinet_index";
 
+    public static final String AISLE_INDEX = "aisle_index";
+
     public static final String ROOM_INDEX = "room_index";
 
     public static final String ALARM_LOG_RECORD = "alarm_log_record";
