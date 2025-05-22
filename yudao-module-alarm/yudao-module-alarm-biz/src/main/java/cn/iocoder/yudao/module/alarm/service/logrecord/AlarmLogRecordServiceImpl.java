@@ -377,8 +377,6 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 alarmCodeList.add(CabinetStatusEnum.ALARM.getStatus());
                 if (alarmCodeList.contains(cabinetIndexNew.getRunStatus()) && cabinetIndexOld.getRunStatus() != cabinetIndexNew.getRunStatus()) {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
-                    String alarmKey = cabinetIndexNew.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndexNew.getId();
-                    alarmRecord.setAlarmKey(alarmKey);
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                     if (cabinetIndexNew.getRunStatus() == CabinetStatusEnum.ALARM.getStatus()) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_CAPACITY_ALARM.getType());
@@ -387,8 +385,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_CAPACITY_WARNING.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
                     }
-
-                    JSONObject cabinetJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_CABINET + alarmKey);
+                    String redisKey = cabinetIndexNew.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndexNew.getId();
+                    JSONObject cabinetJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_CABINET + redisKey);
                     if (cabinetJson != null) {
                         // 告警描述
                         String alarmDesc = getOverCapacityAlarmDesc(cabinetJson,DBTable.CABINET_INDEX);
@@ -414,6 +412,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             alarmRecord.setRoomId(cabinetIndex.getRoomId());
                             alarmRecord.setAisleId(cabinetIndex.getAisleId());
                             alarmRecord.setCabinetId(cabinetIndex.getId());
+                            alarmRecord.setAlarmKey(cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getAisleId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId());
                         }
                         result = logRecordMapper.insert(alarmRecord);
                     }
@@ -422,7 +421,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                             .set(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.FINISH.getStatus())
                             .set(AlarmLogRecordDO::getFinishTime, LocalDateTime.now())
                             .set(AlarmLogRecordDO::getFinishReason, "状态恢复正常")
-                            .eq(AlarmLogRecordDO::getAlarmKey, cabinetIndexNew.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndexNew.getId())
+                            .eq(AlarmLogRecordDO::getAlarmKey, cabinetIndexNew.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndexNew.getAisleId() + FieldConstant.SPLIT_KEY + cabinetIndexNew.getId())
                             .eq(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus()));
                 }
             }
@@ -446,8 +445,6 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                 alarmCodeList.add(AisleStatusEnum.ALARM.getStatus());
                 if (alarmCodeList.contains(aisleIndexNew.getLoadRateStatus()) && !Objects.equals(aisleIndexOld.getLoadRateStatus(), aisleIndexNew.getLoadRateStatus())) {
                     AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
-                    String alarmKey = aisleIndexNew.getId()+"";
-                    alarmRecord.setAlarmKey(alarmKey);
                     alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                     if (Objects.equals(aisleIndexNew.getLoadRateStatus(), AisleStatusEnum.ALARM.getStatus())) {
                         alarmRecord.setAlarmType(AlarmTypeEnums.AISLE_CAPACITY_ALARM.getType());
@@ -456,8 +453,8 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         alarmRecord.setAlarmType(AlarmTypeEnums.AISLE_CAPACITY_WARNING.getType());
                         alarmRecord.setAlarmLevel(AlarmLevelEnums.THREE.getStatus());
                     }
-
-                    JSONObject aisleJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_AISLE + alarmKey);
+                    String aisleId = aisleIndexNew.getId()+"";
+                    JSONObject aisleJson = (JSONObject) ops.get(FieldConstant.REDIS_KEY_AISLE + aisleId);
                     if (aisleJson != null) {
                         // 告警描述
                         String alarmDesc = getOverCapacityAlarmDesc(aisleJson,DBTable.AISLE_INDEX);
@@ -476,6 +473,7 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                         // 级联关系id
                         alarmRecord.setAisleId(aisleIndexNew.getId());
                         alarmRecord.setRoomId(aisleIndexNew.getRoomId());
+                        alarmRecord.setAlarmKey(aisleIndexNew.getRoomId()+FieldConstant.SPLIT_KEY+aisleId);
                         result = logRecordMapper.insert(alarmRecord);
                     }
                 } else if (alarmCodeList.contains(aisleIndexOld.getLoadRateStatus())
