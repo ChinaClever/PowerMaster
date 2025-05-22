@@ -743,7 +743,8 @@ const handleDelete = async (devKey: string) => {
     })
     message.success(t('common.delSuccess'))
     // 刷新列表
-    await getList()
+    await getList();
+     await getNavList();
   } catch {}
 }
 

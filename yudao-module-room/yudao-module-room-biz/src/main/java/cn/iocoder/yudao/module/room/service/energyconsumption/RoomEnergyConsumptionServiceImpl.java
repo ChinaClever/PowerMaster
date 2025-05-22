@@ -2,7 +2,9 @@ package cn.iocoder.yudao.module.room.service.energyconsumption;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.FileManage;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.mapper.FileManageMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
@@ -48,6 +50,8 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
 
     @Autowired
     private RoomHistoryDataService roomHistoryDataService;
+    @Autowired
+    private FileManageMapper fileManageMapper;
 
     @Override
     public PageResult<Object> getEQDataPage(RoomEnergyConsumptionPageReqVO pageReqVO) throws IOException {
@@ -410,7 +414,7 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.trackTotalHits(true);
         searchSourceBuilder.size(10000);
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
 
         searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
@@ -433,6 +437,11 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
             }
         }
         return list;
+    }
+
+    @Override
+    public void saveFileManage(FileManage fileManage) {
+        fileManageMapper.insert(fileManage);
     }
 
 }

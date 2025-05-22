@@ -453,6 +453,8 @@
 // import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts'
+import { formatter } from 'element-plus'
+import { formatDate } from '@/utils/formatTime'
 import { onMounted, onUpdated} from 'vue'
 import { useRoute } from 'vue-router'
 // import { object } from 'vue-types';
@@ -782,6 +784,17 @@ const initChart = async () => {
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({
+  toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -807,7 +820,6 @@ const initChart = async () => {
       //显示线的按钮
       legend: { data: ['总有功功率','总视在功率','总无功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
             function (value) {
               if(toggleTime.value == "oneHour"){
@@ -874,7 +886,17 @@ const initChart = async () => {
         }},
         legend: { data: legendList},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
         xAxis: {type: 'category', axisLabel: { formatter: 
               function (value) {
                 if(queryParams.powGranularityF == "oneHour"){
@@ -1160,6 +1182,17 @@ const flashChartData = async () =>{
   // 设置新的配置对象
   if (chart) {
     chart.setOption({
+  toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -1183,7 +1216,6 @@ const flashChartData = async () =>{
       }},
       legend: { data: ['总有功功率','总视在功率','总无功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
             function (value) {
               if(queryParams.powGranularity == "oneHour"){
@@ -1269,7 +1301,17 @@ const flashChartData = async () =>{
         }},
         legend: { data: legendList},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
         xAxis: {type: 'category', axisLabel: { formatter: 
               function (value) {
                 if(queryParams.powGranularityF == "oneHour"){
@@ -1664,7 +1706,17 @@ watch([() => typeRadioShowCur.value],async () => {
         selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true }
       },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "电流" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
       xAxis: {
         type: 'category',axisLabel: { formatter: 
             function (value) {
@@ -1825,7 +1877,17 @@ watch([() => typeRadioShowVol.value],async () => {
         selected: {  "L1-电压": true, "L2-电压": true, "L3-电压": true }
       },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "电压" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
       xAxis: {
         type: 'category',axisLabel: { formatter: 
             function (value) {
@@ -1973,7 +2035,17 @@ watch([() => toggleTime.value],async ()=>{
         selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true }
       },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "电流" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
       xAxis: {
         type: 'category',axisLabel: { formatter: 
             function (value) {
@@ -2119,7 +2191,18 @@ watch([() => toggleTimeV.value],async ()=>{
         selected: {  "L1-电压": true, "L2-电压": true, "L3-电压": true }
       },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "电压" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
+          //        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {
         type: 'category',axisLabel: { formatter: 
             function (value) {
@@ -2248,6 +2331,17 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
     // 设置新的配置对象
     if (chart) {
       chart.setOption({
+  toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
         tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -2271,7 +2365,6 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
         }},
         legend: { data: ['总有功功率','总视在功率','总无功功率']},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
               function (value) {
                 if(queryParams.powGranularity == "oneHour"){
@@ -2359,7 +2452,17 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
         }},
         legend: { data: legendList},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
         xAxis: {type: 'category', axisLabel: { formatter: 
               function (value) {
                 if(queryParams.powGranularityF == "oneHour"){
@@ -2449,6 +2552,17 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     // 设置新的配置对象
     if (chart) {
       chart.setOption({
+  toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
         // 这里设置 Echarts 的配置项和数据
         title: { text: ''},
         tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -2472,7 +2586,6 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
         }},
         legend: { data: ['总有功功率','总视在功率','总无功功率']},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
               function (value) {
                 if(queryParams.powGranularity == "oneHour"){
@@ -2604,7 +2717,17 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
         }},
         legend: { data: legendList},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
         xAxis: {type: 'category', axisLabel: { formatter: 
               function (value) {
                 if(queryParams.powGranularityF == "oneHour"){
@@ -2901,7 +3024,17 @@ const lineidFlashChartData = async () =>{
         selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true }
       },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "电流" + formatDate(new Date)  },//保存为图片
+              dataZoom :{},
+            },
+          },
       xAxis: {
         type: 'category',nameLocation: 'end',axisLabel: { formatter: 
             function (value) {
@@ -3045,7 +3178,17 @@ const lineidFlashChartData = async () =>{
         selected: {"L1-电压": true, "L2-电压": true, "L3-电压": true }
       },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      toolbox: {
+            show: true,//是否显示工具箱开关
+            top: 'center',
+            orient: 'vertical',
+            feature: {
+              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              restore: { show: true },//重新加载视图
+              saveAsImage: { show: true,name: "电压" + formatDate(new Date) },//保存为图片
+              dataZoom :{},
+            },
+          },
       xAxis: {
         type: 'category',nameLocation: 'end',axisLabel: { formatter: 
             function (value) {

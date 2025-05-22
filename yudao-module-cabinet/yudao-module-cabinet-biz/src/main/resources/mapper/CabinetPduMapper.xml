@@ -13,9 +13,6 @@
         <foreach collection="list" item="item" index="index" separator=";">
             UPDATE cabinet_pdu
             <set>
-                <if test="item.cabinetId != null">
-                    cabinet_id = #{item.cabinetId},
-                </if>
                 <if test="item.pduKeyA != null">
                     pdu_key_a = #{item.pduKeyA},
                 </if>
@@ -23,9 +20,7 @@
                     pdu_key_b = #{item.pduKeyB},
                 </if>
             </set>
-            <where>
-                id = #{item.id}
-            </where>
+            where id = #{item.id}
         </foreach>
     </update>
 </mapper>
