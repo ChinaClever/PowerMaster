@@ -14,7 +14,6 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.loop.PduHdaLoopBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
@@ -42,7 +41,6 @@ import cn.iocoder.yudao.module.pdu.enums.DataNameType;
 import cn.iocoder.yudao.module.pdu.enums.DataType;
 import cn.iocoder.yudao.module.pdu.enums.PduDataTypeEnum;
 import cn.iocoder.yudao.module.pdu.utils.PduAnalysisResult;
-import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -52,7 +50,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
-
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -75,7 +73,6 @@ import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
-import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -141,8 +138,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
-        PageResult pageResult = new PageResult();
-        Page<PduIndex> pduIndexPageResult = null;
+        Page<PduIndex> pduIndexPageResult;
         List<PDUDeviceDO> result = new ArrayList<>();
         if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
@@ -203,7 +199,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setDataUpdateTime(jsonObject.getString("sys_time"));
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
 
-
             if (curArr.size() > 1) {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setBcur(new BigDecimal(curArr.get(1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
@@ -232,7 +227,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 .inIfPresent(PduIndex::getPduKey, pageReqVO.getPduKeyList())
                 .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
                 .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
+                .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus())
+                .orderByDesc(PduIndex::getUpdateTime));
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
 
@@ -800,45 +796,45 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     SearchHits hits = searchResponse.getHits();
                     for (SearchHit hit : hits) {
                         String str = hit.getSourceAsString();
-                                switch (type) {
-                                    case "oneHour":
-                                        PduHdaLineRealtimeResVO realtimeDO = JsonUtils.parseObject(str, PduHdaLineRealtimeResVO.class);
-                                        switch (realtimeDO.getLineId()) {
-                                            case 1:
-                                                oneHourList1.add(realtimeDO);
-                                                result.put("l", oneHourList1);
-                                                break;
-                                            case 2:
-                                                oneHourList2.add(realtimeDO);
-                                                result.put("ll", oneHourList2);
-                                                break;
-                                            case 3:
-                                                oneHourList3.add(realtimeDO);
-                                                result.put("lll", oneHourList3);
-                                                break;
-                                            default:
-                                        }
-                                        dateTimes.add(realtimeDO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        switch (type) {
+                            case "oneHour":
+                                PduHdaLineRealtimeResVO realtimeDO = JsonUtils.parseObject(str, PduHdaLineRealtimeResVO.class);
+                                switch (realtimeDO.getLineId()) {
+                                    case 1:
+                                        oneHourList1.add(realtimeDO);
+                                        result.put("l", oneHourList1);
+                                        break;
+                                    case 2:
+                                        oneHourList2.add(realtimeDO);
+                                        result.put("ll", oneHourList2);
+                                        break;
+                                    case 3:
+                                        oneHourList3.add(realtimeDO);
+                                        result.put("lll", oneHourList3);
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(realtimeDO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                                 break;
-                                    case "twentyfourHour":
-                                    case "seventytwoHour":
-                                        PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
-                                        switch (houResVO.getLineId()) {
-                                            case 1:
-                                                dayList1.add(houResVO);
+                            case "twentyfourHour":
+                            case "seventytwoHour":
+                                PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
+                                switch (houResVO.getLineId()) {
+                                    case 1:
+                                        dayList1.add(houResVO);
 
-                                                break;
-                                            case 2:
-                                                dayList2.add(houResVO);
+                                        break;
+                                    case 2:
+                                        dayList2.add(houResVO);
 
-                                                break;
-                                            case 3:
-                                                dayList3.add(houResVO);
+                                        break;
+                                    case 3:
+                                        dayList3.add(houResVO);
 
-                                                break;
-                                            default:
-                                        }
-                                        dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                        break;
+                                    default:
+                                }
+                                dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                                 break;
                             default:
                         }
@@ -855,7 +851,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 try {
                     curMaxValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())), index, "cur_max_value");
                     totalCurMax = JsonUtils.parseObject(curMaxValue, PduHdaLineHouResVO.class);
-                    curMinValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())),index, "cur_min_value");
+                    curMinValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())), index, "cur_min_value");
                     totalCurMin = JsonUtils.parseObject(curMinValue, PduHdaLineHouResVO.class);
                     volMaxValue = getMaxData(formatter.format(pastTime), formatter.format(now), Arrays.asList(Integer.valueOf(id.intValue())), index, "vol_max_value");
                     totalVolMax = JsonUtils.parseObject(volMaxValue, PduHdaLineHouResVO.class);
@@ -872,13 +868,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     result.put("volAMinValue", totalVolMin.getVolMinValue());
                     result.put("volAMinTime", sdf.format(totalVolMin.getVolMinTime()));
 
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.error("获取数据失败", e);
                 }
             }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
             redisTemplate.opsForValue().set(key, JSONObject.toJSONString(result), 5, TimeUnit.MINUTES);
-
 
 
             return result;
@@ -904,7 +899,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (pduIndex != null) {
             Integer id = pduIndex.getId();
             String index = (type == 0 || oldTime.toLocalDate().equals(newTime.toLocalDate())) ? "pdu_hda_line_hour" : "pdu_hda_line_day";
-            boolean isSameDay = (type == 0|| oldTime.toLocalDate().equals(newTime.toLocalDate()));
+            boolean isSameDay = (type == 0 || oldTime.toLocalDate().equals(newTime.toLocalDate()));
 
             if (!isSameDay) {
                 oldTime = oldTime.plusDays(1).withHour(0).withMinute(0).withSecond(0);
@@ -983,7 +978,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     curResBase.getSeries().add(curSeries);
                     volResBase.getSeries().add(volSeries);
                 }
-                resultMap.put("lineNumber",lineId);
+                resultMap.put("lineNumber", lineId);
             }
 
             // 添加时间轴数据
@@ -2175,9 +2170,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             , pduHdaTotalHourDo.getActivePowMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
 
 
-                    updatePowerData(reactivePow,pduHdaTotalHourDo.getPowReactiveMaxValue(),pduHdaTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss")
-                            ,pduHdaTotalHourDo.getPowReactiveAvgValue(),pduHdaTotalHourDo.getPowReactiveMinValue()
-                            ,pduHdaTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"),dataType);
+                    updatePowerData(reactivePow, pduHdaTotalHourDo.getPowReactiveMaxValue(), pduHdaTotalHourDo.getPowReactiveMaxTime().toString("yyyy-MM-dd HH:mm:ss")
+                            , pduHdaTotalHourDo.getPowReactiveAvgValue(), pduHdaTotalHourDo.getPowReactiveMinValue()
+                            , pduHdaTotalHourDo.getPowReactiveMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
 
                     if (timeFlag) {
                         totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("HH:mm"));
@@ -3691,15 +3686,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (roomIds.isEmpty()) {
             roomIds.add(0);
         }
-        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete,0));
-        if (CollectionUtils.isEmpty(roomIndices)){
+        List<RoomIndex> roomIndices = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>().in(RoomIndex::getId, roomIds).eq(RoomIndex::getIsDelete, 0));
+        if (CollectionUtils.isEmpty(roomIndices)) {
             return locationMap;
         }
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         List<Integer> cabIds = cabinetPdus.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetPduResVO::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {
-            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getId,cabIds).eq(AisleIndex::getIsDelete,0));
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>().in(AisleIndex::getId, cabIds).eq(AisleIndex::getIsDelete, 0));
             if (!CollectionUtils.isEmpty(aisleIndexList)) {
                 aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
             } else {

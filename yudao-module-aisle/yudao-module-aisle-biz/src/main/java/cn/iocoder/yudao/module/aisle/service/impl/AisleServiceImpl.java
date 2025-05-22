@@ -134,6 +134,9 @@ public class AisleServiceImpl implements AisleService {
 
     @Value("${aisle-refresh-url}")
     public String adder;
+
+    @Value("${room-refresh-url}")
+    public String roomAdder;
     public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
     /**
@@ -382,7 +385,7 @@ public class AisleServiceImpl implements AisleService {
             }
         } finally {
             log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
+//            HttpUtil.get(adder);
         }
 
 
@@ -402,7 +405,7 @@ public class AisleServiceImpl implements AisleService {
             aisleBarMapper.deleteById(barId);
         } finally {
             log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
+//            HttpUtil.get(adder);
         }
 
     }
