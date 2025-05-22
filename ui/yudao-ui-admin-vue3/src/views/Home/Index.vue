@@ -640,7 +640,10 @@ const getHomeEqData = async() => {
 //   return item; // 如果item不存在或name不是字符串，保持原样
 // }) : [];
 
-  res.roomEqList = [...res.roomEqList] //添加了模拟数据
+  res.roomEqList = res.roomEqList //添加了模拟数据
+  if(res.roomEqList==null) {
+    res.roomEqList=0
+  }
   //.slice(0, 12)
   
   Object.assign(eqInfo, res)

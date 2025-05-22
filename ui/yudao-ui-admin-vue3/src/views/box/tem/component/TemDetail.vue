@@ -46,7 +46,6 @@ const echartsOption = reactive({
    },
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: [
     {name: 'A相温度', type: 'line', symbol: 'circle', symbolSize: 4, data: temValueA},
     {name: 'B相温度', type: 'line', symbol: 'circle', symbolSize: 4, data: temValueB},

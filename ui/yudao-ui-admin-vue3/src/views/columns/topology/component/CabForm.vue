@@ -1,25 +1,28 @@
 <template>
-  <Dialog id="machine-dialog" v-model="dialogVisible" :title="dialogTitle" width="60%">
+  <Dialog id="machine-dialog" v-model="dialogVisible" :title="dialogTitle" width="60%" top="9vh">
     <div class="formContainer">
       <el-form
         ref="machineForm"
         v-loading="formLoading"
         :model="machineFormData"
         :rules="machineFormRules"
-        label-width="120px"
+        label-width="140px"
         center
       >
       <el-collapse v-model="activeNames" @change="handleChange" accordion>
         <el-collapse-item title="机柜参数" name="1">
-          <div class="collapseItem">
-            <el-form-item label="机房：" prop="roomId">
-              <el-input disabled v-model="machineFormData.roomName" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="机柜名称：" prop="cabinetName">
+          <div class="collapse-container">
+            <div class="collapseItem">
+              <el-form-item label="机房：" prop="roomId">
+              <el-select :model-value="props.roomId" placeholder="请选择" disabled>
+                <el-option v-for="room in props.roomList" :key="room.roomId" :label="room.roomName" :value="room.roomId" />
+              </el-select>
+              </el-form-item>
+              <el-form-item label="机柜名称：" prop="cabinetName">
               <el-input v-model="machineFormData.cabinetName" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="机柜类型：" prop="type">
-              <el-select v-model="machineFormData.type" placeholder="请选择">
+              </el-form-item>
+              <el-form-item label="机柜类型：" prop="type">
+              <el-select v-model="machineFormData.cabinetType" placeholder="请选择">
                 <el-option label="IT机柜" value="IT机柜" />
                 <el-option label="网络柜" value="网络柜" />
                 <el-option label="配电-电池柜" value="配电-电池柜" />
@@ -27,37 +30,47 @@
                 <el-option label="适配框" value="适配框" />
                 <el-option label="柱子" value="柱子" />
                 <el-option label="占位" value="占位" />
+                <template #footer>
+                  <el-input
+                    v-model="machineFormData.cabinetType"
+                    placeholder="请输入机柜类型"
+                    size="small"
+                  />
+                </template>
               </el-select>
-            </el-form-item>
-            <el-form-item label="机柜高度：" prop="cabinetHeight">
-              <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="电力容量：" prop="powCapacity ">
-              <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="所属公司：" prop="company">
-              <el-input v-model="machineFormData.company" placeholder="请输入" />
-            </el-form-item>
-            <div class="double-formitem">
-              <el-form-item label="日用能告警">
-                <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
               </el-form-item>
-              <el-form-item label="日用能限制">
-                <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              <el-form-item label="机柜高度(U)：" prop="cabinetHeight">
+              <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
               </el-form-item>
             </div>
-            <div class="double-formitem">
-              <el-form-item label="月用能告警">
-                <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+            <div class="collapseItem">
+              <el-form-item  label="电力容量(kVA)：" prop="powCapacity">
+                <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
               </el-form-item>
-              <el-form-item label="月用能限制">
-                <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              <el-form-item label="所属公司：" prop="company">
+                <el-input v-model="machineFormData.company" placeholder="请输入" />
               </el-form-item>
+              <div class="double-formitem">
+                <el-form-item label="月用能告警">
+                  <el-switch @click="showFlag = !showFlag" v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item v-if="showFlag" label="月用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" controls-position="right" placeholder="请输入" />
+                </el-form-item>
+              </div>
+              <div class="double-formitem">
+                <el-form-item label="日用能告警">
+                  <el-switch @click="showFlagCopy = !showFlagCopy" v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item v-if="showFlagCopy" label="日用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" controls-position="right" placeholder="请输入" />
+                </el-form-item>
+              </div>
             </div>
           </div>
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
-          <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox">
+          <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox" @tab-change="tabClick">
             <el-tab-pane label="PDU" :name="0">
               <div class="pduBus">
                 <el-form-item label="A路：">
@@ -139,14 +152,14 @@
           </el-tabs>
           
         </el-collapse-item>
-        <el-collapse-item v-if="machineFormData.pduBox == 0" title="机柜与传感器" name="4">
+        <el-collapse-item v-if="machineFormData.pduBox == false" title="机柜与传感器" name="4">
           <div class="sensorContainer">
             <div class="list">
               <template v-for="(item, index) in sensorListLeft" :key="index">
                 <div class="minInterval" v-if="index > 0"></div>
                 <!-- <div v-if="!item.sensorId" :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">{{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}</div> -->
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
                   <div :class="item.pathPdu ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
                     <div v-if="item.pathPdu" @click.stop="handleSensorDelete(0, index)" class="delete"><Icon icon="ep:close" />
@@ -163,7 +176,8 @@
               <template v-for="(item, index) in sensorListRight" :key="index">
                 <div class="minInterval" v-if="index > 0"></div>
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <!-- <el-table-column prop="id" label="ID" v-if="false"/> -->
                   <div :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 1, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
                     <div v-if="item.pathPdu" @click.stop="handleSensorDelete(1, index)" class="delete"><Icon icon="ep:close" /></div>
@@ -198,18 +212,18 @@
             <el-input disabled :value="sensorType[sensorFormData.type]" />
           </el-form-item>
           <el-form-item label="PDU" prop="pathPdu">
-            <el-select v-model="sensorFormData.pathPdu" placeholder="请选择">
+            <el-select v-model="sensorFormData.pathPdu" placeholder="请选择" @change="sensorFormData.sensorId = null">
               <el-option label="A路" value="A" />
               <el-option label="B路" value="B" />
             </el-select>
           </el-form-item>
           <el-form-item label="传感器id" prop="sensorId">
             <el-select v-model="sensorFormData.sensorId " placeholder="请选择">
-              <template v-if="sensorFormData.type == 1 && leftRight[0] == 0">
-                <el-option v-for="id in sensorLeftIds" :key="id" :label="id" :value="id" />
+              <template v-if="sensorFormData.type == 1 && sensorFormData.pathPdu == 'A'">
+                <el-option v-for="id in sensorAIds" :key="id" :label="id" :value="id" />
               </template>
-              <template v-else-if="sensorFormData.type == 1 && leftRight[0] == 1">
-                <el-option v-for="id in sensorRightIds" :key="id" :label="id" :value="id" />
+              <template v-else-if="sensorFormData.type == 1 && sensorFormData.pathPdu == 'B'">
+                <el-option v-for="id in sensorBIds" :key="id" :label="id" :value="id" />
               </template>
               <el-option v-else v-for="id in 2" :key="id" :label="id" :value="id" />
             </el-select>
@@ -227,18 +241,19 @@
 import { FormRules } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import TopologyEdit from './TopologyEdit.vue'
+import { clear } from 'console'
 
-// const {roomList} = defineProps({
-//   roomList: {
-//     type: Array
-//   },
-// })
+const props = defineProps({
+  roomId: {
+    type: Number
+  },
+  roomList: {
+    type: Array
+  }
+})
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
-
-const roomList = ref([])
 const isBusBind = ref(false) // 柜列中是否已经绑定母线了  绑定了则有些数据不能修改
-const boxAmount = ref(0) // 插接箱数量, 柜列中如果绑定母线，则回显对应的插接箱数量
 const boxListA = ref([])
 const boxListB = ref([])
 const dialogVisible = ref(false) // 弹窗的是否展示
@@ -247,6 +262,8 @@ const isFullscreen = ref(false)
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const sensorVisible = ref(false) // 传感器弹窗的是否展示
 const sensorLoading = ref(false) // 传感器表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+const showFlag = ref(false);
+const showFlagCopy = ref(false);
 const sensorFormData = reactive({
   type: null,
   sensorId: null,
@@ -260,8 +277,8 @@ const sensorPositon = {
   2: '(中)', 
   3: '(下)', 
 }
-const sensorLeftIds = ref([1, 2, 3, 4])
-const sensorRightIds = ref([1, 2, 3, 4])
+const sensorAIds = ref([1, 2, 3, 4])
+const sensorBIds = ref([1, 2, 3, 4])
 const leftRight = ref([0, 0])
 const sensorListLeft = reactive([
   {
@@ -269,39 +286,45 @@ const sensorListLeft = reactive([
     sensorId: null,
     position: 1,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 3,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 4,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 2,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 2,
     sensorId: null,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 3,
     pathPdu: '',
-    channel: 1
+    channel: 1,
+    id: null
   }
 ])
 const sensorListRight = reactive([
@@ -310,50 +333,53 @@ const sensorListRight = reactive([
     sensorId: null,
     position: 1,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 3,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 4,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 2,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 2,
     sensorId: null,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
   {
     type: 1,
     sensorId: null,
     position: 3,
     pathPdu: '',
-    channel: 2
+    channel: 2,
+    id: null
   },
 ])
 const machineFormData = ref({
   roomId: '',
-  roomName: '',
-  aisleId: '',
-  index: '',
   cabinetName: '',
-  type: 'IT机柜',
+  cabinetType: 'IT机柜',
   cabinetHeight: 42, //U
-  powCapacity: 8, // kAV
+  powCapacity: 40, // kVA
   company: '',
   pduIpA: '',
   casIdA: '',
@@ -362,17 +388,19 @@ const machineFormData = ref({
   sensorList: [] as any,
   busIpA: '',
   barIdA: '',
-  boxIndexA: '',
+  busNameA: '',
+  boxNameA: '',
   boxOutletIdA: '',
   busIpB: '',
   barIdB: '',
-  boxIndexB: '',
+  busNameB: '',
+  boxNameB: '',
   boxOutletIdB: '',
   pduBox: 0, // 0 pdu 1母线
   eleAlarmDay: 0, // 日用能告警
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
-  eleLimitMonth: 1000, // 月用能限制
+  eleLimitMonth: 30000, // 月用能限制
 })
 const PDUFormData = ref({
   ipdzA: '',
@@ -384,7 +412,7 @@ const PDUFormData = ref({
 const machineFormRules = reactive<FormRules>({
   roomId: [{ required: true, message: '所属机房不能为空', trigger: 'blur' }],
   cabinetName: [{ required: true, message: '机柜名称不能为空', trigger: 'blur' }],
-  type: [{ required: true, message: '机柜类型不能为空', trigger: 'blur' }],
+  cabinetType: [{ required: true, message: '机柜类型不能为空', trigger: 'blur' }],
   cabinetHeight: [{ required: true, message: '机柜高度不能为空', trigger: 'blur' }],
   powCapacity: [{ required: true, message: '电力容量不能为空', trigger: 'blur' }],
 })
@@ -398,19 +426,22 @@ const sensorFormRules = reactive<FormRules>({
 })
 const activeNames = ref(['1'])
 
-watch(sensorListLeft, (val) => {
-  const usedFilter = val.filter(item => item.type == 1 && item.sensorId)
-  const list = usedFilter.map(item => item.sensorId)
-  if (list.length == 0) return
-  sensorLeftIds.value = sensorLeftIds.value.filter(item => !list.includes(item))
-})
+const getSemsorIds = (val1,val2) => {
+  const usedFilterA = [...val1.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "A"),...val2.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "A")]
+  const usedFilterB = [...val1.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "B"),...val2.filter(item => item.type == 1 && item.sensorId && item.pathPdu == "B")]
 
-watch(sensorListRight, (val) => {
-  const usedFilter = val.filter(item => item.type == 1 && item.sensorId)
-  const list = usedFilter.map(item => item.sensorId)
-  if (list.length == 0) return
-  sensorRightIds.value = sensorRightIds.value.filter(item => !list.includes(item))
-})
+  const listA = usedFilterA.map(item => item.sensorId)
+  const listB = usedFilterB.map(item => item.sensorId)
+
+  if(listA.length != 0) {
+    sensorAIds.value = sensorAIds.value.filter(item => !listA.includes(item))
+  }
+  if(listB.length != 0) {
+    sensorBIds.value = sensorBIds.value.filter(item => !listB.includes(item))
+  }
+
+  console.log(listA,listB,sensorAIds.value,sensorBIds.value)
+}
 
 const handleSensorEdit = (data, i, index) => {
   console.log('handleSensorEdit', data)
@@ -418,40 +449,78 @@ const handleSensorEdit = (data, i, index) => {
   Object.assign(sensorFormData, data)
   sensorVisible.value = true
 }
+
 const handleSensorDelete = (i, index) => {
   console.log('handleSensorDelete',i, index)
   if (i == 0) {
+    if(sensorListLeft[index].pathPdu == "A") {
+      sensorAIds.value.push(sensorListLeft[index].sensorId)
+      sensorAIds.value.sort((a, b) => a - b)
+    } else if(sensorListLeft[index].pathPdu == "B") {
+      sensorBIds.value.push(sensorListLeft[index].sensorId)
+      sensorBIds.value.sort((a, b) => a - b)
+    }
     Object.assign(sensorListLeft[index], {
       ...sensorListLeft[index],
       sensorId: null,
       pathPdu: null,
+      //id:null,
     })
   } else {
+    if(sensorListRight[index].pathPdu == "A") {
+      sensorAIds.value.push(sensorListRight[index].sensorId)
+      sensorAIds.value.sort((a, b) => a - b)
+    } else if(sensorListRight[index].pathPdu == "B") {
+      sensorBIds.value.push(sensorListRight[index].sensorId)
+      sensorBIds.value.sort((a, b) => a - b)
+    }
     Object.assign(sensorListRight[index], {
       ...sensorListLeft[index],
       sensorId: null,
       pathPdu: null,
+      //id:null,
     })
   }
 }
-const submitSensorForm = async(data) => {
-  try {
-    // 校验表单
-    if (!machineForm) return
-    const valid = await machineForm.value.validate()
-    if (!valid) return
-    const index = leftRight.value[1]
-    console.log('submitSensorForm', sensorFormData, leftRight.value[0], index)
-    if (leftRight.value[0] == 0) {
-      Object.assign(sensorListLeft[index], sensorFormData)
-    } else {
-      Object.assign(sensorListRight[index], sensorFormData)
-    }
-    sensorVisible.value = false
-    console.log('sensorListLeft', sensorListLeft, sensorListRight)
-  } catch (error) {
-    message.error(String(error))
+
+const clearData = () =>{
+  for(let index = 0; index < sensorListLeft.length; index++){
+    Object.assign(sensorListLeft[index], {
+      ...sensorListLeft[index],
+      sensorId: null,
+      pathPdu: null,
+      id:null,
+    })
+    Object.assign(sensorListRight[index], {
+      ...sensorListRight[index],
+      sensorId: null,
+      pathPdu: null,
+      id:null,
+    })
   }
+  sensorAIds.value = [1,2,3,4]
+  sensorBIds.value = [1,2,3,4]
+}
+
+const submitSensorForm = async(data) => {
+  // 校验表单
+  if (!sensorForm) return
+  const valid = await sensorForm.value.validate()
+  if (!valid) return
+  const index = leftRight.value[1]
+  console.log('submitSensorForm', sensorFormData, leftRight.value[0], index)
+  if(sensorFormData.pathPdu == "A") {
+    sensorAIds.value = sensorAIds.value.filter(item => item != sensorFormData.sensorId)
+  } else if(sensorFormData.pathPdu == "B") {
+    sensorBIds.value = sensorBIds.value.filter(item => item != sensorFormData.sensorId)
+  }
+  if (leftRight.value[0] == 0) {
+    Object.assign(sensorListLeft[index], sensorFormData)
+  } else {
+    Object.assign(sensorListRight[index], sensorFormData)
+  }
+  sensorVisible.value = false;
+  console.log('sensorListLeft', sensorListLeft, sensorListRight);
 }
 const handleChange = (val: string[]) => {
   console.log(val)
@@ -461,19 +530,28 @@ const toggleFull = () => {
 }
 const machineForm = ref() // 机柜表单 Ref
 const sensorForm = ref() // 传感器表单 Ref
+const operateInfo = ref<any>({})
+const machineColIf = ref()
+// const deptList = ref<Tree[]>([]) // 树形结构
+// const postList = ref([] as PostApi.PostVO[]) // 岗位列表
 
 /** 打开弹窗 */
-const open = async (type: string, data, machineColInfo) => {
-  dialogVisible.value = true
-  dialogTitle.value = type == 'edit' ? '编辑': '添加'
-  formType.value = type
-  resetForm()
-  sensorListLeft.forEach(item => {
-    item.sensorId = null
-    item.pathPdu = ''
-  })
-  console.log('data', data)
-  if (data && data.sensorList && data.sensorList.length > 0) {
+const open = async (type: string, data, info, machineColInfo) => {
+  console.log(props)
+  dialogVisible.value = true;
+  clearData();
+  dialogTitle.value = type == 'edit' ? '编辑': '添加';
+  formType.value = type;
+  operateInfo.value = info
+  machineColIf.value = machineColInfo
+  resetForm();
+  
+  // sensorListLeft.forEach(item => {
+  //   item.sensorId = null
+  //   item.pathPdu = ''
+  // })
+  console.log('data', data,machineColInfo)
+  if (data && data.sensorList && data.sensorList.length) {
     data.sensorList.forEach(item => {
       if (item.channel == 1) {
         const index = sensorListLeft.findIndex(sensor => item.position ? (item.position == sensor.position) : (sensor.type == item.sensorType))
@@ -481,6 +559,7 @@ const open = async (type: string, data, machineColInfo) => {
           ...sensorListLeft[index],
           sensorId: item.sensorId,
           pathPdu: item.pathPdu,
+          id: item.id
         }
       } else if (item.channel == 2) {
         const index = sensorListRight.findIndex(sensor => item.position ? (item.position == sensor.position) : (sensor.type == item.sensorType))
@@ -488,19 +567,24 @@ const open = async (type: string, data, machineColInfo) => {
           ...sensorListRight[index],
           sensorId: item.sensorId,
           pathPdu: item.pathPdu,
+          id: item.id
         }
       }
     })
+    getSemsorIds(sensorListLeft,sensorListRight)
   }
+  //for(let i = 0; i < sensorListLeft.length; i++){
+  //  sensorListLeft[i].pathPdu = '';
+  //  sensorListLeft[i].id = null;
+  //  sensorListRight[i].pathPdu = '';
+  //  sensorListRight[i].id = null;
+  //}
   machineFormData.value = data || {
     cabinetName: '',
     roomId: '',
-    roomName: '',
-    aisleId: '',
-    index: '',
-    type: 'IT机柜',
+    cabinetType: 'IT机柜',
     cabinetHeight: 42,
-    powCapacity: 8,
+    powCapacity: 40,
     company: '',
     pduIpA: '',
     casIdA: '',
@@ -509,58 +593,81 @@ const open = async (type: string, data, machineColInfo) => {
     sensorList: [],
     busIpA: '',
     barIdA: '',
-    boxIndexA: '',
+    busNameA: '',
+    boxNameA: '',
     boxOutletIdA: '',
     busIpB: '',
     barIdB: '',
-    boxIndexB: '',
+    busNameB: '',
+    boxNameB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线
     eleAlarmDay: 0, // 日用能告警
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
-    eleLimitMonth: 1000, // 月用能限制
+    eleLimitMonth: 30000, // 月用能限制
   }
-  machineFormData.value.roomName = machineColInfo.roomName
-  machineFormData.value.roomId = machineColInfo.roomId
-  machineFormData.value.aisleId = machineColInfo.aisleId
-  machineFormData.value.index = machineColInfo.index
-  console.log("machineFormData",machineFormData)
-  console.log('machineColInfo', machineColInfo)
-  if (machineColInfo.barA) {
+  machineFormData.value.eleAlarmDay = machineFormData.value.eleAlarmDay ? 1 : 0
+  machineFormData.value.eleAlarmMonth = machineFormData.value.eleAlarmMonth ? 1 : 0
+  if(machineFormData.value.eleAlarmMonth) {
+    showFlag.value = true
+  }
+  if(machineFormData.value.eleAlarmDay) {
+    showFlagCopy.value = true
+  }
+
+  if(type == 'add') {
+    machineFormData.value.roomId = String(props.roomId)
+    machineFormData.value.cabinetType = 'IT机柜'
+    machineFormData.value.cabinetHeight = 42
+    machineFormData.value.powCapacity = 40
+    machineFormData.value.eleLimitDay = 1000
+    machineFormData.value.eleLimitMonth = 30000
+  }
+  console.log(machineColInfo?.barA == null && machineColInfo?.barB == null)
+  if (machineColInfo && machineColInfo.barA) {
     isBusBind.value = true
-    boxListA.value = machineColInfo.barA
-    boxListB.value = machineColInfo.barB
+    boxListA.value = machineColInfo.barA.boxList
+    boxListB.value = machineColInfo.barB.boxList
+
     machineFormData.value = {
       ...machineFormData.value,
-      barIdA: machineColInfo.barIdA,
-      busIpA: machineColInfo.busIpA,
-      barIdB: machineColInfo.barIdB,
-      busIpB: machineColInfo.busIpB,
+      barIdA: machineColInfo.barA.barId,
+      busIpA: machineColInfo.barA.devIp,
+      barIdB: machineColInfo.barB.barId,
+      busIpB: machineColInfo.barB.devIp,
     }
-    console.log(machineFormData)
+    console.log(machineFormData.value,machineColInfo)
   }
-  machineFormData.value.pduBox = machineFormData.value.pduBox ? 1 : 0
+  
+  // 修改时，设置数据
+  // if (id) {
+  //   formLoading.value = true
+  //   try {
+  //     machineFormData.value = await UserApi.getUser(id)
+  //   } finally {
+  //     formLoading.value = false
+  //   }
+  // }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
+watch(() => machineFormData.value.powCapacity, (newValue) => {
+});
 
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
+  if(machineColIf.value && machineColIf.value.barA == null && machineColIf.value.barB == null && machineFormData.value.pduBox) {
+    message.warning('请先给柜列绑定母线')
+    return
+  }
+  // 校验表单
+  if (!machineForm) return
+  const valid = await machineForm.value.validate()
+  if (!valid) return
+  // 提交请求
+  formLoading.value = true
   try {
-    // 校验表单
-    if (!machineForm) return
-    const valid = await machineForm.value.validate()
-    if (!valid) return
-    if(machineFormData.value.pduIpA != "" && machineFormData.value.pduIpB != "" && machineFormData.value.pduIpA != null && machineFormData.value.pduIpB != null){
-        console.log("machineFormData.value",machineFormData.value)
-        if(machineFormData.value.pduIpA == machineFormData.value.pduIpB && machineFormData.value.casIdA == machineFormData.value.casIdB){
-           message.error("PDU-IP地址相同情况下, 级联地址不能相同。");
-           return;
-       }
-    }
-    // 提交请求
-    formLoading.value = true
     const sensorList = [...sensorListLeft, ...sensorListRight]
     const sensorListFilter = sensorList.filter(item => item.sensorId)
     console.log('sensorListFilter', sensorListFilter)
@@ -578,34 +685,51 @@ const submitForm = async () => {
       machineFormData.value.casIdB = boxListB_Index != -1 ? boxListB.value[boxListB_Index].casAddr : 0
     }
 
-    console.log('roomName', {...machineFormData.value})
+    console.log('roomName', {
+      ...machineFormData.value,
+      type: machineFormData.value.cabinetType
+    })
+
     const res = await CabinetApi.saveCabinetInfo({
       ...machineFormData.value,
+      type: machineFormData.value.cabinetType
     })
-    console.log('res', res , {...machineFormData.value}, machineFormData.value)
+    console.log('res', res, machineFormData.value)
+    //console.log('sensorListLeft111', sensorListLeft, sensorListRight);
+    // const data = machineFormData.value as unknown as UserApi.UserVO
+    // if (formType.value === 'create') {
+    //   await UserApi.createUser(data)
+    //   message.success(t('common.createSuccess'))
+    // } else {
+    //   await UserApi.updateUser(data)
+    //   message.success(t('common.updateSuccess'))
+    // }
     dialogVisible.value = false
+    if(res) {
+      message.success(dialogTitle.value + '成功')
+    } else {
+      message.error(dialogTitle.value + '失败')
+    }
+    resetForm();
     // 发送操作成功的事件
-    emit('success', {...machineFormData.value, addrA:null, addrB: null})
-    resetForm()
-  } catch(error:any) {
-    console.log('error', error)
-    message.error(String(error.cabinetName ? error.cabinetName[0].message : error.type[0].message))
+    emit('success');
   } finally {
-    formLoading.value = false
+    formLoading.value = false;
   }
 }
 
 /** 重置表单 */
 const resetForm = () => {
+  isBusBind.value = false
+  showFlag.value = false
+  showFlagCopy.value = false
+
   machineFormData.value = {
     cabinetName: '',
     roomId: '',
-    roomName: '',
-    aisleId: '',
-    index: '',
-    type: 'IT机柜',
+    cabinetType: 'IT机柜',
     cabinetHeight: 42,
-    powCapacity: 8,
+    powCapacity: 40,
     company: '',
     pduIpA: '',
     casIdA: '',
@@ -614,36 +738,22 @@ const resetForm = () => {
     sensorList: [],
     busIpA: '',
     barIdA: '',
-    boxIndexA: '',
+    busNameA: '',
+    boxNameA: '',
     boxOutletIdA: '',
     busIpB: '',
     barIdB: '',
-    boxIndexB: '',
+    busNameB: '',
+    boxNameB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线
     eleAlarmDay: 0, // 日用能告警
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
-    eleLimitMonth: 1000, // 月用能限制
+    eleLimitMonth: 30000, // 月用能限制
   }
-  machineForm.value?.resetFields();
-  sensorListRight.forEach(item => {
-    item.sensorId = null
-    item.pathPdu = ''
-  })
-  sensorListLeft.forEach(item => {
-    item.sensorId = null
-    item.pathPdu = ''
-  })
+  machineForm.value?.resetFields()
 }
-
-// 接口获取机房导航列表
-const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  console.log('接口获取机房导航列表', res)
-  roomList.value = res
-}
-getNavList()
 </script>
 <style lang="scss" scoped>
 .sensorContainer {
@@ -703,8 +813,17 @@ getNavList()
     }
   }
 }
-.collapseItem {
+
+.collapse-container {
+  display: flex;
+  flex-direction: row;
   border: 1px solid #efefef;
+}
+
+.collapseItem {
+  display: block;
+  width: 50%;
+  //border: 1px solid #efefef;
   padding: 30px 50px 10px 0;
 }
 .pduBus {
@@ -729,9 +848,11 @@ getNavList()
     text-align: center;
   }
 }
+
 :deep(.el-collapse-item__content) {
   padding: 0 20px 20px;
 }
+
 .formContainer {
   padding: 20px;
 }

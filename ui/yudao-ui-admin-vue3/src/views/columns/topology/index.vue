@@ -260,7 +260,7 @@
   <!-- </div> -->
   <!-- 添加或修改用户对话框 -->
   <PluginForm ref="columnForm" @success="handleFormPlugin" />
-  <CabForm ref="cabinetForm" @success="handleFormCabinet" />
+  <CabForm ref="cabinetForm" @success="handleFormCabinet" :roomList="roomList" :roomId="Number(queryParams.cabinetroomId)" />
   <BoxForm ref="columnBoxForm" @success="handleFormBox" />
 
   <el-dialog v-model="detailVis" style="width: 80%;height: 80%;margin-top: 100px;">
@@ -341,6 +341,38 @@ const queryParams = reactive({
   cabinetroomId: Number(query.roomId),
   roomDownValId:Number(query.roomValId)
 })
+const statusColor = ref([
+  {
+    name: '未绑定',
+    color: '#3e62c7',
+    value: 0,
+  },
+  {
+    name: '正常',
+    color: '#298447',
+    value: 1,
+  },
+  {
+    name: '预警',
+    color: '#e56e19',
+    value: 2,
+  },
+  {
+    name: '告警',
+    color: '#d42023',
+    value: 3,
+  },
+  {
+    name: '离线',
+    color: '#757c8a',
+    value: 4,
+  },
+  {
+    name: '空机柜',
+    color: '#f5f7fa',
+    value: 5,
+  },
+])
 const statusList = reactive([
   [{
     name: '负载率<30%',
@@ -799,7 +831,7 @@ const updatePluginAnchor = () => {
 const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   const cabElementA = document.getElementById('cab-A-' + index) as Element
   const cabElementB = document.getElementById('cab-B-' + index) as Element
-  console.log('cabElementB', cabElementB, cabElementA, data)
+  // console.log('cabElementB', cabElementB, cabElementA, data)
   instance?.removeAllEndpoints(cabElementA)
   instance?.removeAllEndpoints(cabElementB)
   if (onlyDelete) return
@@ -817,7 +849,7 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   if ((data.boxIndexA !== '' && data.boxIndexA > -1) && data.boxOutletIdA) { // A路有连接
     const source = document.getElementById('cab-A-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexA}_A-${data.boxOutletIdA}`)  as Element
-    console.log('target', source, target, data.boxIndexA, data.boxOutletIdA, machineColInfo)
+    // console.log('target', source, target, data.boxIndexA, data.boxOutletIdA, machineColInfo)
     instance?.connect({
       source,
       target,
@@ -831,7 +863,7 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   if ((data.boxIndexA !== '' && data.boxIndexA > -1) && data.boxOutletIdB) { // B路有连接
     const source = document.getElementById('cab-B-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexB}_B-${data.boxOutletIdB}`)  as Element
-    console.log('target---', source, target)
+    // console.log('target---', source, target)
     instance?.connect({
       source,
       target,
@@ -1196,8 +1228,8 @@ const handleOperate = (type) => {
       }
     }
     const data = type == 'add' ? null : cabinetList.value[index]
-    console.log("data",data)
-    cabinetForm.value.open(type, data, info)
+    console.log("cabinetList.value[index]",cabinetList.value[index])
+    cabinetForm.value.open(type, data, null, machineColInfo)
   } else if (type == 'delete') {
     ElMessageBox.confirm('确认删除吗？', '提示', {
       confirmButtonText: '确 认',
@@ -1939,7 +1971,7 @@ const handleDataDetail = (res) => {
             ]
           }
         }
-        console.log('ssssssss----------', cab, cab.id)
+        // console.log('ssssssss----------', cab, cab.id)
         return
       }
     })
@@ -2043,7 +2075,11 @@ const getMachineColInfoReal = async() => {
   emit('sendList', result);
     //push({path: '/aisle/index', state: { roomDownVal: result.roomId}});
     // Object.assign(machineColInfo, result);
+
     handleCabinetListReal(result); 
+    //连线就保存
+    // handleCabinetList(result);s
+
     // handleBusInit(result);
     console.log('getMachineColInfo', result);
 }
@@ -2093,7 +2129,11 @@ const handleCabinetList = async(data) => {
   console.log('处理机柜列表', data)
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
-    arr.push({})
+    arr.push({
+      roomId: data.roomId,
+      aisleId: data.id,
+      index: i+1
+    })
   }
   // 给机柜要连接的插接箱 找到对应的下标
   data.cabinetList && data.cabinetList.forEach(item => {
@@ -2110,16 +2150,46 @@ const handleCabinetList = async(data) => {
 }
 // 实时处理机柜列表
 const handleCabinetListReal = async(data) => {
-  let show = cabinetList.value
-  console.log(show)
+  // data.cabinetList && data.cabinetList.forEach(item => {
+  //   if(item.index > 0) {
+  //     cabinetList.value[item.index - 1].runStatus = item.runStatus
+  //   }
+  // })
+  console.log('处理机柜列表', data)
+  const arr = [] as any
+  for (let i=0; i < data.length; i++) {
+    arr.push({
+      roomId: data.roomId,
+      aisleId: data.id,
+      index: i+1
+    })
+  }
+  // 给机柜要连接的插接箱 找到对应的下标
+  data.cabinetList && data.cabinetList.forEach(item => {
+    if(item.index > 0) {
+      arr.splice(item.index - 1, 1, item)
+    }
+  })
+  console.log('arr', arr)
+  cabinetList.value = arr
   handleDataDetail(data)
   updateCabinetConnect()
 }
 // 增加空机柜
-const addMachine = () => {
+const addMachine = async () => {
   console.log('addMachine')
   cabinetList.value.push({})
   updateCabinetConnect()
+  // const res = await MachineColumnApi.saveAisleDetail({
+  //   id: machineColInfo.id,
+  //   length: cabinetList.value.length + 1,
+  // })
+  // if(res) {
+  //   message.success('增加成功！')
+  // } else {
+  //   message.error('增加失败！')
+  // }
+  // getMachineColInfoReal()
 }
 // 删除空机柜
 const deleteMachine = () => {

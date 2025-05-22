@@ -145,7 +145,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         Page<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
         if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
-            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
+            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
+                    .inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
             if (cabinetPduList != null && cabinetPduList.size() > 0) {
                 List<String> devKeyList = new ArrayList<>();
                 List<String> pduKeya = cabinetPduList.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
