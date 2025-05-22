@@ -17,15 +17,8 @@
 <script lang="ts" setup>
 import { IndexApi } from '@/api/aisle/aisleindex'
 import RequirementLine from './RequirementLine.vue'
-import { dayjs, ElTree } from 'element-plus'
+import { dayjs } from 'element-plus'
 import download from '@/utils/download'
-
-const prop = defineProps({
-  list: {
-    type: Object,
-    required: true
-  }
-})
 
 const requirementLine = ref([]) as any;
 
