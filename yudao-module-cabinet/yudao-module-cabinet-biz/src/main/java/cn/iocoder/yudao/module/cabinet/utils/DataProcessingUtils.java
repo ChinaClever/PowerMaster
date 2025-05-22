@@ -105,12 +105,11 @@ public class DataProcessingUtils {
     public static String formatFactorTotalTime(CabinetPowHourDo houResVO, DataTypeEnums dataType) {
         switch (dataType) {
             case MAX:
-//                return sdf.format(houResVO.getCurMaxTime());
-                return "无";
+                return houResVO.getFactorTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss");
             case AVG:
                 return "无";
             case MIN:
-                return "无";
+                return houResVO.getFactorTotalMinTime().toString("yyyy-MM-dd HH:mm:ss");
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }

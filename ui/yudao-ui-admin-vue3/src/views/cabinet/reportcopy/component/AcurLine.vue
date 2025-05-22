@@ -113,7 +113,7 @@ const series = ref()
 const time = ref()
 const legendList = ref()
 const happenTime = ref()
-
+var dataTypeName = '';
 
 
 // 设置饼图的选项
@@ -130,9 +130,9 @@ const echartsOption = ref({
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
         if(prop.dataType == 0){
-          result +=  params[i].marker + params[i].seriesName+'：'+ params[i].value.toFixed(2)+' A' + '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+ params[0].name  ;
+          result +=  params[i].marker + params[i].seriesName+dataTypeName+'：'+ params[i].value.toFixed(2)+' A' + '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+ params[0].name  ;
         }else{
-          result +=  params[i].marker + params[i].seriesName +'：'+ + params[i].value.toFixed(2)+' A'+ '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+happenTime.value[i][params[i].dataIndex] ;
+          result +=  params[i].marker + params[i].seriesName +dataTypeName+'：'+ + params[i].value.toFixed(2)+' A'+ '&nbsp&nbsp&nbsp&nbsp'+'发生时间：'+happenTime.value[i][params[i].dataIndex] ;
         }
         result += '<br>';
       }
@@ -196,7 +196,13 @@ watchEffect(() => {
   time.value = prop.list.time;
 
   happenTime.value = prop.list.series.map(item => item.happenTime);
-
+  if(prop.dataType == 1){
+    dataTypeName = "最大电流";
+  }else if(prop.dataType == 0){
+    dataTypeName = "平均电流";
+  }else if(prop.dataType == -1){
+    dataTypeName = "最小电流";
+  }
   
 });
 

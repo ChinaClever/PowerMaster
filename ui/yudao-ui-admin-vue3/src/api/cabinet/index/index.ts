@@ -81,6 +81,16 @@ export const IndexApi = {
   getCabinetIceTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/ice`,params})
   },
+
+    getCabinetIceTemAndHumByTypeById: async (params) => {
+    return await request.get({ url: `/cabinet/index/env/iceByType`,params})
+  },
+
+   getCabinetIceAndHotTemAndHumByTypeById: async (params) => {
+    return await request.get({ url: `/cabinet/index/env/getIceAndHot`,params})
+  },
+  
+
   getCabinetHotTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/hot`,params})
   },

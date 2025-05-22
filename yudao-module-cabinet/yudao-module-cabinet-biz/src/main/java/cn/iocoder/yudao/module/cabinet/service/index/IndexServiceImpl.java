@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.service.index;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
+import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
@@ -48,6 +49,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -55,6 +57,7 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -192,6 +195,7 @@ public class IndexServiceImpl implements IndexService {
                 String maxEleTime = null;
                 int nowTimes = 0;
                 if (isSameDay) {
+                    List<CabinetEleTotalRealtimeDo> busList = new ArrayList<>();
                     for (String str : cabinetData) {
                         nowTimes++;
                         CabinetEleTotalRealtimeDo cabinetEleTotalRealtimeDo = JsonUtils.parseObject(str, CabinetEleTotalRealtimeDo.class);
@@ -203,13 +207,28 @@ public class IndexServiceImpl implements IndexService {
                             barRes.getTime().add(cabinetEleTotalRealtimeDo.getCreateTime().split(" ")[1]);
                         }
                         lastEq = cabinetEleTotalRealtimeDo.getEleTotal();
+                        busList.add(cabinetEleTotalRealtimeDo);
                     }
-                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "ele_total");
-                    CabinetEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, CabinetEleTotalRealtimeDo.class);
-                    if (eleMaxValue != null) {
-                        maxEle = eleMaxValue.getEleTotal();
-                        maxEleTime = eleMaxValue.getCreateTime();
+
+                    //计算实时用电量
+                    List<CabinetEleTotalRealtimeDo> dayEqList = new ArrayList<>();
+                    for (int i = 0; i < cabinetData.size() - 1; i++) {
+                        CabinetEleTotalRealtimeDo dayEleDo = new CabinetEleTotalRealtimeDo();
+                        totalEq += (float) busList.get(i + 1).getEleTotal() - (float) busList.get(i).getEleTotal();
+                        dayEleDo.setEleTotal(busList.get(i + 1).getEleTotal() - busList.get(i).getEleTotal());
+                        dayEleDo.setCreateTime(busList.get(i).getCreateTime());
+                        dayEqList.add(dayEleDo);
                     }
+                    maxEle = dayEqList.get(dayEqList.size() - 1).getEleTotal();
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime();
+
+//                    dayEqList.sort(Comparator.comparing(CabinetEleTotalRealtimeDo::getEleTotal));
+//                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "ele_total");
+//                    CabinetEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, CabinetEleTotalRealtimeDo.class);
+//                    if (eleMaxValue != null) {
+//                        maxEle = eleMaxValue.getEleTotal();
+//                        maxEleTime = eleMaxValue.getCreateTime();
+//                    }
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
                     result.put("maxEle", maxEle);
@@ -218,12 +237,19 @@ public class IndexServiceImpl implements IndexService {
                     result.put("lastEq", lastEq);
                     result.put("barRes", barRes);
                 } else {
+                    int dataIndex = 0;
                     for (String str : cabinetData) {
                         nowTimes++;
                         CabinetEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, CabinetEqTotalDayDo.class);
                         totalEq += totalDayDo.getEqValue();
                         barSeries.getData().add((float) totalDayDo.getEqValue());
                         barRes.getTime().add(totalDayDo.getStartTime().toString("yyyy-MM-dd"));
+                        if (dataIndex == 0) {
+                            firstEq = totalDayDo.getStartEle();
+                        }
+                        if (dataIndex == cabinetData.size() - 1) {
+                            lastEq = totalDayDo.getEndEle();
+                        }
                     }
                     String eqMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "eq_value");
                     CabinetEqTotalDayDo eqMaxValue = JsonUtils.parseObject(eqMax, CabinetEqTotalDayDo.class);
@@ -233,6 +259,8 @@ public class IndexServiceImpl implements IndexService {
                     }
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
                     result.put("maxEle", maxEle);
                     result.put("maxEleTime", maxEleTime);
                     result.put("barRes", barRes);
@@ -624,6 +652,7 @@ public class IndexServiceImpl implements IndexService {
         return result;
     }
 
+
     public void processPowMavMin(List<CabinetPowHourDo> powList, Integer dataType, Map<String, Object> result) {
         PowerData apparentPowData = new PowerData();
         PowerData activePowData = new PowerData();
@@ -724,14 +753,54 @@ public class IndexServiceImpl implements IndexService {
         }
     }
 
+    private void updateTemHumData(PowerData powerData, Float maxValue, String maxTime, Float avgValue, Float minValue, String minTime, Integer dataType, Integer id) {
+        if (dataType == 1) {
+            updateTemHumExtremes(powerData, maxValue, maxTime, maxValue, maxTime, id);
+        } else if (dataType == 0) {
+            updateTemHumExtremes(powerData, avgValue, "无", avgValue, "无", id);
+        } else if (dataType == -1) {
+            updateTemHumExtremes(powerData, minValue, minTime, minValue, minTime, id);
+        }
+    }
+
+    private void updateTemHumExtremes(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime, Integer id) {
+        if (powerData.getMaxValue() <= maxValue) {
+            powerData.setMaxValue(maxValue);
+            powerData.setMaxTime(maxTime);
+            powerData.setMaxId(id);
+        }
+        if (powerData.getMinValue() >= minValue) {
+            powerData.setMinValue(minValue);
+            powerData.setMinTime(minTime);
+            powerData.setMinId(id);
+        }
+    }
+
     /**
      * 数值辅助类
      */
     private static class PowerData {
+        private int maxId;
+        private int minId;
         private Float maxValue = 0f;
         private Float minValue = Float.MAX_VALUE;
         private String maxTime = "";
         private String minTime = "";
+
+        public int getMaxId() {
+            return maxId;
+        }
+        public void setMaxId(int id) {
+            this.maxId = id;
+        }
+
+        public int getMinId() {
+            return minId;
+        }
+        public void setMinId(int id) {
+            this.minId = id;
+        }
+
 
         public Float getMaxValue() {
             return maxValue;
@@ -904,6 +973,494 @@ public class IndexServiceImpl implements IndexService {
             log.error("获取数据失败", e);
         }
         return result;
+    }
+
+    @Override
+    public Map getCabinetEnvIceTemAndHumDataByType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+        Map result = new HashMap<>();
+        CabinetChartResBase temResult = new CabinetChartResBase();
+        CabinetChartResBase humResult = new CabinetChartResBase();
+
+        try {
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id), false);
+            if (cabinetPdu == null) {
+                return result;
+            }
+            List<String> devKeyList = new ArrayList<>();
+            Map<String, String> pduMap = new HashMap<>();
+            pduMap.put("A", cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("B", cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
+                devKeyList.add(cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            }
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())) {
+                devKeyList.add(cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            }
+            if (CollectionUtil.isEmpty(devKeyList)) {
+                return result;
+            }
+            List<PduIndex> pduIndices = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().in(PduIndex::getPduKey, devKeyList));
+            Map<String, Integer> pduIdMap = pduIndices.stream().collect(Collectors.toMap(PduIndex::getPduKey, PduIndex::getId));
+            String whichIndex = "pdu_env_hour";
+            LocalDateTime now = LocalDateTime.now();
+            if (timeType == 1) {
+                whichIndex = "pdu_env_day";
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+            } else {
+//                oldTime = now.minusHours(25);
+                newTime = now;
+            }
+            List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId, id)
+                    .eq(CabinetEnvSensor::getChannel, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
+                    .orderByAsc(CabinetEnvSensor::getPosition));
+            List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
+            List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
+            List<String> data = getData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex);
+            if (CollectionUtil.isEmpty(data)) {
+                return result;
+            }
+            Map<Integer, Map<Integer, List<PduEnvHourDo>>> pduEnvHourDoMap = data.stream()
+                    .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
+                    .collect(Collectors.groupingBy(PduEnvHourDo::getPduId, Collectors.groupingBy(PduEnvHourDo::getSensorId)));
+            List<String> time = null;
+            boolean isFisrt = false;
+            for (CabinetEnvSensor cabinetEnvSensor : cabinetEnvSensors) {
+                int position = cabinetEnvSensor.getPosition();
+                if (pduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))) == null) {
+                    continue;
+                }
+                List<PduEnvHourDo> pduEnvHourDo = pduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))).get(cabinetEnvSensor.getSensorId());
+
+                List<Float> temList = new ArrayList<>();
+                List<Float> humList = new ArrayList<>();
+                List<String> temHappenTime = new ArrayList<>();
+                List<String> humHappenTime = new ArrayList<>();
+                //处理最大值最小值平均值
+                if (dataType == 1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMaxValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMaxValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                } else if (dataType == 0) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumAvgValue).map(Float::valueOf).collect(Collectors.toList());
+                } else if (dataType == -1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMinValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                }
+                processTemHumMavMin(pduEnvHourDo, dataType, result);
+
+
+                LineSeries temLineSeries = new LineSeries();
+                LineSeries humLineSeries = new LineSeries();
+                String temName = null;
+                String humName = null;
+                if (position == 1) {
+                    temName = "上层温度传感器";
+                    humName = "上层湿度传感器";
+                } else if (position == 2) {
+                    temName = "中层温度传感器";
+                    humName = "中层湿度传感器";
+                } else if (position == 3) {
+                    temName = "下层温度传感器";
+                    humName = "下层湿度传感器";
+                }
+                temLineSeries.setName(temName);
+                temLineSeries.setData(temList);
+                temLineSeries.setHappenTime(temHappenTime);
+                humLineSeries.setName(humName);
+                humLineSeries.setData(humList);
+                humLineSeries.setHappenTime(humHappenTime);
+                if (!isFisrt) {
+                    if (timeType == 2) {
+
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
+                    } else {
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                    }
+                    temResult.setTime(time);
+                    humResult.setTime(time);
+                    isFisrt = true;
+                }
+                temResult.getSeries().add(temLineSeries);
+                humResult.getSeries().add(humLineSeries);
+            }
+
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
+        }
+        result.put("temResult", temResult);
+        result.put("humResult", humResult);
+
+
+        return result;
+    }
+
+
+
+    private void processTemHumMavMin(List<PduEnvHourDo> temList, Integer dataType, Map<String, Object> result) {
+        PowerData tem = new PowerData();
+        PowerData hum = new PowerData();
+        for (PduEnvHourDo pduEnvHourDo : temList) {
+
+            updateTemHumData(tem, pduEnvHourDo.getTemMaxValue(), pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"), pduEnvHourDo.getTemAvgValue()
+                    , pduEnvHourDo.getTemMinValue(), pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType, pduEnvHourDo.getSensorId());
+            updateTemHumData(hum, (float) pduEnvHourDo.getHumMaxValue(),pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"), (float) pduEnvHourDo.getHumAvgValue()
+                    , (float) pduEnvHourDo.getHumMinValue(),pduEnvHourDo.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"),dataType,pduEnvHourDo.getSensorId());
+        }
+
+
+        result.put("temMaxValue",tem.getMaxValue() );
+        result.put("temMaxTime", tem.getMaxTime());
+        result.put("temMaxSensorId", tem.getMaxId());
+        result.put("temMinValue", tem.getMinValue());
+        result.put("temMinTime", tem.getMinTime());
+        result.put("temMinSensorId", tem.getMinId());
+
+
+        result.put("humMaxValue", hum.getMinValue());
+        result.put("humMaxTime", hum.getMaxTime());
+        result.put("humMaxSensorId", hum.getMaxId());
+        result.put("humMinValue", hum.getMinValue());
+        result.put("humMinTime", hum.getMinTime());
+        result.put("humMinSensorId", hum.getMinId());
+    }
+
+    @Override
+    public Map getCabinetEnvHotTemAndHumDataByType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+        Map result = new HashMap<>();
+        CabinetChartResBase temResult = new CabinetChartResBase();
+        CabinetChartResBase humResult = new CabinetChartResBase();
+
+        try {
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id), false);
+            if (cabinetPdu == null) {
+                return result;
+            }
+            List<String> devKeyList = new ArrayList<>();
+            Map<String, String> pduMap = new HashMap<>();
+            pduMap.put("A", cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("B", cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
+                devKeyList.add(cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            }
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())) {
+                devKeyList.add(cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            }
+            if (CollectionUtil.isEmpty(devKeyList)) {
+                return result;
+            }
+            List<PduIndex> pduIndices = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().in(PduIndex::getPduKey, devKeyList));
+            Map<String, Integer> pduIdMap = pduIndices.stream().collect(Collectors.toMap(PduIndex::getPduKey, PduIndex::getId));
+            String whichIndex = "pdu_env_hour";
+            LocalDateTime now = LocalDateTime.now();
+            if (timeType == 2) {
+                whichIndex = "pdu_env_day";
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+            } else {
+//                oldTime = now.minusHours(25);
+                newTime = now;
+            }
+            List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId, id)
+                    .eq(CabinetEnvSensor::getChannel, 2)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
+                    .orderByAsc(CabinetEnvSensor::getPosition));
+            List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
+            List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
+            List<String> data = getData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex);
+            if (CollectionUtil.isEmpty(data)) {
+                return result;
+            }
+            Map<Integer, Map<Integer, List<PduEnvHourDo>>> pduEnvHourDoMap = data.stream()
+                    .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
+                    .collect(Collectors.groupingBy(PduEnvHourDo::getPduId, Collectors.groupingBy(PduEnvHourDo::getSensorId)));
+            List<String> time = null;
+            boolean isFisrt = false;
+            for (CabinetEnvSensor cabinetEnvSensor : cabinetEnvSensors) {
+                int position = cabinetEnvSensor.getPosition();
+                Integer i = pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())));
+                if (pduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))) == null) {
+                    continue;
+                }
+                List<PduEnvHourDo> pduEnvHourDo = pduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))).get(cabinetEnvSensor.getSensorId());
+                List<Float> temList = new ArrayList<>();
+                List<Float> humList = new ArrayList<>();
+                List<String> temHappenTime = new ArrayList<>();
+                List<String> humHappenTime = new ArrayList<>();
+                //处理最大值最小值平均值
+                if (dataType == 1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMaxValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMaxValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                } else if (dataType == 0) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumAvgValue).map(Float::valueOf).collect(Collectors.toList());
+                } else if (dataType == -1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMinValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                }
+                processTemHumMavMin(pduEnvHourDo, dataType, result);
+
+                LineSeries temLineSeries = new LineSeries();
+                LineSeries humLineSeries = new LineSeries();
+                String temName = null;
+                String humName = null;
+                if (position == 1) {
+                    temName = "上层温度传感器";
+                    humName = "上层湿度传感器";
+                } else if (position == 2) {
+                    temName = "中层温度传感器";
+                    humName = "中层湿度传感器";
+                } else if (position == 3) {
+                    temName = "下层温度传感器";
+                    humName = "下层湿度传感器";
+                }
+                temLineSeries.setName(temName);
+                temLineSeries.setData(temList);
+                temLineSeries.setHappenTime(temHappenTime);
+                humLineSeries.setName(humName);
+                humLineSeries.setData(humList);
+                humLineSeries.setHappenTime(humHappenTime);
+                if (!isFisrt) {
+                    if (timeType == 2) {
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
+                    } else {
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                    }
+                    temResult.setTime(time);
+                    humResult.setTime(time);
+                    isFisrt = true;
+                }
+                temResult.getSeries().add(temLineSeries);
+                humResult.getSeries().add(humLineSeries);
+            }
+
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
+        }
+        result.put("temResult", temResult);
+        result.put("humResult", humResult);
+        return result;
+    }
+
+    @Override
+    public Map getCabinetEnvIceAndHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
+        Map result = new HashMap<>();
+        CabinetChartResBase temResult = new CabinetChartResBase();
+        CabinetChartResBase humResult = new CabinetChartResBase();
+
+        try {
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id), false);
+            if (cabinetPdu == null) {
+                return result;
+            }
+            List<String> devKeyList = new ArrayList<>();
+            Map<String, String> pduMap = new HashMap<>();
+            pduMap.put("A", cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("B", cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
+                devKeyList.add(cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            }
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())) {
+                devKeyList.add(cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            }
+            if (CollectionUtil.isEmpty(devKeyList)) {
+                return result;
+            }
+            List<PduIndex> pduIndices = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().in(PduIndex::getPduKey, devKeyList));
+            Map<String, Integer> pduIdMap = pduIndices.stream().collect(Collectors.toMap(PduIndex::getPduKey, PduIndex::getId));
+            String whichIndex = "pdu_env_hour";
+            LocalDateTime now = LocalDateTime.now();
+            if (timeType == 1) {
+                whichIndex = "pdu_env_day";
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+            } else {
+//                oldTime = now.minusHours(25);
+                newTime = now;
+            }
+            List<CabinetEnvSensor> iCabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId, id)
+                    .eq(CabinetEnvSensor::getChannel, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
+                    .orderByAsc(CabinetEnvSensor::getPosition));
+            List<Integer> iSearchIds = iCabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
+            List<Integer> iSensorIds = iCabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
+            List<String> iData = getData(localDateTimeToString(oldTime), localDateTimeToString(newTime), iSearchIds, iSensorIds, whichIndex);
+            if (CollectionUtil.isEmpty(iData)) {
+                return result;
+            }
+            Map<Integer, Map<Integer, List<PduEnvHourDo>>> iPduEnvHourDoMap = iData.stream()
+                    .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
+                    .collect(Collectors.groupingBy(PduEnvHourDo::getPduId, Collectors.groupingBy(PduEnvHourDo::getSensorId)));
+            List<String> time = null;
+            boolean isFisrt = false;
+            for (CabinetEnvSensor cabinetEnvSensor : iCabinetEnvSensors) {
+                int position = cabinetEnvSensor.getPosition();
+                if (iPduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))) == null) {
+                    continue;
+                }
+                List<PduEnvHourDo> pduEnvHourDo = iPduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))).get(cabinetEnvSensor.getSensorId());
+
+                List<Float> temList = new ArrayList<>();
+                List<Float> humList = new ArrayList<>();
+                List<String> temHappenTime = new ArrayList<>();
+                List<String> humHappenTime = new ArrayList<>();
+                //处理最大值最小值平均值
+                if (dataType == 1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMaxValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMaxValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                } else if (dataType == 0) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumAvgValue).map(Float::valueOf).collect(Collectors.toList());
+                } else if (dataType == -1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMinValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                }
+                processTemHumMavMin(pduEnvHourDo, dataType, result);
+
+
+                LineSeries temLineSeries = new LineSeries();
+                LineSeries humLineSeries = new LineSeries();
+                String temName = null;
+                String humName = null;
+                if (position == 1) {
+                    temName = "冷通道上层温度传感器";
+                    humName = "冷通道上层湿度传感器";
+                } else if (position == 2) {
+                    temName = "冷通道中层温度传感器";
+                    humName = "冷通道中层湿度传感器";
+                } else if (position == 3) {
+                    temName = "冷通道下层温度传感器";
+                    humName = "冷通道下层湿度传感器";
+                }
+                temLineSeries.setName(temName);
+                temLineSeries.setData(temList);
+                temLineSeries.setHappenTime(temHappenTime);
+                humLineSeries.setName(humName);
+                humLineSeries.setData(humList);
+                humLineSeries.setHappenTime(humHappenTime);
+                if (!isFisrt) {
+                    if (timeType == 2) {
+
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
+                    } else {
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                    }
+                    temResult.setTime(time);
+                    humResult.setTime(time);
+                    isFisrt = true;
+                }
+                temResult.getSeries().add(temLineSeries);
+                humResult.getSeries().add(humLineSeries);
+                result.put("temResult", temResult);
+                result.put("humResult", humResult);
+            }
+
+
+            List<CabinetEnvSensor> hCabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId, id)
+                    .eq(CabinetEnvSensor::getChannel, 2)
+                    .eq(CabinetEnvSensor::getSensorType, 0)
+                    .orderByAsc(CabinetEnvSensor::getPosition));
+            List<Integer> hSearchIds = hCabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
+            List<Integer> hSensorIds = hCabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
+            List<String> hData = getData(localDateTimeToString(oldTime), localDateTimeToString(newTime), hSearchIds, hSensorIds, whichIndex);
+            if (CollectionUtil.isEmpty(hData)) {
+                return result;
+            }
+            Map<Integer, Map<Integer, List<PduEnvHourDo>>> hPduEnvHourDoMap = hData.stream()
+                    .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
+                    .collect(Collectors.groupingBy(PduEnvHourDo::getPduId, Collectors.groupingBy(PduEnvHourDo::getSensorId)));
+                isFisrt = false;
+            for (CabinetEnvSensor cabinetEnvSensor : hCabinetEnvSensors) {
+                int position = cabinetEnvSensor.getPosition();
+                Integer i = pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())));
+                if (hPduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))) == null) {
+                    continue;
+                }
+                List<PduEnvHourDo> pduEnvHourDo = hPduEnvHourDoMap.get(pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())))).get(cabinetEnvSensor.getSensorId());
+                List<Float> temList = new ArrayList<>();
+                List<Float> humList = new ArrayList<>();
+                List<String> temHappenTime = new ArrayList<>();
+                List<String> humHappenTime = new ArrayList<>();
+                //处理最大值最小值平均值
+                if (dataType == 1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMaxValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMaxValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                } else if (dataType == 0) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemAvgValue).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumAvgValue).map(Float::valueOf).collect(Collectors.toList());
+                } else if (dataType == -1) {
+                    temList = pduEnvHourDo.stream().map(PduEnvHourDo::getTemMinValue).collect(Collectors.toList());
+                    temHappenTime = pduEnvHourDo.stream().map(item -> item.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
+                    humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                }
+                processTemHumMavMin(pduEnvHourDo, dataType, result);
+
+                LineSeries temLineSeries = new LineSeries();
+                LineSeries humLineSeries = new LineSeries();
+                String temName = null;
+                String humName = null;
+                if (position == 1) {
+                    temName = "热通道上层温度传感器";
+                    humName = "热通道上层湿度传感器";
+                } else if (position == 2) {
+                    temName = "热通道中层温度传感器";
+                    humName = "热通道中层湿度传感器";
+                } else if (position == 3) {
+                    temName = "热通道下层温度传感器";
+                    humName = "热通道下层湿度传感器";
+                }
+                temLineSeries.setName(temName);
+                temLineSeries.setData(temList);
+                temLineSeries.setHappenTime(temHappenTime);
+                humLineSeries.setName(humName);
+                humLineSeries.setData(humList);
+                humLineSeries.setHappenTime(humHappenTime);
+                if (!isFisrt) {
+                    if (timeType == 2) {
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
+                    } else {
+                        time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                    }
+                    temResult.setTime(time);
+                    humResult.setTime(time);
+                    isFisrt = true;
+                }
+                temResult.getSeries().add(temLineSeries);
+                humResult.getSeries().add(humLineSeries);
+            }
+
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
+        }
+        result.put("temResult", temResult);
+        result.put("humResult", humResult);
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Double> getPduEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        return Collections.emptyMap();
     }
 
     @Override
@@ -1115,7 +1672,7 @@ public class IndexServiceImpl implements IndexService {
     public Map getCabinetPFLineByType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
         Map result = new HashMap<>();
         CabinetChartResBase totalLineRes = new CabinetChartResBase();
-
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
 
             String index = null;
@@ -1150,9 +1707,9 @@ public class IndexServiceImpl implements IndexService {
                 LineSeries aSeries = new LineSeries();
                 LineSeries bSeries = new LineSeries();
 
-                totalSeries.setName(getSeriesName("总",FACTOR_FORMAT,dataType));
-                aSeries.setName(getSeriesName("A路",FACTOR_FORMAT,dataType));
-                bSeries.setName(getSeriesName("B路",FACTOR_FORMAT,dataType));
+                totalSeries.setName(getSeriesName("总", FACTOR_FORMAT, dataType));
+                aSeries.setName(getSeriesName("A路", FACTOR_FORMAT, dataType));
+                bSeries.setName(getSeriesName("B路", FACTOR_FORMAT, dataType));
 
                 totalSeries.setData((List<Float>) lineData.get("factorTotalList"));
                 totalSeries.setHappenTime((List<String>) lineData.get("totalHappenTime"));
@@ -1170,20 +1727,44 @@ public class IndexServiceImpl implements IndexService {
                 DataProcessingUtils.FactorAResult aFactor = (DataProcessingUtils.FactorAResult) analyzeFactorData.get("aFactor");
                 DataProcessingUtils.FactorBResult bFactor = (DataProcessingUtils.FactorBResult) analyzeFactorData.get("bFactor");
 
-                result.put("tMax",totalFactor.totalFactorMax);
-                result.put("tMaxTime",totalFactor.totalFactorMaxTime);
-                result.put("tMin",totalFactor.totalFactorMin);
-                result.put("tMinTime",totalFactor.totalFactorMinTime);
+                if (dataType != 0){
+                    result.put("pName"+1,"总功率因数");
+                    result.put("fMax"+1, totalFactor.totalFactorMax);
+                    result.put("fMaxTime"+1, sdf.format(totalFactor.totalFactorMaxTime));
+                    result.put("fMin"+1, totalFactor.totalFactorMin);
+                    result.put("fMinTime"+1, sdf.format(totalFactor.totalFactorMinTime));
 
-                result.put("aMax",aFactor.aFactorMax);
-                result.put("aMaxTime",aFactor.aFactorMaxTime);
-                result.put("aMin",aFactor.aFactorMin);
-                result.put("aMinTime",aFactor.aFactorMinTime);
+                    result.put("pName"+2,"A路功率因数");
+                    result.put("fMax"+2, aFactor.aFactorMax);
+                    result.put("fMaxTime"+2, sdf.format(aFactor.aFactorMaxTime));
+                    result.put("fMin"+2, aFactor.aFactorMin);
+                    result.put("fMinTime"+2, sdf.format(aFactor.aFactorMinTime));
 
-                result.put("bMax",bFactor.bFactorMax);
-                result.put("bMaxTime",bFactor.bFactorMaxTime);
-                result.put("bMin",bFactor.bFactorMin);
-                result.put("bMinTime",bFactor.bFactorMinTime);
+                    result.put("pName"+3,"B路功率因数");
+                    result.put("fMax"+3, bFactor.bFactorMax);
+                    result.put("fMaxTime"+3, sdf.format(bFactor.bFactorMaxTime));
+                    result.put("fMin"+3, bFactor.bFactorMin);
+                    result.put("fMinTime"+3, sdf.format(bFactor.bFactorMinTime));
+                }else {
+                    result.put("pName"+1,"总功率因数");
+                    result.put("fMax"+1, totalFactor.totalFactorMax);
+                    result.put("fMaxTime"+1, "无");
+                    result.put("fMin"+1, totalFactor.totalFactorMin);
+                    result.put("fMinTime"+1, "无");
+
+                    result.put("pName"+2,"A路功率因数");
+                    result.put("fMax"+2, aFactor.aFactorMax);
+                    result.put("fMaxTime"+2, "无");
+                    result.put("fMin"+2, aFactor.aFactorMin);
+                    result.put("fMinTime"+2, "无");
+
+                    result.put("pName"+3,"B路功率因数");
+                    result.put("fMax"+3, bFactor.bFactorMax);
+                    result.put("fMaxTime"+3, "无");
+                    result.put("fMin"+3, bFactor.bFactorMin);
+                    result.put("fMinTime"+3, "无");
+                }
+
 
                 totalLineRes.getSeries().add(totalSeries);
                 totalLineRes.getSeries().add(aSeries);
@@ -1201,12 +1782,21 @@ public class IndexServiceImpl implements IndexService {
     }
 
 
-
-
     private String getSeriesName(String preFix, String type, Integer dataType) {
+        String midName = "";
+        switch (dataType){
+            case 1:
+                midName = "最大";
+                break;
+            case 0:
+                midName = "平均";
+                break;
+            case -1:
+                midName = "最小";
+                break;
+        }
 
-
-        return preFix + DataTypeEnums.fromValue(dataType).name() + type;
+        return preFix + midName + type;
     }
 
 

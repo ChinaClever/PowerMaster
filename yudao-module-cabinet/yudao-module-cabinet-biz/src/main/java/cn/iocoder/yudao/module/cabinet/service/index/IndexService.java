@@ -74,4 +74,12 @@ public interface IndexService {
     Map getCabinetPFLineByType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
     Map getReportPowDataByIdAndType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getCabinetEnvIceTemAndHumDataByType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getCabinetEnvHotTemAndHumDataByType(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getCabinetEnvIceAndHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map<String, Double> getPduEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }
