@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
@@ -470,6 +471,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return jsonObject != null ? jsonObject.toJSONString() : null;
         }
     }
+
+
+
 
     @Override
     public Map getHistoryDataByDevKey(String devKey, String type) {
@@ -1290,8 +1294,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     LineSeries volSeries = new LineSeries();
                     result.put("curName" + lineId, lineId == 1 ? "A路A相电流" : lineId == 2 ? "A路B相电流" : "A路C相电流");
                     result.put("volName" + lineId, lineId == 1 ? "A路A相电压" : lineId == 2 ? "A路B相电压" : "A路C相电压");
-                    curSeries.setName("A-L"+lineId);
-                    volSeries.setName("A-L"+lineId);
+                    curSeries.setName("A-L" + lineId);
+                    volSeries.setName("A-L" + lineId);
                     curSeries.setData((List<Float>) lineData.get("curDataList"));
                     curSeries.setHappenTime((List<String>) lineData.get("curHappenTime"));
                     volSeries.setData((List<Float>) lineData.get("volDataList"));
@@ -1329,7 +1333,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             volResBase.setTime(xTime);
             result.put("curRes", curResBase);
             result.put("volRes", volResBase);
-            resultAB.put("res",result);
+            resultAB.put("res", result);
         } else {
             return resultAB;
         }
@@ -1375,10 +1379,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
                     LineSeries curSeries = new LineSeries();
                     LineSeries volSeries = new LineSeries();
-                    resultB.put("curName" + (lineId+suffix), lineId == 1 ? "B路A相电流" : lineId == 2 ? "B路B相电流" : "B路C相电流");
-                    resultB.put("volName" + (lineId+suffix), lineId == 1 ? "B路A相电压" : lineId == 2 ? "B路B相电压" : "B路C相电压");
-                    curSeries.setName("B-L"+lineId);
-                    volSeries.setName("B-L"+lineId);
+                    result.put("curName" + (lineId + suffix), lineId == 1 ? "B路A相电流" : lineId == 2 ? "B路B相电流" : "B路C相电流");
+                    result.put("volName" + (lineId + suffix), lineId == 1 ? "B路A相电压" : lineId == 2 ? "B路B相电压" : "B路C相电压");
+                    curSeries.setName("B-L" + lineId);
+                    volSeries.setName("B-L" + lineId);
                     curSeries.setData((List<Float>) lineData.get("curDataList"));
                     curSeries.setHappenTime((List<String>) lineData.get("curHappenTime"));
                     volSeries.setData((List<Float>) lineData.get("volDataList"));
@@ -1389,23 +1393,23 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     PduAnalysisResult.VoltageResult voltageResult = (PduAnalysisResult.VoltageResult) analyzedData.get("voltage");
 
                     if (dataType != 0) {
-                        result.put("curMaxValue" + (lineId+suffix), currentResult.maxCurValue);
-                        result.put("curMaxTime" + (lineId+suffix), sdf.format(currentResult.maxCurTime));
-                        result.put("curMinValue" + (lineId+suffix), currentResult.minCurValue);
-                        result.put("curMinTime" + (lineId+suffix), sdf.format(currentResult.minCurTime));
-                        result.put("volMaxValue" + (lineId+suffix), voltageResult.maxVolValue);
-                        result.put("volMaxTime" + (lineId+suffix), sdf.format(voltageResult.maxVolTime));
-                        result.put("volMinValue" + (lineId+suffix), voltageResult.minVolValue);
-                        result.put("volMinTime" + (lineId+suffix), sdf.format(voltageResult.minVolTime));
+                        result.put("curMaxValue" + (lineId + suffix), currentResult.maxCurValue);
+                        result.put("curMaxTime" + (lineId + suffix), sdf.format(currentResult.maxCurTime));
+                        result.put("curMinValue" + (lineId + suffix), currentResult.minCurValue);
+                        result.put("curMinTime" + (lineId + suffix), sdf.format(currentResult.minCurTime));
+                        result.put("volMaxValue" + (lineId + suffix), voltageResult.maxVolValue);
+                        result.put("volMaxTime" + (lineId + suffix), sdf.format(voltageResult.maxVolTime));
+                        result.put("volMinValue" + (lineId + suffix), voltageResult.minVolValue);
+                        result.put("volMinTime" + (lineId + suffix), sdf.format(voltageResult.minVolTime));
                     } else {
-                        result.put("curMaxValue" + (lineId+suffix), currentResult.maxCurValue);
-                        result.put("curMaxTime" + (lineId+suffix), "无");
-                        result.put("curMinValue" + (lineId+suffix), currentResult.minCurValue);
-                        result.put("curMinTime" + (lineId+suffix), "无");
-                        result.put("volMaxValue" + (lineId+suffix), voltageResult.maxVolValue);
-                        result.put("volMaxTime" + (lineId+suffix), "无");
-                        result.put("volMinValue" + (lineId+suffix), voltageResult.minVolValue);
-                        result.put("volMinTime" + (lineId+suffix), "无");
+                        result.put("curMaxValue" + (lineId + suffix), currentResult.maxCurValue);
+                        result.put("curMaxTime" + (lineId + suffix), "无");
+                        result.put("curMinValue" + (lineId + suffix), currentResult.minCurValue);
+                        result.put("curMinTime" + (lineId + suffix), "无");
+                        result.put("volMaxValue" + (lineId + suffix), voltageResult.maxVolValue);
+                        result.put("volMaxTime" + (lineId + suffix), "无");
+                        result.put("volMinValue" + (lineId + suffix), voltageResult.minVolValue);
+                        result.put("volMinTime" + (lineId + suffix), "无");
                     }
 
                     curResBase.getSeries().add(curSeries);
@@ -1415,18 +1419,167 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             // 添加时间轴数据
             List<String> uniqueDateTimes = (List<String>) resultB.getOrDefault("dateTimes", new ArrayList<>());
-             xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
+            xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
             curResBase.setTime(xTime);
             volResBase.setTime(xTime);
             result.put("curRes", curResBase);
             result.put("volRes", volResBase);
-            resultAB.put("res",result);
+            resultAB.put("res", result);
         } else {
             return resultAB;
         }
 
         return resultAB;
     }
+
+    @Override
+    public Map getReportConsumeDataByDevKeys(List<String> pduKeyList, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        double pduTotal = 0D;
+        if (!CollectionUtils.isEmpty(pduKeyList)) {
+            for (String s : pduKeyList) {
+                try {
+                    PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, s));
+                    if (pduIndex != null) {
+                        String index = null;
+                        boolean isSameDay = false;
+                        Integer Id = pduIndex.getId();
+                        if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                            index = "pdu_ele_total_realtime";
+                            if (oldTime.equals(newTime)) {
+                                newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                            }
+                            isSameDay = true;
+                        } else {
+                            index = "pdu_eq_total_day";
+                            oldTime = oldTime.plusDays(1);
+                            newTime = newTime.plusDays(1);
+                            isSameDay = false;
+                        }
+                        String startTime = localDateTimeToString(oldTime);
+                        String endTime = localDateTimeToString(newTime);
+                        // TODO 电力计算错误，待电力计算错误解决再实现功能
+                        List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
+                        double totalEq = 0D;
+                        if (isSameDay) {
+                            List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
+                            for (String str : cabinetData) {
+                                PduEleTotalRealtimeDo eleDO = JsonUtils.parseObject(str, PduEleTotalRealtimeDo.class);
+                                busList.add(eleDO);
+                            }
+
+                            for (int i = 0; i < cabinetData.size() - 1; i++) {
+                                totalEq += (float) busList.get(i + 1).getEle() - (float) busList.get(i).getEle();
+                            }
+                            pduTotal += totalEq;
+                        } else {
+                            for (String str : cabinetData) {
+                                PduEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, PduEqTotalDayDo.class);
+                                totalEq += (float) totalDayDo.getEq();
+                            }
+                            pduTotal += totalEq;
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("获取数据失败", e);
+                }
+            }
+        }
+        result.put("pduTotal", pduTotal);
+        return result;
+    }
+
+    @Override
+    public List<PduBasicInformationVo> getPduDisplayDataByDevKey(List<String> pduKeyList, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        if (CollectionUtils.isEmpty(pduKeyList)) {
+            return Collections.emptyList();
+        }
+        List<PduBasicInformationVo> pduBasicInformationVos = new ArrayList<>();
+        for (String devKey : pduKeyList) {
+            ValueOperations ops = redisTemplate.opsForValue();
+            JSONObject jsonObject = (JSONObject) ops.get("packet:pdu:" + devKey);
+            if (jsonObject != null){
+                PduBasicInformationVo pduBasicInformationVo = new PduBasicInformationVo();
+                //设置ip
+                pduBasicInformationVo.setIpAddress(jsonObject.getString("dev_ip"));
+                //设置运行状态
+                pduBasicInformationVo.setStatus(jsonObject.getInteger("status"));
+                //获取功率数据
+                JSONObject pduData = jsonObject.getJSONObject("pdu_data");
+                JSONObject pduTotalData = pduData.getJSONObject("pdu_total_data");
+                if (pduTotalData != null) {
+                    pduBasicInformationVo.setPowActive(pduTotalData.getDouble("pow_active"));
+                    pduBasicInformationVo.setPowReactive(pduTotalData.getDouble("pow_reactive"));
+                    pduBasicInformationVo.setPowApparent(pduTotalData.getDouble("pow_apparent"));
+                    pduBasicInformationVo.setPowerFactor(pduTotalData.getDouble("power_factor"));
+                    Double pduEleData = getPduEleDataByDevKey(devKey, timeType, oldTime, newTime);
+                    pduBasicInformationVo.setEleActive(pduEleData);
+                    pduBasicInformationVo.setVolUnbalance(pduTotalData.getDouble("vol_unbalance"));
+                    pduBasicInformationVo.setCurUnbalance(pduTotalData.getDouble("cur_unbalance"));
+                    pduBasicInformationVos.add(pduBasicInformationVo);
+                } else {
+                    System.out.println("pdu_total_data is null");
+                }
+            }
+            }
+
+        return pduBasicInformationVos;
+    }
+
+    public Double getPduEleDataByDevKey(String pduKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+
+        double pduTotal = 0D;
+        if (!StringUtils.isEmpty(pduKey)) {
+                try {
+                    PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKey));
+                    if (pduIndex != null) {
+                        String index = null;
+                        boolean isSameDay = false;
+                        Integer Id = pduIndex.getId();
+                        if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                            index = "pdu_ele_total_realtime";
+                            if (oldTime.equals(newTime)) {
+                                newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                            }
+                            isSameDay = true;
+                        } else {
+                            index = "pdu_eq_total_day";
+                            oldTime = oldTime.plusDays(1);
+                            newTime = newTime.plusDays(1);
+                            isSameDay = false;
+                        }
+                        String startTime = localDateTimeToString(oldTime);
+                        String endTime = localDateTimeToString(newTime);
+                        // TODO 电力计算错误，待电力计算错误解决再实现功能
+                        List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
+                        double totalEq = 0D;
+                        if (isSameDay) {
+                            List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
+                            for (String str : cabinetData) {
+                                PduEleTotalRealtimeDo eleDO = JsonUtils.parseObject(str, PduEleTotalRealtimeDo.class);
+                                busList.add(eleDO);
+                            }
+
+                            for (int i = 0; i < cabinetData.size() - 1; i++) {
+                                totalEq += (float) busList.get(i + 1).getEle() - (float) busList.get(i).getEle();
+                            }
+                            pduTotal = totalEq;
+                        } else {
+                            for (String str : cabinetData) {
+                                PduEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, PduEqTotalDayDo.class);
+                                totalEq += (float) totalDayDo.getEq();
+                            }
+                            pduTotal = totalEq;
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("获取数据失败", e);
+                }
+
+        }
+        return pduTotal;
+    }
+
 
     @Override
     public Map getPduMaxLine(PDURequireDetailReq pduRequireDetailReq) {

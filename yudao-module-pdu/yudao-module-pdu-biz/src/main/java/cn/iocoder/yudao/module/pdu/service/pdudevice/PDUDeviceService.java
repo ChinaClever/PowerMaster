@@ -82,4 +82,8 @@ public interface PDUDeviceService {
     Map getPduHdaLineHisdataKey(String devKey, String type);
 
     Map getPduHdaLineHisdataKeyByCabinetByType(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getReportConsumeDataByDevKeys(List<String> pduKeyList, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    List<PduBasicInformationVo> getPduDisplayDataByDevKey(List<String> pduKeyList, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

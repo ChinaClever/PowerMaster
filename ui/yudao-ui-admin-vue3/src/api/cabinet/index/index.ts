@@ -63,6 +63,10 @@ export const IndexApi = {
     return await request.get({ url: `/cabinet/index/report/ele`,params})
   },
 
+    getPduBasicInformation: async (data) => {
+      return await request.post({ url: `/pdu/PDU-device/pduBasicInformation`,data})
+    },
+
   getPowData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/pow`,params})
   },
