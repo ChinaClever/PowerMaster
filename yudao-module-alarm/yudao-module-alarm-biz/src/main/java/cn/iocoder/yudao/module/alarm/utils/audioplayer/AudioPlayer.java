@@ -26,8 +26,8 @@ public class AudioPlayer {
             if (!AudioSystem.isLineSupported(new DataLine.Info(Clip.class, format))) {
                 log.info("Line not supported for this audio format.");
             } else {
-                Clip clip = AudioSystem.getClip();
-                clip.open(audioInputStream);
+                this.clip = AudioSystem.getClip(); // 使用类成员变量
+                this.clip.open(audioInputStream);
 
                 // 获取音频格式
                 AudioFormat audioFormat = audioInputStream.getFormat();
@@ -44,26 +44,21 @@ public class AudioPlayer {
                 // 秒
                 float totalSeconds = frameLength / frameRate;
 
-                clip.start();
-                //开始后睡眠播放时间秒
-                Thread.sleep((long) (totalSeconds * 1000L));
-                //关闭
-                clip.close();
+                this.clip.loop(Clip.LOOP_CONTINUOUSLY); // 循环播放
             }
-        }catch (Exception e){
-            log.error("播放异常：",e);
+        } catch (Exception e) {
+            log.error("播放异常：", e);
         }
     }
+
 
     public void stopAudio() {
         if (clip != null) {
-            // 停止播放
-            clip.stop();
-
-            // 关闭音频资源
-            clip.close();
+            clip.stop(); // 停止播放
+            clip.close(); // 关闭音频资源
         }
     }
+
 
 
 
