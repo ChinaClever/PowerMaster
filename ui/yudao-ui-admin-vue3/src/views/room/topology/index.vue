@@ -13,7 +13,7 @@
         <div class="temStatus" style="background: linear-gradient(to right, rgb(244,229,162), rgb(191,68,76))">
         </div>
       </div> -->
-      <div class="status" :style="isFromHome ? 'font-size: 8px' : ''">
+      <div class="status" :style="isFromHome ? 'font-size: 10px;color: black' : ''">
         <template v-for="item in statusInfo[chosenBtn]" :key="item.value">
           <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
         </template>
@@ -84,93 +84,168 @@
                       <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)">
                         <el-tooltip :disabled="tooltipDisabled || !element.cabinetName" effect="light">
                           <template #content>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                机柜状态：{{statusColor[element.runStatus].name}} <br/>
-                                机柜名称：{{element.cabinetName}} <br/>
-                                机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                            <div v-if="element.cabinetBoxes || element.cabinetPdus">
+                              <div class="flex justify-between" style="width: 20vw">
+                                <div style="width: 50%">
+                                  机柜状态：{{element.runStatus ? statusColor[element.runStatus].name : '正常'}} <br/>
+                                  机柜名称：{{element.name + '-' + element.cabinetName}} <br/>
+                                  机柜负荷：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                  昨日用能：{{element.yesterdayEq ? element.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                </div>
+                                <div style="width: 50%">
+                                  总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                  总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                  总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                  总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
+                                </div>
                               </div>
-                              <div style="width: 50%">
-                                总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
-                                总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar
-                              </div>
-                            </div>
-                            <hr/>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                A路占比：{{element.powActivea ? (element.powActivea*100/element.powActive).toFixed(0) : '0'}}%<br/>
-                                A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                A路设备：{{element.cabinetkeya}}
-                              </div>
-                              <div style="width: 50%">
-                                B路占比：{{element.powActiveb ? (element.powActiveb*100/element.powActive).toFixed(0) : '0'}}%<br/>
-                                B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
-                                B路设备：{{element.cabinetkeyb}}
-                              </div>
-                            </div>
-                            <hr/>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
-                                前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
-                              </div>
-                              <div style="width: 50%">
-                                后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
-                                后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
-                                后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
-                              </div>
-                            </div>
-                            <div v-if="element.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
                               <hr/>
-                              告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
-                              告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                              <div class="flex justify-between" style="width: 20vw">
+                                <div style="width: 50%">
+                                  A路占比：{{element.powActivea ? (element.powActivea*100/element.powActive).toFixed(0) : '0'}}%<br/>
+                                  A路功率：{{element.powActivea ? element.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                  A路设备：{{element.cabinetkeya}}
+                                </div>
+                                <div style="width: 50%">
+                                  B路占比：{{element.powActiveb ? (element.powActiveb*100/element.powActive).toFixed(0) : '0'}}%<br/>
+                                  B路功率：{{element.powActiveb ? element.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                  B路设备：{{element.cabinetkeyb}}
+                                </div>
+                              </div>
+                              <hr/>
+                              <div class="flex justify-between" style="width: 20vw">
+                                <div style="width: 50%">
+                                  前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
+                                  前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
+                                  前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
+                                </div>
+                                <div style="width: 50%">
+                                  后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
+                                  后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
+                                  后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
+                                </div>
+                              </div>
+                              <div v-if="element.alarmLogRecord && element.runStatus != 1" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                <hr/>
+                                告警类型：{{alarmTypeDesc[element.alarmLogRecord?.alarmType]}}<br/>
+                                告警描述：{{element.alarmLogRecord?.alarmDesc}}
+                              </div>
+                            </div>
+                            <div v-else>
+                              <div class="flex justify-between" style="width: 20vw">
+                                <div style="width: 50%">
+                                  机柜状态：未绑定 <br/>
+                                  机柜名称：{{element.name + '-' + element.cabinetName}} <br/>
+                                  机柜负荷：0.0%<br/>
+                                  昨日用能：0.0kW·h
+                                </div>
+                                <div style="width: 50%">
+                                  总功率因素：0.00<br/>
+                                  总有功功率：0.000kW<br/>
+                                  总视在功率：0.000kVA<br/>
+                                  总无功功率：0.000kVar
+                                </div>
+                              </div>
+                              <hr/>
+                              <div class="flex justify-between" style="width: 20vw">
+                                <div style="width: 50%">
+                                  A路占比：0%<br/>
+                                  A路功率：0.000kW<br/>
+                                  A路设备：
+                                </div>
+                                <div style="width: 50%">
+                                  B路占比：0%<br/>
+                                  B路功率：0.000kW<br/>
+                                  B路设备：
+                                </div>
+                              </div>
+                              <hr/>
+                              <div class="flex justify-between" style="width: 20vw">
+                                <div style="width: 50%">
+                                  前门温度：°C<br/>
+                                  前门湿度：%<br/>
+                                  前门露点温度: °C
+                                </div>
+                                <div style="width: 50%">
+                                  后门温度：°C<br/>
+                                  后门湿度：%<br/>
+                                  后门露点温度: °C
+                                </div>
+                              </div>
                             </div>
                           </template>
-                          <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.loadRate ? (element.loadRate>=89.5 ? `rgba(240, 58, 23, ${element.loadRate/100})` : (element.loadRate>=74.5 ? `rgba(255, 225, 0, ${(element.loadRate+15)/100})` : (element.loadRate>=49.5 ? `rgba(0, 120, 215, ${(141-element.loadRate)/100})` : `rgba(22, 198, 12, ${(element.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
-                            <template v-if="element.name">
-                              <div v-if="element.loadRate != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 8px;margin-top: -18px">%</div></div>
+                          <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus)" :style="{backgroundColor: element.cabinetName && element.loadRate ? (element.loadRate>=89.5 ? `rgba(240, 58, 23, ${element.loadRate/100})` : (element.loadRate>=74.5 ? `rgba(255, 225, 0, ${(element.loadRate+15)/100})` : (element.loadRate>=49.5 ? `rgba(0, 120, 215, ${(141-element.loadRate)/100})` : `rgba(22, 198, 12, ${(element.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                            <template v-if="element.id > 0">
+                              <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                <div class="cabinetNameClass">
+                                  {{ element.cabinetName }}
+                                </div>
+                                <div v-if="element.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div class="unitClass">%</div></div>
+                              </div>
                             </template>
                           </div>
-                          <div v-else-if="chosenBtn == 1 && element.runStatus == 1" :style="{backgroundColor: element.cabinetName ? `rgba(41, 132, 71, ${element.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
-                            <template v-if="element.name">
-                              <div v-if="element.powActive != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 8px;margin-top: -18px">kW</div></div>
+                          <div v-else-if="chosenBtn == 1 && element.runStatus==1 && (element.cabinetBoxes || element.cabinetPdus)" :style="{backgroundColor: element.cabinetName ? `rgba(41, 132, 71, ${element.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                            <template v-if="element.id > 0">
+                              <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                <div class="cabinetNameClass">
+                                  {{ element.cabinetName }}
+                                </div>
+                                <div v-if="element.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div class="unitClass">kW</div></div>
+                              </div>
                             </template>
                           </div>
-                          <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.powerFactor ? (element.powerFactor>=0.945 ? `#16c60c` : (element.powerFactor>=0.845 ? `#0078d7` : (element.powerFactor>=0.745 ? `rgba(252, 225, 0, ${1.75-element.powerFactor})` : `rgba(240, 58, 23, ${1.3-element.powerFactor})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
-                            <template v-if="element.name">
-                              <div v-if="element.powerFactor != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                          <div v-else-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus)" :style="{backgroundColor: element.cabinetName && element.powerFactor ? (element.powerFactor>=0.895 ? `#16c60c` : (element.powerFactor>=0.845 ? `#0078d7` : (element.powerFactor>=0.745 ? `rgba(252, 225, 0, ${1.75-element.powerFactor})` : `rgba(240, 58, 23, ${1.3-element.powerFactor})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                            <template v-if="element.id > 0">
+                              <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                <div class="cabinetNameClass">
+                                  {{ element.cabinetName }}
+                                </div>
+                                <div v-if="element.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                              </div>
                             </template>
                           </div>
-                          <!-- <div v-else-if="chosenBtn == 6 && element.runStatus != 0 && element.runStatus != 4" :style="{background: `linear-gradient(to bottom, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
-                            <template v-if="element.name">
-                              <div v-if="element.temFront != 0 || element.temBlack != 0" style="display: flex;flex-direction: column;justify-content: space-around;width: 100%">
+                          <!-- <div v-else-if="chosenBtn == 6 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus)" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(element.temFront)} 50%, ${getColorFromGradient(element.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
+                            <template v-if="element.id > 0">
+                              <div v-if="element.temFront != 0 || element.temBlack != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
                                 <div>{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}</div>
                                 <div>{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}</div>
                               </div>
                             </template>
                           </div> -->
-                          <div v-else-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.temFront ? (element.temFront>=35 ? `rgba(232, 18, 36, ${element.temFront})` : (element.temFront>=30 ? `rgba(247, 99, 12, ${(element.temFront+65)/100})` : (element.temFront>=27 ? `rgba(252, 225, 0, ${(element.temFront+70)/100})` : (element.temFront>=24 ? `rgba(50, 205, 50, ${(124-element.temFront)/100})` : (element.temFront>20 ? `rgba(0, 128, 0, ${(element.temFront+76)/100})` : `rgba(0, 120, 215, ${element.temFront+80})`))))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                          <div v-else-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus)" :style="{backgroundColor: element.cabinetName && element.temFront ? (element.temFront>=35 ? `rgba(232, 18, 36, ${element.temFront})` : (element.temFront>=30 ? `rgba(247, 99, 12, ${(element.temFront+65)/100})` : (element.temFront>=27 ? `rgba(252, 225, 0, ${(element.temFront+70)/100})` : (element.temFront>=24 ? `rgba(50, 205, 50, ${(124-element.temFront)/100})` : (element.temFront>20 ? `rgba(0, 128, 0, ${(element.temFront+76)/100})` : `rgba(0, 120, 215, ${element.temFront+80})`))))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                             <template v-if="element.id > 0">
-                              <div v-if="element.temFront != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 8px;margin-top: -18px">°C</div></div>
+                              <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                <div class="cabinetNameClass">
+                                  {{ element.cabinetName }}
+                                </div>
+                                <div v-if="element.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
+                              </div>
                             </template>
                           </div>
-                          <div v-else-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4" :style="{backgroundColor: element.cabinetName && element.temBlack ? (element.temBlack>=45 ? `rgba(232, 18, 36, ${element.temBlack})` : (element.temBlack>=40 ? `rgba(247, 99, 12, ${(element.temBlack+55)/100})` : (element.temBlack>=35 ? `rgba(252, 225, 0, ${(element.temBlack+60)/100})` : (element.temBlack>30 ? `rgba(50, 205, 50, ${(130-element.temBlack)/100})` : `rgba(0, 128, 0, ${(element.temBlack+70)/100})`)))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
-                            <template v-if="element.name">
-                              <div :style="!isFromHome ? `font-size: 14px` : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 8px;margin-top: -18px">°C</div></div>
+                          <div v-else-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus)" :style="{backgroundColor: element.cabinetName && element.temBlack ? (element.temBlack>=45 ? `rgba(232, 18, 36, ${element.temBlack})` : (element.temBlack>=40 ? `rgba(247, 99, 12, ${(element.temBlack+55)/100})` : (element.temBlack>=35 ? `rgba(252, 225, 0, ${(element.temBlack+60)/100})` : (element.temBlack>30 ? `rgba(50, 205, 50, ${(130-element.temBlack)/100})` : `rgba(0, 128, 0, ${(element.temBlack+70)/100})`)))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                            <template v-if="element.id > 0">
+                              <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                <div class="cabinetNameClass">
+                                  {{ element.cabinetName }}
+                                </div>
+                                <div v-if="element.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div v-if="element.temBlack != 0 && element.direction == '1'" class="unitClass">°C</div></div>
+                              </div>
                             </template>
                           </div>
-                          <div v-else :style="{backgroundColor: element.cabinetName ? statusColor[element.runStatus].color : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
-                            <template v-if="element.name">
-                              <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && element.loadRate != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div style="font-size: 8px;margin-top: -18px">%</div></div>
-                              <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && element.powActive != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div style="font-size: 8px;margin-top: -18px">kW</div></div>
-                              <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && element.powerFactor != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                              <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && element.temFront != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div style="font-size: 8px;margin-top: -18px">°C</div></div>
-                              <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && element.temBlack != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div style="font-size: 8px;margin-top: -18px">°C</div></div>
-                              <div v-if="chosenBtn == 5 && element.runStatus != 0 && element.runStatus != 4 && element.yesterdayEq != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{element.yesterdayEq ? element.yesterdayEq.toFixed(0) : '0'}}<div style="font-size: 8px;margin-top: -18px">kWh</div></div>
+                          <div v-else :style="{backgroundColor: element.cabinetName ? ((element.cabinetBoxes || element.cabinetPdus) ? (element.runStatus ? statusColor[element.runStatus].color : '#298447') : '#3e62c7') : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                            <template v-if="element.id > 0">
+                              <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                <div class="cabinetNameClass">
+                                  {{ element.cabinetName }}
+                                </div>
+                                <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div class="unitClass">%</div></div>
+                                <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div class="unitClass">kW</div></div>
+                                <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                                <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
+                                <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
+                              </div>
+                              
+                              <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.yesterdayEq != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div class="unitClass">kWh</div></div> -->
                             </template>
                           </div>
                         </el-tooltip>
@@ -180,74 +255,127 @@
                           <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i" :data-index="i">
                             <el-tooltip :disabled="tooltipDisabled || !item.cabinetName" effect="light">
                               <template #content>
-                                <div class="flex justify-between" style="width: 20vw">
-                                  <div style="width: 50%">
-                                    机柜状态：{{statusColor[item.runStatus].name}} <br/>
-                                    机柜名称：{{element.name + '-' + item.cabinetName}} <br/>
-                                    机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                    昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                <div v-if="item.cabinetBoxes || item.cabinetPdus">
+                                  <div class="flex justify-between" style="width: 20vw">
+                                    <div style="width: 50%">
+                                      机柜状态：{{item.runStatus ? statusColor[item.runStatus].name : '正常'}} <br/>
+                                      机柜名称：{{element.name + '-' + item.cabinetName}} <br/>
+                                      机柜负荷：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
+                                      昨日用能：{{item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0'}}kW·h
+                                    </div>
+                                    <div style="width: 50%">
+                                      总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                                      总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                                      总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                                      总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
+                                    </div>
                                   </div>
-                                  <div style="width: 50%">
-                                    总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
-                                    总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                    总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                    总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar
-                                  </div>
-                                </div>
-                                <hr/>
-                                <div class="flex justify-between" style="width: 20vw">
-                                  <div style="width: 50%">
-                                    A路占比：{{item.powActivea ? (item.powActivea*100/item.powActive).toFixed(0) : '0'}}%<br/>
-                                    A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
-                                    A路设备：{{item.cabinetkeya}}
-                                  </div>
-                                  <div style="width: 50%">
-                                    B路占比：{{item.powActiveb ? (item.powActiveb*100/item.powActive).toFixed(0) : '0'}}%<br/>
-                                    B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
-                                    B路设备：{{item.cabinetkeyb}}
-                                  </div>
-                                </div>
-                                <hr/>
-                                <div class="flex justify-between" style="width: 20vw">
-                                  <div style="width: 50%">
-                                    前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                    前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
-                                    前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
-                                  </div>
-                                  <div style="width: 50%">
-                                    后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                    后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
-                                    后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
-                                  </div>
-                                </div>
-                                <div v-if="item.alarmLogRecord" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
                                   <hr/>
-                                  告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
-                                  告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                  <div class="flex justify-between" style="width: 20vw">
+                                    <div style="width: 50%">
+                                      A路占比：{{item.powActivea ? (item.powActivea*100/item.powActive).toFixed(0) : '0'}}%<br/>
+                                      A路功率：{{item.powActivea ? item.powActivea.toFixed(3) : '0.000'}}kW<br/>
+                                      A路设备：{{item.cabinetkeya}}
+                                    </div>
+                                    <div style="width: 50%">
+                                      B路占比：{{item.powActiveb ? (item.powActiveb*100/item.powActive).toFixed(0) : '0'}}%<br/>
+                                      B路功率：{{item.powActiveb ? item.powActiveb.toFixed(3) : '0.000'}}kW<br/>
+                                      B路设备：{{item.cabinetkeyb}}
+                                    </div>
+                                  </div>
+                                  <hr/>
+                                  <div class="flex justify-between" style="width: 20vw">
+                                    <div style="width: 50%">
+                                      前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
+                                      前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                      前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
+                                    </div>
+                                    <div style="width: 50%">
+                                      后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
+                                      后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                      后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
+                                    </div>
+                                  </div>
+                                  <div v-if="item.alarmLogRecord && item.runStatus != 1" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
+                                    <hr/>
+                                    告警类型：{{alarmTypeDesc[item.alarmLogRecord?.alarmType]}}<br/>
+                                    告警描述：{{item.alarmLogRecord?.alarmDesc}}
+                                  </div>
+                                </div>
+                                <div v-else>
+                                  <div class="flex justify-between" style="width: 20vw">
+                                    <div style="width: 50%">
+                                      机柜状态：未绑定 <br/>
+                                      机柜名称：{{element.name + '-' + item.cabinetName}} <br/>
+                                      机柜负荷：0.0%<br/>
+                                      昨日用能：0.0kW·h
+                                    </div>
+                                    <div style="width: 50%">
+                                      总功率因素：0.00<br/>
+                                      总有功功率：0.000kW<br/>
+                                      总视在功率：0.000kVA<br/>
+                                      总无功功率：0.000kVar
+                                    </div>
+                                  </div>
+                                  <hr/>
+                                  <div class="flex justify-between" style="width: 20vw">
+                                    <div style="width: 50%">
+                                      A路占比：0%<br/>
+                                      A路功率：0.000kW<br/>
+                                      A路设备：
+                                    </div>
+                                    <div style="width: 50%">
+                                      B路占比：0%<br/>
+                                      B路功率：0.000kW<br/>
+                                      B路设备：
+                                    </div>
+                                  </div>
+                                  <hr/>
+                                  <div class="flex justify-between" style="width: 20vw">
+                                    <div style="width: 50%">
+                                      前门温度：°C<br/>
+                                      前门湿度：%<br/>
+                                      前门露点温度: °C
+                                    </div>
+                                    <div style="width: 50%">
+                                      后门温度：°C<br/>
+                                      后门湿度：%<br/>
+                                      后门露点温度: °C
+                                    </div>
+                                  </div>
                                 </div>
                               </template>
-                              <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.loadRate ? (item.loadRate>=89.5 ? `rgba(240, 58, 23, ${item.loadRate/100})` : (item.loadRate>=74.5 ? `rgba(255, 225, 0, ${(item.loadRate+15)/100})` : (item.loadRate>=49.5 ? `rgba(0, 120, 215, ${(141-item.loadRate)/100})` : `rgba(22, 198, 12, ${(item.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                              <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus)" :style="{backgroundColor: item.cabinetName && item.loadRate ? (item.loadRate>=89.5 ? `rgba(240, 58, 23, ${item.loadRate/100})` : (item.loadRate>=74.5 ? `rgba(255, 225, 0, ${(item.loadRate+15)/100})` : (item.loadRate>=49.5 ? `rgba(0, 120, 215, ${(141-item.loadRate)/100})` : `rgba(22, 198, 12, ${(item.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                                 <template v-if="item.id > 0">
-                                  <div v-if="item.loadRate != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 8px;margin-top: -18px">%</div><span v-else style="font-size: 10px;">%</span></div>
-                                </template>
-                              </div>
-                              <div v-else-if="chosenBtn == 1 && item.runStatus==1" :style="{backgroundColor: item.cabinetName ? `rgba(41, 132, 71, ${item.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
-                                <template v-if="item.id > 0">
-                                  <div class="flex justify-center align-center" style="position: relative;width: 100%;height: 100%;flex-direction: column;">
-                                    <div style="position: absolute;left: 0px;top: -10px;font-size: 10px">
+                                  <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                    <div class="cabinetNameClass">
                                       {{ item.cabinetName }}
                                     </div>
-                                    <div v-if="item.powActive != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<span  v-if="element.direction != '1'" style="font-size: 10px;">kW</span></div>
-                                    <div v-if="item.powActive != 0 && element.direction == '1'" style="font-size: 8px;position: absolute;bottom: -10px;left: 50%;transform: translateX(-50%)">kW</div>
+                                    <div v-if="item.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">%</div><span v-else class="unitClassCol">%</span></div>
                                   </div>
                                 </template>
                               </div>
-                              <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.powerFactor ? (item.powerFactor>=0.895 ? `#16c60c` : (item.powerFactor>=0.845 ? `#0078d7` : (item.powerFactor>=0.745 ? `rgba(252, 225, 0, ${1.75-item.powerFactor})` : `rgba(240, 58, 23, ${1.3-item.powerFactor})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                              <div v-else-if="chosenBtn == 1 && item.runStatus==1 && (item.cabinetBoxes || item.cabinetPdus)" :style="{backgroundColor: item.cabinetName ? `rgba(41, 132, 71, ${item.loadRate/100+0.5})` : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                                 <template v-if="item.id > 0">
-                                  <div v-if="item.powerFactor != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                  <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                    <div class="cabinetNameClass">
+                                      {{ item.cabinetName }}
+                                    </div>
+                                    <div v-if="item.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">kW</div><span v-else class="unitClassCol">&nbsp;kW</span></div>
+                                  </div>
                                 </template>
                               </div>
-                              <!-- <div v-else-if="chosenBtn == 6 && item.runStatus != 0 && item.runStatus != 4" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
+                              <div v-else-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus)" :style="{backgroundColor: item.cabinetName && item.powerFactor ? (item.powerFactor>=0.895 ? `#16c60c` : (item.powerFactor>=0.845 ? `#0078d7` : (item.powerFactor>=0.745 ? `rgba(252, 225, 0, ${1.75-item.powerFactor})` : `rgba(240, 58, 23, ${1.3-item.powerFactor})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                                <template v-if="item.id > 0">
+                                  <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                    <div class="cabinetNameClass">
+                                      {{ item.cabinetName }}
+                                    </div>
+                                    <div v-if="item.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                  </div>
+                                </template>
+                              </div>
+                              <!-- <div v-else-if="chosenBtn == 6 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus)" :style="{background: element.direction == '1' ? `linear-gradient(to bottom, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)` : `linear-gradient(to right, ${getColorFromGradient(item.temFront)} 50%, ${getColorFromGradient(item.temBlack)} 50%)`,color: '#fff',height: '100%',width: '100%'}">
                                 <template v-if="item.id > 0">
                                   <div v-if="item.temFront != 0 || item.temBlack != 0" :style="element.direction == '1' ? 'display: flex;flex-direction: column;justify-content: space-around;width: 100%' : 'display: flex;justify-content: space-around;width: 100%'">
                                     <div>{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}</div>
@@ -255,24 +383,40 @@
                                   </div>
                                 </template>
                               </div> -->
-                              <div v-else-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.temFront ? (item.temFront>=35 ? `rgba(232, 18, 36, ${item.temFront})` : (item.temFront>=30 ? `rgba(247, 99, 12, ${(item.temFront+65)/100})` : (item.temFront>=27 ? `rgba(252, 225, 0, ${(item.temFront+70)/100})` : (item.temFront>=24 ? `rgba(50, 205, 50, ${(124-item.temFront)/100})` : (item.temFront>20 ? `rgba(0, 128, 0, ${(item.temFront+76)/100})` : `rgba(0, 120, 215, ${item.temFront+80})`))))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                              <div v-else-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus)" :style="{backgroundColor: item.cabinetName && item.temFront ? (item.temFront>=35 ? `rgba(232, 18, 36, ${item.temFront})` : (item.temFront>=30 ? `rgba(247, 99, 12, ${(item.temFront+65)/100})` : (item.temFront>=27 ? `rgba(252, 225, 0, ${(item.temFront+70)/100})` : (item.temFront>=24 ? `rgba(50, 205, 50, ${(124-item.temFront)/100})` : (item.temFront>20 ? `rgba(0, 128, 0, ${(item.temFront+76)/100})` : `rgba(0, 120, 215, ${item.temFront+80})`))))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                                 <template v-if="item.id > 0">
-                                  <div v-if="item.temFront != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 8px;margin-top: -18px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                    <div class="cabinetNameClass">
+                                      {{ item.cabinetName }}
+                                    </div>
+                                    <div v-if="item.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                  </div>
                                 </template>
                               </div>
-                              <div v-else-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4" :style="{backgroundColor: item.cabinetName && item.temBlack ? (item.temBlack>=45 ? `rgba(232, 18, 36, ${item.temBlack})` : (item.temBlack>=40 ? `rgba(247, 99, 12, ${(item.temBlack+55)/100})` : (item.temBlack>=35 ? `rgba(252, 225, 0, ${(item.temBlack+60)/100})` : (item.temBlack>30 ? `rgba(50, 205, 50, ${(130-item.temBlack)/100})` : `rgba(0, 128, 0, ${(item.temBlack+70)/100})`)))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                              <div v-else-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus)" :style="{backgroundColor: item.cabinetName && item.temBlack ? (item.temBlack>=45 ? `rgba(232, 18, 36, ${item.temBlack})` : (item.temBlack>=40 ? `rgba(247, 99, 12, ${(item.temBlack+55)/100})` : (item.temBlack>=35 ? `rgba(252, 225, 0, ${(item.temBlack+60)/100})` : (item.temBlack>30 ? `rgba(50, 205, 50, ${(130-item.temBlack)/100})` : `rgba(0, 128, 0, ${(item.temBlack+70)/100})`)))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                                 <template v-if="item.id > 0">
-                                  <div v-if="item.temBlack != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 8px;margin-top: -18px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
+                                  <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                    <div class="cabinetNameClass">
+                                      {{ item.cabinetName }}
+                                    </div>
+                                    <div v-if="item.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="item.temBlack != 0 && element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                  </div>
                                 </template>
                               </div>
-                              <div v-else :style="{backgroundColor: item.cabinetName ? statusColor[item.runStatus].color : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
+                              <div v-else :style="{backgroundColor: item.cabinetName ? ((item.cabinetBoxes || item.cabinetPdus) ? (item.runStatus ? statusColor[item.runStatus].color : '#298447') : '#3e62c7') : '#f5f7fa',color: '#fff',height: '100%',width: '100%'}">
                                 <template v-if="item.id > 0">
-                                  <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && item.loadRate != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 8px;margin-top: -18px">%</div><span v-else style="font-size: 10px;">%</span></div>
-                                  <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && item.powActive != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" style="font-size: 8px;margin-top: -18px">kW</div><span v-else style="font-size: 10px;">kW</span></div>
-                                  <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && item.powerFactor != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                  <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && item.temFront != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 8px;margin-top: -18px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
-                                  <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && item.temBlack != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" style="font-size: 8px;margin-top: -18px">°C</div><span v-else style="font-size: 10px;">°C</span></div>
-                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && item.yesterdayEq != 0" :style="!isFromHome ? `font-size: 14px` : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div style="font-size: 8px;margin-top: -18px">kWh</div></div> -->
+                                  <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
+                                    <div class="cabinetNameClass">
+                                      {{ item.cabinetName }}
+                                    </div>
+                                    <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">%</div><span v-else class="unitClassCol">%</span></div>
+                                    <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">kW</div><span v-else class="unitClassCol">kW</span></div>
+                                    <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                    <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                    <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                  </div>
+                                  
+                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.yesterdayEq != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div class="unitClass">kWh</div></div> -->
                                 </template>
                               </div>
                             </el-tooltip>
@@ -1397,7 +1541,7 @@ const getRoomInfoNoLoading = async() => {
     // const results = await Promise.all([result1, result2])
     // const res = results[0];
     //console.log("res",res)
-    if(!res) {
+    if(!res || res.id != roomId.value) {
       return
     }
     res.aisleList = res.aisleList==null ? [] : res.aisleList
@@ -3017,7 +3161,7 @@ const handleExportAisle = async () => {
     await download.excel(data, rowColInfo?.roomName + '的机柜绑定关系表.xlsx');
     ElMessage.success('导出成功');
   } catch (error) {
-    ElMessage.success('导出失败');
+    ElMessage.error('导出失败');
     console.error('导出失败：', error);
   } finally {
     exportLoading.value = false;
@@ -3144,7 +3288,6 @@ const submitSetting = async() => {
       return
     }
   }
-  return
    try {
     const res = await MachineRoomApi.saveRoomDetail({
       id: roomFlagId,
@@ -3316,7 +3459,7 @@ watch(() => containerInfo, (val) => {
 onMounted(() => {
   getCabinetColorAll()
   roomsId.roomDownValIds = Number(query.id)
-  // flashListTimer.value = setInterval((getRoomInfoNoLoading), 5000);
+  flashListTimer.value = setInterval((getRoomInfoNoLoading), 5000);
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
     // //console.log(event)
@@ -3401,10 +3544,10 @@ onUnmounted(() => {
       height: 30px;
       padding: 20px 10px;
       box-sizing: border-box;
+      font-size: 14px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 14px;
       color: #606266;
     }
     .menu_item:hover {
@@ -3437,6 +3580,7 @@ onUnmounted(() => {
         box-sizing: border-box;
         background-color: #f5f7fa;
         border-right: 1px solid #bed1ff;
+        position: relative;
         &>div {
           min-height: 29px;
           display: flex;
@@ -3468,6 +3612,7 @@ onUnmounted(() => {
         justify-content: center;
         background-color: #f5f7fa;
         border-bottom: 1px solid #bed1ff;
+        position: relative;
         &>div {
           min-height: 29px;
           display: flex;
@@ -3592,5 +3737,26 @@ onUnmounted(() => {
   position: absolute;
   left: 30%;
   top: 22px;
+}
+.unitClass {
+  font-size: 10px;
+  color: black;
+  display:none;
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.unitClassCol {
+  font-size: 10px;
+  color: black;
+  display:none;
+}
+.cabinetNameClass {
+  position: absolute;
+  left: 0px;
+  top: -10px;
+  font-size: 10px;
+  color: black;
 }
 </style>

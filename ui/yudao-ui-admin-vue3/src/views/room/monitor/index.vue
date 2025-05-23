@@ -686,9 +686,9 @@
     </el-dialog>
 
     <el-dialog v-model="huiFuRoomVis" title="恢复机房" width="30%" align-center>
-      该机房已存在，是否恢复？
+      该机房已删除，是否恢复？
       <template #footer>
-        <el-button @click="rowColInfo.roomName = '';huiFuRoomVis = false" color="black" plain>不 恢 复</el-button>
+        <el-button @click="submitSettingRoom" color="black" plain>不 恢 复</el-button>
         <el-button type="primary" @click="huiFuRoom(huiFuRoomId)" color="black">恢 复</el-button>
       </template>
     </el-dialog>
@@ -736,6 +736,7 @@ const rowColInfo = reactive({
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
   sort:null,
+  id: null
 })
 const queryParams = reactive({
   roomName: undefined,
@@ -805,6 +806,7 @@ const openSetting = (item) => {
   console.log(item)
   // noChange.value = true
   Object.assign(rowColInfo, {
+    id: item.id,
     roomName: item.roomName,
     row: item.yLength,
     col: item.xLength,
@@ -953,6 +955,7 @@ const huiFuRoom = async (resSelect) => {
 // 重置表单
 const resetForm = () => {
   Object.assign(rowColInfo, {
+    id: null,
     roomName: '', // 机房名
     addr: '未区分', //楼层
     row: 14, // 行
@@ -986,15 +989,23 @@ const submitSetting = async() => {
   }
 
   if(roomFlag.value == 1){
-    const resSelect = await MachineRoomApi.selectRoomByName({name: rowColInfo.roomName});
+    const resSelect = await MachineRoomApi.selectRoomByName({roomName: rowColInfo.roomName});
     if(resSelect != null){
       huiFuRoomId.value = resSelect
       huiFuRoomVis.value = true
       return
     }
+  } else {
+    const resSelect = await MachineRoomApi.selectRoomByName({roomName: rowColInfo.roomName,id: rowColInfo.id});
+    if(resSelect != null){
+      return
+    }
   }
-  
 
+  submitSettingRoom()
+}
+
+const submitSettingRoom = async() => {
   let roomFlagId:any = null;
   let messageRoomFlag = "保存成功！";
   if(roomFlag.value == 2){
@@ -1003,7 +1014,7 @@ const submitSetting = async() => {
   }
 
   if(radio.value === "PUE") {
-  rowColInfo.displayType = 1
+    rowColInfo.displayType = 1
   } else {
     rowColInfo.displayType = 0
   }
@@ -1016,61 +1027,62 @@ const submitSetting = async() => {
   }
 
   console.log(rowColInfo)
-    if(rowColInfo.width <= 0 || rowColInfo.length <= 0 || rowColInfo.width > 60 || rowColInfo.length > 60) {
-      message.error('机房面积有误或过大,请重新输入!')
-      return
-    }
-
-    if(rowColInfo.areaFlag == false) {
-      rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
-      rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
-    } else {
-      rowColInfo.width = Number(rowColInfo.width)
-      rowColInfo.length = Number(rowColInfo.length)
-      rowColInfo.row = Math.ceil((rowColInfo.width * 10)/6)
-      rowColInfo.col = Math.ceil((rowColInfo.length * 10)/6)
-    }
-
-    console.log(rowColInfo,roomFlagId)
-
-  if(roomFlag.value == 2) {
-    const resFind = await MachineRoomApi.findAreaById({xLength: rowColInfo.col,yLength: rowColInfo.row,id: roomFlagId});
-    if(resFind) {
-      message.error('减少的行数或列数中有机柜或柜列,请重新设置行数或列数!')
-      return
-    }
+  if(rowColInfo.width <= 0 || rowColInfo.length <= 0 || rowColInfo.width > 60 || rowColInfo.length > 60) {
+    message.error('机房面积有误或过大,请重新输入!')
+    return
   }
 
-   try {
-    const res = await MachineRoomApi.saveRoomDetail({
-      id: roomFlagId,
-      roomName: rowColInfo.roomName,
-      addr: rowColInfo.addr,
-      xLength: rowColInfo.col,
-      yLength: rowColInfo.row,
-      areaFlag: rowColInfo.areaFlag, //新建类型 砖数 面积
-      areayLength: rowColInfo.width, //宽度
-      areaxLength: rowColInfo.length, //长度
-      powerCapacity:rowColInfo.powerCapacity, 
-      airPower:rowColInfo.airPower, 
-      displayType: rowColInfo.displayType, 
-      displayFlag: rowColInfo.displayFlag, 
-      eleAlarmDay: rowColInfo.eleAlarmDay,
-      eleAlarmMonth: rowColInfo.eleAlarmMonth,
-      eleLimitDay: rowColInfo.eleLimitDay,
-      eleLimitMonth: rowColInfo.eleLimitMonth,
-      sort:rowColInfo.sort,
-    })
-    
-    if(res != null || res != "")
-    message.success(messageRoomFlag);
-    dialogVisible.value = false;
-    roomId.value = res;
-   } catch (error) {
-    console.log(error)
-   }
-   
-   getRoomAddrList();
+  if(rowColInfo.areaFlag == false) {
+    rowColInfo.width = Number((rowColInfo.row * 0.6).toFixed(1))
+    rowColInfo.length = Number((rowColInfo.col * 0.6).toFixed(1))
+  } else {
+    rowColInfo.width = Number(rowColInfo.width)
+    rowColInfo.length = Number(rowColInfo.length)
+    rowColInfo.row = Math.ceil((rowColInfo.width * 10)/6)
+    rowColInfo.col = Math.ceil((rowColInfo.length * 10)/6)
+  }
+
+  console.log(rowColInfo,roomFlagId)
+
+if(roomFlag.value == 2) {
+  const resFind = await MachineRoomApi.findAreaById({xLength: rowColInfo.col,yLength: rowColInfo.row,id: roomFlagId});
+  if(resFind) {
+    message.error('减少的行数或列数中有机柜或柜列,请重新设置行数或列数!')
+    return
+  }
+}
+
+  try {
+  const res = await MachineRoomApi.saveRoomDetail({
+    id: roomFlagId,
+    roomName: rowColInfo.roomName,
+    addr: rowColInfo.addr,
+    xLength: rowColInfo.col,
+    yLength: rowColInfo.row,
+    areaFlag: rowColInfo.areaFlag, //新建类型 砖数 面积
+    areayLength: rowColInfo.width, //宽度
+    areaxLength: rowColInfo.length, //长度
+    powerCapacity:rowColInfo.powerCapacity, 
+    airPower:rowColInfo.airPower, 
+    displayType: rowColInfo.displayType, 
+    displayFlag: rowColInfo.displayFlag, 
+    eleAlarmDay: rowColInfo.eleAlarmDay,
+    eleAlarmMonth: rowColInfo.eleAlarmMonth,
+    eleLimitDay: rowColInfo.eleLimitDay,
+    eleLimitMonth: rowColInfo.eleLimitMonth,
+    sort:rowColInfo.sort,
+  })
+  
+  if(res != null || res != "")
+  message.success(messageRoomFlag);
+  huiFuRoomVis.value = false;
+  dialogVisible.value = false;
+  roomId.value = res;
+  } catch (error) {
+  console.log(error)
+  }
+  
+  getRoomAddrList();
 }
 
 watch(() => rowColInfo.areaFlag, (val) => {
