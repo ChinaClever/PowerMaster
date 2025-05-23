@@ -403,8 +403,8 @@
         aba.bus_key as busKeya,
         abb.bus_key as busKeyb,
 
-        SUBSTRING_INDEX( cb.box_key_a, '-', -1) as boxAddra,
-        SUBSTRING_INDEX( cb.box_key_b, '-', -1) as boxAddrb,
+        SUBSTRING_INDEX(cb.box_key_a, '-', -1) as boxAddra,
+        SUBSTRING_INDEX(cb.box_key_b, '-', -1) as boxAddrb,
         cb.outlet_id_a as outletIda,
         cb.outlet_id_b as outletIdb
         FROM cabinet_index ci

@@ -87,7 +87,13 @@ public class RoomController {
     @Operation(summary = "机房新增/编辑")
     @PostMapping("/save")
     public CommonResult<Integer> saveRoom(@RequestBody RoomSaveVo vo) {
-        return success(roomService.roomSave(vo));
+        CommonResult<Integer> success = success(roomService.roomSave(vo));
+        ThreadPoolConfig.getTHreadPool().execute(() -> {
+            HttpUtil.get(adder);
+            HttpUtil.get(adderAisle);
+            HttpUtil.get(adderCabinet);
+        });
+        return success;
     }
 
 
@@ -98,6 +104,8 @@ public class RoomController {
         if (i > 0) {
             ThreadPoolConfig.getTHreadPool().execute(() -> {
                 HttpUtil.get(adder);
+                HttpUtil.get(adderAisle);
+                HttpUtil.get(adderCabinet);
             });
         }
         return success(i);

@@ -40,6 +40,13 @@ public class AisleController {
 
     @Value("${aisle-refresh-url}")
     public String adder;
+
+    @Value("${room-refresh-url}")
+    public String roomAdder;
+
+
+    @Value("${cabinet-refresh-url}")
+    public String adderCabinet;
     /**
      * 柜列列表
      *
@@ -79,6 +86,7 @@ public class AisleController {
                 //刷新柜列计算服务缓存
                 log.info("刷新计算服务缓存 --- " + adder);
                 HttpUtil.get(adder);
+                HttpUtil.get(roomAdder);
             });
         }
         return CommonResult.success(i);
@@ -97,6 +105,7 @@ public class AisleController {
          ThreadPoolConfig.getTHreadPool().execute(()->{
              log.info("刷新计算服务缓存 --- " + adder);
              HttpUtil.get(adder);
+             HttpUtil.get(roomAdder);
          });
         return success(id);
     }
@@ -110,6 +119,11 @@ public class AisleController {
     @GetMapping("/aisle/box/delete")
     public CommonResult<Integer> deleteAisleBox(@RequestParam("ids") List<Integer> ids) {
         aisleService.batchDeleteBox(ids);
+        ThreadPoolConfig.getTHreadPool().execute(()->{
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+            HttpUtil.get(roomAdder);
+        });
         return success(0);
     }
 
@@ -122,6 +136,11 @@ public class AisleController {
     @GetMapping("/aisle/bus/delete")
     public CommonResult<Integer> deleteAisleBus(@Param("id") int id) {
         aisleService.deleteBus(id);
+        ThreadPoolConfig.getTHreadPool().execute(()->{
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+            HttpUtil.get(roomAdder);
+        });
         return success(id);
     }
 
