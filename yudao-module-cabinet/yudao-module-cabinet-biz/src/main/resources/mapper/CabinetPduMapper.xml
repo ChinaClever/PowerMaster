@@ -9,17 +9,17 @@
         </foreach>
     </insert>
 
-    <update id="updateBatch">
-        <foreach collection="list" item="item" index="index" separator=";">
-            UPDATE cabinet_pdu
-            <set>
-                <if test="item.pduKeyA != null">
+    <!--                <if test="item.pduKeyA != null">
                     pdu_key_a = #{item.pduKeyA},
                 </if>
                 <if test="item.pduKeyB != null">
                     pdu_key_b = #{item.pduKeyB},
-                </if>
-            </set>
+                </if>-->
+
+    <update id="updateBatch">
+        <foreach collection="list" item="item" index="index" separator=";">
+            UPDATE cabinet_pdu
+              set  pdu_key_a = #{item.pduKeyA},pdu_key_b = #{item.pduKeyB}
             where id = #{item.id}
         </foreach>
     </update>

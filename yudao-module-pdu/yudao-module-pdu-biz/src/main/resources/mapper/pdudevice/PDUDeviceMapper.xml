@@ -64,8 +64,14 @@
             </if>
             and is_deleted =0
         </where>
-        ORDER BY CASE WHEN run_status =4 THEN 0 ELSE 1 END, create_time asc
+        ORDER BY CASE WHEN run_status =2 THEN 0 WHEN run_status =0 THEN 2 ELSE run_status END, create_time asc
     </select>
+    <!--0：正常
+1：预警
+2：告警
+3: 升级
+4：故障
+5：离线-->
 
     <select id="selectCurbanceQuery" resultType="cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex">
         SELECT
@@ -97,6 +103,6 @@
             </if>
             and is_deleted =0 and run_status !=5
         </where>
-        ORDER BY CASE WHEN run_status =4 THEN 0 ELSE 1 END, create_time asc
+        ORDER BY CASE WHEN run_status =2 THEN 0 WHEN run_status =0 THEN 2 ELSE run_status END, create_time asc
     </select>
 </mapper>

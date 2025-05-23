@@ -789,10 +789,10 @@ const initChart = async () => {
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
       // 这里设置 Echarts 的配置项和数据
@@ -838,7 +838,7 @@ const initChart = async () => {
           {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
           {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
       ],
-    });
+    },true);
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.chart = chart;
   }
@@ -891,10 +891,10 @@ const initChart = async () => {
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -910,7 +910,7 @@ const initChart = async () => {
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.chartF = chartF;
   }
@@ -1187,10 +1187,10 @@ const flashChartData = async () =>{
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
       // 这里设置 Echarts 的配置项和数据
@@ -1233,7 +1233,7 @@ const flashChartData = async () =>{
           {name: '总视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
           {name: '总无功功率', type: 'line', data: chartData.value.reactiveList , symbol: 'circle', symbolSize: 4},
       ],
-    });
+    },true);
   }
 
   var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularityF}
@@ -1306,10 +1306,10 @@ const flashChartData = async () =>{
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -1325,7 +1325,7 @@ const flashChartData = async () =>{
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
   }
 
 
@@ -1701,20 +1701,17 @@ watch([() => typeRadioShowCur.value],async () => {
         });
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
-      legend: {
-        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
-        selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true }
-      },
+      legend: {data: ['L1-电流', 'L2-电流', 'L3-电流']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {
             show: true,//是否显示工具箱开关
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "电流" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
       xAxis: {
@@ -1733,7 +1730,8 @@ watch([() => typeRadioShowCur.value],async () => {
         data:lineidDateTimes.value
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        axisLabel: {formatter: '{value}A'}
       },
       series: [
         {
@@ -1758,76 +1756,8 @@ watch([() => typeRadioShowCur.value],async () => {
           symbolSize: 4,
         }
       ]
-    })
-    lineidChart.on('legendselectchanged', function (params) {
-      // 获取当前的 legend.selected 配置
-      var legendName = params.name;
-
-      // 初始化新的 legend.selected 配置
-      var newLegendSelected = {};
-
-      // 根据选中的图例项设置新的 legend.selected 配置
-      if (legendName.endsWith('-电压')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
-          newLegendSelected = {
-            "L1-电压": true,
-            "L2-电压": true,
-            "L3-电压": true,
-            "L1-电流": false,
-            "L2-电流": false,
-            "L3-电流": false
-          };
-        } else {
-          if(legendName === 'L1-电压'){
-            newLegendSelected = {
-              "L1-电压": false,
-            }
-          }else if(legendName === 'L2-电压'){
-            newLegendSelected = {
-              "L2-电压": false,
-            }
-          }else if(legendName === 'L3-电压'){
-            newLegendSelected = {
-              "L3-电压": false,
-            }
-          }
-        }
-      } else if (legendName.endsWith('-电流')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
-          newLegendSelected = {
-            "L1-电压": false,
-            "L2-电压": false,
-            "L3-电压": false,
-            "L1-电流": true,
-            "L2-电流": true,
-            "L3-电流": true
-          };
-        } else {
-          if(legendName === 'L1-电流'){
-            newLegendSelected = {
-              "L1-电流": false,
-            }
-          }else if(legendName === 'L2-电流'){
-            newLegendSelected = {
-              "L2-电流": false,
-            }
-          }else if(legendName === 'L3-电流'){
-            newLegendSelected = {
-              "L3-电流": false
-            }
-          }
-        }
-      }
- 
-      // 应用新的配置到图表实例
-      lineidChart.setOption({
-        legend: {
-          selected: newLegendSelected
-        }
-      });
-    });
+    },true)
+    lineidChart.clear;
     }
 })
 
@@ -1872,20 +1802,17 @@ watch([() => typeRadioShowVol.value],async () => {
         });
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
-      legend: {
-        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
-        selected: {  "L1-电压": true, "L2-电压": true, "L3-电压": true }
-      },
+      legend: {data: ['L1-电压', 'L2-电压', 'L3-电压']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {
             show: true,//是否显示工具箱开关
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "电压" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
       xAxis: {
@@ -1904,7 +1831,8 @@ watch([() => typeRadioShowVol.value],async () => {
         data:lineidDateTimesV.value
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        axisLabel: {formatter: '{value}V'}
       },
       series: [
         {
@@ -1929,76 +1857,7 @@ watch([() => typeRadioShowVol.value],async () => {
           symbolSize: 4,
         }
       ]
-    })
-    lineidChartV.on('legendselectchanged', function (params) {
-      // 获取当前的 legend.selected 配置
-      var legendName = params.name;
-
-      // 初始化新的 legend.selected 配置
-      var newLegendSelected = {};
-
-      // 根据选中的图例项设置新的 legend.selected 配置
-      if (legendName.endsWith('-电压')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
-          newLegendSelected = {
-            "L1-电压": true,
-            "L2-电压": true,
-            "L3-电压": true,
-            "L1-电流": false,
-            "L2-电流": false,
-            "L3-电流": false
-          };
-        } else {
-          if(legendName === 'L1-电压'){
-            newLegendSelected = {
-              "L1-电压": false,
-            }
-          }else if(legendName === 'L2-电压'){
-            newLegendSelected = {
-              "L2-电压": false,
-            }
-          }else if(legendName === 'L3-电压'){
-            newLegendSelected = {
-              "L3-电压": false,
-            }
-          }
-        }
-      } else if (legendName.endsWith('-电流')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
-          newLegendSelected = {
-            "L1-电压": false,
-            "L2-电压": false,
-            "L3-电压": false,
-            "L1-电流": true,
-            "L2-电流": true,
-            "L3-电流": true
-          };
-        } else {
-          if(legendName === 'L1-电流'){
-            newLegendSelected = {
-              "L1-电流": false,
-            }
-          }else if(legendName === 'L2-电流'){
-            newLegendSelected = {
-              "L2-电流": false,
-            }
-          }else if(legendName === 'L3-电流'){
-            newLegendSelected = {
-              "L3-电流": false
-            }
-          }
-        }
-      }
- 
-      // 应用新的配置到图表实例
-      lineidChartV.setOption({
-        legend: {
-          selected: newLegendSelected
-        }
-      });
-    });
+    },true)
     }
 })
 
@@ -2030,20 +1889,17 @@ watch([() => toggleTime.value],async ()=>{
         });
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
-      legend: {
-        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
-        selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true }
-      },
+      legend: {data: ['L1-电流', 'L2-电流', 'L3-电流']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {
             show: true,//是否显示工具箱开关
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "电流" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
       xAxis: {
@@ -2062,7 +1918,8 @@ watch([() => toggleTime.value],async ()=>{
         data:lineidDateTimes.value
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        axisLabel: {formatter: '{value}A'}
       },
       series: [
         {
@@ -2087,76 +1944,7 @@ watch([() => toggleTime.value],async ()=>{
           symbolSize: 4,
         }
       ]
-    })
-    lineidChart.on('legendselectchanged', function (params) {
-      // 获取当前的 legend.selected 配置
-      var legendName = params.name;
-
-      // 初始化新的 legend.selected 配置
-      var newLegendSelected = {};
-
-      // 根据选中的图例项设置新的 legend.selected 配置
-      if (legendName.endsWith('-电压')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
-          newLegendSelected = {
-            "L1-电压": true,
-            "L2-电压": true,
-            "L3-电压": true,
-            "L1-电流": false,
-            "L2-电流": false,
-            "L3-电流": false
-          };
-        } else {
-          if(legendName === 'L1-电压'){
-            newLegendSelected = {
-              "L1-电压": false,
-            }
-          }else if(legendName === 'L2-电压'){
-            newLegendSelected = {
-              "L2-电压": false,
-            }
-          }else if(legendName === 'L3-电压'){
-            newLegendSelected = {
-              "L3-电压": false,
-            }
-          }
-        }
-      } else if (legendName.endsWith('-电流')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
-          newLegendSelected = {
-            "L1-电压": false,
-            "L2-电压": false,
-            "L3-电压": false,
-            "L1-电流": true,
-            "L2-电流": true,
-            "L3-电流": true
-          };
-        } else {
-          if(legendName === 'L1-电流'){
-            newLegendSelected = {
-              "L1-电流": false,
-            }
-          }else if(legendName === 'L2-电流'){
-            newLegendSelected = {
-              "L2-电流": false,
-            }
-          }else if(legendName === 'L3-电流'){
-            newLegendSelected = {
-              "L3-电流": false
-            }
-          }
-        }
-      }
- 
-      // 应用新的配置到图表实例
-      lineidChart.setOption({
-        legend: {
-          selected: newLegendSelected
-        }
-      });
-    });
+    },true)
     }
 })
 
@@ -2186,20 +1974,17 @@ watch([() => toggleTimeV.value],async ()=>{
         });
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
-      legend: {
-        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
-        selected: {  "L1-电压": true, "L2-电压": true, "L3-电压": true }
-      },
+      legend: {data: ['L1-电压', 'L2-电压', 'L3-电压']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {
             show: true,//是否显示工具箱开关
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "电压" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
           //        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -2219,7 +2004,8 @@ watch([() => toggleTimeV.value],async ()=>{
         data:lineidDateTimesV.value
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        axisLabel: {formatter: '{value}V'}
       },
       series: [
         {
@@ -2244,76 +2030,7 @@ watch([() => toggleTimeV.value],async ()=>{
           symbolSize: 4,
         }
       ]
-    })
-    lineidChartV.on('legendselectchanged', function (params) {
-      // 获取当前的 legend.selected 配置
-      var legendName = params.name;
-
-      // 初始化新的 legend.selected 配置
-      var newLegendSelected = {};
-
-      // 根据选中的图例项设置新的 legend.selected 配置
-      if (legendName.endsWith('-电压')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
-          newLegendSelected = {
-            "L1-电压": true,
-            "L2-电压": true,
-            "L3-电压": true,
-            "L1-电流": false,
-            "L2-电流": false,
-            "L3-电流": false
-          };
-        } else {
-          if(legendName === 'L1-电压'){
-            newLegendSelected = {
-              "L1-电压": false,
-            }
-          }else if(legendName === 'L2-电压'){
-            newLegendSelected = {
-              "L2-电压": false,
-            }
-          }else if(legendName === 'L3-电压'){
-            newLegendSelected = {
-              "L3-电压": false,
-            }
-          }
-        }
-      } else if (legendName.endsWith('-电流')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
-          newLegendSelected = {
-            "L1-电压": false,
-            "L2-电压": false,
-            "L3-电压": false,
-            "L1-电流": true,
-            "L2-电流": true,
-            "L3-电流": true
-          };
-        } else {
-          if(legendName === 'L1-电流'){
-            newLegendSelected = {
-              "L1-电流": false,
-            }
-          }else if(legendName === 'L2-电流'){
-            newLegendSelected = {
-              "L2-电流": false,
-            }
-          }else if(legendName === 'L3-电流'){
-            newLegendSelected = {
-              "L3-电流": false
-            }
-          }
-        }
-      }
- 
-      // 应用新的配置到图表实例
-      lineidChartV.setOption({
-        legend: {
-          selected: newLegendSelected
-        }
-      });
-    });
+    },true)
     }
 })
 
@@ -2336,10 +2053,10 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
         // 这里设置 Echarts 的配置项和数据
@@ -2382,7 +2099,7 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
         {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
         {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
         ],
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -2457,10 +2174,10 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2476,7 +2193,7 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -2557,10 +2274,10 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "总功率趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
         // 这里设置 Echarts 的配置项和数据
@@ -2603,7 +2320,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
         {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
         {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
         ],
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -2722,10 +2439,10 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "功率因数趋势图" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2741,7 +2458,7 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -3029,10 +2746,10 @@ const lineidFlashChartData = async () =>{
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "电流" + formatDate(new Date)  },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
       xAxis: {
@@ -3051,7 +2768,8 @@ const lineidFlashChartData = async () =>{
         data:lineidDateTimes.value
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        axisLabel: {formatter: '{value}A'}
       },
       series: [
        {
@@ -3076,76 +2794,7 @@ const lineidFlashChartData = async () =>{
           symbolSize: 4,
         }
       ]
-    })
-    lineidChart.on('legendselectchanged', function (params) {
-      // 获取当前的 legend.selected 配置
-      var legendName = params.name;
-
-      // 初始化新的 legend.selected 配置
-      var newLegendSelected = {};
-
-      // 根据选中的图例项设置新的 legend.selected 配置
-      if (legendName.endsWith('-电压')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
-          newLegendSelected = {
-            "L1-电压": true,
-            "L2-电压": true,
-            "L3-电压": true,
-            "L1-电流": false,
-            "L2-电流": false,
-            "L3-电流": false
-          };
-        } else {
-          if(legendName === 'L1-电压'){
-            newLegendSelected = {
-              "L1-电压": false,
-            }
-          }else if(legendName === 'L2-电压'){
-            newLegendSelected = {
-              "L2-电压": false,
-            }
-          }else if(legendName === 'L3-电压'){
-            newLegendSelected = {
-              "L3-电压": false,
-            }
-          }
-        }
-      } else if (legendName.endsWith('-电流')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
-          newLegendSelected = {
-            "L1-电压": false,
-            "L2-电压": false,
-            "L3-电压": false,
-            "L1-电流": true,
-            "L2-电流": true,
-            "L3-电流": true
-          };
-        } else {
-          if(legendName === 'L1-电流'){
-            newLegendSelected = {
-              "L1-电流": false,
-            }
-          }else if(legendName === 'L2-电流'){
-            newLegendSelected = {
-              "L2-电流": false,
-            }
-          }else if(legendName === 'L3-电流'){
-            newLegendSelected = {
-              "L3-电流": false
-            }
-          }
-        }
-      }
- 
-      // 应用新的配置到图表实例
-      lineidChart.setOption({
-        legend: {
-          selected: newLegendSelected
-        }
-      });
-    });
+    },true)
   }
   lineidBeforeChartUnmountV()
   await PDUHdaLineHisdataV(toggleTimeV.value)
@@ -3173,20 +2822,17 @@ const lineidFlashChartData = async () =>{
         });
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
-      legend: {
-        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
-        selected: {"L1-电压": true, "L2-电压": true, "L3-电压": true }
-      },
+      legend: {data: ['L1-电压', 'L2-电压', 'L3-电压']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {
             show: true,//是否显示工具箱开关
             top: 'center',
             orient: 'vertical',
             feature: {
-              dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
-              restore: { show: true },//重新加载视图
+              // dataView: { show: true, readOnly: true },//数据视图打开并允许编辑
+              // restore: { show: true },//重新加载视图
               saveAsImage: { show: true,name: "电压" + formatDate(new Date) },//保存为图片
-              dataZoom :{},
+              // dataZoom :{},
             },
           },
       xAxis: {
@@ -3205,7 +2851,8 @@ const lineidFlashChartData = async () =>{
         data:lineidDateTimes.value
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        axisLabel: {formatter: '{value}V'}
       },
       series: [
         {
@@ -3230,76 +2877,7 @@ const lineidFlashChartData = async () =>{
           symbolSize: 4,
         }
       ]
-    })
-    lineidChartV.on('legendselectchanged', function (params) {
-      // 获取当前的 legend.selected 配置
-      var legendName = params.name;
-
-      // 初始化新的 legend.selected 配置
-      var newLegendSelected = {};
-
-      // 根据选中的图例项设置新的 legend.selected 配置
-      if (legendName.endsWith('-电压')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
-          newLegendSelected = {
-            "L1-电压": true,
-            "L2-电压": true,
-            "L3-电压": true,
-            "L1-电流": false,
-            "L2-电流": false,
-            "L3-电流": false
-          };
-        } else {
-          if(legendName === 'L1-电压'){
-            newLegendSelected = {
-              "L1-电压": false,
-            }
-          }else if(legendName === 'L2-电压'){
-            newLegendSelected = {
-              "L2-电压": false,
-            }
-          }else if(legendName === 'L3-电压'){
-            newLegendSelected = {
-              "L3-电压": false,
-            }
-          }
-        }
-      } else if (legendName.endsWith('-电流')) {
-        if (params.selected[legendName]) {
-          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
-          newLegendSelected = {
-            "L1-电压": false,
-            "L2-电压": false,
-            "L3-电压": false,
-            "L1-电流": true,
-            "L2-电流": true,
-            "L3-电流": true
-          };
-        } else {
-          if(legendName === 'L1-电流'){
-            newLegendSelected = {
-              "L1-电流": false,
-            }
-          }else if(legendName === 'L2-电流'){
-            newLegendSelected = {
-              "L2-电流": false,
-            }
-          }else if(legendName === 'L3-电流'){
-            newLegendSelected = {
-              "L3-电流": false
-            }
-          }
-        }
-      }
- 
-      // 应用新的配置到图表实例
-      lineidChartV.setOption({
-        legend: {
-          selected: newLegendSelected
-        }
-      });
-    });
+    },true)
   }
 }
 

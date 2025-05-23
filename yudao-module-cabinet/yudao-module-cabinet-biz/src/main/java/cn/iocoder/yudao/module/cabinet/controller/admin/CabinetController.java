@@ -51,6 +51,12 @@ public class CabinetController {
     @Value("${cabinet-refresh-url}")
     public String adder;
 
+    @Value("${aisle-refresh-url}")
+    public String aisleAdder;
+
+    @Value("${room-refresh-url}")
+    public String roomAdder;
+
     /**
      * 机柜主页面
      *
@@ -99,6 +105,11 @@ public class CabinetController {
     @GetMapping("/cabinet/restorerCabinet")
     public CommonResult getrestorerCabinet(@Param("id") int id) {
         int restorerCabinetResult = cabinetService.getrestorerCabinet(id);
+        ThreadPoolConfig.getTHreadPool().execute(()->{
+            HttpUtil.get(adder);
+            HttpUtil.get(roomAdder);
+            HttpUtil.get(aisleAdder);
+        });
         if (restorerCabinetResult == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "设备恢复失败");
         }
@@ -168,6 +179,8 @@ public class CabinetController {
         CommonResult message = cabinetService.saveCabinet(vo);
         ThreadPoolConfig.getTHreadPool().execute(()->{
             HttpUtil.get(adder);
+            HttpUtil.get(roomAdder);
+            HttpUtil.get(aisleAdder);
         });
 
         return message;
@@ -184,6 +197,11 @@ public class CabinetController {
     public CommonResult<Integer> deleteCabinet(@RequestParam("id") int id,
                                                @RequestParam(value = "type", required = false) @Parameter(description = "删除类型：1-解绑pdu  2-解绑bus(母线) 3-解绑机架  4-删除机柜") Integer type) throws Exception {
         int cabinetId = cabinetService.delCabinet(id, type);
+        ThreadPoolConfig.getTHreadPool().execute(()->{
+            HttpUtil.get(adder);
+            HttpUtil.get(roomAdder);
+            HttpUtil.get(aisleAdder);
+        });
         if (cabinetId == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
         }

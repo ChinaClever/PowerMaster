@@ -15,7 +15,6 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.loop.PduHdaLoopBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
@@ -43,7 +42,6 @@ import cn.iocoder.yudao.module.pdu.enums.DataNameType;
 import cn.iocoder.yudao.module.pdu.enums.DataType;
 import cn.iocoder.yudao.module.pdu.enums.PduDataTypeEnum;
 import cn.iocoder.yudao.module.pdu.utils.PduAnalysisResult;
-import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -53,7 +51,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
-
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -76,7 +74,6 @@ import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
-import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -142,8 +139,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
-        PageResult pageResult = new PageResult();
-        Page<PduIndex> pduIndexPageResult = null;
+        Page<PduIndex> pduIndexPageResult;
         List<PDUDeviceDO> result = new ArrayList<>();
         if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
@@ -204,7 +200,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setDataUpdateTime(jsonObject.getString("sys_time"));
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
 
-
             if (curArr.size() > 1) {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setBcur(new BigDecimal(curArr.get(1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
@@ -233,7 +228,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 .inIfPresent(PduIndex::getPduKey, pageReqVO.getPduKeyList())
                 .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
                 .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
+                .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus())
+                .orderByDesc(PduIndex::getUpdateTime));
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
 

@@ -483,26 +483,25 @@ public class CabinetServiceImpl implements CabinetService {
             } else {
                 //新增
                 //判断机柜名称是否重复（已删除的或者已禁用的恢复）
-                index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
-                        .eq(CabinetIndex::getRoomId, vo.getRoomId()));
-                if (Objects.nonNull(index)) {
-                    if (index.getIsDeleted().equals(DelFlagEnums.DELETE.getStatus()) || index.getIsDisabled().equals(DisableFlagEnums.DISABLE.getStatus())) {
-                        //index 索引表
-                        //修改
-                        cabinetIndexMapper.updateById(convertIndex(vo, index));
-                    } else {
-                        return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "机柜名称重复");
-                    }
-                } else {
-                    index = new CabinetIndex();
-                    //index 索引表
-                    //新增
-                    CabinetIndex cabinetIndex = convertIndex(vo, index);
+//                index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
+//                        .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
+//                        .eq(CabinetIndex::getRoomId, vo.getRoomId()));
+//                if (Objects.nonNull(index)) {
+//                    if (index.getIsDeleted().equals(DelFlagEnums.DELETE.getStatus()) || index.getIsDisabled().equals(DisableFlagEnums.DISABLE.getStatus())) {
+//                        //index 索引表
+//                        //修改
+//                        cabinetIndexMapper.updateById(convertIndex(vo, index));
+//                    } else {
+//                        return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "机柜名称重复");
+//                    }
+//                }
+                index = new CabinetIndex();
+                //index 索引表
+                //新增
+                CabinetIndex cabinetIndex = convertIndex(vo, index);
 //                    cabinetIndexMapper.addIndex(cabinetIndex);
-                    cabinetIndexMapper.insert(cabinetIndex);
-                    vo.setId(cabinetIndex.getId());
-                }
+                cabinetIndexMapper.insert(cabinetIndex);
+                vo.setId(cabinetIndex.getId());
             }
             //配置表
             CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
@@ -572,11 +571,8 @@ public class CabinetServiceImpl implements CabinetService {
             return CommonResult.success(vo.getId());
         } finally {
             //刷新机柜计算服务缓存
-            log.info("刷新计算服务缓存 --- " + adder);
-//            HttpUtil.get(adder);
-            //ThreadPoolConfig.getTHreadPool().execute(() -> {
-            //HttpUtil.get(adder);
-            //});
+
+
         }
     }
 
@@ -1132,13 +1128,13 @@ public class CabinetServiceImpl implements CabinetService {
                     List<TemColorDO> temColorDOList = temColorService.getTemColorAll();
                     if (!CollectionUtils.isEmpty(temColorDOList)) {
                         env.setIceAverageTemColor(findTemColorForValue(temColorDOList, env.getIceMaxTem().doubleValue(), pageReqVO.getSwitchValue()));
-                        env.setHotAverageTemColor(findTemColorForValue(temColorDOList, env.getHotMaxTem().doubleValue(),  pageReqVO.getSwitchValue()));
-                        env.setIceTopTemColor(findTemColorForValue(temColorDOList, env.getIceTopTem().doubleValue(),  pageReqVO.getSwitchValue()));
-                        env.setIceMidTemColor(findTemColorForValue(temColorDOList, env.getIceMidTem().doubleValue(),  pageReqVO.getSwitchValue()));
-                        env.setIceBomTemColor(findTemColorForValue(temColorDOList, env.getIceBomTem().doubleValue(),  pageReqVO.getSwitchValue()));
-                        env.setHotTopTemColor(findTemColorForValue(temColorDOList, env.getHotTopTem().doubleValue(),  pageReqVO.getSwitchValue()));
-                        env.setHotMidTemColor(findTemColorForValue(temColorDOList, env.getHotMidTem().doubleValue(),  pageReqVO.getSwitchValue()));
-                        env.setHotBomTemColor(findTemColorForValue(temColorDOList, env.getHotBomTem().doubleValue(),  pageReqVO.getSwitchValue()));
+                        env.setHotAverageTemColor(findTemColorForValue(temColorDOList, env.getHotMaxTem().doubleValue(), pageReqVO.getSwitchValue()));
+                        env.setIceTopTemColor(findTemColorForValue(temColorDOList, env.getIceTopTem().doubleValue(), pageReqVO.getSwitchValue()));
+                        env.setIceMidTemColor(findTemColorForValue(temColorDOList, env.getIceMidTem().doubleValue(), pageReqVO.getSwitchValue()));
+                        env.setIceBomTemColor(findTemColorForValue(temColorDOList, env.getIceBomTem().doubleValue(), pageReqVO.getSwitchValue()));
+                        env.setHotTopTemColor(findTemColorForValue(temColorDOList, env.getHotTopTem().doubleValue(), pageReqVO.getSwitchValue()));
+                        env.setHotMidTemColor(findTemColorForValue(temColorDOList, env.getHotMidTem().doubleValue(), pageReqVO.getSwitchValue()));
+                        env.setHotBomTemColor(findTemColorForValue(temColorDOList, env.getHotBomTem().doubleValue(), pageReqVO.getSwitchValue()));
                     }
                 }
             }
@@ -1147,13 +1143,13 @@ public class CabinetServiceImpl implements CabinetService {
         return pageResult;
     }
 
-    public String findTemColorForValue(List<TemColorDO> temColorDOList, double value,Integer switchValue) {
+    public String findTemColorForValue(List<TemColorDO> temColorDOList, double value, Integer switchValue) {
         for (TemColorDO temColorDO : temColorDOList) {
-            if (Objects.equals(switchValue,1)){
+            if (Objects.equals(switchValue, 1)) {
                 if (value >= temColorDO.getHotMin() && value <= temColorDO.getHotMax()) {
                     return temColorDO.getHotColor();
                 }
-            }else {
+            } else {
                 if (value >= temColorDO.getMin() && value <= temColorDO.getMax()) {
                     return temColorDO.getColor();
                 }
@@ -1610,7 +1606,7 @@ public class CabinetServiceImpl implements CabinetService {
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             // 从聚合结果中获取最大值
             Max maxAggregation = searchResponse.getAggregations().get("pow_apparent_max");
-            if (maxAggregation.getValue()>0){
+            if (maxAggregation.getValue() > 0) {
                 return maxAggregation.getValue();
             }
             return 0.0;
@@ -1663,10 +1659,10 @@ public class CabinetServiceImpl implements CabinetService {
                     index = "cabinet_hda_pow_day";
                     start = LocalDateTime.now().minusMonths(1).format(formatter);
             }
-            if (Objects.equals(reqVO.getGranularity(), "realtime")){
+            if (Objects.equals(reqVO.getGranularity(), "realtime")) {
                 heads = new String[]{"cabinet_id", "apparent_total", "apparent_a", "apparent_b", "active_total", "active_a",
                         "active_b", "reactive_a", "reactive_b", "reactive_total", "factor_a", "factor_b", "factor_total", "load_rate", "create_time"};
-            }else {
+            } else {
                 heads = new String[]{};
             }
 
@@ -1939,7 +1935,7 @@ public class CabinetServiceImpl implements CabinetService {
             searchSourceBuilder.query(QueryBuilders.termQuery(idKey, id));
 
             searchRequest.indices(index);
-            if(heads!=null&&heads.length!=0){
+            if (heads != null && heads.length != 0) {
                 searchSourceBuilder.fetchSource(heads, null);
             }
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
@@ -2046,21 +2042,34 @@ public class CabinetServiceImpl implements CabinetService {
      * @return
      */
     private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
-        CabinetIndex cabinetIndex = new CabinetIndex();
-        cabinetIndex.setAisleId(vo.getAisleId());
-        cabinetIndex.setCabinetName(vo.getCabinetName());
-        cabinetIndex.setPduBox(vo.getPduBox());
+//        if (index == null) {
+//            CabinetIndex cabinetIndex = new CabinetIndex();
+//            cabinetIndex.setAisleId(vo.getAisleId());
+//            cabinetIndex.setCabinetName(vo.getCabinetName());
+//            cabinetIndex.setPduBox(vo.getPduBox());
+//            //未删除
+//            cabinetIndex.setIsDeleted(DelFlagEnums.NO_DEL.getStatus());
+//            //未禁用
+//            cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
+//            cabinetIndex.setPowerCapacity(vo.getPowCapacity());
+//            cabinetIndex.setCabinetHeight(vo.getCabinetHeight());
+//            cabinetIndex.setRoomId(vo.getRoomId());
+//            cabinetIndex.setCabinetType(vo.getType());
+//            return cabinetIndex;
+//        }else {
+        index.setAisleId(vo.getAisleId());
+        index.setCabinetName(vo.getCabinetName());
+        index.setPduBox(vo.getPduBox());
         //未删除
-        cabinetIndex.setIsDeleted(DelFlagEnums.NO_DEL.getStatus());
+        index.setIsDeleted(DelFlagEnums.NO_DEL.getStatus());
         //未禁用
-        cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
-        cabinetIndex.setPowerCapacity(vo.getPowCapacity());
-        cabinetIndex.setCabinetHeight(vo.getCabinetHeight());
-        cabinetIndex.setRoomId(vo.getRoomId());
-        cabinetIndex.setId(index.getId());
-        cabinetIndex.setCabinetType(vo.getType());
-
-        return cabinetIndex;
+        index.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
+        index.setPowerCapacity(vo.getPowCapacity());
+        index.setCabinetHeight(vo.getCabinetHeight());
+        index.setRoomId(vo.getRoomId());
+        index.setCabinetType(vo.getType());
+        return index;
+//        }
     }
 
     /**
