@@ -838,7 +838,7 @@ const initChart = async () => {
           {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
           {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
       ],
-    });
+    },true);
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.chart = chart;
   }
@@ -910,7 +910,7 @@ const initChart = async () => {
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.chartF = chartF;
   }
@@ -1233,7 +1233,7 @@ const flashChartData = async () =>{
           {name: '总视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
           {name: '总无功功率', type: 'line', data: chartData.value.reactiveList , symbol: 'circle', symbolSize: 4},
       ],
-    });
+    },true);
   }
 
   var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularityF}
@@ -1325,7 +1325,7 @@ const flashChartData = async () =>{
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
   }
 
 
@@ -1756,7 +1756,7 @@ watch([() => typeRadioShowCur.value],async () => {
           symbolSize: 4,
         }
       ]
-    })
+    },true)
     lineidChart.clear;
     }
 })
@@ -1857,7 +1857,7 @@ watch([() => typeRadioShowVol.value],async () => {
           symbolSize: 4,
         }
       ]
-    })
+    },true)
     }
 })
 
@@ -1944,7 +1944,7 @@ watch([() => toggleTime.value],async ()=>{
           symbolSize: 4,
         }
       ]
-    })
+    },true)
     }
 })
 
@@ -2030,7 +2030,7 @@ watch([() => toggleTimeV.value],async ()=>{
           symbolSize: 4,
         }
       ]
-    })
+    },true)
     }
 })
 
@@ -2099,7 +2099,7 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
         {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
         {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
         ],
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -2193,7 +2193,7 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -2320,7 +2320,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
         {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
         {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
         ],
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -2458,7 +2458,7 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
             },boundaryGap: false, data:chartDataF.value.dateTimes},
         yAxis: { type: 'value'},
         series: seriesList,
-      });
+      },true);
     }
 
     if(flashListTimer.value.chartTimer){
@@ -2794,7 +2794,7 @@ const lineidFlashChartData = async () =>{
           symbolSize: 4,
         }
       ]
-    })
+    },true)
   }
   lineidBeforeChartUnmountV()
   await PDUHdaLineHisdataV(toggleTimeV.value)
@@ -2877,7 +2877,7 @@ const lineidFlashChartData = async () =>{
           symbolSize: 4,
         }
       ]
-    })
+    },true)
   }
 }
 
