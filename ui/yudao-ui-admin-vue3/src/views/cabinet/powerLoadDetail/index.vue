@@ -39,21 +39,21 @@
         <el-col :span="7" :offset="1">
           <el-card style="background-color: dodgerblue;">
             <!-- <img style="float: left;" width="50px" height="30px" src="@/assets/imgs/PDU.jpg" alt=""/> -->
-             <span style="padding-left: 2vw; color: white; font-size: 18px;">{{ratedCapacity}} </span><span style="font-size: 10px;color: white;">kVA</span><br/>
+             <span style="padding-left: 2vw; color: white; font-size: 18px;">{{ratedCapacity}} </span><span style="font-size: 10px;color: white;">KW</span><br/>
              <span style="padding-left: 3vw;color: white; font-size: 14px;" >额定容量</span>
           </el-card>
         </el-col> 
         <el-col :span="7">
           <el-card style="background-color:crimson;">
             <!-- <img style="float: left;" width="50px" height="30px" src="@/assets/imgs/PDU.jpg" alt=""/> -->
-             <span style="padding-left: 2vw; color: white; font-size: 18px;">{{runLoad}} </span><span style="font-size: 10px;color: white;">kVA</span><br/>
+             <span style="padding-left: 2vw; color: white; font-size: 18px;">{{runLoad}} </span><span style="font-size: 10px;color: white;">kW</span><br/>
              <span style="padding-left: 3vw;color: white; font-size: 14px;" >运行负荷</span>
           </el-card>
         </el-col>
         <el-col :span="7">
           <el-card style="background-color:darkorchid;">
             <!-- <img style="float: left;" width="50px" height="30px" src="@/assets/imgs/PDU.jpg" alt=""/> -->
-             <span style="padding-left: 2vw; color: white; font-size: 18px;">{{reserveMargin}} </span><span style="font-size: 10px;color: white;">kVA</span><br/>
+             <span style="padding-left: 2vw; color: white; font-size: 18px;">{{reserveMargin}} </span><span style="font-size: 10px;color: white;">KW</span><br/>
              <span style="padding-left: 3vw;color: white; font-size: 14px;" >负荷余量</span>
           </el-card>
         </el-col>
@@ -102,50 +102,62 @@
   </div>
   <div style="margin:10px;background-color: #ffffff;padding: 10px;border-radius: 5px" v-show="hasData">
     <el-row  v-show="hasData">
-      <el-col :span="19">
+      <el-col :span="timeRadio=='近一小时'?19:17">
       <el-radio-group v-model="typeRadio">
-        <el-radio-button v-if="pduBox == false" label="电流" value="电流" @click="switchChartContainer = 0;"/>
-        <el-radio-button v-if="pduBox == false" label="电压" value="电压" @click="switchChartContainer = 2;"/>
+        <el-radio-button label="负载率" value="负载率" @click="avgMaxMin='最大';switchChartContainer = 7;"/>
         <!--<el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled" @click="switchChartContainer = 1;"/>-->
-        <el-radio-button label="有功功率" value="有功功率" @click="switchChartContainer = 3;"/>
-        <el-radio-button label="无功功率" value="无功功率" @click="switchChartContainer = 4;"/>
-        <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer = 5;"/>
-        <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer = 6;"/>
-        <el-radio-button label="负载率" value="负载率" @click="switchChartContainer = 7;"/>
+        <el-radio-button label="功率曲线" value="功率曲线" @click="avgMaxMin='最大';switchChartContainer = 8;"/>
+        <el-radio-button label="有功功率" value="有功功率" @click="avgMaxMin='最大';switchChartContainer = 3;"/>
+        <el-radio-button label="无功功率" value="无功功率" @click="avgMaxMin='最大';switchChartContainer = 4;"/>
+        <el-radio-button label="视在功率" value="视在功率" @click="avgMaxMin='最大';switchChartContainer = 5;"/>
+        <el-radio-button label="功率因素" value="功率因素" @click="avgMaxMin='最大';switchChartContainer = 6;"/>
+        <el-radio-button v-if="pduBox == false" label="电流" value="电流" @click="avgMaxMin='最大';switchChartContainer = 0;"/>
+        <el-radio-button v-if="pduBox == false" label="电压" value="电压" @click="avgMaxMin='最大';switchChartContainer = 2;"/>
       </el-radio-group> 
     </el-col>
-    <el-col :span="5">
+    <el-col :span="2"  v-if="timeRadio!='近一小时'" style="margin-top: 3px;">
+      <el-select v-model="avgMaxMin" placeholder="请选择" :clearable="false">
+        <el-option
+          v-for="item in ['最大','平均','最小']"
+          :key="item"
+          :label="item"
+          :value="item"/>
+      </el-select>
+    </el-col>
+    <el-col :span="5" >
       <el-radio-group v-model="timeRadio">
-        <el-radio-button label="近一小时" value="近一小时" :disabled="isHourDisabled" />
-        <el-radio-button label="近一天" value="近一天" :disabled="isDayAndMonthDisabled" />
-        <el-radio-button label="近三天" value="近三天" :disabled="isDayAndMonthDisabled" />
-        <el-radio-button label="近一月" value="近一月" :disabled="isDayAndMonthDisabled"/>
+        <el-radio-button label="近一小时" value="近一小时" :disabled="isHourDisabled" @click="avgMaxMin='最大';" />
+        <el-radio-button label="近一天" value="近一天" :disabled="isDayAndMonthDisabled" @click="avgMaxMin='最大';"/>
+        <el-radio-button label="近三天" value="近三天" :disabled="isDayAndMonthDisabled" @click="avgMaxMin='最大';"/>
+        <el-radio-button label="近一月" value="近一月" :disabled="isDayAndMonthDisabled" @click="avgMaxMin='最大';"/>
       </el-radio-group>
     </el-col>
     </el-row>
   <br/>
   <div v-if="switchChartContainer === 0 && pduBox == false">
-    <CurChart v-if="visContro.curVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <CurChart v-if="visContro.curVis" style="width: 85vw; height: 340px;" :avgMaxMin="avgMaxMin" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 2 && pduBox == false">
-    <VolChart v-if="visContro.volVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <VolChart v-if="visContro.volVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio" :avgMaxMin="avgMaxMin"/>
   </div>
   <div v-else-if="switchChartContainer === 3">
-    <ActivePower v-if="visContro.activeVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <ActivePower v-if="visContro.activeVis" style="width: 85vw; height: 340px;" :avgMaxMin="avgMaxMin" :curChartData="curChartData" :timeRadio="timeRadio"/>
   </div>
   <div v-else-if="switchChartContainer === 4">
-    <ReactivePower v-if="visContro.reactiveVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <ReactivePower v-if="visContro.reactiveVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio" :avgMaxMin="avgMaxMin"/>
   </div>
   <div v-else-if="switchChartContainer === 5">
-    <CurrentPower v-if="visContro.currentVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <CurrentPower v-if="visContro.currentVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio" :avgMaxMin="avgMaxMin"/>
   </div>
   <div v-else-if="switchChartContainer === 6">
-    <PowerFactor v-if="visContro.factorVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <PowerFactor v-if="visContro.factorVis" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio" :avgMaxMin="avgMaxMin"/>
   </div>
   <div v-else-if="switchChartContainer === 7">
-    <loadRateTu v-if="visContro.loadRate" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio"/>
+    <loadRateTu v-if="visContro.loadRate" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio" :avgMaxMin="avgMaxMin"/>
   </div>
-  
+  <div v-else-if="switchChartContainer === 8">
+    <AllPower v-if="visContro.allPower" style="width: 85vw; height: 340px;" :curChartData="curChartData" :timeRadio="timeRadio" :avgMaxMin="avgMaxMin"/>
+  </div>
   </div>
 </div>
 </template>
@@ -164,6 +176,7 @@ import ReactivePower from './component/ReactivePower.vue';
 import CurrentPower from './component/CurrentPower.vue';
 import PowerFactor from './component/PowerFactor.vue';
 import loadRateTu from './component/loadRateTu.vue';
+import AllPower from './component/AllPower.vue';
 import { CabinetApi } from '@/api/cabinet/detail';
 import { useRoute } from 'vue-router'
 
@@ -178,16 +191,17 @@ const visContro = ref({
   reactiveVis:false,
   currentVis:false,
   factorVis:false,
+  allPower:false
 })
 
+const avgMaxMin = ref('最大');
 const queryFormRef = ref(); // 搜索的表单
 const input = ref('');
 // const value1 = ref('')
 const hasData = ref(true);
 const roomName = ref(query.roomName);
 const cabinetName = ref(query.cabinetName);
-const pduBox = ref(query.pduBox);
-
+const pduBox = ref(query.pduBox=='true');
 const instance = getCurrentInstance();
 const typeRadio = ref('负载率');
 const timeRadio = ref('近一小时');
@@ -219,6 +233,7 @@ const ratedCapacity = ref();
 const reserveMargin = ref();
 const powActive = ref();
 const powReactive = ref();
+const powApparent = ref();
 const peakDemand = ref();
 const powActivepPercentage = ref();
 const powReactivepPercentage = ref();
@@ -310,12 +325,12 @@ const initChart = () => {
                 lineStyle: {
                       color: function(value) {
                           // 根据 value 返回不同的颜色
-                          if (value <= 50) {
+                          if (value < 50) {
                               return '#16c60c'; 
-                          } else if (value <= 75) {
+                          } else if (value < 75) {
                               return '#0078d7'; 
-                          } else if(value<=90){
-                              return '#fff100'; 
+                          } else if(value<90){
+                              return '#fac858'; 
                           }else{
                             return '#e81224';
                           }
@@ -352,7 +367,7 @@ const initChart = () => {
               type: 'line',
               data: [],
               itemStyle: {
-                  color: '#fff100', // 设置颜色
+                  color: '#fac858', // 设置颜色
               },
               show: false,  // 设置为 false 隐藏该系列数据
           },
@@ -368,11 +383,11 @@ const initChart = () => {
           {
             name: '',
             type: 'line',
-            data: [[ loadPercentage.value , 50]],
+            data: [[ Math.min(loadPercentage.value,100) , 50]],
             markLine: {
               data: [
                 [
-                  { xAxis: loadPercentage.value, yAxis: 50, symbol: 'none',  label: {
+                  { xAxis: Math.min(loadPercentage.value,100), yAxis: 50, symbol: 'none',  label: {
                             show: true,
                             position: 'start',
                             formatter: loadPercentage.value + ' %'+ xAxisLabel.value,
@@ -382,13 +397,13 @@ const initChart = () => {
                               color: getTextColor(loadPercentage.value),
                             }
                         }},
-                  { xAxis: loadPercentage.value, yAxis: 0, symbol: 'arrow' },
+                  { xAxis: Math.min(loadPercentage.value,100), yAxis: 0,  },
                 ]
               ],
               lineStyle: {
                 normal: {
                     type: 'solid',
-                    color: 'green',
+                    color: getTextColor(loadPercentage.value),
                   },
               },
             }
@@ -399,21 +414,35 @@ const initChart = () => {
     instance.appContext.config.globalProperties.myChart = myChart;
 
   } 
-        // 根据 loadPercentage.value 设置字体颜色的函数
-        function getTextColor (value) {
-            if (value <= 40) {
-                return 'rgb(223, 196, 43)'; 
-            } else if (value <= 75) {
-                return 'rgb(56,201,73)'; 
-            } else {
-                return 'rgb(230,93,93)'; 
-            }
-        }
+// 根据 loadPercentage.value 设置字体颜色的函数
+function getTextColor (value) {
+  if (value <= 50) {
+      return '#16c60c'; 
+  } else if (value <= 75) {
+      return '#0078d7'; 
+  } else if(value<=90){
+      return '#fac858'; 
+  } else{
+      return '#e81224';
+  }
+}
 };
+function getTextColor (value) {
+    if (value <= 50) {
+        return '#16c60c'; 
+    } else if (value <= 75) {
+        return '#0078d7'; 
+    } else if(value<=90){
+        return '#fac858'; 
+    } else{
+        return '#e81224';
+    }
+}
 
 const chartContainer1 = ref<HTMLElement | null>(null);
 let myChart1 = null as echarts.ECharts | null; 
 const initChart1 = () => {
+  console.log("run");
   if (chartContainer1.value && instance) {
     myChart1 = echarts.init(chartContainer1.value);
     myChart1.setOption(
@@ -441,8 +470,8 @@ const initChart1 = () => {
               formatter: '{b}: {d}%',
             },
             data: [
-              { value: powReactivepPercentage.value, name: '无功功率', },
-              { value: powActivepPercentage.value, name: '有功功率' },
+              { value: powReactivepPercentage.value, name: '无功功率', itemStyle: { color: '#fac858' }},
+              { value: powActivepPercentage.value, name: '有功功率', itemStyle: { color: '#91cc75' } },
             ],
             emphasis: {
               itemStyle: {
@@ -489,10 +518,11 @@ const getDetailData =async () => {
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
       powActive.value = formatNumber(data.powActive, 2);
       powReactive.value = formatNumber(data.powReactive, 2);
+      powApparent.value = formatNumber(data.powApparent, 2);
       peakDemand.value = formatNumber(data.peakDemand, 2);
-      powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
-      powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
-      loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
+      powActivepPercentage.value = powActive.value+powReactive.value == 0 ? 0 :  ((powActive.value / (Number(powActive.value)+Number(powReactive.value))) * 100).toFixed(2);
+      powReactivepPercentage.value = powActive.value+powReactive.value == 0 ? 0 : ((powReactive.value / (Number(powActive.value)+Number(powReactive.value))) * 100 ).toFixed(2)
+      loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((powActive.value / ratedCapacity.value) * 100).toFixed(1);
       //loadPercentage.value = 76 测试数据
       if (loadPercentage.value <= 50){
         xAxisLabel.value = '安全'
@@ -552,121 +582,122 @@ const flashChartData = async () =>{
             }
         }
   // 更新数据后重新渲染图表
-  myChart?.setOption(
-    {        
-      legend: {
-          orient: 'horizontal',
-          left: 80,
-          top: 5,
-          data: ['正常运行', '经济运行', '高损耗运行'],
-          icon: 'rect',
-          selected: {
-            正常运行: true,
-            经济运行: true,
-            高损耗运行: true
-          },
-          selectedMode: false, // 禁用选中模式
-      },
+  // myChart?.setOption(
+  //   {        
+  //     legend: {
+  //         orient: 'horizontal',
+  //         left: 80,
+  //         top: 5,
+  //         data: ['正常运行', '经济运行', '高损耗运行'],
+  //         icon: 'rect',
+  //         selected: {
+  //           正常运行: true,
+  //           经济运行: true,
+  //           高损耗运行: true
+  //         },
+  //         selectedMode: false, // 禁用选中模式
+  //     },
 
-      tooltip: {
-        show: false  // 是否显示 tooltip
-      },
-      xAxis: {
-          min: 0,
-          max: 100,
-          type: 'value',
-          interval: 10,
-          data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 
-          axisTick: { alignWithLabel: true, show: false },
-          axisLabel: {
-            interval: 0,
-            rotate: 0,
-            formatter: function(value, _index) {
-              if (value == 0) {
-                  return value;
-              }
-              return value + '%'; // 去掉前导零并在数值后加上百分号
-            }
-          },
-          axisLine: {
-              lineStyle: {
-                    color: function(value) {
-                        // 根据 value 返回不同的颜色
-                        if (value <= 40) {
-                            return 'rgb(223, 196, 43)'; 
-                        } else if (value <= 75) {
-                            return 'rgb(56,201,73)'; 
-                        } else {
-                            return 'rgb(230,93,93)'; 
-                        }
-                    },
-                    width: 1, // 设置粗细
-              }
-          }
-      },
-      yAxis: {
-        show: false // 不显示y轴
-      },
-      series: [
-        {
-            name: '正常运行',
-            type: 'line',
-            data: [],
-            itemStyle: {
-                color: 'rgb(223, 196, 43)', // 设置颜色
-            },
-            show: false,  // 设置为 false 隐藏该系列数据
+  //     tooltip: {
+  //       show: false  // 是否显示 tooltip
+  //     },
+  //     xAxis: {
+  //         min: 0,
+  //         max: 100,
+  //         type: 'value',
+  //         interval: 10,
+  //         data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 
+  //         axisTick: { alignWithLabel: true, show: false },
+  //         axisLabel: {
+  //           interval: 0,
+  //           rotate: 0,
+  //           formatter: function(value, _index) {
+  //             if (value == 0) {
+  //                 return value;
+  //             }
+  //             return value + '%'; // 去掉前导零并在数值后加上百分号
+  //           }
+  //         },
+  //         axisLine: {
+  //             lineStyle: {
+  //                   color: function(value) {
+  //                       // 根据 value 返回不同的颜色
+  //                       if (value <= 40) {
+  //                           return 'rgb(223, 196, 43)'; 
+  //                       } else if (value <= 75) {
+  //                           return 'rgb(56,201,73)'; 
+  //                       } else {
+  //                           return 'rgb(230,93,93)'; 
+  //                       }
+  //                   },
+  //                   width: 1, // 设置粗细
+  //             }
+  //         }
+  //     },
+  //     yAxis: {
+  //       show: false // 不显示y轴
+  //     },
+  //     series: [
+  //       {
+  //           name: '正常运行',
+  //           type: 'line',
+  //           data: [],
+  //           itemStyle: {
+  //               color: 'rgb(223, 196, 43)', // 设置颜色
+  //           },
+  //           show: false,  // 设置为 false 隐藏该系列数据
             
-        },
-        {
-            name: '经济运行',
-            type: 'line',
-            data: [],
-            itemStyle: {
-                color: 'rgb(56,201,73)', // 设置颜色
-            },
-            show: false,  // 设置为 false 隐藏该系列数据
-        },
-        {
-            name: '高损耗运行',
-            type: 'line',
-            data: [],
-            itemStyle: {
-                color: 'rgb(230,93,93)', // 设置颜色
-            },
-            show: false,  // 设置为 false 隐藏该系列数据
-        },
-        {
-          name: '',
-          type: 'line',
-          data: [[ loadPercentage.value , 50]],
-          markLine: {
-            data: [
-              [
-                { xAxis: loadPercentage.value, yAxis: 50, symbol: 'none',  label: {
-                          show: true,
-                          position: 'start',
-                          formatter: loadPercentage.value + ' %'+ xAxisLabel.value,
-                          textStyle: {
-                            fontSize: 16,
-                            fontWeight: 'bold',
-                            color: getTextColor(loadPercentage.value),
-                          }
-                      }},
-                { xAxis: loadPercentage.value, yAxis: 0, symbol: 'arrow' },
-              ]
-            ],
-            lineStyle: {
-              normal: {
-                  type: 'solid',
-                  color: 'green',
-                },
-            },
-          }
-        },
-      ],
-    }
-  );
+  //       },
+  //       {
+  //           name: '经济运行',
+  //           type: 'line',
+  //           data: [],
+  //           itemStyle: {
+  //               color: 'rgb(56,201,73)', // 设置颜色
+  //           },
+  //           show: false,  // 设置为 false 隐藏该系列数据
+  //       },
+  //       {
+  //           name: '高损耗运行',
+  //           type: 'line',
+  //           data: [],
+  //           itemStyle: {
+  //               color: 'rgb(230,93,93)', // 设置颜色
+  //           },
+  //           show: false,  // 设置为 false 隐藏该系列数据
+  //       },
+  //       {
+  //         name: '',
+  //         type: 'line',
+  //         data: [[ loadPercentage.value , 50]],
+  //         markLine: {
+  //           data: [
+  //             [
+  //               { xAxis: loadPercentage.value, yAxis: 50, symbol: 'none',  label: {
+  //                         show: true,
+  //                         position: 'start',
+  //                         formatter: loadPercentage.value + ' %'+ xAxisLabel.value,
+  //                         textStyle: {
+  //                           fontSize: 16,
+  //                           fontWeight: 'bold',
+  //                           color: getTextColor(loadPercentage.value),
+  //                         }
+  //                     }},
+  //               { xAxis: loadPercentage.value, yAxis: 0, symbol: 'arrow' },
+  //             ]
+  //           ],
+  //           lineStyle: {
+  //             normal: {
+  //                 type: 'solid',
+  //                 color: getTextColor(loadPercentage.value),
+  //               },
+  //           },
+  //         }
+  //       },
+  //     ],
+  //   }
+  // );
+  initChart();
   myChart1?.setOption(
     {
       title: {
@@ -734,6 +765,7 @@ watch(
       5: () => updateChart(0, 'currentVis'),
       6: () => updateChart(0, 'factorVis'),
       7: () => updateChart(0, 'loadRate'),
+      8: () => updateChart(0, 'allPower'),
     };
 
     if (actions[newValue]) {
@@ -912,8 +944,9 @@ onMounted(async () => {
     //initChart2()
     //initChart3()
     // 设置每五秒执行一次 getDetailData 方法
-    intervalId = window.setInterval(() => {
-     getDetailData();
+    intervalId = window.setInterval( async() => {
+      await getDetailData();
+      initChart();
     }, 5000);
   } catch (error) {
     console.error('onMounted 钩子中的异步操作失败:', error);

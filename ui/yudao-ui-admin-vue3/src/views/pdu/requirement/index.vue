@@ -933,6 +933,14 @@ let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart �
 const lineidChartContainerOne = ref<HTMLElement | null>(null);
 
 
+function buKongGe(value,du){
+  value=Number(value);
+  console.log(value);
+  if(value<100&&value>=10) return "&nbsp;&nbsp;&nbsp;"+value.toFixed(du);
+  if(value<10) return "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+value.toFixed(du);
+  return "&nbsp;"+value.toFixed(du);
+}
+
 const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => {
   interface DataItem {
     Year: any;
@@ -1013,7 +1021,7 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
   tooltip: {
     trigger: 'axis',
     formatter: function (params) {
-        let result = params[0].value.Year + '<br>';
+        let result = '';
         params.forEach((param) => {
             let unit = param.seriesName.includes('功率')? 'kW' : 'A';
             result += `${param.seriesName}: ${param.value.Income} ${unit}<br>`;

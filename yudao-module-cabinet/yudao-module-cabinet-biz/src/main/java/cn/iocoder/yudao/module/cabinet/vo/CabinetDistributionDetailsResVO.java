@@ -110,4 +110,9 @@ public class CabinetDistributionDetailsResVO {
     @Schema(description = "最大有功功率发生时间")
     private String powActiveTime;
 
+    private List<BigDecimal> avgLoadRate;
+    private List<BigDecimal> maxLoadRate;
+    private List<String> maxLoadRateTime;
+    private List<BigDecimal> minLoadRate;
+    private List<String> minLoadRateTime;
 }

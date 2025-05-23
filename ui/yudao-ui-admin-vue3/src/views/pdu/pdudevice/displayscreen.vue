@@ -390,21 +390,21 @@
             </el-table-column>
             <el-table-column label="输出电流(A)" align="center" prop="cur_value"  v-if="controlVis.outPutTableCol.cur_value">
               <template #default="scope">
-                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.curColor }">
+                <el-text line-clamp="2"  :style="{ color: scope.row.curColor }">
                   {{ scope.row.cur_value }}
                 </el-text>
               </template>
             </el-table-column>
             <el-table-column label="有功功率(kW)" align="center" prop="pow_value"  v-if="controlVis.outPutTableCol.pow_value">
               <template #default="scope">
-                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powColor }">
+                <el-text line-clamp="2"  :style="{ color: scope.row.powColor }">
                   {{ scope.row.pow_value }}
                 </el-text>
               </template>
             </el-table-column>
             <el-table-column label="功率因数" align="center" prop="pow_value" v-if="controlVis.outPutTableCol.power_factor" >
               <template #default="scope">
-                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powerColor }">
+                <el-text line-clamp="2"  :style="{ color: scope.row.powerColor }">
                   {{ scope.row.power_factor }}
                 </el-text>
               </template>
@@ -834,9 +834,9 @@ const initChart = async () => {
       yAxis: { type: 'value'},
       //鼠标悬停的显示
       series: [
-          {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
-          {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
-          {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
+          {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , ...(chartData.value[itemActiveType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , ...(chartData.value[itemApparentType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , ...(chartData.value[itemReactiveType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
       ],
     },true);
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -849,15 +849,15 @@ const initChart = async () => {
     if(chartDataF.value.size == 3) {
       legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
       seriesList = [
-        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
-        {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
-        {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
-        {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , ...(chartDataF.value[itemFactorType+ 'a']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , ...(chartDataF.value[itemFactorType+ 'b']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , ...(chartDataF.value[itemFactorType+ 'c']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
       ]
     } else {
       legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
       seriesList = [
-        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4}
       ]
     }
 
@@ -1229,9 +1229,9 @@ const flashChartData = async () =>{
           },boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
       series: [
-          {name: '总有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
-          {name: '总视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
-          {name: '总无功功率', type: 'line', data: chartData.value.reactiveList , symbol: 'circle', symbolSize: 4},
+          {name: '总有功功率', type: 'line', data: chartData.value.activeList , ...(chartData.value?.activeList?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: '总视在功率', type: 'line', data: chartData.value.apparentList , ...(chartData.value?.apparentList?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: '总无功功率', type: 'line', data: chartData.value.reactiveList , ...(chartData.value?.reactiveList?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
       ],
     },true);
   }
@@ -1265,15 +1265,15 @@ const flashChartData = async () =>{
     if(chartDataF.value.size == 3) {
       legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
       seriesList = [
-        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
-        {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
-        {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
-        {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , ...(chartDataF.value[itemFactorType + 'a']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , ...(chartDataF.value[itemFactorType + 'b']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , ...(chartDataF.value[itemFactorType + 'c']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
       ]
     } else {
       legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
       seriesList = [
-        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+        {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4}
       ]
     }
 
@@ -1417,7 +1417,10 @@ const getTestData = async()=>{
           if(alarmStatus == 1 ||alarmStatus == 8){
             var alarmColor = key.split("_")[0] + "Color";
             loopItem[alarmColor] = "red";
-          } else {
+          } else if(alarmStatus == 2 ||alarmStatus == 4) {
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "yellow";
+          }else{
             var alarmColor = key.split("_")[0] + "Color";
             loopItem[alarmColor] = "";
           }
@@ -1425,6 +1428,7 @@ const getTestData = async()=>{
       }
       temp.push(loopItem);
     }
+    console.log('temp',temp)
     circleList.value = temp;
     controlVis.value.haveCircle = true;
   }else{
@@ -1453,7 +1457,10 @@ const getTestData = async()=>{
           if(alarmStatus == 1 ||alarmStatus == 8){
             var alarmColor = key.split("_")[0] + "Color";
             loopItem[alarmColor] = "red";
-          } else {
+          } else if(alarmStatus == 2||alarmStatus == 4) {
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "yellow";
+          }else {
             var alarmColor = key.split("_")[0] + "Color";
             loopItem[alarmColor] = "";
           }
@@ -1490,7 +1497,10 @@ const getTestData = async()=>{
           if(alarmStatus == 1 ||alarmStatus == 8){
             var alarmColor = key.split("_")[0] + "Color";
             loopItem[alarmColor] = "red";
-          } else {
+          } else if(alarmStatus == 2 ||alarmStatus == 4){
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "yellow";
+          }else{
             var alarmColor = key.split("_")[0] + "Color";
             loopItem[alarmColor] = "";
           }
@@ -1738,21 +1748,21 @@ watch([() => typeRadioShowCur.value],async () => {
           name: 'L1-电流',
           type: 'line',
           data: lChartData.value.curValueList,
-          symbol: 'circle',
+          ...(lChartData.value.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4
         },
         {
           name: 'L2-电流',
           type: 'line',
           data: llChartData.value.curValueList,
-          symbol: 'circle',
+          ...(llChartData.value.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         },
         {
           name: 'L3-电流',
           type: 'line',
           data: lllChartData.value.curValueList,
-          symbol: 'circle',
+          ...(lllChartData.value.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         }
       ]
@@ -1839,21 +1849,21 @@ watch([() => typeRadioShowVol.value],async () => {
           name: 'L1-电压',
           type: 'line',
           data: lChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(lChartDataV.value.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4
         },
         {
           name: 'L2-电压',
           type: 'line',
           data: llChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(llChartDataV.value.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         },
         {
           name: 'L3-电压',
           type: 'line',
           data: lllChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(lllChartDataV.value.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         }
       ]
@@ -1926,21 +1936,21 @@ watch([() => toggleTime.value],async ()=>{
           name: 'L1-电流',
           type: 'line',
           data: lChartData.value.curValueList,
-          symbol: 'circle',
+          ...(lllChartData.value.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4
         },
         {
           name: 'L2-电流',
           type: 'line',
           data: llChartData.value.curValueList,
-          symbol: 'circle',
+          ...(lllChartData.value.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         },
         {
           name: 'L3-电流',
           type: 'line',
           data: lllChartData.value.curValueList,
-          symbol: 'circle',
+          ...(lllChartData.value.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         }
       ]
@@ -2012,21 +2022,21 @@ watch([() => toggleTimeV.value],async ()=>{
           name: 'L1-电压',
           type: 'line',
           data: lChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(lChartDataV.value.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4
         },
         {
           name: 'L2-电压',
           type: 'line',
           data: llChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(llChartDataV.value.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         },
         {
           name: 'L3-电压',
           type: 'line',
           data: lllChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(lllChartDataV.value.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         }
       ]
@@ -2095,9 +2105,9 @@ watch([() => typeRadioShowPower.value], async ([value]) => {
             },boundaryGap: false, data:chartData.value.dateTimes},
         yAxis: { type: 'value'},
         series: [
-        {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
-        {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
-        {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
+        {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , ...(chartData.value[itemActiveType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , ...(chartData.value[itemApparentType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , ...(chartData.value[itemReactiveType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
         ],
       },true);
     }
@@ -2133,15 +2143,15 @@ watch([() => typeRadioShowFactor.value], async ([value]) => {
       if(chartDataF.value.size == 3) {
         legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
         seriesList = [
-          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
-          {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
-          {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
-          {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , ...(chartDataF.value[itemFactorType+ 'a']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , ...(chartDataF.value[itemFactorType+ 'b']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , ...(chartDataF.value[itemFactorType+ 'c']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
         ]
       } else {
         legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
         seriesList = [
-          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4}
         ]
       }
 
@@ -2316,9 +2326,9 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
             },boundaryGap: false, data:chartData.value.dateTimes},
         yAxis: { type: 'value'},
         series: [
-        {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , symbol: 'circle', symbolSize: 4},
-        {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , symbol: 'circle', symbolSize: 4},
-        {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , symbol: 'circle', symbolSize: 4},
+        {name: '总有功功率', type: 'line', data: chartData.value[itemActiveType] , ...(chartData.value[itemActiveType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: '总视在功率', type: 'line', data: chartData.value[itemApparentType] , ...(chartData.value[itemApparentType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+        {name: '总无功功率', type: 'line', data: chartData.value[itemReactiveType] , ...(chartData.value[itemReactiveType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
         ],
       },true);
     }
@@ -2398,15 +2408,15 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
       if(chartDataF.value.size == 3) {
         legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
         seriesList = [
-          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4},
-          {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , symbol: 'circle', symbolSize: 4},
-          {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , symbol: 'circle', symbolSize: 4},
-          {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , symbol: 'circle', symbolSize: 4},
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: 'L1功率因数', type: 'line', data: chartDataF.value[itemFactorType +'a'] , ...(chartDataF.value[itemFactorType + 'a']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: 'L2功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'b'] , ...(chartDataF.value[itemFactorType + 'b']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
+          {name: 'L3功率因数', type: 'line', data: chartDataF.value[itemFactorType + 'c'] , ...(chartDataF.value[itemFactorType + 'c']?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4},
         ]
       } else {
         legendList = ['总功率因数','L1功率因数','L2功率因数','L3功率因数']
         seriesList = [
-          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , symbol: 'circle', symbolSize: 4}
+          {name: '总功率因数', type: 'line', data: chartDataF.value[itemFactorType] , ...(chartDataF.value[itemFactorType]?.length==1? {symbol: 'circle'}:{symbol:'none'}), symbolSize: 4}
         ]
       }
 
@@ -2490,6 +2500,8 @@ const handleQuery = async () => {
     await getTestData();
     await getLocation();
     flashChartData();
+    
+    window.history.pushState({}, '', new URL(window.location.href).pathname+'?devKey='+queryParams.devKey+'&location='+location2.value);
 }
 
 const getLocation = async () => {
@@ -2776,21 +2788,21 @@ const lineidFlashChartData = async () =>{
           name: 'L1-电流',
           type: 'line',
           data: lChartData.value.curValueList,
-          symbol: 'circle',
+          ...(lChartData.value?.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4
         },
         {
           name: 'L2-电流',
           type: 'line',
           data: llChartData.value.curValueList,
-          symbol: 'circle',
+          ...(llChartData.value?.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         },
         {
           name: 'L3-电流',
           type: 'line',
           data: lllChartData.value.curValueList,
-          symbol: 'circle',
+          ...(lllChartData.value?.curValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         }
       ]
@@ -2859,21 +2871,21 @@ const lineidFlashChartData = async () =>{
           name: 'L1-电压',
           type: 'line',
           data: lChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(lChartDataV.value?.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4
         },
         {
           name: 'L2-电压',
           type: 'line',
           data: llChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(llChartDataV.value?.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         },
         {
           name: 'L3-电压',
           type: 'line',
           data: lllChartDataV.value.volValueList,
-          symbol: 'circle',
+          ...(lllChartDataV.value?.volValueList?.length==1? {symbol: 'circle'}:{symbol:'none'}),
           symbolSize: 4,
         }
       ]
@@ -2967,6 +2979,22 @@ queryParams.devKey = devKey;
 //     padding:12px;
 
 // }
+   ::v-deep .el-button--primary{
+    --el-button-border-color:#00778c;
+    --el-button-bg-color:#00778c;
+    --el-button-hover-bg-color:#00778c;
+   }
+   ::v-deep .el-button:hover{
+        --el-button-hover-text-color: #fff;
+        --el-button-hover-border-color: #00778c;
+        background-color: #00778c;
+   }
+   ::v-deep .el-select__wrapper.is-focused{
+      --el-color-primary:#00778c;
+   }
+   ::v-deep .el-select-dropdown__item.is-selected{
+    --el-color-primary: #00778c;
+   }
 .header_app{
   background-color: white;
   display: flex;
@@ -2991,6 +3019,7 @@ queryParams.devKey = devKey;
   background-color: white;
 
 }
+
 @media screen and (max-width:1599px) {
   .adaptiveStyle {
     width: 90vw;

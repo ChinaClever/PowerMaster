@@ -3,21 +3,31 @@
   <div style="background-color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px;margin:0 28px 10px 20px;" class="header_app">
     <div style="padding: 5px 10px;" class="header_app_text_left">
       <span>所在位置：{{ location }}-{{ cabinetName }}</span>
-      <span style="margin-left:10px;">A路网络地址：{{ keyAlocation }}</span>
-      <span style="margin-left:10px;">B路网络地址：{{ keyBlocation }}</span>
+      <span style="margin-left:10px;">A路：{{ keyAlocation }}</span>
+      <span style="margin-left:10px;">B路：{{ keyBlocation }}</span>
       <span v-if="pduBox === false" style="margin-left:10px;"><el-button @click="goPDU(keyA,location,cabinetName,'A路')">A路PDU详情</el-button><el-button @click="goPDU(keyB,location,cabinetName,'B路')">B路PDU详情</el-button></span>
       <span v-else-if="pduBox === true" style="margin-left:10px;"><el-button @click="goBus(keyA,location,cabinetName,'A路')">A路母线详情</el-button><el-button @click="goBus(keyB,location,cabinetName,'A路')">B路母线详情</el-button></span>
     </div>
     <div  style="display: flex; justify-content: flex-end; gap: 10px;" class="header_app_text_right">
       <!--<el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>-->
       <el-button @click="changeTime ('hour');" :type="queryParams.timeGranularity == 'hour' ? 'primary' : ''">近一小时</el-button>
-      <el-button @click="changeTime ('day');" :type="queryParams.timeGranularity == 'day' ? 'primary' : ''">今天</el-button>
+      <!-- <el-button @click="changeTime ('day');" :type="queryParams.timeGranularity == 'day' ? 'primary' : ''">今天</el-button> -->
       <el-button @click="changeTime('today');" :type="queryParams.timeGranularity == 'today' ? 'primary' : ''">近一天</el-button>
       <el-button @click="changeTime('threeDay');" :type="queryParams.timeGranularity == 'threeDay' ? 'primary' : ''">近三天</el-button>
+      <el-button @click="changeTime('month');" :type="queryParams.timeGranularity == 'month' ? 'primary' : ''">近一月</el-button>
     </div>
   </div>
   <div class="TransformerMonitor">
-    <div class="center-part">
+    <div class="center-part" >
+      <div class="showSelect" v-show="queryParams.timeGranularity!='hour'">
+        <el-select v-model="avgMaxMin" placeholder="请选择">
+          <el-option
+            v-for="item in ['最大','平均','最小']"
+            :key="item"
+            :label="item"
+            :value="item"/>
+        </el-select>
+      </div>
       <div class="left-part">
         <!-- <el-tag size="large">{{ location }}</el-tag>
         <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
@@ -40,6 +50,7 @@
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>-->
         <div style="height:40vh;width:100%;margin-top:-40px;">
+          
             <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData.loadFactor" />
         </div>
         <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
@@ -70,7 +81,7 @@
       </div>
       <div class="right-right-part" style="color: black;font-weight:bold;">
         <div style="margin:10px;">负载率曲线</div>
-        <MarkLine style="margin-top:-40px;" v-if="visContro.gaugeVis"  width="100%" height="100%" :list="resultData"/>
+        <MarkLine style="margin-top:-40px;" v-if="visContro.gaugeVis"  width="100%" height="100%" :list="loadRateData" :choose="queryParams.timeGranularity=='hour'?'实时':avgMaxMin"/>
       </div>
     </div>
     <div class="bottom-part">
@@ -268,7 +279,7 @@ const keyA = ref();
 const keyB = ref();
 const keyAlocation = ref();
 const keyBlocation = ref();
-
+const avgMaxMin=ref("最大")
 const goPDU = (devKey,location,cabinetName,path) => {
   if(devKey == -0){
     message.error('未绑定A路设备!')
@@ -322,8 +333,8 @@ const queryParams = reactive({
 }) as any
 
 const getRedisData = async () => {
-      visContro.value.gaugeVis = false;
-  console.log('visContro.value.gaugeVis',visContro.value.gaugeVis);
+      // visContro.value.gaugeVis = false;
+  // console.log('visContro.value.gaugeVis',visContro.value.gaugeVis);
   const result = await CabinetApi.getCabinetdistributionDetails({
     id:id.value,
     roomId:roomId.value,
@@ -354,7 +365,6 @@ const getRedisData = async () => {
     resultData.value.loadFactor = 100;
   }
 }
-
 const getLoadRateList = async () =>{
     const data = await IndexApi.getBusLoadRateLine(queryParams);
     loadRateList.value = data;
@@ -386,11 +396,18 @@ const flashChartData = async () =>{
     await getRedisData();
     await getLoadRateList();
 }
-
+const loadRateData=ref()
 const handleQuery = async () => {
   queryParams.devKey = queryParamsSearch.devKey;
    await getBusIdAndLocation();
-   await flashChartData();
+   let data=await CabinetApi.getCabinetLoadRate({
+    id:id.value,
+    roomId:roomId.value,
+    type:queryParams.timeGranularity
+   });
+   loadRateData.value=data;
+   console.log('data',data);
+  //  await flashChartData();
 }
 
 const changeTime = async (data) => {
@@ -447,6 +464,17 @@ onMounted(async () => {
     type.value = cabinetDetailStore.type
   }
   await getRedisData();
+  queryParams.timeGranularity=type.value||"hour";
+  await getBusIdAndLocation();
+   let data=await CabinetApi.getCabinetLoadRate({
+    id:id.value,
+    roomId:roomId.value,
+    type:queryParams.timeGranularity
+   });
+   loadRateData.value=data;
+  setInterval(()=>{
+     getRedisData();
+  },5000);
   //await getLoadRateList();
   // initChart1();
   // initChart2();
@@ -500,7 +528,8 @@ body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body
 .TransformerMonitor .center-part {
     height: 35%;
     width: 100%;
-    margin-bottom: 5px
+    margin-bottom: 5px;
+    position: relative;
 }
 
 body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part {
@@ -1062,5 +1091,12 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
   width: 180%;
   align-content: center;
   color:#606266;
-}                                                       
+}       
+.showSelect{
+  position: absolute;
+  width:90px;
+  z-index: 999;
+  right: 80px;
+  top:10px;
+}                                                
 </style>

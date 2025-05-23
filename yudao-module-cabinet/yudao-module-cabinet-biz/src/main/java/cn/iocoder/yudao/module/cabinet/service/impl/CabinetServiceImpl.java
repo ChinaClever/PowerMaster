@@ -1458,6 +1458,11 @@ public class CabinetServiceImpl implements CabinetService {
         Map map = getCabinetDistributionFactor(id, roomId, type);
         vo.setDay((List<String>) map.get("day"));
         vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
+        vo.setAvgLoadRate((List<BigDecimal>) map.get("avgLoadRate"));
+        vo.setMaxLoadRate((List<BigDecimal>) map.get("maxLoadRate"));
+        vo.setMaxLoadRateTime((List<String>) map.get("maxLoadRateTime"));
+        vo.setMinLoadRate((List<BigDecimal>) map.get("minLoadRate"));
+        vo.setMinLoadRateTime((List<String>) map.get("minLoadRateTime"));
         if (Objects.nonNull(map.get("load_rate"))) {
             vo.setLoadFactorBig(BigDemicalUtil.setScale(new BigDecimal(String.valueOf(map.get("load_rate"))), 2));
             vo.setLoadFactorTime((String) map.get("create_time"));
@@ -1481,7 +1486,7 @@ public class CabinetServiceImpl implements CabinetService {
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
-                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time"};
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
                 break;
             case "hour":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1), "yyyy-MM-dd HH:mm:ss");
@@ -1495,14 +1500,21 @@ public class CabinetServiceImpl implements CabinetService {
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
-                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time"};
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
                 break;
             case "threeDay":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
-                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time"};
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
+                break;
+            case "month":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusMonths(1), "yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
+                index = "cabinet_hda_pow_day";
+                key = "load_rate_total_avg_value";
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
                 break;
             default:
         }
@@ -1517,6 +1529,11 @@ public class CabinetServiceImpl implements CabinetService {
         List<BigDecimal> factorB = new ArrayList<>();
         List<BigDecimal> factorTotal = new ArrayList<>();
         List<BigDecimal> loadRate = new ArrayList<>();
+        List<BigDecimal> avgLoadRate = new ArrayList<>();
+        List<BigDecimal> maxLoadRate = new ArrayList<>();
+        List<String> maxloadRateTime = new ArrayList<>();
+        List<BigDecimal> minLoadRate = new ArrayList<>();
+        List<String> minloadRateTime = new ArrayList<>();
         List<String> createTime = new ArrayList<>();
         if (CollectionUtils.isEmpty(data)) {
             return map;
@@ -1531,14 +1548,18 @@ public class CabinetServiceImpl implements CabinetService {
                     loadRate = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()), 100)).collect(Collectors.toList());
                     createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
                     break;
-                case "cabinet_hda_pow_hour":
+                default:
 //                    factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a_avg_value").toString()), 100)).collect(Collectors.toList());
 //                    factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b_avg_value").toString()), 100)).collect(Collectors.toList());
 //                    factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total_avg_value").toString()), 100)).collect(Collectors.toList());
-                    loadRate = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate_total_avg_value").toString()), 100)).collect(Collectors.toList());
+                    avgLoadRate = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate_total_avg_value").toString()), 100)).collect(Collectors.toList());
+                    maxLoadRate = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate_max_value").toString()), 100)).collect(Collectors.toList());
+                    maxloadRateTime = data.stream().map(i -> String.valueOf(i.get("load_rate_max_time"))).collect(Collectors.toList());
+                    minLoadRate = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate_min_value").toString()), 100)).collect(Collectors.toList());
                     createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                    minloadRateTime = data.stream().map(i -> String.valueOf(i.get("load_rate_min_time"))).collect(Collectors.toList());
                     break;
-                default:
+
             }
         }
 //        map.put("factorA", factorA);
@@ -1546,6 +1567,11 @@ public class CabinetServiceImpl implements CabinetService {
 //        map.put("factorTotal", factorTotal);
         map.put("factorTotal", loadRate);
         map.put("day", createTime);
+        map.put("avgLoadRate",avgLoadRate);
+        map.put("maxLoadRate",maxLoadRate);
+        map.put("maxLoadRateTime",maxloadRateTime);
+        map.put("minLoadRateTime",minloadRateTime);
+        map.put("minLoadRate",minLoadRate);
         Map<String, Object> loadRateEs = getDataLoadRateEs(startTime, endTime, id, index, key);
         if (Objects.nonNull(loadRateEs)) {
             map.put("load_rate", loadRateEs.get("load_rate"));
@@ -1563,21 +1589,21 @@ public class CabinetServiceImpl implements CabinetService {
         }
         BigDecimal powCapacity = jsonObject.getBigDecimal("pow_capacity");
         BigDecimal powApparent = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_apparent");//视在功率=运行负荷
-        BigDecimal margin = BigDemicalUtil.safeSubtract(2, powCapacity, powApparent);//余量
-
         BigDecimal powActive = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_active");
         BigDecimal powReactive = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_reactive");
+        BigDecimal margin = BigDemicalUtil.safeSubtract(2, powCapacity, powActive);//余量
 
         // 等待异步操作完成并获取结果
         Double peakDemand = findEsByPowApparentMax(reqVO);
 
         // 返回数据
         CabinetPowerLoadDetailRespVO respVO = new CabinetPowerLoadDetailRespVO();
-        respVO.setRunLoad(powApparent);
+        respVO.setRunLoad(powActive);
         respVO.setRatedCapacity(powCapacity);
         respVO.setReserveMargin(margin);
         respVO.setPowActive(powActive);
         respVO.setPowReactive(powReactive);
+        respVO.setPowApparent(powApparent);
         if (Objects.nonNull(peakDemand))
             respVO.setPeakDemand(BigDecimal.valueOf(peakDemand));
         return respVO;
@@ -1622,11 +1648,11 @@ public class CabinetServiceImpl implements CabinetService {
         Map<String, List> resultMap = new HashMap<>();
         String str = StrUtils.redisKeyByLoginId(null, "/cabinet/loadPage/chart-detail", reqVO);
         Object obj = redisTemplate.opsForValue().get(str);
-        if (ObjectUtil.isNotEmpty(obj)) {
-            JSONObject jsonObject = JSONObject.parseObject(obj.toString());
-            resultMap = JSON.toJavaObject(jsonObject, Map.class);
-            return resultMap;
-        }
+//        if (ObjectUtil.isNotEmpty(obj)) {
+//            JSONObject jsonObject = JSONObject.parseObject(obj.toString());
+//            resultMap = JSON.toJavaObject(jsonObject, Map.class);
+//            return resultMap;
+//        }
         Integer cabinet = reqVO.getId();
         if (cabinet == null) {
             return null;
@@ -1726,27 +1752,27 @@ public class CabinetServiceImpl implements CabinetService {
                     break;
                 case "hour":
                     index = "pdu_hda_line_hour";
-                    heads = new String[]{"pdu_id", "line_id", "cur_avg_value", "vol_avg_value", "create_time"};
+                    heads = new String[0];
                     start = LocalDateTime.now().minusDays(1).format(formatter);
                     break;
                 case "SeventyHours":
                     index = "pdu_hda_line_hour";
-                    heads = new String[]{"pdu_id", "line_id", "cur_avg_value", "vol_avg_value", "create_time"};
+                    heads = new String[0];
                     start = LocalDateTime.now().minusDays(3).format(formatter);
                     break;
                 default:
                     index = "pdu_hda_line_day";
-                    heads = new String[]{"pdu_id", "line_id", "cur_avg_value", "vol_avg_value", "create_time"};
+                    heads = new String[0];
                     start = LocalDateTime.now().minusMonths(1).format(formatter);
             }
 
-            List<CabinetLoadPageChartResVO> aPathVc = new ArrayList<>();
-            List<CabinetLoadPageChartResVO> bPathVc = new ArrayList<>();
+            List<CabinetLoadPageChartAllResVO> aPathVc = new ArrayList<>();
+            List<CabinetLoadPageChartAllResVO> bPathVc = new ArrayList<>();
             if (Objects.nonNull(a)) {
                 List<Map<String, Object>> aList = getDataEsChart(start, end, idKey, a.getId(), index, heads);
                 Map<String, List<Map<String, Object>>> aMap = aList.stream().collect(Collectors.groupingBy(i -> (String) i.get("create_time")));
                 for (String key : aMap.keySet()) {
-                    CabinetLoadPageChartResVO avo = new CabinetLoadPageChartResVO();
+                    CabinetLoadPageChartAllResVO avo = new CabinetLoadPageChartAllResVO();
                     List<Map<String, Object>> list = aMap.get(key);
                     Double vol;
                     Double cur;
@@ -1761,6 +1787,14 @@ public class CabinetServiceImpl implements CabinetService {
                                     } else {
                                         vol = (Double) map.get("vol_avg_value");
                                         cur = (Double) map.get("cur_avg_value");
+                                        avo.setMaxCurValue((Double) map.get("cur_max_value"));
+                                        avo.setMinCurValue((Double) map.get("cur_min_value"));
+                                        avo.setMaxCurValueTime(map.get("cur_max_time").toString());
+                                        avo.setMinCurValueTime(map.get("cur_min_time").toString());
+                                        avo.setMaxVolValue((Double) map.get("vol_max_value"));
+                                        avo.setMinVolValue((Double) map.get("vol_min_value"));
+                                        avo.setMaxVolValueTime(map.get("vol_max_time").toString());
+                                        avo.setMinVolValueTime(map.get("vol_min_time").toString());
                                     }
                                     avo.setVolValue(BigDemicalUtil.setScale(vol, 1).doubleValue());
                                     avo.setCurValue(BigDemicalUtil.setScale(cur, 2).doubleValue());
@@ -1772,6 +1806,14 @@ public class CabinetServiceImpl implements CabinetService {
                                     } else {
                                         vol = (Double) map.get("vol_avg_value");
                                         cur = (Double) map.get("cur_avg_value");
+                                        avo.setMaxCurValuell((Double) map.get("cur_max_value"));
+                                        avo.setMinCurValuell((Double) map.get("cur_min_value"));
+                                        avo.setMaxCurValuellTime(map.get("cur_max_time").toString());
+                                        avo.setMinCurValuellTime(map.get("cur_min_time").toString());
+                                        avo.setMaxVolValuell((Double) map.get("vol_max_value"));
+                                        avo.setMinVolValuell((Double) map.get("vol_min_value"));
+                                        avo.setMaxVolValuellTime(map.get("vol_max_time").toString());
+                                        avo.setMinVolValuellTime(map.get("vol_min_time").toString());
                                     }
                                     avo.setVolValuell(BigDemicalUtil.setScale(vol, 1).doubleValue());
                                     avo.setCurValuell(BigDemicalUtil.setScale(cur, 2).doubleValue());
@@ -1783,6 +1825,14 @@ public class CabinetServiceImpl implements CabinetService {
                                     } else {
                                         vol = (Double) map.get("vol_avg_value");
                                         cur = (Double) map.get("cur_avg_value");
+                                        avo.setMaxCurValuelll((Double) map.get("cur_max_value"));
+                                        avo.setMinCurValuelll((Double) map.get("cur_min_value"));
+                                        avo.setMaxCurValuelllTime(map.get("cur_max_time").toString());
+                                        avo.setMinCurValuelllTime(map.get("cur_min_time").toString());
+                                        avo.setMaxVolValuelll((Double) map.get("vol_max_value"));
+                                        avo.setMinVolValuelll((Double) map.get("vol_min_value"));
+                                        avo.setMaxVolValuelllTime(map.get("vol_max_time").toString());
+                                        avo.setMinVolValuelllTime(map.get("vol_min_time").toString());
                                     }
                                     avo.setVolValuelll(BigDemicalUtil.setScale(vol, 1).doubleValue());
                                     avo.setCurValuelll(BigDemicalUtil.setScale(cur, 2).doubleValue());
@@ -1799,7 +1849,7 @@ public class CabinetServiceImpl implements CabinetService {
                 List<Map<String, Object>> bList = getDataEsChart(start, end, idKey, b.getId(), index, heads);
                 Map<String, List<Map<String, Object>>> bMap = bList.stream().collect(Collectors.groupingBy(i -> (String) i.get("create_time")));
                 for (String key : bMap.keySet()) {
-                    CabinetLoadPageChartResVO bvo = new CabinetLoadPageChartResVO();
+                    CabinetLoadPageChartAllResVO bvo = new CabinetLoadPageChartAllResVO();
                     List<Map<String, Object>> list = bMap.get(key);
                     Double vol = null;
                     Double cur = null;
@@ -1814,6 +1864,14 @@ public class CabinetServiceImpl implements CabinetService {
                                     } else {
                                         vol = (Double) map.get("vol_avg_value");
                                         cur = (Double) map.get("cur_avg_value");
+                                        bvo.setMaxCurValue((Double) map.get("cur_max_value"));
+                                        bvo.setMinCurValue((Double) map.get("cur_min_value"));
+                                        bvo.setMaxCurValueTime(map.get("cur_max_time").toString());
+                                        bvo.setMinCurValueTime(map.get("cur_min_time").toString());
+                                        bvo.setMaxVolValue((Double) map.get("vol_max_value"));
+                                        bvo.setMinVolValue((Double) map.get("vol_min_value"));
+                                        bvo.setMaxVolValueTime(map.get("vol_max_time").toString());
+                                        bvo.setMinVolValueTime(map.get("vol_min_time").toString());
                                     }
                                     bvo.setVolValue(BigDemicalUtil.setScale(vol, 1).doubleValue());
                                     bvo.setCurValue(BigDemicalUtil.setScale(cur, 2).doubleValue());
@@ -1825,6 +1883,14 @@ public class CabinetServiceImpl implements CabinetService {
                                     } else {
                                         vol = (Double) map.get("vol_avg_value");
                                         cur = (Double) map.get("cur_avg_value");
+                                        bvo.setMaxCurValuell((Double) map.get("cur_max_value"));
+                                        bvo.setMinCurValuell((Double) map.get("cur_min_value"));
+                                        bvo.setMaxCurValuellTime(map.get("cur_max_time").toString());
+                                        bvo.setMinCurValuellTime(map.get("cur_min_time").toString());
+                                        bvo.setMaxVolValuell((Double) map.get("vol_max_value"));
+                                        bvo.setMinVolValuell((Double) map.get("vol_min_value"));
+                                        bvo.setMaxVolValuellTime(map.get("vol_max_time").toString());
+                                        bvo.setMinVolValuellTime(map.get("vol_min_time").toString());
                                     }
                                     bvo.setVolValuell(BigDemicalUtil.setScale(vol, 1).doubleValue());
                                     bvo.setCurValuell(BigDemicalUtil.setScale(cur, 2).doubleValue());
@@ -1836,6 +1902,14 @@ public class CabinetServiceImpl implements CabinetService {
                                     } else {
                                         vol = (Double) map.get("vol_avg_value");
                                         cur = (Double) map.get("cur_avg_value");
+                                        bvo.setMaxCurValuelll((Double) map.get("cur_max_value"));
+                                        bvo.setMinCurValuelll((Double) map.get("cur_min_value"));
+                                        bvo.setMaxCurValuelllTime(map.get("cur_max_time").toString());
+                                        bvo.setMinCurValuelllTime(map.get("cur_min_time").toString());
+                                        bvo.setMaxVolValuelll((Double) map.get("vol_max_value"));
+                                        bvo.setMinVolValuelll((Double) map.get("vol_min_value"));
+                                        bvo.setMaxVolValuelllTime(map.get("vol_max_time").toString());
+                                        bvo.setMinVolValuelllTime(map.get("vol_min_time").toString());
                                     }
                                     bvo.setVolValuelll(BigDemicalUtil.setScale(vol, 1).doubleValue());
                                     bvo.setCurValuelll(BigDemicalUtil.setScale(cur, 2).doubleValue());
