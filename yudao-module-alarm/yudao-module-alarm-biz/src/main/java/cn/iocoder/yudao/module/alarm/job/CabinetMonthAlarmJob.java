@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -49,7 +50,7 @@ public class CabinetMonthAlarmJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-        Thread.sleep(1000*60*5);
+//        Thread.sleep(1000*60*5);
         // 获取所有按月统计电量的机柜
         List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                 .eq(CabinetCfg::getEleAlarmMonth, 1));
@@ -58,6 +59,12 @@ public class CabinetMonthAlarmJob implements JobHandler {
             Double eleLimitMonth = cabinetCfg.getEleLimitMonth();
             LambdaEsQueryWrapper<CabinetMonthPower> wrapper = new LambdaEsQueryWrapper<>();
             wrapper.eq(CabinetMonthPower::getCabinet_id, cabinetCfg.getCabinetId());
+            // 获取当前时间
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String nowTime = now.format(formatter);
+            wrapper.lt("end_time.keyword",  nowTime);
+            wrapper.gt("end_time.keyword",  now.minusMonths(1).format(formatter));
             wrapper.orderByDesc("start_time.keyword");
             wrapper.limit(1);
             CabinetMonthPower cabinetMonthPower = cabinetMonthPowerMapper.selectOne (wrapper);
@@ -65,12 +72,13 @@ public class CabinetMonthAlarmJob implements JobHandler {
                 // 用电超额，存入告警记录
                 CabinetIndex cabinetIndex = cabinetIndexMapper.selectById(cabinetCfg.getCabinetId());
                 AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
-                String alarmKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
+                String alarmKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getAisleId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
                 alarmRecord.setAlarmKey(alarmKey);
                 alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                 alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_MONTH_POWER_ALARM.getType());
                 // 告警位置
-                JSONObject cabinetJson = (JSONObject)redisTemplate.opsForValue().get(FieldConstant.REDIS_KEY_CABINET + alarmKey);
+                String redisKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
+                JSONObject cabinetJson = (JSONObject)redisTemplate.opsForValue().get(FieldConstant.REDIS_KEY_CABINET + redisKey);
                 if (cabinetJson != null) {
                     String roomName = cabinetJson.get(FieldConstant.ROOM_NAME) + "";
                     String aisleName = cabinetJson.get(FieldConstant.AISLE_NAME) + "";
@@ -90,7 +98,7 @@ public class CabinetMonthAlarmJob implements JobHandler {
                 DecimalFormat decimalFormat = new DecimalFormat("0.0");
                 decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
                 String powEqValueMonth = decimalFormat.format(cabinetMonthPower.getEq_value());
-                String alarmDesc = "每月用电量超额！月用电量限制：" +  eleLimitMonth + "KWh，实际用电量：" + powEqValueMonth + "KWh";
+                String alarmDesc = "机柜上个月用电量超额！月用电量限制：" +  eleLimitMonth + "KWh，实际用电量：" + powEqValueMonth + "KWh";
                 alarmRecord.setAlarmDesc(alarmDesc);
                 alarmRecord.setStartTime(LocalDateTime.now());
                 alarmLogRecordMapper.insert(alarmRecord);

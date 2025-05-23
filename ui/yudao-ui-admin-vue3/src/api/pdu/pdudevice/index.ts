@@ -72,6 +72,10 @@ export const PDUDeviceApi = {
   getPDUHdaLineHisdataByCabinet: async (params: any) => {
     return await request.get({ url: `pdu/PDU-device/pduHdaLineHisdataByCabinet`, params})
   },
+  //获取PDU相历史数据（dataType）
+  getPDUHdaLineHisdataByCabinetByType: async (params: any) => {
+    return await request.get({ url: `pdu/PDU-device/pduHdaLineHisDataByCabinetByType`, params})
+  },
 
   //获取PDU需量详细数据
   getMaxLineHisdata: async (data) => {

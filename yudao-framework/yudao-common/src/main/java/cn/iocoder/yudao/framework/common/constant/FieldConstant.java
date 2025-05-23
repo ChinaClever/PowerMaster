@@ -432,6 +432,11 @@ public class FieldConstant {
     public static final String LOAD_FACTOR = "load_factor";
 
     /**
+     * 机房负载率
+     */
+    public static final String ROOM_LOAD_FACTOR = "room_load_factor";
+
+    /**
      * 机柜数据
      */
     public static final String CABINET_POWER = "cabinet_power";
@@ -464,6 +469,11 @@ public class FieldConstant {
      * 柜列id
      */
     public static final String AISLE_ID = "aisle_id";
+
+    /**
+     * 柜列id
+     */
+    public static final String AISLE_KEY = "aisle_key";
 
     /**
      * 通道总电能表(实时)

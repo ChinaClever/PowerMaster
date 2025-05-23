@@ -23,5 +23,5 @@ public interface JobApi {
      * @param handlerName 处理器
      * @param cron 定时任务表达式
      */
-    void updateCabinetJobCron(String handlerName, String cron);
+    void updateJobCronByHandler(String handlerName, String cron);
 }

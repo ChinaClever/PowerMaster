@@ -84,7 +84,7 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateCabinetJobCron(String handlerName, String cron) throws Exception {
+    public void updateJobCronByHandler(String handlerName, String cron) throws Exception {
         JobDO jobDO = jobMapper.selectByHandlerName(handlerName);
         if (jobDO != null) {
             JobSaveReqVO updateReqVO = BeanUtils.toBean(jobDO, JobSaveReqVO.class);

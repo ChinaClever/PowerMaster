@@ -63,9 +63,18 @@ export const IndexApi = {
     return await request.get({ url: `/cabinet/index/report/ele`,params})
   },
 
+    getPduBasicInformation: async (data) => {
+      return await request.post({ url: `/pdu/PDU-device/pduBasicInformation`,data})
+    },
+
   getPowData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/pow`,params})
   },
+
+    getPowDataByType: async (params) => {
+    return await request.get({ url: `/cabinet/index/report/powByType`,params})
+  },
+
 
   getTemData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/tem`,params})
@@ -76,13 +85,25 @@ export const IndexApi = {
   getCabinetIceTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/ice`,params})
   },
+
+    getCabinetIceTemAndHumByTypeById: async (params) => {
+    return await request.get({ url: `/cabinet/index/env/iceByType`,params})
+  },
+
+   getCabinetIceAndHotTemAndHumByTypeById: async (params) => {
+    return await request.get({ url: `/cabinet/index/env/getIceAndHot`,params})
+  },
+  
+
   getCabinetHotTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/hot`,params})
   },
   getCabinetPFLine : async (params) => {
     return await request.get({ url: `/cabinet/index/report/pfline`, params })
   },
-
+    getCabinetPFLineByType : async (params) => {
+    return await request.get({ url: `/cabinet/index/report/pfLineByType`, params })
+  },
   getEleByCabinet : async (params) => {
     return await request.get({ url: `/cabinet/index/getEleByCabinet`, params })
   },

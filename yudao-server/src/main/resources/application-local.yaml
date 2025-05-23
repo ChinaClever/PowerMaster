@@ -346,7 +346,7 @@ room-refresh-url: 192.168.1.245:48082/room/refresh
 mybatis-plus:
   configuration:
     shrink-whitespaces-in-sql: true #从SQL中删除多余的空格字符
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 logging:
   level:
     com.simons.cn.springbootdemo.dao.system: debug
@@ -358,4 +358,4 @@ easy-es:
   schema: http
   banner: false
   global-config:
-    process-index-mode: manual  # 索引托管模式（手动/自动）
+    process-index-mode: manual  # 索引托管模式（手动/自动） 驼峰命名需配置

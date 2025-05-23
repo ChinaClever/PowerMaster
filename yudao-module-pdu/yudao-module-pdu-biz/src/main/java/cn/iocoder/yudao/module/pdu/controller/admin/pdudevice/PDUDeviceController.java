@@ -101,6 +101,14 @@ public class PDUDeviceController {
         return success(pDUDeviceService.getDisplayDataByDevKey(devKey));
     }
 
+    @PostMapping("/pduBasicInformation")
+    @Operation(summary = "获得PDU设备详细信息")
+    public CommonResult<List<PduBasicInformationVo>> getPduDisplayDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPduDisplayDataByDevKey(pageReqVO.getPduKeyList(),pageReqVO.getTimeType()
+                ,pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+
     @GetMapping("/displayscreen/location")
     @Operation(summary = "获得位置")
     public CommonResult<String> getLocationByDevKey(String devKey) {
@@ -135,6 +143,12 @@ public class PDUDeviceController {
         return success(pDUDeviceService.getPduHdaLineHisdataKeyByCabinet(CabinetId, type, oldTime, newTime));
     }
 
+    @GetMapping("/pduHdaLineHisDataByCabinetByType")
+    @Operation(summary = "获得PDU相历史数据")
+    public CommonResult<Map> getPduHdaLineHisDataKey(Long CabinetId, String type, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(pDUDeviceService.getPduHdaLineHisdataKeyByCabinetByType(CabinetId, type, oldTime, newTime,dataType));
+    }
+
     @GetMapping("/chartNewData")
     @Operation(summary = "获得PDU历史最新数据")
     public CommonResult<Map> getChartNewDataByPduDevKey(String devKey, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, String type) {
@@ -145,6 +159,12 @@ public class PDUDeviceController {
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/totalEle")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportConsumeDataByDevKeys(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getReportConsumeDataByDevKeys(pageReqVO.getPduKeyList(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
 
