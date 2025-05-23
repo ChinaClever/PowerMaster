@@ -81,5 +81,4 @@ public interface IndexService {
 
     Map getCabinetEnvIceAndHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
-    Map<String, Double> getPduEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

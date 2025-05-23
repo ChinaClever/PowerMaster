@@ -147,6 +147,14 @@ public class IndexServiceImpl implements IndexService {
         Map result = new HashMap<>();
         CabinetChartResBase barRes = new CabinetChartResBase();
         BarSeries barSeries = new BarSeries();
+        //获取与pdu的绑定关系
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, Integer.valueOf(Id)));
+        if (cabinetPdu != null) {
+            String pduKeyA = cabinetPdu.getPduKeyA();
+            String pduKeyB = cabinetPdu.getPduKeyB();
+            result.put("pduKeyA", pduKeyA);
+            result.put("pduKeyB", pduKeyB);
+        }
         try {
             if (Id != null) {
                 String index = null;
@@ -768,6 +776,7 @@ public class IndexServiceImpl implements IndexService {
         public int getMaxId() {
             return maxId;
         }
+
         public void setMaxId(int id) {
             this.maxId = id;
         }
@@ -775,6 +784,7 @@ public class IndexServiceImpl implements IndexService {
         public int getMinId() {
             return minId;
         }
+
         public void setMinId(int id) {
             this.minId = id;
         }
@@ -1031,7 +1041,7 @@ public class IndexServiceImpl implements IndexService {
                     humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
                     humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                 }
-                processTemHumMavMin(pduEnvHourDo, dataType, result);
+//                processTemHumMavMin(pduEnvHourDo, dataType, result);
 
 
                 LineSeries temLineSeries = new LineSeries();
@@ -1080,33 +1090,32 @@ public class IndexServiceImpl implements IndexService {
     }
 
 
-
-    private void processTemHumMavMin(List<PduEnvHourDo> temList, Integer dataType, Map<String, Object> result) {
+    private void processTemHumMavMin(List<PduEnvHourDo> temList, Integer dataType, Map<String, Object> result, String temName, String humName, int dataIndex) {
         PowerData tem = new PowerData();
         PowerData hum = new PowerData();
         for (PduEnvHourDo pduEnvHourDo : temList) {
 
             updateTemHumData(tem, pduEnvHourDo.getTemMaxValue(), pduEnvHourDo.getTemMaxTime().toString("yyyy-MM-dd HH:mm:ss"), pduEnvHourDo.getTemAvgValue()
                     , pduEnvHourDo.getTemMinValue(), pduEnvHourDo.getTemMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType, pduEnvHourDo.getSensorId());
-            updateTemHumData(hum, (float) pduEnvHourDo.getHumMaxValue(),pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"), (float) pduEnvHourDo.getHumAvgValue()
-                    , (float) pduEnvHourDo.getHumMinValue(),pduEnvHourDo.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"),dataType,pduEnvHourDo.getSensorId());
+            updateTemHumData(hum, (float) pduEnvHourDo.getHumMaxValue(), pduEnvHourDo.getHumMaxTime().toString("yyyy-MM-dd HH:mm:ss"), (float) pduEnvHourDo.getHumAvgValue()
+                    , (float) pduEnvHourDo.getHumMinValue(), pduEnvHourDo.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType, pduEnvHourDo.getSensorId());
         }
 
+        result.put("temName"+dataIndex,temName);
+        result.put("temMaxValue"+dataIndex, tem.getMaxValue());
+        result.put("temMaxTime"+dataIndex, tem.getMaxTime());
+        result.put("temMaxSensorId"+dataIndex, tem.getMaxId());
+        result.put("temMinValue"+dataIndex, tem.getMinValue());
+        result.put("temMinTime"+dataIndex, tem.getMinTime());
+        result.put("temMinSensorId"+dataIndex, tem.getMinId());
 
-        result.put("temMaxValue",tem.getMaxValue() );
-        result.put("temMaxTime", tem.getMaxTime());
-        result.put("temMaxSensorId", tem.getMaxId());
-        result.put("temMinValue", tem.getMinValue());
-        result.put("temMinTime", tem.getMinTime());
-        result.put("temMinSensorId", tem.getMinId());
-
-
-        result.put("humMaxValue", hum.getMinValue());
-        result.put("humMaxTime", hum.getMaxTime());
-        result.put("humMaxSensorId", hum.getMaxId());
-        result.put("humMinValue", hum.getMinValue());
-        result.put("humMinTime", hum.getMinTime());
-        result.put("humMinSensorId", hum.getMinId());
+        result.put("humName"+dataIndex,humName);
+        result.put("humMaxValue"+dataIndex, hum.getMinValue());
+        result.put("humMaxTime"+dataIndex, hum.getMaxTime());
+        result.put("humMaxSensorId"+dataIndex, hum.getMaxId());
+        result.put("humMinValue"+dataIndex, hum.getMinValue());
+        result.put("humMinTime"+dataIndex, hum.getMinTime());
+        result.put("humMinSensorId"+dataIndex, hum.getMinId());
     }
 
     @Override
@@ -1187,7 +1196,7 @@ public class IndexServiceImpl implements IndexService {
                     humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
                     humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                 }
-                processTemHumMavMin(pduEnvHourDo, dataType, result);
+//                processTemHumMavMin(pduEnvHourDo, dataType, result);
 
                 LineSeries temLineSeries = new LineSeries();
                 LineSeries humLineSeries = new LineSeries();
@@ -1236,7 +1245,7 @@ public class IndexServiceImpl implements IndexService {
         Map result = new HashMap<>();
         CabinetChartResBase temResult = new CabinetChartResBase();
         CabinetChartResBase humResult = new CabinetChartResBase();
-
+        int dataIndex = 1;
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id), false);
             if (cabinetPdu == null) {
@@ -1309,7 +1318,6 @@ public class IndexServiceImpl implements IndexService {
                     humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
                     humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                 }
-                processTemHumMavMin(pduEnvHourDo, dataType, result);
 
 
                 LineSeries temLineSeries = new LineSeries();
@@ -1326,6 +1334,8 @@ public class IndexServiceImpl implements IndexService {
                     temName = "冷通道下层温度传感器";
                     humName = "冷通道下层湿度传感器";
                 }
+                processTemHumMavMin(pduEnvHourDo, dataType, result, temName, humName, dataIndex);
+                dataIndex++;
                 temLineSeries.setName(temName);
                 temLineSeries.setData(temList);
                 temLineSeries.setHappenTime(temHappenTime);
@@ -1364,7 +1374,7 @@ public class IndexServiceImpl implements IndexService {
             Map<Integer, Map<Integer, List<PduEnvHourDo>>> hPduEnvHourDoMap = hData.stream()
                     .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
                     .collect(Collectors.groupingBy(PduEnvHourDo::getPduId, Collectors.groupingBy(PduEnvHourDo::getSensorId)));
-                isFisrt = false;
+            isFisrt = false;
             for (CabinetEnvSensor cabinetEnvSensor : hCabinetEnvSensors) {
                 int position = cabinetEnvSensor.getPosition();
                 Integer i = pduIdMap.get(pduMap.get(String.valueOf(cabinetEnvSensor.getPathPdu())));
@@ -1391,7 +1401,7 @@ public class IndexServiceImpl implements IndexService {
                     humList = pduEnvHourDo.stream().map(PduEnvHourDo::getHumMinValue).map(Float::valueOf).collect(Collectors.toList());
                     humHappenTime = pduEnvHourDo.stream().map(item -> item.getHumMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
                 }
-                processTemHumMavMin(pduEnvHourDo, dataType, result);
+
 
                 LineSeries temLineSeries = new LineSeries();
                 LineSeries humLineSeries = new LineSeries();
@@ -1407,6 +1417,8 @@ public class IndexServiceImpl implements IndexService {
                     temName = "热通道下层温度传感器";
                     humName = "热通道下层湿度传感器";
                 }
+                processTemHumMavMin(pduEnvHourDo, dataType, result, temName, humName, dataIndex);
+                dataIndex++;
                 temLineSeries.setName(temName);
                 temLineSeries.setData(temList);
                 temLineSeries.setHappenTime(temHappenTime);
@@ -1436,10 +1448,6 @@ public class IndexServiceImpl implements IndexService {
         return result;
     }
 
-    @Override
-    public Map<String, Double> getPduEleByCabinet(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
-        return Collections.emptyMap();
-    }
 
     @Override
     public Map getCabinetEnvHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
@@ -1705,42 +1713,42 @@ public class IndexServiceImpl implements IndexService {
                 DataProcessingUtils.FactorAResult aFactor = (DataProcessingUtils.FactorAResult) analyzeFactorData.get("aFactor");
                 DataProcessingUtils.FactorBResult bFactor = (DataProcessingUtils.FactorBResult) analyzeFactorData.get("bFactor");
 
-                if (dataType != 0){
-                    result.put("pName"+1,"总功率因数");
-                    result.put("fMax"+1, totalFactor.totalFactorMax);
-                    result.put("fMaxTime"+1, sdf.format(totalFactor.totalFactorMaxTime));
-                    result.put("fMin"+1, totalFactor.totalFactorMin);
-                    result.put("fMinTime"+1, sdf.format(totalFactor.totalFactorMinTime));
+                if (dataType != 0) {
+                    result.put("pName" + 1, "总功率因数");
+                    result.put("fMax" + 1, totalFactor.totalFactorMax);
+                    result.put("fMaxTime" + 1, sdf.format(totalFactor.totalFactorMaxTime));
+                    result.put("fMin" + 1, totalFactor.totalFactorMin);
+                    result.put("fMinTime" + 1, sdf.format(totalFactor.totalFactorMinTime));
 
-                    result.put("pName"+2,"A路功率因数");
-                    result.put("fMax"+2, aFactor.aFactorMax);
-                    result.put("fMaxTime"+2, sdf.format(aFactor.aFactorMaxTime));
-                    result.put("fMin"+2, aFactor.aFactorMin);
-                    result.put("fMinTime"+2, sdf.format(aFactor.aFactorMinTime));
+                    result.put("pName" + 2, "A路功率因数");
+                    result.put("fMax" + 2, aFactor.aFactorMax);
+                    result.put("fMaxTime" + 2, sdf.format(aFactor.aFactorMaxTime));
+                    result.put("fMin" + 2, aFactor.aFactorMin);
+                    result.put("fMinTime" + 2, sdf.format(aFactor.aFactorMinTime));
 
-                    result.put("pName"+3,"B路功率因数");
-                    result.put("fMax"+3, bFactor.bFactorMax);
-                    result.put("fMaxTime"+3, sdf.format(bFactor.bFactorMaxTime));
-                    result.put("fMin"+3, bFactor.bFactorMin);
-                    result.put("fMinTime"+3, sdf.format(bFactor.bFactorMinTime));
-                }else {
-                    result.put("pName"+1,"总功率因数");
-                    result.put("fMax"+1, totalFactor.totalFactorMax);
-                    result.put("fMaxTime"+1, "无");
-                    result.put("fMin"+1, totalFactor.totalFactorMin);
-                    result.put("fMinTime"+1, "无");
+                    result.put("pName" + 3, "B路功率因数");
+                    result.put("fMax" + 3, bFactor.bFactorMax);
+                    result.put("fMaxTime" + 3, sdf.format(bFactor.bFactorMaxTime));
+                    result.put("fMin" + 3, bFactor.bFactorMin);
+                    result.put("fMinTime" + 3, sdf.format(bFactor.bFactorMinTime));
+                } else {
+                    result.put("pName" + 1, "总功率因数");
+                    result.put("fMax" + 1, totalFactor.totalFactorMax);
+                    result.put("fMaxTime" + 1, "无");
+                    result.put("fMin" + 1, totalFactor.totalFactorMin);
+                    result.put("fMinTime" + 1, "无");
 
-                    result.put("pName"+2,"A路功率因数");
-                    result.put("fMax"+2, aFactor.aFactorMax);
-                    result.put("fMaxTime"+2, "无");
-                    result.put("fMin"+2, aFactor.aFactorMin);
-                    result.put("fMinTime"+2, "无");
+                    result.put("pName" + 2, "A路功率因数");
+                    result.put("fMax" + 2, aFactor.aFactorMax);
+                    result.put("fMaxTime" + 2, "无");
+                    result.put("fMin" + 2, aFactor.aFactorMin);
+                    result.put("fMinTime" + 2, "无");
 
-                    result.put("pName"+3,"B路功率因数");
-                    result.put("fMax"+3, bFactor.bFactorMax);
-                    result.put("fMaxTime"+3, "无");
-                    result.put("fMin"+3, bFactor.bFactorMin);
-                    result.put("fMinTime"+3, "无");
+                    result.put("pName" + 3, "B路功率因数");
+                    result.put("fMax" + 3, bFactor.bFactorMax);
+                    result.put("fMaxTime" + 3, "无");
+                    result.put("fMin" + 3, bFactor.bFactorMin);
+                    result.put("fMinTime" + 3, "无");
                 }
 
 
@@ -1762,7 +1770,7 @@ public class IndexServiceImpl implements IndexService {
 
     private String getSeriesName(String preFix, String type, Integer dataType) {
         String midName = "";
-        switch (dataType){
+        switch (dataType) {
             case 1:
                 midName = "最大";
                 break;

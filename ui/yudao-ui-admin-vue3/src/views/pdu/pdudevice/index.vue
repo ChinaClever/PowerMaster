@@ -85,7 +85,7 @@
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;resetQuery();getNavList();getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
       </el-form>
       <el-form
@@ -135,11 +135,12 @@
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
-      </el-form>      
+      </el-form>
     </template>
     <template #Content >
      <div v-if="switchValue && list.length > 0" class="table-height">
-      <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <!--  @cell-dblclick="toPDUDisplayScreen" -->
+      <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -156,6 +157,7 @@
                 trigger="hover"
                 :content="scope.row.pduAlarm"
                 v-if="scope.row.status == 2"
+                :popper-style="{ 'white-space': 'pre-line' }"
               >
                 <template #reference>
                   <el-tag type="danger">告警</el-tag>
@@ -227,10 +229,27 @@
         <el-table-column label="网络地址" align="center" prop="devKey" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
-            <el-tag type="info" v-if="scope.row.deleted">已删除</el-tag>
+            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
+            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow != 0">正常</el-tag>
+            <el-tag type="warning" v-if="scope.row.status == 1">预警</el-tag>
+            <el-popover
+                placement="top-start"
+                title="告警内容"
+                :width="500"
+                trigger="hover"
+                :content="scope.row.pduAlarm"
+                v-if="scope.row.status == 2"
+                :popper-style="{ 'white-space': 'pre-line' }"
+              >
+                <template #reference>
+                  <el-tag type="danger">告警</el-tag>
+                </template>
+              </el-popover>
+            <el-tag type="info" v-if="scope.row.status == 4">故障</el-tag>
+            <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
+        <el-table-column label="删除时间" align="center" prop="dataUpdateTime" :class-name="ip" /> 
         <el-table-column label="操作" align="center">
           <template #default="scope">
             <el-button
@@ -283,14 +302,14 @@
               <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
               <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
               <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
-
               <el-popover
                 placement="top-start"
                 title="告警内容"
-                :width="1000"
+                :width="350"
                 trigger="hover"
                 :content="item.pduAlarm"
                 v-if="item.status == 2"
+                :popper-style="{ 'white-space': 'pre-line' }"
               >
                 <template #reference>
                   <el-tag type="danger">告警</el-tag>
@@ -454,15 +473,15 @@ const handleCheck = async (row) => {
   })
   if(haveCabinet){
     queryParams.pduKeyList = pduKeys
-    if(row[0].name == '未绑定') {
-      queryParams.status = [0,1,2,3,4]
-    } else {
-      queryParams.status = []
-    }
+    // if(row[0].name == '未绑定') {
+    //   queryParams.status = [0,1,2,3,4]
+    // } else {
+    //   queryParams.status = []
+    // }
     queryDeletedPageParams.pduKeyList = pduKeys
   }else{
     queryParams.pduKeyList = null;
-    queryParams.status = []
+    // queryParams.status = []
     queryDeletedPageParams.pduKeyList = null;
   }
  if(switchValue.value ==2){
@@ -534,6 +553,7 @@ const queryParams = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds:[],
+    pduKeyList:[] ,
 }) as any
 const queryParamsAll = reactive({
   pageNo: 1,
@@ -555,6 +575,7 @@ const queryDeletedPageParams = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds:[],
+    pduKeyList:[] ,
 }) as any
 const queryFormRef = ref() // 搜索的表单
 const queryFormRef2 = ref()
@@ -596,12 +617,12 @@ const getDeletedList = async () => {
   try {
     const data = await PDUDeviceApi.getDeletedPDUDevice(queryDeletedPageParams);
     deletedList.value = data.list
-    var tableIndex = 0;
-    deletedList.value.forEach((obj) => {
-      obj.tableId = (queryDeletedPageParams.pageNo - 1) * queryDeletedPageParams.pageSize + ++tableIndex;
-      const splitArray = obj.dataUpdateTime.split(' ');
-      obj.dataUpdateTime = splitArray[1];
-    });  
+    // var tableIndex = 0;
+    // deletedList.value.forEach((obj) => {
+    //   obj.tableId = (queryDeletedPageParams.pageNo - 1) * queryDeletedPageParams.pageSize + ++tableIndex;
+    //   const splitArray = obj.dataUpdateTime.split(' ');
+    //   obj.dataUpdateTime = splitArray[1];
+    // });  
     deletedTotal.value = data.total
   } catch (error) {
     
@@ -720,10 +741,13 @@ const resetQuery = () => {
   queryFormRef.value.resetFields();
   queryFormRef2.value.resetFields();
   butColor.value = 0;
-  //statusList.forEach((item) => item.selected = true)
   queryParams.status = [];
   onclickColor.value = -1;
-  handleQuery()
+  queryParams.pduKeyList = null;
+  queryDeletedPageParams.pduKeyList = null;
+  // handleQuery()
+    getList();
+  getNavList();
 }
 
 /** 添加/修改操作 */

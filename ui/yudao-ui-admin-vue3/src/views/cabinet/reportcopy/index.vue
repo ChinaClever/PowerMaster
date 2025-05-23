@@ -195,6 +195,91 @@
             </el-row>
           </div>
 
+                    <div class="pageBox" >
+            <div class="page-conTitle">
+              配电设备信息
+            </div>
+            <br/>
+            <!-- <el-row :gutter="24" >
+              <el-col :span="24 - serChartContainerWidth">
+                <div class="centered-div">
+                  <el-table 
+                    :data="rack" 
+                    :header-cell-style="arraySpanMethod"
+                    >
+                    <el-table-column  align="center" label="网络地址" prop="name"  />
+                    <el-table-column  align="center" label="状态" prop="totalPower" />
+                    <el-table-column  align="center" label="总有功功率" prop="acurrent" />
+                    <el-table-column  align="center" label="总无功功率" prop="bcurrent" />
+                    <el-table-column  align="center" label="总视在功率" prop="bcurrent" />
+                    <el-table-column  align="center" label="总功率因数" prop="bcurrent" />
+                    <el-table-column  align="center" label="耗电量" prop="bcurrent" />
+                    <el-table-column  align="center" label="电压不平衡" prop="bcurrent" />
+                    <el-table-column  align="center" label="电流不平衡" prop="bcurrent" />
+                    <el-table-column label="操作" align="center">
+                    <template #default="scope">
+                    <el-button v-if="switchValue==0" @click="generateDailyReport(scope.row.devKey)">日报</el-button>
+                    <el-button v-if="switchValue==1" @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
+                    </template>
+
+      </el-table-column>
+                  </el-table>
+                </div>
+              </el-col>
+            </el-row> -->
+          </div>
+              <el-table :data="tableData" style="width: 100%" :border="true">
+                                    <el-table-column  align="center" label="序号" type="index" prop="id" width="100px"/>
+      <el-table-column prop="devKey" label="网络地址" align="center"/>
+      <el-table-column prop="runStatus" label="状态" align="center">
+        <template #default="scope">
+          <el-tag
+            v-if="scope.row.runStatus == 1"
+            type="default"
+          >
+            正常
+          </el-tag>
+          <el-tag
+            v-if="scope.row.runStatus == 2"
+            type="warning"
+          >
+            告警
+          </el-tag>
+          <el-popover
+            placement="top-start"
+            title="告警内容"
+            :width="500"
+            trigger="hover"
+            :content="scope.row.pduAlarm"
+            v-if="scope.row.runStatus == 2"
+          >
+            <template #reference>
+              <el-tag type="danger">告警</el-tag>
+            </template>
+          </el-popover>
+          <el-tag
+            v-if="scope.row.runStatus == 0"
+            type="info"
+          >
+            离线
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="powActive" label="总有功功率" align="center"/>
+      <el-table-column prop="powReactive" label="总无功功率" align="center"/>
+      <el-table-column prop="powApparent" label="总视在功率" align="center"/>
+      <el-table-column prop="powFactor" label="总功率因数" align="center"/>
+      <el-table-column prop="eleActive" label="耗电量" align="center"/>
+      <el-table-column prop="volUnbalance" label="电压不平衡" align="center"/>
+      <el-table-column prop="curUnbalance" label="电流不平衡" align="center"/>
+      <el-table-column label="操作" align="center">
+        <template #default="scope">
+          <el-button v-if="switchValue == 0" @click="generateDailyReport(scope.row.devKey)">日报</el-button>
+          <el-button v-else-if="switchValue == 1" @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
           <!-- <div class="pageBox" >
             <div class="page-conTitle">
               机架基本信息
@@ -291,9 +376,9 @@
               <span class="power-title">{{lineCurVolData.res[`curName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 1}`]}})</span></span>
-  <span class="power-title" v-if="index+2<=lineCurList?.series.length-1 "> {{lineCurVolData.res[`curName${index + 2}`]}}</span>
-  <span class="power-value" v-if="index+2<=lineCurList?.series.length-1 ">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value" v-if="index+2<=lineCurList?.series.length-1 ">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 2}`]}})</span></span>
+  <span class="power-title" v-if="index+2<=lineCurList?.series.length "> {{lineCurVolData.res[`curName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 2}`]}})</span></span>
 </div>
           </div>
             <ACurLine class="adaptiveStyle" :list="lineCurList"  :dataType="queryParams.dataType"/>
@@ -307,9 +392,9 @@
               <span class="power-title">{{lineCurVolData.res[`volName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 1}`]}})</span></span>
-  <span class="power-title" v-if="index+2<=lineVolList?.series.length-1 ">{{lineCurVolData.res[`volName${index + 2}`]}}</span>
-  <span class="power-value" v-if="index+2<=lineVolList?.series.length-1 ">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value" v-if="index+2<=lineVolList?.series.length-1 ">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 2}`]}})</span></span>
+  <span class="power-title" v-if="index+2<=lineVolList?.series.length ">{{lineCurVolData.res[`volName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 2}`]}})</span></span>
 </div>
 
           </div>
@@ -398,8 +483,19 @@
             <div class="page-conTitle">
              机柜温度曲线
             </div>
-            <p class="paragraph" v-show="iceTemList.temMaxValue">本周期内，最高温度{{iceTemList.temMaxValue}}°C， 最高温度发生时间{{iceTemList.temMaxTime}}，由温度传感器{{iceTemList.temMaxSensorId}}采集得到</p>
-            <p class="paragraph" v-show="iceTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{iceTemList.temMinValue}}°C， 最高温度发生时间{{iceTemList.temMinTime}}，由温度传感器{{iceTemList.temMinSensorId}}采集得到</p>
+            <!-- <p class="paragraph" v-show="iceTemList.temMaxValue">本周期内，最高温度{{iceTemList.temMaxValue}}°C， 最高温度发生时间{{iceTemList.temMaxTime}}，由温度传感器{{iceTemList.temMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="iceTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{iceTemList.temMinValue}}°C， 最高温度发生时间{{iceTemList.temMinTime}}，由温度传感器{{iceTemList.temMinSensorId}}采集得到</p> -->
+          <div v-for="(sensor, index) in temList?.series" :key="index">
+        <div class="power-section single-line" v-if="index %2==0">
+        <span class="power-title">{{ allTemHumData[`temName${index + 1}`] }}+{{allTemHumData[`temMinSensorId${index + 1}`]}}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`temMaxValue${index + 1}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`temMinValue${index + 1}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMinTime${index + 1}`] }})</span></span>
+        
+        <span class="power-title">{{ allTemHumData[`temName${index + 1}`] }}+{{allTemHumData[`temMinSensorId${index + 2}`]}}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`temMaxValue${index + 2}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`temMinValue${index + 2}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMinTime${index + 2}`] }})</span></span>
+      </div>
+            </div>
             <EnvTemLine class="Container" width="70vw" height="58vh" :list="temList" :dataType="queryParams.dataType"/>
           </div>
           <!-- <div class="pageBox" v-if="visControll.hotTemVis">
@@ -414,8 +510,19 @@
             <div class="page-conTitle">
              机柜湿度曲线
             </div>
-            <p class="paragraph" v-show="iceTemList.humMaxValue">本周期内，最高湿度{{iceTemList.humMaxValue}}%RH， 最高湿度发生时间{{iceTemList.humMaxTime}}，由湿度传感器{{iceTemList.humMaxSensorId}}采集得到</p>
-            <p class="paragraph" v-show="iceTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{iceTemList.humMinValue}}%RH， 最高湿度发生时间{{iceTemList.humMinTime}}，由湿度传感器{{iceTemList.humMinSensorId}}采集得到</p>
+            <!-- <p class="paragraph" v-show="iceTemList.humMaxValue">本周期内，最高湿度{{iceTemList.humMaxValue}}%RH， 最高湿度发生时间{{iceTemList.humMaxTime}}，由湿度传感器{{iceTemList.humMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="iceTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{iceTemList.humMinValue}}%RH， 最高湿度发生时间{{iceTemList.humMinTime}}，由湿度传感器{{iceTemList.humMinSensorId}}采集得到</p> -->
+          <div v-for="(sensor, index) in humList?.series" :key="index">
+        <div class="power-section single-line" v-if="index %2==0">
+        <span class="power-title">{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 1}`]}}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 1}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 1}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMinTime${index + 1}`] }})</span></span>
+        
+        <span class="power-title">{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 2}`]}}极值：</span>
+        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMinTime${index + 2}`] }})</span></span>
+      </div>
+            </div>
             <EnvHumLine class="Container" width="70vw" height="58vh" :list="humList" :dataType="queryParams.dataType"/>
           </div>
         </div>
@@ -466,7 +573,7 @@ import { htmlPdf } from "@/utils/htmlToPDF.js"
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
-
+const tableData = ref([]);
 const AcurVolData = ref();
 const BcurVolData = ref();
 const dataLoaded = ref(false);
@@ -589,15 +696,49 @@ const handleDayPick = () => {
   
 }
 
+
+
+
 const { push } = useRouter()
 
-const generateDailyReport = (id) => {
-      push('/u/rackreport?id='+id+'&Type='+0);
+const now1 = ref()
+const old1 = ref()
+const new1 = ref()
+
+const generateDailyReport = (devKey) => {
+  now1.value = new Date();
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = old1.value.split(" ")[0] + " " + "23:59:59";
+  
+      // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
+      console.log('生成日报报告', devKey);
+      push('/report/pdureport?devKey='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
     };
 
-    const generateMonthlyReport = (id) => {
-      push('/u/rackreport?id='+id+'&Type='+1);
+    const generateMonthlyReport = (devKey) => {
+      now1.value = new Date();
+  now1.value.setDate(1)
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = new Date(old1.value)
+  new1.value.setMonth(new1.value.getMonth() + 1);
+  new1.value.setDate(new1.value.getDate() - 1);
+  new1.value.setHours(23,59,59)
+  new1.value = getFullTimeByDate(new1.value);
+      // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
+      console.log('生成月报报告', devKey);
+      push('/report/pdureport?devKey='+devKey+'&timeType='+1+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
     };
+
+
+// const generateDailyReport = (id) => {
+//       push('/u/rackreport?id='+id+'&Type='+0);
+//     };
+
+//     const generateMonthlyReport = (id) => {
+//       push('/u/rackreport?id='+id+'&Type='+1);
+//     };
 
 
 const handleMonthPick = () => {
@@ -660,7 +801,8 @@ const queryParams = reactive({
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
   timeType: 1,
   cascadeAddr : 0,
-    dataType : 1
+    dataType : 1,
+    pduKeyList : []
 }) as any
 
 const serverRoomArr =  ref([]) as any
@@ -1069,7 +1211,44 @@ const handleConsumeQuery = async () => {
   } else{
     visControll.eqVis = false;
   }
+  
+  // 设置 pduKeyList，确保只包含非空值
+  const pduKeys = [eqData.value?.pduKeyA, eqData.value?.pduKeyB].filter(key => key != null);
+  queryParams.pduKeyList = pduKeys;
+  const baseInfoList = await IndexApi.getPduBasicInformation(queryParams);
+
+const processedData = baseInfoList.map(item => ({
+    devKey: item.ipAddress,
+    runStatus: item.status,
+    powApparent: formatNumber(item.powApparent),
+    powActive: formatNumber(item.powActive),
+    powReactive: formatNumber(item.powReactive),
+    powerFactor: formatNumber(item.powerFactor),
+    eleActive: formatNumber(item.eleActive),
+    volUnbalance : formatNumber(item.volUnbalance)+'%',
+    curUnbalance : formatNumber(item.curUnbalance)+'%',
+}));
+
+// 将处理后的数据存储在 tableData.value 中
+tableData.value = processedData;
+
+// 输出最终的 tableData.value
+console.log('tableData.value', tableData.value);
+
+
 }
+// 对数据进行处理，保留三位小数
+// 辅助函数：处理数值并保留三位小数
+function formatNumber(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0; // 或者返回其他默认值
+    }
+    return Number(value.toFixed(3));
+}
+
+  
+
+
 
 const handleDetailQuery = async () => {
   var temp = [] as any;

@@ -172,11 +172,4 @@ public class IndexController {
     public CommonResult<Map<String, Double>> getEleByCabinet(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
         return success(indexService.getEleByCabinet(Id,timeType,oldTime,newTime));
     }
-
-    @GetMapping("/getPduEleByCabinet")
-    @Operation(summary = "根据机柜id获取Pdu耗电量")
-    public CommonResult<Map<String, Double>> getPduEleByCabinet(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
-        return success(indexService.getPduEleByCabinet(Id,timeType,oldTime,newTime));
-    }
-
 }
