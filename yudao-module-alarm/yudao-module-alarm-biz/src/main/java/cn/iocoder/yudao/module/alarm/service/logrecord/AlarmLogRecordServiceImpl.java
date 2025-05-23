@@ -5,11 +5,13 @@ import cn.iocoder.yudao.framework.common.constant.JobHandlerConstants;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleStatisConfig;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCronConfig;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomStatisConfig;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -566,11 +568,53 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
                 if (!cabinetCronConfigOld.getEqDayCron().equals(cabinetCronConfigNew.getEqDayCron())) {
                     // 更新每日定时任务
-                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_DAY_ALARM_JOB, cabinetCronConfigNew.getEqDayCron());
+                    jobApi.updateJobCronByHandler(JobHandlerConstants.CABINET_DAY_ALARM_JOB, cabinetCronConfigNew.getEqDayCron());
                 }
                 if (!cabinetCronConfigOld.getEqMonthCron().equals(cabinetCronConfigNew.getEqMonthCron())) {
                     // 更新每月定时任务
-                    jobApi.updateCabinetJobCron(JobHandlerConstants.CABINET_MONTH_ALARM_JOB, cabinetCronConfigNew.getEqMonthCron());
+                    jobApi.updateJobCronByHandler(JobHandlerConstants.CABINET_MONTH_ALARM_JOB, cabinetCronConfigNew.getEqMonthCron());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void updateAisleAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            List<AisleStatisConfig> aisleCronConfigListOld = BeanUtils.toBean(oldMaps, AisleStatisConfig.class);
+            List<AisleStatisConfig> aisleCronConfigListNew = BeanUtils.toBean(newMaps, AisleStatisConfig.class);
+            for (int i = 0; i < aisleCronConfigListOld.size(); i++) {
+                AisleStatisConfig aisleCronConfigOld = aisleCronConfigListOld.get(i);
+                AisleStatisConfig aisleCronConfigNew = aisleCronConfigListNew.get(i);
+
+                if (!aisleCronConfigOld.getEqDayCron().equals(aisleCronConfigNew.getEqDayCron())) {
+                    // 更新每日定时任务
+                    jobApi.updateJobCronByHandler(JobHandlerConstants.AISLE_DAY_ALARM_JOB, aisleCronConfigNew.getEqDayCron());
+                }
+                if (!aisleCronConfigOld.getEqMonthCron().equals(aisleCronConfigNew.getEqMonthCron())) {
+                    // 更新每月定时任务
+                    jobApi.updateJobCronByHandler(JobHandlerConstants.AISLE_MONTH_ALARM_JOB, aisleCronConfigNew.getEqMonthCron());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void updateRoomAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        if (!CollectionUtils.isEmpty(oldMaps) && !CollectionUtils.isEmpty(newMaps)) {
+            List<RoomStatisConfig> roomCronConfigListOld = BeanUtils.toBean(oldMaps, RoomStatisConfig.class);
+            List<RoomStatisConfig> roomCronConfigListNew = BeanUtils.toBean(newMaps, RoomStatisConfig.class);
+            for (int i = 0; i < roomCronConfigListOld.size(); i++) {
+                RoomStatisConfig roomCronConfigOld = roomCronConfigListOld.get(i);
+                RoomStatisConfig roomCronConfigNew = roomCronConfigListNew.get(i);
+
+                if (!roomCronConfigOld.getEqDayCron().equals(roomCronConfigNew.getEqDayCron())) {
+                    // 更新每日定时任务
+                    jobApi.updateJobCronByHandler(JobHandlerConstants.ROOM_DAY_ALARM_JOB, roomCronConfigNew.getEqDayCron());
+                }
+                if (!roomCronConfigOld.getEqMonthCron().equals(roomCronConfigNew.getEqMonthCron())) {
+                    // 更新每月定时任务
+                    jobApi.updateJobCronByHandler(JobHandlerConstants.ROOM_MONTH_ALARM_JOB, roomCronConfigNew.getEqMonthCron());
                 }
             }
         }

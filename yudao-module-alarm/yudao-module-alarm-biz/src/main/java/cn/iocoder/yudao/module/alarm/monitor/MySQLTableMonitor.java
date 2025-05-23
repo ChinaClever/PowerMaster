@@ -114,7 +114,9 @@ public class MySQLTableMonitor {
                             DBTable.CABINET_INDEX,
                             DBTable.AISLE_INDEX,
                             DBTable.ROOM_INDEX,
-                            DBTable.CABINET_CRON_CONFIG
+                            DBTable.CABINET_CRON_CONFIG,
+                            DBTable.AISLE_CRON_CONFIG,
+                            DBTable.ROOM_CRON_CONFIG
                     ));
                     if (columns != null && tableList.contains(tableName)) {
                         if (!repeatMessage(event)) {
@@ -151,6 +153,12 @@ public class MySQLTableMonitor {
                                 break;
                             case DBTable.CABINET_CRON_CONFIG:
                                 alarmLogRecordService.updateCabinetAlarmJob(oldMaps,newMaps);
+                                break;
+                            case DBTable.AISLE_CRON_CONFIG:
+                                alarmLogRecordService.updateAisleAlarmJob(oldMaps,newMaps);
+                                break;
+                            case DBTable.ROOM_CRON_CONFIG:
+                                alarmLogRecordService.updateRoomAlarmJob(oldMaps,newMaps);
                                 break;
                             default:
                                 break;

@@ -37,9 +37,9 @@ public class JobApiImpl implements JobApi{
     }
 
     @Override
-    public void updateCabinetJobCron(String handlerName, String cron) {
+    public void updateJobCronByHandler(String handlerName, String cron) {
         try {
-            jobService.updateCabinetJobCron(handlerName,cron);
+            jobService.updateJobCronByHandler(handlerName,cron);
         } catch (Exception e) {
             log.error("更新定时任务异常：" + e.getMessage());
         }

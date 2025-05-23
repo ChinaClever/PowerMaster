@@ -21,4 +21,8 @@ public class DBTable {
 
     public static final String CABINET_CRON_CONFIG = "cabinet_cron_config";
 
+    public static final String AISLE_CRON_CONFIG = "aisle_cron_config";
+
+    public static final String ROOM_CRON_CONFIG = "room_cron_config";
+
 }

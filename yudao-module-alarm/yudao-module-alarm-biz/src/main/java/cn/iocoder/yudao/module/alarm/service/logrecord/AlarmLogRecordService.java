@@ -114,6 +114,18 @@ public interface AlarmLogRecordService {
      */
     void updateCabinetAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
 
+    /**
+     * 当柜列电量定时统计任务发生变更时，同步修改告警定时任务
+     *
+     */
+    void updateAisleAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
+
+    /**
+     * 当机房电量定时统计任务发生变更时，同步修改告警定时任务
+     *
+     */
+    void updateRoomAlarmJob(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
 
     /**
      * 当柜列报警时，插入告警记录

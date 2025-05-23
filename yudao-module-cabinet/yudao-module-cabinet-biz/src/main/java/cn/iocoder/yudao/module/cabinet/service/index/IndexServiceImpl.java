@@ -2,42 +2,28 @@ package cn.iocoder.yudao.module.cabinet.service.index;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
-
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
-
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DataTypeEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
-import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
 import cn.iocoder.yudao.module.cabinet.utils.DataProcessingUtils;
-import cn.iocoder.yudao.module.cabinet.utils.DateTimeUtils;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.math3.analysis.function.Pow;
-import org.apache.poi.hpsf.Decimal;
-import org.elasticsearch.action.search.MultiSearchRequest;
-import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -49,28 +35,20 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
-
 import org.springframework.validation.annotation.Validated;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.*;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
 import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
-
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;

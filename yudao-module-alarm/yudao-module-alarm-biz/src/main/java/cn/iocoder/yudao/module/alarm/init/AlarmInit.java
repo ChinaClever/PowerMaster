@@ -81,7 +81,9 @@ public class AlarmInit {
                     DBTable.AISLE_INDEX,
                     DBTable.ROOM_INDEX,
                     DBTable.ALARM_LOG_RECORD,
-                    DBTable.CABINET_CRON_CONFIG
+                    DBTable.CABINET_CRON_CONFIG,
+                    DBTable.AISLE_CRON_CONFIG,
+                    DBTable.ROOM_CRON_CONFIG
             ));
             binLogConstants.setTableList(tableList);
             try {
