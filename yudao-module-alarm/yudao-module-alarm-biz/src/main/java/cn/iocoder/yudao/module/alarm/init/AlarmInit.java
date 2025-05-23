@@ -100,7 +100,7 @@ public class AlarmInit {
             // 定时任务共同属性
             Map<String, Object> map = new HashMap<>();
             map.put("retryCount", 3);
-            map.put("retryInterval", 1000);
+            map.put("retryInterval", 300000);
             map.put("monitorTimeout", 1000);
 
             CabinetCronConfig cabinetCronConfig = cabinetCronCfgMapper.selectOne(null);
