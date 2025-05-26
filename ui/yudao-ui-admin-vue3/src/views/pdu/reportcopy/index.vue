@@ -1895,7 +1895,25 @@ const formRef = ref()
 //  lineidChartOne.resize();
 //});
 /** 初始化 **/
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
 onMounted( async () =>  {
+  let devKey = route.query?.devKey as string | undefined;
+  let timeType = route.query?.timeType as string | undefined;
+  let oldTime = route.query?.oldTime as string | undefined;
+  let newTime = route.query?.newTime as string | undefined;
+  let visAllReport = route.query?.visAllReport as string | undefined;
+
+  if (devKey != undefined) {
+    queryParams.ipAddr = devKey;
+    queryParams.devKey = devKey;
+    queryParams.timeType = timeType;
+    queryParams.oldTime = oldTime;
+    queryParams.newTime = newTime;
+    queryParams.visAllReport = visAllReport;
+    getList();
+    initChart();
+  }
   getNavList()
   // getList();
   // initChart();
