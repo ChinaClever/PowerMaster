@@ -27,4 +27,7 @@ public interface PduIndexMapper extends BaseMapperX<PduIndex> {
     Page<PduIndex> selectQuery(@Param("page") Page<PduIndex> page, @Param("pduVo") PDUDevicePageReqVO pduVo);
 
     Page<PduIndex> selectCurbanceQuery(@Param("page") Page<PduIndex> page, @Param("pduVo") PDUDevicePageReqVO pduVo);
+
+    BalancedDistributionStatisticsVO getBalancedDistributionVol();
+
 }

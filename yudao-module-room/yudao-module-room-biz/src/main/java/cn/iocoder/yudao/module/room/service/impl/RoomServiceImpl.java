@@ -1122,7 +1122,7 @@ public class RoomServiceImpl implements RoomService {
     public Integer newSelectRoomByName(String name, Integer id) {
         RoomIndex one = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, name).last("limit 1"));
         if (Objects.nonNull(one)){
-            if (Objects.equals(one.getIsDelete(),0)) {
+            if (!one.getIsDelete()) {
                 if (Objects.isNull(id)) {
                     BusinessAssert.error(10010, "当前机房名称已存在");
                 }
@@ -1133,8 +1133,6 @@ public class RoomServiceImpl implements RoomService {
                 return one.getId();
             }
         }
-
-
         return null;
     }
 
