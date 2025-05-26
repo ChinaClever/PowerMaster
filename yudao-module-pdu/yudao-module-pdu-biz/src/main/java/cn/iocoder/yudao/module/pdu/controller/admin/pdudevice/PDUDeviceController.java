@@ -91,7 +91,7 @@ public class PDUDeviceController {
 
     @PostMapping("/line/getMaxCur")
     @Operation(summary = "获得PDU电流最大值的相数据")
-    public CommonResult<PageResult<PDULineRes>> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
+    public CommonResult<MaxCurAndOtherData> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDUMaxCurData(pageReqVO));
     }
 

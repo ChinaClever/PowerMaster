@@ -50,7 +50,7 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
      */
     int updaterestorerCabinet(@Param("id") Integer id);
 
-    void updateByCabinetCfg(@Param("vo") CabinetSaveVo vo);
+    Integer updateByCabinetCfg(@Param("vo") CabinetSaveVo vo);
 
     List<RoomCabinetDTO> roomCabinetList(@Param("id") int id, @Param("aisleIds") List<Integer> aisleIds);
 

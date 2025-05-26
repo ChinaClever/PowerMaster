@@ -1,24 +1,26 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo;
 
 import cn.hutool.core.date.DateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 @Data
 public class MaxCurAndOtherData {
-    Double maxValue;
 
-    DateTime maxTime;
+    private BigDecimal maxValue;
 
-    Integer pdu_id;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime maxTime;
 
-    Integer line_id;
+    private Integer pduId;
 
-    public MaxCurAndOtherData(Double maxValue, DateTime maxTime, Integer pdu_id, Integer line_id) {
-        this.maxValue = maxValue;
-        this.maxTime = maxTime;
-        this.pdu_id = pdu_id;
-        this.line_id = line_id;
-    }
-    public MaxCurAndOtherData() {
-    }
+    private Integer lineId;
+
+    private String unit;
+
+    private String location;
+
+    private String devKey;
 }

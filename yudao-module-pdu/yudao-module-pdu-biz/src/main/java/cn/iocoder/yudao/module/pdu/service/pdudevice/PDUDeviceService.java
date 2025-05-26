@@ -55,7 +55,7 @@ public interface PDUDeviceService {
 
     Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO);
 
-    PageResult<PDULineRes> getPDUMaxCurData(PDUDevicePageReqVO pageReqVO);
+    MaxCurAndOtherData getPDUMaxCurData(PDUDevicePageReqVO pageReqVO);
 
     String getLocationByDevKey(String devKey);
 
