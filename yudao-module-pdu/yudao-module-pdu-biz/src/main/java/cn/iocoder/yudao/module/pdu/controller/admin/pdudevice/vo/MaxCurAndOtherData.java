@@ -9,9 +9,9 @@ import java.math.BigDecimal;
 @Data
 public class MaxCurAndOtherData {
 
-    private BigDecimal maxValue;
+    private String maxValue;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     private DateTime maxTime;
 
     private Integer pduId;

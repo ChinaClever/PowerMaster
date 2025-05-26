@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class PDULineRes extends PDUDeviceDO {
 
@@ -10,39 +12,39 @@ public class PDULineRes extends PDUDeviceDO {
 
     private String devKey;
 
-    private Float L1MaxCur;
+    private BigDecimal L1MaxCur;
 
     private String L1MaxCurTime;
 
-    private Float L1MaxVol;
+    private BigDecimal L1MaxVol;
 
     private String L1MaxVolTime;
 
-    private Float L1MaxPow;
+    private BigDecimal L1MaxPow;
 
     private String L1MaxPowTime;
 
-    private Float L2MaxCur;
+    private BigDecimal L2MaxCur;
 
     private String L2MaxCurTime;
 
-    private Float L2MaxVol;
+    private BigDecimal L2MaxVol;
 
     private String L2MaxVolTime;
 
-    private Float L2MaxPow;
+    private BigDecimal L2MaxPow;
 
     private String L2MaxPowTime;
 
-    private Float L3MaxCur;
+    private BigDecimal L3MaxCur;
 
     private String L3MaxCurTime;
 
-    private Float L3MaxVol;
+    private BigDecimal L3MaxVol;
 
     private String L3MaxVolTime;
 
-    private Float L3MaxPow;
+    private BigDecimal L3MaxPow;
 
     private String L3MaxPowTime;
 

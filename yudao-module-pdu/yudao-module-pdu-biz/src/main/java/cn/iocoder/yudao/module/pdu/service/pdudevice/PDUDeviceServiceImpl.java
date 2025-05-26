@@ -307,31 +307,32 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 }
                 if (Objects.nonNull(curMap.get(pduId))) {
                     MaxValueAndCreateTime curl1 = curMap.get(pduId).get(1);
-                    pduLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
+
+                    pduLineRes.setL1MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl1.getMaxValue()),2));
                     pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     MaxValueAndCreateTime curl2 = curMap.get(pduId).get(2);
                     if (curl2 != null) {
-                        pduLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
+                        pduLineRes.setL2MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl2.getMaxValue()),2));
                         pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                     MaxValueAndCreateTime curl3 = curMap.get(pduId).get(3);
                     if (curl3 != null) {
-                        pduLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
+                        pduLineRes.setL3MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl3.getMaxValue()),2));
                         pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                 }
                 if (Objects.nonNull(powMap.get(pduId))) {
                     MaxValueAndCreateTime powl1 = powMap.get(pduId).get(1);
-                    pduLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
+                    pduLineRes.setL1MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl1.getMaxValue()),3));
                     pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     MaxValueAndCreateTime powl2 = powMap.get(pduId).get(2);
                     if (powl2 != null) {
-                        pduLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
+                        pduLineRes.setL2MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl2.getMaxValue()),3));
                         pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                     MaxValueAndCreateTime powl3 = powMap.get(pduId).get(3);
                     if (powl3 != null) {
-                        pduLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
+                        pduLineRes.setL3MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl3.getMaxValue()),3));
                         pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                 }
@@ -394,7 +395,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 // 构建结果对象
                 if (pageReqVO.getFlagVlaue() == 0) {
                     BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("cur_max_value"));
-                    result.setMaxValue(BigDemicalUtil.setScale(value,2));
+                    result.setMaxValue(BigDemicalUtil.setScale1(value,2).toString());
                     result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                     result.setLineId((Integer) sourceAsMap.get("line_id"));
                     result.setPduId((Integer) sourceAsMap.get("pdu_id"));
@@ -402,7 +403,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 } else {
                     // 构建结果对象
                     BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("pow_active_max_value"));
-                    result.setMaxValue(BigDemicalUtil.setScale(value,2));
+                    result.setMaxValue(BigDemicalUtil.setScale1(value,3).toString());
                     result.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                     result.setLineId((Integer) sourceAsMap.get("line_id"));
                     result.setPduId((Integer) sourceAsMap.get("pdu_id"));

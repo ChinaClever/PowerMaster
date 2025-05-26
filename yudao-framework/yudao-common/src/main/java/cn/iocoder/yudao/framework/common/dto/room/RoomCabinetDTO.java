@@ -182,10 +182,16 @@ public class RoomCabinetDTO {
     @Schema(description = "A")
     private String cabinetkeya;
 
+    @Schema(description = "A露点温度")
+    private Double dewPointa;
+
     private Object keya;
 
     @Schema(description = "B")
     private String cabinetkeyb;
+
+    @Schema(description = "B露点温度")
+    private Double dewPointb;
 
     private Object keyb;
     /**

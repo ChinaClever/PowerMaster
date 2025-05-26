@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.util.number;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 /**
@@ -261,6 +262,14 @@ public class BigDemicalUtil {
         }
         return BigDecimal.valueOf(b1.doubleValue()).setScale(scale, BigDecimal.ROUND_HALF_UP);
 
+    }
+
+    public static <T extends Number> BigDecimal setScale1(T b1,Integer scale) {
+        if (null == b1) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(b1.doubleValue()).setScale(scale, RoundingMode.HALF_UP);
+        //RoundingMode.HALF_UP
     }
     /**
      * BigDecimal的乘法运算封装

@@ -52,6 +52,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -102,6 +103,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static cn.hutool.core.convert.Convert.toList;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 
 /**
@@ -1315,9 +1317,33 @@ public class RoomServiceImpl implements RoomService {
             if (Objects.nonNull(cabinetPdu)) {
                 iter.setCabinetkeya(cabinetPdu.getPduKeyA());
                 iter.setKeya(pduIndexMap.get(cabinetPdu.getPduKeyA()));
+                Object obj = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyA());
+                if (Objects.nonNull(obj)){
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                    JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
+                    if (Objects.nonNull(envList)){
+                        JSONArray dewPoint1 = envList.getJSONArray("dew_point");
+                        if (Objects.nonNull(dewPoint1)){
+                            List<Double> dewPoint = dewPoint1.toList(Double.class);
+                            iter.setDewPointa(dewPoint.get(0));
+                        }
+                    }
+                }
 
                 iter.setCabinetkeyb(cabinetPdu.getPduKeyB());
                 iter.setKeyb(pduIndexMap.get(cabinetPdu.getPduKeyB()));
+                Object objb = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyB());
+                if (Objects.nonNull(objb)){
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(objb));
+                    JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
+                    if (Objects.nonNull(envList)){
+                        JSONArray dewPoint1 = envList.getJSONArray("dew_point");
+                        if (Objects.nonNull(dewPoint1)){
+                            List<Double> dewPoint = dewPoint1.toList(Double.class);
+                            iter.setDewPointb(dewPoint.get(0));
+                        }
+                    }
+                }
                 iter.setCabinetPdus(cabinetPdu);
 
                 if (!StringUtils.isBlank(cabinetPdu.getPduKeyA())) {
