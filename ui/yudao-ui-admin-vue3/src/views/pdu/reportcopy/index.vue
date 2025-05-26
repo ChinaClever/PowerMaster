@@ -200,8 +200,11 @@
             <div class="page-conTitle" >
               电量分布
             </div>
+            <!-- <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大单日用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+            <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p> -->
             <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大单日用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
-            <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
+            <p v-if="visControll.isSameDay">本周期内，共计使用电量{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh，最大用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+           
             <Bar class="Container" :width="computedWidth" height="58vh" :list="eleList"/>
           </div>
 
