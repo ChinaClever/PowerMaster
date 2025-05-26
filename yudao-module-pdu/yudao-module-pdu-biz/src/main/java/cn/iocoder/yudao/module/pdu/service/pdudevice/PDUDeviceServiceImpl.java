@@ -1236,7 +1236,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, cabinetId));
         //TODO 这里可能会出现空指针
-        String pduKeyA = cabinetPdu.getPduKeyA();
+        String pduKeyA = Optional.ofNullable(cabinetPdu)
+                .map(CabinetPdu::getPduKeyA)
+                .orElse("默认值");
+        if ("默认值".equals(pduKeyA)){
+            return resultAB;
+        }
         HashMap result = new HashMap<>();
         HashMap resultB = new HashMap<>();
         CabinetChartResBase curResBase = new CabinetChartResBase();
@@ -1334,7 +1339,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return resultAB;
         }
 
-        String pduKeyB = cabinetPdu.getPduKeyB();
+        String pduKeyB = Optional.ofNullable(cabinetPdu)
+                .map(CabinetPdu::getPduKeyB)
+                .orElse("默认值");
+        if ("默认值".equals(pduKeyB)){
+            return resultAB;
+        }
+
         PduIndex pduIndex1 = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKeyB));
         if (pduIndex1 != null) {
             Integer id = pduIndex1.getId();
@@ -1497,7 +1508,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if (jsonObject != null){
                 PduBasicInformationVo pduBasicInformationVo = new PduBasicInformationVo();
                 //设置ip
-                pduBasicInformationVo.setIpAddress(jsonObject.getString("dev_ip"));
+//                pduBasicInformationVo.setIpAddress(jsonObject.getString("dev_ip"));
+                pduBasicInformationVo.setIpAddress(devKey);
                 //设置运行状态
                 pduBasicInformationVo.setStatus(jsonObject.getInteger("status"));
                 //获取功率数据

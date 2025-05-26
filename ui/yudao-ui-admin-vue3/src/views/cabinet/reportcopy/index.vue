@@ -268,8 +268,8 @@
       <el-table-column prop="powActive" label="总有功功率" align="center"/>
       <el-table-column prop="powReactive" label="总无功功率" align="center"/>
       <el-table-column prop="powApparent" label="总视在功率" align="center"/>
-      <el-table-column prop="powFactor" label="总功率因数" align="center"/>
-      <el-table-column prop="eleActive" label="耗电量" align="center"/>
+      <el-table-column prop="powerFactor" label="总功率因数" align="center"/>
+      <el-table-column prop="eleActive" label="耗电量（kWh）" align="center"/>
       <el-table-column prop="volUnbalance" label="电压不平衡" align="center"/>
       <el-table-column prop="curUnbalance" label="电流不平衡" align="center"/>
       <el-table-column label="操作" align="center">
@@ -376,6 +376,7 @@
               <span class="power-title">{{lineCurVolData.res[`curName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 1}`]}})</span></span>
+          <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=lineCurList?.series.length "> {{lineCurVolData.res[`curName${index + 2}`]}}</span>
   <span class="power-value" v-if="index+2<=lineCurList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 2}`]}})</span></span>
   <span class="power-value" v-if="index+2<=lineCurList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 2}`]}})</span></span>
@@ -392,6 +393,7 @@
               <span class="power-title">{{lineCurVolData.res[`volName${index + 1}`]}}</span>
   <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 1}`]}})</span></span>
   <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 1}`]}})</span></span>
+          <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=lineVolList?.series.length ">{{lineCurVolData.res[`volName${index + 2}`]}}</span>
   <span class="power-value" v-if="index+2<=lineVolList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 2}`]}})</span></span>
   <span class="power-value" v-if="index+2<=lineVolList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 2}`]}})</span></span>
@@ -487,13 +489,13 @@
             <p class="paragraph" v-show="iceTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{iceTemList.temMinValue}}°C， 最高温度发生时间{{iceTemList.temMinTime}}，由温度传感器{{iceTemList.temMinSensorId}}采集得到</p> -->
           <div v-for="(sensor, index) in temList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2==0">
-        <span class="power-title">{{ allTemHumData[`temName${index + 1}`] }}+{{allTemHumData[`temMinSensorId${index + 1}`]}}极值：</span>
+        <span class="power-title">{{ allTemHumData[`temName${index + 1}`] }}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`temMaxValue${index + 1}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`temMinValue${index + 1}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMinTime${index + 1}`] }})</span></span>
-        
-        <span class="power-title">{{ allTemHumData[`temName${index + 1}`] }}+{{allTemHumData[`temMinSensorId${index + 2}`]}}极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`temMaxValue${index + 2}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMaxTime${index + 2}`] }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`temMinValue${index + 2}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMinTime${index + 2}`] }})</span></span>
+                <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="index+2<=temList?.series.length ">{{ allTemHumData[`temName${index + 1}`] }}极值：</span>
+        <span class="power-value" v-if="index+2<=temList?.series.length ">峰值 <span class="highlight">{{ allTemHumData[`temMaxValue${index + 2}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index+2<=temList?.series.length ">谷值 <span class="highlight">{{ allTemHumData[`temMinValue${index + 2}`] }}</span> °C <span class="time">记录于({{ allTemHumData[`temMinTime${index + 2}`] }})</span></span>
       </div>
             </div>
             <EnvTemLine class="Container" width="70vw" height="58vh" :list="temList" :dataType="queryParams.dataType"/>
@@ -514,13 +516,13 @@
             <p class="paragraph" v-show="iceTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{iceTemList.humMinValue}}%RH， 最高湿度发生时间{{iceTemList.humMinTime}}，由湿度传感器{{iceTemList.humMinSensorId}}采集得到</p> -->
           <div v-for="(sensor, index) in humList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2==0">
-        <span class="power-title">{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 1}`]}}极值：</span>
+        <span class="power-title">{{ allTemHumData[`humName${index + 1}`] }}极值：</span>
         <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 1}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 1}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMinTime${index + 1}`] }})</span></span>
-        
-        <span class="power-title">{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 2}`]}}极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMaxTime${index + 2}`] }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMinTime${index + 2}`] }})</span></span>
+                <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="index+2<=humList?.series.length ">{{ allTemHumData[`humName${index + 1}`] }}极值：</span>
+        <span class="power-value" v-if="index+2<=humList?.series.length ">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index+2<=humList?.series.length ">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMinTime${index + 2}`] }})</span></span>
       </div>
             </div>
             <EnvHumLine class="Container" width="70vw" height="58vh" :list="humList" :dataType="queryParams.dataType"/>
@@ -1151,7 +1153,7 @@ const handleHotQuery = async () => {
 }
 
 const handlePowQuery = async () => {
-  powData.value = await IndexApi.getPowData(queryParams);
+  // powData.value = await IndexApi.getPowData(queryParams);
    factorData.value = await IndexApi.getPowDataByType(queryParams);
    totalLineList.value = factorData.value.totalLineRes;
    aLineList.value = factorData.value.aLineRes;
@@ -1162,30 +1164,21 @@ const handlePowQuery = async () => {
   // bLineList.value = powData.value.bLineRes;
 
   if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
-    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
-    powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
-    powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
-    powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+
     visControll.powVis = true;
   }else{
     visControll.powVis = false;
   }
   
   if(aLineList.value?.time != null && aLineList.value?.time?.length > 0){
-    powData.value.AapparentPowMaxValue = powData.value.AapparentPowMaxValue?.toFixed(3);
-    powData.value.AapparentPowMinValue =  powData.value.AapparentPowMinValue?.toFixed(3);
-    powData.value.AactivePowMaxValue = powData.value.AactivePowMaxValue?.toFixed(3);
-    powData.value.AactivePowMinValue = powData.value.AactivePowMinValue?.toFixed(3);
+
     visControll.ApowVis = true;
   }else{
     visControll.ApowVis = false;
   }
 
   if(bLineList.value?.time != null && bLineList.value?.time?.length > 0){
-    powData.value.BapparentPowMaxValue = powData.value.BapparentPowMaxValue?.toFixed(3);
-    powData.value.BapparentPowMinValue =  powData.value.BapparentPowMinValue?.toFixed(3);
-    powData.value.BactivePowMaxValue = powData.value.BactivePowMaxValue?.toFixed(3);
-    powData.value.BactivePowMinValue = powData.value.BactivePowMinValue?.toFixed(3);
+
     visControll.BpowVis = true;
   }else{
     visControll.BpowVis = false;

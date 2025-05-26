@@ -27,9 +27,13 @@ public class DataProcessingUtils {
         ((List<String>) lineData.computeIfAbsent("AHappenTime", k -> new ArrayList<>())).add(formatFactorATime(houResVO, dataType));
         ((List<String>) lineData.computeIfAbsent("BHappenTime", k -> new ArrayList<>())).add(formatFactorBTime(houResVO, dataType));
 
-
         List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
-        dateTimes.add((houResVO.getCreateTime()));
+        if (isSameDay){
+            dateTimes.add((houResVO.getCreateTime().split(" ")[1]));
+        }else{
+            dateTimes.add((houResVO.getCreateTime().split(" ")[0]));
+        }
+
 
 
     }

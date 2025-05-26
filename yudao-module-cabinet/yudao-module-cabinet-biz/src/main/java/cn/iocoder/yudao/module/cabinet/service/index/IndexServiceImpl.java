@@ -174,6 +174,9 @@ public class IndexServiceImpl implements IndexService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> cabinetData = getCabinetData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index);
+                if(CollectionUtil.isEmpty(cabinetData)){
+                    return result;
+                }
                 Double firstEq = null;
                 Double lastEq = null;
                 Double totalEq = 0D;
@@ -1325,14 +1328,14 @@ public class IndexServiceImpl implements IndexService {
                 String temName = null;
                 String humName = null;
                 if (position == 1) {
-                    temName = "冷通道上层温度传感器";
-                    humName = "冷通道上层湿度传感器";
+                    temName = "冷通道上层温度传感器"+cabinetEnvSensor.getSensorId();
+                    humName = "冷通道上层湿度传感器"+cabinetEnvSensor.getSensorId();
                 } else if (position == 2) {
-                    temName = "冷通道中层温度传感器";
-                    humName = "冷通道中层湿度传感器";
+                    temName = "冷通道中层温度传感器"+cabinetEnvSensor.getSensorId();
+                    humName = "冷通道中层湿度传感器"+cabinetEnvSensor.getSensorId();
                 } else if (position == 3) {
-                    temName = "冷通道下层温度传感器";
-                    humName = "冷通道下层湿度传感器";
+                    temName = "冷通道下层温度传感器"+cabinetEnvSensor.getSensorId();
+                    humName = "冷通道下层湿度传感器"+cabinetEnvSensor.getSensorId();
                 }
                 processTemHumMavMin(pduEnvHourDo, dataType, result, temName, humName, dataIndex);
                 dataIndex++;
@@ -1343,7 +1346,7 @@ public class IndexServiceImpl implements IndexService {
                 humLineSeries.setData(humList);
                 humLineSeries.setHappenTime(humHappenTime);
                 if (!isFisrt) {
-                    if (timeType == 2) {
+                    if (timeType == 1) {
 
                         time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
                     } else {
@@ -1408,14 +1411,14 @@ public class IndexServiceImpl implements IndexService {
                 String temName = null;
                 String humName = null;
                 if (position == 1) {
-                    temName = "热通道上层温度传感器";
-                    humName = "热通道上层湿度传感器";
+                    temName = "热通道上层温度传感器"+cabinetEnvSensor.getSensorId();
+                    humName = "热通道上层湿度传感器"+cabinetEnvSensor.getSensorId();
                 } else if (position == 2) {
-                    temName = "热通道中层温度传感器";
-                    humName = "热通道中层湿度传感器";
+                    temName = "热通道中层温度传感器"+cabinetEnvSensor.getSensorId();
+                    humName = "热通道中层湿度传感器"+cabinetEnvSensor.getSensorId();
                 } else if (position == 3) {
-                    temName = "热通道下层温度传感器";
-                    humName = "热通道下层湿度传感器";
+                    temName = "热通道下层温度传感器"+cabinetEnvSensor.getSensorId();
+                    humName = "热通道下层湿度传感器"+cabinetEnvSensor.getSensorId();
                 }
                 processTemHumMavMin(pduEnvHourDo, dataType, result, temName, humName, dataIndex);
                 dataIndex++;
@@ -1426,7 +1429,7 @@ public class IndexServiceImpl implements IndexService {
                 humLineSeries.setData(humList);
                 humLineSeries.setHappenTime(humHappenTime);
                 if (!isFisrt) {
-                    if (timeType == 2) {
+                    if (timeType == 1) {
                         time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
                     } else {
                         time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
