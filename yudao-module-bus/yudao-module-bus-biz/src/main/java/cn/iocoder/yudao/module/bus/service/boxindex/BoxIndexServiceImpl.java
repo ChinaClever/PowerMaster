@@ -2882,13 +2882,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         BoxEleTotalDo dayEleDo = new BoxEleTotalDo();
                         totalEq += (float) busList.get(i + 1).getEleActive() - (float) busList.get(i).getEleActive();
                         dayEleDo.setEleActive(busList.get(i + 1).getEleActive() - busList.get(i).getEleActive());
-                        dayEleDo.setCreateTime(busList.get(i).getCreateTime());
+                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
                         dayEqList.add(dayEleDo);
                     }
                     dayEqList.sort(Comparator.comparing(BoxEleTotalDo::getEleActive));
 
                     maxEle = dayEqList.get(dayEqList.size() - 1).getEleActive();
-                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("HH:mm");
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
                     result.put("maxEle", maxEle);

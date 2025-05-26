@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
@@ -1966,7 +1967,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 // TODO 电力计算错误，待电力计算错误解决再实现功能
-                List<String> realtimeData = getData(startTime, endTime, Arrays.asList(Id.intValue()), "pdu_ele_total_realtime");
                 List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
                 Double firstEq = null;
                 Double lastEq = null;
@@ -1975,6 +1975,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String maxEleTime = null;
                 int nowTimes = 0;
                 if (isSameDay) {
+                    List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
                     for (String str : cabinetData) {
                         nowTimes++;
                         PduEleTotalRealtimeDo eleDO = JsonUtils.parseObject(str, PduEleTotalRealtimeDo.class);
@@ -1986,13 +1987,27 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             barRes.getTime().add(eleDO.getCreateTime().toString("HH:mm"));
                         }
                         lastEq = eleDO.getEle();
+                        busList.add(eleDO);
                     }
-                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "ele_active");
-                    PduEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, PduEleTotalRealtimeDo.class);
-                    if (eleMaxValue != null) {
-                        maxEle = eleMaxValue.getEle();
-                        maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    //计算实时用电量
+                    List<PduEleTotalRealtimeDo> dayEqList = new ArrayList<>();
+                    for (int i = 0; i < cabinetData.size() - 1; i++) {
+                        PduEleTotalRealtimeDo dayEleDo = new PduEleTotalRealtimeDo();
+                        totalEq += (float) busList.get(i + 1).getEle() - (float) busList.get(i).getEle();
+                        dayEleDo.setEle(busList.get(i + 1).getEle() - busList.get(i).getEle());
+                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
+                        dayEqList.add(dayEleDo);
                     }
+                    dayEqList.sort(Comparator.comparing(PduEleTotalRealtimeDo::getEle));
+                    maxEle = dayEqList.get(dayEqList.size() - 1).getEle();
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("HH:mm");
+
+//                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "ele_active");
+//                    PduEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, PduEleTotalRealtimeDo.class);
+//                    if (eleMaxValue != null) {
+//                        maxEle = eleMaxValue.getEle();
+//                        maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+//                    }
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
                     result.put("maxEle", maxEle);
