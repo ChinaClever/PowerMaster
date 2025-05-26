@@ -24,6 +24,7 @@ import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecor
 import cn.iocoder.yudao.module.alarm.controller.admin.logrecord.vo.AlarmLogRecordStatisticsVO;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
+import cn.iocoder.yudao.module.alarm.utils.audioplayer.AudioPlayer;
 import cn.iocoder.yudao.module.infra.api.job.JobApi;
 import cn.iocoder.yudao.module.pdu.api.PduDeviceApi;
 import com.alibaba.fastjson2.JSON;
@@ -83,6 +84,9 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
 
     @Autowired
     private JobApi jobApi;
+
+    @Autowired
+    private AudioPlayer audioPlayer;
 
     @Override
     public Integer saveLogRecord(AlarmLogRecordSaveReqVO createReqVO) {
@@ -620,6 +624,16 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
         }
     }
 
+    @Override
+    public void checkAlarmRecordChange(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps) {
+        Integer result = null;
+        // 检查是否还存在没有被处理的告警信息
+        List<AlarmLogRecordDO> untreatedList = logRecordMapper.selectList(AlarmLogRecordDO::getAlarmStatus, AlarmStatusEnums.UNTREATED.getStatus());
+        if (CollectionUtils.isEmpty(untreatedList)) {
+            // 关闭声音告警
+            audioPlayer.stopAudio();
+        }
+    }
 
     public String getLocationByBusId(BusIndex busIndex) {
         String location = busIndex.getBusKey();

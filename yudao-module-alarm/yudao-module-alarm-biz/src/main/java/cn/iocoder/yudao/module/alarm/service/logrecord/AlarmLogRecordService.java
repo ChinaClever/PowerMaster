@@ -138,4 +138,10 @@ public interface AlarmLogRecordService {
      *
      */
     Integer insertOrUpdateAlarmRecordWhenRoomAlarm(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
+
+    /**
+     * 当机房报警时，插入告警记录后面的
+     *
+     */
+    void checkAlarmRecordChange(List<Map<String, Object>> oldMaps, List<Map<String, Object>> newMaps);
 }
