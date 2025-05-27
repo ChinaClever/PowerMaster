@@ -250,7 +250,7 @@
             <el-button
               link
               type="primary"
-              @click="location=scope.row.location;toPDUDisplayScreen(scope.row)"
+              @click="location=scope.row.location;timeType=0;toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5 && scope.row.bvol != null && scope.row.cvol != null"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -309,7 +309,7 @@
           <button
             v-if="item.status != null && item.color != 5 && item.bcur != null && item.ccur != null"
             class="detail"
-            @click="location=item.location;showDialogVol(item)"
+            @click="location=item.location;timeType=0;showDialogVol(item)"
             >详情</button
           >
         </div>
@@ -348,7 +348,7 @@
           <button
             v-if="item.status != null && item.status != 5 && item.bvol != null && item.cvol != null"
             class="detail"
-            @click="location=item.location;showDialogVol(item)"
+            @click="location=item.location;timeType=0;showDialogVol(item)"
             >详情</button
           >
         </div>
@@ -805,7 +805,7 @@ const handleSelectStatus1 = (index) => {
 const getBalanceTrend = async (item) => {
   const res = await PDUDeviceApi.balanceTrend({
     pduId: item.id,
-    timeType: 1
+    timeType: timeType.value
   })
 
   pduBalanceTrend.value = res
@@ -853,7 +853,7 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[0].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[0].curValue,2))
         }
       ]
     } else if (res[0].cur && res[0].cur.length == 3) {
@@ -878,19 +878,19 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[0].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[0].curValue,2))
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[1].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[1].curValue,2))
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[2].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[2].curValue,2))
         }
       ]
     }if (res[0].vol && res[0].vol.length == 1) {
@@ -915,7 +915,7 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[0].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[0].volValue,1)),
         },
       ]
     } else if(res[0].vol && res[0].vol.length == 3) {
@@ -940,19 +940,19 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[0].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[0].volValue,1)),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[1].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[1].volValue,1)),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[2].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[2].volValue,1)),
         },
       ]
     }
@@ -1245,6 +1245,8 @@ const showDialogVol = (item) => {
 
   getBalanceDetail(item)
   getBalanceTrend(item)
+  // changeChart('cur');
+  // changeChart('vol');
   detailPDUID.value=item.id;
   console.log(detailPDUID.value,"detailPDUID");
   curUnblance1.value = balanceObj.imbalanceValueA
@@ -1599,6 +1601,8 @@ onActivated(() => {
 
 })
 async function showTrend(){
+  typeRadioCur.value = "最大";
+  typeRadioVol.value = "最大";
   let res=await await PDUDeviceApi.balanceTrend({
     pduId: detailPDUID.value,
     timeType: timeType.value,
