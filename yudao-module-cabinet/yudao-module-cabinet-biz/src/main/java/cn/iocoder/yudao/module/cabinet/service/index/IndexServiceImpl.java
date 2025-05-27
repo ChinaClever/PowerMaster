@@ -1480,6 +1480,8 @@ public class IndexServiceImpl implements IndexService {
     }
 
 
+
+
     @Override
     public Map getCabinetEnvHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
@@ -1973,6 +1975,72 @@ public class IndexServiceImpl implements IndexService {
         return result;
     }
 
+
+    @Override
+    public Map getEleByAisle(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        IndexPageReqVO indexPageReqVO = new IndexPageReqVO();
+        indexPageReqVO.setAisleId(Integer.valueOf(id));
+        HashMap result = new HashMap<>();
+        CabinetChartResBase barRes = new CabinetChartResBase();
+        BarSeries barSeries = new BarSeries();
+        PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(indexPageReqVO);
+        List<IndexDO> cabinetList = indexDOPageResult.getList();
+        if (CollectionUtil.isEmpty(cabinetList)){
+            return  result;
+        }
+        for (IndexDO indexDO : cabinetList) {
+            try {
+                    String index = null;
+                    boolean isSameDay = false;
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        index = "cabinet_ele_total_realtime";
+                        if (oldTime.equals(newTime)) {
+                            newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                        }
+                        isSameDay = true;
+                    } else {
+                        index = "cabinet_eq_total_day";
+                        oldTime = oldTime.plusDays(1);
+                        newTime = newTime.plusDays(1);
+                    }
+                    String startTime = localDateTimeToString(oldTime);
+                    String endTime = localDateTimeToString(newTime);
+                    List<String> cabinetData = getCabinetData(startTime, endTime, Arrays.asList(indexDO.getId()), index);
+                    if(CollectionUtil.isEmpty(cabinetData)){
+                        continue;
+                    }
+
+                    float totalEq = 0F;
+
+                    if (isSameDay) {
+                        List<CabinetEleTotalRealtimeDo> busList = new ArrayList<>();
+                        for (String str : cabinetData) {
+                            CabinetEleTotalRealtimeDo cabinetEleTotalRealtimeDo = JsonUtils.parseObject(str, CabinetEleTotalRealtimeDo.class);
+                            busList.add(cabinetEleTotalRealtimeDo);
+                        }
+                        //计算实时用电量
+                        for (int i = 0; i < cabinetData.size() - 1; i++) {
+                            totalEq += (float) busList.get(i + 1).getEleTotal() - (float) busList.get(i).getEleTotal();
+                        }
+                        barSeries.getData().add((totalEq));
+                        barRes.getTime().add(indexDO.getCabinetName());
+                    } else {
+                        for (String str : cabinetData) {
+                            CabinetEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, CabinetEqTotalDayDo.class);
+                            totalEq += totalDayDo.getEqValue();
+                        }
+                        barSeries.getData().add((totalEq));
+                        barRes.getTime().add(indexDO.getCabinetName());
+                    }
+            } catch (Exception e) {
+                log.error("获取数据失败", e);
+            }
+
+        }
+        barRes.getSeries().add(barSeries);
+        result.put("barRes",barRes);
+        return result;
+    }
 
     /**
      * 获取数据

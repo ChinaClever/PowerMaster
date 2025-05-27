@@ -113,6 +113,15 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/report/powByType`,data})
   },
 
+    getCabinetEleByAis: async (params) => {
+      return await request.get({ url: `/cabinet/index/getEleByAisle`,params})
+    },
+
+     getAisleHdaLineData: async (params) => {
+      return await request.get({ url: `/aisle/index/aisleHdaLineHisdataReport`,params})
+    },
+  
+
   getAislePFLine : async (data) => {
     return await request.post({ url: `/aisle/index/report/pfline`, data })
   },

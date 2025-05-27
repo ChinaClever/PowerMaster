@@ -10,6 +10,9 @@ public class AisleHdaLineHour {
     @JsonProperty("aisle_id")
     private Integer aisleId;
 
+    @JsonProperty("line_id")
+    private Integer lineId;
+
     @JsonProperty("create_time")
     private String createTime;
 

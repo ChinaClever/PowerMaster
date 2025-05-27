@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.aisle.utils;
 
 
+import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AisleHdaLineHour;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 import cn.iocoder.yudao.framework.common.enums.DataTypeEnums;
@@ -36,8 +37,8 @@ public class DataProcessingUtils {
     /**
      * 处理总功率因素
      *
-     * @param houResVO    数据对象
-     * @param dataType    数据类型
+     * @param houResVO 数据对象
+     * @param dataType 数据类型
      * @return 总功率因素
      */
     public static Float getFactorTotal(AislePowHourDo houResVO, DataTypeEnums dataType) {
@@ -56,8 +57,8 @@ public class DataProcessingUtils {
     /**
      * 处理A路功率因素
      *
-     * @param houResVO    数据对象
-     * @param dataType    数据类型
+     * @param houResVO 数据对象
+     * @param dataType 数据类型
      * @return A路功率因素
      */
     public static Float getFactorB(AislePowHourDo houResVO, DataTypeEnums dataType) {
@@ -76,8 +77,8 @@ public class DataProcessingUtils {
     /**
      * 处理B路功率因素
      *
-     * @param houResVO    数据对象
-     * @param dataType    数据类型
+     * @param houResVO 数据对象
+     * @param dataType 数据类型
      * @return B路功率因素
      */
     public static Float getFactorA(AislePowHourDo houResVO, DataTypeEnums dataType) {
@@ -96,8 +97,8 @@ public class DataProcessingUtils {
     /**
      * 处理总功率因素发生时间
      *
-     * @param houResVO    数据对象
-     * @param dataType    数据类型
+     * @param houResVO 数据对象
+     * @param dataType 数据类型
      * @return 发生时间
      */
     public static String formatFactorTotalTime(AislePowHourDo houResVO, DataTypeEnums dataType) {
@@ -116,8 +117,8 @@ public class DataProcessingUtils {
     /**
      * 处理A路功率因素发生时间
      *
-     * @param houResVO    数据对象
-     * @param dataType    数据类型
+     * @param houResVO 数据对象
+     * @param dataType 数据类型
      * @return 发生时间
      */
     public static String formatFactorATime(AislePowHourDo houResVO, DataTypeEnums dataType) {
@@ -136,8 +137,8 @@ public class DataProcessingUtils {
     /**
      * 处理B路功率因素发生时间
      *
-     * @param houResVO    数据对象
-     * @param dataType    数据类型
+     * @param houResVO 数据对象
+     * @param dataType 数据类型
      * @return 发生时间
      */
     public static String formatFactorBTime(AislePowHourDo houResVO, DataTypeEnums dataType) {
@@ -298,8 +299,7 @@ public class DataProcessingUtils {
                 }
             }
 
-        }
-        else if (dataType == -1) {
+        } else if (dataType == -1) {
             factorTotalResult.totalFactorMax = dayList1.get(0).getFactorTotalMinValue();
             factorTotalResult.totalFactorMaxTime = dayList1.get(0).getFactorTotalMinTime();
             factorTotalResult.totalFactorMin = dayList1.get(0).getFactorTotalMinValue();
@@ -352,5 +352,195 @@ public class DataProcessingUtils {
         result.put("bFactor", factorBResult);
         return result;
     }
+
+    /**
+     * 收集相电压电流数据
+     *
+     * @param houResVO
+     * @param resultMap
+     * @param isSameDay
+     * @param dataType
+     */
+    public static void processLineHisData(AisleHdaLineHour houResVO, Map<String, Object> resultMap, boolean isSameDay, DataTypeEnums dataType) {
+        int lineId = houResVO.getLineId() + 1;
+        String lineKey = "dayList" + lineId;
+
+        Map<String, Object> lineData = (Map<String, Object>) resultMap.computeIfAbsent(lineKey, k -> new HashMap<>());
+        ((List<AisleHdaLineHour>) lineData.computeIfAbsent("data", k -> new ArrayList<>())).add(houResVO);
+        ((List<Float>) lineData.computeIfAbsent("curADataList", k -> new ArrayList<>())).add(getACurValue(houResVO, dataType));
+        ((List<Float>) lineData.computeIfAbsent("volADataList", k -> new ArrayList<>())).add(getAVolValue(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("curAHappenTime", k -> new ArrayList<>())).add(formatACurTime(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("volAHappenTime", k -> new ArrayList<>())).add(formatAVolTime(houResVO, dataType));
+
+        ((List<Float>) lineData.computeIfAbsent("curBDataList", k -> new ArrayList<>())).add(getBCurValue(houResVO, dataType));
+        ((List<Float>) lineData.computeIfAbsent("volBDataList", k -> new ArrayList<>())).add(getBVolValue(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("curBHappenTime", k -> new ArrayList<>())).add(formatBCurTime(houResVO, dataType));
+        ((List<String>) lineData.computeIfAbsent("volBHappenTime", k -> new ArrayList<>())).add(formatBVolTime(houResVO, dataType));
+
+        List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
+        dateTimes.add(isSameDay ? houResVO.getCreateTime().split(" ")[1] : houResVO.getCreateTime().split(" ")[0]);
+    }
+
+    /**
+     * 处理相电流值
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static Float getACurValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getCurAMaxValue().floatValue();
+            case AVG:
+                return houResVO.getCurAAvgValue().floatValue();
+            case MIN:
+                return houResVO.getCurAMinValue().floatValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电压值
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static Float getAVolValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getVolAMaxValue().floatValue();
+            case AVG:
+                return houResVO.getVolAAvgValue().floatValue();
+            case MIN:
+                return houResVO.getVolAMinValue().floatValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电流发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static String formatACurTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getCurAMaxTime();
+            case AVG:
+                return "无";
+            case MIN:
+                return houResVO.getCurAMinTime();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电压发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static String formatAVolTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getVolABaxTime();
+            case AVG:
+                return "无";
+            case MIN:
+                return houResVO.getVolAMinTime();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+
+    /**
+     * 处理相电流值
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static Float getBCurValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getCurBMaxValue().floatValue();
+            case AVG:
+                return houResVO.getCurBAvgValue().floatValue();
+            case MIN:
+                return houResVO.getCurBMinValue().floatValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电压值
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static Float getBVolValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getVolBMaxValue().floatValue();
+            case AVG:
+                return houResVO.getVolBAvgValue().floatValue();
+            case MIN:
+                return houResVO.getVolBMinValue().floatValue();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电流发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static String formatBCurTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getCurBMaxTime();
+            case AVG:
+                return "无";
+            case MIN:
+                return houResVO.getCurBMinTime();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电压发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static String formatBVolTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getVolBMaxTime();
+            case AVG:
+                return "无";
+            case MIN:
+                return houResVO.getVolBMinTime();
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
 
 }

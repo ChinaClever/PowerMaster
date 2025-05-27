@@ -105,4 +105,6 @@ public interface AisleIndexService {
     Map getAislePFLineByType(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
     Map getReportPowDataByTypeAndId(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map aisleHdaLineHisdataReportKey(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }

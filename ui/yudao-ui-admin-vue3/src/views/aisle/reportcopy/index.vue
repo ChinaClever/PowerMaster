@@ -322,6 +322,13 @@
             <Line class="Container" width="70vw" height="58vh" :list="bLineList" :dataType="queryParams.dataType"/>
           </div>
 
+              <div class="pageBox" v-if="visControll.eqVis">
+            <div class="page-conTitle" >
+              机柜耗电量排名
+            </div>
+            <HorizontalBar :width="computedWidth" height="78vh" :list="cabinetEleList" />
+          </div>
+
           <!-- <div class="pageBox"  v-if="visControll.ApowVis">
             <div class="page-conTitle">
               A路平均功率曲线
@@ -397,6 +404,7 @@ import { ElTree } from 'element-plus'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
+import HorizontalBar from './component/HorizontalBar.vue';
 
 
 /** PDU设备 列表 */
@@ -409,6 +417,8 @@ const totalLineList = ref() as any;
 const aLineList = ref() as any;
 const bLineList = ref() as any;
 const idList = ref() as any;
+const cabinetEleData = ref() as any;
+const cabinetEleList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 const location = ref("");
@@ -823,6 +833,11 @@ const handleConsumeQuery = async () => {
   } else{
     visControll.eqVis = false;
   }
+     cabinetEleData.value = await IndexApi.getCabinetEleByAis({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime})
+     cabinetEleList.value = cabinetEleData.value.barRes;
+
+
+     await IndexApi.getAisleHdaLineData({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime,dataType: queryParams.dataType})
 }
 
 const handleDetailQuery = async () => {
