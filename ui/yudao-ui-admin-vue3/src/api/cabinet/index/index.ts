@@ -25,6 +25,10 @@ export const IndexApi = {
     return await request.get({ url: `/cabinet/index/get?id=` + id })
   },
 
+   getBoxRecordPage: async (data: any) => {
+      return await request.post({ url: `/alarm/log-record/pdu`, data})
+    },
+
   // 新增机柜索引
   createIndex: async (data: IndexVO) => {
     return await request.post({ url: `/cabinet/index/create`, data })

@@ -113,6 +113,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat hourOnlyFormat = new SimpleDateFormat("HH:mm:ss");
 
     @Resource
     private PduIndexMapper pDUDeviceMapper;
@@ -1294,8 +1295,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
                     LineSeries curSeries = new LineSeries();
                     LineSeries volSeries = new LineSeries();
-                    result.put("curName" + lineId, lineId == 1 ? "A路A相电流" : lineId == 2 ? "A路B相电流" : "A路C相电流");
-                    result.put("volName" + lineId, lineId == 1 ? "A路A相电压" : lineId == 2 ? "A路B相电压" : "A路C相电压");
+                    result.put("curName" + lineId, "A路L" + lineId + "相电流");
+                    result.put("volName" + lineId, "A路L" + lineId + "相电压");
                     curSeries.setName("A-L" + lineId);
                     volSeries.setName("A-L" + lineId);
                     curSeries.setData((List<Float>) lineData.get("curDataList"));
@@ -1387,8 +1388,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
                     LineSeries curSeries = new LineSeries();
                     LineSeries volSeries = new LineSeries();
-                    result.put("curName" + (lineId + suffix), lineId == 1 ? "B路A相电流" : lineId == 2 ? "B路B相电流" : "B路C相电流");
-                    result.put("volName" + (lineId + suffix), lineId == 1 ? "B路A相电压" : lineId == 2 ? "B路B相电压" : "B路C相电压");
+                    result.put("curName" + (lineId + suffix), "B路L" + lineId + "相电流");
+                    result.put("volName" + (lineId + suffix), "B路L" + lineId + "相电压");
                     curSeries.setName("B-L" + lineId);
                     volSeries.setName("B-L" + lineId);
                     curSeries.setData((List<Float>) lineData.get("curDataList"));
@@ -4248,7 +4249,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         ((List<String>) lineData.computeIfAbsent("volHappenTime", k -> new ArrayList<>())).add(formatVolTime(houResVO, dataType));
 
         List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
-        dateTimes.add(isSameDay ? sdf.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+
+
+            dateTimes.add(isSameDay ? hourOnlyFormat.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+
+
     }
 
     /**

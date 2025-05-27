@@ -517,12 +517,12 @@
           <div v-for="(sensor, index) in humList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2==0">
         <span class="power-title">{{ allTemHumData[`humName${index + 1}`] }}极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 1}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMaxTime${index + 1}`] }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 1}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMinTime${index + 1}`] }})</span></span>
+        <span class="power-value">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 1}`] }}</span> % <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 1}`] }}</span> % <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 1}`]}}记录于({{ allTemHumData[`humMinTime${index + 1}`] }})</span></span>
                 <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span class="power-title" v-if="index+2<=humList?.series.length ">{{ allTemHumData[`humName${index + 1}`] }}极值：</span>
-        <span class="power-value" v-if="index+2<=humList?.series.length ">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMaxTime${index + 2}`] }})</span></span>
-        <span class="power-value" v-if="index+2<=humList?.series.length ">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 2}`] }}</span> °C <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMinTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index+2<=humList?.series.length ">峰值 <span class="highlight">{{ allTemHumData[`humMaxValue${index + 2}`] }}</span> % <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMaxSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index+2<=humList?.series.length ">谷值 <span class="highlight">{{ allTemHumData[`humMinValue${index + 2}`] }}</span> % <span class="time">由{{ allTemHumData[`humName${index + 1}`] }}+{{allTemHumData[`humMinSensorId${index + 2}`]}}记录于({{ allTemHumData[`humMinTime${index + 2}`] }})</span></span>
       </div>
             </div>
             <EnvHumLine class="Container" width="70vw" height="58vh" :list="humList" :dataType="queryParams.dataType"/>
@@ -537,6 +537,50 @@
             <p class="paragraph" v-show="hotTemList.humMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低湿度{{hotTemList.humMinValue}}%RH， 最高湿度发生时间{{hotTemList.humMinTime}}，由湿度传感器{{hotTemList.humMinSensorId}}采集得到</p>
             <EnvHumLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
         </div> -->
+
+        <div class="pageBox">
+            <div class="page-conTitle">
+              告警信息
+            </div>
+                <el-table
+                  ref="multipleTableRef"
+                  :data="temp1"
+                  highlight-current-row
+                  style="width: 100%"
+                  :stripe="true" 
+                  :border="true"
+                  @current-change="handleCurrentChange"
+                >
+                    <!-- <el-table-column type="selection" width="55" /> -->
+                    <el-table-column type="index" width="80" label="序号" align="center" />
+                    <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
+                    <el-table-column property="devName" label="设备" min-width="100" align="center" />
+                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+                    <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+                    <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+                      <template #default="scope">
+                        <el-tooltip  placement="right">
+                          <div class="table-desc">{{scope.row.alarmDesc}}</div>
+                          <template #content>
+                            <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
+                          </template>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+    <el-table-column label="开始时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.startTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.endTime) }}
+        </template>
+      </el-table-column>
+                    <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+                    <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+                </el-table>
+          </div>
       </div>
     </div>
     </template>
@@ -560,8 +604,6 @@ import EnvHumLine from './component/EnvHumLine.vue'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import ACurLine from './component/AcurLine.vue'
 import AVolLine from './component/AvolLine.vue'
-import BBCurLine from './component/BcurLine.vue'
-import BVolLine from './component/BvolLine.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 // 引入方法
 import { htmlPdf } from "@/utils/htmlToPDF.js"  
@@ -572,9 +614,17 @@ import { htmlPdf } from "@/utils/htmlToPDF.js"
 	  htmlPdf(fileName, document.querySelector('#pdfRef'), fileList)
 	}
 
-
+   // 格式化时间戳的方法
+const formatTime = (timestamp) => {
+    if(timestamp == null){
+    return ''
+  }
+  const date = new Date(timestamp);
+  return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
+const temp1 = ref([]) as any;
 const tableData = ref([]);
 const AcurVolData = ref();
 const BcurVolData = ref();
@@ -968,6 +1018,25 @@ const getList = async () => {
   await handleDetailQuery();
   await handlePFLineQuery();
   
+      //清除temp1的缓存数据
+  temp1.value=[]
+  //获得告警信息
+  const temp1Data = await IndexApi.getBoxRecordPage({
+    pageNo: 1,
+    pageSize: 10,
+    // devKey: queryParams.devKey,
+    devKey : '',
+    devType: 7,
+    alarmType: 4,
+    likeName: queryParams.devKey,
+  })
+  //处理告警信息数据
+  // //debugger
+  //处理时间信息
+  
+  console.log('表格的数据',temp1Data)
+  temp1.value = temp1Data.list
+
 
   visControll.visAllReport = true;
   loading.value = false
