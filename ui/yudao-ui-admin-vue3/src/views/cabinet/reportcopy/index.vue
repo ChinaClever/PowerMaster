@@ -1023,12 +1023,12 @@ const getList = async () => {
   //获得告警信息
   const temp1Data = await IndexApi.getBoxRecordPage({
     pageNo: 1,
-    pageSize: 10,
-    // devKey: queryParams.devKey,
-    devKey : '',
+    pageSize: 100,
+    devKey: queryParams.devKey,
+    // devKey : '',
     devType: 7,
-    alarmType: 4,
-    likeName: queryParams.devKey,
+    alarmType: 6,
+    likeName: '1-1-1',
   })
   //处理告警信息数据
   // //debugger

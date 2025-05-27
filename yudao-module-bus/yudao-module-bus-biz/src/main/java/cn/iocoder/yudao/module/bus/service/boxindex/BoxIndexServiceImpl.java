@@ -124,7 +124,6 @@ import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
-import static cn.iocoder.yudao.module.bus.util.DataProcessingUtils.collectPhaseData;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
 
 /**

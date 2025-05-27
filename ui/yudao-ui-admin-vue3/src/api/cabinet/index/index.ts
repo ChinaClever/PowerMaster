@@ -102,6 +102,8 @@ export const IndexApi = {
   getCabinetHotTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/hot`,params})
   },
+
+
   getCabinetPFLine : async (params) => {
     return await request.get({ url: `/cabinet/index/report/pfline`, params })
   },

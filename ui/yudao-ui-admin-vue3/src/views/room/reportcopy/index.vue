@@ -717,10 +717,10 @@ const handlePowQuery = async () => {
 
 
   if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
-    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
-    powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
-    powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
-    powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+    // powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
+    // powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
+    // powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
+    // powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
 
 
 
@@ -732,20 +732,20 @@ const handlePowQuery = async () => {
   }
   
   if(aLineList.value?.time != null && aLineList.value?.time?.length > 0){
-    powData.value.AapparentPowMaxValue = powData.value.AapparentPowMaxValue?.toFixed(3);
-    powData.value.AapparentPowMinValue =  powData.value.AapparentPowMinValue?.toFixed(3);
-    powData.value.AactivePowMaxValue = powData.value.AactivePowMaxValue?.toFixed(3);
-    powData.value.AactivePowMinValue = powData.value.AactivePowMinValue?.toFixed(3);
+    // powData.value.AapparentPowMaxValue = powData.value.AapparentPowMaxValue?.toFixed(3);
+    // powData.value.AapparentPowMinValue =  powData.value.AapparentPowMinValue?.toFixed(3);
+    // powData.value.AactivePowMaxValue = powData.value.AactivePowMaxValue?.toFixed(3);
+    // powData.value.AactivePowMinValue = powData.value.AactivePowMinValue?.toFixed(3);
     visControll.ApowVis = true;
   }else{
     visControll.ApowVis = false;
   }
 
   if(bLineList.value?.time != null && bLineList.value?.time?.length > 0){
-    powData.value.BapparentPowMaxValue = powData.value.BapparentPowMaxValue?.toFixed(3);
-    powData.value.BapparentPowMinValue =  powData.value.BapparentPowMinValue?.toFixed(3);
-    powData.value.BactivePowMaxValue = powData.value.BactivePowMaxValue?.toFixed(3);
-    powData.value.BactivePowMinValue = powData.value.BactivePowMinValue?.toFixed(3);
+    // powData.value.BapparentPowMaxValue = powData.value.BapparentPowMaxValue?.toFixed(3);
+    // powData.value.BapparentPowMinValue =  powData.value.BapparentPowMinValue?.toFixed(3);
+    // powData.value.BactivePowMaxValue = powData.value.BactivePowMaxValue?.toFixed(3);
+    // powData.value.BactivePowMinValue = powData.value.BactivePowMinValue?.toFixed(3);
     visControll.BpowVis = true;
   }else{
     visControll.BpowVis = false;
