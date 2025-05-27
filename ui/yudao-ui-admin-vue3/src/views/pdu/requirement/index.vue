@@ -1313,6 +1313,14 @@ window.addEventListener('resize', function() {
   // lineidChart?.resize();
   lineidChartOne?.resize();
 });
+function buKongGe(value,du){
+  value=Number(value);
+  console.log(value);
+  if(value<100&&value>=10) return "&nbsp;&nbsp;&nbsp;"+value.toFixed(du);
+  if(value<10) return "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+value.toFixed(du);
+  return "&nbsp;"+value.toFixed(du);
+}
+
 </script>
 
 <style scoped lang="scss">
