@@ -15,6 +15,7 @@ import cn.iocoder.yudao.framework.quartz.core.handler.JobHandler;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.math.RoundingMode;
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
+@Slf4j
 public class AisleDayAlarmJob implements JobHandler {
 
     @Autowired
@@ -42,6 +44,7 @@ public class AisleDayAlarmJob implements JobHandler {
     public String execute(String param) throws Exception {
         Thread.sleep(1000*60*5);
         // 获取所有按天统计电量的柜列
+        log.info("AisleDayAlarmJob execute start, current time: {}", LocalDateTime.now());
         List<AisleCfg> aisleCfgList = aisleCfgMapper.selectList(new LambdaQueryWrapper<AisleCfg>()
                 .eq(AisleCfg::getEleAlarmDay, 1));
         for (AisleCfg aisleCfg : aisleCfgList) {
