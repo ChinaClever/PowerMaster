@@ -219,10 +219,10 @@ const getActivePowTrend = async() => {
         let result = ''
         params.forEach(item => {
           if(item.seriesName == '昨日'){
-            result+=`昨日最大值：${item.value}KW 发生时间：${res.yesterdayList[params.dataIndex]?.maxActivePowTime||''}<br/>`
+            result+=`昨日最大值：${item.value}KW 发生时间：${res.yesterdayList[item.dataIndex]?.maxActivePowTime||''}<br/>`
           }
           if(item.seriesName == '当日'){
-            result+=`当日最大值：${item.value||'-'}KW 发生时间：${res.todayList[params.dataIndex]?.maxActivePowTime||''}<br/>`
+            result+=`当日最大值：${item.value||'-'}KW 发生时间：${res.todayList[item.dataIndex]?.maxActivePowTime||''}<br/>`
           }
         })
         console.log("params=========",params);

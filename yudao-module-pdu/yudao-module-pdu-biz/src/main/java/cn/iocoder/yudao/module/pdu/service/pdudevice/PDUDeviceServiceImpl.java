@@ -1786,7 +1786,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     timeBus.put(dateTime, lineHourDos);
                 } else {
                     PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
-                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH");
+                    String dateTime = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH:mm:ss");
                     List<PduHdaLineHourDo> lineHourDos = timeBus.get(dateTime);
                     if (CollectionUtils.isEmpty(lineHourDos)) {
                         lineHourDos = new ArrayList<>();
@@ -1808,11 +1808,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         Map<String, Object> curMap = new HashMap<>();
                         curMap.put("lineId", hourDo.getLineId());
                         curMap.put("curValue", hourDo.getCur());
-                        curMap.put("createTime", hourDo.getCreateTime());
+                        curMap.put("createTime",sdf.format(hourDo.getCreateTime()) );
                         Map<String, Object> volMap = new HashMap<>();
                         volMap.put("lineId", hourDo.getLineId());
                         volMap.put("volValue", hourDo.getVol());
-                        curMap.put("createTime", hourDo.getCreateTime());
+                        curMap.put("createTime", sdf.format(hourDo.getCreateTime()));
                         cur.add(curMap);
                         vol.add(volMap);
                     });
@@ -1822,19 +1822,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         Map<String, Object> curMap = new HashMap<>();
                         curMap.put("lineId", hourDo.getLineId());
                         curMap.put("curValue", hourDo.getCurAvgValue());
-                        curMap.put("createTime", hourDo.getCreateTime());
+                        curMap.put("createTime", sdf.format(hourDo.getCreateTime()));
                         curMap.put("curMaxValue", hourDo.getCurMaxValue());
-                        curMap.put("curMaxTime", hourDo.getCurMaxTime());
+                        curMap.put("curMaxTime", sdf.format(hourDo.getCurMaxTime()));
                         curMap.put("curMinValue", hourDo.getCurMinValue());
-                        curMap.put("curMinTime", hourDo.getCurMinTime());
+                        curMap.put("curMinTime", sdf.format(hourDo.getCurMinTime()));
                         Map<String, Object> volMap = new HashMap<>();
                         volMap.put("lineId", hourDo.getLineId());
                         volMap.put("volValue", hourDo.getVolAvgValue());
-                        volMap.put("createTime",  hourDo.getCreateTime());
+                        volMap.put("createTime",  sdf.format(hourDo.getCreateTime()));
                         volMap.put("volMaxValue", hourDo.getVolMaxValue());
-                        volMap.put("volMaxTime", hourDo.getVolMaxTime());
+                        volMap.put("volMaxTime", sdf.format(hourDo.getVolMaxTime()));
                         volMap.put("volMinValue", hourDo.getVolMinValue());
-                        volMap.put("volMinTime", hourDo.getVolMinTime());
+                        volMap.put("volMinTime", sdf.format(hourDo.getVolMinTime()));
                         cur.add(curMap);
                         vol.add(volMap);
                     });

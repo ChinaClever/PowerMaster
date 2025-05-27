@@ -20,10 +20,16 @@ public class PduHdaLineMaxResVO extends PduBaseDo {
     @Schema(description = "电流")
     @JsonProperty("cur_max_value")
     private BigDecimal curValue;
+
+    @JsonProperty("cur_max_time")
+    private String curTime;
     /**
      * 平均电流
      */
     @Schema(description = "功率")
     @JsonProperty("pow_active_max_value")
     private BigDecimal powActiveValue;
+
+    @JsonProperty("pow_active_max_time")
+    private String powActiveTime;
 }

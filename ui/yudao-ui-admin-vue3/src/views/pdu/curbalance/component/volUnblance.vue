@@ -66,7 +66,7 @@ const option = computed(() => ({
           value: percentageValue.value,
           name: 'Percentage',
           itemStyle: {
-            color: props.customColor || '#FF0000'
+            color: chooseColor(percentageValue.value)
           }
         },
         {
@@ -78,6 +78,18 @@ const option = computed(() => ({
     }
   ]
 }));
+
+function chooseColor(value){
+  if(value<=2){
+    return "#00d26a";
+  }else if(value<=4){
+    return "#00a6ed"
+  }else if(value<=5){
+    return "#fcd53f"
+  }else{
+    return "#f8312f"
+  }
+}
 
 // 组件挂载时初始化图表
 onMounted(() => {

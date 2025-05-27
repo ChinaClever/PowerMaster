@@ -981,8 +981,21 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
     formatter: function (params) {
         let result = params[0].value.Year + '<br>';
         params.forEach((param) => {
-            let unit = param.seriesName.includes('功率')? 'kW' : 'A';
-            result += `${param.seriesName}: ${param.value.Income} ${unit}<br>`;
+          console.log(param)
+          if(param.seriesName=='L1-电流'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,2)} A 发生时间：${lChartData.value.cur_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L2-电流'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,2)} A 发生时间：${llChartData.value.cur_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L3-电流'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,2)} A 发生时间：${lllChartData.value.cur_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L1功率'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,3)} kW 发生时间：${lChartData.value.pow_active_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L2功率'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,3)} kW 发生时间：${llChartData.value.pow_active_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L3功率'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,3)} kW 发生时间：${lllChartData.value.pow_active_max_time[param.dataIndex]}<br>`;
+          }
+            
         });
         return result;
     }
@@ -1088,8 +1101,21 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
     formatter: function (params) {
         let result = params[0].value.Year + '<br>';
         params.forEach((param) => {
-            let unit = param.seriesName.includes('功率')? 'kW' : 'A';
-            result += `${param.seriesName}: ${param.value.Income} ${unit}<br>`;
+          console.log(param)
+          if(param.seriesName=='L1-电流'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,2)} A 发生时间：${lChartData.value.cur_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L2-电流'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,2)} A 发生时间：${llChartData.value.cur_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L3-电流'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,2)} A 发生时间：${lllChartData.value.cur_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L1功率'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,3)} kW 发生时间：${lChartData.value.pow_active_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L2功率'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,3)} kW 发生时间：${llChartData.value.pow_active_max_time[param.dataIndex]}<br>`;
+          }else if(param.seriesName=='L3功率'){
+            result += `${param.seriesName}:${buKongGe(param.value.Income,3)} kW 发生时间：${lllChartData.value.pow_active_max_time[param.dataIndex]}<br>`;
+          }
+            
         });
         return result;
     }
@@ -1149,7 +1175,9 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
 
 const updateChartData = (chartData, dataArray) => {
   chartData.value.cur_max_value = dataArray.map(item => item.cur_max_value);
+  chartData.value.cur_max_time = dataArray.map(item => item.cur_max_time);
   chartData.value.pow_active_max_value = dataArray.map(item => item.pow_active_max_value);
+  chartData.value.pow_active_max_time = dataArray.map(item => item.pow_active_max_time);
 };
 
 window.addEventListener('resize',function(){
@@ -1168,17 +1196,23 @@ const getLineid = async (id, type,flagValue) => {
 
   const lChartData = ref({
     cur_max_value : [] as number[], //电流
+    cur_max_time:[] as string[],
     pow_active_max_value : [] as number[], //功率
+    pow_active_max_time:[] as string[],
   });
 
   const llChartData = ref({
-    cur_max_value : [] as number[],
-    pow_active_max_value : [] as number[],
+    cur_max_value : [] as number[], //电流
+    cur_max_time:[] as string[],
+    pow_active_max_value : [] as number[], //功率
+    pow_active_max_time:[] as string[],
   });
 
   const lllChartData = ref({
-    cur_max_value : [] as number[],
-    pow_active_max_value : [] as number[],
+    cur_max_value : [] as number[], //电流
+    cur_max_time:[] as string[],
+    pow_active_max_value : [] as number[], //功率
+    pow_active_max_time:[] as string[],
   });
 
   const lineidDateTimes = ref([] as string[])
@@ -1565,8 +1599,8 @@ window.addEventListener('resize', function() {
       width: 20%;
       height: 140px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
       position: relative;
       .content {
@@ -1635,12 +1669,14 @@ window.addEventListener('resize', function() {
     display: flex;
     flex-wrap: wrap;
     .arrayItem {
-      width: 25%;
+      width: 23%;
       height: 140px;
       font-size: 13px;
+      margin: 14px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
+      border-radius: 7px;
       padding-top: 40px;
       position: relative;
       .content {
@@ -1713,8 +1749,8 @@ window.addEventListener('resize', function() {
       height: 140px;
       font-size: 13px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
       position: relative;
       .content {
