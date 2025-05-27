@@ -242,10 +242,22 @@ public class AisleIndexController {
         return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
+    @PostMapping("/report/powByType")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getReportPowDataByTypeAndId(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataByTypeAndId(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
+    }
+
     @PostMapping("/report/pfline")
     @Operation(summary = "获得通道列报表数据")
     public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
         return success(indexService.getAislePFLine(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/pflineByType")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getAislePFLineByType(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getAislePFLineByType(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
     @PostMapping("/chartDetail")

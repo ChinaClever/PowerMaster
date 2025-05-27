@@ -109,9 +109,18 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/report/pow`,data})
   },
 
+    getPowDataByType: async (data) => {
+    return await request.post({ url: `/aisle/index/report/powByType`,data})
+  },
+
   getAislePFLine : async (data) => {
     return await request.post({ url: `/aisle/index/report/pfline`, data })
   },
+
+    getAislePFLineByType : async (data) => {
+    return await request.post({ url: `/aisle/index/report/pflineByType`, data })
+  },
+
 
   idList: async () => {
     return await request.download({ url: `/aisle/index/idList`})
