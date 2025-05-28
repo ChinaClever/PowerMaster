@@ -52,6 +52,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -1681,8 +1682,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             if (searchResponse != null) {
                 SearchHits hits = searchResponse.getHits();
+                if (Objects.equals(hits.getTotalHits().value,0L)){
+                    BusinessAssert.error(50011,"当前pdu暂无历史数据");
+                }
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
+//                    PduHdaLineMaxResVO houResVO = JsonUtils.parseObject(str, PduHdaLineMaxResVO.class);
                     PduHdaLineMaxResVO houResVO = JsonUtils.parseObject(str, PduHdaLineMaxResVO.class);
                     switch (houResVO.getLineId()) {
                         case 1:

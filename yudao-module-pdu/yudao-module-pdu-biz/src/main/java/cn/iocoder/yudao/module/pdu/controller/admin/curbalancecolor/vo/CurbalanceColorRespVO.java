@@ -33,6 +33,8 @@ public class CurbalanceColorRespVO {
     @ExcelProperty("第三个大于的范围")
     private Integer rangeFour;
 
+    private Integer lowCurrent;
+
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
