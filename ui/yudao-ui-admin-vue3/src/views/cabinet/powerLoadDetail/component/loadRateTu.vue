@@ -54,8 +54,8 @@ const chartOptions = ref({
 
 const updateChartData = () => {
   if (props.curChartData && props.curChartData.aPath) {
-    L3Data.value = props.curChartData.aPath.map((item) => item.loadRateTotal.toFixed(2)*100);
-    createTimeData.value = props.curChartData.aPath.map((item) => item.createTime);
+    L3Data.value = props.curChartData.aPath.map((item) => item.load_rate?.toFixed(2)*100);
+    createTimeData.value = props.curChartData.aPath.map((item) => item.create_time);
 
     chartOptions.value = {
       ...chartOptions.value,

@@ -1018,9 +1018,9 @@ const initData = () => {
     switch (typeRadio.value){
       case '有效电能':
         if(allEqData.value != null && timeRadio.value == '近一月'){
-        eqValue.value = allEqData.value.map((item) => item.eq_value.toFixed(3));
+        eqValue.value = allEqData.value.map((item) => item.eq_value.toFixed(1));
         } else if (allEqData.value != null && (timeRadio.value == '近三天' || timeRadio.value == '近一天')){
-        eqValue.value = allEqData.value.map((item) => item.ele_total.toFixed(3));
+        eqValue.value = allEqData.value.map((item) => item.ele_total.toFixed(1));
         }
         break;
       case '负载率':
@@ -1057,7 +1057,7 @@ const initData = () => {
     switch (typeRadio.value){
       case '有效电能':
         if(allEqData.value != null){
-        eqValue.value = allEqData.value.map((item) => item.ele_total.toFixed(3));
+        eqValue.value = allEqData.value.map((item) => item.ele_total.toFixed(1));
         }
         break;
       case '负载率':

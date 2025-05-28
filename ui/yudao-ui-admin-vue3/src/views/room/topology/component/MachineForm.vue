@@ -41,7 +41,7 @@
               </el-form-item>
             </div>
             <div class="collapseItem">
-              <el-form-item  label="电力容量(kW)：" prop="powCapacity">
+              <el-form-item  label="电力容量(kVA)：" prop="powCapacity">
                 <el-input v-model="machineFormData.powCapacity" placeholder="请输入" />
               </el-form-item>
               <el-form-item label="所属公司：" prop="company">
@@ -101,13 +101,14 @@
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
                       <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
+                    <el-select v-else v-model="machineFormData.boxIndexA" placeholder="请选择">
+                      <el-option v-for="(box, index) in [{type: 0 ,boxIndex: 0},{type: 0 ,boxIndex: 1},{type: 0 ,boxIndex: 2}]" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
+                    </el-select>
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
-                    <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdA" placeholder="请选择">
+                    <el-select v-model="machineFormData.boxOutletIdA" placeholder="请选择">
                       <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxOutletIdA" placeholder="请输入" />
                   </el-form-item>
                 </div>
                 <div>
@@ -122,13 +123,14 @@
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
                       <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxIndexB" placeholder="请输入" />
+                    <el-select v-else v-model="machineFormData.boxIndexB" placeholder="请选择">
+                      <el-option v-for="(box, index) in [{type: 0 ,boxIndex: 0},{type: 0 ,boxIndex: 1},{type: 0 ,boxIndex: 2}]" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
+                    </el-select>
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
-                    <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdB" placeholder="请选择">
+                    <el-select v-model="machineFormData.boxOutletIdB" placeholder="请选择">
                       <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxOutletIdB" placeholder="请输入" />
                   </el-form-item>
                 </div>
               </div>
@@ -685,17 +687,20 @@ const submitForm = async () => {
   try {
     const sensorList = [...sensorListLeft, ...sensorListRight]
     const sensorListFilter = sensorList.filter(item => item.sensorId)
-    console.log('sensorListFilter', sensorListFilter)
+    // console.log('sensorListFilter', sensorListFilter)
     machineFormData.value.sensorList = sensorListFilter
 
-    console.log(boxListA.value,machineFormData.value)
+    // console.log(boxListA.value,machineFormData.value)
 
     let boxListA_Index = boxListA.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexA)
     let boxListB_Index = boxListB.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexB)
     
-    console.log(boxListA_Index,boxListB_Index)
+    // console.log(boxListA_Index,boxListB_Index)
 
-    if(machineFormData.value.pduBox && boxListA_Index != -1 && boxListB_Index != -1) {
+    if(machineFormData.value.pduBox && !machineFormData.value?.aisleId) {
+      machineFormData.value.casIdA = Number(machineFormData.value.boxIndexA) + 2
+      machineFormData.value.casIdB = Number(machineFormData.value.boxIndexB) + 2
+    } else if(machineFormData.value.pduBox && boxListA_Index != -1 && boxListB_Index != -1) {
       machineFormData.value.casIdA = boxListA_Index != -1 ? boxListA.value[boxListA_Index].casAddr : 0
       machineFormData.value.casIdB = boxListB_Index != -1 ? boxListB.value[boxListB_Index].casAddr : 0
     }

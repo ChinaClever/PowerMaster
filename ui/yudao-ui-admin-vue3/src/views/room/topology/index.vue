@@ -13,7 +13,7 @@
         <div class="temStatus" style="background: linear-gradient(to right, rgb(244,229,162), rgb(191,68,76))">
         </div>
       </div> -->
-      <div class="status" :style="isFromHome ? 'font-size: 10px;color: black' : ''">
+      <div class="status" :style="isFromHome ? 'font-size: 8px;color: black' : ''">
         <template v-for="item in statusInfo[chosenBtn]" :key="item.value">
           <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
         </template>
@@ -117,12 +117,12 @@
                                 <div style="width: 50%">
                                   前门温度：{{element.temFront ? element.temFront.toFixed(1) : ''}}°C<br/>
                                   前门湿度：{{element.temFront ? element.humFront.toFixed(0) : ''}}%<br/>
-                                  前门露点温度: {{element.temludianfront ? element.temludianfront.toFixed(1) : ''}}°C
+                                  前门露点温度: {{element.dewPointa ? element.dewPointa.toFixed(1) : ''}}°C
                                 </div>
                                 <div style="width: 50%">
                                   后门温度：{{element.temBlack ? element.temBlack.toFixed(1) : ''}}°C<br/>
                                   后门湿度：{{element.temBlack ? element.humBlack.toFixed(0) : ''}}%<br/>
-                                  后门露点温度: {{element.temludianblack ? element.temludianblack.toFixed(1) : ''}}°C
+                                  后门露点温度: {{element.dewPointb ? element.dewPointb.toFixed(1) : ''}}°C
                                 </div>
                               </div>
                               <div v-if="element.alarmLogRecord && element.runStatus != 1" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -180,7 +180,7 @@
                                 <div class="cabinetNameClass">
                                   {{ element.cabinetName }}
                                 </div>
-                                <div v-if="element.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div class="unitClass">%</div></div>
+                                <div v-if="element.loadRate != 0">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div class="unitClass">%</div></div>
                               </div>
                             </template>
                           </div>
@@ -190,7 +190,7 @@
                                 <div class="cabinetNameClass">
                                   {{ element.cabinetName }}
                                 </div>
-                                <div v-if="element.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div class="unitClass">kW</div></div>
+                                <div v-if="element.powActive != 0">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div class="unitClass">kW</div></div>
                               </div>
                             </template>
                           </div>
@@ -200,7 +200,7 @@
                                 <div class="cabinetNameClass">
                                   {{ element.cabinetName }}
                                 </div>
-                                <div v-if="element.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                                <div v-if="element.powerFactor != 0">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
                               </div>
                             </template>
                           </div>
@@ -218,7 +218,7 @@
                                 <div class="cabinetNameClass">
                                   {{ element.cabinetName }}
                                 </div>
-                                <div v-if="element.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
+                                <div v-if="element.temFront != 0">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
                               </div>
                             </template>
                           </div>
@@ -228,7 +228,7 @@
                                 <div class="cabinetNameClass">
                                   {{ element.cabinetName }}
                                 </div>
-                                <div v-if="element.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div v-if="element.temBlack != 0 && element.direction == '1'" class="unitClass">°C</div></div>
+                                <div v-if="element.temBlack != 0">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div v-if="element.temBlack != 0 && element.direction == '1'" class="unitClass">°C</div></div>
                               </div>
                             </template>
                           </div>
@@ -238,14 +238,14 @@
                                 <div class="cabinetNameClass">
                                   {{ element.cabinetName }}
                                 </div>
-                                <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div class="unitClass">%</div></div>
-                                <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div class="unitClass">kW</div></div>
-                                <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
-                                <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
-                                <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
+                                <div v-if="chosenBtn == 0 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.loadRate != 0">{{element.loadRate ? element.loadRate.toFixed(0) : '0'}}<div class="unitClass">%</div></div>
+                                <div v-if="chosenBtn == 1 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.powActive != 0">{{element.powActive ? element.powActive.toFixed(0) : '0'}}<div class="unitClass">kW</div></div>
+                                <div v-if="chosenBtn == 2 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.powerFactor != 0">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}</div>
+                                <div v-if="chosenBtn == 3 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.temFront != 0">{{element.temFront ? element.temFront.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
+                                <div v-if="chosenBtn == 4 && element.runStatus != 0 && element.runStatus != 4 && (element.cabinetBoxes || element.cabinetPdus) && element.temBlack != 0">{{element.temBlack ? element.temBlack.toFixed(1) : '0.0'}}<div class="unitClass">°C</div></div>
                               </div>
                               
-                              <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.yesterdayEq != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div class="unitClass">kWh</div></div> -->
+                              <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.yesterdayEq != 0">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div class="unitClass">kWh</div></div> -->
                             </template>
                           </div>
                         </el-tooltip>
@@ -287,13 +287,13 @@
                                   <div class="flex justify-between" style="width: 20vw">
                                     <div style="width: 50%">
                                       前门温度：{{item.temFront ? item.temFront.toFixed(1) : ''}}°C<br/>
-                                      前门湿度：{{item.temFront ? item.humFront.toFixed(0) : ''}}%<br/>
-                                      前门露点温度: {{item.temludianfront ? item.temludianfront.toFixed(1) : ''}}°C
+                                      前门湿度：{{item.humFront ? item.humFront.toFixed(0) : ''}}%<br/>
+                                      前门露点温度: {{item.dewPointa ? item.dewPointa.toFixed(1) : ''}}°C
                                     </div>
                                     <div style="width: 50%">
                                       后门温度：{{item.temBlack ? item.temBlack.toFixed(1) : ''}}°C<br/>
-                                      后门湿度：{{item.temBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
-                                      后门露点温度: {{item.temludianblack ? item.temludianblack.toFixed(1) : ''}}°C
+                                      后门湿度：{{item.humBlack ? item.humBlack.toFixed(0) : ''}}%<br/>
+                                      后门露点温度: {{item.dewPointb ? item.dewPointb.toFixed(1) : ''}}°C
                                     </div>
                                   </div>
                                   <div v-if="item.alarmLogRecord && item.runStatus != 1" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
@@ -351,7 +351,7 @@
                                     <div class="cabinetNameClass">
                                       {{ item.cabinetName }}
                                     </div>
-                                    <div v-if="item.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">%</div><span v-else class="unitClassCol">%</span></div>
+                                    <div v-if="item.loadRate != 0">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">%</div><span v-else class="unitClassCol">%</span></div>
                                   </div>
                                 </template>
                               </div>
@@ -361,7 +361,7 @@
                                     <div class="cabinetNameClass">
                                       {{ item.cabinetName }}
                                     </div>
-                                    <div v-if="item.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">kW</div><span v-else class="unitClassCol">&nbsp;kW</span></div>
+                                    <div v-if="item.powActive != 0">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">kW</div><span v-else class="unitClassCol">&nbsp;kW</span></div>
                                   </div>
                                 </template>
                               </div>
@@ -371,7 +371,7 @@
                                     <div class="cabinetNameClass">
                                       {{ item.cabinetName }}
                                     </div>
-                                    <div v-if="item.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                    <div v-if="item.powerFactor != 0">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
                                   </div>
                                 </template>
                               </div>
@@ -389,7 +389,7 @@
                                     <div class="cabinetNameClass">
                                       {{ item.cabinetName }}
                                     </div>
-                                    <div v-if="item.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                    <div v-if="item.temFront != 0">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
                                   </div>
                                 </template>
                               </div>
@@ -399,7 +399,7 @@
                                     <div class="cabinetNameClass">
                                       {{ item.cabinetName }}
                                     </div>
-                                    <div v-if="item.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="item.temBlack != 0 && element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                    <div v-if="item.temBlack != 0">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="item.temBlack != 0 && element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
                                   </div>
                                 </template>
                               </div>
@@ -409,14 +409,14 @@
                                     <div class="cabinetNameClass">
                                       {{ item.cabinetName }}
                                     </div>
-                                    <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.loadRate != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">%</div><span v-else class="unitClassCol">%</span></div>
-                                    <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.powActive != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">kW</div><span v-else class="unitClassCol">kW</span></div>
-                                    <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.powerFactor != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
-                                    <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.temFront != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
-                                    <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.temBlack != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                    <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.loadRate != 0">{{item.loadRate ? item.loadRate.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">%</div><span v-else class="unitClassCol">%</span></div>
+                                    <div v-if="chosenBtn == 1 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.powActive != 0">{{item.powActive ? item.powActive.toFixed(0) : '0'}}<div v-if="element.direction == '1'" class="unitClass">kW</div><span v-else class="unitClassCol">kW</span></div>
+                                    <div v-if="chosenBtn == 2 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.powerFactor != 0">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}</div>
+                                    <div v-if="chosenBtn == 3 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.temFront != 0">{{item.temFront ? item.temFront.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
+                                    <div v-if="chosenBtn == 4 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.temBlack != 0">{{item.temBlack ? item.temBlack.toFixed(1) : '0.0'}}<div v-if="element.direction == '1'" class="unitClass">°C</div><span v-else class="unitClassCol">°C</span></div>
                                   </div>
                                   
-                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.yesterdayEq != 0" :style="!isFromHome ? `font-size: ${20/tableScaleValue}px` : ''">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div class="unitClass">kWh</div></div> -->
+                                  <!-- <div v-if="chosenBtn == 5 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus) && item.yesterdayEq != 0">{{item.yesterdayEq ? item.yesterdayEq.toFixed(0) : '0'}}<br/><div class="unitClass">kWh</div></div> -->
                                 </template>
                               </div>
                             </el-tooltip>
@@ -441,7 +441,7 @@
             <!-- <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="editMachine">编辑</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="handleJump(false)">查看</div>
             <div class="menu_item" v-if="!showMenuAdd && editEnable" @click="deleteMachine">删除</div> -->
-            <el-cascader-panel ref="areaIdsCascader" class="menu_item_panel" v-if="(!showMenuAdd || !editEnable) && menuOptions.length" style="width: fit-content;" model-value="['编辑']" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" @expand-change="expandChange" />
+            <el-cascader-panel ref="areaIdsCascader" class="menu_item_panel" v-if="(!showMenuAdd || !editEnable) && menuOptions.length" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" @expand-change="expandChange" />
           </div>
         </div>
     </div>
@@ -678,6 +678,7 @@ import { IndexApi } from '@/api/cabinet/index'
 import MachineForm from './component/MachineForm.vue';
 import aisleRequire from './component/aisleRequire.vue';
 import aisleBalance from './component/aisleBalance.vue';
+import aisleFactor from './component/aisleFactor.vue';
 import cabinetBalance from './component/cabinetBalance.vue';
 import busRequire from './component/busRequire.vue';
 import busBalance from './component/busBalance.vue';
@@ -1520,7 +1521,7 @@ const getRoomInfo = async() => {
     tableData.value = data;
     //console.log("tableData.value",tableData.value)
     getRoomStatus(result)
-    if(isFromHome)
+    // if(isFromHome)
     updateScale()
     // handleCssScale()
   } finally {
@@ -1678,6 +1679,12 @@ const updateScale = () => {
 
   // 计算缩放比例（取宽高中较小的比例，确保完整显示）
   tableScaleValueStart.value = Math.min(Math.floor(containerHeight/(rowColInfo.row*4))/10,Math.floor(containerWidth/(rowColInfo.col*4))/10)
+
+
+  if(!isFromHome) {
+    tableScaleValueStart.value = Math.min(tableScaleValueStart.value + 0.8,1)
+  }
+
   tableScaleWidthStart.value = 1/tableScaleValueStart.value*100
   tableScaleHeightStart.value = 1/tableScaleValueStart.value*100
   
@@ -2950,36 +2957,6 @@ const handleChange = async(data) => {
           pduBar: data.pduBar
       }
 
-      // console.log(data)
-
-      // if(data.type == 2) {
-      //   data.amount = 1
-      // }
-      // if (data.direction == 2) {
-      //   const X = data.xCoordinate-1
-      //   const Y = data.yCoordinate-1
-      //   if (Y + data.amount > rowColInfo.row) return false
-      //   for(let i = 0;i < data.amount;i++) {
-      //     if((tableData.value[Y+i][formParam.value[X]].length && tableData.value[Y+i][formParam.value[X]][0].id != data.id) || (tableData.value[Y+i][formParam.value[X+1]].length && tableData.value[Y+i][formParam.value[X+1]][0].id != data.id)) {
-      //       console.log(false)
-      //       return
-      //     }
-      //   }
-      // } else {
-      //   const X = data.xCoordinate-1
-      //   const Y = data.yCoordinate-1
-      //   console.log(X + data.amount,rowColInfo)
-      //   if (X + data.amount > rowColInfo.col) return false
-      //   for(let i = 0;i < data.amount;i++) {
-      //     if((tableData.value[Y][formParam.value[X+i]].length && tableData.value[Y][formParam.value[X+i]][0].id != data.id) || (tableData.value[Y+1][formParam.value[X+i]].length && tableData.value[Y+1][formParam.value[X+i]][0].id != data.id)) {
-      //       console.log(false)
-      //       return
-      //     }
-      //   }
-      // }
-
-      // console.log(true)
-
       const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
 
       if(flagRes) {
@@ -2989,57 +2966,10 @@ const handleChange = async(data) => {
 
       const aisleRes = await MachineRoomApi.saveRoomAisle(asileObject) 
       if(aisleRes != null || aisleRes != "") {
-        // if(tableData.value[+Y][formParam.value[X]].length) {
-        //   let lastMount = tableData.value[+Y][formParam.value[X]][0].amount
-        //   for(let i=  0; i < lastMount; i++) {
-        //     if (data.direction == 1) {
-        //       tableData.value[+Y][formParam.value[X+i]] = []
-        //       tableData.value[+Y+1][formParam.value[X+i]] = []
-        //     } else {
-        //       tableData.value[+Y+i][formParam.value[X]] = []
-        //       tableData.value[+Y+i][formParam.value[X+1]] = []
-        //     }
-        //   }
-        // }
-        
-        // if (data.direction == 1) {
-        //   tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
-        //   tableData.value[+Y+1][formParam.value[X]] = [{...data,first: false}]
-        // } else {
-        //   tableData.value[+Y][formParam.value[X]] = [{...data,first: true}]
-        //   tableData.value[+Y][formParam.value[X+1]] = [{...data,first: false}]
-        // }
-        // for (let i=  1; i < data.amount; i++) {
-        //   if (data.direction == 1) {
-        //     tableData.value[+Y][formParam.value[X+i]] = [{...data,first: false}]
-        //     tableData.value[+Y+1][formParam.value[X+i]] = [{...data,first: false}]
-        //   } else {
-        //     tableData.value[+Y+i][formParam.value[X]] = [{...data,first: false}]
-        //     tableData.value[+Y+i][formParam.value[X+1]] = [{...data,first: false}]
-        //   }
-        // }
         getRoomInfoNoLoading()
         message.success(messageAisleFlag);
       }
   }
-  // else{
-      // const cabinetRes = await MachineRoomApi.saveRoomCabinet({
-      //     id:aisleFlagId
-      //     roomId: roomId.value,
-      //     cabinetName: data.name,
-      //     cabinetHeight: data.cabinetHeight,
-      //     xCoordinate:X+1,
-      //     yCoordinate:+Y+1,
-      //     powerCapacity:data.powerCapacity,
-      //     eleAlarmDay: data.eleAlarmDay,
-      //     eleLimitDay: data.eleLimitDay,
-      //     eleAlarmMonth: data.eleAlarmMonth,
-      //     eleLimitMonth: data.eleLimitMonth
-      // })
-      // if(cabinetRes != null || cabinetRes != "") {
-      //   message.success(messageAisleFlag);
-      // }
-  // }
 }
 
 const queryParamsPF = reactive({
@@ -3728,6 +3658,10 @@ onUnmounted(() => {
 
 :deep(.el-cascader-node.in-active-path, .el-cascader-node.is-active, .el-cascader-node.is-selectable.in-checked-path) {
   color: rgba(0, 119, 140, 1);
+}
+
+:deep(.el-cascader-menu__wrap) {
+  height: 250px;
 }
 
 .crosshair {
