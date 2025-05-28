@@ -84,4 +84,6 @@ public interface RoomIndexService {
     List<Map<String, Object>> getChartDetail(RoomIndexChartDetailDTO detailDTO);
 
     DeviceStatisticsVO deviceStatistics(Integer roomId);
+
+    Map getReportPowDataByTypeAndId(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }

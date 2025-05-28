@@ -209,12 +209,17 @@ public class RoomPowBaseDo extends RoomBaseDo {
     @JsonProperty("reactive_a_max_value")
     private float reactiveAMaxValue;
 
+    @JsonProperty("reactive_a_max_time")
+    private DateTime reactiveAMaxTime;
+
     /**
      * a路最小无功功率
      */
     @JsonProperty("reactive_a_min_value")
     private float reactiveAMinValue;
 
+    @JsonProperty("reactive_a_min_time")
+    private DateTime reactiveAMinTime;
     /**
      * b路平均无功功率
      */
@@ -227,12 +232,16 @@ public class RoomPowBaseDo extends RoomBaseDo {
     @JsonProperty("reactive_b_max_value")
     private float reactiveBMaxValue;
 
+    @JsonProperty("reactive_b_max_time")
+    private DateTime reactiveBMaxTime;
     /**
      * b路平均无功功率
      */
     @JsonProperty("reactive_b_min_value")
     private float reactiveBMinValue;
 
+    @JsonProperty("reactive_b_min_time")
+    private DateTime reactiveBMinTime;
 
     /**
      * a路平均功率因素

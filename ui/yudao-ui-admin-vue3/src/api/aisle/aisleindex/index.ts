@@ -109,9 +109,27 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/report/pow`,data})
   },
 
+    getPowDataByType: async (data) => {
+    return await request.post({ url: `/aisle/index/report/powByType`,data})
+  },
+
+    getCabinetEleByAis: async (params) => {
+      return await request.get({ url: `/cabinet/index/getEleByAisle`,params})
+    },
+
+     getAisleHdaLineData: async (params) => {
+      return await request.get({ url: `/aisle/index/aisleHdaLineHisdataReport`,params})
+    },
+  
+
   getAislePFLine : async (data) => {
     return await request.post({ url: `/aisle/index/report/pfline`, data })
   },
+
+    getAislePFLineByType : async (data) => {
+    return await request.post({ url: `/aisle/index/report/pflineByType`, data })
+  },
+
 
   idList: async () => {
     return await request.download({ url: `/aisle/index/idList`})

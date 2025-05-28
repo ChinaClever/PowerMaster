@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
@@ -112,6 +113,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat hourOnlyFormat = new SimpleDateFormat("HH:mm:ss");
 
     @Resource
     private PduIndexMapper pDUDeviceMapper;
@@ -1236,7 +1238,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, cabinetId));
         //TODO 这里可能会出现空指针
-        String pduKeyA = cabinetPdu.getPduKeyA();
+        String pduKeyA = Optional.ofNullable(cabinetPdu)
+                .map(CabinetPdu::getPduKeyA)
+                .orElse("默认值");
+        if ("默认值".equals(pduKeyA)){
+            return resultAB;
+        }
         HashMap result = new HashMap<>();
         HashMap resultB = new HashMap<>();
         CabinetChartResBase curResBase = new CabinetChartResBase();
@@ -1288,8 +1295,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
                     LineSeries curSeries = new LineSeries();
                     LineSeries volSeries = new LineSeries();
-                    result.put("curName" + lineId, lineId == 1 ? "A路A相电流" : lineId == 2 ? "A路B相电流" : "A路C相电流");
-                    result.put("volName" + lineId, lineId == 1 ? "A路A相电压" : lineId == 2 ? "A路B相电压" : "A路C相电压");
+                    result.put("curName" + lineId, "A路L" + lineId + "相电流");
+                    result.put("volName" + lineId, "A路L" + lineId + "相电压");
                     curSeries.setName("A-L" + lineId);
                     volSeries.setName("A-L" + lineId);
                     curSeries.setData((List<Float>) lineData.get("curDataList"));
@@ -1334,7 +1341,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return resultAB;
         }
 
-        String pduKeyB = cabinetPdu.getPduKeyB();
+        String pduKeyB = Optional.ofNullable(cabinetPdu)
+                .map(CabinetPdu::getPduKeyB)
+                .orElse("默认值");
+        if ("默认值".equals(pduKeyB)){
+            return resultAB;
+        }
+
         PduIndex pduIndex1 = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKeyB));
         if (pduIndex1 != null) {
             Integer id = pduIndex1.getId();
@@ -1375,8 +1388,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
                     LineSeries curSeries = new LineSeries();
                     LineSeries volSeries = new LineSeries();
-                    result.put("curName" + (lineId + suffix), lineId == 1 ? "B路A相电流" : lineId == 2 ? "B路B相电流" : "B路C相电流");
-                    result.put("volName" + (lineId + suffix), lineId == 1 ? "B路A相电压" : lineId == 2 ? "B路B相电压" : "B路C相电压");
+                    result.put("curName" + (lineId + suffix), "B路L" + lineId + "相电流");
+                    result.put("volName" + (lineId + suffix), "B路L" + lineId + "相电压");
                     curSeries.setName("B-L" + lineId);
                     volSeries.setName("B-L" + lineId);
                     curSeries.setData((List<Float>) lineData.get("curDataList"));
@@ -1497,7 +1510,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if (jsonObject != null){
                 PduBasicInformationVo pduBasicInformationVo = new PduBasicInformationVo();
                 //设置ip
-                pduBasicInformationVo.setIpAddress(jsonObject.getString("dev_ip"));
+//                pduBasicInformationVo.setIpAddress(jsonObject.getString("dev_ip"));
+                pduBasicInformationVo.setIpAddress(devKey);
                 //设置运行状态
                 pduBasicInformationVo.setStatus(jsonObject.getInteger("status"));
                 //获取功率数据
@@ -1954,7 +1968,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 // TODO 电力计算错误，待电力计算错误解决再实现功能
-                List<String> realtimeData = getData(startTime, endTime, Arrays.asList(Id.intValue()), "pdu_ele_total_realtime");
                 List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
                 Double firstEq = null;
                 Double lastEq = null;
@@ -1963,6 +1976,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String maxEleTime = null;
                 int nowTimes = 0;
                 if (isSameDay) {
+                    List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
                     for (String str : cabinetData) {
                         nowTimes++;
                         PduEleTotalRealtimeDo eleDO = JsonUtils.parseObject(str, PduEleTotalRealtimeDo.class);
@@ -1974,13 +1988,27 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             barRes.getTime().add(eleDO.getCreateTime().toString("HH:mm"));
                         }
                         lastEq = eleDO.getEle();
+                        busList.add(eleDO);
                     }
-                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "ele_active");
-                    PduEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, PduEleTotalRealtimeDo.class);
-                    if (eleMaxValue != null) {
-                        maxEle = eleMaxValue.getEle();
-                        maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    //计算实时用电量
+                    List<PduEleTotalRealtimeDo> dayEqList = new ArrayList<>();
+                    for (int i = 0; i < cabinetData.size() - 1; i++) {
+                        PduEleTotalRealtimeDo dayEleDo = new PduEleTotalRealtimeDo();
+                        totalEq += (float) busList.get(i + 1).getEle() - (float) busList.get(i).getEle();
+                        dayEleDo.setEle(busList.get(i + 1).getEle() - busList.get(i).getEle());
+                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
+                        dayEqList.add(dayEleDo);
                     }
+                    dayEqList.sort(Comparator.comparing(PduEleTotalRealtimeDo::getEle));
+                    maxEle = dayEqList.get(dayEqList.size() - 1).getEle();
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("HH:mm");
+
+//                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index, "ele_active");
+//                    PduEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, PduEleTotalRealtimeDo.class);
+//                    if (eleMaxValue != null) {
+//                        maxEle = eleMaxValue.getEle();
+//                        maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+//                    }
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
                     result.put("maxEle", maxEle);
@@ -4221,7 +4249,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         ((List<String>) lineData.computeIfAbsent("volHappenTime", k -> new ArrayList<>())).add(formatVolTime(houResVO, dataType));
 
         List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
-        dateTimes.add(isSameDay ? sdf.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+
+
+            dateTimes.add(isSameDay ? hourOnlyFormat.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+
+
     }
 
     /**
