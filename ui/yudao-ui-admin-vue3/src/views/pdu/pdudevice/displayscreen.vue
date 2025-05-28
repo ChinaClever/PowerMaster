@@ -238,9 +238,10 @@
                   <el-option label="最大" value="最大" />
                   <el-option label="最小" value="最小" />
                 </el-select>
-                <el-button @click="queryParams.powGranularity = `oneHour`;switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''">最近一小时</el-button>
-                <el-button @click="queryParams.powGranularity = `twentyfourHour`;switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''">过去24小时</el-button>
-                <el-button @click="queryParams.powGranularity = `seventytwoHour`;switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''">过去三天</el-button>
+                <el-button @click="queryParams.powGranularity = `oneHour`;switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''">近一小时</el-button>
+                <el-button @click="queryParams.powGranularity = `twentyfourHour`;switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''">近一天</el-button>
+                <el-button @click="queryParams.powGranularity = `seventytwoHour`;switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''">近三天</el-button>
+                <el-button @click="queryParams.powGranularity = `oneMonth`;switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''">近一个月</el-button>
               </el-form-item>
             </div>
           </el-col> 
@@ -263,9 +264,10 @@
                   <el-option label="最大" value="最大" />
                   <el-option label="最小" value="最小" />
                 </el-select>
-                <el-button @click="queryParams.powGranularityF = `oneHour`;switchValueF = 0;" :type="switchValueF === 0 ? 'primary' : ''">最近一小时</el-button>
-                <el-button @click="queryParams.powGranularityF = `twentyfourHour`;switchValueF = 1;" :type="switchValueF === 1 ? 'primary' : ''">过去24小时</el-button>
-                <el-button @click="queryParams.powGranularityF = `seventytwoHour`;switchValueF = 2;" :type="switchValueF === 2 ? 'primary' : ''">过去三天</el-button>
+                <el-button @click="queryParams.powGranularityF = `oneHour`;switchValueF = 0;" :type="switchValueF === 0 ? 'primary' : ''">近一小时</el-button>
+                <el-button @click="queryParams.powGranularityF = `twentyfourHour`;switchValueF = 1;" :type="switchValueF === 1 ? 'primary' : ''">近一天</el-button>
+                <el-button @click="queryParams.powGranularityF = `seventytwoHour`;switchValueF = 2;" :type="switchValueF === 2 ? 'primary' : ''">近三天</el-button>
+                <el-button @click="queryParams.powGranularityF = `oneMonth`;switchValueF = 3;" :type="switchValueF === 3 ? 'primary' : ''">近一个月</el-button>
               </el-form-item>
             </div>
           </el-col> 
@@ -288,9 +290,10 @@
                   <el-option label="最大" value="最大" />
                   <el-option label="最小" value="最小" />
                 </el-select>
-                <el-button @click="toggleTime = `oneHour`;toggleValue = 0;" :type="toggleValue === 0 ? 'primary' : ''">最近一小时</el-button>
-                <el-button @click="toggleTime = `twentyfourHour`;toggleValue = 1;" :type="toggleValue === 1 ? 'primary' : ''">过去24小时</el-button>
-                <el-button @click="toggleTime = `seventytwoHour`;toggleValue = 2;" :type="toggleValue === 2 ? 'primary' : ''">过去三天</el-button>
+                <el-button @click="toggleTime = `oneHour`;toggleValue = 0;" :type="toggleValue === 0 ? 'primary' : ''">近一小时</el-button>
+                <el-button @click="toggleTime = `twentyfourHour`;toggleValue = 1;" :type="toggleValue === 1 ? 'primary' : ''">近一天</el-button>
+                <el-button @click="toggleTime = `seventytwoHour`;toggleValue = 2;" :type="toggleValue === 2 ? 'primary' : ''">近三天</el-button>
+                <el-button @click="toggleTime = `oneMonth`;toggleValue = 3;" :type="toggleValue === 3 ? 'primary' : ''">近一个月</el-button>
               </el-form-item>
             </div>
           </el-col> 
@@ -313,9 +316,10 @@
                   <el-option label="最大" value="最大" />
                   <el-option label="最小" value="最小" />
                 </el-select>
-                <el-button @click="toggleTimeV = `oneHour`;toggleValueV = 0;" :type="toggleValueV === 0 ? 'primary' : ''">最近一小时</el-button>
-                <el-button @click="toggleTimeV = `twentyfourHour`;toggleValueV = 1;" :type="toggleValueV === 1 ? 'primary' : ''">过去24小时</el-button>
-                <el-button @click="toggleTimeV = `seventytwoHour`;toggleValueV = 2;" :type="toggleValueV === 2 ? 'primary' : ''">过去三天</el-button>
+                <el-button @click="toggleTimeV = `oneHour`;toggleValueV = 0;" :type="toggleValueV === 0 ? 'primary' : ''">近一小时</el-button>
+                <el-button @click="toggleTimeV = `twentyfourHour`;toggleValueV = 1;" :type="toggleValueV === 1 ? 'primary' : ''">近一天</el-button>
+                <el-button @click="toggleTimeV = `seventytwoHour`;toggleValueV = 2;" :type="toggleValueV === 2 ? 'primary' : ''">近三天</el-button>
+                <el-button @click="toggleTimeV = `oneMonth`;toggleValueV = 3;" :type="toggleValueV === 3 ? 'primary' : ''">近一个月</el-button>
               </el-form-item>
             </div>
           </el-col> 
@@ -1815,6 +1819,8 @@ watch([() => typeRadioShowCur.value],async () => {
               } else if(toggleTime.value == "twentyfourHour" || toggleTime.value == "seventytwoHour"){
                 // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(5, 19);
+              } else if(toggleTime.value=='oneMonth'){
+                return value.substring(0, 10);
               }
             }
           },
@@ -1862,9 +1868,9 @@ watch([() => typeRadioShowVol.value],async () => {
       L3DataTime: []
     }
     if(itemVolTimeType != '') {
-      dataTime.value.L1DataTime = resultVol.value.l.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
-      dataTime.value.L2DataTime = resultVol.value.ll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
-      dataTime.value.L3DataTime = resultVol.value.lll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+      dataTime.value.L1DataTime = resultVol.value.l.map((item) => item[itemVolTimeType] ? item[itemVolTimeType] : '');
+      dataTime.value.L2DataTime = resultVol.value.ll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType] : '');
+      dataTime.value.L3DataTime = resultVol.value.lll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType]: '');
     }
 
     processChartDataV(resultVol.value.l, lChartDataV);
@@ -1916,6 +1922,9 @@ watch([() => typeRadioShowVol.value],async () => {
               } else if(toggleTimeV.value == "twentyfourHour" || toggleTimeV.value == "seventytwoHour"){
                 // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(5, 19);
+              }else if(toggleTimeV.value == "oneMonth" ){
+                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(0, 10);
               }
             }
           },
@@ -2003,6 +2012,8 @@ watch([() => toggleTime.value],async ()=>{
               } else if(toggleTime.value == "twentyfourHour" || toggleTime.value == "seventytwoHour"){
                 // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(5, 19);
+              }else if(toggleTime.value == "oneMonth"){
+                return value.substring(0, 10);
               }
             }
           },
@@ -2089,6 +2100,8 @@ watch([() => toggleTimeV.value],async ()=>{
               } else if(toggleTimeV.value == "twentyfourHour" || toggleTimeV.value == "seventytwoHour"){
                 // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(5, 19);
+              }else if(toggleTimeV.value == "oneMonth"){
+                return value.substring(0, 10);
               }
             }
           },
@@ -2357,6 +2370,8 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
   }else if(queryParams.powGranularity === 'seventytwoHour'){
     chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }else if(queryParams.powGranularity === 'oneMonth'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 10));
   }
 
   let timeArr = [itemActiveType + 'Time',itemApparentType + 'Time',itemReactiveType + 'Time']
@@ -2396,20 +2411,20 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
             //   result += ' kVar';
             // }
             result +=  params[i].marker + params[i].seriesName;
-          result += ':' + buKongGe(params[i].value,3)
-          //判断是否给鼠标悬停上显示符号
-          if (params[i].seriesName === '总视在功率') {
-            result += ' kVA&nbsp;'; 
-          } else if (params[i].seriesName === '总有功功率') {
-            result += ' kW&nbsp;&nbsp;';
-          }else if (params[i].seriesName === '总无功功率') {
-            result += ' kVar';
-          }
-          if(itemApparentType != 'apparentList' && chartData.value[timeArr[i]].length) {
-            result += '&nbsp;发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
-          }
-            result += '<br>';
-          }
+            result += ':' + buKongGe(params[i].value,3)
+            //判断是否给鼠标悬停上显示符号
+            if (params[i].seriesName === '总视在功率') {
+              result += ' kVA&nbsp;'; 
+            } else if (params[i].seriesName === '总有功功率') {
+              result += ' kW&nbsp;&nbsp;';
+            }else if (params[i].seriesName === '总无功功率') {
+              result += ' kVar';
+            }
+            if(itemApparentType != 'apparentList' && chartData.value[timeArr[i]].length) {
+              result += '&nbsp;发生时间:' + chartData.value[timeArr[i]][params[i].dataIndex]
+            }
+              result += '<br>';
+            }
           return result;
         }},
         legend: { data: ['总有功功率','总视在功率','总无功功率']},
@@ -2422,6 +2437,8 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
                 } else if(queryParams.powGranularity == "twentyfourHour" || queryParams.powGranularity == "seventytwoHour"){
                   // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                   return value.substring(5, 19);
+                }else if(queryParams.powGranularity == "oneMonth"){
+                  return value.substring(0, 10)
                 }
               }
             },boundaryGap: false, data:chartData.value.dateTimes},
@@ -2498,6 +2515,8 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
     chartDataF.value.dateTimes = chartDataF.value.dateTimes.map(item => item.slice(5, item.length));
   }else if(queryParams.powGranularityF === 'seventytwoHour'){
     chartDataF.value.dateTimes = chartDataF.value.dateTimes.map(item => item.slice(0, 16));
+  }else if(queryParams.powGranularityF === 'oneMonth'){
+    chartDataF.value.dateTimes = chartDataF.value.dateTimes.map(item => item.slice(0, 10));
   }
     // 创建新的图表实例
     chartF = echarts.init(document.getElementById('chartContainerF'));
@@ -2557,6 +2576,9 @@ watch([() => queryParams.powGranularityF], async ([newPowGranularityF]) => {
                 } else if(queryParams.powGranularityF == "twentyfourHour" || queryParams.powGranularityF == "seventytwoHour"){
                   // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                   return value.substring(5, 19);
+                }else if(queryParams.powGranularityF == "oneMonth" ){
+                  // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                  return value.substring(0, 10);
                 }
               }
             },boundaryGap: false, data:chartDataF.value.dateTimes},
@@ -2744,6 +2766,9 @@ const PDUHdaLineHisdata = async (type) => {
   }else if(type === 'seventytwoHour'){
     result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'seventytwoHour'})
     lineidDateTimes.value = result.dateTimes.map(item => item.slice(0, 16));
+  }else if(type === 'oneMonth'){
+    result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'oneMonth'})
+    lineidDateTimes.value = result.dateTimes.map(item => item.slice(0, 10));
   }
   resultCur.value = result
   //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
@@ -2792,6 +2817,9 @@ const PDUHdaLineHisdataV = async (type) => {
   }else if(type === 'seventytwoHour'){
     result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'seventytwoHour'})
     lineidDateTimesV.value = result.dateTimes.map(item => item.slice(0, 16));
+  }else if(type === 'oneMonth'){
+    result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'oneMonth'})
+    lineidDateTimesV.value = result.dateTimes.map(item => item.slice(0, 10));
   }
   resultVol.value = result
   //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
@@ -2803,9 +2831,9 @@ const PDUHdaLineHisdataV = async (type) => {
     L3DataTime: []
   }
   if(itemVolTimeType != '') {
-    dataTime.value.L1DataTime = resultVol.value.l.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
-    dataTime.value.L2DataTime = resultVol.value.ll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
-    dataTime.value.L3DataTime = resultVol.value.lll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType].slice(0, -3) : '');
+    dataTime.value.L1DataTime = resultVol.value.l.map((item) => item[itemVolTimeType] ? item[itemVolTimeType] : '');
+    dataTime.value.L2DataTime = resultVol.value.ll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType] : '');
+    dataTime.value.L3DataTime = resultVol.value.lll.map((item) => item[itemVolTimeType] ? item[itemVolTimeType] : '');
   }
 
 

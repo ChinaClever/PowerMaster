@@ -52,7 +52,7 @@
             月份
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showSearchBtn = true;dateSwitch = false" 
+            @click="queryParams.timeType = 2;queryParams.oldTime = dayjs(new Date(new Date().getTime() - 24 * 60 * 60 * 1000)).format('YYYY-MM-DD HH:mm:ss');queryParams.newTime = dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss');queryParams.timeArr = [dayjs(new Date(new Date().getTime() - 24 * 60 * 60 * 1000)).format('YYYY-MM-DD HH:mm:ss'),dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss')];showSearchBtn = true;dateSwitch = false" 
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
@@ -438,7 +438,7 @@ import download from '@/utils/download';
 import { PDUDeviceApi } from '@/api/pdu/pdudevice';
 import Pie from './component/Pie.vue';
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { ElTree } from 'element-plus';
+import { dayjs, ElTree } from 'element-plus';
 import { CabinetApi } from '@/api/cabinet/info';
 
 import * as echarts from 'echarts';
@@ -690,7 +690,6 @@ const disabledDate = (date) => {
 
 const handleDayPick = () => {
   if(queryParams?.oldTime && queryParams.timeType == 2){
-
     queryParams.oldTime = null;
     queryParams.newTime = null;
   }
