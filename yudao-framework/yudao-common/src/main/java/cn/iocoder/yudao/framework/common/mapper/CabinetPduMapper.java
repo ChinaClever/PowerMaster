@@ -24,4 +24,6 @@ public interface CabinetPduMapper extends BaseMapper<CabinetPdu> {
     void updateBatch(@Param("list") List<CabinetPdu> list);
 
     void insertBatch(@Param("list") List<CabinetPdu> list);
+
+    Integer pduCountQuery(String pduKey);
 }

@@ -95,6 +95,9 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
                 // 从聚合结果中获取最大值
                 Max maxAggregation = searchResponse.getAggregations().get("pow_apparent_max");
+                if (Double.isInfinite(maxAggregation.getValue())) {
+                    return 0.0;
+                }
                 return maxAggregation.getValue();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -260,6 +263,9 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
                 // 从聚合结果中获取最大值
                 Max maxAggregation = searchResponse.getAggregations().get("pow_apparent_max");
+                if (Double.isInfinite(maxAggregation.getValue())) {
+                    return 0.0;
+                }
                 return maxAggregation.getValue();
             } catch (IOException e) {
                 e.printStackTrace();

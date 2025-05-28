@@ -23,4 +23,7 @@
             where id = #{item.id}
         </foreach>
     </update>
+    <select id="pduCountQuery" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM cabinet_pdu WHERE (((pdu_key_a = #{pduKey}) OR (pdu_key_b = #{pduKey})))
+    </select>
 </mapper>

@@ -1,10 +1,10 @@
 package cn.iocoder.yudao.framework.common.dto.aisle;
 
-import cn.hutool.json.JSONObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -30,7 +30,7 @@ public class AisleBoxDTO implements Serializable {
 
 
     /**
-     *  唯一标识
+     * 唯一标识
      */
     @Schema(description = "唯一标识")
     private String barKey;
@@ -54,7 +54,7 @@ public class AisleBoxDTO implements Serializable {
     private Integer aisleBarId;
 
     /**
-     *  插接箱
+     * 插接箱
      */
     @Schema(description = "插接箱key")
     private String boxKey;
@@ -86,51 +86,134 @@ public class AisleBoxDTO implements Serializable {
     /**
      * 输出位昨日电量
      */
-    @Schema(description = "昨日电量", example = "1")
+    @Schema(description = "输出位昨日电量", example = "1")
     private Double[] yesterdayEq;
 
 
-
+    @Schema(description = "插接箱key")
     private String devKey;
     /**
      * 相负载率
      */
+    @Schema(description = "相负载率")
     private float[] lineLoadRate;
     /**
      * 相电流
      */
-    private  float[] lineCur;
+    @Schema(description = "相电流")
+    private float[] lineCur;
 
     /**
      * 相电压
      */
-    private  float[] lineVol;
+    @Schema(description = "相电压")
+    private float[] lineVol;
 
 
     /**
      * 输出位功率因素
      */
+    @Schema(description = "输出位功率因素")
     private float[] powerFactor;
 
     /**
      * 输出位有功功率
      */
-    private  float[] powActive;
+    @Schema(description = "输出位有功功率")
+    private float[] powActive;
 
 
     /**
      * 输出位无功功率
      */
-    private  float[] powReactive;
+    @Schema(description = "输出位无功功率")
+    private float[] powReactive;
 
     /**
      * 输出位视在功率
      */
-    private  float[] powApparent;
+    @Schema(description = "输出位视在功率")
+    private float[] powApparent;
 
 
     /**
      * 温度
      */
+    @Schema(description = "温度")
     private float[] temData;
+
+    //    private String boxName;
+    @Schema(description = "状态")
+    private Integer status;
+
+    /**
+     * 插接箱系统软件版本号
+     */
+    @Schema(description = "插接箱系统软件版本号")
+    private String boxVersion;
+
+    /**
+     * 断路器状态
+     */
+    @Schema(description = "断路器状态")
+    private List<Integer> breakerStatus;
+
+    /**
+     * 回路
+     */
+    @Schema(description = "回路")
+    private Integer loopNum;
+
+    /**
+     * 总功率因素
+     */
+    @Schema(description = "总功率因素")
+    private BigDecimal powerFactorTotal;
+
+    /**
+     * 总总有功功率
+     */
+    @Schema(description = "总总有功功率")
+    private BigDecimal powValueTotal;
+
+    /**
+     * 总视在
+     */
+    @Schema(description = "总视在")
+    private BigDecimal powApparentTotal;
+
+    /**
+     * 总无功
+     */
+    @Schema(description = "总无功")
+    private BigDecimal powReactiveTotal;
+
+    /**
+     * 总电压三相不平衡
+     */
+    @Schema(description = "总电压三相不平衡")
+    private BigDecimal volUnbalance;
+
+    /**
+     * 总电流三相不平衡
+     */
+    @Schema(description = "总电流三相不平衡")
+    private BigDecimal curUnbalance;
+
+    /**
+     * 电流谐波含量
+     */
+    @Schema(description = "电流谐波含量")
+    private List<BigDecimal> curThd;
+    /**
+     * 电压谐波含量
+     */
+    @Schema(description = "电压谐波含量")
+    private List<BigDecimal> volThd;
+
+    /**
+     * 回路电流
+     */
+    @Schema(description = "回路电流")
+    private List<BigDecimal> curValueLoop;
 }
