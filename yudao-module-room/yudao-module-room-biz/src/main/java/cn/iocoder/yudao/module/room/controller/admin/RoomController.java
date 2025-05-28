@@ -122,8 +122,9 @@ public class RoomController {
 
     @Operation(summary = "机房新增根据名称异步查询")
     @GetMapping("/newSelectRoomByName")
-    public CommonResult<Integer> newSelectRoomByName(@Param("roomName") String name) {
-        Integer i = roomService.newSelectRoomByName(name);
+    public CommonResult<Integer> newSelectRoomByName(@RequestParam(value = "roomName")  String name,
+                                                     @RequestParam(value = "id",  required = false) Integer id) {
+        Integer i = roomService.newSelectRoomByName(name,id);
         return success(i);
     }
 
@@ -245,10 +246,18 @@ public class RoomController {
         return success(i);
     }
 
-    @Operation(summary = "机房柜列新增/编辑")
+    @Operation(summary = "机房机柜新增/编辑")
     @PostMapping("/roomCabinetSave")
     public CommonResult<Integer> roomCabinetSave(@RequestBody CabinetSaveVo vo) {
-        return success(roomService.roomCabinetSave(vo));
+        Integer result = roomService.roomCabinetSave(vo);
+        if (result > 0) {
+            ThreadPoolConfig.getTHreadPool().execute(() -> {
+                HttpUtil.get(adder);
+                HttpUtil.get(adderAisle);
+                HttpUtil.get(adderCabinet);
+            });
+        }
+        return success(result);
     }
 
 

@@ -73,5 +73,5 @@ public interface JobService {
      * @param handlerName 处理器
      * @param cron 定时任务表达式
      */
-    void updateCabinetJobCron(String handlerName, String cron) throws Exception;
+    void updateJobCronByHandler(String handlerName, String cron) throws Exception;
 }

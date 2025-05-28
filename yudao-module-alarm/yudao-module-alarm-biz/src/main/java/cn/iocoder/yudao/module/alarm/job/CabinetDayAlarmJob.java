@@ -14,7 +14,6 @@ import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.quartz.core.handler.JobHandler;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
-import cn.iocoder.yudao.module.alarm.service.logrecord.AlarmLogRecordService;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -39,9 +39,6 @@ public class CabinetDayAlarmJob implements JobHandler {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private AlarmLogRecordService alarmLogRecordService;
-
-    @Autowired
     private AlarmLogRecordMapper alarmLogRecordMapper;
 
     @Autowired
@@ -49,7 +46,7 @@ public class CabinetDayAlarmJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-        Thread.sleep(1000*60*5);
+//        Thread.sleep(1000*60*5);
         // 获取所有按天统计电量的机柜
         List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                 .eq(CabinetCfg::getEleAlarmDay, 1));
@@ -58,6 +55,12 @@ public class CabinetDayAlarmJob implements JobHandler {
             Double eleLimitDay = cabinetCfg.getEleLimitDay();
             LambdaEsQueryWrapper<CabinetDayPower> wrapper = new LambdaEsQueryWrapper<>();
             wrapper.eq(CabinetDayPower::getCabinet_id, cabinetCfg.getCabinetId());
+            // 获取当前时间
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String nowTime = now.format(formatter);
+            wrapper.lt("end_time.keyword",  nowTime);
+            wrapper.gt("end_time.keyword",  now.minusDays(1).format(formatter));
             wrapper.orderByDesc("start_time.keyword");
             wrapper.limit(1);
             CabinetDayPower cabinetDayPower = cabinetDayPowerMapper.selectOne(wrapper);
@@ -65,12 +68,13 @@ public class CabinetDayAlarmJob implements JobHandler {
                 // 用电超额，存入告警记录
                 CabinetIndex cabinetIndex = cabinetIndexMapper.selectById(cabinetCfg.getCabinetId());
                 AlarmLogRecordDO alarmRecord = new AlarmLogRecordDO();
-                String alarmKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
+                String alarmKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getAisleId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
                 alarmRecord.setAlarmKey(alarmKey);
                 alarmRecord.setAlarmStatus(AlarmStatusEnums.UNTREATED.getStatus());
                 alarmRecord.setAlarmType(AlarmTypeEnums.CABINET_DAY_POWER_ALARM.getType());
                 // 告警位置
-                JSONObject cabinetJson = (JSONObject)redisTemplate.opsForValue().get(FieldConstant.REDIS_KEY_CABINET + alarmKey);
+                String redisKey = cabinetIndex.getRoomId() + FieldConstant.SPLIT_KEY + cabinetIndex.getId();
+                JSONObject cabinetJson = (JSONObject)redisTemplate.opsForValue().get(FieldConstant.REDIS_KEY_CABINET + redisKey);
                 if (cabinetJson != null) {
                     String roomName = cabinetJson.get(FieldConstant.ROOM_NAME) + "";
                     String aisleName = cabinetJson.get(FieldConstant.AISLE_NAME) + "";
@@ -90,7 +94,7 @@ public class CabinetDayAlarmJob implements JobHandler {
                 DecimalFormat decimalFormat = new DecimalFormat("0.0");
                 decimalFormat.setRoundingMode(RoundingMode.HALF_UP);
                 String powEqValueDay = decimalFormat.format(cabinetDayPower.getEq_value());
-                String alarmDesc = "每日用电量超额！日用电量限制：" +  eleLimitDay + "KWh，实际用电量：" + powEqValueDay + "KWh";
+                String alarmDesc = "机柜上一日用电量超额！该机柜日用电量限制：" +  eleLimitDay + "KWh，实际用电量：" + powEqValueDay + "KWh";
                 alarmRecord.setAlarmDesc(alarmDesc);
                 alarmRecord.setStartTime(LocalDateTime.now());
                 alarmLogRecordMapper.insert(alarmRecord);

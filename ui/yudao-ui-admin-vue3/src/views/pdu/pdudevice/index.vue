@@ -1175,8 +1175,8 @@ onActivated(() => {
       height: 140px;
       font-size: 13px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
       position: relative;
       .content {
@@ -1257,13 +1257,14 @@ onActivated(() => {
     margin-top: -10px;
 
     .arrayItem {
-      width: 25%;
+      width: 23%;
       height: 140px;
       font-size: 13px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
+      margin: 14px;
       position: relative;
       border-radius: 7px;
       .content {
@@ -1348,8 +1349,8 @@ onActivated(() => {
       height: 140px;
       font-size: 13px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
       position: relative;
       .content {

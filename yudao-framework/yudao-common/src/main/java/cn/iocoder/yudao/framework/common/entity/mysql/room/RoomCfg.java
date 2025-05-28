@@ -19,7 +19,7 @@ public class RoomCfg implements Serializable {
     private Integer id;
 
     @Schema(description = "关联机房id", example = "2")
-    private int roomId;
+    private Integer roomId;
 
     /**
      * 更新时间
@@ -36,26 +36,26 @@ public class RoomCfg implements Serializable {
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private int isDelete;
+    private Integer isDelete;
 
     /**
      * 日用能告警开关
      */
-    private  int eleAlarmDay;
+    private  Integer eleAlarmDay;
 
     /**
      * 月用能告警开关
      */
-    private  int eleAlarmMonth;
+    private  Integer eleAlarmMonth;
 
     /**
      * 日用能限制
      */
-    private double eleLimitDay;
+    private Double eleLimitDay;
 
     /**
      * 月用能限制
      */
-    private double eleLimitMonth;
+    private Double eleLimitMonth;
 
 }

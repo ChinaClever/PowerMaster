@@ -108,10 +108,22 @@ public class IndexController {
         return success(indexService.getReportPowDataById(Id,timeType,oldTime,newTime));
     }
 
+    @GetMapping("/report/powByType")
+    @Operation(summary = "获得机柜报表数据")
+    public CommonResult<Map> getReportPowDataByIdAndType(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(indexService.getReportPowDataByIdAndType(Id,timeType,oldTime,newTime,dataType));
+    }
+
     @GetMapping("/report/pfline")
     @Operation(summary = "获得机柜报表数据")
     public CommonResult<Map> getCabinetPFLine(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
         return success(indexService.getCabinetPFLine(Id,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/report/pfLineByType")
+    @Operation(summary = "获得机柜报表数据")
+    public CommonResult<Map> getCabinetPFLineByType(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(indexService.getCabinetPFLineByType(Id,timeType,oldTime,newTime,dataType));
     }
 
     @GetMapping("/env/ice")
@@ -120,10 +132,27 @@ public class IndexController {
         return success(indexService.getCabinetEnvIceTemAndHumData(id,timeType,oldTime,newTime));
     }
 
+    @GetMapping("/env/iceByType")
+    @Operation(summary = "获得机柜冷通道温度和湿度")
+    public CommonResult<Map> getCabinetEnvIceTemAndHumDataByType(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(indexService.getCabinetEnvIceTemAndHumDataByType(id,timeType,oldTime,newTime,dataType));
+    }
+
+    @GetMapping("/env/getIceAndHot")
+    @Operation(summary = "获得机柜冷通道温度和湿度")
+    public CommonResult<Map> getCabinetEnvIceAndHotTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(indexService.getCabinetEnvIceAndHotTemAndHumData(id,timeType,oldTime,newTime,dataType));
+    }
+
     @GetMapping("/env/hot")
     @Operation(summary = "获得机柜热通道温度和湿度")
     public CommonResult<Map> getCabinetEnvHotTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
         return success(indexService.getCabinetEnvHotTemAndHumData(id,timeType,oldTime,newTime));
+    }
+    @GetMapping("/env/hotByType")
+    @Operation(summary = "获得机柜热通道温度和湿度")
+    public CommonResult<Map> getCabinetEnvHotTemAndHumDataByType(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(indexService.getCabinetEnvHotTemAndHumDataByType(id,timeType,oldTime,newTime,dataType));
     }
 
     @GetMapping("/idList")

@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import 'echarts'
-import { reactive, watch, defineProps, onUnmounted } from 'vue';
+import { reactive, watch, defineProps, onUnmounted, guardReactiveProps } from 'vue';
 const props = defineProps({
   loadFactor: {
     type: Number,
@@ -19,7 +19,7 @@ const props = defineProps({
 })
 console.log('loadFactor',props.loadFactor)
 
-const gaugeData = [
+const gaugeData = ref([
   {
     value: props.loadFactor.powApparentTotal,
     detail: {
@@ -50,7 +50,7 @@ const gaugeData = [
       color:'purple'
     }
   }
-];
+]);
 
 // 设置饼图的选项
 const echartsOption = computed(() => ({
@@ -89,7 +89,7 @@ const echartsOption = computed(() => ({
         show: false,
         distance: 50
       },
-      data: gaugeData,
+      data: gaugeData.value,
       title: {
         fontSize: 14
       },
@@ -111,9 +111,13 @@ onUnmounted(() => {
   console.log('onUnmounted******')
 })
 
-// watch(() => props.loadFactor, (newVal) => {
-//   echartsOption.series[0].data[0].value = newVal;
-// });
+watch(() => props.loadFactor, (newVal) => {
+  console.log('newVal',newVal)
+  console.log('echartsOption',echartsOption)
+  gaugeData.value[0].value = newVal.powApparentTotal;
+  gaugeData.value[1].value = newVal.powActiveTotal;
+  gaugeData.value[2].value = newVal.powReactiveTotal;
+});
 
 </script>
 

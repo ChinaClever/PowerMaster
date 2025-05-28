@@ -37,4 +37,6 @@ public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
     int findAddAisleVerifyy(@Param("vo") AisleSaveVo vo);
 
     AisleIndex selectByBusKey(String busKey);
+
+    String selectLocationById(Integer id);
 }

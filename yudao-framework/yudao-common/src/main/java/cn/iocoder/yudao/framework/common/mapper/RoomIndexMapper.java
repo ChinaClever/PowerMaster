@@ -35,8 +35,6 @@ public interface RoomIndexMapper extends BaseMapper<RoomIndex> {
 
     RoomIndexCfgVO findRoomIndexCfg(@Param("id")int id);
 
-    Integer selectRoomByName(@Param("name") String name);
-
     @Delete("DELETE FROM room_index")
     void initRoomData();
 }

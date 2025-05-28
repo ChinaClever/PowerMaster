@@ -30,13 +30,8 @@ public class AisleCfg implements Serializable {
      * 电力容量
      */
     @Schema(description = "电力容量", example = "0")
-    private float powerCapacity;
+    private Float powerCapacity;
 
-    /**
-     * 是否删除
-     */
-    @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private Integer isDelete;
 
     /**
      * 类型
@@ -46,22 +41,22 @@ public class AisleCfg implements Serializable {
     /**
      * 日用能告警开关
      */
-    private  int eleAlarmDay;
+    private  Integer eleAlarmDay;
 
     /**
      * 月用能告警开关
      */
-    private  int eleAlarmMonth;
+    private  Integer eleAlarmMonth;
 
     /**
      * 日用能限制
      */
-    private double eleLimitDay;
+    private Double eleLimitDay;
 
     /**
      * 月用能限制
      */
-    private double eleLimitMonth;
+    private Double eleLimitMonth;
 
     /**
      * 创建时间

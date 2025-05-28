@@ -35,7 +35,15 @@ public class PduIndex {
      */
     private Integer nodeId;
 
-    private Integer  curUnbalanceStatus;
+    /**
+     * 电流均衡
+     */
+    private Integer curUnbalanceStatus;
+
+    /**
+     * 电压均衡
+     */
+    private Integer volUnbalanceStatus;
 
     /**
      * 是否删除

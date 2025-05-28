@@ -53,7 +53,7 @@
         label-width="68px"
       >
       
-        <el-form-item v-if="switchValue == 2 || switchValue == 3">
+        <el-form-item >
           <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus1">
             全部 
           </button>
@@ -62,7 +62,6 @@
             <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus1(status.value)" style="width:70px;">{{status.name}}</button>
           </template>
           <el-button
-          v-if="switchValue == 2 || switchValue == 3"
           type="primary"
           plain
           @click="openForm('create')"
@@ -116,7 +115,9 @@
           <el-button
             @click="pageSizeArr = [24, 36, 48, 96];
             queryParams.pageSize = 24;
+            queryParams.curbance=1;
             getList();
+            getNavAList();
             switchValue = 2
             "
             :type="switchValue == 2 ? 'primary' : ''"
@@ -127,7 +128,9 @@
               statusList.forEach((item) => (item.selected = true));
               pageSizeArr = [24, 36, 48, 96];
               queryParams.pageSize = 24;
+              queryParams.curbance=0;
               getList();
+              getNavAList();
               switchValue = 99;
             "
             :type="switchValue == 99 ? 'primary' : ''"
@@ -137,7 +140,9 @@
             @click="
               pageSizeArr = [15, 25, 30, 50, 100];
               queryParams.pageSize = 15;
+              queryParams.curbance=1;
               getList();
+              getNavAList();
               switchValue = 3;
             "
             :type="switchValue == 3 ? 'primary' : ''"
@@ -152,6 +157,8 @@
         :data="list"
         :show-overflow-tooltip="true"
         @cell-dblclick="toPDUDisplayScreen"
+        :border="true"
+        stripe
       >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
@@ -243,7 +250,7 @@
             <el-button
               link
               type="primary"
-              @click="location=scope.row.location;toPDUDisplayScreen(scope.row)"
+              @click="location=scope.row.location;timeType=0;toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5 && scope.row.bvol != null && scope.row.cvol != null"
               style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
@@ -302,7 +309,7 @@
           <button
             v-if="item.status != null && item.color != 5 && item.bcur != null && item.ccur != null"
             class="detail"
-            @click="location=item.location;showDialogVol(item)"
+            @click="location=item.location;timeType=0;showDialogVol(item)"
             >详情</button
           >
         </div>
@@ -341,7 +348,7 @@
           <button
             v-if="item.status != null && item.status != 5 && item.bvol != null && item.cvol != null"
             class="detail"
-            @click="location=item.location;showDialogVol(item)"
+            @click="location=item.location;timeType=0;showDialogVol(item)"
             >详情</button
           >
         </div>
@@ -354,6 +361,7 @@
     <span style="margin-left: 15px;margin-top: -3px;">所在位置：{{ location?location:'未绑定' }}</span>
     <span style="margin-left: 15px;margin-top: -3px;">网络地址：{{ vollocation }}</span>
     <span style="float: right;margin-top: 3px;">时间：{{ createTimes }} - {{ endTimes }}</span>
+    <span style="float:right"><el-button @click="timeType=0;showTrend()" :type="timeType==0?'primary':''">近一小时</el-button><el-button @click="timeType=1;showTrend()" :type="timeType==1?'primary':''">近一天</el-button><el-button @click="timeType=2;showTrend()" :type="timeType==2?'primary':''">近三天</el-button><el-button @click="timeType=3;showTrend()" :type="timeType==3?'primary':''">近一个月</el-button></span>
     <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
         </template>
          <!-- 自定义的主要内容 -->
@@ -361,7 +369,7 @@
           <div class="custom-content-container">
           <el-card class="cardChilc" shadow="hover">
             <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[balanceObj.colorIndex].name" />
-            <!-- <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
+            <!-- <div class="box" :style="{ borderColor: colorList[balanfceObj.colorIndex].color }">
               <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
               <div
                 class="day"
@@ -412,8 +420,7 @@
             <div style="display: flex;align-items: center;justify-content: space-between">
               <div style="font-size: 18px;font-weight: bold;margin-left: 5px;">电流趋势</div>
               <div>
-                <el-select v-model="typeRadioCur" placeholder="请选择" style="width: 100px">
-                  <el-option label="实时" value="实时" />
+                <el-select v-model="typeRadioCur" placeholder="请选择" style="width: 100px" v-show="timeType!=0">
                   <el-option label="平均" value="平均" />
                   <el-option label="最大" value="最大" />
                   <el-option label="最小" value="最小" />
@@ -469,8 +476,7 @@
             <div style="display: flex;align-items: center;justify-content: space-between">
               <div style="font-size: 18px;font-weight: bold;margin-left: 5px;">电压趋势</div>
               <div>
-                <el-select v-model="typeRadioVol" placeholder="请选择" style="width: 100px">
-                  <el-option label="实时" value="实时" />
+                <el-select v-model="typeRadioVol" placeholder="请选择" style="width: 100px" v-show="timeType!=0">
                   <el-option label="平均" value="平均" />
                   <el-option label="最大" value="最大" />
                   <el-option label="最小" value="最小" />
@@ -519,9 +525,9 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute();
 const query = route.query;
-
+const detailPDUID=ref();
 const openDetailFlag=ref("0")
-
+const timeType=ref(0)
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -799,7 +805,7 @@ const handleSelectStatus1 = (index) => {
 const getBalanceTrend = async (item) => {
   const res = await PDUDeviceApi.balanceTrend({
     pduId: item.id,
-    timeType: 1
+    timeType: timeType.value
   })
 
   pduBalanceTrend.value = res
@@ -836,7 +842,7 @@ const getBalanceTrend = async (item) => {
           result += '<br>';
         });
         return result.trimEnd(); // 去除末尾多余的换行符
-      }},
+      }}
       ALineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -847,7 +853,7 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[0].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[0].curValue,2))
         }
       ]
     } else if (res[0].cur && res[0].cur.length == 3) {
@@ -872,19 +878,19 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[0].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[0].curValue,2))
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[1].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[1].curValue,2))
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => formatEQ(item.cur[2].curMaxValue,2))
+          data: res.map((item) => formatEQ(item.cur[2].curValue,2))
         }
       ]
     }if (res[0].vol && res[0].vol.length == 1) {
@@ -909,7 +915,7 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[0].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[0].volValue,1)),
         },
       ]
     } else if(res[0].vol && res[0].vol.length == 3) {
@@ -934,19 +940,19 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[0].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[0].volValue,1)),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[1].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[1].volValue,1)),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => formatEQ(item.vol[2].volMaxValue,1)),
+          data: res.map(item => formatEQ(item.vol[2].volValue,1)),
         },
       ]
     }
@@ -1239,6 +1245,10 @@ const showDialogVol = (item) => {
 
   getBalanceDetail(item)
   getBalanceTrend(item)
+  // changeChart('cur');
+  // changeChart('vol');
+  detailPDUID.value=item.id;
+  console.log(detailPDUID.value,"detailPDUID");
   curUnblance1.value = balanceObj.imbalanceValueA
 // 将 item 的属性赋值给 barMaxValues
 
@@ -1368,7 +1378,7 @@ const getCurbalanceColor = async () => {
 provide('parentMethod', getCurbalanceColor);
 
 const getNavAList = async() => {
-    const resStatus =await PDUDeviceApi.getBalancedDistribution();
+    const resStatus =await PDUDeviceApi.getBalancedDistribution(queryParams);
     statusNumber.smallCurrent = resStatus.smallCurrent;
     statusNumber.lessFifteen = resStatus.lessFifteen;
     statusNumber.greaterFifteen = resStatus.greaterFifteen;
@@ -1398,8 +1408,9 @@ const router = useRouter()
 
 const toPDUDisplayScreen = (row) => {
   const foundItem = list.value.find(item => item.devKey === row.devKey);
+  detailPDUID.value=row.id;
   showDialogVol(foundItem);
-  
+  console.log(detailPDUID.value,"detailPDUID.value");
 }
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
@@ -1449,7 +1460,11 @@ const handleQuery = () => {
         onclickColor.value = -1;
         queryParams.color = [0,1,2,3,4];
     }
-
+    if(switchValue.value==2||switchValue.value==3){
+      queryParams.curbance=0;
+    }else if(switchValue.value==99){
+      queryParams.curbance=1;
+    }
   queryParams.pageNo = 1
   getList();
   getNavAList();
@@ -1508,22 +1523,22 @@ watch(() => list.value ,async()=>{
 })
 
 // 监听切换类型
-watch(() => typeRadioCur.value ,(value)=>{
-  if(value == "实时") {
-    getBalanceTrendReal()
-  } else {
-   changeType(true)
-  }
-})
+// watch(() => typeRadioCur.value ,(value)=>{
+//   if(value == "实时") {
+//     getBalanceTrendReal()
+//   } else {
+//    changeType(true)
+//   }
+// })
 
 // 监听切换类型
-watch( ()=>typeRadioVol.value, (value)=>{
-  if(value == "实时") {
-    getBalanceTrendReal()
-  } else {
-   changeType(false)
-  }
-})
+// watch( ()=>typeRadioVol.value, (value)=>{
+//   if(value == "实时") {
+//     getBalanceTrendReal()
+//   } else {
+//    changeType(false)
+//   }
+// })
 
 watch(openDetailFlag,async (val) => {
   if(val == "1") {
@@ -1571,7 +1586,7 @@ onBeforeRouteLeave(() => {
     firstTimerCreate.value = false
   }
 })
-
+let trend=null;
 onActivated(() => {
   getList()
   getNavList()
@@ -1585,6 +1600,157 @@ onActivated(() => {
   // }, 5000);
 
 })
+async function showTrend(){
+  typeRadioCur.value = "最大";
+  typeRadioVol.value = "最大";
+  let res=await await PDUDeviceApi.balanceTrend({
+    pduId: detailPDUID.value,
+    timeType: timeType.value,
+  });
+  trend=res;
+  console.log(trend);
+  changeChart('cur');
+  changeChart("vol");
+}
+
+watch([typeRadioCur],()=>changeChart("cur"))
+watch([typeRadioVol],()=>changeChart("vol"))
+
+
+function changeChart(curVol){
+  if(trend!=null&&trend.length!=0){
+    if(curVol=='cur'){
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: trend.map(item => item.dateTime)
+      }
+      ALineOption.value.grid = {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '8%',
+        containLabel: true
+      }
+      ALineOption.value.tooltip= { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'A' || param.seriesName === 'B' || param.seriesName === 'C') {
+            result += ' A';
+          }
+          if(timeType.value!=0){
+            if(typeRadioCur.value=='平均'){
+              result+="&nbsp;&nbsp记录时间:"+trend?.[param.dataIndex]?.dateTime;
+            }else if(typeRadioCur.value=='最大'){
+              result+= "&nbsp;&nbsp发生时间:"+trend?.[param.dataIndex]?.cur[param.seriesIndex].curMaxTime;
+            }else if(typeRadioCur.value=='最小'){
+              result+= "&nbsp;&nbsp发生时间:"+trend?.[param.dataIndex]?.cur[param.seriesIndex].curMinTime;
+            }
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }}
+      if(trend[0].cur.length==1){
+        ALineOption.value.series = [
+          {
+            name: 'A',
+            type: 'line',
+            symbol: 'none',
+            data: trend.map((item) => timeType.value==0?formatEQ(item.cur[0].curValue,2):typeRadioCur.value=='平均'?formatEQ(item.cur[0].curValue,2):typeRadioCur.value=='最大'?formatEQ(item.cur[0].curMaxValue,2):formatEQ(item.cur[0].curMinValue,2))
+          }
+        ]
+      }else if(trend[0].cur.length==3){
+        ALineOption.value.series = [
+          {
+            name: 'A',
+            type: 'line',
+            symbol: 'none',
+            data: trend.map((item) => timeType.value==0?formatEQ(item.cur[0].curValue,2):typeRadioCur.value=='平均'?formatEQ(item.cur[0].curValue,2):typeRadioCur.value=='最大'?formatEQ(item.cur[0].curMaxValue,2):formatEQ(item.cur[0].curMinValue,2))
+          },
+          {
+            name: 'B',
+            type: 'line',
+            symbol: 'none',
+            data: trend.map((item) => timeType.value==0?formatEQ(item.cur[1].curValue,2):typeRadioCur.value=='平均'?formatEQ(item.cur[1].curValue,2):typeRadioCur.value=='最大'?formatEQ(item.cur[1].curMaxValue,2):formatEQ(item.cur[1].curMinValue,2))
+          },
+          {
+            name: 'C',
+            type: 'line',
+            symbol: 'none',
+            data: trend.map((item) => timeType.value==0?formatEQ(item.cur[2].curValue,2):typeRadioCur.value=='平均'?formatEQ(item.cur[2].curValue,2):typeRadioCur.value=='最大'?formatEQ(item.cur[2].curMaxValue,2):formatEQ(item.cur[2].curMinValue,2))
+          }
+        ]
+      }
+    }else if(curVol=='vol'){
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: trend.map(item => item.dateTime)
+      }
+      BLineOption.value.tooltip= { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;' + param.value;
+          if (param.seriesName === 'A' || param.seriesName === 'B' || param.seriesName === 'C') {
+            result += 'V';
+          }
+          if(timeType.value!=0){
+            if(typeRadioVol.value=='平均'){
+              result+="&nbsp;&nbsp记录时间:"+trend?.[param.dataIndex]?.dateTime;
+            }else if(typeRadioVol.value=='最大'){
+              result+= "&nbsp;&nbsp发生时间:"+trend?.[param.dataIndex]?.vol[param.seriesIndex].volMaxTime;
+            }else if(typeRadioVol.value=='最小'){
+              result+= "&nbsp;&nbsp发生时间:"+trend?.[param.dataIndex]?.vol[param.seriesIndex].volMinTime;
+            }
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }}
+      if(trend[0].vol.length==1){
+        BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: trend.map(item => timeType.value==0?formatEQ(item.vol[0].volValue,1):typeRadioVol.value=='平均'?formatEQ(item.vol[0].volValue,1):typeRadioVol.value=='最大'?formatEQ(item.vol[0].volMaxValue,1):formatEQ(item.vol[0].volMinValue,1)),
+        },
+      ]
+      }else if(trend[0].vol.length==3){ 
+        BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: trend.map(item => timeType.value==0?formatEQ(item.vol[0].volValue,1):typeRadioVol.value=='平均'?formatEQ(item.vol[0].volValue,1):typeRadioVol.value=='最大'?formatEQ(item.vol[0].volMaxValue,1):formatEQ(item.vol[0].volMinValue,1)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: trend.map(item => timeType.value==0?formatEQ(item.vol[1].volValue,1):typeRadioVol.value=='平均'?formatEQ(item.vol[1].volValue,1):typeRadioVol.value=='最大'?formatEQ(item.vol[1].volMaxValue,1):formatEQ(item.vol[1].volMinValue,1)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: trend.map(item => timeType.value==0?formatEQ(item.vol[2].volValue,1):typeRadioVol.value=='平均'?formatEQ(item.vol[2].volValue,1):typeRadioVol.value=='最大'?formatEQ(item.vol[2].volMaxValue,1):formatEQ(item.vol[2].volMinValue,1)),
+        },
+      ]
+      }
+    }
+  }else{
+    if(curVol=='cur'){
+      ALineOption.value.series=[]
+      ALineOption.value.xAxis={}
+    }else if(curVol=='vol'){ 
+      BLineOption.value.series=[]
+      BLineOption.value.xAxis={}
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1878,8 +2044,8 @@ onActivated(() => {
       height: 140px;
       font-size: 13px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
       position: relative;
       .content {
@@ -1948,12 +2114,14 @@ onActivated(() => {
     display: flex;
     flex-wrap: wrap;
     .arrayItem {
-      width: 25%;
+      width: 23%;
       height: 140px;
       font-size: 13px;
+      margin: 14px;
+      border-radius: 7px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
       position: relative;
       .content {
@@ -2026,8 +2194,8 @@ onActivated(() => {
       height: 140px;
       font-size: 13px;
       box-sizing: border-box;
-      background-color: #eef4fc;
-      border: 5px solid #fff;
+      background-color: #fff;
+      border: 1px solid #e4e7ed;
       padding-top: 40px;
       position: relative;
       .content {
@@ -2161,10 +2329,7 @@ onActivated(() => {
   }
 }
 
-::v-deep .el-table th,
-::v-deep .el-table td{
- border-right: none;
-}
+
 
 .btnallSelected {
   margin-right: 10px;

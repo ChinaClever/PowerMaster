@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.service;
 
 import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetMaxActivePowDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
 
@@ -27,5 +28,5 @@ public interface CabinetPowService {
      *
      * @return
      */
-    CabinetActivePowDTO getActivePow(CabinetPowVo vo);
+    CabinetMaxActivePowDTO getActivePow(CabinetPowVo vo);
 }

@@ -14,8 +14,8 @@ export const PDUDeviceApi = {
   getPDUDevicePage: async (data: any) => {
     return await request.post({ url: `/pdu/PDU-device/page`, data })
   },
-  getBalancedDistribution: async () => {
-    return await request.get({ url: `/pdu/PDU-device/balancedDistribution`})
+  getBalancedDistribution: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/balancedDistribution`,params})
   },
   
     
@@ -71,6 +71,10 @@ export const PDUDeviceApi = {
   //获取PDU相历史数据
   getPDUHdaLineHisdataByCabinet: async (params: any) => {
     return await request.get({ url: `pdu/PDU-device/pduHdaLineHisdataByCabinet`, params})
+  },
+  //获取PDU相历史数据（dataType）
+  getPDUHdaLineHisdataByCabinetByType: async (params: any) => {
+    return await request.get({ url: `pdu/PDU-device/pduHdaLineHisDataByCabinetByType`, params})
   },
 
   //获取PDU需量详细数据

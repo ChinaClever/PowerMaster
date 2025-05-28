@@ -71,14 +71,12 @@ public class MySQLTableMonitor {
                 if (data instanceof TableMapEventData) {
                     TableMapEventData tableMap = (TableMapEventData) data;
                     if (binLogConstants.getDb().equals(tableMap.getDatabase()) && binLogConstants.getTableList().contains(tableMap.getTable())) {
-                        if (redisTemplate.opsForValue().get("table:" + tableMap.getTable()) != null) {
-                            tableSchemaCache = (Map<String, List<ColumnInfo>>) redisTemplate.opsForValue().get("table:" + tableMap.getTable());
-                        } else {
-                            // 查询表结构并缓存
+                        // 查询表结构
+                        // 不缓存表结构，避免表结构改变tableId也发生改变时，获得不到正确的数据，且性能消耗很小
+                        if (tableSchemaCache.size() == 0 || tableSchemaCache.get(tableMap.getTableId()+"") == null) {
                             String connectionUrl = "jdbc:mysql://" + binLogConstants.getHost() + ":" + binLogConstants.getPort() + "/" + binLogConstants.getDb() + "?useSSL=false";
                             columns = JdbcUtils.getTableColumns(connectionUrl,binLogConstants.getUsername(),binLogConstants.getPasswd(),tableMap.getDatabase(), tableMap.getTable());
                             tableSchemaCache.put(tableMap.getTableId()+"", columns);
-                            redisTemplate.opsForValue().set("table:" + tableMap.getTable(), tableSchemaCache);
                         }
                         if (tableIdToName.size() == 0 || tableIdToName.get(tableMap.getTableId()+"") == null) {
                             tableIdToName.put(tableMap.getTableId()+"", tableMap.getTable());
@@ -99,7 +97,7 @@ public class MySQLTableMonitor {
                         for (Serializable[] row : writeData.getRows()) {
                             Map<String, Object> rowData = parseRowData(row, columns);
                             mapList.add(rowData);
-                            log.info("[INSERT] 数据内容：" + rowData);
+//                            log.info("[INSERT] 数据内容：" + rowData);
                         }
 //                        alarmCfgMailService.pushAlarmMessage(mapList);
                     }
@@ -110,11 +108,16 @@ public class MySQLTableMonitor {
                     tableId = updateData.getTableId();
                     columns = tableSchemaCache.get(tableId+"");
                     tableName = tableIdToName.get(tableId+"");
-                    List<String> tableList = new ArrayList<>();
-                    tableList.add(DBTable.PDU_INDEX);
-                    tableList.add(DBTable.BUS_INDEX);
-                    tableList.add(DBTable.CABINET_INDEX);
-                    tableList.add(DBTable.CABINET_CRON_CONFIG);
+                    List<String> tableList = new ArrayList<>(Arrays.asList(
+                            DBTable.PDU_INDEX,
+                            DBTable.BUS_INDEX,
+                            DBTable.CABINET_INDEX,
+                            DBTable.AISLE_INDEX,
+                            DBTable.ROOM_INDEX,
+                            DBTable.CABINET_CRON_CONFIG,
+                            DBTable.AISLE_CRON_CONFIG,
+                            DBTable.ROOM_CRON_CONFIG
+                    ));
                     if (columns != null && tableList.contains(tableName)) {
                         if (!repeatMessage(event)) {
                             return;
@@ -127,8 +130,8 @@ public class MySQLTableMonitor {
                             if (validateData(oldData, newData)) {
                                 oldMaps.add(oldData);
                                 newMaps.add(newData);
-                                log.info(tableName + " [UPDATE] 旧数据：" + oldData);
-                                log.info(tableName + " [UPDATE] 新数据：" + newData);
+//                                log.info(tableName + " [UPDATE] 旧数据：" + oldData);
+//                                log.info(tableName + " [UPDATE] 新数据：" + newData);
                             }
                         }
                         Integer result = null;
@@ -142,15 +145,27 @@ public class MySQLTableMonitor {
                             case DBTable.CABINET_INDEX:
                                 result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenCabinetAlarm(oldMaps,newMaps);
                                 break;
+                            case DBTable.AISLE_INDEX:
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenAisleAlarm(oldMaps,newMaps);
+                                break;
+                            case DBTable.ROOM_INDEX:
+                                result = alarmLogRecordService.insertOrUpdateAlarmRecordWhenRoomAlarm(oldMaps,newMaps);
+                                break;
                             case DBTable.CABINET_CRON_CONFIG:
                                 alarmLogRecordService.updateCabinetAlarmJob(oldMaps,newMaps);
+                                break;
+                            case DBTable.AISLE_CRON_CONFIG:
+                                alarmLogRecordService.updateAisleAlarmJob(oldMaps,newMaps);
+                                break;
+                            case DBTable.ROOM_CRON_CONFIG:
+                                alarmLogRecordService.updateRoomAlarmJob(oldMaps,newMaps);
                                 break;
                             default:
                                 break;
                         }
                         // 告警记录表发生改变，向前端发送消息
                         if (result != null) {
-                            webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
+//                            webSocketSenderApi.sendObject(UserTypeEnum.ADMIN.getValue(), WebsocketMessageType.ALARM_MESSAGE, "告警消息");
                         }
                     }
                 }
@@ -177,7 +192,7 @@ public class MySQLTableMonitor {
         long nextPosition = binlogEventHeader.getNextPosition();
         String sign = "sign:" + timestamp+":"+ nextPosition;
         if (redisTemplate.opsForValue().get(sign) == null) {
-            redisTemplate.opsForValue().set(sign,sign, 1, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set("sign:" + timestamp,nextPosition, 1, TimeUnit.MINUTES);
             return true;
         } else {
             return false;
@@ -192,14 +207,25 @@ public class MySQLTableMonitor {
         long latestPosition = 0;
         Statement stmt = conn.createStatement();
         try {
-            ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS;");
+            ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS");
             if (rs.next()) {
                 latestFile = rs.getString("File");
                 latestPosition = rs.getLong("Position");
             }
         } catch (Exception e) {
-            log.error("获取binlog状态失败", e);
+            log.info("获取binlog状态异常: "+ e.getMessage());
+            log.info("更换DQL语句重新获取");
             // 设置默认值或重试策略
+            try {
+                ResultSet rs = stmt.executeQuery("SHOW BINARY LOG STATUS");
+                if (rs.next()) {
+                    latestFile = rs.getString("File");
+                    latestPosition = rs.getLong("Position");
+                }
+            } catch (Exception exception) {
+                log.info("重新获取binlog异常：" + e.getMessage());
+            }
+
         }
         return new String[]{latestFile, String.valueOf(latestPosition)};
     }
@@ -262,6 +288,9 @@ public class MySQLTableMonitor {
             return true;
         }
         if (Objects.nonNull(oldData.get("eq_month_cron")) && !oldData.get("eq_month_cron").equals(newData.get("eq_month_cron"))) {
+            return true;
+        }
+        if (Objects.nonNull(oldData.get("load_rate_status")) && !oldData.get("load_rate_status").equals(newData.get("load_rate_status"))) {
             return true;
         }
         return false;

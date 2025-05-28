@@ -60,7 +60,8 @@ public class PDUDevicePageReqVO extends PageParam {
 
     private List<String> pduKeyList;
 
-    private String curbance;
+    @Schema(description = "pdu均衡配电 0-电流/1-电压")
+    private int curbance;
 
     public String getDevKey(){
         return devKey;

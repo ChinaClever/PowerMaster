@@ -114,18 +114,21 @@ public class AlarmCfgPromptController {
      */
     @GetMapping("/play")
     @PermitAll
-    public void playAudio(){
+    public CommonResult<Boolean> playAudio(){
         Integer voiceEnable = alarmCfgPromptService.getCfgPromptByType(AlarmPromptType.VOICE_ALARM.getCode());
         Integer count = alarmLogRecordService.getCountByStatus(AlarmStatusEnums.UNTREATED.getStatus());
         if (voiceEnable == 1 && count > 0) {
             audioPlayer.playAudio();
+            return success(true);
         }
+        return success(false);
     }
 
     @GetMapping("/stop")
     @PermitAll
-    public void stopAudio () {
+    public CommonResult<Boolean> stopAudio () {
         audioPlayer.stopAudio();
+        return success(true);
     }
 
 

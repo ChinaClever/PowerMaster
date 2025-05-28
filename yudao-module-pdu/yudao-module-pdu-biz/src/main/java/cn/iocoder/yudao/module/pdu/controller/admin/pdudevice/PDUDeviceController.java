@@ -43,8 +43,9 @@ public class PDUDeviceController {
 
     @GetMapping("/balancedDistribution")
     @Operation(summary = "获得pdu均衡配电统计")
-    public CommonResult<BalancedDistributionStatisticsVO> getBalancedDistribution() throws IOException {
-        BalancedDistributionStatisticsVO pageResult = pDUDeviceService.getBalancedDistribution();
+    public CommonResult<BalancedDistributionStatisticsVO> getBalancedDistribution(
+            @RequestParam(value = "curbance")@Parameter(description = "pdu均衡配电 0-电流/1-电压") int curbance) throws IOException {
+        BalancedDistributionStatisticsVO pageResult = pDUDeviceService.getBalancedDistribution(curbance);
         return success(pageResult);
     }
 
@@ -65,7 +66,7 @@ public class PDUDeviceController {
     @GetMapping("/balance/trend")
     @Operation(summary = "获得PDU不平衡度详情图表")
     public CommonResult<List<PduTrendVO>> getPudBalanceTrend(@RequestParam(value = "pduId")@Parameter(description = "机柜id") Integer pduId,
-                                                             @RequestParam(value = "timeType")@Parameter(description = "0 - 实时；1-历史") Integer timeType) {
+                                                             @RequestParam(value = "timeType")@Parameter(description = "0 - 近1小时；1-近一天；2-三天；3-近一个月") Integer timeType) {
         List<PduTrendVO> result = pDUDeviceService.getPudBalanceTrend(pduId,timeType);
         return success(result);
     }
@@ -91,7 +92,7 @@ public class PDUDeviceController {
 
     @PostMapping("/line/getMaxCur")
     @Operation(summary = "获得PDU电流最大值的相数据")
-    public CommonResult<PageResult<PDULineRes>> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
+    public CommonResult<MaxCurAndOtherData> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDUMaxCurData(pageReqVO));
     }
 
@@ -100,6 +101,14 @@ public class PDUDeviceController {
     public CommonResult<String> getDisplay(String devKey) {
         return success(pDUDeviceService.getDisplayDataByDevKey(devKey));
     }
+
+    @PostMapping("/pduBasicInformation")
+    @Operation(summary = "获得PDU设备详细信息")
+    public CommonResult<List<PduBasicInformationVo>> getPduDisplayDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPduDisplayDataByDevKey(pageReqVO.getPduKeyList(),pageReqVO.getTimeType()
+                ,pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
 
     @GetMapping("/displayscreen/location")
     @Operation(summary = "获得位置")
@@ -135,6 +144,12 @@ public class PDUDeviceController {
         return success(pDUDeviceService.getPduHdaLineHisdataKeyByCabinet(CabinetId, type, oldTime, newTime));
     }
 
+    @GetMapping("/pduHdaLineHisDataByCabinetByType")
+    @Operation(summary = "获得PDU相历史数据")
+    public CommonResult<Map> getPduHdaLineHisDataKey(Long CabinetId, String type, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
+        return success(pDUDeviceService.getPduHdaLineHisdataKeyByCabinetByType(CabinetId, type, oldTime, newTime,dataType));
+    }
+
     @GetMapping("/chartNewData")
     @Operation(summary = "获得PDU历史最新数据")
     public CommonResult<Map> getChartNewDataByPduDevKey(String devKey, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, String type) {
@@ -145,6 +160,12 @@ public class PDUDeviceController {
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/totalEle")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportConsumeDataByDevKeys(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getReportConsumeDataByDevKeys(pageReqVO.getPduKeyList(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
 

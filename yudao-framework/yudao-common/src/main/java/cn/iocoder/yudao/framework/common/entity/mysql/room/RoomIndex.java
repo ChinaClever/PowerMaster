@@ -55,7 +55,7 @@ public class RoomIndex implements Serializable {
      * 是否删除
      */
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
-    private int isDelete;
+    private Boolean isDelete;
 
     /**
      * 电力容量
@@ -63,6 +63,11 @@ public class RoomIndex implements Serializable {
     @Schema(description = "电力容量", example = "0")
     private float powerCapacity;
 
+    /**
+     * 负载率状态
+     */
+    @Schema(description = "负载率状态", example = "10")
+    private Integer loadRateStatus;
 
     /**
      * 空调额定功率

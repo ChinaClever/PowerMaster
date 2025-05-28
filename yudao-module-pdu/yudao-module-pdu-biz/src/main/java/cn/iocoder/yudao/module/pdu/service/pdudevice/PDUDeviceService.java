@@ -55,7 +55,7 @@ public interface PDUDeviceService {
 
     Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO);
 
-    PageResult<PDULineRes> getPDUMaxCurData(PDUDevicePageReqVO pageReqVO);
+    MaxCurAndOtherData getPDUMaxCurData(PDUDevicePageReqVO pageReqVO);
 
     String getLocationByDevKey(String devKey);
 
@@ -71,7 +71,7 @@ public interface PDUDeviceService {
 
     PduDeviceCountResVO getPDUDeviceCount();
 
-    BalancedDistributionStatisticsVO getBalancedDistribution();
+    BalancedDistributionStatisticsVO getBalancedDistribution(int curbance);
 
     Map<String, String> setLocation(List<String> collect1);
 
@@ -80,4 +80,10 @@ public interface PDUDeviceService {
     Map getReportOutLetCurDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
     Map getPduHdaLineHisdataKey(String devKey, String type);
+
+    Map getPduHdaLineHisdataKeyByCabinetByType(Long cabinetId, String type, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getReportConsumeDataByDevKeys(List<String> pduKeyList, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    List<PduBasicInformationVo> getPduDisplayDataByDevKey(List<String> pduKeyList, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

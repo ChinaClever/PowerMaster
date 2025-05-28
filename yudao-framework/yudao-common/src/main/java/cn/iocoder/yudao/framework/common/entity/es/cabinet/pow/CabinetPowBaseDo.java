@@ -1,8 +1,12 @@
 package cn.iocoder.yudao.framework.common.entity.es.cabinet.pow;
 
+import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.CabinetBaseDo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @author luowei
@@ -270,6 +274,65 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
     @JsonProperty("factor_b_avg_value")
     private float factorBAvgValue;
 
+    /**
+     * 总最大功率因素
+     */
+    @JsonProperty("factor_total_max_value")
+    private float factorTotalMaxValue;
+
+    @JsonProperty("factor_total_max_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorTotalMaxTime;
+
+    /**
+     * a路最大功率因素
+     */
+    @JsonProperty("factor_a_max_value")
+    private float factorAMaxValue;
+
+    @JsonProperty("factor_a_max_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorAMaxTime;
+
+    /**
+     * b路最大功率因素
+     */
+    @JsonProperty("factor_b_max_value")
+    private float factorBMaxValue;
+
+    @JsonProperty("factor_b_max_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorBMaxTime;
+
+    /**
+     * 总最小功率因素
+     */
+    @JsonProperty("factor_total_min_value")
+    private float factorTotalMinValue;
+
+    @JsonProperty("factor_total_min_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorTotalMinTime;
+
+    /**
+     * a路最大功率因素
+     */
+    @JsonProperty("factor_a_min_value")
+    private float factorAMinValue;
+
+    @JsonProperty("factor_a_min_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorAMinTime;
+
+    /**
+     * b路最大功率因素
+     */
+    @JsonProperty("factor_b_min_value")
+    private float factorBMinValue;
+
+    @JsonProperty("factor_b_min_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorBMinTime;
 
     /**
      * 平均负载率

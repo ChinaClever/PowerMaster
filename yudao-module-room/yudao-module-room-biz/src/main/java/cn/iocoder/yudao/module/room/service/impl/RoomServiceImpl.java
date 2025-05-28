@@ -52,6 +52,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -102,6 +103,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static cn.hutool.core.convert.Convert.toList;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 
 /**
@@ -426,7 +428,7 @@ public class RoomServiceImpl implements RoomService {
                 }
 
                 //逻辑删除
-                if (roomIndex.getIsDelete() == (DelEnums.NO_DEL.getStatus())) {
+                if (!roomIndex.getIsDelete()) {
                     roomIndexMapper.update(new LambdaUpdateWrapper<RoomIndex>()
                             .eq(RoomIndex::getId, roomId)
                             .set(RoomIndex::getIsDelete, DelEnums.DELETE.getStatus()));
@@ -1117,8 +1119,21 @@ public class RoomServiceImpl implements RoomService {
 
     //机房新增根据名称异步查询
     @Override
-    public Integer newSelectRoomByName(String name) {
-        return roomIndexMapper.selectRoomByName(name);
+    public Integer newSelectRoomByName(String name, Integer id) {
+        RoomIndex one = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, name).last("limit 1"));
+        if (Objects.nonNull(one)){
+            if (!one.getIsDelete()) {
+                if (Objects.isNull(id)) {
+                    BusinessAssert.error(10010, "当前机房名称已存在");
+                }
+                if (!Objects.equals(one.getId(),id)){
+                    BusinessAssert.error(10010, "当前机房名称已存在");
+                }
+            }else {
+                return one.getId();
+            }
+        }
+        return null;
     }
 
 
@@ -1300,9 +1315,33 @@ public class RoomServiceImpl implements RoomService {
             if (Objects.nonNull(cabinetPdu)) {
                 iter.setCabinetkeya(cabinetPdu.getPduKeyA());
                 iter.setKeya(pduIndexMap.get(cabinetPdu.getPduKeyA()));
+                Object obj = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyA());
+                if (Objects.nonNull(obj)){
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                    JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
+                    if (Objects.nonNull(envList)){
+                        JSONArray dewPoint1 = envList.getJSONArray("dew_point");
+                        if (Objects.nonNull(dewPoint1)){
+                            List<Double> dewPoint = dewPoint1.toList(Double.class);
+                            iter.setDewPointa(dewPoint.get(0));
+                        }
+                    }
+                }
 
                 iter.setCabinetkeyb(cabinetPdu.getPduKeyB());
                 iter.setKeyb(pduIndexMap.get(cabinetPdu.getPduKeyB()));
+                Object objb = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyB());
+                if (Objects.nonNull(objb)){
+                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(objb));
+                    JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
+                    if (Objects.nonNull(envList)){
+                        JSONArray dewPoint1 = envList.getJSONArray("dew_point");
+                        if (Objects.nonNull(dewPoint1)){
+                            List<Double> dewPoint = dewPoint1.toList(Double.class);
+                            iter.setDewPointb(dewPoint.get(0));
+                        }
+                    }
+                }
                 iter.setCabinetPdus(cabinetPdu);
 
                 if (!StringUtils.isBlank(cabinetPdu.getPduKeyA())) {
@@ -1732,6 +1771,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Integer newSaveRoom(RoomSavesVo vo) {
         RoomIndex index = BeanUtils.toBean(vo, RoomIndex.class);
+
         if (Objects.nonNull(vo.getId())) {
             //编辑
             RoomIndex roomIndex = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>()
@@ -1744,10 +1784,6 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         } else {
-            Long count = roomIndexMapper.selectCount(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, vo.getRoomName()).eq(RoomIndex::getIsDelete, 0));
-            if (count > 0) {
-                BusinessAssert.error(10010, "当前机房名称已存在");
-            }
             //新增
             int insert = roomIndexMapper.insert(index);
             if (insert > 0) {
@@ -2078,7 +2114,7 @@ public class RoomServiceImpl implements RoomService {
                 if (ObjectUtil.isEmpty(pduIp)) {
                     continue;
                 }
-
+                String pduKey ;
                 CabinetPdu cabinetPdu = new CabinetPdu();
                 cabinetPdu.setCabinetId(cabinetIndex.getId());
 
@@ -2089,13 +2125,26 @@ public class RoomServiceImpl implements RoomService {
                     sj.add(split[0]).add(split[1]).add(split[2]).add(String.valueOf(Integer.parseInt(split[3]) + 1));
                     pduIp = sj.toString();
                     int addr = pduAddr + pduIndex;
-                    cabinetPdu.setPduKeyA(pduIp + "-" + addr);
+                    pduKey = pduIp + "-" + addr;
                     pduIndex++;
+                    Long pduFlag = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
+                            .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, pduKey))
+                                    .or(qr -> qr.eq(CabinetPdu::getPduKeyB, pduKey))));
+                    if (pduFlag>0){
+
+                    }
                 } else {
                     int addr = pduAddr + pduIndex;
-                    cabinetPdu.setPduKeyA(pduIp + "-" + addr);
+                    pduKey = pduIp + "-" + addr;
                     pduIndex++;
+                    Long pduFlag = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
+                            .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, pduKey))
+                                    .or(qr -> qr.eq(CabinetPdu::getPduKeyB, pduKey))));
+                    if (pduFlag>0){
+
+                    }
                 }
+                cabinetPdu.setPduKeyA(pduKey);
                 if (pduIndex >= firstVO.getAddrNum()) {
                     pduIndex = 0;
                     String[] split = pduIp.split("\\.");
@@ -2161,7 +2210,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     /**
-     * 机房柜列新增/编辑
+     * 机房机柜新增/编辑
      *
      * @param vo
      * @return
@@ -2169,43 +2218,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer roomCabinetSave(CabinetSaveVo vo) {
-        try {
-            CabinetIndex index = new CabinetIndex();
-            index.setCabinetName(vo.getCabinetName());
-            index.setRoomId(vo.getRoomId());
-            index.setPowerCapacity(vo.getPowerCapacity());
-            index.setCabinetHeight(vo.getCabinetHeight());
-            if (Objects.nonNull(vo.getId())) {
-                //编辑
-                CabinetIndex cabinetIndex = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getId, vo.getId()));
-                if (Objects.nonNull(cabinetIndex)) {
-                    index.setId(vo.getId());
-                    int updateById = cabinetIndexMapper.updateById(index);
-                    if (updateById > 0) {
-                        cabinetCfgMapper.updateByCabinetCfg(vo);
-                    }
-                }
-            } else {
-                int insert = cabinetIndexMapper.insert(index);
-                if (insert > 0) {
-                    //保存配置
-                    CabinetCfg cfg = new CabinetCfg();
-                    cfg.setCabinetId(index.getId());
-                    cfg.setXCoordinate(vo.getXCoordinate());
-                    cfg.setYCoordinate(vo.getYCoordinate());
-                    cfg.setEleLimitDay(vo.getEleLimitDay());
-                    cfg.setEleAlarmDay(vo.getEleAlarmDay());
-                    cfg.setEleLimitMonth(vo.getEleLimitMonth());
-                    cfg.setEleAlarmMonth(vo.getEleAlarmMonth());
-                    cabinetCfgMapper.insert(cfg);
-                }
-            }
-            return index.getId();
-        } finally {
-            log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
-        }
+       return cabinetCfgMapper.updateByCabinetCfg(vo);
     }
 
     @Override

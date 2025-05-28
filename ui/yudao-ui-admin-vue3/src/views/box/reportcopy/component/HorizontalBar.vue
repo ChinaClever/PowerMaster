@@ -33,7 +33,11 @@ if (Object.keys(prop.list).length === 0) {
   console.warn('prop.list is empty');
 } else {
   const keys = Object.keys(prop.list);
-  const length = keys.length;
+    let length = keys.length;
+  if(keys.length > 3){
+  length = 3
+  }
+
 
   // 初始化 count 数组
   for (let i = 0; i < length; i++) {
@@ -44,7 +48,7 @@ if (Object.keys(prop.list).length === 0) {
   }
 
   // 构建 series 和 legendList
-  for (let i = 0; i < length-1; i++) {
+  for (let i = 0; i < length; i++) {
     series.value.push({
       name: `输出位${i + 1}`,
       data: count.value[i],

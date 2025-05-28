@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.bus.util;
 
 import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusHdaLineAvgResVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -225,79 +226,202 @@ public class PduAnalysisResult {
         return result;
     }
 
+    // 总功率因素分析结果
+    public static class FactorTotalResult {
+        public Float totalFactorMax;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date totalFactorMaxTime;
 
+        public Float totalFactorMin;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date totalFactorMinTime;
 
-    /**
-     * 更新数值
-     *
-     * @param powerData
-     * @param maxValue
-     * @param maxTime
-     * @param minValue
-     * @param minTime
-     * @param dataType
-     */
-    private static void updatePowerData(PowerData powerData, Float maxValue, String maxTime, Float avgValue, Float minValue, String minTime, Integer dataType) {
+    }
+
+    // 总功率因素分析结果
+    public static class FactorAResult {
+        public Float aFactorMax;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date aFactorMaxTime;
+
+        public Float aFactorMin;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date aFactorMinTime;
+
+    }
+
+    // 总功率因素分析结果
+    public static class FactorBResult {
+        public Float bFactorMax;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date bFactorMaxTime;
+
+        public Float bFactorMin;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+        public Date bFactorMinTime;
+
+    }
+
+    public static Map<String, Object> analyzeFactorData(List<CabinetPowHourDo> dayList1, Integer dataType) {
+        if (dayList1 == null || dayList1.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> result = new HashMap<>();
+        FactorTotalResult factorTotalResult = new FactorTotalResult();
+        FactorAResult factorAResult = new FactorAResult();
+        FactorBResult factorBResult = new FactorBResult();
+
         if (dataType == 1) {
-            updateExtremes(powerData, maxValue, maxTime, maxValue, maxTime);
+
+            factorTotalResult.totalFactorMax = dayList1.get(0).getFactorTotalMaxValue();
+            factorTotalResult.totalFactorMaxTime = dayList1.get(0).getFactorTotalMaxTime();
+            factorTotalResult.totalFactorMin = dayList1.get(0).getFactorTotalMaxValue();
+            factorTotalResult.totalFactorMinTime = dayList1.get(0).getFactorTotalMaxTime();
+
+            factorAResult.aFactorMax = dayList1.get(0).getFactorAMaxValue();
+            factorAResult.aFactorMaxTime = dayList1.get(0).getFactorAMaxTime();
+            factorAResult.aFactorMin = dayList1.get(0).getFactorAMaxValue();
+            factorAResult.aFactorMinTime = dayList1.get(0).getFactorAMaxTime();
+
+            factorBResult.bFactorMax = dayList1.get(0).getFactorBMaxValue();
+            factorBResult.bFactorMaxTime = dayList1.get(0).getFactorBMaxTime();
+            factorBResult.bFactorMin = dayList1.get(0).getFactorBMaxValue();
+            factorBResult.bFactorMinTime = dayList1.get(0).getFactorBMaxTime();
+
+
+            for (CabinetPowHourDo item : dayList1) {
+                // 总功率因素分析
+                if (item.getFactorTotalMaxValue() > factorTotalResult.totalFactorMax) {
+                    factorTotalResult.totalFactorMax = item.getFactorTotalMaxValue();
+                    factorTotalResult.totalFactorMaxTime = item.getFactorTotalMaxTime();
+                }
+                if (item.getFactorTotalMaxValue() < factorTotalResult.totalFactorMin) {
+                    factorTotalResult.totalFactorMin = item.getFactorTotalMaxValue();
+                    factorTotalResult.totalFactorMinTime = item.getFactorTotalMaxTime();
+                }
+
+                // A路功率因素分析
+                if (item.getFactorAMaxValue() > factorAResult.aFactorMax) {
+                    factorAResult.aFactorMax = item.getFactorAMaxValue();
+                    factorAResult.aFactorMaxTime = item.getFactorAMaxTime();
+                }
+                if (item.getFactorAMaxValue() < factorAResult.aFactorMin) {
+                    factorAResult.aFactorMin = item.getFactorAMaxValue();
+                    factorAResult.aFactorMinTime = item.getFactorAMaxTime();
+                }
+
+                // B路功率因素分析
+                if (item.getFactorBMaxValue() > factorBResult.bFactorMax) {
+                    factorBResult.bFactorMax = item.getFactorBMaxValue();
+                    factorBResult.bFactorMaxTime = item.getFactorBMaxTime();
+                }
+                if (item.getFactorBMaxValue() < factorBResult.bFactorMin) {
+                    factorBResult.bFactorMin = item.getFactorBMaxValue();
+                    factorBResult.bFactorMinTime = item.getFactorBMaxTime();
+                }
+
+            }
+
         } else if (dataType == 0) {
-            updateExtremes(powerData, avgValue, "无", avgValue, "无");
-        } else if (dataType == -1) {
-            updateExtremes(powerData, minValue, minTime, minValue, minTime);
+
+            factorTotalResult.totalFactorMax = dayList1.get(0).getFactorTotalAvgValue();
+
+            factorTotalResult.totalFactorMin = dayList1.get(0).getFactorTotalAvgValue();
+
+
+            factorAResult.aFactorMax = dayList1.get(0).getFactorAAvgValue();
+
+            factorAResult.aFactorMin = dayList1.get(0).getFactorAAvgValue();
+
+
+            factorBResult.bFactorMax = dayList1.get(0).getFactorBAvgValue();
+
+            factorBResult.bFactorMin = dayList1.get(0).getFactorBAvgValue();
+
+            for (CabinetPowHourDo item : dayList1) {
+                // 总功率因素分析
+                if (item.getFactorTotalAvgValue() > factorTotalResult.totalFactorMax) {
+                    factorTotalResult.totalFactorMax = item.getFactorTotalAvgValue();
+
+                }
+                if (item.getFactorTotalAvgValue() < factorTotalResult.totalFactorMin) {
+                    factorTotalResult.totalFactorMin = item.getFactorTotalAvgValue();
+
+                }
+
+                // A路功率因素分析
+                if (item.getFactorAAvgValue() > factorAResult.aFactorMax) {
+                    factorAResult.aFactorMax = item.getFactorAMaxValue();
+
+                }
+                if (item.getFactorAMaxValue() < factorAResult.aFactorMin) {
+                    factorAResult.aFactorMin = item.getFactorAMaxValue();
+
+                }
+
+                // B路功率因素分析
+                if (item.getFactorBMaxValue() > factorBResult.bFactorMax) {
+                    factorBResult.bFactorMax = item.getFactorBMaxValue();
+
+                }
+                if (item.getFactorBMaxValue() < factorBResult.bFactorMin) {
+                    factorBResult.bFactorMin = item.getFactorBMaxValue();
+
+                }
+            }
+
         }
+        else if (dataType == -1) {
+            factorTotalResult.totalFactorMax = dayList1.get(0).getFactorTotalMinValue();
+            factorTotalResult.totalFactorMaxTime = dayList1.get(0).getFactorTotalMinTime();
+            factorTotalResult.totalFactorMin = dayList1.get(0).getFactorTotalMinValue();
+            factorTotalResult.totalFactorMinTime = dayList1.get(0).getFactorTotalMinTime();
+
+            factorAResult.aFactorMax = dayList1.get(0).getFactorAMinValue();
+            factorAResult.aFactorMaxTime = dayList1.get(0).getFactorAMinTime();
+            factorAResult.aFactorMin = dayList1.get(0).getFactorAMinValue();
+            factorAResult.aFactorMinTime = dayList1.get(0).getFactorAMinTime();
+
+            factorBResult.bFactorMax = dayList1.get(0).getFactorBMinValue();
+            factorBResult.bFactorMaxTime = dayList1.get(0).getFactorBMinTime();
+            factorBResult.bFactorMin = dayList1.get(0).getFactorBMinValue();
+            factorBResult.bFactorMinTime = dayList1.get(0).getFactorBMinTime();
+
+            for (CabinetPowHourDo item : dayList1) {
+                if (item.getFactorTotalMinValue() > factorTotalResult.totalFactorMax) {
+                    factorTotalResult.totalFactorMax = item.getFactorTotalMinValue();
+                    factorTotalResult.totalFactorMaxTime = item.getFactorTotalMinTime();
+                }
+                if (item.getFactorTotalMinValue() < factorTotalResult.totalFactorMin) {
+                    factorTotalResult.totalFactorMin = item.getFactorTotalMinValue();
+                    factorTotalResult.totalFactorMinTime = item.getFactorTotalMinTime();
+                }
+
+                // A路功率因素分析
+                if (item.getFactorAMinValue() > factorAResult.aFactorMax) {
+                    factorAResult.aFactorMax = item.getFactorAMinValue();
+                    factorAResult.aFactorMaxTime = item.getFactorAMinTime();
+                }
+                if (item.getFactorAMinValue() < factorAResult.aFactorMin) {
+                    factorAResult.aFactorMin = item.getFactorAMinValue();
+                    factorAResult.aFactorMinTime = item.getFactorAMinTime();
+                }
+
+                // B路功率因素分析
+                if (item.getFactorBMinValue() > factorBResult.bFactorMax) {
+                    factorBResult.bFactorMax = item.getFactorBMinValue();
+                    factorBResult.bFactorMaxTime = item.getFactorBMinTime();
+                }
+                if (item.getFactorBMinValue() < factorBResult.bFactorMin) {
+                    factorBResult.bFactorMin = item.getFactorBMinValue();
+                    factorBResult.bFactorMinTime = item.getFactorBMinTime();
+                }
+            }
+
+        }
+        result.put("totalFactor", factorTotalResult);
+        result.put("aFactor", factorAResult);
+        result.put("bFactor", factorBResult);
+        return result;
     }
-
-    private static void updateExtremes(PowerData powerData, Float maxValue, String maxTime, Float minValue, String minTime) {
-        if (powerData.getMaxValue() < maxValue) {
-            powerData.setMaxValue(maxValue);
-            powerData.setMaxTime(maxTime);
-        }
-        if (powerData.getMinValue() > minValue) {
-            powerData.setMinValue(minValue);
-            powerData.setMinTime(minTime);
-        }
-    }
-
-    /**
-     * 数值辅助类
-     */
-    private static class PowerData {
-        private Float maxValue = 0f;
-        private Float minValue = Float.MAX_VALUE;
-        private String maxTime = "";
-        private String minTime = "";
-
-        public Float getMaxValue() {
-            return maxValue;
-        }
-
-        public void setMaxValue(Float maxValue) {
-            this.maxValue = maxValue;
-        }
-
-        public String getMaxTime() {
-            return maxTime;
-        }
-
-        public void setMaxTime(String maxTime) {
-            this.maxTime = maxTime;
-        }
-
-        public Float getMinValue() {
-            return minValue;
-        }
-
-        public void setMinValue(Float minValue) {
-            this.minValue = minValue;
-        }
-
-        public String getMinTime() {
-            return minTime;
-        }
-
-        public void setMinTime(String minTime) {
-            this.minTime = minTime;
-        }
-    }
-
 }
