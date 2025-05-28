@@ -161,9 +161,9 @@
 
 
     <update id="updateByCabinetCfg">
-        update cabinet_cfg cg set cg.x_coordinate = #{vo.xCoordinate},cg.y_coordinate =
-        #{vo.yCoordinate},cg.ele_alarm_day = #{vo.eleAlarmDay}, cg.ele_limit_day = #{vo.eleLimitDay}, cg.ele_alarm_month
-        = #{vo.eleAlarmMonth}, cg.ele_limit_month = #{vo.eleLimitMonth}
+        update cabinet_cfg cg set
+        cg.x_coordinate = #{vo.xCoordinate},
+        cg.y_coordinate = #{vo.yCoordinate}
         where cg.cabinet_id = #{vo.id}
     </update>
 <!--    <update id="updateBatchByCabinetId">-->

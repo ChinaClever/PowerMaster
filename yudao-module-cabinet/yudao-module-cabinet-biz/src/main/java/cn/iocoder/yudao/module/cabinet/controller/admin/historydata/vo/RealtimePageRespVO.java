@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo;
 
+import cn.iocoder.yudao.framework.excel.core.util.DataSourceConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -24,7 +25,7 @@ public class RealtimePageRespVO {
     private String location;
 
 
-    @ExcelProperty("保存策略")
+    @ExcelProperty(value="保存策略",converter = DataSourceConverter.class)
     private Integer data_source;
     @ExcelProperty("记录时间")
     private String create_time;

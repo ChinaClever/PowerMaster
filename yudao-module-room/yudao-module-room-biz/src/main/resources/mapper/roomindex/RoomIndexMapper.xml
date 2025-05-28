@@ -45,9 +45,4 @@
     <update id="restoreByDeleteRoom">
         update room_index set is_delete = 0 where id = #{id}
     </update>
-
-    <select id="selectRoomByName" resultType="java.lang.Integer">
-        select  *  from  room_index ri  where ri.room_name = #{name}
-    </select>
-
 </mapper>

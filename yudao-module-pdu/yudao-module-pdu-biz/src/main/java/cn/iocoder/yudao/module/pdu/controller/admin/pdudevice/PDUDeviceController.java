@@ -43,8 +43,9 @@ public class PDUDeviceController {
 
     @GetMapping("/balancedDistribution")
     @Operation(summary = "获得pdu均衡配电统计")
-    public CommonResult<BalancedDistributionStatisticsVO> getBalancedDistribution() throws IOException {
-        BalancedDistributionStatisticsVO pageResult = pDUDeviceService.getBalancedDistribution();
+    public CommonResult<BalancedDistributionStatisticsVO> getBalancedDistribution(
+            @RequestParam(value = "curbance")@Parameter(description = "pdu均衡配电 0-电流/1-电压") int curbance) throws IOException {
+        BalancedDistributionStatisticsVO pageResult = pDUDeviceService.getBalancedDistribution(curbance);
         return success(pageResult);
     }
 
@@ -65,7 +66,7 @@ public class PDUDeviceController {
     @GetMapping("/balance/trend")
     @Operation(summary = "获得PDU不平衡度详情图表")
     public CommonResult<List<PduTrendVO>> getPudBalanceTrend(@RequestParam(value = "pduId")@Parameter(description = "机柜id") Integer pduId,
-                                                             @RequestParam(value = "timeType")@Parameter(description = "0 - 实时；1-历史") Integer timeType) {
+                                                             @RequestParam(value = "timeType")@Parameter(description = "0 - 近1小时；1-近一天；2-三天；3-近一个月") Integer timeType) {
         List<PduTrendVO> result = pDUDeviceService.getPudBalanceTrend(pduId,timeType);
         return success(result);
     }
@@ -91,7 +92,7 @@ public class PDUDeviceController {
 
     @PostMapping("/line/getMaxCur")
     @Operation(summary = "获得PDU电流最大值的相数据")
-    public CommonResult<PageResult<PDULineRes>> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
+    public CommonResult<MaxCurAndOtherData> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDUMaxCurData(pageReqVO));
     }
 

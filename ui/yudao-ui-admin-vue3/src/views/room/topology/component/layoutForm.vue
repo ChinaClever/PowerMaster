@@ -194,8 +194,8 @@
             </el-form-item>
           </div>
           <div v-if="isAutoCreate.pdu" style="flex: 1;">
-            <el-form-item label="设备主副机数量" label-width="130">
-              <el-input type="number" v-model="machineFormData.addrNum" placeholder="请输入设备主副机数量" style="width: 80%" />
+            <el-form-item label="终止级联地址" label-width="130">
+              <el-input type="number" v-model="machineFormData.addrNum" placeholder="请输入终止级联地址" style="width: 80%" />
             </el-form-item>
           </div>
         </div>
@@ -418,7 +418,7 @@ const open = async (type: string, data, info) => {
   formData.value.yCoordinate = Number(operateInfo.value.lndexY)+1
   console.log('formData.value', formData.value)
   if(type == 'edit' && (formData.value.eleAlarmDay || formData.value.eleAlarmMonth)) {
-    isAutoCreate.value.aisleAlarm = 1
+    isAutoCreate.value.aisleAlarm = true
   }
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
@@ -510,14 +510,8 @@ const submitForm = async () => {
 
 const handleChange = (currentValue: number | undefined, oldValue: number | undefined) => {
   if(currentValue < minAmount.value) {
-    formData.value.amount = 12
+    formData.value.amount = minAmount.value
     message.warning("当前柜列中机柜数量为" + minAmount.value + ",要减少的位置不能为空")
-  }
-}
-
-const judgeValue = (val,label) => {
-  if(val < 0) {
-    machineFormData.value[label] = 0
   }
 }
 

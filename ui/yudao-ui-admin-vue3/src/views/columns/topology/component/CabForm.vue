@@ -39,9 +39,6 @@
                 </template>
               </el-select>
               </el-form-item>
-              <el-form-item label="机柜高度(U)：" prop="cabinetHeight">
-              <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
-              </el-form-item>
             </div>
             <div class="collapseItem">
               <el-form-item  label="电力容量(kVA)：" prop="powCapacity">
@@ -50,28 +47,15 @@
               <el-form-item label="所属公司：" prop="company">
                 <el-input v-model="machineFormData.company" placeholder="请输入" />
               </el-form-item>
-              <div class="double-formitem">
-                <el-form-item label="月用能告警">
-                  <el-switch @click="showFlag = !showFlag" v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
-                </el-form-item>
-                <el-form-item v-if="showFlag" label="月用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" controls-position="right" placeholder="请输入" />
-                </el-form-item>
-              </div>
-              <div class="double-formitem">
-                <el-form-item label="日用能告警">
-                  <el-switch @click="showFlagCopy = !showFlagCopy" v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
-                </el-form-item>
-                <el-form-item v-if="showFlagCopy" label="日用能限制">
-                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" controls-position="right" placeholder="请输入" />
-                </el-form-item>
-              </div>
+              <el-form-item label="机柜高度(U)：" prop="cabinetHeight">
+                <el-input v-model="machineFormData.cabinetHeight" placeholder="请输入" />
+              </el-form-item>
             </div>
           </div>
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
           <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox" @tab-change="tabClick">
-            <el-tab-pane label="PDU" :name="0">
+            <el-tab-pane label="PDU" :name="false">
               <div class="pduBus">
                 <el-form-item label="A路：">
                   <el-col :span="4" class="text-center">
@@ -103,11 +87,11 @@
                 </el-form-item>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="母线" :name="1">
+            <el-tab-pane label="母线" :name="true">
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item clearable label="母线地址：">
                     <el-input v-model="machineFormData.busIpA" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
@@ -117,18 +101,19 @@
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
                       <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
+                    <el-select v-else v-model="machineFormData.boxIndexA" placeholder="请选择">
+                      <el-option v-for="(box, index) in [{type: 0 ,boxIndex: 0},{type: 0 ,boxIndex: 1},{type: 0 ,boxIndex: 2}]" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
+                    </el-select>
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
-                    <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdA" placeholder="请选择">
+                    <el-select v-model="machineFormData.boxOutletIdA" placeholder="请选择">
                       <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxOutletIdA" placeholder="请输入" />
                   </el-form-item>
                 </div>
                 <div>
                   <div class="title">B路</div>
-                  <el-form-item label="母线地址：">
+                  <el-form-item clearable label="母线地址：">
                     <el-input v-model="machineFormData.busIpB" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线编号：">
@@ -138,13 +123,14 @@
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
                       <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxIndexB" placeholder="请输入" />
+                    <el-select v-else v-model="machineFormData.boxIndexB" placeholder="请选择">
+                      <el-option v-for="(box, index) in [{type: 0 ,boxIndex: 0},{type: 0 ,boxIndex: 1},{type: 0 ,boxIndex: 2}]" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="box.boxIndex" />
+                    </el-select>
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
-                    <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdB" placeholder="请选择">
+                    <el-select v-model="machineFormData.boxOutletIdB" placeholder="请选择">
                       <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxOutletIdB" placeholder="请输入" />
                   </el-form-item>
                 </div>
               </div>
@@ -159,7 +145,7 @@
                 <div class="minInterval" v-if="index > 0"></div>
                 <!-- <div v-if="!item.sensorId" :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">{{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}</div> -->
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
                   <div :class="item.pathPdu ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
                     <div v-if="item.pathPdu" @click.stop="handleSensorDelete(0, index)" class="delete"><Icon icon="ep:close" />
@@ -176,7 +162,7 @@
               <template v-for="(item, index) in sensorListRight" :key="index">
                 <div class="minInterval" v-if="index > 0"></div>
                 <el-tooltip placement="right"  effect="light">
-                  <template #content>id:{{item.id}}<br />PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
                   <!-- <el-table-column prop="id" label="ID" v-if="false"/> -->
                   <div :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 1, index)">
                     {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
@@ -187,6 +173,28 @@
               <div class="tip">
                 <div>机柜后端</div>
                 <div>(热通道)</div>
+              </div>
+            </div>
+          </div>
+        </el-collapse-item>
+        <el-collapse-item title="机柜用能告警" name="5">
+          <div class="collapse-container">
+            <div class="collapseItem">
+              <div class="double-formitem">
+                <el-form-item label="月用能告警">
+                  <el-switch @click="showFlag = !showFlag" v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item v-if="showFlag" label="月用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" controls-position="right" placeholder="请输入" />
+                </el-form-item>
+              </div>
+              <div class="double-formitem">
+                <el-form-item label="日用能告警">
+                  <el-switch @click="showFlagCopy = !showFlagCopy" v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+                </el-form-item>
+                <el-form-item v-if="showFlagCopy" label="日用能限制">
+                  <el-input-number v-model="machineFormData.eleLimitDay" :min="0" controls-position="right" placeholder="请输入" />
+                </el-form-item>
               </div>
             </div>
           </div>
@@ -530,19 +538,16 @@ const toggleFull = () => {
 }
 const machineForm = ref() // 机柜表单 Ref
 const sensorForm = ref() // 传感器表单 Ref
-const operateInfo = ref<any>({})
 const machineColIf = ref()
 // const deptList = ref<Tree[]>([]) // 树形结构
 // const postList = ref([] as PostApi.PostVO[]) // 岗位列表
 
 /** 打开弹窗 */
 const open = async (type: string, data, info, machineColInfo) => {
-  console.log(props)
   dialogVisible.value = true;
   clearData();
   dialogTitle.value = type == 'edit' ? '编辑': '添加';
   formType.value = type;
-  operateInfo.value = info
   machineColIf.value = machineColInfo
   resetForm();
   
@@ -657,8 +662,18 @@ watch(() => machineFormData.value.powCapacity, (newValue) => {
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
-  if(machineColIf.value && machineColIf.value.barA == null && machineColIf.value.barB == null && machineFormData.value.pduBox) {
+  if(machineColIf.value && machineColIf.value.type == 1 && machineColIf.value.barA == null && machineColIf.value.barB == null && machineFormData.value.pduBox) {
     message.warning('请先给柜列绑定母线')
+    return
+  }
+
+  if(!machineFormData.value.pduBox && ((machineFormData.value.pduIpA && !machineFormData.value.pduIpB) || (!machineFormData.value.pduIpA && machineFormData.value.pduIpB))) {
+    message.warning('请勿只绑定一条PDU')
+    return
+  }
+
+  if(machineFormData.value.pduBox && ((machineFormData.value.busIpA && !machineFormData.value.busIpB) || (!machineFormData.value.busIpA && machineFormData.value.busIpB))) {
+    message.warning('请勿只绑定一条母线')
     return
   }
   // 校验表单
@@ -670,17 +685,20 @@ const submitForm = async () => {
   try {
     const sensorList = [...sensorListLeft, ...sensorListRight]
     const sensorListFilter = sensorList.filter(item => item.sensorId)
-    console.log('sensorListFilter', sensorListFilter)
+    // console.log('sensorListFilter', sensorListFilter)
     machineFormData.value.sensorList = sensorListFilter
 
-    console.log(boxListA.value,machineFormData.value)
+    // console.log(boxListA.value,machineFormData.value)
 
     let boxListA_Index = boxListA.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexA)
     let boxListB_Index = boxListB.value.findIndex(box => box.boxIndex == machineFormData.value.boxIndexB)
     
-    console.log(boxListA_Index,boxListB_Index)
+    // console.log(boxListA_Index,boxListB_Index)
 
-    if(machineFormData.value.pduBox && boxListA_Index != -1 && boxListB_Index != -1) {
+    if(machineFormData.value.pduBox && !machineFormData.value?.aisleId) {
+      machineFormData.value.casIdA = Number(machineFormData.value.boxIndexA) + 2
+      machineFormData.value.casIdB = Number(machineFormData.value.boxIndexB) + 2
+    } else if(machineFormData.value.pduBox && boxListA_Index != -1 && boxListB_Index != -1) {
       machineFormData.value.casIdA = boxListA_Index != -1 ? boxListA.value[boxListA_Index].casAddr : 0
       machineFormData.value.casIdB = boxListB_Index != -1 ? boxListB.value[boxListB_Index].casAddr : 0
     }

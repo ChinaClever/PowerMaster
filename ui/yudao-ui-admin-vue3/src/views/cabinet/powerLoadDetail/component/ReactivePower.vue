@@ -13,12 +13,19 @@ const props = defineProps({
   },
   timeRadio: {
     required: true,
-  }
+  },
+  avgMaxMin:String
 });
 
 
 
-
+function buKongGe(value,du){
+  value=Number(value);
+  console.log(value);
+  if(value<100&&value>=10) return "&nbsp;&nbsp;&nbsp;"+value.toFixed(du);
+  if(value<10) return "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+value.toFixed(du);
+  return "&nbsp;"+value.toFixed(du);
+}
 function formatNumber(value, decimalPlaces) {
   try{
     if (!isNaN(value)) {
@@ -63,7 +70,7 @@ const chartOptions = ref({
     type: 'value',
     axisLabel: {
       formatter: function (value) {
-        return value + ' KW';
+        return value + ' KVar';
       }
     }
   },
@@ -92,29 +99,31 @@ const updateChartData = () => {
     bReactivePowData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_b, 3));
     totalReactivePowAvgValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_total_avg_value, 3));
     totalReactivePowMaxValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_total_max_value, 3));
-    totalReactivePowMaxTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_total_max_time, 'YYYY-MM-DD HH:mm'));
+    totalReactivePowMaxTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_total_max_time, 'YYYY-MM-DD HH:mm:ss'));
     totalReactivePowMinValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_total_min_value, 3));
-    totalReactivePowMinTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_total_min_time, 'YYYY-MM-DD HH:mm'));
+    totalReactivePowMinTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_total_min_time, 'YYYY-MM-DD HH:mm:ss'));
 
     aReactivePowAvgValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_a_avg_value, 3));
     aReactivePowMaxValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_a_max_value, 3));
-    aReactivePowMaxTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_a_max_time, 'YYYY-MM-DD HH:mm'));
+    aReactivePowMaxTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_a_max_time, 'YYYY-MM-DD HH:mm:ss'));
     aReactivePowMinValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_a_min_value, 3));
-    aReactivePowMinTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_a_min_time, 'YYYY-MM-DD HH:mm'));
+    aReactivePowMinTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_a_min_time, 'YYYY-MM-DD HH:mm:ss'));
     
     bReactivePowAvgValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_b_avg_value, 3));
     bReactivePowMaxValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_b_max_value, 3));
-    bReactivePowMaxTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_b_max_time, 'YYYY-MM-DD HH:mm'));
+    bReactivePowMaxTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_b_max_time, 'YYYY-MM-DD HH:mm:ss'));
     bReactivePowMinValueData.value = props.curChartData.aPath.map((item) => formatNumber(item.reactive_b_min_value, 3));
-    bReactivePowMinTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_b_min_time, 'YYYY-MM-DD HH:mm'));
-    if(props.timeRadio=='近一小时'){
-      createTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm:ss'));
-    }else if(props.timeRadio=='近一月'){
+    bReactivePowMinTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.reactive_b_min_time, 'YYYY-MM-DD HH:mm:ss'));
+    if(props.timeRadio=='近一月'){
       createTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-    }else{
-      createTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH'));   
+    }else {
+      createTimeData.value = props.curChartData.aPath.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm:ss'));
     }
 
+    let circle={symbol:'none'};
+    if(createTimeData.value.length==1){
+      circle={symbol: 'circle'}
+    }
     if(props.timeRadio=='近一小时'){
       chartOptions.value = {
         title: { text: '' },
@@ -125,7 +134,7 @@ const updateChartData = () => {
           type: 'value',
           axisLabel: {
             formatter: function (value) {
-              return value + ' KW';
+              return value + ' KVar';
             }
           }
         },
@@ -136,7 +145,7 @@ const updateChartData = () => {
             params.forEach(item => {
               result += item.marker+`${item.seriesName}: ${item.value} kVar<br/>`;
             });
-            return result+"记录时间："+createTimeData.value[params[0].dataIndex];
+            return result+"时间："+createTimeData.value[params[0].dataIndex];
           }
         },
         grid: {
@@ -146,22 +155,46 @@ const updateChartData = () => {
           bottom: '10%', // 设置下侧边距
         },
         series: [
-          { name: '总无功功率', type: 'line', symbol: 'none', data:  totalReactivePowData.value},
-          { name: 'A路无功功率', type: 'line', symbol: 'none', data: aReactivePowData.value },
-          { name: 'B路无功功率', type: 'line', symbol: 'none', data: bReactivePowData.value },
+          { name: '总无功功率', type: 'line', ...circle, data:  totalReactivePowData.value,},
+          { name: 'A路无功功率', type: 'line', ...circle, data: aReactivePowData.value, },
+          { name: 'B路无功功率', type: 'line', ...circle, data: bReactivePowData.value, },
         ],
       };
     }else{
+      let series=[];
+      if(props.avgMaxMin=='平均'){
+        series=[
+          { name: '总无功功率', type: 'line', ...circle, data: totalReactivePowAvgValueData.value },
+          { name: 'A路无功功率', type: 'line', ...circle, data: aReactivePowAvgValueData.value, },
+          { name: 'B路无功功率', type: 'line', ...circle, data: bReactivePowAvgValueData.value,},
+        ]
+      }
+      if(props.avgMaxMin=='最大'){
+        series=[
+          { name: '总无功功率', type: 'line', ...circle, data: totalReactivePowMaxValueData.value,},
+          { name: 'A路无功功率', type: 'line', ...circle, data: aReactivePowMaxValueData.value,},
+          { name: 'B路无功功率', type: 'line', ...circle, data: bReactivePowMaxValueData.value,},
+        ]
+      }
+      if(props.avgMaxMin=='最小'){
+        series=[
+          { name: '总无功功率', type: 'line', ...circle, data: totalReactivePowMinValueData.value, },
+          { name: 'A路无功功率', type: 'line', ...circle, data: aReactivePowMinValueData.value,},
+          { name: 'B路无功功率', type: 'line', ...circle, data: bReactivePowMinValueData.value,}, 
+        ]
+      }
       chartOptions.value = {
         title: { text: '' },
-        legend: { orient: 'horizontal', right: '25' },
+        legend: { orient: 'horizontal', right: '25',data:['总无功功率',"A路无功功率",'B路无功功率'],
+          selected:{"总无功功率":true,"A路无功功率":true,"B路无功功率":true}
+         },
         dataZoom: [{ type: "inside" }],
         xAxis: { type: 'category', boundaryGap: false, data: createTimeData.value },
         yAxis: {
           type: 'value',
           axisLabel: {
             formatter: function (value) {
-              return value + ' KW';
+              return value + ' KVar';
             }
           }
         },
@@ -170,30 +203,42 @@ const updateChartData = () => {
           formatter: function (params) {
             let tooltipContent = '';
             params.forEach(item => {
-              switch (item.seriesName) { 
-                case "总平均无功功率":
-                case "A路平均无功功率":
-                case "B路平均无功功率":
-                  tooltipContent += item.marker + ' 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' KVar  <br/>';
+              if(props.avgMaxMin=='平均'){
+                switch (item.seriesName) {  
+                case "总无功功率":
+                  tooltipContent += item.marker + item.seriesName + ':&nbsp;&nbsp;' + buKongGe(item.value,3) + 'KVar 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + '   <br/>';
                   break;
-                case "总最大无功功率":
-                  tooltipContent += item.marker + ' 记录时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' KVar  <br/>';
+                case "A路无功功率":
+                case "B路无功功率":
+                  tooltipContent += item.marker + item.seriesName + ':' + buKongGe(item.value,3) + 'KVar 记录时间: ' +createTimeData.value[item.dataIndex] + ' ' + '   <br/>';
                   break;
-                case "总最小无功功率":
-                  tooltipContent += item.marker + ' 记录时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' KVar  <br/>';
+                } 
+              }
+              if(props.avgMaxMin=='最大'){
+                switch (item.seriesName) {
+                  case "总无功功率":
+                  tooltipContent += item.marker +item.seriesName + ':&nbsp;&nbsp;' + buKongGe(item.value,3) + 'KVar 发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] + ' ' +  '   <br/>';
                   break;
-                case "A路最大无功功率":
-                  tooltipContent += item.marker + ' 记录时间: ' +aReactivePowMaxTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' KVar  <br/>';
+                  case "A路无功功率":
+                  tooltipContent += item.marker + item.seriesName + ':' + buKongGe(item.value,3)+ 'KVar 发生时间: ' +aReactivePowMaxTimeData.value[item.dataIndex] + ' '  + '   <br/>';
                   break;
-                case "A路最小无功功率":
-                  tooltipContent += item.marker + ' 记录时间: ' +aReactivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' KVar  <br/>';
+                  case "B路无功功率":
+                  tooltipContent += item.marker +item.seriesName + ':' + buKongGe(item.value,3) + 'KVar 发生时间: ' +bReactivePowMaxTimeData.value[item.dataIndex] + ' ' +  '   <br/>';
                   break;
-                case "B路最大无功功率":
-                  tooltipContent += item.marker + ' 记录时间: ' +bReactivePowMaxTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' KVar  <br/>';
+                } 
+              }
+              if(props.avgMaxMin=='最小'){
+                switch (item.seriesName) { 
+                case "总无功功率":
+                  tooltipContent += item.marker +item.seriesName + ':&nbsp;&nbsp;' + buKongGe(item.value,3) +  'KVar 发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] + ' ' + '   <br/>';
                   break;
-                case "B路最小无功功率":
-                  tooltipContent += item.marker + ' 记录时间: ' +bReactivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + ' KVar  <br/>';
+                case "A路无功功率":
+                  tooltipContent += item.marker +item.seriesName + ':' + buKongGe(item.value,3) + 'KVar 发生时间: ' +aReactivePowMinTimeData.value[item.dataIndex] + ' ' +  '   <br/>';
                   break;
+                case "B路无功功率":
+                  tooltipContent += item.marker +item.seriesName + ':' + buKongGe(item.value,3) + 'KVar 发生时间: ' +bReactivePowMinTimeData.value[item.dataIndex] + ' ' +  '   <br/>';
+                  break;
+              }
               }
             });
             return tooltipContent;
@@ -205,17 +250,7 @@ const updateChartData = () => {
           top: '10%',    // 设置上侧边距
           bottom: '10%', // 设置下侧边距
         },
-        series: [
-          { name: '总平均无功功率', type: 'line', symbol: 'none', data: totalReactivePowAvgValueData.value },
-          { name: '总最大无功功率', type: 'line', symbol: 'none', data: totalReactivePowMaxValueData.value},
-          { name: '总最小无功功率', type: 'line', symbol: 'none', data: totalReactivePowMinValueData.value },
-          { name: 'A路平均无功功率', type: 'line', symbol: 'none', data: aReactivePowAvgValueData.value },
-          { name: 'A路最大无功功率', type: 'line', symbol: 'none', data: aReactivePowMaxValueData.value},
-          { name: 'A路最小无功功率', type: 'line', symbol: 'none', data: aReactivePowMinValueData.value },
-          { name: 'B路平均无功功率', type: 'line', symbol: 'none', data: bReactivePowAvgValueData.value },
-          { name: 'B路最大无功功率', type: 'line', symbol: 'none', data: bReactivePowMaxValueData.value},
-          { name: 'B路最小无功功率', type: 'line', symbol: 'none', data: bReactivePowMinValueData.value }, 
-        ],
+        series: series
       };
 
     }
@@ -226,11 +261,11 @@ const updateChartData = () => {
 updateChartData();
 
 watch(
-  () => props.curChartData,
+  () => [props.curChartData,props.avgMaxMin],
   (newData) => {
-    if (newData && newData.aPath) { // 确保 newData 和 newData.aPath 存在
+    // if (newData && newData.aPath) { // 确保 newData 和 newData.aPath 存在
       updateChartData();
-    }
+    // }
   },
   { deep: true }
 );

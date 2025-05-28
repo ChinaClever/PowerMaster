@@ -108,6 +108,9 @@ export const CabinetApi = {
   getRackStatistics: async () => {
     return await request.get({ url: `/rack/pageStatistics` })
   },
+  getCabinetPFDetail:async()=>{
+    return null
+  }
 }
 
 // 机柜温度颜色 VO

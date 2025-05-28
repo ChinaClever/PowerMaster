@@ -29,6 +29,11 @@ public class CabinetPowerLoadDetailRespVO {
     private BigDecimal powActive;
 
     /**
+     * 视在功率 redis bus_total_data 的 pow_apparent
+     */
+    private BigDecimal powApparent;
+
+    /**
      * 无功功率 redis bus_total_data 的 pow_reactive
      */
     private BigDecimal powReactive;

@@ -39,10 +39,10 @@
     </select>
     <select id="findAreaById" resultType="java.lang.Integer">
         select count(id) from aisle_index where is_delete = 0 and room_id = #{roomId}
-        and ((aisle_length+y_coordinate+1 >#{yLength} and direction ='x') or
-        ( direction ='y' and aisle_length+x_coordinate+1 > #{xLength} ))
+        AND ((
+        (aisle_length + x_coordinate-1 > #{xLength} or y_coordinate-1>#{yLength}) AND direction = 'x' )
+        OR ((aisle_length + y_coordinate-1 > #{yLength} or x_coordinate+1>#{xLength} ) and direction = 'y'))
     </select>
-
     <select id="findAddAisleVerifyx" resultType="java.lang.Integer">
         select count(id)
         from aisle_index

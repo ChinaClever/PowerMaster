@@ -214,6 +214,19 @@ const getActivePowTrend = async() => {
         label: {
           backgroundColor: '#505765'
         }
+      },
+      formatter(params) {
+        let result = ''
+        params.forEach(item => {
+          if(item.seriesName == '昨日'){
+            result+=`昨日最大值：${item.value}KW 发生时间：${res.yesterdayList[item.dataIndex]?.maxActivePowTime||''}<br/>`
+          }
+          if(item.seriesName == '当日'){
+            result+=`当日最大值：${item.value||'-'}KW 发生时间：${res.todayList[item.dataIndex]?.maxActivePowTime||''}<br/>`
+          }
+        })
+        console.log("params=========",params);
+        return result ;
       }
     },
     legend: {
@@ -262,7 +275,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList.map(item => item.activePow)
+        data: res.yesterdayList.map(item => item.maxActivePow)
       },
       {
         name: '当日',
@@ -278,7 +291,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: 'Avg2' }]
         },
-        data: res.todayList.map(item => item.activePow)
+        data: res.todayList.map(item => item.maxActivePow)
       }
     ]
   }

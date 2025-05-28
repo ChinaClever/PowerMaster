@@ -31,4 +31,8 @@ export const CabinetApi = {
   getCabinetLineChartDetailData: async (data: any) => {
     return await request.post({ url: `/cabinet/loadPage/chart-detail`, data })
   },
+
+  getCabinetLoadRate:async (params: any) => {
+    return await request.get({ url: `/cabinet/distributionFactor`, params })
+  },
 }

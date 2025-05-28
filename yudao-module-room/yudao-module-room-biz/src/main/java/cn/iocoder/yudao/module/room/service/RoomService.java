@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -133,7 +132,7 @@ public interface RoomService {
     RoomMainResVO getDataNewDetail(int id) throws ExecutionException, InterruptedException;
 
     //机房新增根据名称异步查询
-    Integer newSelectRoomByName(String name);
+    Integer newSelectRoomByName(String name, Integer id);
 
     void getRoomListRedis(List<RoomIndexAddrResVO> bean);
 

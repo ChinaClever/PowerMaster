@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetMaxActivePowDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetPowService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
@@ -52,10 +53,10 @@ public class CabinetPowController {
      */
     @Operation(summary = "机柜有功功率趋势")
     @GetMapping("/cabinet/activePowTrend")
-    public CommonResult<CabinetActivePowDTO> activePowTrend(@Param("id") int id) {
+    public CommonResult<CabinetMaxActivePowDTO> activePowTrend(@Param("id") int id) {
         CabinetPowVo vo = new CabinetPowVo();
         vo.setId(id);
-        CabinetActivePowDTO dto = powService.getActivePow(vo);
+        CabinetMaxActivePowDTO dto = powService.getActivePow(vo);
         return success(dto);
     }
 
