@@ -83,7 +83,7 @@
        
         <el-form-item :style="{marginLeft: '20px'}">
           <!-- <el-button  v-if="queryParams.timeType == 2 || queryParams.timeType == 1" @click="handleQuery" style="margin-left: -10px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button> -->
-          <!-- <el-button v-if="queryParams.timeType == 2 || queryParams.timeType == 1" @click="resetQuery" style="margin-left: 10px"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
+          <el-button v-if="queryParams.timeType == 2 || queryParams.timeType == 1" @click="resetQuery" style="margin-left: 10px"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
             type="primary"
             plain
