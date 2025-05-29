@@ -27,6 +27,8 @@ public class PDUDeviceDO extends BaseDO {
     private Integer status;
     private Integer color;
 
+    private Integer volColor;
+
     private Double apparentPow;
 
     private Double pf;

@@ -457,8 +457,6 @@ public class AisleServiceImpl implements AisleService {
     public AisleDetailDTO getAisleDetail(Integer aisleId) throws IOException {
         AisleDetailDTO detailDTO = new AisleDetailDTO();
         AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
-
-
         ValueOperations ops = redisTemplate.opsForValue();
         DecimalFormat df = new DecimalFormat("#.00");
         if (Objects.nonNull(aisleIndex)) {
@@ -634,8 +632,8 @@ public class AisleServiceImpl implements AisleService {
                             barVo.setLineVol(lineData.getObject(VOL_VALUE, Double[].class));
                         }
                         //有功功率
-                        if (lineData.containsKey(POW_ACTIVE)) {
-                            barVo.setPowActive(lineData.getObject(POW_ACTIVE, Double[].class));
+                        if (lineData.containsKey("pow_value")) {
+                            barVo.setPowActive(lineData.getObject("pow_value", Double[].class));
                         }
                         //视在功率
                         if (lineData.containsKey(POW_APPARENT)) {

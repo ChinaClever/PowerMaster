@@ -155,9 +155,6 @@
       <el-table
         v-show="switchValue == 3"
         :data="list"
-        :show-overflow-tooltip="true"
-        @cell-dblclick="toPDUDisplayScreen"
-        :border="true"
         stripe
       >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
@@ -176,11 +173,12 @@
         />
         <el-table-column label="运行状态" align="center" prop="color" width="120px">
           <template #default="scope">
-             <el-tag type="info" v-if="scope.row.color == 0">单相设备</el-tag>
+             <el-tag type="info" v-if="scope.row.color == 0 && scope.row.acur !=null && scope.row.bcur ==null && scope.row.ccur ==null">单相设备</el-tag>
             <el-tag type="info" v-if="scope.row.color == 1">小电流不平衡</el-tag>
             <el-tag type="success" v-if="scope.row.color == 2">大电流不平衡</el-tag>
             <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
+            <el-tag type="info" v-if="scope.row.color == null && scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="电流(A)" align="center">
@@ -342,8 +340,17 @@
 
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status">
-            <el-tag type="info">电压不平衡</el-tag>
+          <div class="status" v-if="item.volColor != 0">
+            <el-tag type="info" v-if="item.volColor == 1">小电压不平衡</el-tag>
+            <el-tag type="success" v-if="item.volColor == 2">大电压不平衡</el-tag>
+            <el-tag type="warning" v-if="item.volColor == 3">大电压不平衡</el-tag>
+            <el-tag type="danger" v-if="item.volColor == 4">大电压不平衡</el-tag>
+          </div>
+          <div class="status" v-if="item.volColor == 0">
+            <el-tag type="info">单相设备</el-tag>
+          </div>
+          <div class="status" v-if="item.status == 5 && item.color == null">
+            <el-tag type="info">离线</el-tag>
           </div>
           <button
             v-if="item.status != null && item.status != 5 && item.bvol != null && item.cvol != null"
@@ -1930,12 +1937,13 @@ function changeChart(curVol){
     margin-top: 20px;
     .box {
       height: 70px;
-      width: 50%;
+      width: 40%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: left;
       flex-direction: column;
+      margin-left: auto;
       .top {
         display: flex;
         align-items: center;
