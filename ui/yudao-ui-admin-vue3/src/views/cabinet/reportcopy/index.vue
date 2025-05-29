@@ -200,33 +200,6 @@
               配电设备信息
             </div>
             <br/>
-            <!-- <el-row :gutter="24" >
-              <el-col :span="24 - serChartContainerWidth">
-                <div class="centered-div">
-                  <el-table 
-                    :data="rack" 
-                    :header-cell-style="arraySpanMethod"
-                    >
-                    <el-table-column  align="center" label="网络地址" prop="name"  />
-                    <el-table-column  align="center" label="状态" prop="totalPower" />
-                    <el-table-column  align="center" label="总有功功率" prop="acurrent" />
-                    <el-table-column  align="center" label="总无功功率" prop="bcurrent" />
-                    <el-table-column  align="center" label="总视在功率" prop="bcurrent" />
-                    <el-table-column  align="center" label="总功率因数" prop="bcurrent" />
-                    <el-table-column  align="center" label="耗电量" prop="bcurrent" />
-                    <el-table-column  align="center" label="电压不平衡" prop="bcurrent" />
-                    <el-table-column  align="center" label="电流不平衡" prop="bcurrent" />
-                    <el-table-column label="操作" align="center">
-                    <template #default="scope">
-                    <el-button v-if="switchValue==0" @click="generateDailyReport(scope.row.devKey)">日报</el-button>
-                    <el-button v-if="switchValue==1" @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
-                    </template>
-
-      </el-table-column>
-                  </el-table>
-                </div>
-              </el-col>
-            </el-row> -->
           </div>
               <el-table :data="tableData" style="width: 100%" :border="true">
                                     <el-table-column  align="center" label="序号" type="index" prop="id" width="100px"/>
@@ -691,6 +664,8 @@ const loadAll = async () => {
   return objectArray;
 }
 
+
+
 const querySearch = (queryString: string, cb: any) => {
   const results = queryString
     ? idList.value.filter(createFilter(queryString))
@@ -1020,15 +995,20 @@ const getList = async () => {
   
       //清除temp1的缓存数据
   temp1.value=[]
+  console.log(queryParams.id)
   //获得告警信息
+  const preStatus = ref([0])
   const temp1Data = await IndexApi.getBoxRecordPage({
+
     pageNo: 1,
     pageSize: 100,
-    devKey: queryParams.devKey,
-    // devKey : '',
     devType: 7,
+    likeName: queryParams.Id,
     alarmType: 6,
-    likeName: '1-1-1',
+    pduStartTime: queryParams.oldTime,
+    pduFinishTime: queryParams.newTime,
+              alarmStatus: preStatus.value,
+    
   })
   //处理告警信息数据
   // //debugger
@@ -1467,8 +1447,35 @@ const handleQuery = async () => {
 // }
 
 
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+
 /** 初始化 **/
 onMounted( async () =>  {
+    let id = route.query?.CabinetId as string | undefined;
+  let timeType = route.query?.timeType as string | undefined;
+  let oldTime = route.query?.oldTime as string | undefined;
+  let newTime = route.query?.newTime as string | undefined;
+  let visAllReport = route.query?.visAllReport as string | undefined;
+  let switchValue1 = route.query?.switchValue as string | undefined;
+
+  if (id != undefined) {
+    queryParams.ipAddr = id;
+    queryParams.Id = id;
+    queryParams.timeType = timeType;
+    queryParams.oldTime = oldTime;
+    queryParams.newTime = newTime;
+    queryParams.visAllReport = visAllReport;
+      switchValue.value = switchValue1;
+    getList();
+    console.log('机柜onMounted');
+    
+  }
+  getNavList()
+  // getList();
+  // initChart();
+  idList.value = await loadAll();
+  // window.addEventListener('resize', updateWindowWidth);
   // getList();
   // initChart();
   getNavList();

@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AisleHdaLineHour;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
@@ -1946,7 +1947,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             oldTime = oldTime.plusDays(1).withHour(0).withMinute(0).withSecond(0);
             newTime = newTime.plusDays(1).withHour(23).withMinute(59).withSecond(59);
         }
-
+        List<String> strData = new ArrayList<>();
         String startTime = localDateTimeToString(oldTime);
         String endTime = localDateTimeToString(newTime);
 
@@ -1968,12 +1969,18 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                     String str = hit.getSourceAsString();
                     AisleHdaLineHour houResVO = JsonUtils.parseObject(str, AisleHdaLineHour.class);
                     DataProcessingUtils.processLineHisData(houResVO, resultMap, isSameDay, DataTypeEnums.fromValue(dataType));
+                    strData.add(str);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int maxIndex = 3;
+
+        List<AisleHdaLineHour> powList = strData.stream().map(str -> JsonUtils.parseObject(str, AisleHdaLineHour.class)).collect(Collectors.toList());
+        processLineMavMin(powList,dataType,resultMap);
+
+        int aIndex = 1;
+        int bIndex = 2;
         // 处理结果
         for (int lineId = 1; lineId <= 3; lineId++) {
             String lineKey = "dayList" + lineId;
@@ -1985,14 +1992,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 LineSeries curBSeries = new LineSeries();
                 LineSeries volBSeries = new LineSeries();
 
-                resultMap.put("curName" + lineId, "A路L" + lineId + "相电流");
-                resultMap.put("volName" + lineId, "A路L" + lineId + "相电压");
+                resultMap.put("curName" + aIndex, "A路L" + lineId + "相电流");
+                resultMap.put("volName" + aIndex, "A路L" + lineId + "相电压");
 
                 curASeries.setName("A-L" + lineId);
                 volASeries.setName("A-L" + lineId);
 
-                resultMap.put("curName" + (lineId + maxIndex), "B路L" + lineId + "相电流");
-                resultMap.put("volName" + (lineId + maxIndex), "B路L" + lineId + "相电压");
+                resultMap.put("curName" + bIndex, "B路L" + lineId + "相电流");
+                resultMap.put("volName" + bIndex, "B路L" + lineId + "相电压");
 
                 curBSeries.setName("B-L" + lineId);
                 volBSeries.setName("B-L" + lineId);
@@ -2007,37 +2014,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 volBSeries.setData((List<Float>) lineData.get("volBDataList"));
                 volBSeries.setHappenTime((List<String>) lineData.get("volBHappenTime"));
 
-//                Map<String, Object> analyzedData = PduAnalysisResult.analyzePduData((List<PduHdaLineHouResVO>) lineData.get("data"), dataType);
-//                PduAnalysisResult.CurrentResult currentResult = (PduAnalysisResult.CurrentResult) analyzedData.get("current");
-//                PduAnalysisResult.VoltageResult voltageResult = (PduAnalysisResult.VoltageResult) analyzedData.get("voltage");
-//
-//                if (dataType != 0) {
-//                    resultMap.put("curMaxValue" + lineId, currentResult.maxCurValue);
-//                    resultMap.put("curMaxTime" + lineId, sdfS.format(currentResult.maxCurTime));
-//                    resultMap.put("curMinValue" + lineId, currentResult.minCurValue);
-//                    resultMap.put("curMinTime" + lineId, sdfS.format(currentResult.minCurTime));
-//                    resultMap.put("volMaxValue" + lineId, voltageResult.maxVolValue);
-//                    resultMap.put("volMaxTime" + lineId, sdfS.format(voltageResult.maxVolTime));
-//                    resultMap.put("volMinValue" + lineId, voltageResult.minVolValue);
-//                    resultMap.put("volMinTime" + lineId, sdfS.format(voltageResult.minVolTime));
-//                } else {
-//                    resultMap.put("curMaxValue" + lineId, currentResult.maxCurValue);
-//                    resultMap.put("curMaxTime" + lineId, "无");
-//                    resultMap.put("curMinValue" + lineId, currentResult.minCurValue);
-//                    resultMap.put("curMinTime" + lineId, "无");
-//                    resultMap.put("volMaxValue" + lineId, voltageResult.maxVolValue);
-//                    resultMap.put("volMaxTime" + lineId, "无");
-//                    resultMap.put("volMinValue" + lineId, voltageResult.minVolValue);
-//                    resultMap.put("volMinTime" + lineId, "无");
-//                }
-
-
                 curResBase.getSeries().add(curASeries);
                 volResBase.getSeries().add(volASeries);
                 curResBase.getSeries().add(curBSeries);
                 volResBase.getSeries().add(volBSeries);
             }
             resultMap.put("lineNumber", lineId);
+            aIndex = aIndex+2;
+            bIndex = bIndex+2;
         }
 
         // 添加时间轴数据
@@ -2051,49 +2035,142 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     public void processLineMavMin(List<AisleHdaLineHour> powList, Integer dataType, Map<String, Object> result) {
+        //电流
+        //A相
+        PowerData lineCurARoadA = new PowerData();
+        PowerData lineCurARoadB = new PowerData();
 
+        //B相
+        PowerData lineCurBRoadA = new PowerData();
+        PowerData lineCurBRoadB = new PowerData();
+
+        //C相
+        PowerData lineCurCRoadA = new PowerData();
+        PowerData lineCurCRoadB = new PowerData();
+
+        //电压
+        //A相
+        PowerData lineVolARoadA = new PowerData();
+        PowerData lineVolARoadB = new PowerData();
+
+        //B相
+        PowerData lineVolBRoadA = new PowerData();
+        PowerData lineVolBRoadB = new PowerData();
+
+        //C相
+        PowerData lineVolCRoadA = new PowerData();
+        PowerData lineVolCRoadB = new PowerData();
         for (AisleHdaLineHour aisleHdaLineHour : powList) {
-            //A相
-            PowerData lineARoadA = new PowerData();
-            PowerData lineARoadB = new PowerData();
-
-            //B相
-            PowerData lineBRoadA = new PowerData();
-            PowerData lineBRoadB = new PowerData();
-
-            //C相
-            PowerData lineCRoadA = new PowerData();
-            PowerData lineCRoadB = new PowerData();
-
-            switch (aisleHdaLineHour.getLineId()) {
+            int lineId = aisleHdaLineHour.getLineId();
+            switch (lineId) {
                 case 0:
-                    updatePowerData(lineARoadA, aisleHdaLineHour.getCurAMaxValue().floatValue(), aisleHdaLineHour.getCurAMaxTime(), aisleHdaLineHour.getCurAAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurAMinValue().floatValue(), aisleHdaLineHour.getCurAMinTime(), dataType);
-                    updatePowerData(lineARoadB, aisleHdaLineHour.getCurBMaxValue().floatValue(), aisleHdaLineHour.getCurBMaxTime(), aisleHdaLineHour.getCurBAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurBMinValue().floatValue(), aisleHdaLineHour.getCurBMinTime(), dataType);
+                    updatePowerData(lineCurARoadA, safeFloatValue(aisleHdaLineHour.getCurAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMaxTime()), safeFloatValue(aisleHdaLineHour.getCurAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurAMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMinTime()), dataType);
+                    updatePowerData(lineCurARoadB, safeFloatValue(aisleHdaLineHour.getCurBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMaxTime()), safeFloatValue(aisleHdaLineHour.getCurBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurBMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMinTime()), dataType);
+
+                    updatePowerData(lineVolARoadA, safeFloatValue(aisleHdaLineHour.getVolAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolABaxTime()), safeFloatValue(aisleHdaLineHour.getVolAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolAMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolAMinTime()), dataType);
+                    updatePowerData(lineVolARoadB, safeFloatValue(aisleHdaLineHour.getVolBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMaxTime()), safeFloatValue(aisleHdaLineHour.getVolBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolBMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMinTime()), dataType);
                     break;
                 case 1:
-                    updatePowerData(lineBRoadA, aisleHdaLineHour.getCurAMaxValue().floatValue(), aisleHdaLineHour.getCurAMaxTime(), aisleHdaLineHour.getCurAAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurAMinValue().floatValue(), aisleHdaLineHour.getCurAMinTime(), dataType);
-                    updatePowerData(lineBRoadB, aisleHdaLineHour.getCurBMaxValue().floatValue(), aisleHdaLineHour.getCurBMaxTime(), aisleHdaLineHour.getCurBAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurBMinValue().floatValue(), aisleHdaLineHour.getCurBMinTime(), dataType);
-                    break;
+                    updatePowerData(lineCurBRoadA, safeFloatValue(aisleHdaLineHour.getCurAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMaxTime()), safeFloatValue(aisleHdaLineHour.getCurAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurAMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMinTime()), dataType);
+                    updatePowerData(lineCurBRoadB, safeFloatValue(aisleHdaLineHour.getCurBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMaxTime()), safeFloatValue(aisleHdaLineHour.getCurBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurBMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMinTime()), dataType);
 
+                    updatePowerData(lineVolBRoadA, safeFloatValue(aisleHdaLineHour.getVolAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolABaxTime()), safeFloatValue(aisleHdaLineHour.getVolAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolAMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolAMinTime()), dataType);
+                    updatePowerData(lineVolBRoadB, safeFloatValue(aisleHdaLineHour.getVolBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMaxTime()), safeFloatValue(aisleHdaLineHour.getVolBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolBMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMinTime()), dataType);
+                    break;
                 case 2:
-                    updatePowerData(lineCRoadA, aisleHdaLineHour.getCurAMaxValue().floatValue(), aisleHdaLineHour.getCurAMaxTime(), aisleHdaLineHour.getCurAAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurAMinValue().floatValue(), aisleHdaLineHour.getCurAMinTime(), dataType);
-                    updatePowerData(lineCRoadB, aisleHdaLineHour.getCurBMaxValue().floatValue(), aisleHdaLineHour.getCurBMaxTime(), aisleHdaLineHour.getCurBAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurBMinValue().floatValue(), aisleHdaLineHour.getCurBMinTime(), dataType);
-                    break;
+                    updatePowerData(lineCurCRoadA, safeFloatValue(aisleHdaLineHour.getCurAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMaxTime()), safeFloatValue(aisleHdaLineHour.getCurAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurAMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMinTime()), dataType);
+                    updatePowerData(lineCurCRoadB, safeFloatValue(aisleHdaLineHour.getCurBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMaxTime()), safeFloatValue(aisleHdaLineHour.getCurBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurBMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMinTime()), dataType);
 
+                    updatePowerData(lineVolCRoadA, safeFloatValue(aisleHdaLineHour.getVolAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolABaxTime()), safeFloatValue(aisleHdaLineHour.getVolAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolAMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolAMinTime()), dataType);
+                    updatePowerData(lineVolCRoadB, safeFloatValue(aisleHdaLineHour.getVolBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMaxTime()), safeFloatValue(aisleHdaLineHour.getVolBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolBMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMinTime()), dataType);
+                    break;
                 default:
+                    // 处理解默认情况
+                    break;
             }
         }
 
         //设置数据
-        result.put("","");
+        //电流
+        result.put("curMaxValue"+1, lineCurARoadA.maxValue);
+        result.put("curMaxTime"+1,lineCurARoadA.maxTime);
+        result.put("curMinValue"+1,lineCurARoadA.minValue);
+        result.put("curMinTime"+1,lineCurARoadA.minTime);
 
+        result.put("curMaxValue"+2, lineCurARoadB.maxValue);
+        result.put("curMaxTime"+2,lineCurARoadB.maxTime);
+        result.put("curMinValue"+2,lineCurARoadB.minValue);
+        result.put("curMinTime"+2,lineCurARoadB.minTime);
 
+        result.put("curMaxValue"+3, lineCurBRoadA.maxValue);
+        result.put("curMaxTime"+3,lineCurBRoadA.maxTime);
+        result.put("curMinValue"+3,lineCurBRoadA.minValue);
+        result.put("curMinTime"+3,lineCurBRoadA.minTime);
+
+        result.put("curMaxValue"+4, lineCurBRoadB.maxValue);
+        result.put("curMaxTime"+4,lineCurBRoadB.maxTime);
+        result.put("curMinValue"+4,lineCurBRoadB.minValue);
+        result.put("curMinTime"+4,lineCurBRoadB.minTime);
+
+        result.put("curMaxValue"+5, lineCurCRoadA.maxValue);
+        result.put("curMaxTime"+5,lineCurCRoadA.maxTime);
+        result.put("curMinValue"+5,lineCurCRoadA.minValue);
+        result.put("curMinTime"+5,lineCurCRoadA.minTime);
+
+        result.put("curMaxValue"+6, lineCurCRoadB.maxValue);
+        result.put("curMaxTime"+6,lineCurCRoadB.maxTime);
+        result.put("curMinValue"+6,lineCurCRoadB.minValue);
+        result.put("curMinTime"+6,lineCurCRoadB.minTime);
+        //电压
+        result.put("volMaxValue" + 1, lineVolARoadA.maxValue);
+        result.put("volMaxTime" + 1, lineVolARoadA.maxTime);
+        result.put("volMinValue" + 1, lineVolARoadA.minValue);
+        result.put("volMinTime" + 1, lineVolARoadA.minTime);
+
+        result.put("volMaxValue" + 2, lineVolARoadB.maxValue);
+        result.put("volMaxTime" + 2, lineVolARoadB.maxTime);
+        result.put("volMinValue" + 2, lineVolARoadB.minValue);
+        result.put("volMinTime" + 2, lineVolARoadB.minTime);
+
+        result.put("volMaxValue" + 3, lineVolBRoadA.maxValue);
+        result.put("volMaxTime" + 3, lineVolBRoadA.maxTime);
+        result.put("volMinValue" + 3, lineVolBRoadA.minValue);
+        result.put("volMinTime" + 3, lineVolBRoadA.minTime);
+
+        result.put("volMaxValue" + 4, lineVolBRoadB.maxValue);
+        result.put("volMaxTime" + 4, lineVolBRoadB.maxTime);
+        result.put("volMinValue" + 4, lineVolBRoadB.minValue);
+        result.put("volMinTime" + 4, lineVolBRoadB.minTime);
+
+        result.put("volMaxValue" + 5, lineVolCRoadA.maxValue);
+        result.put("volMaxTime" + 5, lineVolCRoadA.maxTime);
+        result.put("volMinValue" + 5, lineVolCRoadA.minValue);
+        result.put("volMinTime" + 5, lineVolCRoadA.minTime);
+
+        result.put("volMaxValue" + 6, lineVolCRoadB.maxValue);
+        result.put("volMaxTime" + 6, lineVolCRoadB.maxTime);
+        result.put("volMinValue" + 6, lineVolCRoadB.minValue);
+        result.put("volMinTime" + 6, lineVolCRoadB.minTime);
+    }
+
+    private float safeFloatValue(Number value) {
+        return value != null ? value.floatValue() : 0.0f;
+    }
+
+    private String safeLocalDateTime(String value) {
+        return value != null ? value : "";
     }
 
     public void processPowMavMin(List<AislePowHourDo> powList, Integer dataType, Map<String, Object> result) {

@@ -44,7 +44,7 @@ const echartsOption = ref({
 });
 
 watchEffect(() => {
-  series.value = prop.list.series;
+  series.value = prop.list?.series;
   if (series.value != null && series.value?.length > 0) {
     legendList.value = series.value?.map(item => item.name);
     series.value.forEach(item => {
@@ -58,7 +58,7 @@ watchEffect(() => {
       };
     });
   }
-  time.value = prop.list.time;
+  time.value = prop.list?.time;
 });
 
 onUnmounted(() => {

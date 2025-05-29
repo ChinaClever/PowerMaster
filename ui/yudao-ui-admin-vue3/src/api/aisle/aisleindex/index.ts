@@ -120,7 +120,10 @@ export const IndexApi = {
      getAisleHdaLineData: async (params) => {
       return await request.get({ url: `/aisle/index/aisleHdaLineHisdataReport`,params})
     },
-  
+    // 获取机柜详情
+    getCabinetDetail: async (params: any) => {
+      return await request.get({ url: `/cabinetBasicInformation`, params })
+    },
 
   getAislePFLine : async (data) => {
     return await request.post({ url: `/aisle/index/report/pfline`, data })
@@ -154,5 +157,8 @@ export const IndexApi = {
   },
   getRecordPage: async (data: any) => {
     return await request.post({ url: `/alarm/log-record/page`, data})
+  },
+    getRecordPageByType: async (data: any) => {
+    return await request.post({ url: `/alarm/log-record/pdu`, data})
   },
 }

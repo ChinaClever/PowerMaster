@@ -205,6 +205,82 @@
               </el-col> -->
             </el-row>
           </div>
+             <div class="pageBox" >
+            <div class="page-conTitle">
+              机柜信息
+            </div>
+            <br/>
+          </div>
+       <el-table :data="tableData" style="width: 100%" :border="true">
+      <el-table-column align="center" label="序号" type="index" prop="id" width="100px"/>
+      <el-table-column prop="cabinetName" label="机柜名称" align="center"/>
+      <el-table-column prop="runStatus" label="状态" align="center">
+        <template #default="scope">
+          <el-tag
+            v-if="scope.row.runStatus == 1"
+            type="default"
+          >
+            正常
+          </el-tag>
+          <el-tag
+            v-if="scope.row.runStatus == 2"
+            type="warning"
+          >
+            告警
+          </el-tag>
+          <el-popover
+            placement="top-start"
+            title="告警内容"
+            :width="500"
+            trigger="hover"
+            :content="scope.row.pduAlarm"
+            v-if="scope.row.runStatus == 2"
+          >
+            <template #reference>
+              <el-tag type="danger">告警</el-tag>
+            </template>
+          </el-popover>
+          <el-tag
+            v-if="scope.row.runStatus == 0"
+            type="info"
+          >
+            离线
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="powActive" label="总有功功率" align="center"/>
+      <el-table-column prop="powReactive" label="总无功功率" align="center"/>
+      <el-table-column prop="powApparent" label="总视在功率" align="center"/>
+      <el-table-column prop="powerFactor" label="总功率因数" align="center"/>
+      <el-table-column prop="proportion" label="AB路占比" align="center">
+        <template #default="scope">
+          <span v-if="scope.row.proportion != null">
+            <div class="progressContainer">
+              <div class="progress">
+                <div class="left" :style="`flex: ${scope.row.proportion}; `">
+                  {{ scope.row.proportion }}%
+                </div>
+                <div class="line"></div>
+                <div class="right" :style="`flex: ${100 - scope.row.proportion}; `">
+                  {{ 100 - scope.row.proportion }}%
+                </div>
+              </div>
+            </div>
+          </span>
+          <span v-else>
+            -
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center">
+        <template #default="scope">
+          <el-button v-if="switchValue == 0" @click="generateDailyReport(scope.row.cabinetId)">日报</el-button>
+          <el-button v-else-if="switchValue == 1" @click="generateMonthlyReport(scope.row.cabinetId)">月报</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
               电量分布
@@ -322,6 +398,43 @@
             <Line class="Container" width="70vw" height="58vh" :list="bLineList" :dataType="queryParams.dataType"/>
           </div>
 
+                    <div class="pageBox" v-if="visControll.lineACurVis">
+            <div class="page-conTitle">
+              相电流历史曲线趋势图
+            </div>
+                        
+          <div v-for="(sensor, index) in lineCurList?.series" :key="index">
+            <div class="power-section single-line" v-if="index %2 == 0">
+              <span class="power-title">{{lineCurVolData[`curName${index + 1}`]}}</span>
+  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData[`curMaxValue${index + 1}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData[`curMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData[`curMinValue${index + 1}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData[`curMinTime${index + 1}`]}})</span></span>
+          <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+  <span class="power-title" v-if="index+2<=lineCurList?.series.length "> {{lineCurVolData[`curName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">峰值 <span class="highlight">{{lineCurVolData[`curMaxValue${index + 2}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData[`curMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">谷值 <span class="highlight">{{lineCurVolData[`curMinValue${index + 2}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData[`curMinTime${index + 2}`]}})</span></span>
+</div>
+          </div>
+            <CurLine :width="computedWidth" height="78vh" :list="lineCurList"  :dataType="queryParams.dataType"/>
+          </div>
+          <div class="pageBox" v-if="visControll.lineAVolVis">
+            <div class="page-conTitle">
+              相电压历史曲线趋势图
+            </div>
+                        <div v-for="(sensor, index) in lineVolList?.series" :key="index">
+            <div class="power-section single-line" v-if="index %2 == 0">
+              <span class="power-title">{{lineCurVolData[`volName${index + 1}`]}}</span>
+  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData[`volMaxValue${index + 1}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData[`volMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData[`volMinValue${index + 1}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData[`volMinTime${index + 1}`]}})</span></span>
+          <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+  <span class="power-title" v-if="index+2<=lineVolList?.series.length ">{{lineCurVolData[`volName${index + 2}`]}}</span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">峰值 <span class="highlight">{{lineCurVolData[`volMaxValue${index + 2}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData[`volMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">谷值 <span class="highlight">{{lineCurVolData[`volMinValue${index + 2}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData[`volMinTime${index + 2}`]}})</span></span>
+</div>
+
+          </div>
+            <VolLine :width="computedWidth" height="78vh" :list="lineVolList"  :dataType="queryParams.dataType"/>
+          </div>
+
               <div class="pageBox" v-if="visControll.eqVis">
             <div class="page-conTitle" >
               机柜耗电量排名
@@ -373,8 +486,16 @@
                         </el-tooltip>
                       </template>
                     </el-table-column>
-                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
-                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+             <el-table-column label="开始时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.startTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" min-width="160" align="center">
+        <template #default="scope">
+          {{ formatTime(scope.row.endTime) }}
+        </template>
+      </el-table-column>
                     <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
                     <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
                 </el-table>
@@ -405,7 +526,8 @@ import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue';
-
+import CurLine from './component/CurLine.vue';
+import VolLine from './component/VolLine.vue';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -423,6 +545,11 @@ const now = ref()
 const switchValue = ref(1);
 const location = ref("");
 const warnList=ref(null)
+const lineCurVolData =ref() as any;
+const lineCurList = ref() as any;
+const lineVolList = ref() as any;
+const tableData = ref([]);
+
 
 const visControll = reactive({
   visAllReport : false,
@@ -435,6 +562,8 @@ const visControll = reactive({
   ApowVis :false,
   BpowVis : false,
   pfVis: false,
+    lineACurVis : false,
+  lineAVolVis : false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -468,6 +597,15 @@ const computedWidth = computed(() => {
     return '80vw';
   }
 });
+
+   // 格式化时间戳的方法
+const formatTime = (timestamp) => {
+    if(timestamp == null){
+    return ''
+  }
+  const date = new Date(timestamp);
+  return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
 
 const handleDayPick = () => {
   if(queryParams?.oldTime && switchValue.value == 2){
@@ -739,9 +877,97 @@ const getList = async () => {
   await handleDetailQuery();
   await handlePFLineQuery();
   await handleWarn();
+  await handleCVlineQuery();
+  await handleCabinetQuery();
 
   visControll.visAllReport = true;
   loading.value = false
+
+}
+// 对数据进行处理，保留三位小数
+// 辅助函数：处理数值并保留三位小数
+function formatNumber(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0; // 或者返回其他默认值
+    }
+    return Number(value.toFixed(3));
+}
+
+function formatNumber0(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return null; // 或者返回其他默认值
+    }
+    return Number(value.toFixed(0));
+}
+
+
+
+const handleCabinetQuery = async () =>{
+       const baseInfoList =  await IndexApi.getCabinetDetail({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime})
+const processedData = baseInfoList.map(item => ({
+    devKey: item.devKey,
+    runStatus: item.status,
+    cabinetName: item.cabinetName,
+    powApparent: formatNumber(item.powApparent),
+    powActive: formatNumber(item.powActive),
+    powReactive: formatNumber(item.powReactive),
+    powerFactor: formatNumber(item.powerFactor),
+    proportion: formatNumber0(item.proportion),
+    cabinetId: item.cabinetId,
+}));
+
+// 将处理后的数据存储在 tableData.value 中
+tableData.value = processedData;
+
+// 输出最终的 tableData.value
+console.log('tableData.value', tableData.value);
+}
+
+const { push } = useRouter()
+
+const now1 = ref()
+const old1 = ref()
+const new1 = ref()
+
+const generateDailyReport = (devKey) => {
+  now1.value = new Date();
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = old1.value.split(" ")[0] + " " + "23:59:59";
+  
+      // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
+      console.log('生成日报报告', devKey);
+      push('/report/cabinetreport?CabinetId='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
+    };
+
+    const generateMonthlyReport = (devKey) => {
+      now1.value = new Date();
+  now1.value.setDate(1)
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = new Date(old1.value)
+  new1.value.setMonth(new1.value.getMonth() + 1);
+  new1.value.setDate(new1.value.getDate() - 1);
+  new1.value.setHours(23,59,59)
+  new1.value = getFullTimeByDate(new1.value);
+      // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
+      console.log('生成月报报告', devKey);
+      push('/report/cabinetreport?CabinetId='+devKey+'&timeType='+1+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+    };
+
+
+
+const handleCVlineQuery = async () =>{
+  lineCurVolData.value = await IndexApi.getAisleHdaLineData({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime,dataType: queryParams.dataType})
+  lineCurList.value = lineCurVolData.value.curRes;
+  lineVolList.value = lineCurVolData.value.volRes;
+      if(lineCurVolData.value?.curRes?.time != null && lineCurVolData.value?.curRes?.time.length > 0){
+    visControll.lineACurVis = true;
+    visControll.lineAVolVis = true;
+    }else{
+    visControll.lineACurVis = false;
+    visControll.lineAVolVis = false;
+    }
 
 }
 
@@ -835,9 +1061,6 @@ const handleConsumeQuery = async () => {
   }
      cabinetEleData.value = await IndexApi.getCabinetEleByAis({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime})
      cabinetEleList.value = cabinetEleData.value.barRes;
-
-
-     await IndexApi.getAisleHdaLineData({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime,dataType: queryParams.dataType})
 }
 
 const handleDetailQuery = async () => {
@@ -930,7 +1153,7 @@ const handleQuery = async () => {
 //     exportLoading.value = false
 //   }
 // }
-
+const preStatus = ref([0])
 /** 初始化 **/
 onMounted( async () =>  {
   // getList();
@@ -939,11 +1162,16 @@ onMounted( async () =>  {
   idList.value = await loadAll();
 })
 async function handleWarn(){
-  warnList.value= await IndexApi.getRecordPage({
+  warnList.value= await IndexApi.getRecordPageByType({
     pageNo: 1,
-    pageSize: 10,
+    pageSize: 100,
     devKey: queryParams.devKey,
-    devType: 2
+    devType: 2,
+    likeName: queryParams.id,
+    alarmType: 10,
+     pduStartTime: queryParams.oldTime,
+    pduFinishTime: queryParams.newTime,
+              alarmStatus: preStatus.value,
 })
 }
 const handleCurrentChange = (val) => {
