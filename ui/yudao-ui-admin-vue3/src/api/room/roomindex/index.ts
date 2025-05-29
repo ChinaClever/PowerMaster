@@ -62,6 +62,10 @@ export const IndexApi = {
     return await request.post({ url: `/room/index/report/pow`,data})
   },
 
+    getPowDataByType: async (data) => {
+    return await request.post({ url: `/room/index/report/powByType`,data})
+  },
+
   getRoomPFLine : async (data) => {
     return await request.post({ url: `/room/index/report/pfline`, data })
   },

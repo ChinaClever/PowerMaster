@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.entity.es.aisle.pow;
 
 import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.AisleBaseDo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -210,6 +211,48 @@ public class AislePowBaseDo extends AisleBaseDo {
     private float reactiveBAvgValue;
 
     /**
+     * a路最大无功功率
+     */
+    @JsonProperty("reactive_a_max_value")
+    private float reactiveAMaxValue;
+    /**
+     * a路最大无功功率时间
+     */
+    @JsonProperty("reactive_a_max_time")
+    private DateTime reactiveAMaxTime;
+    /**
+     * a路最小无功功率时间
+     */
+    @JsonProperty("reactive_a_min_time")
+    private DateTime reactiveAMinTime;
+    /**
+     * a路最小无功功率
+     */
+    @JsonProperty("reactive_a_min_value")
+    private float reactiveAMinValue;
+
+    /**
+     * b路最大无功功率
+     */
+    @JsonProperty("reactive_b_max_value")
+    private float reactiveBMaxValue;
+    /**
+     * b路最大无功功率时间
+     */
+    @JsonProperty("reactive_b_max_time")
+    private DateTime reactiveBMaxTime;
+    /**
+     * b路最小无功功率时间
+     */
+    @JsonProperty("reactive_b_min_time")
+    private DateTime reactiveBMinTime;
+    /**
+     * b路最小无功功率
+     */
+    @JsonProperty("reactive_b_min_value")
+    private float reactiveBMinValue;
+
+    /**
      * 总平均功率因素
      */
     @JsonProperty("factor_total_avg_value")
@@ -226,4 +269,64 @@ public class AislePowBaseDo extends AisleBaseDo {
      */
     @JsonProperty("factor_b_avg_value")
     private float factorBAvgValue;
+
+    /**
+     * 总最大功率因素
+     */
+    @JsonProperty("factor_total_max_value")
+    private float factorTotalMaxValue;
+
+    @JsonProperty("factor_total_max_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorTotalMaxTime;
+
+    /**
+     * a路最大功率因素
+     */
+    @JsonProperty("factor_a_max_value")
+    private float factorAMaxValue;
+
+    @JsonProperty("factor_a_max_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorAMaxTime;
+
+    /**
+     * b路最大功率因素
+     */
+    @JsonProperty("factor_b_max_value")
+    private float factorBMaxValue;
+
+    @JsonProperty("factor_b_max_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorBMaxTime;
+
+    /**
+     * 总最小功率因素
+     */
+    @JsonProperty("factor_total_min_value")
+    private float factorTotalMinValue;
+
+    @JsonProperty("factor_total_min_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorTotalMinTime;
+
+    /**
+     * a路最大功率因素
+     */
+    @JsonProperty("factor_a_min_value")
+    private float factorAMinValue;
+
+    @JsonProperty("factor_a_min_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorAMinTime;
+
+    /**
+     * b路最大功率因素
+     */
+    @JsonProperty("factor_b_min_value")
+    private float factorBMinValue;
+
+    @JsonProperty("factor_b_min_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private DateTime factorBMinTime;
 }

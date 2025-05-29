@@ -101,4 +101,10 @@ public interface AisleIndexService {
     PageResult<AisleIndexDelResVO> getDelPage(AisleIndexPageReqVO pageReqVO);
 
     Boolean restore(Integer id);
+
+    Map getAislePFLineByType(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map getReportPowDataByTypeAndId(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    Map aisleHdaLineHisdataReportKey(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 }

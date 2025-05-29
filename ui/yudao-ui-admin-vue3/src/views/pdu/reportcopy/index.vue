@@ -200,8 +200,11 @@
             <div class="page-conTitle" >
               电量分布
             </div>
+            <!-- <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大单日用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+            <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p> -->
             <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大单日用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
-            <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
+            <p v-if="visControll.isSameDay">本周期内，共计使用电量{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh，最大用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+           
             <Bar class="Container" :width="computedWidth" height="58vh" :list="eleList"/>
           </div>
 
@@ -1895,7 +1898,25 @@ const formRef = ref()
 //  lineidChartOne.resize();
 //});
 /** 初始化 **/
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
 onMounted( async () =>  {
+  let devKey = route.query?.devKey as string | undefined;
+  let timeType = route.query?.timeType as string | undefined;
+  let oldTime = route.query?.oldTime as string | undefined;
+  let newTime = route.query?.newTime as string | undefined;
+  let visAllReport = route.query?.visAllReport as string | undefined;
+
+  if (devKey != undefined) {
+    queryParams.ipAddr = devKey;
+    queryParams.devKey = devKey;
+    queryParams.timeType = timeType;
+    queryParams.oldTime = oldTime;
+    queryParams.newTime = newTime;
+    queryParams.visAllReport = visAllReport;
+    getList();
+    initChart();
+  }
   getNavList()
   // getList();
   // initChart();

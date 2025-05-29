@@ -81,4 +81,5 @@ public interface IndexService {
 
     Map getCabinetEnvIceAndHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
+    Map getEleByAisle(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

@@ -1,10 +1,10 @@
 package cn.iocoder.yudao.framework.common.dto.aisle;
 
-import cn.hutool.json.JSONObject;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -28,7 +28,7 @@ public class AisleBarDTO {
 
 
     /**
-     *  唯一标识
+     * 唯一标识
      */
     @Schema(description = "唯一标识", example = "1")
     private String barKey;
@@ -71,7 +71,7 @@ public class AisleBarDTO {
     private Integer direction;
 
     @Schema(description = "插接箱", example = "1")
-    private List<AisleBoxDTO>  boxList;
+    private List<AisleBoxDTO> boxList;
 
 
     /**
@@ -80,49 +80,147 @@ public class AisleBarDTO {
     @Schema(description = "昨日电量", example = "1")
     private Double yesterdayEq;
 
-
+    @Schema(description = "母线key")
     private String devKey;
 
     /**
      * 相负载率
      */
-    private float[] lineLoadRate;
+    @Schema(description = "相负载率")
+    private Double[] lineLoadRate;
     /**
      * 相电流
      */
-    private  float[] lineCur;
+    @Schema(description = "相电流")
+    private Double[] lineCur;
 
     /**
      * 相电压
      */
-    private  float[] lineVol;
+    @Schema(description = "相电压")
+    private Double[] lineVol;
 
 
     /**
      * 温度
      */
-    private float[] temData;
+    @Schema(description = "温度")
+    private Double[] temData;
 
     /**
      * 相功率因素
      */
-    private float[] powerFactor;
+    @Schema(description = "相功率因素")
+    private Double[] powerFactor;
 
     /**
-     *  相有功功率
+     * 相有功功率
      */
-    private  float[] powActive;
+    @Schema(description = "相有功功率")
+    private Double[] powActive;
 
 
     /**
-     *  相无功功率
+     * 相无功功率
      */
-    private  float[] powReactive;
+    @Schema(description = "相无功功率")
+    private Double[] powReactive;
 
     /**
-     *  相视在功率
+     * 相视在功率
      */
-    private  float[] powApparent;
+    @Schema(description = "相视在功率")
+    private Double[] powApparent;
 
+    @Schema(description = "母线")
     private BusIndex busIndex;
+
+    /**
+     * 始端箱系统软件版本号
+     */
+    @Schema(description = "始端箱系统软件版本号")
+    private String busVersion;
+
+    /**
+     * 运行状态
+     */
+    @Schema(description = "运行状态")
+    private Integer status;
+
+    /**
+     * 断路器状态,1：合闸   2：分闸   3：跳闸
+     */
+    @Schema(description = "断路器状态,1：合闸   2：分闸   3：跳闸")
+    private Integer breakerStatus;
+
+    /**
+     * 防雷状态,1：工作正常   2：损坏
+     */
+    @Schema(description = "防雷状态,1：工作正常   2：损坏")
+    private Integer lspStatus;
+
+    /**
+     * 剩余电流
+     */
+    @Schema(description = "剩余电流")
+    private Integer curResidualValueTotal;
+
+    /**
+     * 总功率因素
+     */
+    @Schema(description = "总功率因素")
+    private BigDecimal powerFactorTotal;
+
+    /**
+     * 总总有功功率
+     */
+    @Schema(description = "总总有功功率")
+    private BigDecimal powValueTotal;
+
+    /**
+     * 总视在
+     */
+    @Schema(description = "总视在")
+    private BigDecimal powApparentTotal;
+
+    /**
+     * 总无功
+     */
+    @Schema(description = "总无功")
+    private BigDecimal powReactiveTotal;
+
+    /**
+     * 总电压三相不平衡
+     */
+    @Schema(description = "总电压三相不平衡")
+    private BigDecimal volUnbalance;
+
+    /**
+     * 总电流三相不平衡
+     */
+    @Schema(description = "总电流三相不平衡")
+    private BigDecimal curUnbalance;
+
+    /**
+     * 频率值
+     */
+    @Schema(description = "频率值")
+    private BigDecimal hzValue;
+
+    /**
+     * 线电压
+     */
+    @Schema(description = "线电压")
+    private List<BigDecimal> volLineValue;
+
+    /**
+     * 电压谐波含量
+     */
+    @Schema(description = "电压谐波含量")
+    private List<BigDecimal> volThd;
+    /**
+     * 电流谐波含量
+     */
+    @Schema(description = "电流谐波含量")
+    private List<BigDecimal> curThd;
 }

@@ -164,6 +164,12 @@ public class RoomIndexController {
         return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
     }
 
+    @PostMapping("/report/powByType")
+    @Operation(summary = "获得机房报表数据")
+    public CommonResult<Map> getReportPowDataByTypeAndId(@RequestBody RoomIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataByTypeAndId(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
+    }
+
     @PostMapping("/report/pfline")
     @Operation(summary = "获得机房报表数据")
     public CommonResult<Map> getRoomPFLine(@RequestBody RoomIndexPageReqVO pageReqVO) {

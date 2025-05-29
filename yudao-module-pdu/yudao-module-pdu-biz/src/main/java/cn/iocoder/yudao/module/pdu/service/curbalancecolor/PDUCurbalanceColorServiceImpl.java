@@ -69,6 +69,7 @@ public class PDUCurbalanceColorServiceImpl implements PDUCurbalanceColorService 
             PDUCurbalanceColorDO.setRangeTwo(15);
             PDUCurbalanceColorDO.setRangeThree(30);
             PDUCurbalanceColorDO.setRangeFour(30);
+            PDUCurbalanceColorDO.setLowCurrent(30);
             PDUCurbalanceColorMapper.insert(PDUCurbalanceColorDO);
         }
         return PDUCurbalanceColorDO;

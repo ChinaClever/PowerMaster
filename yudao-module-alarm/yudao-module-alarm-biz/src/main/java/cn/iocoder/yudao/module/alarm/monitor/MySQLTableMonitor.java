@@ -1,7 +1,5 @@
 package cn.iocoder.yudao.module.alarm.monitor;
 
-import cn.iocoder.yudao.framework.common.constant.WebsocketMessageType;
-import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.alarm.constants.BinLogConstants;
 import cn.iocoder.yudao.framework.mybatis.core.object.ColumnInfo;
@@ -73,12 +71,12 @@ public class MySQLTableMonitor {
                     if (binLogConstants.getDb().equals(tableMap.getDatabase()) && binLogConstants.getTableList().contains(tableMap.getTable())) {
                         // 查询表结构
                         // 不缓存表结构，避免表结构改变tableId也发生改变时，获得不到正确的数据，且性能消耗很小
-                        if (tableSchemaCache.size() == 0 || tableSchemaCache.get(tableMap.getTableId()+"") == null) {
+                        if (tableSchemaCache.isEmpty() || tableSchemaCache.get(tableMap.getTableId()+"") == null) {
                             String connectionUrl = "jdbc:mysql://" + binLogConstants.getHost() + ":" + binLogConstants.getPort() + "/" + binLogConstants.getDb() + "?useSSL=false";
                             columns = JdbcUtils.getTableColumns(connectionUrl,binLogConstants.getUsername(),binLogConstants.getPasswd(),tableMap.getDatabase(), tableMap.getTable());
                             tableSchemaCache.put(tableMap.getTableId()+"", columns);
                         }
-                        if (tableIdToName.size() == 0 || tableIdToName.get(tableMap.getTableId()+"") == null) {
+                        if (tableIdToName.isEmpty() || tableIdToName.get(tableMap.getTableId()+"") == null) {
                             tableIdToName.put(tableMap.getTableId()+"", tableMap.getTable());
                         }
                     }
@@ -116,7 +114,8 @@ public class MySQLTableMonitor {
                             DBTable.ROOM_INDEX,
                             DBTable.CABINET_CRON_CONFIG,
                             DBTable.AISLE_CRON_CONFIG,
-                            DBTable.ROOM_CRON_CONFIG
+                            DBTable.ROOM_CRON_CONFIG,
+                            DBTable.ALARM_LOG_RECORD
                     ));
                     if (columns != null && tableList.contains(tableName)) {
                         if (!repeatMessage(event)) {
@@ -159,6 +158,9 @@ public class MySQLTableMonitor {
                                 break;
                             case DBTable.ROOM_CRON_CONFIG:
                                 alarmLogRecordService.updateRoomAlarmJob(oldMaps,newMaps);
+                                break;
+                            case DBTable.ALARM_LOG_RECORD:
+                                alarmLogRecordService.checkAlarmRecordChange(oldMaps,newMaps);
                                 break;
                             default:
                                 break;

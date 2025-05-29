@@ -16,6 +16,7 @@ import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
+@Slf4j
 public class CabinetDayAlarmJob implements JobHandler {
 
     @Autowired
@@ -46,8 +48,9 @@ public class CabinetDayAlarmJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-//        Thread.sleep(1000*60*5);
+        Thread.sleep(1000*60*5);
         // 获取所有按天统计电量的机柜
+        log.info("CabinetDayAlarmJob execute start, current time: {}", LocalDateTime.now());
         List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                 .eq(CabinetCfg::getEleAlarmDay, 1));
         for (CabinetCfg cabinetCfg : cabinetCfgList) {

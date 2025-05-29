@@ -21,6 +21,11 @@
         <div style="background-color: #fa3333;margin-right:20px;width:100px;text-align:center;border-radius:5px;">红色的范围</div>
         大于<el-input style="width: 11.3%;" type="number" v-model="formData.rangeFour" placeholder="请输入第三个大于的范围" />%
       </el-form-item>
+
+      <el-form-item  prop="lowCurrent" >
+        <div style="background-color: #aaa;margin-right:20px;width:100px;text-align:center;border-radius:5px;">小电流的范围</div>
+        小于<el-input style="width: 11.3%;" type="number" v-model="formData.lowCurrent" placeholder="请输入第四个小于的范围" />%
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="submitForm" type="primary" :disabled="formLoading">确 定</el-button>
@@ -47,14 +52,15 @@ const formData = ref({
   rangeTwo: undefined,
   rangeThree: undefined,
   rangeFour: undefined,
+  lowCurrent: undefined,
 })
 const validateRangeOrder = (rule, value, callback) => {
   // 检查范围是否为空
-  if (!formData.value.rangeOne || !formData.value.rangeTwo || !formData.value.rangeThree || !formData.value.rangeFour) {
+  if (!formData.value.rangeOne || !formData.value.rangeTwo || !formData.value.rangeThree || !formData.value.rangeFour|| !formData.value.lowCurrent) {
     callback(new Error('请填写所有范围'));
   } else {
-    const ranges = [parseFloat(formData.value.rangeOne), parseFloat(formData.value.rangeTwo), parseFloat(formData.value.rangeThree), parseFloat(formData.value.rangeFour)];
-    const rangeNames = ['第一空', '第二空', '第三空', '第四空'];
+    const ranges = [parseFloat(formData.value.rangeOne), parseFloat(formData.value.rangeTwo), parseFloat(formData.value.rangeThree), parseFloat(formData.value.rangeFour), parseFloat(formData.value.lowCurrent)];
+    const rangeNames = ['第一空', '第二空', '第三空', '第四空', '第四空'];
     // 检查范围顺序
     for (let i = 0; i < ranges.length - 1; i++) {
       if (ranges[i] > ranges[i + 1]) {
@@ -72,6 +78,7 @@ const formRules = reactive({
   rangeTwo: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
   rangeThree: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
   rangeFour: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
+  lowCurrent: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
 })
 const formRef = ref() // 表单 Ref
 
@@ -135,6 +142,7 @@ const resetForm = () => {
     rangeTwo: undefined,
     rangeThree: undefined,
     rangeFour: undefined,
+    lowCurrent: undefined,
   }
   formRef.value?.resetFields()
 }

@@ -120,7 +120,13 @@
             class="!w-200px"
           />
         </el-form-item>
+        
         <el-form-item style="position: relative;left: -55%;">
+                 <el-select v-model="queryParams.dataType" placeholder="请选择" style="width: 100px">
+            <el-option label="最大" :value="1" />
+            <el-option label="平均" :value="0" />
+            <el-option label="最小" :value="-1" />
+          </el-select>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <!-- <el-text size="large">
@@ -207,36 +213,138 @@
             <p class="paragraph" v-if="visControll.isSameDay && eqData.firstEq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
-          <div class="pageBox"  v-if="visControll.pfVis">
+          <!-- <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
               功率因素曲线
             </div>        
             <PFLine class="Container"  width="70vw" height="58vh" :list="pfLineList"/>
+          </div> -->
+              <div class="pageBox"  v-if="visControll.pfVis">
+            <div class="page-conTitle">
+              功率因素曲线
+            </div>  
+                   <div v-for="(sensor, index) in pfLineList?.series" :key="index">
+        <div class="power-section single-line" v-if="index %2 == 0">
+        <span class="power-title" v-if="pfLineData[`pName${index+1}`]!=null">{{pfLineData[`pName${index+1}`]}}极值：</span>
+        <span class="power-value" v-if="pfLineData[`pName${index+1}`]!=null">峰值 <span class="highlight">{{ pfLineData[`fMax${index + 1}`].toFixed(2) }}</span>  <span class="time">记录于({{ pfLineData[`fMaxTime${index + 1}`] }})</span></span>
+        <span class="power-value" v-if="pfLineData[`pName${index+1}`]!=null">谷值 <span class="highlight">{{ pfLineData[`fMin${index + 1}`].toFixed(2) }}</span>  <span class="time">记录于({{ pfLineData[`fMinTime${index + 1}`] }})</span></span>
+        <span  class="separator" v-if="pfLineData[`pName${index+1}`]!=null">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="power-title" v-if="pfLineData[`pName${index+2}`]!=null">{{pfLineData[`pName${index+2}`]}}极值：</span>
+        <span class="power-value" v-if="pfLineData[`pName${index+2}`]!=null">峰值 <span class="highlight">{{ pfLineData[`fMax${index + 2}`].toFixed(2) }}</span>  <span class="time">记录于({{ pfLineData[`fMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="pfLineData[`pName${index+2}`]!=null">谷值 <span class="highlight">{{ pfLineData[`fMin${index + 2}`].toFixed(2) }}</span>  <span class="time">记录于({{ pfLineData[`fMinTime${index + 2}`] }})</span></span>
+      </div>
+            </div>        
+            <PFLine class="Container"  :width="computedWidth" height="58vh" :list="pfLineList"/>
           </div>
-          <div class="pageBox"  v-if="visControll.powVis">
+
+          <!-- <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
               总平均功率曲线
             </div>
             <p class="paragraph">本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kW， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kW， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
+          </div> -->
+                <div class="pageBox"  v-if="visControll.powVis">
+            <div class="page-conTitle">
+              总功率趋势曲线
+            </div>
+             <div class="power-section single-line">
+  <span class="power-title">视在功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.apparentPowMaxValue.toFixed(3)}}</span> kVA <span class="time">记录于({{factorData.apparentPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.apparentPowMinValue.toFixed(3)}}</span> kVA <span class="time">记录于({{factorData.apparentPowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">有功功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.activePowMaxValue.toFixed(3)}}</span> kW，<span class="time">记录于 ({{factorData.activePowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.activePowMinValue.toFixed(3)}}</span> kW，<span class="time">记录于 ({{factorData.activePowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">无功功率极值</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.reactivePowMaxValue.toFixed(3)}}</span> kVar，<span class="time">记录于 ({{factorData.reactivePowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.reactivePowMinValue.toFixed(3)}}</span> kVar，<span class="time">记录于 ({{factorData.reactivePowMinTime}})</span></span>
+</div>
+            <Line class="Container"  width="70vw" height="58vh" :list="totalLineList" :dataType="queryParams.dataType"/>
           </div>
-          <div class="pageBox"  v-if="visControll.ApowVis">
+         <div class="pageBox"  v-if="visControll.ApowVis">
+            <div class="page-conTitle">
+              A路功率趋势曲线
+            </div>
+                         <div class="power-section single-line">
+  <span class="power-title">视在功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.apparentAPowMaxValue.toFixed(3)}}</span> kVA <span class="time">记录于({{factorData.apparentAPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.apparentAPowMinValue.toFixed(3)}}</span> kVA <span class="time">记录于({{factorData.apparentAPowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">有功功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.activeAPowMaxValue.toFixed(3)}}</span> kW，<span class="time">记录于 ({{factorData.activeAPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.activeAPowMinValue.toFixed(3)}}</span> kW，<span class="time">记录于 ({{factorData.activeAPowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">无功功率极值</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.reactiveAPowMaxValue.toFixed(3)}}</span> kVar，<span class="time">记录于 ({{factorData.reactiveAPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.reactiveAPowMinValue.toFixed(3)}}</span> kVar，<span class="time">记录于 ({{factorData.reactiveAPowMinTime}})</span></span>
+</div>
+            <Line class="Container" width="70vw" height="58vh" :list="aLineList" :dataType="queryParams.dataType"/>
+          </div>
+
+          <div class="pageBox"  v-if="visControll.BpowVis">
+            <div class="page-conTitle">
+              B路功率趋势曲线
+            </div>
+                         <div class="power-section single-line">
+  <span class="power-title">视在功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.apparentBPowMaxValue.toFixed(3)}}</span> kVA <span class="time">记录于({{factorData.apparentBPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.apparentBPowMinValue.toFixed(3)}}</span> kVA <span class="time">记录于({{factorData.apparentBPowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">有功功率极值：</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.activeBPowMaxValue.toFixed(3)}}</span> kW，<span class="time">记录于 ({{factorData.activeBPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.activeBPowMinValue.toFixed(3)}}</span> kW，<span class="time">记录于 ({{factorData.activeBPowMinTime}})</span></span>
+</div>
+
+ 
+<div class="power-section single-line">
+  <span class="power-title">无功功率极值</span>
+  <span class="power-value">峰值 <span class="highlight">{{factorData.reactiveBPowMaxValue.toFixed(3)}}</span> kVar，<span class="time">记录于 ({{factorData.reactiveBPowMaxTime}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{factorData.reactiveBPowMinValue.toFixed(3)}}</span> kVar，<span class="time">记录于 ({{factorData.reactiveBPowMinTime}})</span></span>
+</div>
+            <Line class="Container" width="70vw" height="58vh" :list="bLineList" :dataType="queryParams.dataType"/>
+          </div>
+
+              <div class="pageBox" v-if="visControll.eqVis">
+            <div class="page-conTitle" >
+              机柜耗电量排名
+            </div>
+            <HorizontalBar :width="computedWidth" height="78vh" :list="cabinetEleList" />
+          </div>
+
+          <!-- <div class="pageBox"  v-if="visControll.ApowVis">
             <div class="page-conTitle">
               A路平均功率曲线
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kW， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kW， 发生时间{{powData.AactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="aLineList"/>
-          </div>
-          <div class="pageBox"  v-if="visControll.BpowVis">
+          </div> -->
+          <!-- <div class="pageBox"  v-if="visControll.BpowVis">
             <div class="page-conTitle">
               B路平均功率曲线
             </div>
             <p class="paragraph" >本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kW， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kW， 发生时间{{powData.BactivePowMinTime}}</p>
             <Line class="Container" width="70vw" height="58vh" :list="bLineList"/>
-          </div>
+          </div> -->
           <div class="pageBox"  v-if="warnList!=null">
             <div class="page-conTitle">
               告警信息
@@ -296,17 +404,21 @@ import { ElTree } from 'element-plus'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
+import HorizontalBar from './component/HorizontalBar.vue';
 
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
-
+const pfLineData = ref() as any;
 const pfLineList = ref() as any;
 const eleList = ref() as any;
+const factorData = ref() as any;
 const totalLineList = ref() as any;
 const aLineList = ref() as any;
 const bLineList = ref() as any;
 const idList = ref() as any;
+const cabinetEleData = ref() as any;
+const cabinetEleList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 const location = ref("");
@@ -342,6 +454,20 @@ const disabledDate = (date) => {
   }
   
 }
+
+const windowWidth = ref(window.innerWidth);
+
+
+// 计算属性，根据窗口宽度返回不同的width值
+const computedWidth = computed(() => {
+  if (windowWidth.value >= 2400) {
+    return '90vw';
+  } else if (windowWidth.value >= 1600) {
+    return '70vw';
+  } else {
+    return '80vw';
+  }
+});
 
 const handleDayPick = () => {
   if(queryParams?.oldTime && switchValue.value == 2){
@@ -422,8 +548,15 @@ const queryParams = reactive({
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
   timeType: 1,
-  cascadeAddr : 0
+  cascadeAddr : 0,
+  dataType : 1
 }) as any
+
+watch( ()=>queryParams.dataType, async()=>{
+  //  queryParams.devKey = queryParams.ipAddr;  
+  getList()
+
+})
 
 const serverRoomArr =  ref([]) as any
 
@@ -613,8 +746,8 @@ const getList = async () => {
 }
 
 const handlePFLineQuery = async () => {
-  const data = await IndexApi.getAislePFLine(queryParams);
-  pfLineList.value = data.pfLineRes;
+  pfLineData.value = await IndexApi.getAislePFLineByType(queryParams);
+  pfLineList.value = pfLineData.value.pfLineRes;
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     visControll.pfVis = true;
@@ -625,40 +758,60 @@ const handlePFLineQuery = async () => {
 
 
 const handlePowQuery = async () => {
-  powData.value = await IndexApi.getPowData(queryParams);
-  totalLineList.value = powData.value.totalLineRes;
-  aLineList.value = powData.value.aLineRes;
-  bLineList.value = powData.value.bLineRes;
-
+   factorData.value = await IndexApi.getPowDataByType(queryParams);
+totalLineList.value = factorData.value.totalLineRes;
+   aLineList.value = factorData.value.aLineRes;
+   bLineList.value = factorData.value.bLineRes;
   if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
-    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
-    powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
-    powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
-    powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+
     visControll.powVis = true;
   }else{
     visControll.powVis = false;
   }
   
   if(aLineList.value?.time != null && aLineList.value?.time?.length > 0){
-    powData.value.AapparentPowMaxValue = powData.value.AapparentPowMaxValue?.toFixed(3);
-    powData.value.AapparentPowMinValue =  powData.value.AapparentPowMinValue?.toFixed(3);
-    powData.value.AactivePowMaxValue = powData.value.AactivePowMaxValue?.toFixed(3);
-    powData.value.AactivePowMinValue = powData.value.AactivePowMinValue?.toFixed(3);
+
     visControll.ApowVis = true;
   }else{
     visControll.ApowVis = false;
   }
 
   if(bLineList.value?.time != null && bLineList.value?.time?.length > 0){
-    powData.value.BapparentPowMaxValue = powData.value.BapparentPowMaxValue?.toFixed(3);
-    powData.value.BapparentPowMinValue =  powData.value.BapparentPowMinValue?.toFixed(3);
-    powData.value.BactivePowMaxValue = powData.value.BactivePowMaxValue?.toFixed(3);
-    powData.value.BactivePowMinValue = powData.value.BactivePowMinValue?.toFixed(3);
+
     visControll.BpowVis = true;
   }else{
     visControll.BpowVis = false;
   }
+
+  // if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
+  //   powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
+  //   powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
+  //   powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
+  //   powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+  //   visControll.powVis = true;
+  // }else{
+  //   visControll.powVis = false;
+  // }
+  
+  // if(aLineList.value?.time != null && aLineList.value?.time?.length > 0){
+  //   powData.value.AapparentPowMaxValue = powData.value.AapparentPowMaxValue?.toFixed(3);
+  //   powData.value.AapparentPowMinValue =  powData.value.AapparentPowMinValue?.toFixed(3);
+  //   powData.value.AactivePowMaxValue = powData.value.AactivePowMaxValue?.toFixed(3);
+  //   powData.value.AactivePowMinValue = powData.value.AactivePowMinValue?.toFixed(3);
+  //   visControll.ApowVis = true;
+  // }else{
+  //   visControll.ApowVis = false;
+  // }
+
+  // if(bLineList.value?.time != null && bLineList.value?.time?.length > 0){
+  //   powData.value.BapparentPowMaxValue = powData.value.BapparentPowMaxValue?.toFixed(3);
+  //   powData.value.BapparentPowMinValue =  powData.value.BapparentPowMinValue?.toFixed(3);
+  //   powData.value.BactivePowMaxValue = powData.value.BactivePowMaxValue?.toFixed(3);
+  //   powData.value.BactivePowMinValue = powData.value.BactivePowMinValue?.toFixed(3);
+  //   visControll.BpowVis = true;
+  // }else{
+  //   visControll.BpowVis = false;
+  // }
 }
 
 const handleConsumeQuery = async () => {
@@ -680,6 +833,11 @@ const handleConsumeQuery = async () => {
   } else{
     visControll.eqVis = false;
   }
+     cabinetEleData.value = await IndexApi.getCabinetEleByAis({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime})
+     cabinetEleList.value = cabinetEleData.value.barRes;
+
+
+     await IndexApi.getAisleHdaLineData({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime,dataType: queryParams.dataType})
 }
 
 const handleDetailQuery = async () => {
@@ -1057,5 +1215,39 @@ const handleCurrentChange = (val) => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.power-section {
+  margin-bottom: 15px;
+  background: #f9f9f9;
+  padding: 12px 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.power-title {
+  font-weight: bold;
+  color: #3498db;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.power-value {
+  margin: 5px 0;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 4px;
+  font-size: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.highlight {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.time {
+  color: rgb(55, 169, 173);
+  font-size: 13px;
+  margin-left: 5px;
 }
 </style>

@@ -68,17 +68,21 @@
                         <div><span class="bullet" style="background-color:#C8603A;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">有功功率：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}kW</el-text></div>
                         <div><span class="bullet" style="background-color:#AD3762;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">无功功率：{{item.powReactive ? item.powReactive.toFixed(1) : '0.0'}}kVAr</el-text></div>
                       </div>
-                      <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column;">
+                      <div style="display: flex;flex-direction: column;">
+                        <el-progress type="circle" :percentage="item.roomLoadFactor ? parseFloat(Math.min(item.roomLoadFactor,100).toFixed(0)) : 0" :width="100" color="#5470c6">
+                          <span class="percentage-label" :style="{textAlign: 'center',fontSize: isFromHome ? '16px' : '18px'}">负载率</span>
+                          <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '16px' : '18px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
+                        </el-progress>
+                      </div>
+                      <!-- <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column;">
                         <el-progress type="dashboard" :percentage="item.roomLoadFactor ? parseFloat(Math.min(item.roomLoadFactor,100).toFixed(0)) : 0" :width="100" :stroke-width="12" :color="item.roomLoadFactor>90 ? `rgba(173, 55, 98, ${item.roomLoadFactor/100})` : (item.roomLoadFactor>=60 ? `rgba(200, 96, 58, ${(item.roomLoadFactor+10)/100})` : `rgba(229, 184, 73, ${(item.roomLoadFactor+40)/100})`)">
                           <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '24px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
                           <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
                         </el-progress>
-                        <!-- <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '24px' : '34px'}">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : '0%')}}</div>
-                        <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '14px' : '22px'}">{{item.displayType ? "PUE" : "负载率"}}</div> -->
                       </div>
                       <div v-else>
                         <Echart :height="100" :width="100" :options="addrAllPowChartOptions[0][index]" />
-                      </div>
+                      </div> -->
                       <div></div>
                     </div>
                   </el-card>
@@ -196,17 +200,21 @@
                             <div><span class="bullet" style="background-color:#C8603A;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">有功功率：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}kW</el-text></div>
                             <div><span class="bullet" style="background-color:#AD3762;"></span><el-text :style="isFromHome ? 'font-size: 12px' : ''">无功功率：{{item.powReactive ? item.powReactive.toFixed(1) : '0.0'}}kVAr</el-text></div>
                           </div>
-                          <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column">
+                          <div style="display: flex;flex-direction: column;">
+                            <el-progress type="circle" :percentage="item.roomLoadFactor ? parseFloat(Math.min(item.roomLoadFactor,100).toFixed(0)) : 0" :width="100" color="#5470c6">
+                              <span class="percentage-label" :style="{textAlign: 'center',fontSize: isFromHome ? '16px' : '18px'}">负载率</span>
+                              <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '16px' : '18px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
+                            </el-progress>
+                          </div>
+                          <!-- <div v-if="item.displayFlag && !item.displayType" style="display: flex;flex-direction: column">
                             <el-progress type="dashboard" :percentage="item.roomLoadFactor ? parseFloat(Math.min(item.roomLoadFactor,100).toFixed(0)) : 0" :width="100" :stroke-width="12" :color="item.roomLoadFactor>90 ? `rgba(173, 55, 98, ${item.roomLoadFactor/100})` : (item.roomLoadFactor>=60 ? `rgba(200, 96, 58, ${(item.roomLoadFactor+10)/100})` : `rgba(229, 184, 73, ${(item.roomLoadFactor+40)/100})`)">
                               <span class="percentage-value" :style="{textAlign: 'center',fontSize: isFromHome ? '22px' : '24px'}">{{item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0}}%</span><br/>
                               <span class="percentage-label" :style="{textAlign: 'center',fontSize: '12px'}">负载率</span>
                             </el-progress>
-                            <!-- <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '24px' : '34px'}">{{item.displayType ? (item.roomPue ? item.roomPue.toFixed(2) : 0) : (item.roomLoadFactor ? item.roomLoadFactor.toFixed(0) : 0)}}</div>
-                            <div v-if="item.displayFlag" :style="{textAlign: 'center',fontSize: isFromHome ? '14px' : '22px'}">{{item.displayType ? "PUE" : "负载率"}}</div> -->
                           </div>
                           <div v-else>
                             <Echart :height="100" :width="100" :options="addrAllPowChartOptions[i+1][index]" />
-                          </div>
+                          </div> -->
                           <div></div>
                         </div>
                       </el-card>
@@ -1582,13 +1590,17 @@ const handleChange = async (val: CollapseModelValue) => {
 
 .percentage-value {
   display: block;
-  margin-top: 36px;
-  font-size: 14px;
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+  margin-top: 10px;
 }
 .percentage-label {
   display: block;
-  margin-top: 10px;
-  font-size: 10px;
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  margin-top: 13px;
 }
 
 :deep(.el-collapse-item__header) {
@@ -1609,6 +1621,10 @@ const handleChange = async (val: CollapseModelValue) => {
 }
 :deep(.el-radio-button__inner) {
   width: 5vw;
+}
+:deep(.el-progress-circle) {
+  background: linear-gradient(to bottom, rgba(145, 204, 117, 1), rgba(145, 204, 117, 0.2));
+  border-radius: 50%;
 }
 // :deep(.el-button:hover) {
 //   color: #00778c;

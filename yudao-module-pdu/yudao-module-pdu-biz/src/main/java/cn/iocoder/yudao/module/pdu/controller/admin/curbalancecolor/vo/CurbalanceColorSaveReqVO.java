@@ -28,4 +28,6 @@ public class CurbalanceColorSaveReqVO {
     @NotNull(message = "第三个大于的范围不能为空")
     private Integer rangeFour;
 
+    private Integer  lowCurrent;
+
 }

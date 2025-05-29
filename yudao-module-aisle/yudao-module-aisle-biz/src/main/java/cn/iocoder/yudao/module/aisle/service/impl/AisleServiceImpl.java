@@ -18,16 +18,17 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
+import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
 import cn.iocoder.yudao.framework.common.mapper.*;
-import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -86,21 +87,21 @@ import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 @Service
 public class AisleServiceImpl implements AisleService {
 
-    @Resource
-    AisleIndexMapper aisleIndexMapper;
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
 
-    @Resource
-    AisleBarMapper aisleBarMapper;
+    @Autowired
+    private AisleBarMapper aisleBarMapper;
 
-    @Resource
-    AisleBoxMapper aisleBoxMapper;
+    @Autowired
+    private AisleBoxMapper aisleBoxMapper;
 
-    @Resource
-    RedisTemplate redisTemplate;
-    @Resource
-    RoomIndexMapper roomIndexMapper;
-    @Resource
-    CabinetIndexMapper cabinetIndexMapper;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private RoomIndexMapper roomIndexMapper;
+    @Autowired
+    private CabinetIndexMapper cabinetIndexMapper;
     @Autowired
     private CabinetPduMapper cabinetPduMapper;
     @Autowired
@@ -109,25 +110,28 @@ public class AisleServiceImpl implements AisleService {
     private CabinetEnvSensorMapper envSensorMapper;
     @Autowired
     private CabinetBusMapper cabinetBusMapper;
-    @Resource
-    CabinetCfgDoMapper cabinetCfgDoMapper;
-    @Resource
-    BusIndexDoMapper busIndexDoMapper;
-    @Resource
-    BoxIndexMapper boxIndexMapper;
-    @Resource
-    CabinetCfgDoMapper cfgDoMapper;
+    @Autowired
+    private CabinetCfgDoMapper cabinetCfgDoMapper;
+    @Autowired
+    private BusIndexDoMapper busIndexDoMapper;
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
+    @Autowired
+    private CabinetCfgDoMapper cfgDoMapper;
 
-
+    @Autowired
+    private PduIndexDoMapper pduIndexDoMapper;
     @Autowired
     private CabinetService cabinetService;
 
     @Autowired
-    RackIndexDoMapper rackIndexDoMapper;
+    private RackIndexDoMapper rackIndexDoMapper;
 
+    @Autowired
+    private AisleCfgMapper aisleCfgMapper;
 
-    @Resource
-    CabinetApi cabinetApi;
+    @Autowired
+    private CabinetApi cabinetApi;
 
     @Autowired
     private RestHighLevelClient client;
@@ -227,7 +231,7 @@ public class AisleServiceImpl implements AisleService {
                             editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "A");
                         }
                     }
-                }else {
+                } else {
                     //相同母线
                     if (!CollectionUtils.isEmpty(list)) {
                         List<Integer> boxIndexA = list.stream().map(CabinetBox::getBoxIndexA).collect(Collectors.toList());
@@ -268,7 +272,7 @@ public class AisleServiceImpl implements AisleService {
                             editAisleBus(aisleBar, busKey, barVo, index, list, oldBusKey, "B");
                         }
                     }
-                }else {
+                } else {
                     //相同母线
                     if (!CollectionUtils.isEmpty(list)) {
                         List<Integer> boxIndexB = list.stream().map(CabinetBox::getBoxIndexB).collect(Collectors.toList());
@@ -453,6 +457,8 @@ public class AisleServiceImpl implements AisleService {
     public AisleDetailDTO getAisleDetail(Integer aisleId) throws IOException {
         AisleDetailDTO detailDTO = new AisleDetailDTO();
         AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
+
+
         ValueOperations ops = redisTemplate.opsForValue();
         DecimalFormat df = new DecimalFormat("#.00");
         if (Objects.nonNull(aisleIndex)) {
@@ -463,6 +469,15 @@ public class AisleServiceImpl implements AisleService {
             detailDTO.setDirection(aisleIndex.getDirection());
             detailDTO.setXCoordinate(aisleIndex.getXCoordinate());
             detailDTO.setYCoordinate(aisleIndex.getYCoordinate());
+            AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>().eq(AisleCfg::getAisleId, aisleIndex.getId()).last("limit 1"));
+            if (Objects.nonNull(aisleCfg)){
+                detailDTO.setPowerCapacity(aisleCfg.getPowerCapacity());
+                detailDTO.setEleAlarmDay(aisleCfg.getEleAlarmDay());
+                detailDTO.setEleAlarmMonth(aisleCfg.getEleAlarmMonth());
+                detailDTO.setEleLimitDay(aisleCfg.getEleLimitDay());
+                detailDTO.setEleLimitMonth(aisleCfg.getEleLimitMonth());
+                detailDTO.setType(aisleCfg.getAisleType());
+            }
 
             Integer roomId = aisleIndex.getRoomId();
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
@@ -585,42 +600,90 @@ public class AisleServiceImpl implements AisleService {
                 Object busObject = ops.get(REDIS_KEY_BUS + aisleBar.getBusKey());
                 if (Objects.nonNull(busObject)) {
                     JSONObject data = JSON.parseObject(JSON.toJSONString(busObject));
-                    JSONObject busData = data.containsKey(BUS_DATA) ? data.getJSONObject(BUS_DATA) : new JSONObject();
+                    barVo.setStatus(data.getInteger("status"));
+                    barVo.setBusName(data.getString("bus_name"));
+                    JSONObject busCfg = data.containsKey("bus_cfg") ? data.getJSONObject("bus_cfg") : new JSONObject();
+                    if (busCfg.containsKey("bus_version")) {
+                        barVo.setBusVersion(busCfg.getString("bus_version"));
+                    }
+                    if (busCfg.containsKey("breaker_status")) {
+                        barVo.setBreakerStatus(busCfg.getInteger("breaker_status"));
+                    }
+                    if (busCfg.containsKey("lsp_status")) {
+                        barVo.setLspStatus(busCfg.getInteger("lsp_status"));
+                    }
                     JSONObject envData = data.containsKey(ENV_ITEM_LIST) ? data.getJSONObject(ENV_ITEM_LIST) : new JSONObject();
                     //温度数据
                     if (envData.containsKey(TEM_VALUE)) {
-                        barVo.setTemData(envData.getObject(TEM_VALUE, float[].class));
+                        barVo.setTemData(envData.getObject(TEM_VALUE, Double[].class));
                     }
+                    JSONObject busData = data.containsKey(BUS_DATA) ? data.getJSONObject(BUS_DATA) : new JSONObject();
                     //相数据
                     if (busData.containsKey(LINE_ITEM_LIST)) {
                         JSONObject lineData = busData.getJSONObject(LINE_ITEM_LIST);
                         //负载率
                         if (lineData.containsKey(LOAD_RATE)) {
-                            barVo.setLineLoadRate(lineData.getObject(LOAD_RATE, float[].class));
+                            barVo.setLineLoadRate(lineData.getObject(LOAD_RATE, Double[].class));
                         }
                         //电流
                         if (lineData.containsKey(CUR_VALUE)) {
-                            barVo.setLineCur(lineData.getObject(CUR_VALUE, float[].class));
+                            barVo.setLineCur(lineData.getObject(CUR_VALUE, Double[].class));
                         }
                         //电压
                         if (lineData.containsKey(VOL_VALUE)) {
-                            barVo.setLineVol(lineData.getObject(VOL_VALUE, float[].class));
+                            barVo.setLineVol(lineData.getObject(VOL_VALUE, Double[].class));
                         }
                         //有功功率
                         if (lineData.containsKey(POW_ACTIVE)) {
-                            barVo.setPowActive(lineData.getObject(POW_ACTIVE, float[].class));
+                            barVo.setPowActive(lineData.getObject(POW_ACTIVE, Double[].class));
                         }
                         //视在功率
                         if (lineData.containsKey(POW_APPARENT)) {
-                            barVo.setPowApparent(lineData.getObject(POW_APPARENT, float[].class));
+                            barVo.setPowApparent(lineData.getObject(POW_APPARENT, Double[].class));
                         }
                         //无功功率
                         if (lineData.containsKey(POW_REACTIVE)) {
-                            barVo.setPowReactive(lineData.getObject(POW_REACTIVE, float[].class));
+                            barVo.setPowReactive(lineData.getObject(POW_REACTIVE, Double[].class));
                         }
                         //功率因素
                         if (lineData.containsKey(POWER_FACTOR)) {
-                            barVo.setPowerFactor(lineData.getObject(POWER_FACTOR, float[].class));
+                            barVo.setPowerFactor(lineData.getObject(POWER_FACTOR, Double[].class));
+                        }
+                        //线电压
+                        if (lineData.containsKey("vol_line_value")) {
+                            barVo.setVolLineValue(lineData.getJSONArray("vol_line_value").toList(BigDecimal.class));
+                        }
+                        //电流谐波含量
+                        if (lineData.containsKey("cur_thd")) {
+                            barVo.setCurThd(lineData.getJSONArray("cur_thd").toList(BigDecimal.class));
+                        }
+                        //电压谐波含量
+                        if (lineData.containsKey("vol_thd")) {
+                            barVo.setVolThd(lineData.getJSONArray("vol_thd").toList(BigDecimal.class));
+                        }
+                    }
+                    if (busData.containsKey("bus_total_data")) {
+                        JSONObject totalData = busData.getJSONObject("bus_total_data");
+                        if (totalData.containsKey("cur_residual_value")) {
+                            barVo.setCurResidualValueTotal(totalData.getInteger("cur_residual_value"));
+                        }
+                        if (totalData.containsKey("pow_value")) {
+                            barVo.setPowValueTotal(totalData.getBigDecimal("pow_value"));
+                        }
+                        if (totalData.containsKey("power_factor")) {
+                            barVo.setPowerFactorTotal(totalData.getBigDecimal("power_factor"));
+                        }
+                        if (totalData.containsKey("pow_reactive")) {
+                            barVo.setPowReactiveTotal(totalData.getBigDecimal("pow_reactive"));
+                        }
+                        if (totalData.containsKey("pow_apparent")) {
+                            barVo.setPowApparentTotal(totalData.getBigDecimal("pow_apparent"));
+                        }
+                        if (totalData.containsKey("cur_unbalance")) {
+                            barVo.setCurUnbalance(totalData.getBigDecimal("cur_unbalance"));
+                        }
+                        if (totalData.containsKey("vol_unbalance")) {
+                            barVo.setVolUnbalance(totalData.getBigDecimal("vol_unbalance"));
                         }
                     }
                 }
@@ -638,12 +701,50 @@ public class AisleServiceImpl implements AisleService {
                         Object boxObject = ops.get(REDIS_KEY_BOX + box.getBoxKey());
                         if (Objects.nonNull(boxObject)) {
                             JSONObject data = JSON.parseObject(JSON.toJSONString(boxObject));
+                            boxDTO.setStatus(data.getInteger("status"));
+                            boxDTO.setBoxName(data.getString("box_name"));
                             JSONObject boxData = data.containsKey(BOX_DATA) ? data.getJSONObject(BOX_DATA) : new JSONObject();
                             JSONObject envData = data.containsKey(ENV_ITEM_LIST) ? data.getJSONObject(ENV_ITEM_LIST) : new JSONObject();
+
+                            JSONObject boxCfg = data.containsKey(BOX_DATA) ? data.getJSONObject("box_cfg") : new JSONObject();
+                            if (Objects.nonNull(boxCfg)) {
+                                if (boxCfg.containsKey("loop_num")) {
+                                    boxDTO.setLoopNum(boxCfg.getInteger("loop_num"));
+                                }
+                                if (boxCfg.containsKey("breaker_status")) {
+                                    boxDTO.setBreakerStatus(boxCfg.getList("breaker_status", Integer.class));
+                                }
+                                if (boxCfg.containsKey("box_version")) {
+                                    boxDTO.setBoxVersion(boxCfg.getString("box_version"));
+                                }
+                            }
                             //温度数据
                             if (envData.containsKey(TEM_VALUE)) {
                                 boxDTO.setTemData(envData.getObject(TEM_VALUE, float[].class));
                             }
+
+                            if (boxData.containsKey("bus_total_data")) {
+                                JSONObject totalData = boxData.getJSONObject("bus_total_data");
+                                if (totalData.containsKey("pow_value")) {
+                                    boxDTO.setPowValueTotal(totalData.getBigDecimal("pow_value"));
+                                }
+                                if (totalData.containsKey("power_factor")) {
+                                    boxDTO.setPowerFactorTotal(totalData.getBigDecimal("power_factor"));
+                                }
+                                if (totalData.containsKey("pow_reactive")) {
+                                    boxDTO.setPowReactiveTotal(totalData.getBigDecimal("pow_reactive"));
+                                }
+                                if (totalData.containsKey("pow_apparent")) {
+                                    boxDTO.setPowApparentTotal(totalData.getBigDecimal("pow_apparent"));
+                                }
+                                if (totalData.containsKey("cur_unbalance")) {
+                                    boxDTO.setCurUnbalance(totalData.getBigDecimal("cur_unbalance"));
+                                }
+                                if (totalData.containsKey("vol_unbalance")) {
+                                    boxDTO.setVolUnbalance(totalData.getBigDecimal("vol_unbalance"));
+                                }
+                            }
+
                             //相数据
                             if (boxData.containsKey(LINE_ITEM_LIST)) {
                                 JSONObject lineData = boxData.getJSONObject(LINE_ITEM_LIST);
@@ -659,7 +760,14 @@ public class AisleServiceImpl implements AisleService {
                                 if (lineData.containsKey(VOL_VALUE)) {
                                     boxDTO.setLineVol(lineData.getObject(VOL_VALUE, float[].class));
                                 }
-
+                                //电流谐波含量
+                                if (lineData.containsKey("cur_thd")) {
+                                    boxDTO.setCurThd(lineData.getJSONArray("cur_thd").toList(BigDecimal.class));
+                                }
+                                //电压谐波含量
+                                if (lineData.containsKey("vol_thd")) {
+                                    boxDTO.setVolThd(lineData.getJSONArray("vol_thd").toList(BigDecimal.class));
+                                }
                             }
                             //输出位数据
                             if (boxData.containsKey(OUTLET_ITEM_LIST)) {
@@ -679,6 +787,12 @@ public class AisleServiceImpl implements AisleService {
                                 //功率因素
                                 if (outletData.containsKey(POWER_FACTOR)) {
                                     boxDTO.setPowerFactor(outletData.getObject(POWER_FACTOR, float[].class));
+                                }
+                            }
+                            if (boxData.containsKey("loop_item_list")){
+                                JSONObject loopItemList = boxData.getJSONObject("loop_item_list");
+                                if (loopItemList.containsKey("cur_value")){
+                                    boxDTO.setCurValueLoop(loopItemList.getList("cur_value", BigDecimal.class));
                                 }
                             }
                         }
@@ -719,16 +833,36 @@ public class AisleServiceImpl implements AisleService {
         List<CabineIndexCfgVO> voList = map.get(false);
         Map<Integer, CabinetPdu> pduMap = new HashMap<>();
         Map<Integer, CabinetBox> boxMap = new HashMap<>();
+        Map<String, BoxIndex> boxIndexMap = new HashMap<>();
+        Map<String, PduIndexDo> pduIndexMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(voList)) {
             List<Integer> cabinetIds = voList.stream().map(CabineIndexCfgVO::getId).collect(Collectors.toList());
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>().in(CabinetPdu::getCabinetId, cabinetIds));
             pduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
+            List<String> pduKey = new ArrayList<>();
+            List<String> pduKeya = cabinetPdus.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
+            List<String> pduKeyb = cabinetPdus.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
+            pduKey.addAll(pduKeyb);
+            pduKey.addAll(pduKeya);
+            if (!CollectionUtils.isEmpty(pduKey)) {
+                List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>().in(PduIndexDo::getPduKey, pduKey).eq(PduIndexDo::getIsDeleted, 0));
+                pduIndexMap = pduIndexDos.stream().collect(Collectors.toMap(PduIndexDo::getPduKey, Function.identity()));
+            }
         }
         List<CabineIndexCfgVO> voList1 = map.get(true);
         if (!CollectionUtils.isEmpty(voList1)) {
             List<Integer> cabinetIds = voList1.stream().map(CabineIndexCfgVO::getId).collect(Collectors.toList());
             List<CabinetBox> cabinetBoxs = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>().in(CabinetBox::getCabinetId, cabinetIds));
             boxMap = cabinetBoxs.stream().collect(Collectors.toMap(CabinetBox::getCabinetId, Function.identity()));
+            List<String> boxKey = new ArrayList<>();
+            List<String> boxKeya = cabinetBoxs.stream().map(CabinetBox::getBoxKeyA).distinct().collect(Collectors.toList());
+            List<String> boxKeyb = cabinetBoxs.stream().map(CabinetBox::getBoxKeyB).distinct().collect(Collectors.toList());
+            boxKey.addAll(boxKeya);
+            boxKey.addAll(boxKeyb);
+            if (!CollectionUtils.isEmpty(boxKey)) {
+                List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>().in(BoxIndex::getBoxKey, boxKey).eq(BoxIndex::getIsDeleted, 0));
+                boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getBoxKey, Function.identity()));
+            }
         }
 
         List<CabinetAisleVO> aisleCabinetDTOList = new ArrayList<>();
@@ -746,6 +880,7 @@ public class AisleServiceImpl implements AisleService {
             }
             for (CabineIndexCfgVO cabinetIndex : cabinetIndexList) {
                 CabinetAisleVO cabinetDTO = BeanUtils.toBean(cabinetIndex, CabinetAisleVO.class);
+
                 cabinetDTO.setType(cabinetIndex.getCabinetType());
                 cabinetDTO.setPowCapacity(cabinetIndex.getPowerCapacity());
                 List<CabinetEnvSensor> envs = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
@@ -761,6 +896,9 @@ public class AisleServiceImpl implements AisleService {
                     CabinetBox cabinetBoxes = boxMap.get(cabinetIndex.getId());
                     cabinetDTO.setCabinetBoxes(cabinetBoxes);
                     if (Objects.nonNull(cabinetBoxes)) {
+                        cabinetDTO.setCabinetkeya(cabinetBoxes.getBoxKeyA());
+                        BoxIndex boxIndex = boxIndexMap.get(cabinetBoxes.getBoxKeyA());
+                        cabinetDTO.setKeya(boxIndex);
                         if (!StringUtils.isBlank(cabinetBoxes.getBoxKeyA())) {
                             String[] keya = cabinetBoxes.getBoxKeyA().split(SPLIT_KEY);
                             if (keya.length == 3) {
@@ -772,6 +910,9 @@ public class AisleServiceImpl implements AisleService {
                             }
                         }
                         if (!StringUtils.isBlank(cabinetBoxes.getBoxKeyB())) {
+                            cabinetDTO.setCabinetkeyb(cabinetBoxes.getBoxKeyB());
+                            BoxIndex boxIndexb = boxIndexMap.get(cabinetBoxes.getBoxKeyB());
+                            cabinetDTO.setKeyb(boxIndexb);
                             String[] keyb = cabinetBoxes.getBoxKeyB().split(SPLIT_KEY);
                             if (keyb.length == 3) {
                                 cabinetDTO.setBusIpB(keyb[0]);
@@ -787,11 +928,41 @@ public class AisleServiceImpl implements AisleService {
                     cabinetDTO.setCabinetPdus(cabinetPdus);
                     if (Objects.nonNull(cabinetPdus)) {
                         if (!StringUtils.isBlank(cabinetPdus.getPduKeyA())) {
+                            Object obj = ops.get(REDIS_KEY_PDU + cabinetPdus.getPduKeyA());
+                            if (Objects.nonNull(obj)) {
+                                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                                JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
+                                if (Objects.nonNull(envList)) {
+                                    JSONArray dewPoint1 = envList.getJSONArray("dew_point");
+                                    if (Objects.nonNull(dewPoint1)) {
+                                        List<Double> dewPoint = dewPoint1.toList(Double.class);
+                                        cabinetDTO.setDewPointa(Collections.max(dewPoint));
+                                    }
+                                }
+                            }
                             String[] split = cabinetPdus.getPduKeyA().split(SPLIT_KEY);
+                            PduIndexDo pduIndexDo = pduIndexMap.get(cabinetPdus.getPduKeyA());
+                            cabinetDTO.setKeya(pduIndexDo);
+                            cabinetDTO.setCabinetkeya(cabinetPdus.getPduKeyA());
                             cabinetDTO.setPduIpA(split[0]);
                             cabinetDTO.setCasIdA(Integer.parseInt(split[1]));
                         }
                         if (!StringUtils.isBlank(cabinetPdus.getPduKeyB())) {
+                            Object obj = ops.get(REDIS_KEY_PDU + cabinetPdus.getPduKeyB());
+                            if (Objects.nonNull(obj)) {
+                                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+                                JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
+                                if (Objects.nonNull(envList)) {
+                                    JSONArray dewPoint1 = envList.getJSONArray("dew_point");
+                                    if (Objects.nonNull(dewPoint1)) {
+                                        List<Double> dewPoint = dewPoint1.toList(Double.class);
+                                        cabinetDTO.setDewPointb(Collections.max(dewPoint));
+                                    }
+                                }
+                            }
+                            PduIndexDo pduIndexDo = pduIndexMap.get(cabinetPdus.getPduKeyB());
+                            cabinetDTO.setKeyb(pduIndexDo);
+                            cabinetDTO.setCabinetkeyb(cabinetPdus.getPduKeyB());
                             String[] splitb = cabinetPdus.getPduKeyB().split(SPLIT_KEY);
                             cabinetDTO.setPduIpB(splitb[0]);
                             cabinetDTO.setCasIdB(Integer.parseInt(splitb[1]));
@@ -896,13 +1067,12 @@ public class AisleServiceImpl implements AisleService {
                     cabinetDTO.setOutletA(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, cabinetDTO.getPowApparentA(), cabinetDTO.getPowApparent()), 100));
                     cabinetDTO.setOutletB(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, cabinetDTO.getPowApparentB(), cabinetDTO.getPowApparent()), 100));
                     //温度
-                    if (envData.containsKey("tem_average")) {
-                        JSONArray temAverage = envData.getJSONArray("tem_average");
-                        if (!CollectionUtils.isEmpty(temAverage)) {
-                            cabinetDTO.setTemData(temAverage.getBigDecimal(0));
-                            cabinetDTO.setTemDataHot(temAverage.getBigDecimal(1));
-
-                        }
+                    if (envData.containsKey(TEM_VALUE)) {
+                        JSONObject temData = envData.getJSONObject(TEM_VALUE);
+                        List<BigDecimal> front = temData.getList("front", BigDecimal.class);
+                        List<BigDecimal> black = temData.getList("black", BigDecimal.class);
+                        cabinetDTO.setTemFront(Collections.max(front).doubleValue());
+                        cabinetDTO.setTemBlack(Collections.max(black).doubleValue());
                     }
                 }
                 aisleCabinetDTOList.add(cabinetDTO);

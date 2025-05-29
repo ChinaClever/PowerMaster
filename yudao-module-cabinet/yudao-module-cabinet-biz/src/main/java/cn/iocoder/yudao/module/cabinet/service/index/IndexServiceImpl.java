@@ -174,6 +174,9 @@ public class IndexServiceImpl implements IndexService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> cabinetData = getCabinetData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index);
+                if(CollectionUtil.isEmpty(cabinetData)){
+                    return result;
+                }
                 Double firstEq = null;
                 Double lastEq = null;
                 Double totalEq = 0D;
@@ -202,13 +205,14 @@ public class IndexServiceImpl implements IndexService {
                         CabinetEleTotalRealtimeDo dayEleDo = new CabinetEleTotalRealtimeDo();
                         totalEq += (float) busList.get(i + 1).getEleTotal() - (float) busList.get(i).getEleTotal();
                         dayEleDo.setEleTotal(busList.get(i + 1).getEleTotal() - busList.get(i).getEleTotal());
-                        dayEleDo.setCreateTime(busList.get(i).getCreateTime());
+                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
                         dayEqList.add(dayEleDo);
                     }
+                    dayEqList.sort(Comparator.comparing(CabinetEleTotalRealtimeDo::getEleTotal));
                     maxEle = dayEqList.get(dayEqList.size() - 1).getEleTotal();
                     maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime();
 
-//                    dayEqList.sort(Comparator.comparing(CabinetEleTotalRealtimeDo::getEleTotal));
+//
 //                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "ele_total");
 //                    CabinetEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, CabinetEleTotalRealtimeDo.class);
 //                    if (eleMaxValue != null) {
@@ -602,6 +606,12 @@ public class IndexServiceImpl implements IndexService {
                     totalApparentPow.setName("总最小视在功率");
                     totalActivePow.setName("总最小有功功率");
                     totalReactivePow.setName("总最小无功功率");
+                    aApparentPow.setName("A路最小视在功率");
+                    aActivePow.setName("A路最小有功功率");
+                    aReactivePow.setName("A路最小无功功率");
+                    bApparentPow.setName("B路最小视在功率");
+                    bActivePow.setName("B路最小有功功率");
+                    bReactivePow.setName("B路最小无功功率");
                     powList.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalMinValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalMinValue());
@@ -1324,15 +1334,26 @@ public class IndexServiceImpl implements IndexService {
                 LineSeries humLineSeries = new LineSeries();
                 String temName = null;
                 String humName = null;
+//                if (position == 1) {
+//                    temName = "冷通道上层温度传感器";
+//                    humName = "冷通道上层湿度传感器";
+//                } else if (position == 2) {
+//                    temName = "冷通道中层温度传感器";
+//                    humName = "冷通道中层湿度传感器";
+//                } else if (position == 3) {
+//                    temName = "冷通道下层温度传感器";
+//                    humName = "冷通道下层湿度传感器";
+//                }
+
                 if (position == 1) {
-                    temName = "冷通道上层温度传感器";
-                    humName = "冷通道上层湿度传感器";
+                    temName = "前-上温度传感器";
+                    humName = "前-上湿度传感器";
                 } else if (position == 2) {
-                    temName = "冷通道中层温度传感器";
-                    humName = "冷通道中层湿度传感器";
+                    temName = "前-中温度传感器";
+                    humName = "前-中湿度传感器";
                 } else if (position == 3) {
-                    temName = "冷通道下层温度传感器";
-                    humName = "冷通道下层湿度传感器";
+                    temName = "前-下温度传感器";
+                    humName = "前-下湿度传感器";
                 }
                 processTemHumMavMin(pduEnvHourDo, dataType, result, temName, humName, dataIndex);
                 dataIndex++;
@@ -1343,7 +1364,7 @@ public class IndexServiceImpl implements IndexService {
                 humLineSeries.setData(humList);
                 humLineSeries.setHappenTime(humHappenTime);
                 if (!isFisrt) {
-                    if (timeType == 2) {
+                    if (timeType == 1) {
 
                         time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
                     } else {
@@ -1407,15 +1428,25 @@ public class IndexServiceImpl implements IndexService {
                 LineSeries humLineSeries = new LineSeries();
                 String temName = null;
                 String humName = null;
+//                if (position == 1) {
+//                    temName = "热通道上层温度传感器";
+//                    humName = "热通道上层湿度传感器";
+//                } else if (position == 2) {
+//                    temName = "热通道中层温度传感器";
+//                    humName = "热通道中层湿度传感器";
+//                } else if (position == 3) {
+//                    temName = "热通道下层温度传感器";
+//                    humName = "热通道下层湿度传感器";
+//                }
                 if (position == 1) {
-                    temName = "热通道上层温度传感器";
-                    humName = "热通道上层湿度传感器";
+                    temName = "后-上温度传感器";
+                    humName = "后-上湿度传感器";
                 } else if (position == 2) {
-                    temName = "热通道中层温度传感器";
-                    humName = "热通道中层湿度传感器";
+                    temName = "后-中温度传感器";
+                    humName = "后-中湿度传感器";
                 } else if (position == 3) {
-                    temName = "热通道下层温度传感器";
-                    humName = "热通道下层湿度传感器";
+                    temName = "后-下温度传感器";
+                    humName = "后-下湿度传感器";
                 }
                 processTemHumMavMin(pduEnvHourDo, dataType, result, temName, humName, dataIndex);
                 dataIndex++;
@@ -1426,7 +1457,7 @@ public class IndexServiceImpl implements IndexService {
                 humLineSeries.setData(humList);
                 humLineSeries.setHappenTime(humHappenTime);
                 if (!isFisrt) {
-                    if (timeType == 2) {
+                    if (timeType == 1) {
                         time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
                     } else {
                         time = pduEnvHourDo.stream().map(pduEnvHour -> pduEnvHour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
@@ -1447,6 +1478,8 @@ public class IndexServiceImpl implements IndexService {
 
         return result;
     }
+
+
 
 
     @Override
@@ -1942,6 +1975,72 @@ public class IndexServiceImpl implements IndexService {
         return result;
     }
 
+
+    @Override
+    public Map getEleByAisle(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        IndexPageReqVO indexPageReqVO = new IndexPageReqVO();
+        indexPageReqVO.setAisleId(Integer.valueOf(id));
+        HashMap result = new HashMap<>();
+        CabinetChartResBase barRes = new CabinetChartResBase();
+        BarSeries barSeries = new BarSeries();
+        PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(indexPageReqVO);
+        List<IndexDO> cabinetList = indexDOPageResult.getList();
+        if (CollectionUtil.isEmpty(cabinetList)){
+            return  result;
+        }
+        for (IndexDO indexDO : cabinetList) {
+            try {
+                    String index = null;
+                    boolean isSameDay = false;
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        index = "cabinet_ele_total_realtime";
+                        if (oldTime.equals(newTime)) {
+                            newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                        }
+                        isSameDay = true;
+                    } else {
+                        index = "cabinet_eq_total_day";
+                        oldTime = oldTime.plusDays(1);
+                        newTime = newTime.plusDays(1);
+                    }
+                    String startTime = localDateTimeToString(oldTime);
+                    String endTime = localDateTimeToString(newTime);
+                    List<String> cabinetData = getCabinetData(startTime, endTime, Arrays.asList(indexDO.getId()), index);
+                    if(CollectionUtil.isEmpty(cabinetData)){
+                        continue;
+                    }
+
+                    float totalEq = 0F;
+
+                    if (isSameDay) {
+                        List<CabinetEleTotalRealtimeDo> busList = new ArrayList<>();
+                        for (String str : cabinetData) {
+                            CabinetEleTotalRealtimeDo cabinetEleTotalRealtimeDo = JsonUtils.parseObject(str, CabinetEleTotalRealtimeDo.class);
+                            busList.add(cabinetEleTotalRealtimeDo);
+                        }
+                        //计算实时用电量
+                        for (int i = 0; i < cabinetData.size() - 1; i++) {
+                            totalEq += (float) busList.get(i + 1).getEleTotal() - (float) busList.get(i).getEleTotal();
+                        }
+                        barSeries.getData().add((totalEq));
+                        barRes.getTime().add(indexDO.getCabinetName());
+                    } else {
+                        for (String str : cabinetData) {
+                            CabinetEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, CabinetEqTotalDayDo.class);
+                            totalEq += totalDayDo.getEqValue();
+                        }
+                        barSeries.getData().add((totalEq));
+                        barRes.getTime().add(indexDO.getCabinetName());
+                    }
+            } catch (Exception e) {
+                log.error("获取数据失败", e);
+            }
+
+        }
+        barRes.getSeries().add(barSeries);
+        result.put("barRes",barRes);
+        return result;
+    }
 
     /**
      * 获取数据

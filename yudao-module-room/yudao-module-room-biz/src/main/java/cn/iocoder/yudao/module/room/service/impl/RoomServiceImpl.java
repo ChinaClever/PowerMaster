@@ -103,8 +103,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static cn.hutool.core.convert.Convert.toList;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
+import static net.sf.jsqlparser.parser.feature.Feature.insert;
 
 /**
  * @author luowei
@@ -1121,15 +1121,15 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Integer newSelectRoomByName(String name, Integer id) {
         RoomIndex one = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>().eq(RoomIndex::getRoomName, name).last("limit 1"));
-        if (Objects.nonNull(one)){
+        if (Objects.nonNull(one)) {
             if (!one.getIsDelete()) {
                 if (Objects.isNull(id)) {
                     BusinessAssert.error(10010, "当前机房名称已存在");
                 }
-                if (!Objects.equals(one.getId(),id)){
+                if (!Objects.equals(one.getId(), id)) {
                     BusinessAssert.error(10010, "当前机房名称已存在");
                 }
-            }else {
+            } else {
                 return one.getId();
             }
         }
@@ -1316,12 +1316,12 @@ public class RoomServiceImpl implements RoomService {
                 iter.setCabinetkeya(cabinetPdu.getPduKeyA());
                 iter.setKeya(pduIndexMap.get(cabinetPdu.getPduKeyA()));
                 Object obj = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyA());
-                if (Objects.nonNull(obj)){
+                if (Objects.nonNull(obj)) {
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
                     JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
-                    if (Objects.nonNull(envList)){
+                    if (Objects.nonNull(envList)) {
                         JSONArray dewPoint1 = envList.getJSONArray("dew_point");
-                        if (Objects.nonNull(dewPoint1)){
+                        if (Objects.nonNull(dewPoint1)) {
                             List<Double> dewPoint = dewPoint1.toList(Double.class);
                             iter.setDewPointa(dewPoint.get(0));
                         }
@@ -1331,12 +1331,12 @@ public class RoomServiceImpl implements RoomService {
                 iter.setCabinetkeyb(cabinetPdu.getPduKeyB());
                 iter.setKeyb(pduIndexMap.get(cabinetPdu.getPduKeyB()));
                 Object objb = redisTemplate.opsForValue().get(REDIS_KEY_PDU + cabinetPdu.getPduKeyB());
-                if (Objects.nonNull(objb)){
+                if (Objects.nonNull(objb)) {
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(objb));
                     JSONObject envList = jsonObject.getJSONObject("pdu_data").getJSONObject("env_item_list");
-                    if (Objects.nonNull(envList)){
+                    if (Objects.nonNull(envList)) {
                         JSONArray dewPoint1 = envList.getJSONArray("dew_point");
-                        if (Objects.nonNull(dewPoint1)){
+                        if (Objects.nonNull(dewPoint1)) {
                             List<Double> dewPoint = dewPoint1.toList(Double.class);
                             iter.setDewPointb(dewPoint.get(0));
                         }
@@ -1848,6 +1848,14 @@ public class RoomServiceImpl implements RoomService {
         index.setPduBar(vo.getPduBar());
         index.setDirection(vo.getDirection());
         if (Objects.nonNull(vo.getId())) {
+            Long count = aisleIndexMapper.selectCount(new LambdaQueryWrapper<AisleIndex>()
+                    .eq(AisleIndex::getRoomId, index.getRoomId())
+                    .eq(AisleIndex::getAisleName, index.getAisleName())
+                    .ne(AisleIndex::getId,vo.getId()));
+            if (count>0){
+                BusinessAssert.error(7010, "柜列名称重复");
+            }
+
             //编辑
             AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
                     .eq(AisleIndex::getId, vo.getId()));
@@ -1915,6 +1923,11 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         } else {
+            Long count = aisleIndexMapper.selectCount(new LambdaQueryWrapper<AisleIndex>().eq(AisleIndex::getRoomId, index.getRoomId())
+                    .eq(AisleIndex::getAisleName, index.getAisleName()));
+            if (count>0){
+                BusinessAssert.error(7010, "柜列名称重复");
+            }
             int insert = aisleIndexMapper.insert(index);
             if (insert > 0) {
                 //保存配置
@@ -2024,9 +2037,9 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         }
-        Integer pduAddr = firstVO.getAddr();
-        String pduIp = firstVO.getPduIp();
-        Integer pduIndex = 0;
+
+
+
         Integer outletIdA = 1;
         Integer outletIdB = 1;
         Integer boxAIndex = 0;
@@ -2041,7 +2054,7 @@ public class RoomServiceImpl implements RoomService {
                     Iterator<Integer> iterator = airList.iterator();
                     while (iterator.hasNext()) {
                         Integer next = iterator.next();
-                        if (Objects.equals(0,next)){
+                        if (Objects.equals(0, next)) {
                             iterator.remove();
                         }
                         if (Objects.equals(i, next)) {
@@ -2111,54 +2124,17 @@ public class RoomServiceImpl implements RoomService {
                 }
                 cabinetBoxMapper.insert(cabinetBox);
             } else {
-                if (ObjectUtil.isEmpty(pduIp)) {
+                if (ObjectUtil.isEmpty(firstVO.getPduIp())) {
                     continue;
                 }
-                String pduKey ;
                 CabinetPdu cabinetPdu = new CabinetPdu();
                 cabinetPdu.setCabinetId(cabinetIndex.getId());
 
-                if (pduIndex >= firstVO.getAddrNum()) {
-                    pduIndex = 0;
-                    String[] split = pduIp.split("\\.");
-                    StringJoiner sj = new StringJoiner(".");
-                    sj.add(split[0]).add(split[1]).add(split[2]).add(String.valueOf(Integer.parseInt(split[3]) + 1));
-                    pduIp = sj.toString();
-                    int addr = pduAddr + pduIndex;
-                    pduKey = pduIp + "-" + addr;
-                    pduIndex++;
-                    Long pduFlag = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
-                            .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, pduKey))
-                                    .or(qr -> qr.eq(CabinetPdu::getPduKeyB, pduKey))));
-                    if (pduFlag>0){
+                String pduKeyA = getString(firstVO);
+                cabinetPdu.setPduKeyA(pduKeyA);
 
-                    }
-                } else {
-                    int addr = pduAddr + pduIndex;
-                    pduKey = pduIp + "-" + addr;
-                    pduIndex++;
-                    Long pduFlag = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
-                            .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, pduKey))
-                                    .or(qr -> qr.eq(CabinetPdu::getPduKeyB, pduKey))));
-                    if (pduFlag>0){
-
-                    }
-                }
-                cabinetPdu.setPduKeyA(pduKey);
-                if (pduIndex >= firstVO.getAddrNum()) {
-                    pduIndex = 0;
-                    String[] split = pduIp.split("\\.");
-                    StringJoiner sj = new StringJoiner(".");
-                    sj.add(split[0]).add(split[1]).add(split[2]).add(String.valueOf(Integer.parseInt(split[3]) + 1));
-                    pduIp = sj.toString();
-                    int addr = pduAddr + pduIndex;
-                    cabinetPdu.setPduKeyB(pduIp + "-" + addr);
-                    pduIndex++;
-                } else {
-                    int addr = pduAddr + pduIndex;
-                    cabinetPdu.setPduKeyB(pduIp + "-" + addr);
-                    pduIndex++;
-                }
+                String pduKeyB = getString(firstVO);
+                cabinetPdu.setPduKeyB(pduKeyB);
 
                 int inserted = cabinetPduMapper.insert(cabinetPdu);
                 if (StringUtils.isNotEmpty(firstVO.getFrontPath())) {
@@ -2183,6 +2159,40 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
         }
+    }
+
+    private String getString(CabinetFirstVO firstVO) {
+        String pduKey;
+        if (firstVO.getAddr() >= firstVO.getAddrNum()) {
+            firstVO.setAddr(0);
+            String[] split = firstVO.getPduIp().split("\\.");
+            StringJoiner sj = new StringJoiner(".");
+            sj.add(split[0]).add(split[1]).add(split[2]).add(String.valueOf(Integer.parseInt(split[3]) + 1));
+            pduKey = sj.toString() + "-" + firstVO.getAddr();
+            firstVO.setPduIp(sj.toString());
+            firstVO.setAddr(firstVO.getAddr() + 1);
+            Long pduFlag = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
+                    .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, pduKey))
+                            .or(qr -> qr.eq(CabinetPdu::getPduKeyB, pduKey))));
+//           Integer pduCount = cabinetPduMapper.pduCountQuery(pduKey);
+            if (pduFlag > 1) {
+                getString(firstVO);
+            } else {
+                return pduKey;
+            }
+        } else {
+            pduKey = firstVO.getPduIp() + "-" + firstVO.getAddr();
+            firstVO.setAddr(firstVO.getAddr() + 1);
+            Long pduFlag = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
+                    .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, pduKey))
+                            .or(qr -> qr.eq(CabinetPdu::getPduKeyB, pduKey))));
+            if (pduFlag > 1) {
+                getString(firstVO);
+            } else {
+                return pduKey;
+            }
+        }
+        return null;
     }
 
     /**
@@ -2218,7 +2228,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer roomCabinetSave(CabinetSaveVo vo) {
-       return cabinetCfgMapper.updateByCabinetCfg(vo);
+        return cabinetCfgMapper.updateByCabinetCfg(vo);
     }
 
     @Override
@@ -2488,7 +2498,7 @@ public class RoomServiceImpl implements RoomService {
                     .in(CabinetEnvSensor::getCabinetId, cabinetIds).eq(CabinetEnvSensor::getSensorType, 0));
             envMap = envs.stream().collect(Collectors.groupingBy(CabinetEnvSensor::getCabinetId));
         }
-        if (CollectionUtils.isEmpty(boxList) && CollectionUtils.isEmpty(pduList)){
+        if (CollectionUtils.isEmpty(boxList) && CollectionUtils.isEmpty(pduList)) {
             BusinessAssert.error(10016, "该机房下没有设备");
         }
         for (AisleCabinetPduEditExcelVO iter : pduList) {
@@ -2562,14 +2572,15 @@ public class RoomServiceImpl implements RoomService {
         List<AisleCabinetBoxEditExcelVO> boxList = ExcelUtils.extractedEditAisle(boxList1, AisleCabinetBoxEditExcelVO.class);
 
         if (!CollectionUtils.isEmpty(pduList)) {
-            List<String> pduKey =new ArrayList<>();
+            List<String> pduKey = new ArrayList<>();
             List<String> pduKeya = pduList.stream().filter(i -> StringUtils.isNotEmpty(i.getPduKeya())).map(AisleCabinetPduEditExcelVO::getPduKeya).collect(Collectors.toList());
             List<String> pduKeyb = pduList.stream().filter(i -> StringUtils.isNotEmpty(i.getPduKeyb())).map(AisleCabinetPduEditExcelVO::getPduKeyb).collect(Collectors.toList());
-            pduKey.addAll(pduKeya);pduKey.addAll(pduKeyb);
+            pduKey.addAll(pduKeya);
+            pduKey.addAll(pduKeyb);
             List<String> duplicates = findDuplicates(pduKey);
             if (!CollectionUtils.isEmpty(duplicates)) {
                 String join = String.join(",", duplicates);
-                BusinessAssert.error(10100, "AB路pdu重复，请重新输入，重复数据为"+join);
+                BusinessAssert.error(10100, "AB路pdu重复，请重新输入，重复数据为" + join);
             }
 
             cabinetIdsPdu = pduList.stream().map(AisleCabinetPduEditExcelVO::getCabinetId).collect(Collectors.toList());
@@ -2591,14 +2602,14 @@ public class RoomServiceImpl implements RoomService {
                     BusinessAssert.error(10100, vo.getRoomName() + "-" + vo.getAisleName() + "-" + vo.getCabinetName() + "：AB路pdu一致，请重新输入");
                 }
                 Long counta = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
-                        .ne(CabinetPdu::getCabinetId,cabinetIdsPdu)
+                        .notIn(CabinetPdu::getCabinetId, cabinetIdsPdu)
                         .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, vo.getPduKeya()))
                                 .or(qr -> qr.eq(CabinetPdu::getPduKeyB, vo.getPduKeya())))));
                 if (counta > 0L) {
                     BusinessAssert.error(10101, vo.getRoomName() + "-" + vo.getAisleName() + "-" + vo.getCabinetName() + "：PDU的A路重复");
                 }
                 Long countb = cabinetPduMapper.selectCount(new LambdaQueryWrapper<CabinetPdu>()
-                        .ne(CabinetPdu::getCabinetId, cabinetIdsPdu)
+                        .notIn(CabinetPdu::getCabinetId, cabinetIdsPdu)
                         .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, vo.getPduKeyb()))
                                 .or(qr -> qr.eq(CabinetPdu::getPduKeyB, vo.getPduKeyb())))));
                 if (countb > 0L) {
