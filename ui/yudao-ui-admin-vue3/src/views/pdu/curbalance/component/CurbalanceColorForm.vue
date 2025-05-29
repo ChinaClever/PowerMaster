@@ -51,12 +51,15 @@ const formData = ref({
 const validateRangeOrder = (rule, value, callback) => {
   // 检查范围是否为空
   if (!formData.value.rangeOne || !formData.value.rangeTwo || !formData.value.rangeThree || !formData.value.rangeFour) {
-    callback(new Error('请填写所有范围'));
+    callback(new Error('请正确填写所有范围'));
   } else {
     const ranges = [parseFloat(formData.value.rangeOne), parseFloat(formData.value.rangeTwo), parseFloat(formData.value.rangeThree), parseFloat(formData.value.rangeFour)];
     const rangeNames = ['第一空', '第二空', '第三空', '第四空'];
     // 检查范围顺序
     for (let i = 0; i < ranges.length - 1; i++) {
+      if(ranges[i] < 0){
+        return callback(new Error(`第${i+1}空不能为负数`));
+      }
       if (ranges[i] > ranges[i + 1]) {
         return callback(new Error(`${rangeNames[i]} 必须小于 ${rangeNames[i + 1]}`));
       }

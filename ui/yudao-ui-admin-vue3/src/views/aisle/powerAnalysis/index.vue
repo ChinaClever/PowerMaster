@@ -522,7 +522,7 @@ if(history.state.id!=null){
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getAisleMenu()
-  setNavList(res)
+  // setNavList(res)
   setDefaultExpandedKeys(res)
   console.log("getNavList   defaultExpandedKeys====",defaultExpandedKeys.value)
   navList.value = res

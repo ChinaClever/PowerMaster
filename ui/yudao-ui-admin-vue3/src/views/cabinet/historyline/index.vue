@@ -1730,7 +1730,7 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
-  setNavList(res)
+  // setNavList(res)
   console.log("res=======================",res);
   setDefaultExpandedKeys(res)
   navList.value = res

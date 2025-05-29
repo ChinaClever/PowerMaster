@@ -1786,7 +1786,7 @@ if(history.state.aisleId!=null){
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getAisleMenu()
-  setNavList(res)
+  // setNavList(res)
   setDefaultExpandedKeys(res)
   navList.value = res
 }

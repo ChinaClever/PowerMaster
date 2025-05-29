@@ -404,13 +404,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
+                    <span class="bullet" style="background-color:#E5B849;"></span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
+                    <span class="bullet" style="background-color:#C8603A;"></span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
+                    <span class="bullet" style="background-color:#AD3762;"></span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
                   </div>
                 </div>
                 <!--<Echart :options="ABarOption" :height="300" />-->
@@ -461,13 +461,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
+                    <span class="bullet" style="background-color: #075F71;"></span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
+                    <span class="bullet" style="background-color:#119CB5;"></span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
+                    <span class="bullet" style="background-color:#45C0C9;"></span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
                   </div>
                 </div>
               </div>
@@ -738,9 +738,9 @@ const getBalanceDetail = async (item) => {
           fontWeight: 'bold'
         },
         data: [
-          { value: cur_valueA[0].toFixed(2), name: 'A相电流', itemStyle: { color: '#E5B849' } },
-          { value: cur_valueA[1].toFixed(2), name: 'B相电流', itemStyle: { color: '#C8603A' } },
-          { value: cur_valueA[2].toFixed(2), name: 'C相电流', itemStyle: { color: '#AD3762' } },
+          { value: cur_valueA[0]?.toFixed(2), name: 'A相电流', itemStyle: { color: '#E5B849' } },
+          { value: cur_valueA[1]?.toFixed(2), name: 'B相电流', itemStyle: { color: '#C8603A' } },
+          { value: cur_valueA[2]?.toFixed(2), name: 'C相电流', itemStyle: { color: '#AD3762' } },
         ]
       }
     ]
@@ -773,9 +773,9 @@ const getBalanceDetail = async (item) => {
           fontWeight: 'bold'
         },
         data: [
-          { value: vol_value[0].toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
-          { value: vol_value[1].toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
-          { value: vol_value[2].toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
+          { value: vol_value[0]?.toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
+          { value: vol_value[1]?.toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
+          { value: vol_value[2]?.toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
         ]
       }
     ]
@@ -2114,10 +2114,10 @@ function changeChart(curVol){
     display: flex;
     flex-wrap: wrap;
     .arrayItem {
-      width: 23%;
+      width: 24%;
       height: 140px;
       font-size: 13px;
-      margin: 14px;
+      margin: 4px;
       border-radius: 7px;
       box-sizing: border-box;
       background-color: #fff;
@@ -2389,5 +2389,11 @@ function changeChart(curVol){
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+.bullet{
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+  border-radius: 5px;
 }
 </style>

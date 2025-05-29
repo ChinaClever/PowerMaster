@@ -37,7 +37,7 @@ import { ElTree } from 'element-plus';
 import * as DeptApi from '@/api/system/dept';
 import { defineProps } from 'vue';
 import type Node from 'element-plus/es/components/tree/src/model/node';
-import { number, string } from 'vue-types';
+import { func, number, string } from 'vue-types';
 import { ar, da } from 'element-plus/es/locale';
 import { c } from 'vite/dist/node/types.d-aGj9QkWt';
 import { add } from '@jsplumb/browser-ui';
@@ -94,7 +94,7 @@ const props = defineProps({
   },
   nodeKey:{
     type:String,
-    default:'id',
+    default:'unique',
     required: false
   },
 })
@@ -121,8 +121,8 @@ const initCheck = (keys) => {
 
 /** 基于名字过滤 */
 const filterNode = (value:string, data) => {
+  console.log('filterNode', value, data)
   if (!value) return true
-
   return data.name.includes(value) || data.unique.includes(value);
 }
 let lastKey:number=props.currentKey as number;
@@ -160,7 +160,19 @@ watch(deptName, () => {
 watch(()=>props.dataList, (val:any[]) => {
   showList.value = val
   console.log('showList.value', showList.value)
+  setUnique(showList.value);
 })
+function setUnique(list:any[]){
+  if(list==null||list.length==0)return;
+  for(let i in list){
+    if(list[i].unique==null){
+      list[i].unique=list[i].type+"-"+list[i].id
+    }
+    if(list[i].children!=null){
+      setUnique(list[i].children)
+    }
+  }
+}
 defineExpose({ initCheck })
 // showList.value = props.dataList
 function search(){
@@ -183,10 +195,15 @@ function search(){
   for(let i in ans){
     addExpandKeys(ans[i])
   }
+  console.log('expandKeys',expandKeys.value)
 }
 function addExpandKeys(node){
   if(node==null||node.children==null||node.children.length==0)return;
+  console.log('node',node) 
   expandKeys.value.push(node[props.nodeKey])
+  console.log('props.nodeKey',props.nodeKey)
+  console.log("node[props.nodeKey]",node[props.nodeKey])
+  if(node.isEnd==true)return;
   for(let i in node.children){
     addExpandKeys(node.children[i])
   }
@@ -209,7 +226,7 @@ function deepFind(node){
     if(ans.length>0){
       return {...node,children:ans}
     }else{
-      return null
+      return node.name.includes(deptName.value)?{...node,isEnd:true}:null
     }
   }
 }
