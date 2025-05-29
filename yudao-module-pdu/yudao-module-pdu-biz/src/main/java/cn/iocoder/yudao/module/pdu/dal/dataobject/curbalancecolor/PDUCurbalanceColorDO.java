@@ -41,6 +41,8 @@ public class PDUCurbalanceColorDO {
      * 第三个大于的范围
      */
     private Integer rangeFour;
+
+    private Integer lowCurrent;
     /**
      * 创建时间
      */

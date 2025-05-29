@@ -21,6 +21,11 @@
         <div style="background-color: #fa3333;margin-right:20px;width:100px;text-align:center;border-radius:5px;">红色的范围</div>
         大于<el-input style="width: 11.3%;" type="number" v-model="formData.rangeFour" placeholder="请输入第三个大于的范围" />%
       </el-form-item>
+
+      <el-form-item  prop="lowCurrent" >
+        <div style="background-color: #aaa;margin-right:20px;width:100px;text-align:center;border-radius:5px;">小电流的范围</div>
+        小于<el-input style="width: 11.3%;" type="number" v-model="formData.lowCurrent" placeholder="请输入第四个小于的范围" />%
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="submitForm" type="primary" :disabled="formLoading">确 定</el-button>
@@ -47,6 +52,7 @@ const formData = ref({
   rangeTwo: undefined,
   rangeThree: undefined,
   rangeFour: undefined,
+  lowCurrent: undefined,
 })
 const validateRangeOrder = (rule, value, callback) => {
   // 检查范围是否为空
@@ -77,6 +83,7 @@ const formRules = reactive({
   rangeTwo: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
   rangeThree: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
   rangeFour: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
+  lowCurrent: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
 })
 const formRef = ref() // 表单 Ref
 
@@ -140,6 +147,7 @@ const resetForm = () => {
     rangeTwo: undefined,
     rangeThree: undefined,
     rangeFour: undefined,
+    lowCurrent: undefined,
   }
   formRef.value?.resetFields()
 }
