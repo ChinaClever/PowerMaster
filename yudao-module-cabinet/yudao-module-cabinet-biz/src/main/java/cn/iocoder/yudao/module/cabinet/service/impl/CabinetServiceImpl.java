@@ -436,7 +436,7 @@ public class CabinetServiceImpl implements CabinetService {
                 if (isExist(vo.getPduIpA(), vo.getCasIdA(), vo.getId())) {
                     return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                 }
-                if (isExist(vo.getPduIpB(), vo.getCasIdB(),  vo.getId())) {
+                if (isExist(vo.getPduIpB(), vo.getCasIdB(), vo.getId())) {
                     return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                 }
                 //判断AB路pdu是否一样
@@ -1255,6 +1255,86 @@ public class CabinetServiceImpl implements CabinetService {
     }
 
     @Override
+    public List<CabinetBasicInformationVo> getCabinetDisplayDataByDevKey(String aisleId, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        aisleId = "17";
+        List<CabineIndexCfgVO> cabinetIndexCfgVOS = cabinetIndexMapper.selectCabineIndexCfgByAisleId(Integer.valueOf(aisleId));
+        List<CabinetBasicInformationVo> basicInformationVos = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(cabinetIndexCfgVOS)) {
+            for (CabineIndexCfgVO cabinetIndexCfgVO : cabinetIndexCfgVOS) {
+                Integer id = cabinetIndexCfgVO.getId();
+                CabinetBasicInformationVo cabinetBasicInformationVo = new CabinetBasicInformationVo();
+                CabinetIndex index = cabinetIndexMapper.selectById(id);
+                cabinetBasicInformationVo.setCabinetId(index.getId());
+                //获取redis数据
+                String key = REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + id;
+                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
+
+                if (jsonObject != null) {
+                    //设置运行状态
+                    Integer status = jsonObject.getInteger("status");
+                    cabinetBasicInformationVo.setStatus(status);
+                    //设置编号
+                    String cabinetKey = jsonObject.getString("cabinet_key");
+                    cabinetBasicInformationVo.setDevKey(cabinetKey);
+                    //设置机柜名
+                    String cabinetName = jsonObject.getString("cabinet_name");
+                    cabinetBasicInformationVo.setCabinetName(cabinetName);
+                    //获取功率数据
+                    JSONObject cabinetPower = jsonObject.getJSONObject("cabinet_power");
+                    if (cabinetPower != null) {
+                        JSONObject totalData = cabinetPower.getJSONObject("total_data");
+                        //设置总有功功率
+                        Double powActive = totalData.getDouble("pow_active");
+                        cabinetBasicInformationVo.setPowActive(powActive);
+                        //设置总视在功率
+                        Double powApparent = totalData.getDouble("pow_apparent");
+                        cabinetBasicInformationVo.setPowApparent(powApparent);
+                        //设置总无功功率
+                        Double powReactive = totalData.getDouble("pow_reactive");
+                        cabinetBasicInformationVo.setPowReactive(powReactive);
+                        //设置总功率因数
+                        Double powerFactor = totalData.getDouble("power_factor");
+                        cabinetBasicInformationVo.setPowerFactor(powerFactor);
+                        //AB路占比
+                        JSONObject pathA = cabinetPower.getJSONObject("path_a");
+                        JSONObject pathB = cabinetPower.getJSONObject("path_b");
+                        //TODO 判空
+                        if (pathA != null && pathB != null){
+                            Double aPow = pathA.getDouble("pow_active");
+                            Double bPow = pathB.getDouble("pow_active");
+                            Double proportion = calculateProportion(aPow, bPow);
+                            cabinetBasicInformationVo.setProportion(proportion);
+                        }
+
+                    }
+                }
+                basicInformationVos.add(cabinetBasicInformationVo);
+            }
+        }
+        return basicInformationVos;
+    }
+
+    private Double calculateProportion(Double apow, Double bpow) {
+        double percentageValue = 50.0;
+
+        if (apow == null && bpow == null) {
+            percentageValue = -1.0;
+        } else if (apow != null && bpow == null) {
+            percentageValue = 100.0;
+        } else if (apow == null && bpow != null) {
+            percentageValue = 0.0;
+        } else if (apow != 0 && bpow == 0) {
+            percentageValue = 100.0;
+        } else if (apow == 0 && bpow != 0) {
+            percentageValue = 0.0;
+        } else if (apow != 0 && bpow != 0) {
+            percentageValue = apow / (apow + bpow) * 100;
+        }
+
+        return percentageValue;
+    }
+
+    @Override
     public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
         Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
         Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
@@ -1477,7 +1557,7 @@ public class CabinetServiceImpl implements CabinetService {
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
-                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time", "load_rate_max_value", "load_rate_max_time", "load_rate_min_value", "load_rate_min_time"};
                 break;
             case "hour":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1), "yyyy-MM-dd HH:mm:ss");
@@ -1491,21 +1571,21 @@ public class CabinetServiceImpl implements CabinetService {
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
-                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time", "load_rate_max_value", "load_rate_max_time", "load_rate_min_value", "load_rate_min_time"};
                 break;
             case "threeDay":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_hour";
                 key = "load_rate_total_avg_value";
-                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time", "load_rate_max_value", "load_rate_max_time", "load_rate_min_value", "load_rate_min_time"};
                 break;
             case "month":
                 startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusMonths(1), "yyyy-MM-dd HH:mm:ss");
                 endTime = LocalDateTimeUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss");
                 index = "cabinet_hda_pow_day";
                 key = "load_rate_total_avg_value";
-                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time","load_rate_max_value","load_rate_max_time","load_rate_min_value","load_rate_min_time"};
+                heads = new String[]{"cabinet_id", "load_rate_total_avg_value", "create_time", "load_rate_max_value", "load_rate_max_time", "load_rate_min_value", "load_rate_min_time"};
                 break;
             default:
         }
@@ -1558,11 +1638,11 @@ public class CabinetServiceImpl implements CabinetService {
 //        map.put("factorTotal", factorTotal);
         map.put("factorTotal", loadRate);
         map.put("day", createTime);
-        map.put("avgLoadRate",avgLoadRate);
-        map.put("maxLoadRate",maxLoadRate);
-        map.put("maxLoadRateTime",maxloadRateTime);
-        map.put("minLoadRateTime",minloadRateTime);
-        map.put("minLoadRate",minLoadRate);
+        map.put("avgLoadRate", avgLoadRate);
+        map.put("maxLoadRate", maxLoadRate);
+        map.put("maxLoadRateTime", maxloadRateTime);
+        map.put("minLoadRateTime", minloadRateTime);
+        map.put("minLoadRate", minLoadRate);
         Map<String, Object> loadRateEs = getDataLoadRateEs(startTime, endTime, id, index, key);
         if (Objects.nonNull(loadRateEs)) {
             map.put("load_rate", loadRateEs.get("load_rate"));
@@ -2229,7 +2309,7 @@ public class CabinetServiceImpl implements CabinetService {
             return false;
         }
         List<CabinetPdu> pduFlag = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
-                .ne(Objects.nonNull(id),CabinetPdu::getCabinetId, id)
+                .ne(Objects.nonNull(id), CabinetPdu::getCabinetId, id)
                 .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, ip + "-" + cas))
                         .or(qr -> qr.eq(CabinetPdu::getPduKeyB, ip + "-" + cas)))
                 ));

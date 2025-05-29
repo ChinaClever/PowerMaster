@@ -13,6 +13,7 @@ import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -139,4 +140,5 @@ public interface CabinetService {
 
     Map getCabinetPFDetail(CabinetIndexVo pageReqVO);
 
+    List<CabinetBasicInformationVo> getCabinetDisplayDataByDevKey(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

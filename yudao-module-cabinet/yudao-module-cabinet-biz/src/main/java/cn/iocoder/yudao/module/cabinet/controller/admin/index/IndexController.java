@@ -178,4 +178,6 @@ public class IndexController {
     public CommonResult<Map> getEleByAisle(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
         return success(indexService.getEleByAisle(id,timeType,oldTime,newTime));
     }
+
+
 }

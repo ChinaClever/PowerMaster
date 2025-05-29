@@ -23,12 +23,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -301,5 +303,11 @@ public class CabinetController {
         Map map = cabinetService.getCabinetPFDetail(pageReqVO);
         List<CabinetPFDetailVO> tableList = (List<CabinetPFDetailVO>) map.get("table");
         ExcelUtils.write(response, "机柜功率因素详情.xlsx", "数据", CabinetPFDetailVO.class, tableList);
+    }
+
+    @GetMapping("/cabinetBasicInformation")
+    @Operation(summary = "获得PDU设备详细信息")
+    public CommonResult<List<CabinetBasicInformationVo>> getCabinetDisplayDataByDevKey(String id, Integer timeType, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(cabinetService.getCabinetDisplayDataByDevKey(id,timeType,oldTime,newTime));
     }
 }
