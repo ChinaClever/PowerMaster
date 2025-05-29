@@ -475,6 +475,7 @@ import OutLetActiveLine from './component/OutLetActiveLine.vue';
 defineOptions({ name: 'PDUDevice' });
 
 const temp1 = ref([]) as any;
+const preStatus = ref([0])
 // const curvolList = ref() as any;
 const curVolData = ref();
 const volList = ref() as any
@@ -1277,6 +1278,9 @@ const getList = async () => {
     devType: 7,
     alarmType: 4,
     likeName: queryParams.devKey,
+     pduStartTime: queryParams.oldTime,
+    pduFinishTime: queryParams.newTime,
+          alarmStatus: preStatus.value,
         // likeName: '11111',
   })
   //处理告警信息数据

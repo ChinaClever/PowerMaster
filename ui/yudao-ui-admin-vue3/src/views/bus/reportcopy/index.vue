@@ -1294,11 +1294,14 @@ console.log('tableData.value', tableData.value);
   //获得告警信息
   const temp1Data = await IndexApi.getBusRecordPage({
     pageNo: 1,
-    pageSize: 10,
+    pageSize: 100,
     devKey: queryParams.devKey,
     devType: 6,
     alarmType: 4,
     likeName: queryParams.devKey,
+     pduStartTime: queryParams.oldTime,
+    pduFinishTime: queryParams.newTime,
+      alarmStatus: preStatus.value,
     
   })
   //处理告警信息数据

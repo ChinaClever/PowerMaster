@@ -1779,7 +1779,7 @@ const getTableData = async(reset = false) => {
     // tableLoading.value = true
     const res = await AlarmApi.getPduAlarmRecord({
       pageNo: 1,
-      pageSize: 10,
+      pageSize: 100,
       alarmStatus: preStatus.value,
          alarmType: 1,
       likeName: queryParams.devKey,
