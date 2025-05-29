@@ -670,54 +670,58 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .collect(Collectors.groupingBy(i -> i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")));
                 for (String time : dateTimes) {
                     List<PduHdaLineRealtimeDo> dos = (List<PduHdaLineRealtimeDo>) timeListMap.get(time);
-                    dos.forEach(iter -> {
-                        switch (iter.getLineId()) {
-                            case 1:
-                                factorLista.add(Double.valueOf(iter.getPowerFactor()));
-                                break;
-                            case 2:
-                                factorListb.add(Double.valueOf(iter.getPowerFactor()));
-                                break;
-                            case 3:
-                                factorListc.add(Double.valueOf(iter.getPowerFactor()));
-                                break;
-                            default:
-                                break;
-                        }
-                    });
+                    if(dos != null) {
+                        dos.forEach(iter -> {
+                            switch (iter.getLineId()) {
+                                case 1:
+                                    factorLista.add(Double.valueOf(iter.getPowerFactor()));
+                                    break;
+                                case 2:
+                                    factorListb.add(Double.valueOf(iter.getPowerFactor()));
+                                    break;
+                                case 3:
+                                    factorListc.add(Double.valueOf(iter.getPowerFactor()));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                    }
                 }
             } else {
                 timeListMap = list.stream().map(str -> JsonUtils.parseObject(str, PduHdaLineHourDo.class))
                         .collect(Collectors.groupingBy(i -> i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")));
                 for (String time : dateTimes) {
                     List<PduHdaLineHourDo> dos = (List<PduHdaLineHourDo>) timeListMap.get(time);
-                    dos.forEach(iter -> {
-                        switch (iter.getLineId()) {
-                            case 1:
-                                factorLista.add(Double.valueOf(iter.getPowerFactorAvgValue()));
-                                factorListMaxa.add(Double.valueOf(iter.getPowerFactorMaxValue()));
-                                factorListMaxTimea.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMina.add(Double.valueOf(iter.getPowerFactorMinValue()));
-                                factorListMinTimea.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            case 2:
-                                factorListb.add(Double.valueOf(iter.getPowerFactorAvgValue()));
-                                factorListMaxb.add(Double.valueOf(iter.getPowerFactorMaxValue()));
-                                factorListMaxTimeb.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMinb.add(Double.valueOf(iter.getPowerFactorMinValue()));
-                                factorListMinTimeb.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            case 3:
-                                factorListc.add(Double.valueOf(iter.getPowerFactorAvgValue()));
-                                factorListMaxc.add(Double.valueOf(iter.getPowerFactorMaxValue()));
-                                factorListMaxTimec.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMinc.add(Double.valueOf(iter.getPowerFactorMinValue()));
-                                factorListMinTimec.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            default:
-                                break;
-                        }
-                    });
+                    if(dos != null) {
+                        dos.forEach(iter -> {
+                            switch (iter.getLineId()) {
+                                case 1:
+                                    factorLista.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                    factorListMaxa.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                    factorListMaxTimea.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    factorListMina.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                    factorListMinTimea.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    break;
+                                case 2:
+                                    factorListb.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                    factorListMaxb.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                    factorListMaxTimeb.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    factorListMinb.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                    factorListMinTimeb.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    break;
+                                case 3:
+                                    factorListc.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                    factorListMaxc.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                    factorListMaxTimec.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    factorListMinc.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                    factorListMinTimec.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                    }
                 }
             }
             result.put("factorLista", factorLista);
