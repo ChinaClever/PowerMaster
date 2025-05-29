@@ -347,12 +347,12 @@
           <div v-for="(sensor, index) in lineCurList?.series" :key="index">
             <div class="power-section single-line" v-if="index %2 == 0">
               <span class="power-title">{{lineCurVolData.res[`curName${index + 1}`]}}</span>
-  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 1}`]}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 1}`]}})</span></span>
+  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 1}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 1}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 1}`]}})</span></span>
           <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=lineCurList?.series.length "> {{lineCurVolData.res[`curName${index + 2}`]}}</span>
-  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 2}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 2}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 2}`]}})</span></span>
 </div>
           </div>
             <ACurLine class="adaptiveStyle" :list="lineCurList"  :dataType="queryParams.dataType"/>
@@ -364,12 +364,12 @@
                         <div v-for="(sensor, index) in lineVolList?.series" :key="index">
             <div class="power-section single-line" v-if="index %2 == 0">
               <span class="power-title">{{lineCurVolData.res[`volName${index + 1}`]}}</span>
-  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 1}`]}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 1}`]}})</span></span>
+  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 1}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 1}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 1}`]}})</span></span>
           <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=lineVolList?.series.length ">{{lineCurVolData.res[`volName${index + 2}`]}}</span>
-  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 2}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 2}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 2}`]}})</span></span>
 </div>
 
           </div>

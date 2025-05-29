@@ -208,7 +208,7 @@
             <Bar class="Container" :width="computedWidth" height="58vh" :list="eleList"/>
           </div>
 
-          <div class="pageBox" v-if="visControll.eqVis" >
+          <div class="pageBox" v-if="visControll.currentOutletVis" >
             <div class="page-conTitle" >
               输出位实时电流图
             </div>
@@ -319,9 +319,9 @@
         <span class="power-value">峰值 <span class="highlight">{{ temData[`temMax${index + 1}`] }}</span> °C <span class="time">记录于({{ temData[`temMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData[`temMin${index + 1}`] }}</span> °C <span class="time">记录于({{ temData[`temMinTime${index + 1}`] }})</span></span>
         
-        <span class="power-title">温度传感器{{ index + 2 }}极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ temData[`temMax${index + 2}`] }}</span> °C <span class="time">记录于({{ temData[`temMaxTime${index + 2}`] }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ temData[`temMin${index + 2}`] }}</span> °C <span class="time">记录于({{ temData[`temMinTime${index + 2}`] }})</span></span>
+        <span class="power-title" v-if="index+2<=temList?.series.length ">温度传感器{{ index + 2 }}极值：</span>
+        <span class="power-value" v-if="index+2<=temList?.series.length ">峰值 <span class="highlight">{{ temData[`temMax${index + 2}`] }}</span> °C <span class="time">记录于({{ temData[`temMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index+2<=temList?.series.length ">谷值 <span class="highlight">{{ temData[`temMin${index + 2}`] }}</span> °C <span class="time">记录于({{ temData[`temMinTime${index + 2}`] }})</span></span>
       </div>
             </div>
             <!-- <div class="power-section single-line">
@@ -342,9 +342,9 @@
         <span class="power-value">峰值 <span class="highlight">{{ temData[`humMax${index + 1}`] }}</span> % <span class="time">记录于({{ temData[`humMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ temData[`humMin${index + 1}`] }}</span> % <span class="time">记录于({{ temData[`humMinTime${index + 1}`] }})</span></span>
         <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span class="power-title">温度传感器{{ index + 2 }}极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ temData[`humMax${index + 2}`] }}</span> % <span class="time">记录于({{ temData[`humMaxTime${index + 2}`] }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ temData[`humMin${index + 2}`] }}</span> % <span class="time">记录于({{ temData[`humMinTime${index + 2}`] }})</span></span>
+        <span class="power-title" v-if="index+2<=temList?.series.length ">温度传感器{{ index + 2 }}极值：</span>
+        <span class="power-value" v-if="index+2<=temList?.series.length ">峰值 <span class="highlight">{{ temData[`humMax${index + 2}`] }}</span> % <span class="time">记录于({{ temData[`humMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index+2<=temList?.series.length ">谷值 <span class="highlight">{{ temData[`humMin${index + 2}`] }}</span> % <span class="time">记录于({{ temData[`humMinTime${index + 2}`] }})</span></span>
         
       </div>
             </div>
@@ -356,7 +356,7 @@
             <EnvHumLine :width="computedWidth" height="58vh" :list="humList"  :dataType="queryParams.dataType"/>
           </div>
 
-          <div class="pageBox" v-if="visControll.temVis">
+          <div class="pageBox" v-if="visControll.loopVis">
             <div class="page-conTitle">
               回路电流曲线
             </div>
@@ -569,6 +569,7 @@ const visControll = reactive({
   pfVis: false,
   loopOutVis : false,
   curVolVis: false,
+  currentOutletVis: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -1403,7 +1404,7 @@ const getList = async () => {
   outLetCurData.value = await PDUDeviceApi.getOutLetCurData(queryParams);
   console.log('outLetCurData.size',outLetCurData.value.outRes);
 
-  if(outLetCurData.value?.outRes.dataRes1.time != null  && outLetCurData.value?.outRes.dataRes1.time.length > 0){
+  if(outLetCurData.value?.outRes?.dataRes1?.time != null  && outLetCurData.value?.outRes?.dataRes1?.time.length > 0){
     visControll.loopOutVis = true;
   }else{
     visControll.loopOutVis = false;
@@ -1456,7 +1457,7 @@ const getList = async () => {
   console.log('loopData',loopData.value);
   
   loopList.value = loopData.value.lineRes;
-  if(loopList.value?.series != null && loopList.value?.series?.length > 0 ){
+  if(loopList.value?.time != null && loopList.value?.time?.length > 0 ){
     loopData.value.lineRes.series.forEach((_, index) => {
           const maxKey = `loopMax${index + 1}`;
           const minKey = `loopMin${index + 1}`;
@@ -1483,6 +1484,16 @@ const getList = async () => {
   // var powApparentValueArray = PDU?.pdu_data?.output_item_list?.pow_apparent;
   // var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
   currentOutletList.value = PDU?.pdu_data?.output_item_list?.cur_value;
+  if(currentOutletList.value != null || currentOutletList.value != undefined){
+    visControll.currentOutletVis = true;
+    console.log('  currentOutletList.value ',  currentOutletList.value );
+    
+    console.log('不为空');
+    
+  }else{
+        visControll.currentOutletVis = false;
+            console.log('为空');
+  }
   var curUnBalance = PDU?.pdu_data?.pdu_total_data?.cur_unbalance;
   var volUnBalance = PDU?.pdu_data?.pdu_total_data?.vol_unbalance;
 
@@ -1558,7 +1569,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
     consumeName : "结束电能",
     consumeValue : eqData.value.lastEq+"kWh",
     unbalanceName : "电流不平衡度",
-    unbalanceValue : curUnBalance.toFixed(0)+"%",
+    unbalanceValue : curUnBalance != null ? curUnBalance.toFixed(0)+"%" : '--',
   })
   temp.push({
     baseInfoName : "设备状态",
@@ -1569,7 +1580,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
     consumeName : "电能消耗",
     consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '--',
     unbalanceName : "电压不平衡度",
-    unbalanceValue : volUnBalance.toFixed(0)+"%",
+    unbalanceValue : volUnBalance != null ? volUnBalance.toFixed(0)+"%" : '--',
   })
   temp.push({
     baseInfoName : "额定电流",
