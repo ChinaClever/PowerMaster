@@ -211,17 +211,11 @@ public class CabinetAisleVO {
     @Schema(description = "插接箱ID编号")
     private Integer boxIndexB;
 
-
-
     @Schema(description = "B路母线名称", example = "1")
     private String busNameB;
 
-
     @Schema(description = "B路插接箱名称", example = "1")
     private String boxNameB;
-
-
-
 
     /**
      * 柜列中机柜位置
@@ -258,9 +252,6 @@ public class CabinetAisleVO {
      */
     @Schema(description = "月用能限制")
     private BigDecimal eleLimitMonth;
-
-
-
 
     /**
      * 负载率
@@ -367,19 +358,48 @@ public class CabinetAisleVO {
     /**
      * 温度
      */
-    @Schema(description = "冷通道温度")
-    private BigDecimal temData;
+    @Schema(description = "前门温度")
+    private double temFront;
 
     /**
      * 温度
      */
-    @Schema(description = "热通道温度")
-    private BigDecimal temDataHot;
+    @Schema(description = "后门温度")
+    private double temBlack;
+
+    /**
+     * 湿度
+     */
+    @Schema(description = "前门湿度")
+    private double humFront;
+
+    /**
+     * 湿度
+     */
+    @Schema(description = "后门湿度")
+    private double humBlack;
 
     private CabinetBox cabinetBoxes;
 
     private CabinetPdu cabinetPdus;
 
     private List<RackIndex> rackIndices;
+
+
+    @Schema(description = "A")
+    private String cabinetkeya;
+
+    @Schema(description = "A露点温度")
+    private Double dewPointa;
+
+    private Object keya;
+
+    @Schema(description = "B")
+    private String cabinetkeyb;
+
+    @Schema(description = "B露点温度")
+    private Double dewPointb;
+
+    private Object keyb;
 
 }

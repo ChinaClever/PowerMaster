@@ -16,6 +16,7 @@ import cn.iocoder.yudao.framework.quartz.core.handler.JobHandler;
 import cn.iocoder.yudao.module.alarm.dal.dataobject.logrecord.AlarmLogRecordDO;
 import cn.iocoder.yudao.module.alarm.dal.mysql.logrecord.AlarmLogRecordMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
+@Slf4j
 public class RoomMonthAlarmJob implements JobHandler {
 
     @Autowired
@@ -43,6 +45,7 @@ public class RoomMonthAlarmJob implements JobHandler {
     @Override
     public String execute(String param) throws Exception {
         Thread.sleep(1000*60*5);
+        log.info("RoomMonthAlarmJob execute start, current time: {}", LocalDateTime.now());
         // 获取所有按天统计电量的机房
         List<RoomCfg> roomCfgList = roomCfgMapper.selectList(new LambdaQueryWrapper<RoomCfg>()
                 .eq(RoomCfg::getEleAlarmMonth, 1));

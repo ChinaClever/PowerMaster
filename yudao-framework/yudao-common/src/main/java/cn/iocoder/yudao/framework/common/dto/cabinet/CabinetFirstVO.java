@@ -58,7 +58,7 @@ public class CabinetFirstVO {
     /**
      * 级联数量
      */
-    @Schema(description = "级联数量")
+    @Schema(description = "结束级联")
     private Integer addrNum;
 
     /**
@@ -110,17 +110,7 @@ public class CabinetFirstVO {
     @Schema(description = "输出数量b")
     private Integer outNumb;
 
-    /**
-     * 机柜前后通道 1前2后
-     */
-//    @Schema(description = "机柜温度-机柜前后通道 1前2后")
-//    private int channel;
 
-    /**
-     * 位置 1 上 2 中 3下
-     */
-//    @Schema(description = "机柜温度-位置 1 上 2 中 3下")
-//    private int position;
     @Schema(description = "机柜温度-前门A/B路")
     private String frontPath;
 

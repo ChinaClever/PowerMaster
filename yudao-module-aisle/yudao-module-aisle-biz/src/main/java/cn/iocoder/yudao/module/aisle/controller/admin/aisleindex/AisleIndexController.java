@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +24,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -242,11 +244,32 @@ public class AisleIndexController {
         return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
+    @PostMapping("/report/powByType")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getReportPowDataByTypeAndId(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataByTypeAndId(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
+    }
+
     @PostMapping("/report/pfline")
     @Operation(summary = "获得通道列报表数据")
     public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
         return success(indexService.getAislePFLine(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
+
+    @PostMapping("/report/pflineByType")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getAislePFLineByType(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getAislePFLineByType(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime(),pageReqVO.getDataType()));
+    }
+
+    @GetMapping("/aisleHdaLineHisdataReport")
+    @Operation(summary = "获得机柜PDU相历史数据")
+    public CommonResult<Map> aisleHdaLineHisdataReportKey(String id, Integer timeType, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime, Integer dataType) {
+        System.out.println("oldTime"+oldTime);
+        System.out.println("newTime"+newTime);
+        return success(indexService.aisleHdaLineHisdataReportKey(id, timeType, oldTime, newTime, dataType));
+    }
+
 
     @PostMapping("/chartDetail")
     @Operation(summary = "折线图数据")

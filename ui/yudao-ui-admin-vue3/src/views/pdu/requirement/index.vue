@@ -82,7 +82,7 @@
           />
        
         <el-form-item :style="{marginLeft: '20px'}">
-          <el-button  v-if="queryParams.timeType == 2 || queryParams.timeType == 1" @click="handleQuery" style="margin-left: -10px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <!-- <el-button  v-if="queryParams.timeType == 2 || queryParams.timeType == 1" @click="handleQuery" style="margin-left: -10px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button> -->
           <el-button v-if="queryParams.timeType == 2 || queryParams.timeType == 1" @click="resetQuery" style="margin-left: 10px"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
             type="primary"
@@ -118,7 +118,7 @@
     <template #Content>
      <div v-if="switchValue && list.length > 0" class="table-height">
     <!-- 三相数据显示  @cell-dblclick="toPDUDisplayScreen"-->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"   >
+      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"  border stripe>
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
@@ -178,7 +178,7 @@
         </el-table-column>
       </el-table>  
     <!-- 单相数据显示  @cell-dblclick="toPDUDisplayScreen"-->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list"  :show-overflow-tooltip="true"  >
+      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list"  :show-overflow-tooltip="true"  border stripe>
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
@@ -219,7 +219,7 @@
         </el-table-column>
       </el-table> 
     <!-- 三相有数据显示  @cell-dblclick="toPDUDisplayScreen"-->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"  >
+      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true" border stripe>
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
@@ -275,7 +275,7 @@
         </el-table-column>
       </el-table>
     <!-- 单相数据显示  @cell-dblclick="toPDUDisplayScreen"-->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list"  :show-overflow-tooltip="true" >
+      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list"  :show-overflow-tooltip="true" border stripe>
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
@@ -452,7 +452,7 @@ const query = route.query;
 const flag = ref(0);
 const openDetailFlag=ref("0")
 const searchbth = ref(false);
-const flagName = ref('最大电流');
+const flagName = ref('最大功率');
 const now1 = new Date();
 let startTime = new Date(now1.getTime() - 24 * 60 * 60 * 1000);
 let endTime = new Date();
@@ -781,7 +781,7 @@ const getList = async () => {
   // loading.value = true
   try {
     const data = await PDUDeviceApi.getPDULinePage(queryParams)
-    visModeShow(flag);
+    visModeShow(flag.value);
     list.value = data.list
     total.value = data.total
   } finally {
@@ -843,8 +843,33 @@ const handleQuery = () => {
   getList()
 }
 
+function endOfMonth(date){
+  let month=date.getMonth() + 1
+  if(month==2){
+    if(date.getFullYear() % 4 === 0 && date.getFullYear() % 100 !== 0 || date.getFullYear() % 400 === 0)
+      return dayjs(new Date(date.getFullYear(),date.getMonth() ,29,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+    else
+      return dayjs(new Date(date.getFullYear(),date.getMonth() ,28,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+  }else if(month==1 || month==3 || month==5 || month==7 || month==8 || month==10 || month==12){
+    return dayjs(new Date(date.getFullYear(),date.getMonth() ,31,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+  }else if(month==4 || month==6 || month==9 || month==11){
+    return dayjs(new Date(date.getFullYear(),date.getMonth() ,30,23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+  }
+}
 /** 重置按钮操作 */
 const resetQuery = () => {
+  if(queryParams.timeType == 1){
+    queryParams.oldTime=dayjs(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)).format("YYYY-MM-DD HH:mm:ss");
+    queryParams.newTime=endOfMonth(new Date());
+  }
+  if(queryParams.timeType == 2){
+    let yesterday=new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
+    let ystr=dayjs(new Date(yesterday.getFullYear(),yesterday.getMonth(),yesterday.getDate(),0,0,0)).format("YYYY-MM-DD HH:mm:ss");
+    let dstr=dayjs(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)).format("YYYY-MM-DD HH:mm:ss");
+    queryParams.timeArr=[ystr,dstr];
+    queryParams.oldTime = ystr;
+    queryParams.newTime = dstr;
+  }
   queryFormRef.value.resetFields()
   statusList.forEach((item) => item.selected = true)
   queryParams.status = [];
@@ -904,6 +929,7 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
     Income: string; // 现在我们指定Income为字符串类型
   }
 
+  // console.log("updateChart",lChartData,llChartData,lllChartData,lineidDateTimes);
   const formatToTwoDecimals = (num) => {
     if (typeof num === 'number') {
       return num.toFixed(2);
@@ -918,16 +944,29 @@ const updateChart = (lChartData, llChartData, lllChartData, lineidDateTimes) => 
 
   const newData: DataItem[] = [];
   for (let i = 0; i < lineidDateTimes.value.length; i++) {
-    newData.push({ Year: lineidDateTimes.value[i], Country: 'L1-电流', Income: formatToTwoDecimals(lChartData.value.cur_max_value[i]) });
-    newData.push({ Year: lineidDateTimes.value[i], Country: 'L2-电流', Income: formatToTwoDecimals(llChartData.value.cur_max_value[i]) });
-    newData.push({ Year: lineidDateTimes.value[i], Country: 'L3-电流', Income: formatToTwoDecimals(lllChartData.value.cur_max_value[i]) });
+    if(lChartData.value.cur_max_time!=null&&lChartData.value.cur_max_time.length>0){
+      newData.push({ Year: lineidDateTimes.value[i], Country: 'L1-电流', Income: formatToTwoDecimals(lChartData.value.cur_max_value[i]) });
+    }
+    if(llChartData.value.cur_max_time!=null&&llChartData.value.cur_max_time.length>0){
+      newData.push({ Year: lineidDateTimes.value[i], Country: 'L2-电流', Income: formatToTwoDecimals(llChartData.value.cur_max_value[i]) });
+    }
+    if(lllChartData.value.cur_max_time!=null&&lllChartData.value.cur_max_time.length>0){
+      newData.push({ Year: lineidDateTimes.value[i], Country: 'L3-电流', Income: formatToTwoDecimals(lllChartData.value.cur_max_value[i]) });
+    }
   }
 
   const newData1: DataItem[] = [];
   for (let i = 0; i < lineidDateTimes.value.length; i++) {
-    newData1.push({ Year: lineidDateTimes.value[i], Country: 'L1功率', Income: formatToTwoDecimals(lChartData.value.pow_active_max_value[i]) });
-    newData1.push({ Year: lineidDateTimes.value[i], Country: 'L2功率', Income: formatToTwoDecimals(llChartData.value.pow_active_max_value[i]) });
-    newData1.push({ Year: lineidDateTimes.value[i], Country: 'L3功率', Income: formatToTwoDecimals(lllChartData.value.pow_active_max_value[i]) });
+    if(lChartData.value.cur_max_time!=null&&lChartData.value.cur_max_time.length>0){
+      newData1.push({ Year: lineidDateTimes.value[i], Country: 'L1功率', Income: formatToTwoDecimals(lChartData.value.pow_active_max_value[i]) });
+    }
+
+    if(llChartData.value.cur_max_time!=null&&llChartData.value.cur_max_time.length>0){
+      newData1.push({ Year: lineidDateTimes.value[i], Country: 'L2功率', Income: formatToTwoDecimals(llChartData.value.pow_active_max_value[i]) });
+    }
+    if(lllChartData.value.cur_max_time!=null&&lllChartData.value.cur_max_time.length>0){
+      newData1.push({ Year: lineidDateTimes.value[i], Country: 'L3功率', Income: formatToTwoDecimals(lllChartData.value.pow_active_max_value[i]) });
+    }
   }
   console.log("newData1",newData1);
 
@@ -1237,12 +1276,18 @@ const getLineid = async (id, type,flagValue) => {
   const lData = result.l
   const llData = result.ll
   const lllData = result.lll
-
   // 更新图表数据
   updateChartData(lChartData, lData);
   updateChartData(llChartData, llData);
   updateChartData(lllChartData, lllData);
- 
+  console.log(lChartData)
+  console.log(llChartData)
+  console.log(lllChartData)
+  console.log(lineidDateTimes)
+  console.log(lData)
+  console.log(llData)
+  console.log(lllData)
+  console.log("-------------------------")
   // 假设 updateChart 函数返回正确的 ECharts 配置对象
   const option = updateChart(lChartData, llChartData, lllChartData, lineidDateTimes);
  
@@ -1676,10 +1721,10 @@ function buKongGe(value,du){
     display: flex;
     flex-wrap: wrap;
     .arrayItem {
-      width: 23%;
+      width: 24%;
       height: 140px;
       font-size: 13px;
-      margin: 14px;
+      margin: 4px;
       box-sizing: border-box;
       background-color: #fff;
       border: 1px solid #e4e7ed;
@@ -1885,5 +1930,8 @@ function buKongGe(value,du){
   flex: 1;
   margin: 0 10px;
   box-sizing: border-box;
+}
+::v-deep .el-button--primary{
+  background-color: #00778c;
 }
 </style>

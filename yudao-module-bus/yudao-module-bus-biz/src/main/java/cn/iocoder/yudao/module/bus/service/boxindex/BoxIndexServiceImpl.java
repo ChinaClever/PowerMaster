@@ -124,7 +124,6 @@ import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
-import static cn.iocoder.yudao.module.bus.util.DataProcessingUtils.collectPhaseData;
 import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.KEY_SHORT;
 
 /**
@@ -2882,13 +2881,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         BoxEleTotalDo dayEleDo = new BoxEleTotalDo();
                         totalEq += (float) busList.get(i + 1).getEleActive() - (float) busList.get(i).getEleActive();
                         dayEleDo.setEleActive(busList.get(i + 1).getEleActive() - busList.get(i).getEleActive());
-                        dayEleDo.setCreateTime(busList.get(i).getCreateTime());
+                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
                         dayEqList.add(dayEleDo);
                     }
                     dayEqList.sort(Comparator.comparing(BoxEleTotalDo::getEleActive));
 
                     maxEle = dayEqList.get(dayEqList.size() - 1).getEleActive();
-                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("HH:mm");
                     barRes.getSeries().add(barSeries);
                     result.put("totalEle", totalEq);
                     result.put("maxEle", maxEle);

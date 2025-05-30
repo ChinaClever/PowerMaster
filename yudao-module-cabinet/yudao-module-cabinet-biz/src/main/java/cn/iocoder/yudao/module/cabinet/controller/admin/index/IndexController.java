@@ -172,4 +172,10 @@ public class IndexController {
     public CommonResult<Map<String, Double>> getEleByCabinet(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
         return success(indexService.getEleByCabinet(Id,timeType,oldTime,newTime));
     }
+
+    @GetMapping("/getEleByAisle")
+    @Operation(summary = "根据机柜id获取耗电量")
+    public CommonResult<Map> getEleByAisle(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        return success(indexService.getEleByAisle(id,timeType,oldTime,newTime));
+    }
 }

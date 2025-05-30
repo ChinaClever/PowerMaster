@@ -25,6 +25,10 @@ export const IndexApi = {
     return await request.get({ url: `/cabinet/index/get?id=` + id })
   },
 
+   getBoxRecordPage: async (data: any) => {
+      return await request.post({ url: `/alarm/log-record/pdu`, data})
+    },
+
   // 新增机柜索引
   createIndex: async (data: IndexVO) => {
     return await request.post({ url: `/cabinet/index/create`, data })
@@ -98,6 +102,8 @@ export const IndexApi = {
   getCabinetHotTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/hot`,params})
   },
+
+
   getCabinetPFLine : async (params) => {
     return await request.get({ url: `/cabinet/index/report/pfline`, params })
   },

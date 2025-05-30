@@ -41,11 +41,10 @@ public class PDUDeviceController {
         return success(pageResult);
     }
 
-    @GetMapping("/balancedDistribution")
+    @PostMapping("/balancedDistribution")
     @Operation(summary = "获得pdu均衡配电统计")
-    public CommonResult<BalancedDistributionStatisticsVO> getBalancedDistribution(
-            @RequestParam(value = "curbance")@Parameter(description = "pdu均衡配电 0-电流/1-电压") int curbance) throws IOException {
-        BalancedDistributionStatisticsVO pageResult = pDUDeviceService.getBalancedDistribution(curbance);
+    public CommonResult<BalancedDistributionStatisticsVO> getBalancedDistribution(@RequestBody PDUDevicePageReqVO pageReqVO) throws IOException {
+        BalancedDistributionStatisticsVO pageResult = pDUDeviceService.getBalancedDistribution(pageReqVO.getCurbance());
         return success(pageResult);
     }
 

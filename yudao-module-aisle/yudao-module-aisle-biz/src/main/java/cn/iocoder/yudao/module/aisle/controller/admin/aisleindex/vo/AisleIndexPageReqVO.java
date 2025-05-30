@@ -68,4 +68,9 @@ public class AisleIndexPageReqVO extends PageParam {
 
     @Schema(description = "位置")
     private String location;
+
+    /**
+     * 数据类型(=1：最大值，=0：平均值，=-1：最小值)
+     */
+    private Integer dataType;
 }

@@ -367,7 +367,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
             roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + -1);
             roomMenuDTO.setParentId(0);
             roomMenuDTO.setParentType(0);
-            List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>().eq(PduIndexDo::getIsDeleted, false));
+            List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>().eq(PduIndexDo::getIsDeleted, false).orderByDesc(PduIndexDo::getPduKey));
             Map<String, PduIndexDo> pduMap = pduIndexDos.stream().collect(Collectors.toMap(PduIndexDo::getPduKey, Function.identity()));
             pduMap.keySet().removeAll(pduKeys);
 

@@ -85,7 +85,7 @@
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;resetQuery();getNavList();getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;resetQuery();getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
       </el-form>
       <el-form
@@ -672,6 +672,9 @@ const getListAll = async () => {
 
 // 接口获取导航列表
 const getNavList = async() => {
+  if (navList.value.length > 0) {
+  navList.value++;
+}
   let arr = [] as any
   var temp = await CabinetApi.getRoomPDUList()
   arr = arr.concat(temp);
@@ -749,6 +752,19 @@ const resetQuery = () => {
     getList();
   getNavList();
 }
+const resetQueryDel = () => {
+  queryFormRef.value.resetFields();
+  queryFormRef2.value.resetFields();
+  butColor.value = 0;
+  queryParams.status = [];
+  onclickColor.value = -1;
+  queryParams.pduKeyList = null;
+  queryDeletedPageParams.pduKeyList = null;
+  // handleQuery()
+    getList();
+  getNavList();
+}
+
 
 /** 添加/修改操作 */
 const formRef = ref()
@@ -1257,14 +1273,14 @@ onActivated(() => {
     margin-top: -10px;
 
     .arrayItem {
-      width: 23%;
+      width: 24%;
       height: 140px;
       font-size: 13px;
       box-sizing: border-box;
       background-color: #fff;
       border: 1px solid #e4e7ed;
       padding-top: 40px;
-      margin: 14px;
+      margin: 4px;
       position: relative;
       border-radius: 7px;
       .content {

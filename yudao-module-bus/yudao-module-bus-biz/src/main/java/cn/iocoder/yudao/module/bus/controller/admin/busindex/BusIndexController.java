@@ -1,38 +1,34 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexMaxEqResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
+import cn.iocoder.yudao.module.bus.service.busindex.BusIndexService;
 import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.*;
-
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
-
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
-import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
-import cn.iocoder.yudao.module.bus.service.busindex.BusIndexService;
-
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 始端箱索引")
 @RestController
