@@ -21,7 +21,7 @@
             >
           </div>
           <div class="box">
-            <div class="top"> <div class="tag empty"></div>小电流 </div>
+            <div class="top"> <div class="tag empty"></div>{{switchValue==99?'小电压':'小电流'}} </div>
             <div class="value"
               ><span class="number">{{ statusNumber.smallCurrent }}</span
               >个</div
@@ -155,9 +155,6 @@
       <el-table
         v-show="switchValue == 3"
         :data="list"
-        :show-overflow-tooltip="true"
-        @cell-dblclick="toPDUDisplayScreen"
-        :border="true"
         stripe
       >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
@@ -176,11 +173,12 @@
         />
         <el-table-column label="运行状态" align="center" prop="color" width="120px">
           <template #default="scope">
-             <el-tag type="info" v-if="scope.row.color == 0">单相设备</el-tag>
+             <el-tag type="info" v-if="scope.row.color == 0 && scope.row.acur !=null && scope.row.bcur ==null && scope.row.ccur ==null">单相设备</el-tag>
             <el-tag type="info" v-if="scope.row.color == 1">小电流不平衡</el-tag>
             <el-tag type="success" v-if="scope.row.color == 2">大电流不平衡</el-tag>
             <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
+            <el-tag type="info" v-if="scope.row.color == null && scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="电流(A)" align="center">
@@ -342,8 +340,17 @@
 
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status">
-            <el-tag type="info">电压不平衡</el-tag>
+          <div class="status" v-if="item.volColor != 0">
+            <el-tag type="info" v-if="item.volColor == 1">小电压不平衡</el-tag>
+            <el-tag type="success" v-if="item.volColor == 2">大电压不平衡</el-tag>
+            <el-tag type="warning" v-if="item.volColor == 3">大电压不平衡</el-tag>
+            <el-tag type="danger" v-if="item.volColor == 4">大电压不平衡</el-tag>
+          </div>
+          <div class="status" v-if="item.volColor == 0">
+            <el-tag type="info">单相设备</el-tag>
+          </div>
+          <div class="status" v-if="item.status == 5 && item.color == null">
+            <el-tag type="info">离线</el-tag>
           </div>
           <button
             v-if="item.status != null && item.status != 5 && item.bvol != null && item.cvol != null"
@@ -368,7 +375,7 @@
         <div class="custom-content" style="margin-top:-30px">
           <div class="custom-content-container">
           <el-card class="cardChilc" shadow="hover">
-            <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[balanceObj.colorIndex].name" />
+            <curUnblance :max="balanceObj.imbalanceValueA||0" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[balanceObj.colorIndex].name" />
             <!-- <div class="box" :style="{ borderColor: colorList[balanfceObj.colorIndex].color }">
               <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
               <div
@@ -404,13 +411,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
+                    <span class="bullet" style="background-color:#E5B849;"></span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
+                    <span class="bullet" style="background-color:#C8603A;"></span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
+                    <span class="bullet" style="background-color:#AD3762;"></span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
                   </div>
                 </div>
                 <!--<Echart :options="ABarOption" :height="300" />-->
@@ -434,7 +441,7 @@
         </div>
         <div class="custom-content-container">
           <el-card  class="cardChilc" shadow="hover">
-            <volUnblance :max="balanceObj.imbalanceValueB" :customColor="colorList[4].color"  :name="colorList[4].name" />
+            <volUnblance :max="balanceObj.imbalanceValueB||0" :customColor="colorList[4].color"  :name="colorList[4].name" />
             <!-- <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
               <div class="value">{{balanceObj.imbalanceValueB}}%</div>
               <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
@@ -461,13 +468,13 @@
                     height: 100px;
                     top: 30%;">
                   <div>
-                    <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
+                    <span class="bullet" style="background-color: #075F71;"></span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
+                    <span class="bullet" style="background-color:#119CB5;"></span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
                   </div>
                   <div style="margin-top:10px;">
-                    <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
+                    <span class="bullet" style="background-color:#45C0C9;"></span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
                   </div>
                 </div>
               </div>
@@ -738,9 +745,9 @@ const getBalanceDetail = async (item) => {
           fontWeight: 'bold'
         },
         data: [
-          { value: cur_valueA[0].toFixed(2), name: 'A相电流', itemStyle: { color: '#E5B849' } },
-          { value: cur_valueA[1].toFixed(2), name: 'B相电流', itemStyle: { color: '#C8603A' } },
-          { value: cur_valueA[2].toFixed(2), name: 'C相电流', itemStyle: { color: '#AD3762' } },
+          { value: cur_valueA[0]?.toFixed(2), name: 'A相电流', itemStyle: { color: '#E5B849' } },
+          { value: cur_valueA[1]?.toFixed(2), name: 'B相电流', itemStyle: { color: '#C8603A' } },
+          { value: cur_valueA[2]?.toFixed(2), name: 'C相电流', itemStyle: { color: '#AD3762' } },
         ]
       }
     ]
@@ -773,9 +780,9 @@ const getBalanceDetail = async (item) => {
           fontWeight: 'bold'
         },
         data: [
-          { value: vol_value[0].toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
-          { value: vol_value[1].toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
-          { value: vol_value[2].toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
+          { value: vol_value[0]?.toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
+          { value: vol_value[1]?.toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
+          { value: vol_value[2]?.toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
         ]
       }
     ]
@@ -1930,12 +1937,13 @@ function changeChart(curVol){
     margin-top: 20px;
     .box {
       height: 70px;
-      width: 50%;
+      width: 40%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: left;
       flex-direction: column;
+      margin-left: auto;
       .top {
         display: flex;
         align-items: center;
@@ -2114,10 +2122,10 @@ function changeChart(curVol){
     display: flex;
     flex-wrap: wrap;
     .arrayItem {
-      width: 23%;
+      width: 24%;
       height: 140px;
       font-size: 13px;
-      margin: 14px;
+      margin: 4px;
       border-radius: 7px;
       box-sizing: border-box;
       background-color: #fff;
@@ -2389,5 +2397,11 @@ function changeChart(curVol){
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+.bullet{
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+  border-radius: 5px;
 }
 </style>

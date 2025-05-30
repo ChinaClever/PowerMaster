@@ -89,7 +89,7 @@ const props = defineProps({
   },
   nodeKey:{
     type: String,
-    default: 'id',
+    default: 'unique',
     required: false
   }
 })

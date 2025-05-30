@@ -38,7 +38,8 @@
         SELECT
         id,pdu_key pduKey,ip_addr ipAddr,cascade_id cascadeId,
         node_id nodeId,is_deleted isDeleted,run_status runStatus,
-        create_time createTime,update_time updateTime,cur_unbalance_status curUnbalanceStatus
+        create_time createTime,update_time updateTime,cur_unbalance_status curUnbalanceStatus,
+        vol_unbalance_status volUnbalanceStatus
         FROM pdu_index
         <where>
             <if test="pduVo.pduKeyList !=null and pduVo.pduKeyList.size>0">
@@ -88,7 +89,7 @@
                 </foreach>
             </if>
             <if test="pduVo.devKey != null and pduVo.devKey != ''">
-                and pdu_key = #{pduVo.devKey}
+                and pdu_key like concat('%',#{pduVo.devKey},'%')
             </if>
             <if test="pduVo.status != null and pduVo.status.size >0">
                 and run_status in
@@ -102,7 +103,7 @@
                     #{item}
                 </foreach>
             </if>
-            and is_deleted =0 and run_status !=5
+            and is_deleted =0
         </where>
         ORDER BY CASE WHEN run_status =2 THEN 0 WHEN run_status =0 THEN 2 ELSE run_status END, create_time asc
     </select>

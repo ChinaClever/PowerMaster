@@ -1277,11 +1277,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             //获取峰值
             AisleActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(AisleActivePowTrendDTO::getActivePow)).orElse(new AisleActivePowTrendDTO());
             AisleActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(AisleActivePowTrendDTO::getActivePow)).orElse(new AisleActivePowTrendDTO());
-            powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
-            powDTO.setTodayMaxTime(todayMax.getDateTime());
-            powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
-            powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
-
+            if (Objects.nonNull(todayMax)) {
+                powDTO.setTodayMax(Float.valueOf(todayMax.getActivePow()));
+                powDTO.setTodayMaxTime(todayMax.getDateTime());
+            }
+            if (Objects.nonNull(yesterdayMax)) {
+                powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
+                powDTO.setYesterdayMax(Float.valueOf(yesterdayMax.getActivePow()));
+            }
             return powDTO;
         } catch (Exception e) {
             log.error("获取数据失败： ", e);

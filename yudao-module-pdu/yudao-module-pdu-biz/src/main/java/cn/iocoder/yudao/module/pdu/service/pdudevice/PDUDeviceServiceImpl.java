@@ -19,6 +19,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
+import cn.iocoder.yudao.framework.common.exception.BusinessAssert;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
@@ -51,6 +52,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -155,7 +157,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 return new PageResult<PDUDeviceDO>(result, 0L);
             }
         }
-        if (Objects.equals(pageReqVO.getCurbance(), 1)) {
+        if (StringUtils.isNotEmpty(pageReqVO.getDevKey())){
+            boolean matches = pageReqVO.getDevKey().matches("[\\u4e00-\\u9fa5]+");
+            if (matches){
+                BusinessAssert.error(50020,"网络地址出现中文，请输入正确的PDU的网络地址");
+            }
+        }
+        if (Objects.equals(pageReqVO.getCurbance(),1)) {
             pduIndexPageResult = pDUDeviceMapper.selectQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
         } else {
             pduIndexPageResult = pDUDeviceMapper.selectCurbanceQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
@@ -169,7 +177,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setId(pduIndex.getId());
             pduDeviceDO.setDevKey(pduIndex.getPduKey());
             pduDeviceDO.setDeleted(pduIndex.getIsDeleted().equals(1));
-            pduDeviceDO.setColor(pduIndex.getCurUnbalanceStatus());
+            if (!Objects.equals(pduIndex.getRunStatus(),5)) {
+                pduDeviceDO.setColor(pduIndex.getCurUnbalanceStatus());
+                pduDeviceDO.setVolColor(pduIndex.getVolUnbalanceStatus());
+            }
             result.add(pduDeviceDO);
         }
         Map<String, PDUDeviceDO> resMap = result.stream().collect(Collectors.toMap(PDUDeviceDO::getDevKey, Function.identity()));
@@ -204,14 +215,21 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setBcur(new BigDecimal(curArr.get(1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setCcur(new BigDecimal(curArr.get(2)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+                pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+                pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             } else {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+                pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+//                pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+//                pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
 
-            pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 
-            pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
             pduDeviceDO.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
         }
@@ -277,12 +295,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             Map<Integer, Map<Integer, MaxValueAndCreateTime>> curMap;
             Map<Integer, Map<Integer, MaxValueAndCreateTime>> powMap;
-            String index = null;
-            if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
-                index = "pdu_hda_line_hour";
-            } else {
-                index = "pdu_hda_line_day";
-            }
+            String index = "pdu_hda_line_realtime";
+//            if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+//                index = "pdu_hda_line_hour";
+//            } else {
+//                index = "pdu_hda_line_day";
+//            }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
@@ -353,12 +371,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     public MaxCurAndOtherData getPDUMaxCurData(PDUDevicePageReqVO pageReqVO) {
         try {
             MaxCurAndOtherData result = new MaxCurAndOtherData();
-            String index = null;
-            if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
-                index = "pdu_hda_line_hour";
-            } else {
-                index = "pdu_hda_line_day";
-            }
+            String index = "pdu_hda_line_realtime";
+//            if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+//                index = "pdu_hda_line_hour";
+//            } else {
+//                index = "pdu_hda_line_day";
+//            }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             // 创建搜索请求
@@ -370,14 +388,14 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             String[] includeFields;
             if (pageReqVO.getFlagVlaue() == 0) {
                 // 排序字段
-                searchSourceBuilder.sort("cur_max_value", SortOrder.DESC);
+                searchSourceBuilder.sort("cur_value", SortOrder.DESC);
                 // 限制字段，只取需要的字段
-                includeFields = new String[]{"cur_max_value", "cur_max_time", "line_id", "pdu_id"};
+                includeFields = new String[]{"cur_value", "create_time", "line_id", "pdu_id"};
             } else {
                 // 排序字段
-                searchSourceBuilder.sort("pow_active_max_value", SortOrder.DESC);
+                searchSourceBuilder.sort("pow_active", SortOrder.DESC);
                 // 限制字段，只取需要的字段
-                includeFields = new String[]{"pow_active_max_value", "pow_active_max_time", "line_id", "pdu_id"};
+                includeFields = new String[]{"pow_active", "create_time", "line_id", "pdu_id"};
             }
             FetchSourceContext fetchSourceContext = new FetchSourceContext(true, includeFields, null);
             searchSourceBuilder.fetchSource(fetchSourceContext);
@@ -392,17 +410,17 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 Map<String, Object> sourceAsMap = hit.getSourceAsMap();
                 // 构建结果对象
                 if (pageReqVO.getFlagVlaue() == 0) {
-                    BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("cur_max_value"));
-                    result.setMaxValue(BigDemicalUtil.setScale1(value, 2).toString());
-                    result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                    BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("cur_value"));
+                    result.setMaxValue(BigDemicalUtil.setScale1(value,2).toString());
+                    result.setMaxTime(new DateTime(sourceAsMap.get("create_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                     result.setLineId((Integer) sourceAsMap.get("line_id"));
                     result.setPduId((Integer) sourceAsMap.get("pdu_id"));
                     result.setUnit("A");
                 } else {
                     // 构建结果对象
-                    BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("pow_active_max_value"));
-                    result.setMaxValue(BigDemicalUtil.setScale1(value, 3).toString());
-                    result.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                    BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("pow_active"));
+                    result.setMaxValue(BigDemicalUtil.setScale1(value,3).toString());
+                    result.setMaxTime(new DateTime(sourceAsMap.get("create_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                     result.setLineId((Integer) sourceAsMap.get("line_id"));
                     result.setPduId((Integer) sourceAsMap.get("pdu_id"));
                     result.setUnit("kW");
@@ -570,6 +588,14 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 heads = new String[]{"pdu_id", "line_id", "power_factor_avg_value", "power_factor_max_value", "power_factor_max_time",
                         "power_factor_min_value", "power_factor_min_time", "create_time"};
                 break;
+            case "oneMonth":
+                index = "pdu_hda_total_day";
+                startTime = formatter.format(now.minusMonths(1));
+                indexLine = "pdu_hda_line_day";
+                heads = new String[]{"pdu_id", "line_id", "power_factor_avg_value", "power_factor_max_value", "power_factor_max_time",
+                        "power_factor_min_value", "power_factor_min_time", "create_time"};
+                break;
+            default:
         }
         SearchResponse searchResponse = getData(startTime, endTime, id, index);
 
@@ -594,6 +620,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     break;
                 case "twentyfourHour":
                 case "seventytwoHour":
+                case "oneMonth":
                     PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
                     apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowAvgValue()));
                     activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowAvgValue()));
@@ -669,54 +696,58 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .collect(Collectors.groupingBy(i -> i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")));
                 for (String time : dateTimes) {
                     List<PduHdaLineRealtimeDo> dos = (List<PduHdaLineRealtimeDo>) timeListMap.get(time);
-                    dos.forEach(iter -> {
-                        switch (iter.getLineId()) {
-                            case 1:
-                                factorLista.add(Double.valueOf(iter.getPowerFactor()));
-                                break;
-                            case 2:
-                                factorListb.add(Double.valueOf(iter.getPowerFactor()));
-                                break;
-                            case 3:
-                                factorListc.add(Double.valueOf(iter.getPowerFactor()));
-                                break;
-                            default:
-                                break;
-                        }
-                    });
+                    if(dos != null) {
+                        dos.forEach(iter -> {
+                            switch (iter.getLineId()) {
+                                case 1:
+                                    factorLista.add(Double.valueOf(iter.getPowerFactor()));
+                                    break;
+                                case 2:
+                                    factorListb.add(Double.valueOf(iter.getPowerFactor()));
+                                    break;
+                                case 3:
+                                    factorListc.add(Double.valueOf(iter.getPowerFactor()));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                    }
                 }
             } else {
                 timeListMap = list.stream().map(str -> JsonUtils.parseObject(str, PduHdaLineHourDo.class))
                         .collect(Collectors.groupingBy(i -> i.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")));
                 for (String time : dateTimes) {
                     List<PduHdaLineHourDo> dos = (List<PduHdaLineHourDo>) timeListMap.get(time);
-                    dos.forEach(iter -> {
-                        switch (iter.getLineId()) {
-                            case 1:
-                                factorLista.add(Double.valueOf(iter.getPowerFactorAvgValue()));
-                                factorListMaxa.add(Double.valueOf(iter.getPowerFactorMaxValue()));
-                                factorListMaxTimea.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMina.add(Double.valueOf(iter.getPowerFactorMinValue()));
-                                factorListMinTimea.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            case 2:
-                                factorListb.add(Double.valueOf(iter.getPowerFactorAvgValue()));
-                                factorListMaxb.add(Double.valueOf(iter.getPowerFactorMaxValue()));
-                                factorListMaxTimeb.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMinb.add(Double.valueOf(iter.getPowerFactorMinValue()));
-                                factorListMinTimeb.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            case 3:
-                                factorListc.add(Double.valueOf(iter.getPowerFactorAvgValue()));
-                                factorListMaxc.add(Double.valueOf(iter.getPowerFactorMaxValue()));
-                                factorListMaxTimec.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                factorListMinc.add(Double.valueOf(iter.getPowerFactorMinValue()));
-                                factorListMinTimec.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                                break;
-                            default:
-                                break;
-                        }
-                    });
+                    if(dos != null) {
+                        dos.forEach(iter -> {
+                            switch (iter.getLineId()) {
+                                case 1:
+                                    factorLista.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                    factorListMaxa.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                    factorListMaxTimea.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    factorListMina.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                    factorListMinTimea.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    break;
+                                case 2:
+                                    factorListb.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                    factorListMaxb.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                    factorListMaxTimeb.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    factorListMinb.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                    factorListMinTimeb.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    break;
+                                case 3:
+                                    factorListc.add(Double.valueOf(iter.getPowerFactorAvgValue()));
+                                    factorListMaxc.add(Double.valueOf(iter.getPowerFactorMaxValue()));
+                                    factorListMaxTimec.add(iter.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    factorListMinc.add(Double.valueOf(iter.getPowerFactorMinValue()));
+                                    factorListMinTimec.add(iter.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                    }
                 }
             }
             result.put("factorLista", factorLista);
@@ -774,19 +805,29 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 //            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String index = "";
 
-            if ("oneHour".equals(type)) {
-                pastTime = now.minusHours(1);
-                pastTime = pastTime.minusMinutes(1);
-                searchRequest = new SearchRequest("pdu_hda_line_realtime");
-                index = "pdu_hda_line_realtime";
-            } else if ("twentyfourHour".equals(type)) {
-                pastTime = now.minusHours(25);
-                searchRequest = new SearchRequest("pdu_hda_line_hour");
-                index = "pdu_hda_line_hour";
-            } else if ("seventytwoHour".equals(type)) {
-                pastTime = now.minusHours(73);
-                searchRequest = new SearchRequest("pdu_hda_line_day");
-                index = "pdu_hda_line_hour";
+            switch (type){
+                case "oneHour":
+                    pastTime = now.minusHours(1);
+                    pastTime = pastTime.minusMinutes(1);
+                    searchRequest = new SearchRequest("pdu_hda_line_realtime");
+                    index = "pdu_hda_line_realtime";
+                    break;
+                case "twentyfourHour":
+                    pastTime = now.minusHours(25);
+                    searchRequest = new SearchRequest("pdu_hda_line_hour");
+                    index = "pdu_hda_line_hour";
+                    break;
+                case "seventytwoHour":
+                    pastTime = now.minusHours(73);
+                    searchRequest = new SearchRequest("pdu_hda_line_hour");
+                    index = "pdu_hda_line_hour";
+                    break;
+                case "oneMonth":
+                    pastTime = now.minusMonths(1);
+                    searchRequest = new SearchRequest("pdu_hda_line_day");
+                    index = "pdu_hda_line_day";
+                    break;
+                default:
             }
 
             String curMaxValue = null;
@@ -849,19 +890,17 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 break;
                             case "twentyfourHour":
                             case "seventytwoHour":
+                                case  "oneMonth":
                                 PduHdaLineHouResVO houResVO = JsonUtils.parseObject(str, PduHdaLineHouResVO.class);
                                 switch (houResVO.getLineId()) {
                                     case 1:
                                         dayList1.add(houResVO);
-
                                         break;
                                     case 2:
                                         dayList2.add(houResVO);
-
                                         break;
                                     case 3:
                                         dayList3.add(houResVO);
-
                                         break;
                                     default:
                                 }
@@ -905,7 +944,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
             redisTemplate.opsForValue().set(key, JSONObject.toJSONString(result), 5, TimeUnit.MINUTES);
-
 
             return result;
         } else {
@@ -1663,8 +1701,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             if (searchResponse != null) {
                 SearchHits hits = searchResponse.getHits();
+                if (Objects.equals(hits.getTotalHits().value,0L)){
+                    BusinessAssert.error(50011,"当前pdu暂无历史数据");
+                }
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
+//                    PduHdaLineMaxResVO houResVO = JsonUtils.parseObject(str, PduHdaLineMaxResVO.class);
                     PduHdaLineMaxResVO houResVO = JsonUtils.parseObject(str, PduHdaLineMaxResVO.class);
                     switch (houResVO.getLineId()) {
                         case 1:
@@ -3545,19 +3587,18 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 .field("line_id")
                                 .size(1000)
                                 .order(BucketOrder.aggregation("max_cur", false))
-                                .subAggregation(AggregationBuilders.max("max_cur").field("cur_max_value"))
+                                .subAggregation(AggregationBuilders.max("max_cur").field("cur_value"))
                                 .subAggregation(AggregationBuilders.topHits("top_docs")
                                         .size(1)
-                                        .fetchSource(new String[]{"cur_max_time"}, null)
-                                        .sort(SortBuilders.fieldSort("cur_max_value").order(SortOrder.DESC))))
+                                        .fetchSource(new String[]{"create_time"}, null)
+                                        .sort(SortBuilders.fieldSort("cur_value").order(SortOrder.DESC))))
         );
-
 
         // 设置搜索条件
         searchRequest.source(builder);
         builder.size(0);
 
-        List<String> list = new ArrayList<>();
+//        List<String> list = new ArrayList<>();
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
@@ -3583,7 +3624,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (topHits.getHits().getHits().length != 0) {
                     SearchHit topHit = topHits.getHits().getHits()[0]; // 取第一个top hit
                     Map<String, Object> sourceAsMap = topHit.getSourceAsMap();
-                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("create_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                 }
 
                 // 将valueMap添加到lineIdMap中
@@ -3614,22 +3655,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 .field("line_id")
                                 .size(1000)
                                 .order(BucketOrder.aggregation("max_pow", false))
-                                .subAggregation(AggregationBuilders.max("max_pow").field("pow_active_max_value"))
+                                .subAggregation(AggregationBuilders.max("max_pow").field("pow_active"))
                                 .subAggregation(AggregationBuilders.topHits("top_docs")
                                         .size(1)
-                                        .fetchSource(new String[]{"pow_active_max_time"}, null)
-                                        .sort(SortBuilders.fieldSort("pow_active_max_value").order(SortOrder.DESC))))
+                                        .fetchSource(new String[]{"create_time"}, null)
+                                        .sort(SortBuilders.fieldSort("pow_active").order(SortOrder.DESC))))
         );
-
 
         // 设置搜索条件
         searchRequest.source(builder);
         builder.size(0);
 
-        List<String> list = new ArrayList<>();
+//        List<String> list = new ArrayList<>();
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
 
         // 初始化结果Map
         Map<Integer, Map<Integer, MaxValueAndCreateTime>> resultMap = new HashMap<>();
@@ -3653,13 +3692,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (topHits.getHits().getHits().length != 0) {
                     SearchHit topHit = topHits.getHits().getHits()[0]; // 取第一个top hit
                     Map<String, Object> sourceAsMap = topHit.getSourceAsMap();
-                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("create_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                 }
-
                 // 将valueMap添加到lineIdMap中
                 lineIdMap.put(lineId, maxValueAndCreateTime);
             }
-
             // 将lineIdMap添加到resultMap中
             resultMap.put(boxId, lineIdMap);
         }
@@ -4013,7 +4050,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return locationMap;
         }
         List<CabinetPduResVO> cabinetPdus = cabinetIndexMapper.selectCabinetPduList(pduKeys);
-
+        if (CollectionUtils.isEmpty(cabinetPdus)){
+            pduKeys.forEach(iter ->{
+                locationMap.put(iter,"未绑定");
+            });
+            return locationMap;
+        }
         // 将查询结果按 ipAddr 和 cascadeAddr 分组
         Map<String, List<CabinetPduResVO>> cabinetPduAMap = cabinetPdus.stream()
                 .filter(vo -> pduKeys.contains(vo.getPduKeyA()))

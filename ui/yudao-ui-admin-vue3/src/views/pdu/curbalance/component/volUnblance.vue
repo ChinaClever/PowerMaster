@@ -38,7 +38,7 @@ const option = computed(() => ({
   },
   tooltip: {
     trigger: 'item',
-    formatter: '{d}%'
+    formatter:  percentageValue.value + '%'
   },
   legend: {
     show: false // 不显示图例

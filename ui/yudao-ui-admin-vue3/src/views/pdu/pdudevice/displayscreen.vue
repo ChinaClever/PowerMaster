@@ -939,7 +939,7 @@ const initChart = async () => {
               orient: 'vertical',
               right: 10,
               top: 'center',
-              data: totalData.value.pow+totalData.value.powReactive,
+              data: totalData.value.powApparent,
             },
             graphic: {
                 elements: [
@@ -948,7 +948,7 @@ const initChart = async () => {
                         left: 'center',
                         top: 'center',
                         style: {
-                            text: (Number(totalData.value.pow)+Number(totalData.value.powReactive)).toFixed(3)+"kVA",
+                            text: totalData.value.powApparent+"kVA",
                             fontSize: 13,
                             // fontWeight: 'bold',
                             fill: '#000'
@@ -1106,7 +1106,7 @@ const setNewABCChartData = () => {
                         left: 'center',
                         top: 'center',
                         style: {
-                            text: (Number(totalData.value.pow)+Number(totalData.value.powReactive)).toFixed(3)+"kVA",
+                            text: totalData.value.powApparent+"kVA",
                             fontSize: 13,
                             // fontWeight: 'bold',
                             fill: '#000'
@@ -2344,7 +2344,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     var tempParams = { devKey : queryParams.devKey, type : newPowGranularity}
     chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
 
-    chartData.value.apparentList.forEach((obj,index) => {
+    chartData.value?.apparentList?.forEach((obj,index) => {
       chartData.value.apparentList[index] = obj?.toFixed(3);
       chartData.value.apparentListMin[index] = chartData.value.apparentListMin[index]?.toFixed(3);
       chartData.value.apparentListMax[index] = chartData.value.apparentListMax[index]?.toFixed(3);
@@ -3106,17 +3106,17 @@ queryParams.devKey = devKey;
     --el-button-bg-color:#00778c;
     --el-button-hover-bg-color:#00778c;
    }
-   ::v-deep .el-button:hover{
-        --el-button-hover-text-color: #fff;
-        --el-button-hover-border-color: #00778c;
-        background-color: #00778c;
-   }
-   ::v-deep .el-select__wrapper.is-focused{
-      --el-color-primary:#00778c;
-   }
-   ::v-deep .el-select-dropdown__item.is-selected{
-    --el-color-primary: #00778c;
-   }
+  //  ::v-deep .el-button:hover{
+  //       --el-button-hover-text-color: #fff;
+  //       --el-button-hover-border-color: #00778c;
+  //       background-color: #00778c;
+  //  }
+  //  ::v-deep .el-select__wrapper.is-focused{
+  //     --el-color-primary:#00778c;
+  //  }
+  //  ::v-deep .el-select-dropdown__item.is-selected{
+  //   --el-color-primary: #00778c;
+  //  }
 .header_app{
   background-color: white;
   display: flex;

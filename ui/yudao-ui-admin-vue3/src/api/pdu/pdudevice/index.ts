@@ -14,8 +14,8 @@ export const PDUDeviceApi = {
   getPDUDevicePage: async (data: any) => {
     return await request.post({ url: `/pdu/PDU-device/page`, data })
   },
-  getBalancedDistribution: async (params) => {
-    return await request.get({ url: `/pdu/PDU-device/balancedDistribution`,params})
+  getBalancedDistribution: async (data: any) => {
+    return await request.post({ url: `/pdu/PDU-device/balancedDistribution`,data})
   },
   
     
