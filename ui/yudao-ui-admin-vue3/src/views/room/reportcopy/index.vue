@@ -217,6 +217,89 @@
               </el-col> -->
             </el-row>
           </div>
+
+             <div class="pageBox" >
+            <div class="page-conTitle">
+              柜列信息
+            </div>
+            <br/>
+          </div>
+       <el-table :data="tableData" style="width: 100%" :border="true">
+      <el-table-column align="center" label="序号" type="index" prop="id" width="100px"/>
+      <el-table-column prop="aisleName" label="柜列名称" align="center"/>
+      <el-table-column prop="runStatus" label="状态" align="center">
+        <template #default="scope">
+          <el-tag
+            v-if="scope.row.runStatus == 1"
+            type="default"
+          >
+            正常
+          </el-tag>
+          <el-tag
+            v-if="scope.row.runStatus == 2"
+            type="warning"
+          >
+            告警
+          </el-tag>
+          <el-popover
+            placement="top-start"
+            title="告警内容"
+            :width="500"
+            trigger="hover"
+            :content="scope.row.pduAlarm"
+            v-if="scope.row.runStatus == 2"
+          >
+            <template #reference>
+              <el-tag type="danger">告警</el-tag>
+            </template>
+          </el-popover>
+          <el-tag
+            v-if="scope.row.runStatus == 0"
+            type="info"
+          >
+            未绑定
+          </el-tag>
+           <el-tag
+            v-if="scope.row.runStatus == 4"
+            type="info"
+          >
+            离线
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="powActive" label="总有功功率" align="center"/>
+      <el-table-column prop="powReactive" label="总无功功率" align="center"/>
+      <el-table-column prop="powApparent" label="总视在功率" align="center"/>
+      <el-table-column prop="powerFactor" label="总功率因数" align="center"/>
+      <el-table-column prop="proportion" label="AB路占比" align="center">
+        <template #default="scope">
+          <span v-if="scope.row.proportion != null">
+            <div class="progressContainer">
+              <div class="progress">
+                <div class="left" :style="`flex: ${scope.row.proportion}; `">
+                  {{ scope.row.proportion }}%
+                </div>
+                <div class="line"></div>
+                <div class="right" :style="`flex: ${100 - scope.row.proportion}; `">
+                  {{ 100 - scope.row.proportion }}%
+                </div>
+              </div>
+            </div>
+          </span>
+          <span v-else>
+            -
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center">
+        <template #default="scope">
+          <el-button v-if="switchValue == 0" @click="generateDailyReport(scope.row.aisleId)">日报</el-button>
+          <el-button v-else-if="switchValue == 1" @click="generateMonthlyReport(scope.row.aisleId)">月报</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
               电量分布
@@ -341,6 +424,13 @@
             <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div> -->
 
+      <div class="pageBox" v-if="visControll.aisleEleVis">
+            <div class="page-conTitle" >
+              柜列耗电量排名
+            </div>
+            <HorizontalBar :width="computedWidth" height="78vh" :list="aisleEleList" />
+          </div>
+
         </div>
         
       </div>
@@ -359,7 +449,7 @@ import { ElTree } from 'element-plus'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
-
+import HorizontalBar from './component/HorizontalBar.vue';
 
 
 /** PDU设备 列表 */
@@ -375,7 +465,9 @@ const bLineList = ref() as any;
 const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
-
+const tableData = ref([]);
+const aisleEleData = ref() as any;
+const aisleEleList = ref() as any;
 const visControll = reactive({
   visAllReport : false,
   isSameDay : false,
@@ -387,6 +479,7 @@ const visControll = reactive({
   ApowVis :false,
   BpowVis : false,
   pfVis: false,
+  aisleEleVis: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -398,7 +491,19 @@ const loadAll = async () => {
 
   return objectArray;
 }
+const windowWidth = ref(window.innerWidth);
 
+
+// 计算属性，根据窗口宽度返回不同的width值
+const computedWidth = computed(() => {
+  if (windowWidth.value >= 2400) {
+    return '90vw';
+  } else if (windowWidth.value >= 1600) {
+    return '70vw';
+  } else {
+    return '80vw';
+  }
+});
 const querySearch = (queryString: string, cb: any) => {
   const results = queryString
     ? idList.value.filter(createFilter(queryString))
@@ -682,23 +787,89 @@ const getList = async () => {
   await handlePowQuery();
   await handleDetailQuery();
   // await handlePFLineQuery();
-
+  await handleAisleQuery();
+  await handleAisleEleQuery();
   visControll.visAllReport = true;
   loading.value = false
 
 }
 
-// const handlePFLineQuery = async () => {
-//   const data = await IndexApi.getRoomPFLine(queryParams);
-//   pfLineList.value = data.pfLineRes;
-  
-//   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
-//     visControll.pfVis = true;
-//   }else {
-//     visControll.pfVis = false;
-//   }
-// }
 
+const handleAisleEleQuery = async () => {
+     aisleEleData.value = await IndexApi.getAisleEleByRoom({roomId : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime})
+    aisleEleList.value = aisleEleData.value.barRes;
+
+    if(aisleEleList.value?.time != null && aisleEleList.value?.time.length != 0){
+      visControll.aisleEleVis = true;
+    }else{
+            visControll.aisleEleVis = false;
+    }
+}
+
+// 对数据进行处理，保留三位小数
+// 辅助函数：处理数值并保留三位小数
+function formatNumber(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0; // 或者返回其他默认值
+    }
+    return Number(value.toFixed(3));
+}
+
+function formatNumber0(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return null; // 或者返回其他默认值
+    }
+    return Number(value.toFixed(0));
+}
+
+
+const handleAisleQuery = async () => {
+       const baseInfoList =  await IndexApi.getAisleDetail({roomId : queryParams.id})
+const processedData = baseInfoList.map(item => ({
+    aisleName: item.name,
+    runStatus: item.status,
+    powApparent: formatNumber(item.powApparentTotal),
+    powActive: formatNumber(item.powActiveTotal),
+    powReactive: formatNumber(item.powReactiveTotal),
+    powerFactor: formatNumber(item.powFactorTotal),
+    proportion: formatNumber0(item.rateA),
+    aisleId: item.id,
+}));
+
+// 将处理后的数据存储在 tableData.value 中
+tableData.value = processedData;
+}
+const { push } = useRouter()
+
+const now1 = ref()
+const old1 = ref()
+const new1 = ref()
+
+const generateDailyReport = (devKey) => {
+  now1.value = new Date();
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = old1.value.split(" ")[0] + " " + "23:59:59";
+  
+      // 这里添加生成日报的逻辑，你可以根据 row 数据生成相应的日报报告
+      console.log('生成日报报告', devKey);
+      push('/report/aislereport?AisleId='+devKey+'&timeType='+0+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+0);
+    };
+
+    const generateMonthlyReport = (devKey) => {
+      now1.value = new Date();
+  now1.value.setDate(1)
+  now1.value.setHours(0,0,0,0)
+  old1.value = getFullTimeByDate(now1.value);
+  new1.value = new Date(old1.value)
+  new1.value.setMonth(new1.value.getMonth() + 1);
+  new1.value.setDate(new1.value.getDate() - 1);
+  new1.value.setHours(23,59,59)
+  new1.value = getFullTimeByDate(new1.value);
+      // 这里添加生成月报的逻辑，你可以根据 row 数据生成相应的月报报告
+      console.log('生成月报报告', devKey);
+      push('/report/aislereport?AisleId='+devKey+'&timeType='+1+'&oldTime='+getFullTimeByDate(now1.value)+'&newTime='+new1.value+'&timeArr='+null+'&visAllReport='+false+'&switchValue='+1);
+    };
 
 const handlePowQuery = async () => {
  
@@ -877,15 +1048,10 @@ const handleQuery = async () => {
 // }
 
 
-
-
-
-
-
 /** 初始化 **/
 onMounted( async () =>  {
-  // getList();
-  // initChart();
+
+
   getNavList();
   idList.value = await loadAll();
 })
