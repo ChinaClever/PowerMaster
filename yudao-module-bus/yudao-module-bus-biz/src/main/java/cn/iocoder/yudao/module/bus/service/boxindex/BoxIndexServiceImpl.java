@@ -2388,7 +2388,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
 
 //                map = eleCosts.stream().collect(Collectors.groupingBy(EleCost::getOutletId));
-                List<String> collect1 = baseDos.stream().map(i -> DateUtil.format(i.getCreateTime(), "yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList());
+                List<String> collect1 = baseDos.stream().map(i -> DateUtil.format(i.getCreateTime(), "HH:mm")).distinct().collect(Collectors.toList());
                 map.put("time", collect1);
             } else {
                 List<BoxEqOutletDayDo> baseDos = list.stream().map(i -> JsonUtils.parseObject(i, BoxEqOutletDayDo.class)).collect(Collectors.toList());
@@ -2414,7 +2414,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
 
 
-                List<String> collect1 = baseDos.stream().map(i -> DateUtil.format(i.getCreateTime(), "yyyy-MM-dd HH:mm:ss")).distinct().collect(Collectors.toList());
+                List<String> collect1 = baseDos.stream().map(i -> DateUtil.format(i.getCreateTime(), "yyyy-MM-dd")).distinct().collect(Collectors.toList());
                 map.put("time", collect1);
 
             }
@@ -3370,7 +3370,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<String> busData = getData(startTime, endTime, Arrays.asList(Id), index);
+                List<String> busData = getDataNew(startTime, endTime, Arrays.asList(Id), index);
                 List<BoxTemHourDo> temList = busData.stream()
                         .map(str -> JsonUtils.parseObject(str, BoxTemHourDo.class))
                         .collect(Collectors.toList());
@@ -3437,7 +3437,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 seriesN.setHappenTime(temNHappenTime);
 
                 if (!isSameDay) {
-                    time = temList.stream().map(busTemHourDo -> busTemHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    time = temList.stream().map(busTemHourDo -> busTemHourDo.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
                 } else {
                     time = temList.stream().map(busTemHourDo -> busTemHourDo.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
                 }
@@ -3459,13 +3459,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     private void processTemMavMin(List<BoxTemHourDo> temList, Integer dataType, Map<String, Object> result) {
         PowerData temAData = new PowerData();
-        temAData.setMaxValue(Float.MIN_VALUE);
+        temAData.setMaxValue(-Float.MIN_VALUE);
         PowerData temBData = new PowerData();
-        temBData.setMaxValue(Float.MIN_VALUE);
+        temBData.setMaxValue(-Float.MIN_VALUE);
         PowerData temCData = new PowerData();
-        temCData.setMaxValue(Float.MIN_VALUE);
+        temCData.setMaxValue(-Float.MIN_VALUE);
         PowerData temDData = new PowerData();
-        temDData.setMaxValue(Float.MIN_VALUE);
+        temDData.setMaxValue(-Float.MIN_VALUE);
         for (BoxTemHourDo boxTemHourDo : temList) {
             updatePowerData(temAData, boxTemHourDo.getTemAMaxValue(), boxTemHourDo.getTemAMaxTime().toString("yyyy-MM-dd HH:mm:ss"), boxTemHourDo.getTemAAvgValue(), boxTemHourDo.getTemAMinValue(), boxTemHourDo.getTemAMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);
             updatePowerData(temBData, boxTemHourDo.getTemBMaxValue(), boxTemHourDo.getTemBMaxTime().toString("yyyy-MM-dd HH:mm:ss"), boxTemHourDo.getTemBAvgValue(), boxTemHourDo.getTemBMinValue(), boxTemHourDo.getTemBMinTime().toString("yyyy-MM-dd HH:mm:ss"), dataType);

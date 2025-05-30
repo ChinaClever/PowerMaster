@@ -169,11 +169,11 @@
                         <span v-else>{{ scope.row.baseInfoValue }}</span>
                       </template>
                     </el-table-column> -->
-                    <el-table-column  align="center" label="能耗" >
+                    <el-table-column  align="center" label="当前功率" >
                       <el-table-column :show-header="false" prop="consumeName"  />
                       <el-table-column :show-header="false" prop="consumeValue" />
                     </el-table-column>
-                    <el-table-column  align="center" label="占比" >
+                    <el-table-column  align="center" label="AB路占比" >
                       <el-table-column :show-header="false" prop="percentageName"  />
                       <el-table-column :show-header="false" prop="percentageValue" >
                         <template #default="scope">
@@ -1346,13 +1346,13 @@ if (ab) {
     baseInfoName : "所属位置",
     baseInfoValue : CabinetInfo1?.name,
     consumeName : "当前总视在功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '--',
     percentageName: "当前AB路占比",
     percentageValue: percentageValue?.toFixed(0),
   })
   temp.push({
     baseInfoName : "电力容量",
-    baseInfoValue : CabinetInfo?.pow_capacity != null ?  CabinetInfo?.pow_capacity : '/',
+    baseInfoValue : CabinetInfo?.pow_capacity != null ?  CabinetInfo?.pow_capacity+'KW' : '--',
     consumeName : "当前总有功功率",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active != null ? CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW" : '/',
     percentageName: "A路有功功率",
@@ -1360,17 +1360,17 @@ if (ab) {
   })
   temp.push({
     baseInfoName : "负载率",
-    baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
+    baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '--',
     consumeName : "当前总无功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/',
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '--',
     percentageName: "B路有功功率",
     percentageValue: CabinetInfo?.cabinet_power?.path_b !=null ?CabinetInfo?.cabinet_power?.path_b.pow_active.toFixed(3)+'kW':'--',
   })
   temp.push({
     baseInfoName : "耗电量",
-    baseInfoValue : (ele.value || 0).toFixed(3) + "kW",
+    baseInfoValue : (ele.value || 0).toFixed(3) + "kWh",
     consumeName : "当前功率因素",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '/',
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '--',
     percentageName: "偏差率",
     percentageValue: result.value != null ? result : '--',
   })

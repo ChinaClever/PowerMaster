@@ -176,11 +176,11 @@
                         <span v-else>{{ scope.row.baseInfoValue }}</span>
                       </template>
                     </el-table-column> -->
-                    <el-table-column  align="center" label="能耗" >
+                    <el-table-column  align="center" label="当前功率" >
                       <el-table-column :show-header="false" prop="consumeName"  />
                       <el-table-column :show-header="false" prop="consumeValue" />
                     </el-table-column>
-                    <el-table-column  align="center" label="占比" >
+                    <el-table-column  align="center" label="AB路占比" >
                       <el-table-column :show-header="false" prop="percentageName"  />
                       <el-table-column :show-header="false" prop="percentageValue" >
                         <template #default="scope">
@@ -1066,7 +1066,7 @@ const handleConsumeQuery = async () => {
 const handleDetailQuery = async () => {
   var temp = [] as any;
   
-  var data = await IndexApi.getAisleBalancePage({id : queryParams.id});
+  var data = await IndexApi.getAisBasicInformation({id : queryParams.id});
   var AisleInfo = data.list[0];
   location.value = AisleInfo?.location;
   temp.push({
@@ -1077,13 +1077,29 @@ const handleDetailQuery = async () => {
     percentageName: "当前AB路占比",
     percentageValue: AisleInfo.rateA != null ? AisleInfo.rateA.toFixed(0) : 50,
   })
-  temp.push({
+  temp.push({ 
+    baseInfoName : "电力容量",
+    baseInfoValue :'--',
     consumeName : "当前总有功功率",
     consumeValue : AisleInfo?.powActiveTotal != null ? AisleInfo?.powActiveTotal?.toFixed(3) + "kW" : '/',
+    percentageName: "A路有功功率",
+    percentageValue: AisleInfo?.powActiveA != null ? AisleInfo?.powActiveA+'KW' : '--',
   })
   temp.push({
+    baseInfoName : "负载率",
+    baseInfoValue :  AisleInfo?.loadRate != null ? AisleInfo?.loadRate.toFixed(2)+'%' : '--',
     consumeName : "当前总无功功率",
-    consumeValue : AisleInfo?.powReactiveTotal != null ? AisleInfo?.powReactiveTotal?.toFixed(3) + "kVar" : '/'
+    consumeValue : AisleInfo?.powReactiveTotal != null ? AisleInfo?.powReactiveTotal?.toFixed(3) + "kVar" : '/',
+        percentageName: "B路有功功率",
+    percentageValue: AisleInfo?.powActiveB != null ? AisleInfo?.powActiveB+'KW' :'--',
+  })
+   temp.push({
+    baseInfoName : "耗电量",
+    baseInfoValue : AisleInfo?.eleActive != null ? AisleInfo?.eleActive.toFixed(1)+'kWh' :'--',
+    consumeName : "当前功率因素",
+    consumeValue :  AisleInfo?.powFactorTotal != null ? AisleInfo.powFactorTotal.toFixed(2) : '--',
+    percentageName: "偏差率",
+    percentageValue: AisleInfo?.deviation != null ? (AisleInfo?.deviation * 100).toFixed(2)+'%' : '--',
   })
   CabinetTableData.value = temp;
 }
@@ -1430,8 +1446,11 @@ const handleCurrentChange = (val) => {
 }
 
 :deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
+    // background: #01ada8 !important;
+    // background: #7401ad !important;
+    // color: #c01f1f;
+        background: #f6f6f6 !important;
+    color: rgb(0, 0, 0);
 }
 :deep(.master-left .el-card__body) {
   padding: 0;

@@ -2835,7 +2835,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 totalLineRes.getSeries().add(totalPFLine);
                 if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
                     powList.forEach(hourdo -> {
-                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
                     });
                 } else {
                     powList.forEach(hourdo -> {
@@ -3314,7 +3314,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 seriesN.setHappenTime(temNHappenTime);
 
                 if (!isSameDay) {
-                    time = temList.stream().map(busTemHourDo -> busTemHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    time = temList.stream().map(busTemHourDo -> busTemHourDo.getCreateTime().toString("yyyy-MM-dd")).collect(Collectors.toList());
                 } else {
                     time = temList.stream().map(busTemHourDo -> busTemHourDo.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
                 }

@@ -1256,7 +1256,6 @@ public class CabinetServiceImpl implements CabinetService {
 
     @Override
     public List<CabinetBasicInformationVo> getCabinetDisplayDataByDevKey(String aisleId, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
-        aisleId = "17";
         List<CabineIndexCfgVO> cabinetIndexCfgVOS = cabinetIndexMapper.selectCabineIndexCfgByAisleId(Integer.valueOf(aisleId));
         List<CabinetBasicInformationVo> basicInformationVos = new ArrayList<>();
         if (!CollectionUtils.isEmpty(cabinetIndexCfgVOS)) {

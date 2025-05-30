@@ -257,7 +257,7 @@
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
-              功率因素曲线
+              功率因数曲线
             </div>   
         <div v-for="(sensor, index) in pfLineList?.series" :key="index">
         <div class="power-section single-line" v-if="index %2 == 0">
@@ -265,9 +265,9 @@
         <span class="power-value">峰值 <span class="highlight">{{ pfLineData[`lineMax${index + 1}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ pfLineData[`lineMin${index + 1}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMinTime${index + 1}`] }})</span></span>
         <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span class="power-title">{{pfLineData[`lineName${index+2}`]}}极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ pfLineData[`lineMax${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMaxTime${index + 2}`] }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ pfLineData[`lineMin${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMinTime${index + 2}`] }})</span></span>
+        <span class="power-title" v-if="index<=pfLineList?.series.length-1 ">{{pfLineData[`lineName${index+2}`]}}极值：</span>
+        <span class="power-value" v-if="index<=pfLineList?.series.length-1 ">峰值 <span class="highlight">{{ pfLineData[`lineMax${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index<=pfLineList?.series.length-1 ">谷值 <span class="highlight">{{ pfLineData[`lineMin${index + 2}`] }}</span>  <span class="time">记录于({{ pfLineData[`lineMinTime${index + 2}`] }})</span></span>
       </div>
             </div>
             <PFLine class="Container" :width="computedWidth" height="58vh" :list="pfLineList" :dataType="queryParams.dataType" />
@@ -367,9 +367,9 @@
         <span class="power-value">峰值 <span class="highlight">{{ loopData[`loopMax${index + 1}`] }}</span> A <span class="time">记录于({{ loopData[`loopMaxTime${index + 1}`] }})</span></span>
         <span class="power-value">谷值 <span class="highlight">{{ loopData[`loopMin${index + 1}`] }}</span> A <span class="time">记录于({{ loopData[`loopMinTime${index + 1}`] }})</span></span>
         <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <span class="power-title">回路{{ index + 2 }}电流极值：</span>
-        <span class="power-value">峰值 <span class="highlight">{{ loopData[`loopMax${index + 2}`] }}</span> A <span class="time">记录于({{ loopData[`loopMaxTime${index + 2}`] }})</span></span>
-        <span class="power-value">谷值 <span class="highlight">{{ loopData[`loopMin${index + 2}`] }}</span> A <span class="time">记录于({{ loopData[`loopMinTime${index + 2}`] }})</span></span>
+        <span class="power-title" v-if="index+2<=loopList?.series.length ">回路{{ index + 2 }}电流极值：</span>
+        <span class="power-value" v-if="index+2<=loopList?.series.length ">峰值 <span class="highlight">{{ loopData[`loopMax${index + 2}`] }}</span> A <span class="time">记录于({{ loopData[`loopMaxTime${index + 2}`] }})</span></span>
+        <span class="power-value" v-if="index+2<=loopList?.series.length ">谷值 <span class="highlight">{{ loopData[`loopMin${index + 2}`] }}</span> A <span class="time">记录于({{ loopData[`loopMinTime${index + 2}`] }})</span></span>
       </div>
             </div>
 
@@ -383,7 +383,7 @@
             </div>
             <div v-for="(data, dataIndex) of pairedSeries(sensor.series)" :key="dataIndex">
         <div class="power-section">
-          <div class="sensor-data-item" v-if="data[dataIndex]">
+          <div class="sensor-data-item" >
             <span class="power-title">{{ data[0].projectName }}极值：</span>
             <span class="power-value">峰值 <span class="highlight">{{ data[0].maxValue.toFixed(2) }}</span> A <span class="time">记录于({{ data[0].maxTime }})</span></span>
             <span class="power-value">谷值 <span class="highlight">{{ data[0].minValue.toFixed(2) }}</span> A <span class="time">记录于({{ data[0].minTime }})</span></span>
@@ -1505,7 +1505,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
    curValue = maxCurAlarmMax.toFixed(2) + "A";
   console.log(curValue); // 输出: 63.00A
 } else {
-  curValue = '/';
+  curValue = '--';
   console.log(curValue); // 输出: /
 }
 
@@ -1557,7 +1557,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
     statusInfoName : "总视在功率",
     statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '--',
     consumeName : "起始电能",
-    consumeValue : eqData.value.firstEq+"kWh",
+    consumeValue : eqData.value.firstEq != undefined ? eqData.value.firstEq+"kWh" : '--',
     unbalanceName : "设备类型",
     unbalanceValue : lineNumber === 3 ? "三相设备" : lineNumber === 2 ? "双相设备" : "单相设备",
   })
@@ -1567,7 +1567,7 @@ if (lineItemList && lineItemList.cur_alarm_max) {
     statusInfoName : "总有功功率",
     statusInfoValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_active.toFixed(3) + "kW" : '--',
     consumeName : "结束电能",
-    consumeValue : eqData.value.lastEq+"kWh",
+    consumeValue : eqData.value.lastEq != undefined ? eqData.value.lastEq+"kWh" : '--',
     unbalanceName : "电流不平衡度",
     unbalanceValue : curUnBalance != null ? curUnBalance.toFixed(0)+"%" : '--',
   })

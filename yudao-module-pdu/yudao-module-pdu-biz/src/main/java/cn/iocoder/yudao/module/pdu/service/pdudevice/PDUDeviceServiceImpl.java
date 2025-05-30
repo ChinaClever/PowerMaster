@@ -111,7 +111,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final SimpleDateFormat hourOnlyFormat = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat hourOnlyFormat = new SimpleDateFormat("HH:mm");
 
     @Resource
     private PduIndexMapper pDUDeviceMapper;
@@ -1009,9 +1009,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     curResBase.getSeries().add(curSeries);
                     volResBase.getSeries().add(volSeries);
                 }
-                resultMap.put("lineNumber", lineId);
-            }
 
+            }
+            resultMap.put("lineNumber", curResBase.getSeries().size());
             // 添加时间轴数据
             List<String> uniqueDateTimes = (List<String>) resultMap.getOrDefault("dateTimes", new ArrayList<>());
             List<String> xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
@@ -2223,18 +2223,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> data = getData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), pfIndex);
-                List<PduHdaTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, PduHdaTotalHourDo.class)).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(data)){
+                    List<PduHdaTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, PduHdaTotalHourDo.class)).collect(Collectors.toList());
 
-                LineSeries totalPFLine = new LineSeries();
-                processPFMavMin(powList, dataType, timeType, totalLineRes, totalPFLine, result, oldTime, newTime);
-                if (dataType == 1) {
-                    happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
-                } else if (dataType == -1) {
-                    happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    LineSeries totalPFLine = new LineSeries();
+                    processPFMavMin(powList, dataType, timeType, totalLineRes, totalPFLine, result, oldTime, newTime);
+                    if (dataType == 1) {
+                        happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    } else if (dataType == -1) {
+                        happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    }
+
+                    totalLineRes.getSeries().add(totalPFLine);
+                    totalPFLine.setHappenTime(happenTime);
                 }
-
-                totalLineRes.getSeries().add(totalPFLine);
-                totalPFLine.setHappenTime(happenTime);
                 //获取相功率因数
                 SearchRequest searchRequest = null;
                 String index = "";
@@ -2287,18 +2289,18 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
      */
     public void processData(SearchHits hits, Integer dataType, Map result, CabinetChartResBase totalLineRes) {
         //描述数据收集
-        Float lineAMax = -0.1f;
-        Float lineAMin = 1.1f;
+        Float lineAMax = -Float.MIN_VALUE;
+        Float lineAMin = Float.MAX_VALUE;
         String lineAMaxTime = "";
         String lineAMinTime = "";
 
-        Float lineBMax = -0.1f;
-        Float lineBMin = 1.1f;
+        Float lineBMax = -Float.MIN_VALUE;
+        Float lineBMin = Float.MAX_VALUE;
         String lineBMaxTime = "";
         String lineBMinTime = "";
 
-        Float lineCMax = -0.1f;
-        Float lineCMin = 1.1f;
+        Float lineCMax = -Float.MIN_VALUE;
+        Float lineCMin = Float.MAX_VALUE;
         String lineCMaxTime = "";
         String lineCMinTime = "";
 
@@ -2470,12 +2472,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
 
         }
-        lineASeries.setHappenTime(lineAHappenTime);
-        lineBSeries.setHappenTime(lineBHappenTime);
-        lineCSeries.setHappenTime(lineCHappenTime);
-        totalLineRes.getSeries().add(lineASeries);
-        totalLineRes.getSeries().add(lineBSeries);
-        totalLineRes.getSeries().add(lineCSeries);
+
+        if (!CollectionUtils.isEmpty(lineASeries.getData())){
+            lineASeries.setHappenTime(lineAHappenTime);
+            totalLineRes.getSeries().add(lineASeries);
+        }
+        if (!CollectionUtils.isEmpty(lineBSeries.getData())){
+            lineBSeries.setHappenTime(lineBHappenTime);
+            totalLineRes.getSeries().add(lineBSeries);
+        }
+        if (!CollectionUtils.isEmpty(lineCSeries.getData())){
+            lineCSeries.setHappenTime(lineCHappenTime);
+            totalLineRes.getSeries().add(lineCSeries);
+        }
+
 
 
     }
@@ -2601,11 +2611,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         totalApparentPow.getData().add(pduHdaTotalHourDo.getApparentPowMaxValue());
                         totalActivePow.getData().add(pduHdaTotalHourDo.getActivePowMaxValue());
                         totalReactivePow.getData().add(pduHdaTotalHourDo.getPowReactiveMaxValue());
-//                        if (timeFlag) {
-//                            totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("HH:mm"));
-//                        } else {
-//                            totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
-//                        }
+
                     }
 
                 } else if (dataType == 0) {
@@ -2692,7 +2698,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
      * 数值辅助类
      */
     private static class PowerData {
-        private Float maxValue = 0f;
+        private Float maxValue = -Float.MIN_VALUE;
         private Float minValue = Float.MAX_VALUE;
         private String maxTime = "";
         private String minTime = "";
@@ -3058,8 +3064,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     List<Float> loopCur = null;
 
                     //收集描述信息（峰值、谷值、发生时间）
-                    Float loopMax = 0f;
-                    Float loopMin = Float.MAX_VALUE;
+                    float loopMax = -Float.MIN_VALUE;
+                    float loopMin = Float.MAX_VALUE;
 
                     String loopMaxTime = "";
                     String loopMinTime = "";
@@ -4330,7 +4336,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
      */
     public void processPFMavMin(List<PduHdaTotalHourDo> powList, Integer dataType, Integer timeType, CabinetChartResBase totalLineRes
             , LineSeries totalPFLine, Map<String, Object> result, LocalDateTime oldTime, LocalDateTime newTime) {
-        Float totalMax = 0f;
+        Float totalMax = -Float.MIN_VALUE;
         Float totalMin = Float.MAX_VALUE;
         String totalMaxTime = "";
         String totalMinTime = "";
