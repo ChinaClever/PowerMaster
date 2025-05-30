@@ -111,4 +111,8 @@ public interface AisleIndexService {
     PageResult<AisleBalanceRes> getAisBasicInformation(AisleIndexPageReqVO pageReqVO);
 
     Map getReportConsumeEleDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    List<AisleBalanceRes> getAisBasicInformationByRoom(String roomId);
+
+    Map getEleByRoom(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

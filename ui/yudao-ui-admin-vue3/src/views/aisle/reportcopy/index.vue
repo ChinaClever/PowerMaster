@@ -912,7 +912,7 @@ function formatNumber0(value) {
 
 
 const handleCabinetQuery = async () =>{
-       const baseInfoList =  await IndexApi.getCabinetDetail({id : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime})
+       const baseInfoList =  await IndexApi.getCabinetDetail({aisleId : queryParams.id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime})
 const processedData = baseInfoList.map(item => ({
     devKey: item.devKey,
     runStatus: item.status,
@@ -1179,10 +1179,31 @@ const handleQuery = async () => {
 //   }
 // }
 const preStatus = ref([0])
+
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
 /** 初始化 **/
 onMounted( async () =>  {
-  // getList();
-  // initChart();
+
+    let id = route.query?.AisleId as string | undefined;
+  let timeType = route.query?.timeType as string | undefined;
+  let oldTime = route.query?.oldTime as string | undefined;
+  let newTime = route.query?.newTime as string | undefined;
+  let visAllReport = route.query?.visAllReport as string | undefined;
+  let switchValue1 = route.query?.switchValue as string | undefined;
+
+  if (id != undefined) {
+    
+    queryParams.ipAddr = id;
+    queryParams.id = id;
+    queryParams.timeType = timeType;
+    queryParams.oldTime = oldTime;
+    queryParams.newTime = newTime;
+    queryParams.visAllReport = visAllReport;
+      switchValue.value = switchValue1;
+    getList();
+    
+  }
   getNavList();
   idList.value = await loadAll();
 })
