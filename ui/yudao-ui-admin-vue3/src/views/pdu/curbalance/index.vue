@@ -21,7 +21,7 @@
             >
           </div>
           <div class="box">
-            <div class="top"> <div class="tag empty"></div>小电流 </div>
+            <div class="top"> <div class="tag empty"></div>{{switchValue==99?'小电压':'小电流'}} </div>
             <div class="value"
               ><span class="number">{{ statusNumber.smallCurrent }}</span
               >个</div
@@ -368,7 +368,7 @@
         <div class="custom-content" style="margin-top:-30px">
           <div class="custom-content-container">
           <el-card class="cardChilc" shadow="hover">
-            <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[balanceObj.colorIndex].name" />
+            <curUnblance :max="balanceObj.imbalanceValueA||0" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[balanceObj.colorIndex].name" />
             <!-- <div class="box" :style="{ borderColor: colorList[balanfceObj.colorIndex].color }">
               <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
               <div
@@ -434,7 +434,7 @@
         </div>
         <div class="custom-content-container">
           <el-card  class="cardChilc" shadow="hover">
-            <volUnblance :max="balanceObj.imbalanceValueB" :customColor="colorList[4].color"  :name="colorList[4].name" />
+            <volUnblance :max="balanceObj.imbalanceValueB||0" :customColor="colorList[4].color"  :name="colorList[4].name" />
             <!-- <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
               <div class="value">{{balanceObj.imbalanceValueB}}%</div>
               <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
