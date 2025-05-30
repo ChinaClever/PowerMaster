@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分析" :showCheckbox="false" :hightCurrent="true" :currentKey="currentKey" :highlightTypes="[3]" :defaultExpandedKeys="defaultExpandedKeys">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="能耗分析" :showCheckbox="false" :hightCurrent="true" :currentKey="currentKey" :highlightTypes="[3]" :defaultExpandedKeys="defaultExpandedKeys">
     <template #NavInfo>
       <br/>
       <div class="nav_data">
