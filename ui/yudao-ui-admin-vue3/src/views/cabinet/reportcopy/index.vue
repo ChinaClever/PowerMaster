@@ -441,13 +441,13 @@
           </div>
 
  
-    
+<!--     
           <div class="pageBox" v-if="visControll.BpowVis">
             <div class="page-conTitle" >
               机架耗电电量排名（先写死，后续根据需要修改）
             </div>
             <HorizontalBar :width="computedWidth" height="58vh" />
-          </div>
+          </div> -->
           <!-- <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
               输出位电量排名
@@ -1041,7 +1041,7 @@ const handlePFLineQuery = async () => {
 
 
 const handleEleQuery = async () => {
-  const data = await IndexApi.getEleByCabinet(queryParams);
+  const data = await IndexApi.getEleByCabinetId(queryParams);
   ele.value = data.ele;
   console.log('elekasjklasncklasnckasnk',ele.value);
 }
@@ -1368,7 +1368,7 @@ if (ab) {
   })
   temp.push({
     baseInfoName : "耗电量",
-    baseInfoValue : (ele.value || 0).toFixed(3) + "kWh",
+    baseInfoValue : (ele.value || 0).toFixed(1) + "kWh",
     consumeName : "当前功率因素",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '--',
     percentageName: "偏差率",

@@ -145,7 +145,7 @@ public class PDUDeviceController {
     }
 
     @GetMapping("/pduHdaLineHisDataByCabinetByType")
-    @Operation(summary = "获得PDU相历史数据")
+    @Operation(summary = "获得机柜相历史数据")
     public CommonResult<Map> getPduHdaLineHisDataKey(Long CabinetId, String type, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime,Integer dataType) {
         return success(pDUDeviceService.getPduHdaLineHisdataKeyByCabinetByType(CabinetId, type, oldTime, newTime,dataType));
     }
