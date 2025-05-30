@@ -1490,7 +1490,7 @@ public class CabinetServiceImpl implements CabinetService {
         vo.setRoomName(jsonObject.getString("room_name"));
         vo.setDateTime(LocalDateTimeUtil.parse(jsonObject.getString("date_time"), "yyyy-MM-dd HH:mm:ss"));
         if (Objects.nonNull(total)) {
-            vo.setPowActiveTotal(total.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+            vo.setPowActiveTotal(total.getBigDecimal("pow_active").setScale(3, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentTotal(total.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveTotal(total.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
             vo.setPowerFactor(total.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
@@ -1504,7 +1504,7 @@ public class CabinetServiceImpl implements CabinetService {
             if (!CollectionUtils.isEmpty(volValue)) {
                 vo.setVolA(volValue.stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
             }
-            vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+            vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(3, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentA(apath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveA(apath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
             vo.setPowerFactorA(apath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
@@ -1519,7 +1519,7 @@ public class CabinetServiceImpl implements CabinetService {
             if (!CollectionUtils.isEmpty(volValue)) {
                 vo.setVolB(volValue.stream().map(i -> i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
             }
-            vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+            vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(3, RoundingMode.HALF_DOWN));//有功功率
             vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
             vo.setPowerFactorB(bpath.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素

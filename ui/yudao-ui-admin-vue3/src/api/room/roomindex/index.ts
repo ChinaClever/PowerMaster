@@ -58,6 +58,10 @@ export const IndexApi = {
     return await request.post({ url: `/room/index/report/ele`,data})
   },
 
+      getAisleEleByRoom: async (params) => {
+        return await request.get({ url: `/aisle/index/getEleByRoom`,params})
+      },
+
   getPowData: async (data) => {
     return await request.post({ url: `/room/index/report/pow`,data})
   },
@@ -65,6 +69,11 @@ export const IndexApi = {
     getPowDataByType: async (data) => {
     return await request.post({ url: `/room/index/report/powByType`,data})
   },
+
+    // 获取机柜详情
+    getAisleDetail: async (params: any) => {
+      return await request.get({ url: `/aisle/index/getAisBasicInformationByRoom`, params })
+    },
 
   getRoomPFLine : async (data) => {
     return await request.post({ url: `/room/index/report/pfline`, data })

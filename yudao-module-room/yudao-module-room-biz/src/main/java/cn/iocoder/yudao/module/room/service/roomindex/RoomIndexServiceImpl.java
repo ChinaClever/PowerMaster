@@ -186,6 +186,9 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> roomData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                if (roomData.size() == 0){
+                    return result;
+                }
                 Double firstEq = null;
                 Double lastEq = null;
                 Double totalEq = 0D;
@@ -265,198 +268,17 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         return result;
     }
 
-//    @Override
-//    public Map getReportPowDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
-//        Map result = new HashMap<>();
-//        LineResBase totalLineRes = new LineResBase();
-//        LineResBase aLineRes = new LineResBase();
-//        LineResBase bLineRes = new LineResBase();
-//        LineResBase pFLine = new LineResBase();
-//
-//        result.put("totalLineRes", totalLineRes);
-//        result.put("aLineRes", aLineRes);
-//        result.put("bLineRes", bLineRes);
-//        try {
-//            if (id != null) {
-//                String index = null;
-//
-//                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
-//                    index = "room_hda_pow_hour";
-//                    if (oldTime.equals(newTime)) {
-//                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
-//                    }
-//
-//                } else {
-//                    index = "room_hda_pow_day";
-//                    oldTime = oldTime.plusDays(1);
-//                    newTime = newTime.plusDays(1);
-//                }
-//                String startTime = localDateTimeToString(oldTime);
-//                String endTime = localDateTimeToString(newTime);
-//                List<String> roomData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
-//                List<RoomPowHourDo> roomPowHourDos = roomData.stream().map(str -> JsonUtils.parseObject(str, RoomPowHourDo.class)).collect(Collectors.toList());
-//
-//                LineSeries totalApparentPow = new LineSeries();
-//                totalApparentPow.setName("总视在功率");
-//                LineSeries totalActivePow = new LineSeries();
-//                totalActivePow.setName("总有功功率");
-//                LineSeries totalReactivePow = new LineSeries();
-//                totalReactivePow.setName("总无功功率");
-//                totalLineRes.getSeries().add(totalApparentPow);
-//                totalLineRes.getSeries().add(totalActivePow);
-//                totalLineRes.getSeries().add(totalReactivePow);
-//
-//                LineSeries apparentPowA = new LineSeries();
-//                apparentPowA.setName("A路视在功率");
-//                LineSeries activePowA = new LineSeries();
-//                activePowA.setName("A路有功功率");
-//                LineSeries reactivePowA = new LineSeries();
-//                reactivePowA.setName("A路无功功率");
-//                aLineRes.getSeries().add(apparentPowA);
-//                aLineRes.getSeries().add(activePowA);
-//                aLineRes.getSeries().add(reactivePowA);
-//
-//
-//                LineSeries apparentPowB = new LineSeries();
-//                apparentPowB.setName("B路视在功率");
-//                LineSeries activePowB = new LineSeries();
-//                activePowB.setName("B路有功功率");
-//                LineSeries reactivePowB = new LineSeries();
-//                reactivePowB.setName("B路无功功率");
-//                bLineRes.getSeries().add(apparentPowB);
-//                bLineRes.getSeries().add(activePowB);
-//                bLineRes.getSeries().add(reactivePowB);
-//
-//                LineSeries totalPFLine = new LineSeries();
-//                totalPFLine.setName("总平均功率因素");
-//                LineSeries PFLineA = new LineSeries();
-//                PFLineA.setName("A路功率因素");
-//                LineSeries PFLineB = new LineSeries();
-//                PFLineB.setName("B路功率因素");
-//
-//                pFLine.getSeries().add(totalPFLine);
-//                pFLine.getSeries().add(PFLineA);
-//                pFLine.getSeries().add(PFLineB);
-//
-//                if (!CollectionUtils.isEmpty(roomPowHourDos)) {
-//                    roomPowHourDos.forEach(hourdo -> {
-//                        RoomApparentTotalVO apparentTotalVO = BeanUtils.toBean(hourdo, RoomApparentTotalVO.class);
-//                        totalApparentPow.getData().add(apparentTotalVO);
-//                        RoomActiveTotalVO activeTotalVO = BeanUtils.toBean(hourdo, RoomActiveTotalVO.class);
-//                        totalActivePow.getData().add(activeTotalVO);
-//                        RoomReactiveTotalVO reactiveTotalVO = BeanUtils.toBean(hourdo, RoomReactiveTotalVO.class);
-//                        totalReactivePow.getData().add(reactiveTotalVO);
-//                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-//
-//                        RoomApparentAVO apparentAVO = BeanUtils.toBean(hourdo, RoomApparentAVO.class);
-//                        apparentPowA.getData().add(apparentAVO);
-//                        RoomActiveAVO activeAVO = BeanUtils.toBean(hourdo, RoomActiveAVO.class);
-//                        activePowA.getData().add(activeAVO);
-//                        RoomReactiveAVO reactiveAVO = BeanUtils.toBean(hourdo, RoomReactiveAVO.class);
-//                        reactivePowA.getData().add(reactiveAVO);
-//                        aLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-//
-//                        RoomApparentBVO apparentBVO = BeanUtils.toBean(hourdo, RoomApparentBVO.class);
-//                        apparentPowB.getData().add(apparentBVO);
-//                        RoomActiveBVO activeBVO = BeanUtils.toBean(hourdo, RoomActiveBVO.class);
-//                        activePowB.getData().add(activeBVO);
-//                        RoomReactiveBVO reactiveBVO = BeanUtils.toBean(hourdo, RoomReactiveBVO.class);
-//                        reactivePowB.getData().add(reactiveBVO);
-//                        bLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-//
-//                        RoomFactorTotalVO factorTotalVO = BeanUtils.toBean(hourdo, RoomFactorTotalVO.class);
-//                        totalPFLine.getData().add(factorTotalVO);
-//                        RoomFactorAVO factorAVO = BeanUtils.toBean(hourdo, RoomFactorAVO.class);
-//                        PFLineA.getData().add(factorAVO);
-//                        RoomFactorBVO factorBVO = BeanUtils.toBean(hourdo, RoomFactorBVO.class);
-//                        PFLineB.getData().add(factorBVO);
-//                        DateTime dateTime = new DateTime(hourdo.getCreateTime());
-//                        totalLineRes.getTime().add(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
-//                    });
-//                }
-//
-//                result.put("totalLineRes", totalLineRes);
-//                result.put("aLineRes", aLineRes);
-//                result.put("bLineRes", bLineRes);
-//                result.put("pFLine", pFLine);
-//                RoomPowHourDo totalMaxApparent = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentTotalMaxValue));
-//                if (totalMaxApparent != null) {
-//                    result.put("apparentPowMaxValue", totalMaxApparent.getApparentTotalMaxValue());
-//                    result.put("apparentPowMaxTime", totalMaxApparent.getApparentTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo totalMinApparent = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentTotalMinValue));
-//                if (totalMinApparent != null) {
-//                    result.put("apparentPowMinValue", totalMinApparent.getApparentTotalMinValue());
-//                    result.put("apparentPowMinTime", totalMinApparent.getApparentTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo totalMaxActive = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveTotalMaxValue));
-//                if (totalMaxActive != null) {
-//                    result.put("activePowMaxValue", totalMaxActive.getActiveTotalMaxValue());
-//                    result.put("activePowMaxTime", totalMaxActive.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo totalMinActive = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveTotalMinValue));
-//                if (totalMinActive != null) {
-//                    result.put("activePowMinValue", totalMinActive.getActiveTotalMinValue());
-//                    result.put("activePowMinTime", totalMinActive.getActiveTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo maxApparentA = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentAMaxValue));
-//                if (maxApparentA != null) {
-//                    result.put("AapparentPowMaxValue", maxApparentA.getApparentAMaxValue());
-//                    result.put("AapparentPowMaxTime", maxApparentA.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo minApparentA = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentAMinValue));
-//                if (minApparentA != null) {
-//                    result.put("AapparentPowMinValue", minApparentA.getApparentAMinValue());
-//                    result.put("AapparentPowMinTime", minApparentA.getApparentAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo maxActiveA = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveAMaxValue));
-//                if (maxActiveA != null) {
-//                    result.put("AactivePowMaxValue", maxActiveA.getActiveAMaxValue());
-//                    result.put("AactivePowMaxTime", maxActiveA.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo minActiveA = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveAMinValue));
-//                if (minActiveA != null) {
-//                    result.put("AactivePowMinValue", minActiveA.getActiveAMinValue());
-//                    result.put("AactivePowMinTime", minActiveA.getActiveAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo maxApparentB = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentBMaxValue));
-//                if (maxApparentB != null) {
-//                    result.put("BapparentPowMaxValue", maxApparentB.getApparentBMaxValue());
-//                    result.put("BapparentPowMaxTime", maxApparentB.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo minApparentB = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentBMinValue));
-//                if (minApparentB != null) {
-//                    result.put("BapparentPowMinValue", minApparentB.getApparentBMinValue());
-//                    result.put("BapparentPowMinTime", minApparentB.getApparentBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo maxActiveB = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveBMaxValue));
-//                if (maxActiveB != null) {
-//                    result.put("BactivePowMaxValue", maxActiveB.getActiveBMaxValue());
-//                    result.put("BactivePowMaxTime", maxActiveB.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//                RoomPowHourDo minActiveB = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveBMinValue));
-//                if (minActiveB != null) {
-//                    result.put("BactivePowMinValue", minActiveB.getActiveBMinValue());
-//                    result.put("BactivePowMinTime", minActiveB.getActiveBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-//                }
-//            }
-//        } catch (Exception e) {
-//            log.error("获取数据失败", e);
-//        }
-//        return result;
-//    }
-
     @Override
-    public Map getReportPowDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime,Integer dataType) {
-
-        Map result = new HashMap<String,Objects>();
+    public Map getReportPowDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
         LineResBase totalLineRes = new LineResBase();
         LineResBase aLineRes = new LineResBase();
         LineResBase bLineRes = new LineResBase();
-        LineResBase pFineRes = new LineResBase();
+        LineResBase pFLine = new LineResBase();
 
-
-
+        result.put("totalLineRes", totalLineRes);
+        result.put("aLineRes", aLineRes);
+        result.put("bLineRes", bLineRes);
         try {
             if (id != null) {
                 String index = null;
@@ -477,73 +299,149 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 List<String> roomData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
                 List<RoomPowHourDo> roomPowHourDos = roomData.stream().map(str -> JsonUtils.parseObject(str, RoomPowHourDo.class)).collect(Collectors.toList());
 
-                if (!CollectionUtils.isEmpty(roomPowHourDos)){
-                    processLineSeries(roomPowHourDos, dataType, totalLineRes, aLineRes, bLineRes,pFineRes , timeType, oldTime, newTime);
+                LineSeries totalApparentPow = new LineSeries();
+                totalApparentPow.setName("总视在功率");
+                LineSeries totalActivePow = new LineSeries();
+                totalActivePow.setName("总有功功率");
+                LineSeries totalReactivePow = new LineSeries();
+                totalReactivePow.setName("总无功功率");
+                totalLineRes.getSeries().add(totalApparentPow);
+                totalLineRes.getSeries().add(totalActivePow);
+                totalLineRes.getSeries().add(totalReactivePow);
+
+                LineSeries apparentPowA = new LineSeries();
+                apparentPowA.setName("A路视在功率");
+                LineSeries activePowA = new LineSeries();
+                activePowA.setName("A路有功功率");
+                LineSeries reactivePowA = new LineSeries();
+                reactivePowA.setName("A路无功功率");
+                aLineRes.getSeries().add(apparentPowA);
+                aLineRes.getSeries().add(activePowA);
+                aLineRes.getSeries().add(reactivePowA);
+
+
+                LineSeries apparentPowB = new LineSeries();
+                apparentPowB.setName("B路视在功率");
+                LineSeries activePowB = new LineSeries();
+                activePowB.setName("B路有功功率");
+                LineSeries reactivePowB = new LineSeries();
+                reactivePowB.setName("B路无功功率");
+                bLineRes.getSeries().add(apparentPowB);
+                bLineRes.getSeries().add(activePowB);
+                bLineRes.getSeries().add(reactivePowB);
+
+                LineSeries totalPFLine = new LineSeries();
+                totalPFLine.setName("总平均功率因素");
+                LineSeries PFLineA = new LineSeries();
+                PFLineA.setName("A路功率因素");
+                LineSeries PFLineB = new LineSeries();
+                PFLineB.setName("B路功率因素");
+
+                pFLine.getSeries().add(totalPFLine);
+                pFLine.getSeries().add(PFLineA);
+                pFLine.getSeries().add(PFLineB);
+
+                if (!CollectionUtils.isEmpty(roomPowHourDos)) {
+                    roomPowHourDos.forEach(hourdo -> {
+                        RoomApparentTotalVO apparentTotalVO = BeanUtils.toBean(hourdo, RoomApparentTotalVO.class);
+                        totalApparentPow.getData().add(apparentTotalVO);
+                        RoomActiveTotalVO activeTotalVO = BeanUtils.toBean(hourdo, RoomActiveTotalVO.class);
+                        totalActivePow.getData().add(activeTotalVO);
+                        RoomReactiveTotalVO reactiveTotalVO = BeanUtils.toBean(hourdo, RoomReactiveTotalVO.class);
+                        totalReactivePow.getData().add(reactiveTotalVO);
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                        RoomApparentAVO apparentAVO = BeanUtils.toBean(hourdo, RoomApparentAVO.class);
+                        apparentPowA.getData().add(apparentAVO);
+                        RoomActiveAVO activeAVO = BeanUtils.toBean(hourdo, RoomActiveAVO.class);
+                        activePowA.getData().add(activeAVO);
+                        RoomReactiveAVO reactiveAVO = BeanUtils.toBean(hourdo, RoomReactiveAVO.class);
+                        reactivePowA.getData().add(reactiveAVO);
+                        aLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                        RoomApparentBVO apparentBVO = BeanUtils.toBean(hourdo, RoomApparentBVO.class);
+                        apparentPowB.getData().add(apparentBVO);
+                        RoomActiveBVO activeBVO = BeanUtils.toBean(hourdo, RoomActiveBVO.class);
+                        activePowB.getData().add(activeBVO);
+                        RoomReactiveBVO reactiveBVO = BeanUtils.toBean(hourdo, RoomReactiveBVO.class);
+                        reactivePowB.getData().add(reactiveBVO);
+                        bLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+                        RoomFactorTotalVO factorTotalVO = BeanUtils.toBean(hourdo, RoomFactorTotalVO.class);
+                        totalPFLine.getData().add(factorTotalVO);
+                        RoomFactorAVO factorAVO = BeanUtils.toBean(hourdo, RoomFactorAVO.class);
+                        PFLineA.getData().add(factorAVO);
+                        RoomFactorBVO factorBVO = BeanUtils.toBean(hourdo, RoomFactorBVO.class);
+                        PFLineB.getData().add(factorBVO);
+                        DateTime dateTime = new DateTime(hourdo.getCreateTime());
+                        totalLineRes.getTime().add(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+                    });
                 }
 
                 result.put("totalLineRes", totalLineRes);
                 result.put("aLineRes", aLineRes);
                 result.put("bLineRes", bLineRes);
-                result.put("pfLineRes", pFineRes);
-
-                String apparentTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_total_max_value");
-                RoomPowHourDo totalMaxApparent = JsonUtils.parseObject(apparentTotalMaxValue, RoomPowHourDo.class);
-                String apparentTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_total_min_value");
-                RoomPowHourDo totalMinApparent = JsonUtils.parseObject(apparentTotalMinValue, RoomPowHourDo.class);
-
-                String activeTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_total_max_value");
-                RoomPowHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, RoomPowHourDo.class);
-                String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_total_min_value");
-                RoomPowHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, RoomPowHourDo.class);
-
-                String apparentAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_a_max_value");
-                RoomPowHourDo maxApparentA = JsonUtils.parseObject(apparentAMaxValue, RoomPowHourDo.class);
-                String apparentAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_a_min_value");
-                RoomPowHourDo minApparentA = JsonUtils.parseObject(apparentAMinValue, RoomPowHourDo.class);
-
-                String activeAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_a_max_value");
-                RoomPowHourDo maxActiveA = JsonUtils.parseObject(activeAMaxValue, RoomPowHourDo.class);
-                String activeAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_a_min_value");
-                RoomPowHourDo minActiveA = JsonUtils.parseObject(activeAMinValue, RoomPowHourDo.class);
-
-                String apparentBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_b_max_value");
-                RoomPowHourDo maxApparentB = JsonUtils.parseObject(apparentBMaxValue, RoomPowHourDo.class);
-                String apparentBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_b_min_value");
-                RoomPowHourDo minApparentB = JsonUtils.parseObject(apparentBMinValue, RoomPowHourDo.class);
-
-                String activeBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_b_max_value");
-                RoomPowHourDo maxActiveB = JsonUtils.parseObject(activeBMaxValue, RoomPowHourDo.class);
-                String activeBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_b_min_value");
-                RoomPowHourDo minActiveB = JsonUtils.parseObject(activeBMinValue, RoomPowHourDo.class);
-
-                result.put("apparentPowMaxValue", totalMaxApparent.getApparentTotalMaxValue());
-                result.put("apparentPowMaxTime", totalMaxApparent.getApparentTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("apparentPowMinValue", totalMinApparent.getApparentTotalMinValue());
-                result.put("apparentPowMinTime", totalMinApparent.getApparentTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMaxValue", totalMaxActive.getActiveTotalMaxValue());
-                result.put("activePowMaxTime", totalMaxActive.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMinValue", totalMinActive.getActiveTotalMinValue());
-                result.put("activePowMinTime", totalMinActive.getActiveTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-
-                result.put("AapparentPowMaxValue", maxApparentA.getApparentAMaxValue());
-                result.put("AapparentPowMaxTime", maxApparentA.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("AapparentPowMinValue", minApparentA.getApparentAMinValue());
-                result.put("AapparentPowMinTime", minApparentA.getApparentAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("AactivePowMaxValue", maxActiveA.getActiveAMaxValue());
-                result.put("AactivePowMaxTime", maxActiveA.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("AactivePowMinValue", minActiveA.getActiveAMinValue());
-                result.put("AactivePowMinTime", minActiveA.getActiveAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-
-                result.put("BapparentPowMaxValue", maxApparentB.getApparentBMaxValue());
-                result.put("BapparentPowMaxTime", maxApparentB.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("BapparentPowMinValue", minApparentB.getApparentBMinValue());
-                result.put("BapparentPowMinTime", minApparentB.getApparentBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("BactivePowMaxValue", maxActiveB.getActiveBMaxValue());
-                result.put("BactivePowMaxTime", maxActiveB.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("BactivePowMinValue", minActiveB.getActiveBMinValue());
-                result.put("BactivePowMinTime", minActiveB.getActiveBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
-
-
+                result.put("pFLine", pFLine);
+                RoomPowHourDo totalMaxApparent = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentTotalMaxValue));
+                if (totalMaxApparent != null) {
+                    result.put("apparentPowMaxValue", totalMaxApparent.getApparentTotalMaxValue());
+                    result.put("apparentPowMaxTime", totalMaxApparent.getApparentTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo totalMinApparent = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentTotalMinValue));
+                if (totalMinApparent != null) {
+                    result.put("apparentPowMinValue", totalMinApparent.getApparentTotalMinValue());
+                    result.put("apparentPowMinTime", totalMinApparent.getApparentTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo totalMaxActive = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveTotalMaxValue));
+                if (totalMaxActive != null) {
+                    result.put("activePowMaxValue", totalMaxActive.getActiveTotalMaxValue());
+                    result.put("activePowMaxTime", totalMaxActive.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo totalMinActive = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveTotalMinValue));
+                if (totalMinActive != null) {
+                    result.put("activePowMinValue", totalMinActive.getActiveTotalMinValue());
+                    result.put("activePowMinTime", totalMinActive.getActiveTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo maxApparentA = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentAMaxValue));
+                if (maxApparentA != null) {
+                    result.put("AapparentPowMaxValue", maxApparentA.getApparentAMaxValue());
+                    result.put("AapparentPowMaxTime", maxApparentA.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo minApparentA = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentAMinValue));
+                if (minApparentA != null) {
+                    result.put("AapparentPowMinValue", minApparentA.getApparentAMinValue());
+                    result.put("AapparentPowMinTime", minApparentA.getApparentAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo maxActiveA = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveAMaxValue));
+                if (maxActiveA != null) {
+                    result.put("AactivePowMaxValue", maxActiveA.getActiveAMaxValue());
+                    result.put("AactivePowMaxTime", maxActiveA.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo minActiveA = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveAMinValue));
+                if (minActiveA != null) {
+                    result.put("AactivePowMinValue", minActiveA.getActiveAMinValue());
+                    result.put("AactivePowMinTime", minActiveA.getActiveAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo maxApparentB = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentBMaxValue));
+                if (maxApparentB != null) {
+                    result.put("BapparentPowMaxValue", maxApparentB.getApparentBMaxValue());
+                    result.put("BapparentPowMaxTime", maxApparentB.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo minApparentB = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getApparentBMinValue));
+                if (minApparentB != null) {
+                    result.put("BapparentPowMinValue", minApparentB.getApparentBMinValue());
+                    result.put("BapparentPowMinTime", minApparentB.getApparentBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo maxActiveB = Collections.max(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveBMaxValue));
+                if (maxActiveB != null) {
+                    result.put("BactivePowMaxValue", maxActiveB.getActiveBMaxValue());
+                    result.put("BactivePowMaxTime", maxActiveB.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                RoomPowHourDo minActiveB = Collections.min(roomPowHourDos, Comparator.comparing(RoomPowHourDo::getActiveBMinValue));
+                if (minActiveB != null) {
+                    result.put("BactivePowMinValue", minActiveB.getActiveBMinValue());
+                    result.put("BactivePowMinTime", minActiveB.getActiveBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
             }
         } catch (Exception e) {
             log.error("获取数据失败", e);
@@ -551,175 +449,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         return result;
     }
 
-    //设置初始容器区分需要的数据类型（最大值，平均值，最小值）
-    private void processLineSeries(List<RoomPowHourDo> roomPowHourDos, Integer dataType,
-                                   LineResBase totalLineRes, LineResBase aLineRes, LineResBase bLineRes,
-                                   LineResBase pFineRes, Integer timeType,
-                                   LocalDateTime oldTime, LocalDateTime newTime) {
-        String timeFormat = timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate()) ? "HH:mm:ss" : "yyyy-MM-dd";
-        LineSeries totalPFLine = new LineSeries();
-        LineSeries totalAPFLine = new LineSeries();
-        LineSeries totalBPFLine = new LineSeries();
 
-        LineSeries totalApparentPow = new LineSeries();
-        LineSeries totalActivePow = new LineSeries();
-        LineSeries totalReactivePow = new LineSeries();
-
-        LineSeries apparentPowA = new LineSeries();
-        LineSeries activePowA = new LineSeries();
-        LineSeries reactivePowA = new LineSeries();
-
-        LineSeries apparentPowB = new LineSeries();
-        LineSeries activePowB = new LineSeries();
-        LineSeries reactivePowB = new LineSeries();
-        if (dataType == 1) { // MAX
-            totalPFLine.setName(DataTypeEnum.FACTOR_TOTAL_MAX.getDataType());
-            totalAPFLine.setName(DataTypeEnum.FACTOR_A_TOTAL_MAX.getDataType());
-            totalBPFLine.setName(DataTypeEnum.FACTOR_B_TOTAL_MAX.getDataType());
-            totalApparentPow.setName(DataTypeEnum.APPARENT_TOTAL_MAX.getDataType());
-            totalActivePow.setName(DataTypeEnum.ACTIVE_TOTAL_MAX.getDataType());
-            totalReactivePow.setName(DataTypeEnum.REACTIVE_TOTAL_MAX.getDataType());
-            apparentPowA.setName(DataTypeEnum.A_APPARENT_TOTAL_MAX.getDataType());
-            activePowA.setName(DataTypeEnum.A_ACTIVE_TOTAL_MAX.getDataType());
-            reactivePowA.setName(DataTypeEnum.A_REACTIVE_TOTAL_MAX.getDataType());
-            apparentPowB.setName(DataTypeEnum.B_APPARENT_TOTAL_MAX.getDataType());
-            activePowB.setName(DataTypeEnum.B_ACTIVE_TOTAL_MAX.getDataType());
-            reactivePowB.setName(DataTypeEnum.B_REACTIVE_TOTAL_MAX.getDataType());
-            processMaxData(roomPowHourDos, totalPFLine, totalAPFLine, totalBPFLine, totalApparentPow,
-                    totalActivePow, totalReactivePow, apparentPowA, activePowA,
-                    reactivePowA, apparentPowB, activePowB, reactivePowB,
-                    timeFormat,totalLineRes,aLineRes,bLineRes,pFineRes);
-
-        } else if (dataType == 0) { // AVG
-            totalPFLine.setName(DataTypeEnum.FACTOR_TOTAL_AVG.getDataType());
-            totalAPFLine.setName(DataTypeEnum.FACTOR_A_TOTAL_AVG.getDataType());
-            totalBPFLine.setName(DataTypeEnum.FACTOR_B_TOTAL_AVG.getDataType());
-            totalApparentPow.setName(DataTypeEnum.APPARENT_TOTAL_AVG.getDataType());
-            totalActivePow.setName(DataTypeEnum.ACTIVE_TOTAL_AVG.getDataType());
-            totalReactivePow.setName(DataTypeEnum.REACTIVE_TOTAL_AVG.getDataType());
-            apparentPowA.setName(DataTypeEnum.A_APPARENT_TOTAL_AVG.getDataType());
-            activePowA.setName(DataTypeEnum.A_ACTIVE_TOTAL_AVG.getDataType());
-            reactivePowA.setName(DataTypeEnum.A_REACTIVE_TOTAL_AVG.getDataType());
-            apparentPowB.setName(DataTypeEnum.B_APPARENT_TOTAL_AVG.getDataType());
-            activePowB.setName(DataTypeEnum.B_ACTIVE_TOTAL_AVG.getDataType());
-            reactivePowB.setName(DataTypeEnum.B_REACTIVE_TOTAL_AVG.getDataType());
-            processAvgData(roomPowHourDos, totalPFLine, totalAPFLine, totalBPFLine, totalApparentPow,
-                    totalActivePow, totalReactivePow, apparentPowA, activePowA,
-                    reactivePowA, apparentPowB, activePowB, reactivePowB,
-                    timeFormat,totalLineRes,aLineRes,bLineRes,pFineRes);
-        } else if (dataType == -1) { // MIN
-            totalPFLine.setName(DataTypeEnum.FACTOR_TOTAL_MIN.getDataType());
-            totalAPFLine.setName(DataTypeEnum.FACTOR_A_TOTAL_MIN.getDataType());
-            totalBPFLine.setName(DataTypeEnum.FACTOR_B_TOTAL_MIN.getDataType());
-            totalApparentPow.setName(DataTypeEnum.APPARENT_TOTAL_MIN.getDataType());
-            totalActivePow.setName(DataTypeEnum.ACTIVE_TOTAL_MIN.getDataType());
-            totalReactivePow.setName(DataTypeEnum.REACTIVE_TOTAL_MIN.getDataType());
-            apparentPowA.setName(DataTypeEnum.A_APPARENT_TOTAL_MIN.getDataType());
-            activePowA.setName(DataTypeEnum.A_ACTIVE_TOTAL_MIN.getDataType());
-            reactivePowA.setName(DataTypeEnum.A_REACTIVE_TOTAL_MIN.getDataType());
-            apparentPowB.setName(DataTypeEnum.B_APPARENT_TOTAL_MIN.getDataType());
-            activePowB.setName(DataTypeEnum.B_ACTIVE_TOTAL_MIN.getDataType());
-            reactivePowB.setName(DataTypeEnum.B_REACTIVE_TOTAL_MIN.getDataType());
-            processMinData(roomPowHourDos, totalPFLine, totalAPFLine, totalBPFLine, totalApparentPow,
-                    totalActivePow, totalReactivePow, apparentPowA, activePowA,
-                    reactivePowA, apparentPowB, activePowB, reactivePowB,
-                    timeFormat,totalLineRes,aLineRes,bLineRes,pFineRes);
-        }
-        pFineRes.getSeries().add(totalPFLine);
-        pFineRes.getSeries().add(totalAPFLine);
-        pFineRes.getSeries().add(totalBPFLine);
-        totalLineRes.getSeries().add(totalApparentPow);
-        totalLineRes.getSeries().add(totalActivePow);
-        totalLineRes.getSeries().add(totalReactivePow);
-        aLineRes.getSeries().add(apparentPowA);
-        aLineRes.getSeries().add(activePowA);
-        aLineRes.getSeries().add(reactivePowA);
-        bLineRes.getSeries().add(apparentPowB);
-        bLineRes.getSeries().add(activePowB);
-        bLineRes.getSeries().add(reactivePowB);
-
-    }
-
-    //处理获得最大值数据
-    private void processMaxData(List<RoomPowHourDo> roomPowHourDos, LineSeries totalPFLine, LineSeries totalAPFLine,
-                                LineSeries totalBPFLine, LineSeries totalApparentPow, LineSeries totalActivePow,
-                                LineSeries totalReactivePow, LineSeries apparentPowA, LineSeries activePowA,
-                                LineSeries reactivePowA, LineSeries apparentPowB, LineSeries activePowB,
-                                LineSeries reactivePowB, String timeFormat, LineResBase totalLineRes,
-                                LineResBase aLineRes, LineResBase bLineRes, LineResBase pFineRes) {
-        for (RoomPowHourDo hourdo : roomPowHourDos) {
-            totalPFLine.getData().add(hourdo.getFactorTotalMaxValue());
-            totalAPFLine.getData().add(hourdo.getFactorAMaxValue());
-            totalBPFLine.getData().add(hourdo.getFactorBMaxValue());
-            pFineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            totalApparentPow.getData().add(hourdo.getApparentTotalMaxValue());
-            totalActivePow.getData().add(hourdo.getActiveTotalMaxValue());
-            totalReactivePow.getData().add(hourdo.getReactiveTotalMaxValue());
-            totalLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            apparentPowA.getData().add(hourdo.getApparentAMaxValue());
-            activePowA.getData().add(hourdo.getActiveAMaxValue());
-            reactivePowA.getData().add(hourdo.getReactiveAMaxValue());
-            aLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            apparentPowB.getData().add(hourdo.getApparentBMaxValue());
-            activePowB.getData().add(hourdo.getActiveBMaxValue());
-            reactivePowB.getData().add(hourdo.getReactiveBMaxValue());
-            bLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-        }
-    }
-
-    //处理获得平均值数据
-    private void processAvgData(List<RoomPowHourDo> roomPowHourDos, LineSeries totalPFLine, LineSeries totalAPFLine,
-                                LineSeries totalBPFLine, LineSeries totalApparentPow, LineSeries totalActivePow,
-                                LineSeries totalReactivePow, LineSeries apparentPowA, LineSeries activePowA,
-                                LineSeries reactivePowA, LineSeries apparentPowB, LineSeries activePowB,
-                                LineSeries reactivePowB, String timeFormat, LineResBase totalLineRes,
-                                LineResBase aLineRes, LineResBase bLineRes, LineResBase pFineRes) {
-        for (RoomPowHourDo hourdo : roomPowHourDos) {
-            totalPFLine.getData().add(hourdo.getFactorTotalAvgValue());
-            totalAPFLine.getData().add(hourdo.getFactorAAvgValue());
-            totalBPFLine.getData().add(hourdo.getFactorBAvgValue());
-            pFineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
-            totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
-            totalReactivePow.getData().add(hourdo.getReactiveTotalAvgValue());
-            totalLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            apparentPowA.getData().add(hourdo.getApparentAAvgValue());
-            activePowA.getData().add(hourdo.getActiveAAvgValue());
-            reactivePowA.getData().add(hourdo.getReactiveAAvgValue());
-            aLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            apparentPowB.getData().add(hourdo.getApparentBAvgValue());
-            activePowB.getData().add(hourdo.getActiveBAvgValue());
-            reactivePowB.getData().add(hourdo.getReactiveBAvgValue());
-            bLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-        }
-    }
-
-    //处理获取最小值数据
-    private void processMinData(List<RoomPowHourDo> roomPowHourDos, LineSeries totalPFLine, LineSeries totalAPFLine,
-                                LineSeries totalBPFLine, LineSeries totalApparentPow, LineSeries totalActivePow,
-                                LineSeries totalReactivePow, LineSeries apparentPowA, LineSeries activePowA,
-                                LineSeries reactivePowA, LineSeries apparentPowB, LineSeries activePowB,
-                                LineSeries reactivePowB, String timeFormat, LineResBase totalLineRes,
-                                LineResBase aLineRes, LineResBase bLineRes, LineResBase pFineRes) {
-        for (RoomPowHourDo hourdo : roomPowHourDos) {
-            totalPFLine.getData().add(hourdo.getFactorTotalMinValue());
-            totalAPFLine.getData().add(hourdo.getFactorAMinValue());
-            totalBPFLine.getData().add(hourdo.getFactorBMinValue());
-            pFineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            totalApparentPow.getData().add(hourdo.getApparentTotalMinValue());
-            totalActivePow.getData().add(hourdo.getActiveTotalMinValue());
-            totalReactivePow.getData().add(hourdo.getReactiveTotalMinValue());
-            totalLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            apparentPowA.getData().add(hourdo.getApparentAMinValue());
-            activePowA.getData().add(hourdo.getActiveAMinValue());
-            reactivePowA.getData().add(hourdo.getReactiveAMinValue());
-            aLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-            apparentPowB.getData().add(hourdo.getApparentBMinValue());
-            activePowB.getData().add(hourdo.getActiveBMinValue());
-            reactivePowB.getData().add(hourdo.getReactiveBMinValue());
-            bLineRes.getTime().add(hourdo.getCreateTime().toString(timeFormat));
-        }
-    }
 
     @Override
     public Map getReportPowDataByTypeAndId(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType) {
@@ -837,10 +567,10 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                         bLineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("HH:mm"));
                         pFineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("HH:mm"));
                     } else {
-                        totalLineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-                        aLineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-                        bLineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
-                        pFineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        totalLineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
+                        aLineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
+                        bLineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
+                        pFineRes.getTime().add(boxTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
                     }
                 }
 
