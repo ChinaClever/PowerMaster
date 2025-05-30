@@ -39,7 +39,7 @@
       <div style="display: flex;">
         <div>
           <el-form-item label="柜列用能" label-width="130">
-            <el-switch v-model="isAutoCreate.aisleAlarm" :active-value="1" :inactive-value="0" style="width: 100px;--el-switch-on-color: #00778c;" />
+            <el-switch v-model="isAutoCreate.aisleAlarm" :active-value="true" :inactive-value="false" style="width: 100px;--el-switch-on-color: #00778c;" />
           </el-form-item>
         </div>
         <div v-if="isAutoCreate.aisleAlarm" style="flex: 1;">
@@ -170,7 +170,7 @@ const open = async (type: string, data, info) => {
   }
   if (data) formData.value = data
   formData.value.direction = data.direction == 'x' ? 1 : 2
-  console.log('formData.value', formData.value)
+  console.log('formData.value', formData.value,type == 'edit' && (formData.value.eleAlarmDay || formData.value.eleAlarmMonth))
   if(type == 'edit' && (formData.value.eleAlarmDay || formData.value.eleAlarmMonth)) {
     isAutoCreate.value.aisleAlarm = true
   }

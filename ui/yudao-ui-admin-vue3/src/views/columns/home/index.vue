@@ -137,7 +137,7 @@
     <div class="center" id="center">
       <Topology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleCabEchart" @id-change="handleIdChange" @getpdubar="handlePduBar" @send-list="sendRoomIdValList">
         <template #btn>
-          <el-button class="ml-12px" @click="handleJump" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
+          <el-button class="ml-12px" @click="handleJump" type="primary" color="black"><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
         </template>
       </Topology>
       <ContentWrap class="CabEchart">

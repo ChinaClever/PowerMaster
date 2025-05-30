@@ -345,7 +345,7 @@
                                   </div>
                                 </div>
                               </template>
-                              <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus)" :style="{backgroundColor: item.cabinetName && item.loadRate ? (item.loadRate>=89.5 ? `rgba(240, 58, 23, ${item.loadRate/100})` : (item.loadRate>=74.5 ? `rgba(255, 225, 0, ${(item.loadRate+15)/100})` : (item.loadRate>=49.5 ? `rgba(0, 120, 215, ${(141-item.loadRate)/100})` : `rgba(22, 198, 12, ${(item.loadRate+60)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
+                              <div v-if="chosenBtn == 0 && item.runStatus != 0 && item.runStatus != 4 && (item.cabinetBoxes || item.cabinetPdus)" :style="{backgroundColor: item.cabinetName && item.loadRate ? (item.loadRate>=89.5 ? `rgba(240, 58, 23, ${item.loadRate/100})` : (item.loadRate>=74.5 ? `rgba(255, 225, 0, ${(item.loadRate+10)/100})` : (item.loadRate>=49.5 ? `rgba(0, 120, 215, ${(150-item.loadRate)/100})` : `rgba(22, 198, 12, ${(item.loadRate+50)/100})`))) : '#eef4fc',color: '#fff',height: '100%',width: '100%'}">
                                 <template v-if="item.id > 0">
                                   <div class="flex justify-center align-center" style="width: 100%;height: 100%;flex-direction: column;">
                                     <div class="cabinetNameClass">
@@ -2963,6 +2963,7 @@ const handleChange = async(data) => {
         message.error(messageAisleFlagError + "可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
         return
       }
+      return
 
       const aisleRes = await MachineRoomApi.saveRoomAisle(asileObject) 
       if(aisleRes != null || aisleRes != "") {

@@ -406,10 +406,10 @@
                   <div>
                     <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia：</span><span style="font-size:16px;">{{cur_valueACopy[0]}}A</span>
                   </div>
-                  <div style="margin-top:10px;">
+                  <div v-if="cur_valueACopy?.length == 3" style="margin-top:10px;">
                     <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib：</span><span style="font-size:16px;">{{cur_valueACopy[1]}}A</span>
                   </div>
-                  <div style="margin-top:10px;">
+                  <div v-if="cur_valueACopy?.length == 3" style="margin-top:10px;">
                     <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic：</span><span style="font-size:16px;">{{cur_valueACopy[2]}}A</span>
                   </div>
                 </div>
@@ -463,10 +463,10 @@
                   <div>
                     <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua：</span><span style="font-size:16px;">{{vol_valueACopy[0]}}V</span>
                   </div>
-                  <div style="margin-top:10px;">
+                  <div v-if="vol_valueACopy?.length == 3" style="margin-top:10px;">
                     <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub：</span><span style="font-size:16px;">{{vol_valueACopy[1]}}V</span>
                   </div>
-                  <div style="margin-top:10px;">
+                  <div v-if="vol_valueACopy?.length == 3" style="margin-top:10px;">
                     <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc：</span><span style="font-size:16px;">{{vol_valueACopy[2]}}V</span>
                   </div>
                 </div>
@@ -737,10 +737,12 @@ const getBalanceDetail = async (item) => {
           fontSize: 14,
           fontWeight: 'bold'
         },
-        data: [
+        data: cur_valueA?.length == 3 ? [
           { value: cur_valueA[0].toFixed(2), name: 'A相电流', itemStyle: { color: '#E5B849' } },
           { value: cur_valueA[1].toFixed(2), name: 'B相电流', itemStyle: { color: '#C8603A' } },
           { value: cur_valueA[2].toFixed(2), name: 'C相电流', itemStyle: { color: '#AD3762' } },
+        ] : [
+          { value: cur_valueA[0].toFixed(2), name: 'A相电流', itemStyle: { color: '#E5B849' } },
         ]
       }
     ]
@@ -772,10 +774,12 @@ const getBalanceDetail = async (item) => {
           fontSize: 14,
           fontWeight: 'bold'
         },
-        data: [
+        data: vol_value?.length == 3 ? [
           { value: vol_value[0].toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
           { value: vol_value[1].toFixed(1), name: 'B相电压', itemStyle: { color: '#119CB5' } },
           { value: vol_value[2].toFixed(1), name: 'C相电压', itemStyle: { color: '#45C0C9' } },
+        ] : [
+          { value: vol_value[0].toFixed(1), name: 'A相电压', itemStyle: { color: '#075F71' } },
         ]
       }
     ]

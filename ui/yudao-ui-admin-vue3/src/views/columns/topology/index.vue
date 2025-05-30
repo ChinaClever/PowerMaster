@@ -2,31 +2,39 @@
   <!-- <div style="height:100%;min-height: calc(100vh - 120px);display: flex; flex-direction: column;"> -->
     <ContentWrap>
     <div class="btn-main" style="justify-content:space-between">
-      <!-- <div style="display: flex;flex-direction: column; width: 500px;">
-        <div class="btns" v-if="cabinetList && cabinetList.length">
-          <span v-show="chosenBtn == 8">前门：</span>
+      <div style="display: flex;flex-direction: column; width: 600px;">
+        <div v-if="chosenBtn != 8" class="btns">
           <template v-for="(status, index) in statusList[chosenBtn]" :key="index">
-            <el-button :size="isFromHome ? 'small' : 'default'" :style="`background-color: ${status.color};color: white;`">{{status.name}}</el-button>
+            <div class="statusRadius" :style="{backgroundColor: status.color}"></div>{{status.name}}
+            <!-- <el-button :size="isFromHome ? 'small' : 'default'" :style="`background-color: ${status.color};color: white;`">{{status.name}}</el-button> -->
           </template> 
         </div>
-        <div v-show="chosenBtn == 8" class="btns" v-if="cabinetList && cabinetList.length" style="margin-top: 10px;">
-          <span v-show="chosenBtn == 8">后门：</span>
-          <template v-for="(status, index) in statusList[chosenBtn]" :key="index">
-            <el-button :size="isFromHome ? 'small' : 'default'" :style="`background-color: ${status.hotColor};color: white;`">{{status.hotName}}</el-button>
+        <div v-else class="btns">
+          前门:
+          <template v-for="(status, index) in frontStatusList" :key="index">
+            <div class="statusRadius" :style="{backgroundColor: status.color}"></div>{{status.name}}
+            <!-- <el-button :size="isFromHome ? 'small' : 'default'" :style="`background-color: ${status.color};color: white;`">{{status.name}}</el-button> -->
           </template> 
         </div>
-      </div> -->
+        <div v-if="chosenBtn == 8" class="btns" style="margin-top: 10px;">
+          后门:
+          <template v-for="(status, index) in blackStatusList" :key="index">
+            <div class="statusRadius" :style="{backgroundColor: status.color}"></div>{{status.name}}
+            <!-- <el-button :size="isFromHome ? 'small' : 'default'" :style="`background-color: ${status.color};color: white;`">{{status.name}}</el-button> -->
+          </template> 
+        </div>
+      </div>
       <div class="flex items-center">
         <template v-for="item in btns" :key="item.value">
-          <el-button @click="switchBtn(item.value)" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+          <el-button @click="switchBtn(item.value)" round color="#00778c" :plain="chosenBtn != item.value">{{item.name}}</el-button>
         </template>
       </div>
       <div style="display:flex;">
         <div v-if="!isFromHome" style="margin-left: 10px">
-          <el-button v-if="!editEnable" @click="handleEditClick" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
-          <el-button v-if="editEnable" @click="handleCancel" type="primary" plain>取消</el-button>
-          <el-button v-if="editEnable" @click="handleConfig" type="primary" plain>母线配置</el-button>
-          <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
+          <el-button v-if="!editEnable" @click="handleEditClick" type="primary" color="black"><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
+          <el-button v-if="editEnable" @click="handleCancel" type="primary" plain color="black">取消</el-button>
+          <el-button v-if="editEnable" @click="handleConfig" type="primary" plain color="black">母线配置</el-button>
+          <!-- <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain color="black">保存</el-button> -->
         </div>
         <slot name="btn"></slot>
       </div>
@@ -36,702 +44,988 @@
     <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;`" @click="showAllConnect">
       <div style="margin-top:-25px"></div>
       <div style="height:20px;"></div>
-      <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
-        <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus"  @click.right="handleBarRightClick($event)">
-          <el-tooltip effect="light" :hide-after="0">
-            <template #content>
-              <div class="flex justify-between" style="width: 20vw">
-                <div style="width: 50%">
-                  母线名称：{{machineColInfo.barA.busName ? machineColInfo.barA.busName : ''}} <br/>
-                  网络地址：{{machineColInfo.barA.devIp ? machineColInfo.barA.devIp+'-'+ machineColInfo.barA.barId : ''}}<br/>
-                  软件版本号：{{machineColInfo.barA.busVersion ? machineColInfo.barA.busVersion : ''}}<br/>
-                  断路器状态：{{machineColInfo.barA.breakerStatus ? breakerStatusList[machineColInfo.barA.breakerStatus] : ''}}<br/>
-                  剩余电流：{{machineColInfo.barA.curResidualValueTotal ? machineColInfo.barA.curResidualValueTotal.toFixed(2) : '0.00'}}A<br/>
-                  防雷状态：{{machineColInfo.barA.lspStatus ? lspStatusList[machineColInfo.barA.lspStatus] : ''}}<br/>
-                  突变频率：{{machineColInfo.barA.hzValue ? machineColInfo.barA.hzValue : ''}}
+      <div class="Container" :style="{minHeight: isFromHome ? 'unset' : '600px'}">
+        <div class="busContainer" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center'}">
+          <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus" @click.right="handleBarRightClick($event)">
+            <el-tooltip effect="light" :hide-after="0">
+              <template #content>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 50%">
+                    母线名称：{{machineColInfo.barA.busName ? machineColInfo.barA.busName : ''}} <br/>
+                    网络地址：{{machineColInfo.barA.devIp ? machineColInfo.barA.devIp+'-'+ machineColInfo.barA.barId : ''}}<br/>
+                    软件版本号：{{machineColInfo.barA.busVersion ? machineColInfo.barA.busVersion : ''}}<br/>
+                    断路器状态：{{machineColInfo.barA.breakerStatus ? breakerStatusList[machineColInfo.barA.breakerStatus] : ''}}<br/>
+                    剩余电流：{{machineColInfo.barA.curResidualValueTotal ? machineColInfo.barA.curResidualValueTotal.toFixed(2) : '0.00'}}A<br/>
+                    防雷状态：{{machineColInfo.barA.lspStatus ? lspStatusList[machineColInfo.barA.lspStatus] : ''}}<br/>
+                    突变频率：{{machineColInfo.barA.hzValue ? machineColInfo.barA.hzValue : ''}}
+                  </div>
+                  <div style="width: 50%">
+                    始端箱状态：{{machineColInfo.barA.status ? barStatusList[machineColInfo.barA.status] : ''}} <br/>
+                    总功率因数：{{machineColInfo.barA.powerFactorTotal ? machineColInfo.barA.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
+                    总有功功率：{{machineColInfo.barA.powValueTotal ? machineColInfo.barA.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
+                    总无功功率：{{machineColInfo.barA.powReactiveTotal ? machineColInfo.barA.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
+                    总视在功率：{{machineColInfo.barA.powApparentTotal ? machineColInfo.barA.powApparentTotal.toFixed(3) : '0.000'}}kVA<br/>
+                    电压不平衡：{{machineColInfo.barA.volUnbalance ? machineColInfo.barA.volUnbalance.toFixed(2) : '0.00'}}%<br/>
+                    电流不平衡：{{machineColInfo.barA.curUnbalance ? machineColInfo.barA.curUnbalance.toFixed(2) : '0.00'}}%
+                  </div>
                 </div>
-                <div style="width: 50%">
-                  始端箱状态：{{machineColInfo.barA.status ? barStatusList[machineColInfo.barA.status] : ''}} <br/>
-                  总功率因数：{{machineColInfo.barA.powerFactorTotal ? machineColInfo.barA.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
-                  总有功功率：{{machineColInfo.barA.powValueTotal ? machineColInfo.barA.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
-                  总无功功率：{{machineColInfo.barA.powReactiveTotal ? machineColInfo.barA.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
-                  总视在功率：{{machineColInfo.barA.powApparentTotal ? machineColInfo.barA.powApparentTotal.toFixed(3) : '0.000'}}kVA<br/>
-                  电压不平衡：{{machineColInfo.barA.volUnbalance ? machineColInfo.barA.volUnbalance.toFixed(2) : '0.00'}}%<br/>
-                  电流不平衡：{{machineColInfo.barA.curUnbalance ? machineColInfo.barA.curUnbalance.toFixed(2) : '0.00'}}%
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    <br/>
+                    负载率：<br/>
+                    相电流：<br/>
+                    相电压：<br/>
+                    线电压：<br/>
+                    有功功率：<br/>
+                    无功功率：<br/>
+                    视在功率：<br/>
+                    功率因数：<br/>
+                    电压谐波：<br/>
+                    电流谐波：
+                  </div>
+                  <div style="width: 25%">
+                    A相<br/>
+                    {{machineColInfo.barA.lineLoadRate?.[0] ? machineColInfo.barA.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barA.lineCur?.[0] ? machineColInfo.barA.lineCur[0].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barA.lineVol?.[0] ? machineColInfo.barA.lineVol[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.volLineValue?.[0] ? machineColInfo.barA.volLineValue[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.powActive?.[0] ? machineColInfo.barA.powActive[0].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barA.powReactive?.[0] ? machineColInfo.barA.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barA.powApparent?.[0] ? machineColInfo.barA.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barA.powerFactor?.[0] ? machineColInfo.barA.powerFactor[0].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.volThd?.[0] ? (machineColInfo.barA.volThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.curThd?.[0] ? (machineColInfo.barA.curThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相<br/>
+                    {{machineColInfo.barA.lineLoadRate?.[1] ? machineColInfo.barA.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barA.lineCur?.[1] ? machineColInfo.barA.lineCur[1].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barA.lineVol?.[1] ? machineColInfo.barA.lineVol[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.volLineValue?.[1] ? machineColInfo.barA.volLineValue[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.powActive?.[1] ? machineColInfo.barA.powActive[1].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barA.powReactive?.[1] ? machineColInfo.barA.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barA.powApparent?.[1] ? machineColInfo.barA.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barA.powerFactor?.[1] ? machineColInfo.barA.powerFactor[1].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.volThd?.[1] ? (machineColInfo.barA.volThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.curThd?.[1] ? (machineColInfo.barA.curThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相<br/>
+                    {{machineColInfo.barA.lineLoadRate?.[2] ? machineColInfo.barA.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barA.lineCur?.[2] ? machineColInfo.barA.lineCur[2].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barA.lineVol?.[2] ? machineColInfo.barA.lineVol[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.volLineValue?.[2] ? machineColInfo.barA.volLineValue[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.powActive?.[2] ? machineColInfo.barA.powActive[2].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barA.powReactive?.[2] ? machineColInfo.barA.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barA.powApparent?.[2] ? machineColInfo.barA.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barA.powerFactor?.[2] ? machineColInfo.barA.powerFactor[2].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.volThd?.[2] ? (machineColInfo.barA.volThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.curThd?.[2] ? (machineColInfo.barA.curThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
                 </div>
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    A相温度： {{machineColInfo.barA.temData?.[0] ? machineColInfo.barA.temData[0].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相温度：{{machineColInfo.barA.temData?.[1] ? machineColInfo.barA.temData[1].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相温度：{{machineColInfo.barA.temData?.[2] ? machineColInfo.barA.temData[2].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    N相温度：{{machineColInfo.barA.temData?.[3] ? machineColInfo.barA.temData[3].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                </div>
+              </template> 
+              <div class="startBus" v-if="!machineColInfo.barA.direction" @dblclick="handleInitialDblick($event, 'A')" style="background-color: #43939c" @click.stop="showInitialConnect('A')">
+                <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
+                <div style="background-color: white;color: black;position: absolute;bottom: -20px;left: 50%;transform: translateX(-50%);">A路母线</div>
               </div>
-              <hr/>
-              <div class="flex justify-between" style="width: 20vw">
-                <div style="width: 25%">
-                  <br/>
-                  负载率：<br/>
-                  相电流：<br/>
-                  相电压：<br/>
-                  线电压：<br/>
-                  有功功率：<br/>
-                  无功功率：<br/>
-                  视在功率：<br/>
-                  功率因数：<br/>
-                  电压谐波：<br/>
-                  电流谐波：
+              <div v-else></div>
+            </el-tooltip>
+            <el-tooltip effect="light" :hide-after="0">
+              <template #content>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 50%">
+                    母线名称：{{machineColInfo.barB.busName ? machineColInfo.barB.busName : ''}} <br/>
+                    网络地址：{{machineColInfo.barB.devIp ? machineColInfo.barB.devIp+'-'+ machineColInfo.barB.barId : ''}}<br/>
+                    软件版本号：{{machineColInfo.barB.busVersion ? machineColInfo.barB.busVersion : ''}}<br/>
+                    断路器状态：{{machineColInfo.barB.breakerStatus ? breakerStatusList[machineColInfo.barB.breakerStatus] : ''}}<br/>
+                    剩余电流：{{machineColInfo.barB.curResidualValueTotal ? machineColInfo.barB.curResidualValueTotal.toFixed(2) : '0.00'}}A<br/>
+                    防雷状态：{{machineColInfo.barB.lspStatus ? lspStatusList[machineColInfo.barB.lspStatus] : ''}}<br/>
+                    突变频率：{{machineColInfo.barB.hzValue ? machineColInfo.barB.hzValue : ''}}
+                  </div>
+                  <div style="width: 50%">
+                    始端箱状态：{{machineColInfo.barB.status ? barStatusList[machineColInfo.barB.status] : ''}} <br/>
+                    总功率因数：{{machineColInfo.barB.powerFactorTotal ? machineColInfo.barB.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
+                    总有功功率：{{machineColInfo.barB.powValueTotal ? machineColInfo.barB.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
+                    总无功功率：{{machineColInfo.barB.powReactiveTotal ? machineColInfo.barB.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
+                    总视在功率：{{machineColInfo.barB.powApparentTotal ? machineColInfo.barB.powApparentTotal.toFixed(3) : '0.000'}}kVA<br/>
+                    电压不平衡：{{machineColInfo.barB.volUnbalance ? machineColInfo.barB.volUnbalance.toFixed(2) : '0.00'}}%<br/>
+                    电流不平衡：{{machineColInfo.barB.curUnbalance ? machineColInfo.barB.curUnbalance.toFixed(2) : '0.00'}}%
+                  </div>
                 </div>
-                <div style="width: 25%">
-                  A相<br/>
-                  {{machineColInfo.barA.lineLoadRate?.[0] ? machineColInfo.barA.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
-                  {{machineColInfo.barA.lineCur?.[0] ? machineColInfo.barA.lineCur[0].toFixed(2) : '0.00'}}A<br/>
-                  {{machineColInfo.barA.lineVol?.[0] ? machineColInfo.barA.lineVol[0].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barA.volLineValue?.[0] ? machineColInfo.barA.volLineValue[0].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barA.powActive?.[0] ? machineColInfo.barA.powActive[0].toFixed(3) : '0.000'}}kW<br/>
-                  {{machineColInfo.barA.powReactive?.[0] ? machineColInfo.barA.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
-                  {{machineColInfo.barA.powApparent?.[0] ? machineColInfo.barA.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
-                  {{machineColInfo.barA.powerFactor?.[0] ? machineColInfo.barA.powerFactor[0].toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barA.volThd?.[0] ? (machineColInfo.barA.volThd[0]/100).toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barA.curThd?.[0] ? (machineColInfo.barA.curThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    <br/>
+                    负载率：<br/>
+                    相电流：<br/>
+                    相电压：<br/>
+                    线电压：<br/>
+                    有功功率：<br/>
+                    无功功率：<br/>
+                    视在功率：<br/>
+                    功率因数：<br/>
+                    电压谐波：<br/>
+                    电流谐波：
+                  </div>
+                  <div style="width: 25%">
+                    A相<br/>
+                    {{machineColInfo.barB.lineLoadRate?.[0] ? machineColInfo.barB.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barB.lineCur?.[0] ? machineColInfo.barB.lineCur[0].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barB.lineVol?.[0] ? machineColInfo.barB.lineVol[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.volLineValue?.[0] ? machineColInfo.barB.volLineValue[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.powActive?.[0] ? machineColInfo.barB.powActive[0].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barB.powReactive?.[0] ? machineColInfo.barB.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barB.powApparent?.[0] ? machineColInfo.barB.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barB.powerFactor?.[0] ? machineColInfo.barB.powerFactor[0].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.volThd?.[0] ? (machineColInfo.barB.volThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.curThd?.[0] ? (machineColInfo.barB.curThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相<br/>
+                    {{machineColInfo.barB.lineLoadRate?.[1] ? machineColInfo.barB.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barB.lineCur?.[1] ? machineColInfo.barB.lineCur[1].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barB.lineVol?.[1] ? machineColInfo.barB.lineVol[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.volLineValue?.[1] ? machineColInfo.barB.volLineValue[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.powActive?.[1] ? machineColInfo.barB.powActive[1].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barB.powReactive?.[1] ? machineColInfo.barB.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barB.powApparent?.[1] ? machineColInfo.barB.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barB.powerFactor?.[1] ? machineColInfo.barB.powerFactor[1].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.volThd?.[1] ? (machineColInfo.barB.volThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.curThd?.[1] ? (machineColInfo.barB.curThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相<br/>
+                    {{machineColInfo.barB.lineLoadRate?.[2] ? machineColInfo.barB.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barB.lineCur?.[2] ? machineColInfo.barB.lineCur[2].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barB.lineVol?.[2] ? machineColInfo.barB.lineVol[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.volLineValue?.[2] ? machineColInfo.barB.volLineValue[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.powActive?.[2] ? machineColInfo.barB.powActive[2].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barB.powReactive?.[2] ? machineColInfo.barB.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barB.powApparent?.[2] ? machineColInfo.barB.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barB.powerFactor?.[2] ? machineColInfo.barB.powerFactor[2].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.volThd?.[2] ? (machineColInfo.barB.volThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.curThd?.[2] ? (machineColInfo.barB.curThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
                 </div>
-                <div style="width: 25%">
-                  B相<br/>
-                  {{machineColInfo.barA.lineLoadRate?.[1] ? machineColInfo.barA.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
-                  {{machineColInfo.barA.lineCur?.[1] ? machineColInfo.barA.lineCur[1].toFixed(2) : '0.00'}}A<br/>
-                  {{machineColInfo.barA.lineVol?.[1] ? machineColInfo.barA.lineVol[1].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barA.volLineValue?.[1] ? machineColInfo.barA.volLineValue[1].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barA.powActive?.[1] ? machineColInfo.barA.powActive[1].toFixed(3) : '0.000'}}kW<br/>
-                  {{machineColInfo.barA.powReactive?.[1] ? machineColInfo.barA.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
-                  {{machineColInfo.barA.powApparent?.[1] ? machineColInfo.barA.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
-                  {{machineColInfo.barA.powerFactor?.[1] ? machineColInfo.barA.powerFactor[1].toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barA.volThd?.[1] ? (machineColInfo.barA.volThd[1]/100).toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barA.curThd?.[1] ? (machineColInfo.barA.curThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    A相温度： {{machineColInfo.barB.temData?.[0] ? machineColInfo.barB.temData[0].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相温度：{{machineColInfo.barB.temData?.[1] ? machineColInfo.barB.temData[1].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相温度：{{machineColInfo.barB.temData?.[2] ? machineColInfo.barB.temData[2].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    N相温度：{{machineColInfo.barB.temData?.[3] ? machineColInfo.barB.temData[3].toFixed(0) : '0'}}°C<br/>
+                  </div>
                 </div>
-                <div style="width: 25%">
-                  C相<br/>
-                  {{machineColInfo.barA.lineLoadRate?.[2] ? machineColInfo.barA.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
-                  {{machineColInfo.barA.lineCur?.[2] ? machineColInfo.barA.lineCur[2].toFixed(2) : '0.00'}}A<br/>
-                  {{machineColInfo.barA.lineVol?.[2] ? machineColInfo.barA.lineVol[2].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barA.volLineValue?.[2] ? machineColInfo.barA.volLineValue[2].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barA.powActive?.[2] ? machineColInfo.barA.powActive[2].toFixed(3) : '0.000'}}kW<br/>
-                  {{machineColInfo.barA.powReactive?.[2] ? machineColInfo.barA.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
-                  {{machineColInfo.barA.powApparent?.[2] ? machineColInfo.barA.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
-                  {{machineColInfo.barA.powerFactor?.[2] ? machineColInfo.barA.powerFactor[2].toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barA.volThd?.[2] ? (machineColInfo.barA.volThd[2]/100).toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barA.curThd?.[2] ? (machineColInfo.barA.curThd[2]/100).toFixed(2) : '0.00'}}<br/>
-                </div>
+              </template> 
+              <div class="startBus" v-if="!machineColInfo.barB.direction" @dblclick="handleInitialDblick($event, 'B')" style="background-color: #acd997" @click.stop="showInitialConnect('B')">
+                <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
+                <div style="background-color: white;color: black;position: absolute;bottom: -20px;left: 50%;transform: translateX(-50%);">B路母线</div>
               </div>
-              <hr/>
-              <div class="flex justify-between" style="width: 20vw">
-                <div style="width: 25%">
-                  A相温度： {{machineColInfo.barA.temData?.[0] ? machineColInfo.barA.temData[0].toFixed(0) : '0'}}°C<br/>
-                </div>
-                <div style="width: 25%">
-                  B相温度：{{machineColInfo.barA.temData?.[1] ? machineColInfo.barA.temData[1].toFixed(0) : '0'}}°C<br/>
-                </div>
-                <div style="width: 25%">
-                  C相温度：{{machineColInfo.barA.temData?.[2] ? machineColInfo.barA.temData[2].toFixed(0) : '0'}}°C<br/>
-                </div>
-                <div style="width: 25%">
-                  N相温度：{{machineColInfo.barA.temData?.[3] ? machineColInfo.barA.temData[3].toFixed(0) : '0'}}°C<br/>
-                </div>
-              </div>
-            </template> 
-            <div class="startBus" v-if="!machineColInfo.barA.direction" @dblclick="handleInitialDblick($event, 'A')">
-              <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
+            </el-tooltip>
+              <!-- <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" /> -->
+            <div class="maskPoint1"></div>
+            <div class="maskPoint2"></div>
+            <div class="menu" v-if="operateMenuBox.show && editEnable && operateMenuBox.type == 'bar'" :style="{left: `${operateMenuBox.left}`, top: `${operateMenuBox.top}`}">
+              <div class="menu_item" @click="handleBarOperate('edit')">编辑</div>
+              <div class="menu_item" @click="handleBarOperate('delete')">删除</div>
             </div>
-            <div class="startBus" v-else></div>
-          </el-tooltip>
-          <el-tooltip effect="light" :hide-after="0">
-            <template #content>
-              <div class="flex justify-between" style="width: 20vw">
-                <div style="width: 50%">
-                  母线名称：{{machineColInfo.barB.busName ? machineColInfo.barB.busName : ''}} <br/>
-                  网络地址：{{machineColInfo.barB.devIp ? machineColInfo.barB.devIp+'-'+ machineColInfo.barB.barId : ''}}<br/>
-                  软件版本号：{{machineColInfo.barB.busVersion ? machineColInfo.barB.busVersion : ''}}<br/>
-                  断路器状态：{{machineColInfo.barB.breakerStatus ? breakerStatusList[machineColInfo.barB.breakerStatus] : ''}}<br/>
-                  剩余电流：{{machineColInfo.barB.curResidualValueTotal ? machineColInfo.barB.curResidualValueTotal.toFixed(2) : '0.00'}}A<br/>
-                  防雷状态：{{machineColInfo.barB.lspStatus ? lspStatusList[machineColInfo.barB.lspStatus] : ''}}<br/>
-                  突变频率：{{machineColInfo.barB.hzValue ? machineColInfo.barB.hzValue : ''}}
-                </div>
-                <div style="width: 50%">
-                  始端箱状态：{{machineColInfo.barB.status ? barStatusList[machineColInfo.barB.status] : ''}} <br/>
-                  总功率因数：{{machineColInfo.barB.powerFactorTotal ? machineColInfo.barB.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
-                  总有功功率：{{machineColInfo.barB.powValueTotal ? machineColInfo.barB.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
-                  总无功功率：{{machineColInfo.barB.powReactiveTotal ? machineColInfo.barB.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
-                  总视在功率：{{machineColInfo.barB.powApparentTotal ? machineColInfo.barB.powApparentTotal.toFixed(3) : '0.000'}}kVA<br/>
-                  电压不平衡：{{machineColInfo.barB.volUnbalance ? machineColInfo.barB.volUnbalance.toFixed(2) : '0.00'}}%<br/>
-                  电流不平衡：{{machineColInfo.barB.curUnbalance ? machineColInfo.barB.curUnbalance.toFixed(2) : '0.00'}}%
-                </div>
+          </div>
+          <div class="main">
+            <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="busListContainer" @click.right="handlePluginRightClick($event, 'A')">
+              <div class="bridge"></div>
+              <div class="busList1">
+                <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
+                  <el-tooltip effect="light" :hide-after="0">
+                    <template #content>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 33%">
+                          基本信息：<br/>
+                          网络地址：{{bus.boxKey}}<br/>
+                          插接箱名称：{{bus.boxName}}<br/>
+                          软件版本号：{{bus.boxVersion}}<br/>
+                          断路器状态：{{bus.breakerStatus ? breakerStatusList[bus.breakerStatus] : ''}}
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          插接箱状态：{{bus.status ? barStatusList[bus.status] : ''}}<br/>
+                          电压不平衡：{{bus.volUnbalance ? bus.volUnbalance.toFixed(2) : '0.00'}}%<br/>
+                          电流不平衡：{{bus.curUnbalance ? bus.curUnbalance.toFixed(2) : '0.00'}}%<br/>
+                          回路数量：{{bus.loopNum}}
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          总功率因数：{{bus.powerFactorTotal ? bus.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
+                          总有功功率：{{bus.powValueTotal ? bus.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
+                          总无功功率：{{bus.powReactiveTotal ? bus.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
+                          总视在功率：{{bus.powApparentTotal ? bus.powApparentTotal.toFixed(3) : '0.000'}}kVA
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        插接位：
+                      </div>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 13%">
+                          <br/>
+                          有功功率：<br/>
+                          无功功率：<br/>
+                          视在功率：<br/>
+                          功率因数：
+                        </div>
+                        <div style="width: 29%">
+                          输出位1<br/>
+                          {{bus.powActive?.[0] ? bus.powActive[0].toFixed(3) : '0.000'}}kW<br/>
+                          {{bus.powReactive?.[0] ? bus.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
+                          {{bus.powApparent?.[0] ? bus.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
+                          {{bus.powerFactor?.[0] ? bus.powerFactor[0].toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          输出位2<br/>
+                          {{bus.powActive?.[1] ? bus.powActive[1].toFixed(3) : '0.000'}}kW<br/>
+                          {{bus.powReactive?.[1] ? bus.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
+                          {{bus.powApparent?.[1] ? bus.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
+                          {{bus.powerFactor?.[1] ? bus.powerFactor[1].toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          输出位3<br/>
+                          {{bus.powActive?.[2] ? bus.powActive[2].toFixed(3) : '0.000'}}kW<br/>
+                          {{bus.powReactive?.[2] ? bus.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
+                          {{bus.powApparent?.[2] ? bus.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
+                          {{bus.powerFactor?.[2] ? bus.powerFactor[2].toFixed(2) : '0.00'}}
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        输入相：
+                      </div>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 13%">
+                          <br/>
+                          负载率：<br/>
+                          相电流：<br/>
+                          相电压：<br/>
+                          电流谐波：
+                        </div>
+                        <div style="width: 29%">
+                          A相<br/>
+                          {{bus.lineLoadRate?.[0] ? bus.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
+                          {{bus.lineCur?.[0] ? bus.lineCur[0].toFixed(2) : '0.00'}}A<br/>
+                          {{bus.lineVol?.[0] ? bus.lineVol[0].toFixed(1) : '0.0'}}V<br/>
+                          {{bus.curThd?.[0] ? (bus.curThd[0]/100).toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          B相<br/>
+                          {{bus.lineLoadRate?.[1] ? bus.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
+                          {{bus.lineCur?.[1] ? bus.lineCur[1].toFixed(2) : '0.00'}}A<br/>
+                          {{bus.lineVol?.[1] ? bus.lineVol[1].toFixed(1) : '0.0'}}V<br/>
+                          {{bus.curThd?.[1] ? (bus.curThd[1]/100).toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          C相<br/>
+                          {{bus.lineLoadRate?.[2] ? bus.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
+                          {{bus.lineCur?.[2] ? bus.lineCur[2].toFixed(2) : '0.00'}}A<br/>
+                          {{bus.lineVol?.[2] ? bus.lineVol[2].toFixed(1) : '0.0'}}V<br/>
+                          {{bus.curThd?.[2] ? (bus.curThd[2]/100).toFixed(2) : '0.00'}}
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        温度：
+                      </div>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 25%">
+                          A相温度：{{bus.temData?.[0] ? bus.temData[0].toFixed(0) : '0'}}°C
+                        </div>
+                        <div style="width: 25%">
+                          B相温度：{{bus.temData?.[1] ? bus.temData[1].toFixed(0) : '0'}}°C
+                        </div>
+                        <div style="width: 25%">
+                          C相温度：{{bus.temData?.[2] ? bus.temData[2].toFixed(0) : '0'}}°C
+                        </div>
+                        <div style="width: 25%">
+                          N相温度：{{bus.temData?.[3] ? bus.temData[3].toFixed(0) : '0'}}°C
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 33%">
+                          回路电流：<br/>
+                          C1：{{bus.curValueLoop?.[0] ? bus.curValueLoop[0].toFixed(2) : '0.00'}}A<br/>
+                          C4：{{bus.curValueLoop?.[3] ? bus.curValueLoop[3].toFixed(2) : '0.00'}}A<br/>
+                          C7：{{bus.curValueLoop?.[6] ? bus.curValueLoop[6].toFixed(2) : '0.00'}}A
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          C2：{{bus.curValueLoop?.[1] ? bus.curValueLoop[1].toFixed(2) : '0.00'}}A<br/>
+                          C5：{{bus.curValueLoop?.[4] ? bus.curValueLoop[4].toFixed(2) : '0.00'}}A<br/>
+                          C8：{{bus.curValueLoop?.[7] ? bus.curValueLoop[7].toFixed(2) : '0.00'}}A
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          C3：{{bus.curValueLoop?.[2] ? bus.curValueLoop[2].toFixed(2) : '0.00'}}A<br/>
+                          C6：{{bus.curValueLoop?.[5] ? bus.curValueLoop[5].toFixed(2) : '0.00'}}A<br/>
+                          C9：{{bus.curValueLoop?.[8] ? bus.curValueLoop[8].toFixed(2) : '0.00'}}A
+                        </div>
+                      </div>
+                    </template>
+                    <!-- 插接箱 -->
+                    <div v-if="bus.type == 0 || bus.outletNum > 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'A')" @click.stop="showPluginConnect('A',bus.boxIndex)">
+                      <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
+                      <div class="pointContainer">
+                        <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_A-${pointIndex}`"></div>
+                      </div>
+                    </div>
+                    <!-- 连接器 -->
+                    <div v-else class="template-box" :id="`box-${index}`">
+                      <div class="connector">
+                        <span class="text">连接器</span>
+                      </div>
+                      <div v-if="chosenBtn == 8 && bus.temData" class="Tbox">
+                        <div v-for="(tmp, count) in bus.temData" :key="count" class="T">
+                          <div>T(L{{count}})</div>
+                          <div>{{tmp}}°C</div>
+                        </div>
+                      </div>
+                    </div>
+                  </el-tooltip>
+                </template>
               </div>
-              <hr/>
-              <div class="flex justify-between" style="width: 20vw">
-                <div style="width: 25%">
-                  <br/>
-                  负载率：<br/>
-                  相电流：<br/>
-                  相电压：<br/>
-                  线电压：<br/>
-                  有功功率：<br/>
-                  无功功率：<br/>
-                  视在功率：<br/>
-                  功率因数：<br/>
-                  电压谐波：<br/>
-                  电流谐波：
-                </div>
-                <div style="width: 25%">
-                  A相<br/>
-                  {{machineColInfo.barB.lineLoadRate?.[0] ? machineColInfo.barB.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
-                  {{machineColInfo.barB.lineCur?.[0] ? machineColInfo.barB.lineCur[0].toFixed(2) : '0.00'}}A<br/>
-                  {{machineColInfo.barB.lineVol?.[0] ? machineColInfo.barB.lineVol[0].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barB.volLineValue?.[0] ? machineColInfo.barB.volLineValue[0].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barB.powActive?.[0] ? machineColInfo.barB.powActive[0].toFixed(3) : '0.000'}}kW<br/>
-                  {{machineColInfo.barB.powReactive?.[0] ? machineColInfo.barB.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
-                  {{machineColInfo.barB.powApparent?.[0] ? machineColInfo.barB.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
-                  {{machineColInfo.barB.powerFactor?.[0] ? machineColInfo.barB.powerFactor[0].toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barB.volThd?.[0] ? (machineColInfo.barB.volThd[0]/100).toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barB.curThd?.[0] ? (machineColInfo.barB.curThd[0]/100).toFixed(2) : '0.00'}}<br/>
-                </div>
-                <div style="width: 25%">
-                  B相<br/>
-                  {{machineColInfo.barB.lineLoadRate?.[1] ? machineColInfo.barB.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
-                  {{machineColInfo.barB.lineCur?.[1] ? machineColInfo.barB.lineCur[1].toFixed(2) : '0.00'}}A<br/>
-                  {{machineColInfo.barB.lineVol?.[1] ? machineColInfo.barB.lineVol[1].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barB.volLineValue?.[1] ? machineColInfo.barB.volLineValue[1].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barB.powActive?.[1] ? machineColInfo.barB.powActive[1].toFixed(3) : '0.000'}}kW<br/>
-                  {{machineColInfo.barB.powReactive?.[1] ? machineColInfo.barB.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
-                  {{machineColInfo.barB.powApparent?.[1] ? machineColInfo.barB.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
-                  {{machineColInfo.barB.powerFactor?.[1] ? machineColInfo.barB.powerFactor[1].toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barB.volThd?.[1] ? (machineColInfo.barB.volThd[1]/100).toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barB.curThd?.[1] ? (machineColInfo.barB.curThd[1]/100).toFixed(2) : '0.00'}}<br/>
-                </div>
-                <div style="width: 25%">
-                  C相<br/>
-                  {{machineColInfo.barB.lineLoadRate?.[2] ? machineColInfo.barB.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
-                  {{machineColInfo.barB.lineCur?.[2] ? machineColInfo.barB.lineCur[2].toFixed(2) : '0.00'}}A<br/>
-                  {{machineColInfo.barB.lineVol?.[2] ? machineColInfo.barB.lineVol[2].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barB.volLineValue?.[2] ? machineColInfo.barB.volLineValue[2].toFixed(1) : '0.0'}}V<br/>
-                  {{machineColInfo.barB.powActive?.[2] ? machineColInfo.barB.powActive[2].toFixed(3) : '0.000'}}kW<br/>
-                  {{machineColInfo.barB.powReactive?.[2] ? machineColInfo.barB.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
-                  {{machineColInfo.barB.powApparent?.[2] ? machineColInfo.barB.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
-                  {{machineColInfo.barB.powerFactor?.[2] ? machineColInfo.barB.powerFactor[2].toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barB.volThd?.[2] ? (machineColInfo.barB.volThd[2]/100).toFixed(2) : '0.00'}}<br/>
-                  {{machineColInfo.barB.curThd?.[2] ? (machineColInfo.barB.curThd[2]/100).toFixed(2) : '0.00'}}<br/>
-                </div>
+              <div class="menu" v-if="operateMenuBox.show && editEnable && operateMenuBox.type == 'A'" :style="{left: `${operateMenuBox.left}`, top: `${operateMenuBox.top}`}">
+                <div class="menu_item" @click="handleBoxOperate('edit', 'A')">编辑</div>
+                <div class="menu_item" @click="handleBoxOperate('delete', 'A')">删除</div>
               </div>
-              <hr/>
-              <div class="flex justify-between" style="width: 20vw">
-                <div style="width: 25%">
-                  A相温度： {{machineColInfo.barB.temData?.[0] ? machineColInfo.barB.temData[0].toFixed(0) : '0'}}°C<br/>
-                </div>
-                <div style="width: 25%">
-                  B相温度：{{machineColInfo.barB.temData?.[1] ? machineColInfo.barB.temData[1].toFixed(0) : '0'}}°C<br/>
-                </div>
-                <div style="width: 25%">
-                  C相温度：{{machineColInfo.barB.temData?.[2] ? machineColInfo.barB.temData[2].toFixed(0) : '0'}}°C<br/>
-                </div>
-                <div style="width: 25%">
-                  N相温度：{{machineColInfo.barB.temData?.[3] ? machineColInfo.barB.temData[3].toFixed(0) : '0'}}°C<br/>
-                </div>
-              </div>
-            </template> 
-            <div class="startBus" v-if="!machineColInfo.barB.direction" @dblclick="handleInitialDblick($event, 'B')">
-              <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
             </div>
-          </el-tooltip>
-            <!-- <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" /> -->
-          <div class="maskPoint1"></div>
-          <div class="maskPoint2"></div>
-          <div class="menu" v-if="operateMenuBox.show && editEnable && operateMenuBox.type == 'bar'" :style="{left: `${operateMenuBox.left}`, top: `${operateMenuBox.top}`}">
-            <div class="menu_item" @click="handleBarOperate('edit')">编辑</div>
-            <div class="menu_item" @click="handleBarOperate('delete')">删除</div>
+            <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer" @click.right="handlePluginRightClick($event, 'B')" style="margin-bottom: 80px">
+              <div class="bridge"></div>
+              <div class="busList2">
+                <template v-for="(bus, index) in machineColInfo.barB.boxList" :key="index">
+                  <el-tooltip effect="light" :hide-after="0">
+                    <template #content>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 33%">
+                          基本信息：<br/>
+                          网络地址：{{bus.boxKey}}<br/>
+                          插接箱名称：{{bus.boxName}}<br/>
+                          软件版本号：{{bus.boxVersion}}<br/>
+                          断路器状态：{{bus.breakerStatus ? breakerStatusList[bus.breakerStatus] : ''}}
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          插接箱状态：{{bus.status ? barStatusList[bus.status] : ''}}<br/>
+                          电压不平衡：{{bus.volUnbalance ? bus.volUnbalance.toFixed(2) : '0.00'}}%<br/>
+                          电流不平衡：{{bus.curUnbalance ? bus.curUnbalance.toFixed(2) : '0.00'}}%<br/>
+                          回路数量：{{bus.loopNum}}
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          总功率因数：{{bus.powerFactorTotal ? bus.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
+                          总有功功率：{{bus.powValueTotal ? bus.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
+                          总无功功率：{{bus.powReactiveTotal ? bus.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
+                          总视在功率：{{bus.powApparentTotal ? bus.powApparentTotal.toFixed(3) : '0.000'}}kVA
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        插接位：
+                      </div>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 13%">
+                          <br/>
+                          有功功率：<br/>
+                          无功功率：<br/>
+                          视在功率：<br/>
+                          功率因数：
+                        </div>
+                        <div style="width: 29%">
+                          输出位1<br/>
+                          {{bus.powActive?.[0] ? bus.powActive[0].toFixed(3) : '0.000'}}kW<br/>
+                          {{bus.powReactive?.[0] ? bus.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
+                          {{bus.powApparent?.[0] ? bus.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
+                          {{bus.powerFactor?.[0] ? bus.powerFactor[0].toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          输出位2<br/>
+                          {{bus.powActive?.[1] ? bus.powActive[1].toFixed(3) : '0.000'}}kW<br/>
+                          {{bus.powReactive?.[1] ? bus.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
+                          {{bus.powApparent?.[1] ? bus.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
+                          {{bus.powerFactor?.[1] ? bus.powerFactor[1].toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          输出位3<br/>
+                          {{bus.powActive?.[2] ? bus.powActive[2].toFixed(3) : '0.000'}}kW<br/>
+                          {{bus.powReactive?.[2] ? bus.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
+                          {{bus.powApparent?.[2] ? bus.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
+                          {{bus.powerFactor?.[2] ? bus.powerFactor[2].toFixed(2) : '0.00'}}
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        输入相：
+                      </div>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 13%">
+                          <br/>
+                          负载率：<br/>
+                          相电流：<br/>
+                          相电压：<br/>
+                          电流谐波：
+                        </div>
+                        <div style="width: 29%">
+                          A相<br/>
+                          {{bus.lineLoadRate?.[0] ? bus.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
+                          {{bus.lineCur?.[0] ? bus.lineCur[0].toFixed(2) : '0.00'}}A<br/>
+                          {{bus.lineVol?.[0] ? bus.lineVol[0].toFixed(1) : '0.0'}}V<br/>
+                          {{bus.curThd?.[0] ? (bus.curThd[0]/100).toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          B相<br/>
+                          {{bus.lineLoadRate?.[1] ? bus.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
+                          {{bus.lineCur?.[1] ? bus.lineCur[1].toFixed(2) : '0.00'}}A<br/>
+                          {{bus.lineVol?.[1] ? bus.lineVol[1].toFixed(1) : '0.0'}}V<br/>
+                          {{bus.curThd?.[1] ? (bus.curThd[1]/100).toFixed(2) : '0.00'}}
+                        </div>
+                        <div style="width: 29%">
+                          C相<br/>
+                          {{bus.lineLoadRate?.[2] ? bus.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
+                          {{bus.lineCur?.[2] ? bus.lineCur[2].toFixed(2) : '0.00'}}A<br/>
+                          {{bus.lineVol?.[2] ? bus.lineVol[2].toFixed(1) : '0.0'}}V<br/>
+                          {{bus.curThd?.[2] ? (bus.curThd[2]/100).toFixed(2) : '0.00'}}
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        温度：
+                      </div>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 25%">
+                          A相温度：{{bus.temData?.[0] ? bus.temData[0].toFixed(0) : '0'}}°C
+                        </div>
+                        <div style="width: 25%">
+                          B相温度：{{bus.temData?.[1] ? bus.temData[1].toFixed(0) : '0'}}°C
+                        </div>
+                        <div style="width: 25%">
+                          C相温度：{{bus.temData?.[2] ? bus.temData[2].toFixed(0) : '0'}}°C
+                        </div>
+                        <div style="width: 25%">
+                          N相温度：{{bus.temData?.[3] ? bus.temData[3].toFixed(0) : '0'}}°C
+                        </div>
+                      </div>
+                      <hr/>
+                      <div class="flex justify-between" style="width: 25vw">
+                        <div style="width: 33%">
+                          回路电流：<br/>
+                          C1：{{bus.curValueLoop?.[0] ? bus.curValueLoop[0].toFixed(2) : '0.00'}}A<br/>
+                          C4：{{bus.curValueLoop?.[3] ? bus.curValueLoop[3].toFixed(2) : '0.00'}}A<br/>
+                          C7：{{bus.curValueLoop?.[6] ? bus.curValueLoop[6].toFixed(2) : '0.00'}}A
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          C2：{{bus.curValueLoop?.[1] ? bus.curValueLoop[1].toFixed(2) : '0.00'}}A<br/>
+                          C5：{{bus.curValueLoop?.[4] ? bus.curValueLoop[4].toFixed(2) : '0.00'}}A<br/>
+                          C8：{{bus.curValueLoop?.[7] ? bus.curValueLoop[7].toFixed(2) : '0.00'}}A
+                        </div>
+                        <div style="width: 33%">
+                          <br/>
+                          C3：{{bus.curValueLoop?.[2] ? bus.curValueLoop[2].toFixed(2) : '0.00'}}A<br/>
+                          C6：{{bus.curValueLoop?.[5] ? bus.curValueLoop[5].toFixed(2) : '0.00'}}A<br/>
+                          C9：{{bus.curValueLoop?.[8] ? bus.curValueLoop[8].toFixed(2) : '0.00'}}A
+                        </div>
+                      </div>
+                    </template>
+                    <!-- 插接箱 -->
+                    <div v-if="bus.type == 0 || bus.outletNum > 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'B')" @click.stop="showPluginConnect('B',bus.boxIndex)">
+                      <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
+                      <div class="pointContainer">
+                        <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_B-${pointIndex}`"></div>
+                      </div>
+                    </div>
+                    <!-- 连接器 -->
+                    <div v-else class="template-box" :id="`box-${index}`">
+                      <div class="connector">
+                        <span class="text">连接器</span>
+                      </div>
+                      <div v-if="chosenBtn == 8 && bus.temData" class="Tbox">
+                        <div v-for="(tmp, count) in bus.temData" :key="count" class="T">
+                          <div>T(L{{count}})</div>
+                          <div>{{tmp}}°C</div>
+                        </div>
+                      </div>
+                    </div>
+                  </el-tooltip>
+                </template>
+              </div>
+              <div class="menu" v-if="operateMenuBox.show && operateMenuBox.type == 'B'" :style="{left: `${operateMenuBox.left}`, top: `${operateMenuBox.top}`}">
+                <!-- <div class="menu_item" @click="handleBoxOperate('edit', 'B')">编辑</div>
+                <div class="menu_item" @click="handleBoxOperate('delete', 'B')">删除</div> -->
+                <el-cascader-panel class="menu_item_panel" :options="menuOptionsBox" :props="{expandTrigger: 'hover'}" @change="handleMenuBox" @expand-change="expandChange" />
+              </div>
+            </div>
+          </div>
+          <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus" @click.right="handleBarRightClick($event)">
+            <el-tooltip effect="light" :hide-after="0">
+              <template #content>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 50%">
+                    母线名称：{{machineColInfo.barA.busName ? machineColInfo.barA.busName : ''}} <br/>
+                    网络地址：{{machineColInfo.barA.devIp ? machineColInfo.barA.devIp+'-'+ machineColInfo.barA.barId : ''}}<br/>
+                    软件版本号：{{machineColInfo.barA.busVersion ? machineColInfo.barA.busVersion : ''}}<br/>
+                    断路器状态：{{machineColInfo.barA.breakerStatus ? breakerStatusList[machineColInfo.barA.breakerStatus] : ''}}<br/>
+                    剩余电流：{{machineColInfo.barA.curResidualValueTotal ? machineColInfo.barA.curResidualValueTotal.toFixed(2) : '0.00'}}A<br/>
+                    防雷状态：{{machineColInfo.barA.lspStatus ? lspStatusList[machineColInfo.barA.lspStatus] : ''}}<br/>
+                    突变频率：{{machineColInfo.barA.hzValue ? machineColInfo.barA.hzValue : ''}}
+                  </div>
+                  <div style="width: 50%">
+                    始端箱状态：{{machineColInfo.barA.status ? barStatusList[machineColInfo.barA.status] : ''}} <br/>
+                    总功率因数：{{machineColInfo.barA.powerFactorTotal ? machineColInfo.barA.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
+                    总有功功率：{{machineColInfo.barA.powValueTotal ? machineColInfo.barA.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
+                    总无功功率：{{machineColInfo.barA.powReactiveTotal ? machineColInfo.barA.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
+                    总视在功率：{{machineColInfo.barA.powApparentTotal ? machineColInfo.barA.powApparentTotal.toFixed(3) : '0.000'}}kVA<br/>
+                    电压不平衡：{{machineColInfo.barA.volUnbalance ? machineColInfo.barA.volUnbalance.toFixed(2) : '0.00'}}%<br/>
+                    电流不平衡：{{machineColInfo.barA.curUnbalance ? machineColInfo.barA.curUnbalance.toFixed(2) : '0.00'}}%
+                  </div>
+                </div>
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    <br/>
+                    负载率：<br/>
+                    相电流：<br/>
+                    相电压：<br/>
+                    线电压：<br/>
+                    有功功率：<br/>
+                    无功功率：<br/>
+                    视在功率：<br/>
+                    功率因数：<br/>
+                    电压谐波：<br/>
+                    电流谐波：
+                  </div>
+                  <div style="width: 25%">
+                    A相<br/>
+                    {{machineColInfo.barA.lineLoadRate?.[0] ? machineColInfo.barA.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barA.lineCur?.[0] ? machineColInfo.barA.lineCur[0].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barA.lineVol?.[0] ? machineColInfo.barA.lineVol[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.volLineValue?.[0] ? machineColInfo.barA.volLineValue[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.powActive?.[0] ? machineColInfo.barA.powActive[0].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barA.powReactive?.[0] ? machineColInfo.barA.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barA.powApparent?.[0] ? machineColInfo.barA.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barA.powerFactor?.[0] ? machineColInfo.barA.powerFactor[0].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.volThd?.[0] ? (machineColInfo.barA.volThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.curThd?.[0] ? (machineColInfo.barA.curThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相<br/>
+                    {{machineColInfo.barA.lineLoadRate?.[1] ? machineColInfo.barA.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barA.lineCur?.[1] ? machineColInfo.barA.lineCur[1].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barA.lineVol?.[1] ? machineColInfo.barA.lineVol[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.volLineValue?.[1] ? machineColInfo.barA.volLineValue[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.powActive?.[1] ? machineColInfo.barA.powActive[1].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barA.powReactive?.[1] ? machineColInfo.barA.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barA.powApparent?.[1] ? machineColInfo.barA.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barA.powerFactor?.[1] ? machineColInfo.barA.powerFactor[1].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.volThd?.[1] ? (machineColInfo.barA.volThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.curThd?.[1] ? (machineColInfo.barA.curThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相<br/>
+                    {{machineColInfo.barA.lineLoadRate?.[2] ? machineColInfo.barA.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barA.lineCur?.[2] ? machineColInfo.barA.lineCur[2].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barA.lineVol?.[2] ? machineColInfo.barA.lineVol[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.volLineValue?.[2] ? machineColInfo.barA.volLineValue[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barA.powActive?.[2] ? machineColInfo.barA.powActive[2].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barA.powReactive?.[2] ? machineColInfo.barA.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barA.powApparent?.[2] ? machineColInfo.barA.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barA.powerFactor?.[2] ? machineColInfo.barA.powerFactor[2].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.volThd?.[2] ? (machineColInfo.barA.volThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barA.curThd?.[2] ? (machineColInfo.barA.curThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                </div>
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    A相温度： {{machineColInfo.barA.temData?.[0] ? machineColInfo.barA.temData[0].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相温度：{{machineColInfo.barA.temData?.[1] ? machineColInfo.barA.temData[1].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相温度：{{machineColInfo.barA.temData?.[2] ? machineColInfo.barA.temData[2].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    N相温度：{{machineColInfo.barA.temData?.[3] ? machineColInfo.barA.temData[3].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                </div>
+              </template> 
+              <div class="startBus" v-if="machineColInfo.barA.direction" @dblclick="handleInitialDblick($event, 'A')" style="background-color: #43939c" @click.stop="showInitialConnect('A')">
+                <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
+                <div style="background-color: white;color: black;position: absolute;bottom: -20px;left: 50%;transform: translateX(-50%);">A路母线</div>
+              </div>
+              <div v-else></div>
+            </el-tooltip>
+            <el-tooltip effect="light" :hide-after="0">
+              <template #content>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 50%">
+                    母线名称：{{machineColInfo.barB.busName ? machineColInfo.barB.busName : ''}} <br/>
+                    网络地址：{{machineColInfo.barB.devIp ? machineColInfo.barB.devIp+'-'+ machineColInfo.barB.barId : ''}}<br/>
+                    软件版本号：{{machineColInfo.barB.busVersion ? machineColInfo.barB.busVersion : ''}}<br/>
+                    断路器状态：{{machineColInfo.barB.breakerStatus ? breakerStatusList[machineColInfo.barB.breakerStatus] : ''}}<br/>
+                    剩余电流：{{machineColInfo.barB.curResidualValueTotal ? machineColInfo.barB.curResidualValueTotal.toFixed(2) : '0.00'}}A<br/>
+                    防雷状态：{{machineColInfo.barB.lspStatus ? lspStatusList[machineColInfo.barB.lspStatus] : ''}}<br/>
+                    突变频率：{{machineColInfo.barB.hzValue ? machineColInfo.barB.hzValue : ''}}
+                  </div>
+                  <div style="width: 50%">
+                    始端箱状态：{{machineColInfo.barB.status ? barStatusList[machineColInfo.barB.status] : ''}} <br/>
+                    总功率因数：{{machineColInfo.barB.powerFactorTotal ? machineColInfo.barB.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
+                    总有功功率：{{machineColInfo.barB.powValueTotal ? machineColInfo.barB.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
+                    总无功功率：{{machineColInfo.barB.powReactiveTotal ? machineColInfo.barB.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
+                    总视在功率：{{machineColInfo.barB.powApparentTotal ? machineColInfo.barB.powApparentTotal.toFixed(3) : '0.000'}}kVA<br/>
+                    电压不平衡：{{machineColInfo.barB.volUnbalance ? machineColInfo.barB.volUnbalance.toFixed(2) : '0.00'}}%<br/>
+                    电流不平衡：{{machineColInfo.barB.curUnbalance ? machineColInfo.barB.curUnbalance.toFixed(2) : '0.00'}}%
+                  </div>
+                </div>
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    <br/>
+                    负载率：<br/>
+                    相电流：<br/>
+                    相电压：<br/>
+                    线电压：<br/>
+                    有功功率：<br/>
+                    无功功率：<br/>
+                    视在功率：<br/>
+                    功率因数：<br/>
+                    电压谐波：<br/>
+                    电流谐波：
+                  </div>
+                  <div style="width: 25%">
+                    A相<br/>
+                    {{machineColInfo.barB.lineLoadRate?.[0] ? machineColInfo.barB.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barB.lineCur?.[0] ? machineColInfo.barB.lineCur[0].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barB.lineVol?.[0] ? machineColInfo.barB.lineVol[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.volLineValue?.[0] ? machineColInfo.barB.volLineValue[0].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.powActive?.[0] ? machineColInfo.barB.powActive[0].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barB.powReactive?.[0] ? machineColInfo.barB.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barB.powApparent?.[0] ? machineColInfo.barB.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barB.powerFactor?.[0] ? machineColInfo.barB.powerFactor[0].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.volThd?.[0] ? (machineColInfo.barB.volThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.curThd?.[0] ? (machineColInfo.barB.curThd[0]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相<br/>
+                    {{machineColInfo.barB.lineLoadRate?.[1] ? machineColInfo.barB.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barB.lineCur?.[1] ? machineColInfo.barB.lineCur[1].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barB.lineVol?.[1] ? machineColInfo.barB.lineVol[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.volLineValue?.[1] ? machineColInfo.barB.volLineValue[1].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.powActive?.[1] ? machineColInfo.barB.powActive[1].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barB.powReactive?.[1] ? machineColInfo.barB.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barB.powApparent?.[1] ? machineColInfo.barB.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barB.powerFactor?.[1] ? machineColInfo.barB.powerFactor[1].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.volThd?.[1] ? (machineColInfo.barB.volThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.curThd?.[1] ? (machineColInfo.barB.curThd[1]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相<br/>
+                    {{machineColInfo.barB.lineLoadRate?.[2] ? machineColInfo.barB.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
+                    {{machineColInfo.barB.lineCur?.[2] ? machineColInfo.barB.lineCur[2].toFixed(2) : '0.00'}}A<br/>
+                    {{machineColInfo.barB.lineVol?.[2] ? machineColInfo.barB.lineVol[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.volLineValue?.[2] ? machineColInfo.barB.volLineValue[2].toFixed(1) : '0.0'}}V<br/>
+                    {{machineColInfo.barB.powActive?.[2] ? machineColInfo.barB.powActive[2].toFixed(3) : '0.000'}}kW<br/>
+                    {{machineColInfo.barB.powReactive?.[2] ? machineColInfo.barB.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
+                    {{machineColInfo.barB.powApparent?.[2] ? machineColInfo.barB.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
+                    {{machineColInfo.barB.powerFactor?.[2] ? machineColInfo.barB.powerFactor[2].toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.volThd?.[2] ? (machineColInfo.barB.volThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                    {{machineColInfo.barB.curThd?.[2] ? (machineColInfo.barB.curThd[2]/100).toFixed(2) : '0.00'}}<br/>
+                  </div>
+                </div>
+                <hr/>
+                <div class="flex justify-between" style="width: 20vw">
+                  <div style="width: 25%">
+                    A相温度： {{machineColInfo.barB.temData?.[0] ? machineColInfo.barB.temData[0].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    B相温度：{{machineColInfo.barB.temData?.[1] ? machineColInfo.barB.temData[1].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    C相温度：{{machineColInfo.barB.temData?.[2] ? machineColInfo.barB.temData[2].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                  <div style="width: 25%">
+                    N相温度：{{machineColInfo.barB.temData?.[3] ? machineColInfo.barB.temData[3].toFixed(0) : '0'}}°C<br/>
+                  </div>
+                </div>
+              </template> 
+              <div class="startBus" v-if="machineColInfo.barB.direction" @dblclick="handleInitialDblick($event, 'B')" style="background-color: #acd997" @click.stop="showInitialConnect('B')">
+                <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
+                <div style="background-color: white;color: black;position: absolute;bottom: -20px;left: 50%;transform: translateX(-50%);">B路母线</div>
+              </div>
+            </el-tooltip>
           </div>
         </div>
-        <div class="main">
-          <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="busListContainer" @click.right="handlePluginRightClick($event, 'A')">
-            <div class="bridge"></div>
-            <div class="busList1">
-              <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
-                <el-tooltip effect="light" :hide-after="0">
-                  <template #content>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 33%">
-                        基本信息：<br/>
-                        网络地址：{{bus.boxKey}}<br/>
-                        插接箱名称：{{bus.boxName}}<br/>
-                        软件版本号：{{bus.boxVersion}}<br/>
-                        断路器状态：{{bus.breakerStatus ? breakerStatusList[bus.breakerStatus] : ''}}
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        插接箱状态：{{bus.status ? barStatusList[bus.status] : ''}}<br/>
-                        电压不平衡：{{bus.volUnbalance ? bus.volUnbalance.toFixed(2) : '0.00'}}%<br/>
-                        电流不平衡：{{bus.curUnbalance ? bus.curUnbalance.toFixed(2) : '0.00'}}%<br/>
-                        回路数量：{{bus.loopNum}}
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        总功率因数：{{bus.powerFactorTotal ? bus.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
-                        总有功功率：{{bus.powValueTotal ? bus.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
-                        总无功功率：{{bus.powReactiveTotal ? bus.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
-                        总视在功率：{{bus.powApparentTotal ? bus.powApparentTotal.toFixed(3) : '0.000'}}kVA
-                      </div>
-                    </div>
-                    <hr/>
-                    <div class="flex justify-between" style="width: 25vw">
-                      插接位：
-                    </div>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 13%">
-                        <br/>
-                        有功功率：<br/>
-                        无功功率：<br/>
-                        视在功率：<br/>
-                        功率因数：
-                      </div>
-                      <div style="width: 29%">
-                        输出位1<br/>
-                        {{bus.powActive?.[0] ? bus.powActive[0].toFixed(3) : '0.000'}}kW<br/>
-                        {{bus.powReactive?.[0] ? bus.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
-                        {{bus.powApparent?.[0] ? bus.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
-                        {{bus.powerFactor?.[0] ? bus.powerFactor[0].toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        输出位2<br/>
-                        {{bus.powActive?.[1] ? bus.powActive[1].toFixed(3) : '0.000'}}kW<br/>
-                        {{bus.powReactive?.[1] ? bus.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
-                        {{bus.powApparent?.[1] ? bus.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
-                        {{bus.powerFactor?.[1] ? bus.powerFactor[1].toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        输出位3<br/>
-                        {{bus.powActive?.[2] ? bus.powActive[2].toFixed(3) : '0.000'}}kW<br/>
-                        {{bus.powReactive?.[2] ? bus.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
-                        {{bus.powApparent?.[2] ? bus.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
-                        {{bus.powerFactor?.[2] ? bus.powerFactor[2].toFixed(2) : '0.00'}}
-                      </div>
-                    </div>
-                    <hr/>
-                    <div class="flex justify-between" style="width: 25vw">
-                      输入相：
-                    </div>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 13%">
-                        <br/>
-                        负载率：<br/>
-                        相电流：<br/>
-                        相电压：<br/>
-                        电流谐波：
-                      </div>
-                      <div style="width: 29%">
-                        A相<br/>
-                        {{bus.lineLoadRate?.[0] ? bus.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
-                        {{bus.lineCur?.[0] ? bus.lineCur[0].toFixed(2) : '0.00'}}A<br/>
-                        {{bus.lineVol?.[0] ? bus.lineVol[0].toFixed(1) : '0.0'}}V<br/>
-                        {{bus.curThd?.[0] ? (bus.curThd[0]/100).toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        B相<br/>
-                        {{bus.lineLoadRate?.[1] ? bus.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
-                        {{bus.lineCur?.[1] ? bus.lineCur[1].toFixed(2) : '0.00'}}A<br/>
-                        {{bus.lineVol?.[1] ? bus.lineVol[1].toFixed(1) : '0.0'}}V<br/>
-                        {{bus.curThd?.[1] ? (bus.curThd[1]/100).toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        C相<br/>
-                        {{bus.lineLoadRate?.[2] ? bus.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
-                        {{bus.lineCur?.[2] ? bus.lineCur[2].toFixed(2) : '0.00'}}A<br/>
-                        {{bus.lineVol?.[2] ? bus.lineVol[2].toFixed(1) : '0.0'}}V<br/>
-                        {{bus.curThd?.[2] ? (bus.curThd[2]/100).toFixed(2) : '0.00'}}
-                      </div>
-                    </div>
-                    <hr/>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 33%">
-                        回路电流：<br/>
-                        C1：{{bus.curValueLoop?.[0] ? bus.curValueLoop[0].toFixed(2) : '0.00'}}A<br/>
-                        C4：{{bus.curValueLoop?.[3] ? bus.curValueLoop[3].toFixed(2) : '0.00'}}A<br/>
-                        C7：{{bus.curValueLoop?.[6] ? bus.curValueLoop[6].toFixed(2) : '0.00'}}A
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        C2：{{bus.curValueLoop?.[1] ? bus.curValueLoop[1].toFixed(2) : '0.00'}}A<br/>
-                        C5：{{bus.curValueLoop?.[4] ? bus.curValueLoop[4].toFixed(2) : '0.00'}}A<br/>
-                        C8：{{bus.curValueLoop?.[7] ? bus.curValueLoop[7].toFixed(2) : '0.00'}}A
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        C3：{{bus.curValueLoop?.[2] ? bus.curValueLoop[2].toFixed(2) : '0.00'}}A<br/>
-                        C6：{{bus.curValueLoop?.[5] ? bus.curValueLoop[5].toFixed(2) : '0.00'}}A<br/>
-                        C9：{{bus.curValueLoop?.[8] ? bus.curValueLoop[8].toFixed(2) : '0.00'}}A
-                      </div>
-                    </div>
-                  </template>
-                  <!-- 插接箱 -->
-                  <div v-if="bus.type == 0 || bus.outletNum > 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'A')" @click.stop="showPluginConnect('A',bus.boxIndex)">
-                    <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
-                    <div class="pointContainer">
-                      <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_A-${pointIndex}`"></div>
-                    </div>
-                  </div>
-                  <!-- 连接器 -->
-                  <div v-else class="template-box" :id="`box-${index}`">
-                    <div class="connector">
-                      <span class="text">连接器</span>
-                    </div>
-                    <div v-if="chosenBtn == 8 && bus.temData" class="Tbox">
-                      <div v-for="(tmp, count) in bus.temData" :key="count" class="T">
-                        <div>T(L{{count}})</div>
-                        <div>{{tmp}}°C</div>
-                      </div>
-                    </div>
-                  </div>
-                </el-tooltip>
-              </template>
-            </div>
-            <div class="menu" v-if="operateMenuBox.show && editEnable && operateMenuBox.type == 'A'" :style="{left: `${operateMenuBox.left}`, top: `${operateMenuBox.top}`}">
-              <div class="menu_item" @click="handleBoxOperate('edit', 'A')">编辑</div>
-              <div class="menu_item" @click="handleBoxOperate('delete', 'A')">删除</div>
-            </div>
-          </div>
-          <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer" @click.right="handlePluginRightClick($event, 'B')" style="margin-bottom: 80px">
-            <div class="bridge"></div>
-            <div class="busList2">
-              <template v-for="(bus, index) in machineColInfo.barB.boxList" :key="index">
-                <el-tooltip effect="light" :hide-after="0">
-                  <template #content>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 33%">
-                        基本信息：<br/>
-                        网络地址：{{bus.boxKey}}<br/>
-                        插接箱名称：{{bus.boxName}}<br/>
-                        软件版本号：{{bus.boxVersion}}<br/>
-                        断路器状态：{{bus.breakerStatus ? breakerStatusList[bus.breakerStatus] : ''}}
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        插接箱状态：{{bus.status ? barStatusList[bus.status] : ''}}<br/>
-                        电压不平衡：{{bus.volUnbalance ? bus.volUnbalance.toFixed(2) : '0.00'}}%<br/>
-                        电流不平衡：{{bus.curUnbalance ? bus.curUnbalance.toFixed(2) : '0.00'}}%<br/>
-                        回路数量：{{bus.loopNum}}
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        总功率因数：{{bus.powerFactorTotal ? bus.powerFactorTotal.toFixed(2) : '0.00'}}<br/>
-                        总有功功率：{{bus.powValueTotal ? bus.powValueTotal.toFixed(3) : '0.000'}}kW<br/>
-                        总无功功率：{{bus.powReactiveTotal ? bus.powReactiveTotal.toFixed(3) : '0.000'}}kVar<br/>
-                        总视在功率：{{bus.powApparentTotal ? bus.powApparentTotal.toFixed(3) : '0.000'}}kVA
-                      </div>
-                    </div>
-                    <hr/>
-                    <div class="flex justify-between" style="width: 25vw">
-                      插接位：
-                    </div>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 13%">
-                        <br/>
-                        有功功率：<br/>
-                        无功功率：<br/>
-                        视在功率：<br/>
-                        功率因数：
-                      </div>
-                      <div style="width: 29%">
-                        输出位1<br/>
-                        {{bus.powActive?.[0] ? bus.powActive[0].toFixed(3) : '0.000'}}kW<br/>
-                        {{bus.powReactive?.[0] ? bus.powReactive[0].toFixed(3) : '0.000'}}kVar<br/>
-                        {{bus.powApparent?.[0] ? bus.powApparent[0].toFixed(3) : '0.000'}}kVA<br/>
-                        {{bus.powerFactor?.[0] ? bus.powerFactor[0].toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        输出位2<br/>
-                        {{bus.powActive?.[1] ? bus.powActive[1].toFixed(3) : '0.000'}}kW<br/>
-                        {{bus.powReactive?.[1] ? bus.powReactive[1].toFixed(3) : '0.000'}}kVar<br/>
-                        {{bus.powApparent?.[1] ? bus.powApparent[1].toFixed(3) : '0.000'}}kVA<br/>
-                        {{bus.powerFactor?.[1] ? bus.powerFactor[1].toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        输出位3<br/>
-                        {{bus.powActive?.[2] ? bus.powActive[2].toFixed(3) : '0.000'}}kW<br/>
-                        {{bus.powReactive?.[2] ? bus.powReactive[2].toFixed(3) : '0.000'}}kVar<br/>
-                        {{bus.powApparent?.[2] ? bus.powApparent[2].toFixed(3) : '0.000'}}kVA<br/>
-                        {{bus.powerFactor?.[2] ? bus.powerFactor[2].toFixed(2) : '0.00'}}
-                      </div>
-                    </div>
-                    <hr/>
-                    <div class="flex justify-between" style="width: 25vw">
-                      输入相：
-                    </div>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 13%">
-                        <br/>
-                        负载率：<br/>
-                        相电流：<br/>
-                        相电压：<br/>
-                        电流谐波：
-                      </div>
-                      <div style="width: 29%">
-                        A相<br/>
-                        {{bus.lineLoadRate?.[0] ? bus.lineLoadRate[0].toFixed(0) : '0'}}%<br/>
-                        {{bus.lineCur?.[0] ? bus.lineCur[0].toFixed(2) : '0.00'}}A<br/>
-                        {{bus.lineVol?.[0] ? bus.lineVol[0].toFixed(1) : '0.0'}}V<br/>
-                        {{bus.curThd?.[0] ? (bus.curThd[0]/100).toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        B相<br/>
-                        {{bus.lineLoadRate?.[1] ? bus.lineLoadRate[1].toFixed(0) : '0'}}%<br/>
-                        {{bus.lineCur?.[1] ? bus.lineCur[1].toFixed(2) : '0.00'}}A<br/>
-                        {{bus.lineVol?.[1] ? bus.lineVol[1].toFixed(1) : '0.0'}}V<br/>
-                        {{bus.curThd?.[1] ? (bus.curThd[1]/100).toFixed(2) : '0.00'}}
-                      </div>
-                      <div style="width: 29%">
-                        C相<br/>
-                        {{bus.lineLoadRate?.[2] ? bus.lineLoadRate[2].toFixed(0) : '0'}}%<br/>
-                        {{bus.lineCur?.[2] ? bus.lineCur[2].toFixed(2) : '0.00'}}A<br/>
-                        {{bus.lineVol?.[2] ? bus.lineVol[2].toFixed(1) : '0.0'}}V<br/>
-                        {{bus.curThd?.[2] ? (bus.curThd[2]/100).toFixed(2) : '0.00'}}
-                      </div>
-                    </div>
-                    <hr/>
-                    <div class="flex justify-between" style="width: 25vw">
-                      <div style="width: 33%">
-                        回路电流：<br/>
-                        C1：{{bus.curValueLoop?.[0] ? bus.curValueLoop[0].toFixed(2) : '0.00'}}A<br/>
-                        C4：{{bus.curValueLoop?.[3] ? bus.curValueLoop[3].toFixed(2) : '0.00'}}A<br/>
-                        C7：{{bus.curValueLoop?.[6] ? bus.curValueLoop[6].toFixed(2) : '0.00'}}A
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        C2：{{bus.curValueLoop?.[1] ? bus.curValueLoop[1].toFixed(2) : '0.00'}}A<br/>
-                        C5：{{bus.curValueLoop?.[4] ? bus.curValueLoop[4].toFixed(2) : '0.00'}}A<br/>
-                        C8：{{bus.curValueLoop?.[7] ? bus.curValueLoop[7].toFixed(2) : '0.00'}}A
-                      </div>
-                      <div style="width: 33%">
-                        <br/>
-                        C3：{{bus.curValueLoop?.[2] ? bus.curValueLoop[2].toFixed(2) : '0.00'}}A<br/>
-                        C6：{{bus.curValueLoop?.[5] ? bus.curValueLoop[5].toFixed(2) : '0.00'}}A<br/>
-                        C9：{{bus.curValueLoop?.[8] ? bus.curValueLoop[8].toFixed(2) : '0.00'}}A
-                      </div>
-                    </div>
-                  </template>
-                  <!-- 插接箱 -->
-                  <div v-if="bus.type == 0 || bus.outletNum > 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'B')" @click.stop="showPluginConnect('B',bus.boxIndex)">
-                    <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
-                    <div class="pointContainer">
-                      <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_B-${pointIndex}`"></div>
-                    </div>
-                  </div>
-                  <!-- 连接器 -->
-                  <div v-else class="template-box" :id="`box-${index}`">
-                    <div class="connector">
-                      <span class="text">连接器</span>
-                    </div>
-                    <div v-if="chosenBtn == 8 && bus.temData" class="Tbox">
-                      <div v-for="(tmp, count) in bus.temData" :key="count" class="T">
-                        <div>T(L{{count}})</div>
-                        <div>{{tmp}}°C</div>
-                      </div>
-                    </div>
-                  </div>
-                </el-tooltip>
-              </template>
-            </div>
-            <div class="menu" v-if="operateMenuBox.show && editEnable && operateMenuBox.type == 'B'" :style="{left: `${operateMenuBox.left}`, top: `${operateMenuBox.top}`}">
-              <div class="menu_item" @click="handleBoxOperate('edit', 'B')">编辑</div>
-              <div class="menu_item" @click="handleBoxOperate('delete', 'B')">删除</div>
-            </div>
-          </div>
-          <div class="cabinetContainer" @click.right="handleCabRightClick">
-            <div class="cabinetList" v-if="cabinetList && cabinetList.length">
-              <template v-for="(cabinet,index) in cabinetList" :key="index">
-                <div class="cabinetBox">
-                  <div class="point">
-                    <div v-if="cabinet.cabinetName" :id="'cab-A-' + index" class="leftPoint"></div>
-                    <div v-if="cabinet.cabinetName" :id="'cab-B-' + index" class="rightPoint"></div>
-                  </div>
-                  <div class="cabinet">
-                    <template v-if="cabinet.cabinetName">
-                      <el-tooltip effect="light">
-                        <template #content>
-                          <div v-if="cabinet.cabinetBoxes || cabinet.cabinetPdus">
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                机柜状态：{{cabinet.runStatus ? statusColor[cabinet.runStatus].name : '正常'}} <br/>
-                                机柜名称：{{cabinet.cabinetName}} <br/>
-                                机柜负荷：{{cabinet.loadRate ? cabinet.loadRate.toFixed(1) : '0.0'}}%<br/>
-                                昨日用能：{{cabinet.yesterdayEq ? cabinet.yesterdayEq.toFixed(1) : '0.0'}}kW·h
-                              </div>
-                              <div style="width: 50%">
-                                总功率因素：{{cabinet.powerFactor ? cabinet.powerFactor.toFixed(2) : '0.00'}}<br/>
-                                总有功功率：{{cabinet.powActive ? cabinet.powActive.toFixed(3) : '0.000'}}kW<br/>
-                                总视在功率：{{cabinet.powApparent ? cabinet.powApparent.toFixed(3) : '0.000'}}kVA<br/>
-                                总无功功率：{{cabinet.powReactive ? cabinet.powReactive.toFixed(3) : '0.000'}}kVar
-                              </div>
+        <div class="cabinetContainer" @click.right="handleCabRightClick">
+          <div class="cabinetList" v-if="cabinetList && cabinetList.length">
+            <template v-for="(cabinet,index) in cabinetList" :key="index">
+              <div class="cabinetBox">
+                <div class="point">
+                  <div v-if="cabinet.cabinetName" :id="'cab-A-' + index" class="leftPoint"></div>
+                  <div v-if="cabinet.cabinetName" :id="'cab-B-' + index" class="rightPoint"></div>
+                </div>
+                <div class="cabinet">
+                  <template v-if="cabinet.cabinetName">
+                    <el-tooltip effect="light" :hide-after="0">
+                      <template #content>
+                        <div v-if="cabinet.cabinetBoxes || cabinet.cabinetPdus">
+                          <div class="flex justify-between" style="width: 20vw">
+                            <div style="width: 50%">
+                              机柜状态：{{cabinet.runStatus ? statusColor[cabinet.runStatus].name : '正常'}} <br/>
+                              机柜名称：{{cabinet.cabinetName}} <br/>
+                              机柜负荷：{{cabinet.loadRate ? cabinet.loadRate.toFixed(1) : '0.0'}}%<br/>
+                              昨日用能：{{cabinet.yesterdayEq ? cabinet.yesterdayEq.toFixed(1) : '0.0'}}kW·h
                             </div>
+                            <div style="width: 50%">
+                              总功率因素：{{cabinet.powerFactor ? cabinet.powerFactor.toFixed(2) : '0.00'}}<br/>
+                              总有功功率：{{cabinet.powActive ? cabinet.powActive.toFixed(3) : '0.000'}}kW<br/>
+                              总视在功率：{{cabinet.powApparent ? cabinet.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                              总无功功率：{{cabinet.powReactive ? cabinet.powReactive.toFixed(3) : '0.000'}}kVar
+                            </div>
+                          </div>
+                          <hr/>
+                          <div class="flex justify-between" style="width: 20vw">
+                            <div style="width: 50%">
+                              A路占比：{{cabinet.outletA ? cabinet.outletA : '0'}}%<br/>
+                              A路功率：{{cabinet.powActiveA ? cabinet.powActiveA.toFixed(3) : '0.000'}}kW<br/>
+                              A路设备：{{cabinet.cabinetkeya}}
+                            </div>
+                            <div style="width: 50%">
+                              B路占比：{{cabinet.outletB ? cabinet.outletB : '0'}}%<br/>
+                              B路功率：{{cabinet.powActiveB ? cabinet.powActiveB.toFixed(3) : '0.000'}}kW<br/>
+                              B路设备：{{cabinet.cabinetkeyb}}
+                            </div>
+                          </div>
+                          <hr/>
+                          <div class="flex justify-between" style="width: 20vw">
+                            <div style="width: 50%">
+                              前门温度：{{cabinet.temData ? cabinet.temData.toFixed(1) : ''}}°C<br/>
+                              前门湿度：{{cabinet.temData ? cabinet.temData.toFixed(0) : ''}}%<br/>
+                              前门露点温度: {{cabinet.dewPointa ? cabinet.dewPointa.toFixed(1) : ''}}°C
+                            </div>
+                            <div style="width: 50%">
+                              后门温度：{{cabinet.temDataHot ? cabinet.temDataHot.toFixed(1) : ''}}°C<br/>
+                              后门湿度：{{cabinet.temDataHot ? cabinet.temDataHot.toFixed(0) : ''}}%<br/>
+                              后门露点温度: {{cabinet.dewPointb ? cabinet.dewPointb.toFixed(1) : ''}}°C
+                            </div>
+                          </div>
+                          <div v-if="cabinet.alarmLogRecord && cabinet.runStatus != 1" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
                             <hr/>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                A路占比：{{cabinet.outletA ? cabinet.outletA : '0'}}%<br/>
-                                A路功率：{{cabinet.powActiveA ? cabinet.powActiveA.toFixed(3) : '0.000'}}kW<br/>
-                                A路设备：{{cabinet.cabinetkeya}}
-                              </div>
-                              <div style="width: 50%">
-                                B路占比：{{cabinet.outletB ? cabinet.outletB : '0'}}%<br/>
-                                B路功率：{{cabinet.powActiveB ? cabinet.powActiveB.toFixed(3) : '0.000'}}kW<br/>
-                                B路设备：{{cabinet.cabinetkeyb}}
-                              </div>
+                            告警类型：{{alarmTypeDesc[cabinet.alarmLogRecord?.alarmType]}}<br/>
+                            告警描述：{{cabinet.alarmLogRecord?.alarmDesc}}
+                          </div>
+                        </div>
+                        <div v-else>
+                          <div class="flex justify-between" style="width: 20vw">
+                            <div style="width: 50%">
+                              机柜状态：未绑定 <br/>
+                              机柜名称：{{cabinet.cabinetName}} <br/>
+                              机柜负荷：0.0%<br/>
+                              昨日用能：0.0kW·h
                             </div>
-                            <hr/>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                前门温度：{{cabinet.temData ? cabinet.temData.toFixed(1) : ''}}°C<br/>
-                                前门湿度：{{cabinet.temData ? cabinet.temData.toFixed(0) : ''}}%<br/>
-                                前门露点温度: {{cabinet.dewPointa ? cabinet.dewPointa.toFixed(1) : ''}}°C
-                              </div>
-                              <div style="width: 50%">
-                                后门温度：{{cabinet.temDataHot ? cabinet.temDataHot.toFixed(1) : ''}}°C<br/>
-                                后门湿度：{{cabinet.temDataHot ? cabinet.temDataHot.toFixed(0) : ''}}%<br/>
-                                后门露点温度: {{cabinet.dewPointb ? cabinet.dewPointb.toFixed(1) : ''}}°C
-                              </div>
-                            </div>
-                            <div v-if="cabinet.alarmLogRecord && cabinet.runStatus != 1" style="width: 20vw;word-wrap: break-word;overflow-wrap: break-word;">
-                              <hr/>
-                              告警类型：{{alarmTypeDesc[cabinet.alarmLogRecord?.alarmType]}}<br/>
-                              告警描述：{{cabinet.alarmLogRecord?.alarmDesc}}
+                            <div style="width: 50%">
+                              总功率因素：0.00<br/>
+                              总有功功率：0.000kW<br/>
+                              总视在功率：0.000kVA<br/>
+                              总无功功率：0.000kVar
                             </div>
                           </div>
-                          <div v-else>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                机柜状态：未绑定 <br/>
-                                机柜名称：{{cabinet.cabinetName}} <br/>
-                                机柜负荷：0.0%<br/>
-                                昨日用能：0.0kW·h
-                              </div>
-                              <div style="width: 50%">
-                                总功率因素：0.00<br/>
-                                总有功功率：0.000kW<br/>
-                                总视在功率：0.000kVA<br/>
-                                总无功功率：0.000kVar
-                              </div>
+                          <hr/>
+                          <div class="flex justify-between" style="width: 20vw">
+                            <div style="width: 50%">
+                              A路占比：0%<br/>
+                              A路功率：0.000kW<br/>
+                              A路设备：
                             </div>
-                            <hr/>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                A路占比：0%<br/>
-                                A路功率：0.000kW<br/>
-                                A路设备：
-                              </div>
-                              <div style="width: 50%">
-                                B路占比：0%<br/>
-                                B路功率：0.000kW<br/>
-                                B路设备：
-                              </div>
-                            </div>
-                            <hr/>
-                            <div class="flex justify-between" style="width: 20vw">
-                              <div style="width: 50%">
-                                前门温度：°C<br/>
-                                前门湿度：%<br/>
-                                前门露点温度: °C
-                              </div>
-                              <div style="width: 50%">
-                                后门温度：°C<br/>
-                                后门湿度：%<br/>
-                                后门露点温度: °C
-                              </div>
+                            <div style="width: 50%">
+                              B路占比：0%<br/>
+                              B路功率：0.000kW<br/>
+                              B路设备：
                             </div>
                           </div>
-                        </template>
-                        <div class="inner_fill" @click.stop="showCabinetConnect(index)" @dblclick="handleJump(cabinet)" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? 'rgba(180, 180, 180, 0.2)' : 'rgba(230, 240, 234)'}"></div>
-                      </el-tooltip>
-                      <template v-if="cabinet.id">
-                        <div v-if="chosenBtn == 0" class="fill_box">
-                          <Echart :options="cabinet.echartsOptionLoad" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:center;font-size:12px;">
-                            <div>负载率</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 1" class="fill_box">
-                          <Echart v-if="cabinet.lineCurA || cabinet.lineCurB" :options="cabinet.echartsOptionA1" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:space-around;font-size:12px;">
-                            <div>Ia</div>
-                            <div v-if="(cabinet.lineCurA && cabinet.lineCurA.length == 3) || (cabinet.lineCurB && cabinet.lineCurB.length == 3)">Ib</div>
-                            <div v-if="(cabinet.lineCurA && cabinet.lineCurA.length == 3) || (cabinet.lineCurB && cabinet.lineCurB.length == 3)">Ic</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 2" class="fill_box">
-                          <Echart v-if="cabinet.lineVolA || cabinet.lineVolB" :options="cabinet.echartsOptionV1" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:space-around;font-size:12px;">
-                            <div>Ua</div>
-                            <div v-if="(cabinet.lineVolA && cabinet.lineVolA.length == 3) || (cabinet.lineVolB && cabinet.lineVolB.length == 3)">Ub</div>
-                            <div v-if="(cabinet.lineVolA && cabinet.lineVolA.length == 3) || (cabinet.lineVolB && cabinet.lineVolB.length == 3)">Uc</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 3" class="fill_box">
-                          <Echart :options="cabinet.echartsOptionFactor" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:center;font-size:12px;">
-                            <div>功率因数</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 4" class="fill_box">
-                          <Echart :options="cabinet.echartsOptionApparent" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:center;font-size:12px;">
-                            <div>功率</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 7" class="fill_box">
-                          <Echart :options="cabinet.echartsOptionBalance" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:space-around;font-size:12px;">
-                            <div>A路</div>
-                            <div>B路</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 8" class="fill_box">
-                          <Echart :options="cabinet.echartsOptionTemp" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:space-around;font-size:12px;">
-                            <div>前门</div>
-                            <div>后门</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 9" class="fill_box">
-                          <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:center;font-size:12px;">
-                            <div>容量</div>
-                          </div>
-                        </div>
-                        <div v-if="chosenBtn == 10" class="fill_box">
-                          <Echart :options="cabinet.echartsOptionEq" height="100%" />
-                          <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:center;font-size:12px;">
-                            <div>昨日用能</div>
+                          <hr/>
+                          <div class="flex justify-between" style="width: 20vw">
+                            <div style="width: 50%">
+                              前门温度：°C<br/>
+                              前门湿度：%<br/>
+                              前门露点温度: °C
+                            </div>
+                            <div style="width: 50%">
+                              后门温度：°C<br/>
+                              后门湿度：%<br/>
+                              后门露点温度: °C
+                            </div>
                           </div>
                         </div>
                       </template>
+                      <div class="inner_fill" @click.stop="showCabinetConnect(index)" @dblclick="handleJump(cabinet)" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? '' : 'rgba(230, 240, 234)'}"></div>
+                    </el-tooltip>
+                    <template v-if="cabinet.id && (cabinet.cabinetBoxes || cabinet.cabinetPdus)">
+                      <div v-if="chosenBtn == 0" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionLoad" height="100%" />
+                        <div class="cabinetEchartsName">
+                          <div>负载率</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 1" class="fill_box">
+                        <Echart v-if="(cabinet.lineCurA && cabinet.lineCurA.length == 1) || (cabinet.lineCurB && cabinet.lineCurB.length == 1)" :options="cabinet.echartsOptionA1" height="100%" />
+                        <div v-else style="height: 100%;display: flex;flex-direction: column;justify-content: space-around;align-items: center;font-size: 12px;font-weight: bold">
+                          <div style="display: flex;flex-direction: column;width: 100%;justify-content: center;align-items: center;">
+                            <div>L1(A)</div>
+                            <div style="display: flex;justify-content: space-around;align-items: center;width: 100%;">
+                              <div>{{cabinet.lineCurA ? cabinet.lineCurA[0].toFixed(2) : 0}}</div>
+                              <div>{{cabinet.lineCurB ? cabinet.lineCurB[0].toFixed(2) : 0}}</div>
+                            </div>
+                          </div>
+                          <div style="display: flex;flex-direction: column;width: 100%;justify-content: center;align-items: center;">
+                            <div>L2(A)</div>
+                            <div style="display: flex;justify-content: space-around;align-items: center;width: 100%;">
+                              <div>{{cabinet.lineCurA ? cabinet.lineCurA[1].toFixed(2) : 0}}</div>
+                              <div>{{cabinet.lineCurB ? cabinet.lineCurB[1].toFixed(2) : 0}}</div>
+                            </div>
+                          </div>
+                          <div style="display: flex;flex-direction: column;width: 100%;justify-content: center;align-items: center;">
+                            <div>L3(A)</div>
+                            <div style="display: flex;justify-content: space-around;align-items: center;width: 100%;">
+                              <div>{{cabinet.lineCurA ? cabinet.lineCurA[2].toFixed(2) : 0}}</div>
+                              <div>{{cabinet.lineCurB ? cabinet.lineCurB[2].toFixed(2) : 0}}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="cabinetEchartsName" style="justify-content:space-around;">
+                          <div>A路</div>
+                          <div>B路</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 2" class="fill_box">
+                        <Echart v-if="(cabinet.lineVolA && cabinet.lineVolA.length == 1) || (cabinet.lineVolB && cabinet.lineVolB.length == 1)" :options="cabinet.echartsOptionV1" height="100%" />
+                        <div v-else style="height: 100%;display: flex;flex-direction: column;justify-content: space-around;align-items: center;font-size: 12px;font-weight: bold">
+                          <div style="display: flex;flex-direction: column;width: 100%;justify-content: center;align-items: center;">
+                            <div>L1(V)</div>
+                            <div style="display: flex;justify-content: space-around;align-items: center;width: 100%;">
+                              <div>{{cabinet.lineVolA ? cabinet.lineVolA[0].toFixed(1) : 0}}</div>
+                              <div>{{cabinet.lineVolB ? cabinet.lineVolB[0].toFixed(1) : 0}}</div>
+                            </div>
+                          </div>
+                          <div style="display: flex;flex-direction: column;width: 100%;justify-content: center;align-items: center;">
+                            <div>L2(V)</div>
+                            <div style="display: flex;justify-content: space-around;align-items: center;width: 100%;">
+                              <div>{{cabinet.lineVolA ? cabinet.lineVolA[1].toFixed(1) : 0}}</div>
+                              <div>{{cabinet.lineVolB ? cabinet.lineVolB[1].toFixed(1) : 0}}</div>
+                            </div>
+                          </div>
+                          <div style="display: flex;flex-direction: column;width: 100%;justify-content: center;align-items: center;">
+                            <div>L3(V)</div>
+                            <div style="display: flex;justify-content: space-around;align-items: center;width: 100%;">
+                              <div>{{cabinet.lineVolA ? cabinet.lineVolA[2].toFixed(1) : 0}}</div>
+                              <div>{{cabinet.lineVolB ? cabinet.lineVolB[2].toFixed(1) : 0}}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="cabinetEchartsName" style="justify-content:space-around;">
+                          <div>A路</div>
+                          <div>B路</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 3" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionFactor" height="100%" />
+                        <div class="cabinetEchartsName">
+                          <div>功率因数</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 4" class="fill_box">
+                        <div style="height: 12%;display: flex;flex-direction: column;justify-content: center;align-items: center;font-size: 12px;font-weight: bold">
+                          <div>总视在功率</div>
+                          <div>{{cabinet.powApparent ? cabinet.powApparent.toFixed(1) : 0}}kVA</div>
+                        </div>
+                        <Echart :options="cabinet.echartsOptionApparent" height="87%" />
+                        <div class="cabinetEchartsName">
+                          <div>功率</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 7" class="fill_box">
+                        <div style="height: 12%;display: flex;flex-direction: column;justify-content: center;align-items: center;font-size: 12px;font-weight: bold" :style="{color: cabinet.deviation ? (cabinet.deviation>=19.5 ? `rgba(240, 58, 23, ${cabinet.deviation/100})` : (cabinet.deviation>=9.5 ? `rgba(255, 192, 0, ${(cabinet.deviation+80)/100})` : (cabinet.deviation>=4.5 ? `rgba(0, 120, 215, ${(cabinet.deviation+90)/100})` : `rgba(22, 198, 12, ${(cabinet.deviation+95)/100})`))) : '#eef4fc'}">
+                          <div>偏差率</div>
+                          <div>{{cabinet.deviation ? cabinet.deviation : 0}}%</div>
+                        </div>
+                        <Echart :options="cabinet.echartsOptionBalance" height="88%" />
+                        <div class="cabinetEchartsName" style="justify-content:space-around;">
+                          <div>A路</div>
+                          <div>B路</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 8" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionTemp" height="100%" />
+                        <div style="background-color:black;position: absolute;bottom:5px;color:white;display:flex;width:90%;justify-content:space-around;font-size:12px;">
+                          <div>前门</div>
+                          <div>后门</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 9" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
+                        <div class="cabinetEchartsName">
+                          <div>容量</div>
+                        </div>
+                      </div>
+                      <div v-if="chosenBtn == 10" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionEq" height="100%" />
+                        <div class="cabinetEchartsName">
+                          <div>昨日用能</div>
+                        </div>
+                      </div>
                     </template>
-                    <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
-                  </div>
-                  <div style="width: 100%;display: flex;justify-content: center;">
-                    <div class="ti_xing">
-                    </div>
-                  </div>
-                  <div class="status">{{cabinet.cabinetName || ''}}</div>
+                    <template v-else-if="cabinet.id">
+                      <div class="fill_box">
+                      </div>
+                    </template>
+                  </template>
+                  <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
                 </div>
-              </template>
-              <div class="operateBox">
-                <div v-show="editEnable" class="operateIcon" @click.prevent="addMachine">+</div>
-                <div v-show="editEnable" class="operateIcon" @click.prevent="deleteMachine">-</div>
+                <div style="width: 100%;display: flex;justify-content: center;">
+                  <div class="ti_xing">
+                  </div>
+                </div>
+                <div class="status">{{cabinet.cabinetName || ''}}</div>
               </div>
-            </div>
-            <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-              <!-- <div class="menu_item" v-if="operateMenu.add" @click="handleOperate('add')">新增</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleJump(false)">查看</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('edit')">编辑</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('delete')">删除</div> -->
-              <el-cascader-panel ref="areaIdsCascader" class="menu_item_panel" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" @expand-change="expandChange" />
+            </template>
+            <div class="operateBox">
+              <div v-show="editEnable" class="operateIcon" @click.prevent="addMachine">+</div>
+              <div v-show="editEnable" class="operateIcon" @click.prevent="deleteMachine">-</div>
             </div>
           </div>
-        </div>
-        <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
-          <div class="startBus" v-if="machineColInfo.barA.direction" @dblclick="handleInitialDblick($event, 'A')">
-            <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
-          </div>
-          <div v-else></div>
-
-          <div class="startBus" v-if="machineColInfo.barB.direction" @dblclick="handleInitialDblick($event, 'B')">
-            <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
+          <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
+            <!-- <div class="menu_item" v-if="operateMenu.add" @click="handleOperate('add')">新增</div>
+            <div class="menu_item" v-if="!operateMenu.add" @click="handleJump(false)">查看</div>
+            <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('edit')">编辑</div>
+            <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('delete')">删除</div> -->
+            <el-cascader-panel ref="areaIdsCascader" class="menu_item_panel" :options="menuOptions" :props="{expandTrigger: 'hover'}" @change="handleMenu" @expand-change="expandChange" />
           </div>
         </div>
       </div>
@@ -907,108 +1201,174 @@ const statusColor = ref([
     value: 5,
   },
 ])
-const statusList = reactive([
-  [{
-    name: '负载率<30%',
+const frontStatusList = [
+  {
+    name: '<=20°C',
     selected: true,
     value: 1,
-    color: '#3bbb00'
+    color: '#0078d7'
   },
   {
-    name: '30%≤负载率<60%',
+    name: '20°C~24°C',
     selected: true,
     value: 2,
-    color: '#05ebfc'
+    color: '#008000'
   },
   {
-    name: '60%≤负载率<90%',
+    name: '24°C~27°C',
     selected: true,
     value: 3,
-    color: '#ffc402'
+    color: '#32cd32'
   },
   {
-    name: '负载率>90%',
+    name: '27°C~30°C',
     selected: true,
     value: 4,
-    color: '#fa3333'
+    color: '#FFC000'
+  },
+  {
+    name: '30°C~35°C',
+    color: '#f7630c',
+    value: 5,
+  },
+  {
+    name: '>35°C',
+    color: '#e81224',
+    value: 6,
+  }
+]
+const blackStatusList = [
+  {
+    name: '<=30°C',
+    color: '#008000',
+    value: 1,
+  },
+  {
+    name: '30°C~35°C',
+    color: '#32cd32',
+    value: 2,
+  },
+  {
+    name: '35°C~40°C',
+    color: '#FFC000',
+    value: 3,
+  },
+  {
+    name: '40°C~45°C',
+    color: '#f7630c',
+    value: 4,
+  },
+  {
+    name: '>45°C',
+    color: '#e81224',
+    value: 5,
+  }
+]
+const statusList = reactive([
+  [{
+    name: '0%~50%',
+    selected: true,
+    value: 1,
+    color: '#16c60c'
+  },
+  {
+    name: '50%~75%',
+    selected: true,
+    value: 2,
+    color: '#0078d7'
+  },
+  {
+    name: '75%~90%',
+    selected: true,
+    value: 3,
+    color: '#FFC000'
+  },
+  {
+    name: '90%~100%+',
+    selected: true,
+    value: 4,
+    color: '#f03a17'
   }],
   [{
-    name: 'Ia',
+    name: 'A路',
     selected: true,
     value: 1,
     color: '#E5B849'
   },
   {
-    name: 'Ib',
+    name: 'B路',
     selected: true,
     value: 2,
     color: '#C8603A'
-  },
-  {
-    name: 'Ic',
-    selected: true,
-    value: 3,
-    color: '#AD3762'
   }],
   [{
-    name: 'Ua',
+    name: 'A路',
     selected: true,
     value: 1,
     color: '#075F71'
   },
   {
-    name: 'Ub',
+    name: 'B路',
     selected: true,
     value: 2,
     color: '#119CB5'
-  },
-  {
-    name: 'Uc',
-    selected: true,
-    value: 3,
-    color: '#45C0C9'
   }],
   [{
-    name: '功率因数<25%',
+    name: '0~0.75',
     selected: true,
     value: 1,
-    color: '#FF6E76'
+    color: '#f03a17'
   },
   {
-    name: '25%≤功率因数<50%',
+    name: '0.75~0.84',
     selected: true,
     value: 2,
-    color: '#FDDD60'
+    color: '#FFC000'
   },
   {
-    name: '50%≤功率因数<75%',
+    name: '0.85~0.89',
     selected: true,
     value: 3,
-    color: '#58D9F9'
+    color: '#0078d7'
   },
   {
-    name: '功率因数>75%',
+    name: '0.90~1',
     selected: true,
     value: 4,
-    color: '#7CFFB2'
+    color: '#16c60c'
   }],
   [{
     name: '有功功率',
     selected: true,
     value: 1,
-    color: '#91cc75'
+    color: '#5470c6'
   },
   {
     name: '无功功率',
     selected: true,
     value: 2,
-    color: '#800080'
+    color: '#FFC000'
   }],[],[],
   [{
-    name: '视在功率',
+    name: '<=5%',
     selected: true,
     value: 1,
-    color: '#5470c6'
+    color: '#16c60c'
+  },{
+    name: '5%~10%',
+    selected: true,
+    value: 2,
+    color: '#0078d7'
+  },{
+    name: '10%~20%',
+    selected: true,
+    value: 3,
+    color: '#FFC000'
+  },{
+    name: '>20%',
+    selected: true,
+    value: 4,
+    color: '#f03a17'
   }],
   [],
   [{
@@ -1032,24 +1392,14 @@ const statusList = reactive([
 ])
 const btns = [
   {
-    value: 0,
-    name: '负载率',
-    unitName: '负载率',
-  },
-  {
     value: 1,
     name: '电流',
-    unitName: '电流',
+    unitName: '电流(A)',
   },
   {
     value: 2,
     name: '电压',
-    unitName: '电压',
-  },
-  {
-    value: 3,
-    name: '功率因数',
-    unitName: '功率因数',
+    unitName: '电压(V)',
   },
   {
     value: 4,
@@ -1057,9 +1407,29 @@ const btns = [
     unitName: '功率(kW)',
   },
   {
+    value: 0,
+    name: '负载率',
+    unitName: '负载率',
+  },
+  {
     value: 7,
-    name: '供电平衡',
+    name: '供电均衡',
     unitName: '视在功率(KVA)',
+  },
+  {
+    value: 3,
+    name: '功率因数',
+    unitName: '功率因数',
+  },
+  {
+    value: 10,
+    name: '昨日用能',
+    unitName: '昨日用能(kW·h)',
+  },
+  {
+    value: 11,
+    name: '断路器',
+    unitName: '断路器',
   },
   {
     value: 8,
@@ -1070,12 +1440,7 @@ const btns = [
   //   value: 9,
   //   name: '容量',
   //   unitName: '插接箱',
-  // },
-  {
-    value: 10,
-    name: '用能',
-    unitName: '昨日用能(kW·h)',
-  }
+  // }
 ]
 const btnsCabinet = [
   {
@@ -1111,7 +1476,7 @@ const flashListTimerCopy = ref();
 const echartsOptionCab = ref<EChartsOption>({})
 let intervalTimer = null as any
 const topologyContainer = ref()
-const chosenBtn = ref(0)
+const chosenBtn = ref(4)
 const chosenBtnCabinet = ref(4)
 const scaleValue = ref(1)
 const ContainerHeight = ref(100)
@@ -1191,18 +1556,6 @@ const menuOptionsCopy = ref([
       {
         value: '机柜删除',
         label: '机柜删除'
-      },
-      {
-        value: '柜列移动',
-        label: '柜列移动',
-      },
-      {
-        value: '柜列编辑',
-        label: '柜列编辑',
-      },
-      {
-        value: '柜列删除',
-        label: '柜列删除'
       }
     ]
   },
@@ -1416,29 +1769,66 @@ const menuOptionsCopy = ref([
   }
 ])
 
+const menuOptionsBox = ref([
+  {
+    value: '编辑',
+    label: '编辑 ',
+    children: [
+      {
+        value: '插接箱编辑',
+        label: '插接箱编辑',
+      },
+      {
+        value: '插接箱删除',
+        label: '插接箱删除',
+      }
+    ]
+  },
+  {
+    value: '插接箱 ',
+    label: '插接箱 ',
+    children: [
+      {
+        value: '插接箱配电',
+        label: '插接箱配电',
+      },
+      {
+        value: '插接箱需量',
+        label: '插接箱需量',
+      },
+      {
+        value: '插接箱温度',
+        label: '插接箱温度',
+      },
+      {
+        value: '插接箱设备管理',
+        label: '插接箱设备管理',
+      },
+      {
+        value: '插接箱供电平衡',
+        label: '插接箱供电平衡',
+      }
+    ]
+  }
+])
+
 const emit = defineEmits(['backData', 'idChange', 'getpdubar','sendList']) // 定义 success 事件，用于操作成功后的回调
 
-const saveInit = async (cabIndex) => {
-  const res = await CabinetApi.saveCabinetInfo({
-    ...cabinetList.value[cabIndex],
-  })
-  console.log("res",res,{
-    ...cabinetList.value[cabIndex],
-  })
-}
 // 连接初始化准备
 const initConnect = () => {
+  let cabinetIndex
   // 创建实例
   instance = newInstance({
     container: topologyContainer.value
   })
   // 监听连接
-  instance.bind('beforeDrop', ({connection}) => {
+  instance.bind('beforeDrop', async ({connection}) => {
     console.log('connection', connection)
     const sourceId = connection.source.id
     const targetId = connection.target.id
     const cabId = sourceId.includes('cab') ? sourceId : targetId // 机柜id
     const cabIndex = cabId.split('-')[2]  // 机柜下标
+    cabinetIndex = cabIndex
     const cabRoad = cabId.split('-')[1] // 机柜AB路
     const pluginId = sourceId.includes('plugin') ? sourceId : targetId // 插接箱id
     const pluginName = pluginId.split('_')[0] // 插接箱名字
@@ -1459,20 +1849,32 @@ const initConnect = () => {
     if (cabRoad == 'A') {
       connection.paintStyle = {
         strokeWidth: 1,
-        stroke: "#ccc",
+        stroke: "#43939c",
         dashstyle: "5 5"
       }
     } else if (cabRoad == 'B') {
       connection.paintStyle = {
         strokeWidth: 1,
-        stroke: "#bb0000",
+        stroke: "#acd997",
         dashstyle: "5 5"
       }
     }
+    if(cabIndex >= 0) {
+      const res = await CabinetApi.saveCabinetInfo({
+        ...cabinetList.value[cabIndex]
+      })
+      if(res) {
+        message.success('绑定成功')
+      } else {
+        message.error('绑定失败')
+      }
+    }
+    getMachineColInfoReal()
+    showCabinetConnect(cabIndex)
     return true
   })
   // 监听连接断开
-  instance.bind('beforeDetach', function(connection) {
+  instance.bind('beforeDetach', async function(connection) {
     console.log('监听连接断开', connection, connection.sourceId, connection.source,connection.target)
     if (connection.suspendedElement) { // 用户手动断开连接
       console.log("c1111111111111")
@@ -1480,6 +1882,7 @@ const initConnect = () => {
       const sourceId = connection.source.id
       const cabRoad = connection.source.id.includes('cab') ? sourceId.split('-')[1] : targetId.split(/[-_]/)[2]
       const index = connection.source.id.includes('cab') ? sourceId.split('-')[2] : targetId.split(/[-_]/)[1]
+      cabinetIndex = index
       cabinetList.value[index][`boxOutletId${cabRoad}`] = null
       cabinetList.value[index][`boxIndex${cabRoad}`] = null
       cabinetList.value[index][`casId${cabRoad}`] = null
@@ -1490,8 +1893,26 @@ const initConnect = () => {
       instance?.addEndpoint(cabElement, {
         source: true,
         target: true,
-        endpoint: 'Dot'
+        endpoint: 'Dot',
+        paintStyle: {
+          strokeWidth: 1,
+          stroke: cabRoad == 'A' ? '#43939c' : '#acd997',
+          dashstyle: '5 5'
+        }
       })
+
+      if(index >= 0) {
+        const res = await CabinetApi.saveCabinetInfo({
+          ...cabinetList.value[index]
+        })
+        if(res) {
+          message.success('解绑成功')
+        } else {
+          message.error('解绑失败')
+        }
+      }
+      getMachineColInfoReal()
+      showCabinetConnect(index)
     }
     // 如果返回 false，则连接断开操作会被取消
     return true
@@ -1513,7 +1934,10 @@ const toCreatConnect = (onlyDelete = false) => {
           instance?.addEndpoint(boxElementA, {
             source: true,
             target: true,
-            endpoint: 'Dot'
+            endpoint: 'Dot',
+            paintStyle: {
+              fill: "#43939c"
+            }
           })
           // 更新瞄点
           instance?.revalidate(boxElementA)
@@ -1530,31 +1954,65 @@ const toCreatConnect = (onlyDelete = false) => {
           instance?.addEndpoint(boxElementA, {
             source: true,
             target: true,
-            endpoint: 'Dot'
+            endpoint: 'Dot',
+            paintStyle: {
+              fill: "#acd997"
+            }
           })
           // 更新瞄点
           instance?.revalidate(boxElementA)
         }
       })
       cabinetList.value.forEach((item, index) => {
-        if (!item.cabinetName || !machineColInfo.pduBar) return
-        addCabinetAnchor(index, item, onlyDelete)
+        if (!item.cabinetName || item.cabinetPdus) return
+        if(onlyDelete) {
+          addCabinetAnchor(index, item, onlyDelete)
+        } else {
+          const cabElementA = document.getElementById('cab-A-' + index) as Element
+          const cabElementB = document.getElementById('cab-B-' + index) as Element
+          console.log('cabElementB', cabElementB, cabElementA, item)
+          instance?.removeAllEndpoints(cabElementA)
+          instance?.removeAllEndpoints(cabElementB)
+          // 添加瞄点
+          instance?.addEndpoint(cabElementA, {
+            source: true,
+            target: true,
+            endpoint: 'Dot',
+            paintStyle: {
+              fill: "#43939c"
+            }
+          })
+          instance?.addEndpoint(cabElementB, {
+            source: true,
+            target: true,
+            endpoint: 'Dot',
+            paintStyle: {
+              fill: "#acd997"
+            }
+          })
+          instance?.revalidate(cabElementA)
+          instance?.revalidate(cabElementB)
+        }
       })
+      instance?.deleteEveryConnection()
       return Promise.resolve()
     })
   }
 }
+
 const showAllConnect = () => {
-  console.log(machineColInfo.pduBar)
-  cabinetList.value.forEach((item, index) => {
-    if (!item.cabinetName || !machineColInfo.pduBar) return
-    addCabinetAnchor(index, item)
-  })
+  instance?.deleteEveryConnection()
+  // console.log(machineColInfo.pduBar)
+  // cabinetList.value.forEach((item, index) => {
+  //   if (!item.cabinetName || !machineColInfo.barA) return
+  //   addCabinetAnchor(index, item)
+  // })
 }
+
 const showCabinetConnect = (i) => {
   instance?.deleteEveryConnection()
   cabinetList.value.forEach((item, index) => {
-    if (!item.cabinetName || !machineColInfo.pduBar) return
+    if (!item.cabinetName || !machineColInfo.barA) return
     if(index == i) {
       addCabinetAnchor(index, item)
     } else {
@@ -1567,18 +2025,25 @@ const showCabinetConnect = (i) => {
       instance?.addEndpoint(cabElementA, {
         source: true,
         target: true,
-        endpoint: 'Dot'
+        endpoint: 'Dot',
+        paintStyle: {
+          fill: "#43939c"
+        }
       })
       instance?.addEndpoint(cabElementB, {
         source: true,
         target: true,
-        endpoint: 'Dot'
+        endpoint: 'Dot',
+        paintStyle: {
+          fill: "#acd997"
+        }
       })
       instance?.revalidate(cabElementA)
       instance?.revalidate(cabElementB)
     }
   })
 }
+
 const showPluginConnect = (road,boxIndex) => {
   instance?.deleteEveryConnection()
   cabinetList.value.forEach((item, index) => {
@@ -1592,12 +2057,18 @@ const showPluginConnect = (road,boxIndex) => {
     instance?.addEndpoint(cabElementA, {
       source: true,
       target: true,
-      endpoint: 'Dot'
+      endpoint: 'Dot',
+      paintStyle: {
+        fill: "#43939c"
+      }
     })
     instance?.addEndpoint(cabElementB, {
       source: true,
       target: true,
-      endpoint: 'Dot'
+      endpoint: 'Dot',
+      paintStyle: {
+        fill: "#acd997"
+      }
     })
     if (item[`boxIndex${road}`] !== '' && item[`boxIndex${road}`] == boxIndex) { // 有连接
       const source = document.getElementById('cab-' + road + '-' + index) as Element
@@ -1608,8 +2079,11 @@ const showPluginConnect = (road,boxIndex) => {
         target,
         paintStyle: {
           strokeWidth: 1,
-          stroke: road == 'A' ? '#ccc' : '#bb0000',
+          stroke: road == 'A' ? '#43939c' : '#acd997',
           dashstyle: '5 5'
+        },
+        endpointStyle: {
+          fill: road == 'A' ? '#43939c' : '#acd997'
         }
       })
     }
@@ -1617,6 +2091,55 @@ const showPluginConnect = (road,boxIndex) => {
     instance?.revalidate(cabElementB)
   })
 }
+
+const showInitialConnect = (road) => {
+  instance?.deleteEveryConnection()
+  cabinetList.value.forEach((item, index) => {
+    if (!item.cabinetName || !machineColInfo.pduBar) return
+    const cabElementA = document.getElementById('cab-A-' + index) as Element
+    const cabElementB = document.getElementById('cab-B-' + index) as Element
+    console.log('cabElementB', cabElementB, cabElementA, item)
+    instance?.removeAllEndpoints(cabElementA)
+    instance?.removeAllEndpoints(cabElementB)
+    // 添加瞄点
+    instance?.addEndpoint(cabElementA, {
+      source: true,
+      target: true,
+      endpoint: 'Dot',
+      paintStyle: {
+        fill: "#43939c"
+      }
+    })
+    instance?.addEndpoint(cabElementB, {
+      source: true,
+      target: true,
+      endpoint: 'Dot',
+      paintStyle: {
+        fill: "#acd997"
+      }
+    })
+    if (item[`boxIndex${road}`] !== '') { // 有连接
+      const source = document.getElementById('cab-' + road + '-' + index) as Element
+      const target = document.getElementById(`plugin-${item[`boxIndex${road}`]}_${road}-${item[`boxOutletId${road}`]}`)  as Element
+      console.log('target', source, target, item.boxIndexA, item.boxOutletIdA, machineColInfo)
+      instance?.connect({
+        source,
+        target,
+        paintStyle: {
+          strokeWidth: 1,
+          stroke: road == 'A' ? '#43939c' : '#acd997',
+          dashstyle: '5 5'
+        },
+        endpointStyle: {
+          fill: road == 'A' ? '#43939c' : '#acd997'
+        }
+      })
+    }
+    instance?.revalidate(cabElementA)
+    instance?.revalidate(cabElementB)
+  })
+}
+
 // 创建瞄点并连接
 const controlEndpointShow = (show) => {
   setTimeout((() => {
@@ -1659,15 +2182,23 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   instance?.removeAllEndpoints(cabElementB)
   if (onlyDelete) return
   // 添加瞄点
-  if (data.boxIndexA === '' || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
+  // if (data.boxIndexA === '' || !data.boxOutletIdA) 
+  instance?.addEndpoint(cabElementA, {
     source: true,
     target: true,
-    endpoint: 'Dot'
+    endpoint: 'Dot',
+    paintStyle: {
+      fill: "#43939c"
+    }
   })
-  if (data.boxIndexA === '' || !data.boxOutletIdB) instance?.addEndpoint(cabElementB, {
+  // if (data.boxIndexA === '' || !data.boxOutletIdB) 
+  instance?.addEndpoint(cabElementB, {
     source: true,
     target: true,
-    endpoint: 'Dot'
+    endpoint: 'Dot',
+    paintStyle: {
+      fill: "#acd997"
+    }
   })
   if ((data.boxIndexA !== '' && data.boxIndexA > -1) && data.boxOutletIdA) { // A路有连接
     const source = document.getElementById('cab-A-' + index) as Element
@@ -1678,8 +2209,11 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
       target,
       paintStyle: {
         strokeWidth: 1,
-        stroke: '#ccc',
+        stroke: '#43939c',
         dashstyle: '5 5'
+      },
+      endpointStyle: {
+        fill: '#43939c'
       }
     })
   }
@@ -1692,8 +2226,11 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
       target,
       paintStyle: {
         strokeWidth: 1,
-        stroke: '#bb0000',
+        stroke: '#acd997',
         dashstyle: '5 5'
+      },
+      endpointStyle: {
+        fill: '#acd997'
       }
     })
   }
@@ -1951,6 +2488,12 @@ const handleCabRightClick = (e) => {
     }
   }
 
+  menuOptions.value.splice(1,1)
+
+  if(!editEnable.value) {
+    menuOptions.value.splice(0,1)
+  }
+
   operateMenu.value = {
     left: offsetX + 'px',
     top: offsetY + 'px',
@@ -1963,7 +2506,6 @@ const handleCabRightClick = (e) => {
 // 处理始端箱右击事件
 const handleBarRightClick = (e) => {
   e.preventDefault()
-  if (!editEnable.value) return
   const container = e.currentTarget
   const rect = container.getBoundingClientRect()
   const offsetX = e.clientX - Math.ceil(rect.left) + 1
@@ -1979,7 +2521,6 @@ const handleBarRightClick = (e) => {
 // 处理插接箱右击事件
 const handlePluginRightClick = (e, type) => {
   e.preventDefault()
-  if (!editEnable.value) return
   const targetId = e.target.id || e.target.parentNode.id
   console.log('处理插接箱右击事件',type, e.target.className, e.target.parentNode, targetId, e.currentTarget)
   if (!targetId || !targetId.includes('box')) return
@@ -1988,6 +2529,14 @@ const handlePluginRightClick = (e, type) => {
   const rect = container.getBoundingClientRect()
   const offsetX = e.clientX - Math.ceil(rect.left) + 1
   const offsetY = e.clientY - Math.ceil(rect.top) + 1
+  menuOptionsBox.value[0].value = {...machineColInfo[`bar${type}`].boxList[currentIndex],road: type}
+  menuOptionsBox.value[1].value = machineColInfo[`bar${type}`].boxList[currentIndex]
+  menuOptionsBox.value[1].label = "插接箱：" + machineColInfo[`bar${type}`].boxList[currentIndex].boxName
+  
+  if(!editEnable.value) {
+    menuOptionsBox.value.splice(0,1)
+  }
+  
   operateMenuBox.value = {
     left: offsetX + 'px',
     top: offsetY + 'px',
@@ -2129,13 +2678,69 @@ const handleJump = (data) => {
   } else if(chosenBtn.value == 4) {
     push({path: '/cabinet/cab/detail', state: {id: target.id,roomId: target.roomId,type: 'hour',location: machineColInfo.roomName,cabinetName: target.cabinetName}})
   } else if(chosenBtn.value == 7) {
-    push({path: '/cabinet/cab/balance', query: {openDetailFlag: 1,id: target.id}})
+    cabinetBalanceDetail.value.open({
+      id: target.id
+    })
+    // push({path: '/cabinet/cab/balance', query: {openDetailFlag: 1,id: target.id}})
   } else if(chosenBtn.value == 8) {
     push({path: '/cabinet/cab/cabinetenvdetail', query: { id: target.id }})
   } else if(chosenBtn.value == 9) {
     push({path: '/cabinet/cab/screen', state: { id: target.id,roomId: target.roomId }})
   } else if(chosenBtn.value == 10) {
     push({path: '/cabinet/cab/energyDetail', query: { cabinetId: target.id,cabinetroomId: target.roomId,roomName: machineColInfo.roomName,cabinetName: target.cabinetName }})
+  }
+}
+
+const handleMenuBox = (value) => {
+  operateMenuBox.value.show = false
+
+  switch (value[1]) {
+    case '插接箱编辑':
+      handleBoxOperate('edit', value[0].road)
+      break;
+    
+    case '插接箱删除':
+      handleBoxOperate('delete', value[0].road)
+      break;
+
+    case '插接箱配电':
+      push({ 
+        path: '/bus/busmonitor/boxmonitor/boxpowerdetail', 
+        query: { 
+          devKey: value[0].boxKey,
+          roomName: machineColInfo.roomName,
+        } 
+      });
+      break;
+
+    case '插接箱需量':
+      boxRequirement.value.open({
+        boxId: value[0].id,
+        location: machineColInfo.roomName
+      })
+      break;
+
+    case '插接箱温度':
+      boxTemDetail.value.open({
+        devKey: value[0].boxKey
+      })
+      break;
+
+    case '插接箱供电平衡':
+      boxBalanceDetail.value.open({
+        devKey: value[0].boxKey,
+        roomName: machineColInfo.roomName,
+        boxId: value[0].id
+      })
+      break;
+
+    case '插接箱设备管理':
+      window.open('https://192.168.1.99/index.html', '_blank')
+      break;
+    
+    default:
+      console.warn('未知操作类型:', value[1]);
+      break;
   }
 }
 
@@ -2500,13 +3105,6 @@ const handleOperate = (type) => {
   operateMenu.value.show = false
   const index = operateMenu.value.curIndex
   if (type == 'add' || type == 'edit') {
-    if(barChangeType.value == 'edit') {
-      ElMessage({
-        message: '请先保存母线',
-        type: 'warning',
-      })
-      return
-    }
     let info = {
       roomId: machineColInfo.roomId,
       roomName: machineColInfo.roomName,
@@ -2574,16 +3172,9 @@ const handleEditClick = () => {
 }
 // 处理编辑取消事件
 const handleCancel = () => {
-  ElMessageBox.confirm('取消会使已修改的操作丢失，确认取消？', '提示', {
-    confirmButtonText: '确 认',
-    cancelButtonText: '取 消',
-    type: 'warning'
-  }).then(async () => {
-    instance?.deleteEveryConnection()
-    editEnable.value = false
-    barChangeType.value = ''
-    getMachineColInfo()
-  })
+  editEnable.value = false
+  barChangeType.value = ''
+  getMachineColInfo()
 }
 // 处理配置点击事件  打开配置弹窗
 const handleConfig = () => {
@@ -2613,8 +3204,8 @@ const handleSubmit = () => {
   console.log('handleSubmit')
   saveMachineBus()
 }
-// 插接箱弹窗确认后的处理
-const handleFormPlugin = (data) => {
+// 母线弹窗确认后的处理
+const handleFormPlugin = async (data) => {
   console.log('handleFormSave', data)
   barChangeType.value = 'edit'
   let arrA = [] as any
@@ -2657,15 +3248,28 @@ const handleFormPlugin = (data) => {
     direction: data.directionB,
     boxList: arrB
   }
-  machineColInfo.barA = boxA
-  machineColInfo.barB = boxB
-  machineColInfo.pduBar = 1
-  console.log('machineColInfo', machineColInfo)
-  toCreatConnect() // 因为添加插接箱需要添加瞄点 所以要创建
+  // machineColInfo.barA = boxA
+  // machineColInfo.barB = boxB
+  // machineColInfo.pduBar = 1
+
+  const res = await MachineColumnApi.saveAisleDetail({
+    ...machineColInfo,
+    barA: boxA,
+    barB: boxB,
+    pduBar: 1
+  })
+  if(res) {
+    message.success('母线配置成功')
+  } else {
+    message.error('母线配置失败')
+  }
+  getMachineColInfoReal()
+  // console.log('machineColInfo', machineColInfo)
+  // toCreatConnect() // 因为添加插接箱需要添加瞄点 所以要创建
 }
 // 机柜弹窗确认后的处理
 const handleFormCabinet = (data) => {
-  console.log('handleFormCabinet', data, operateMenu.value)
+  // console.log('handleFormCabinet', data, operateMenu.value)
   data.index = +operateMenu.value.curIndex + 1
   cabinetList.value.splice(operateMenu.value.curIndex, 1, data)
   if (machineColInfo.barA && machineColInfo.pduBar) nextTick(() => {
@@ -2717,7 +3321,12 @@ const handleFormBox = (data) => {
         instance?.addEndpoint(boxElement, {
           source: true,
           target: true,
-          endpoint: 'Dot'
+          endpoint: 'Dot',
+          paintStyle: {
+            strokeWidth: 1,
+            stroke: operateMenuBox.value.type == 'A' ? '#43939c' : '#acd997',
+            dashstyle: '5 5'
+          }
         })
       }
       // 更新瞄点
@@ -2787,7 +3396,7 @@ const handleDataDetail = (res) => {
             grid: {
               left: '-30',
               right: '0',
-              bottom: '4.9%',
+              bottom: '4%',
               top: '8%',
               containLabel: true,
             },
@@ -2802,39 +3411,33 @@ const handleDataDetail = (res) => {
                 data: [cab.loadRate ? cab.loadRate.toFixed(0) : 0],
                 type: 'bar',
                 barWidth: '100%',
-                showBackground: true,
                 itemStyle: {
                   color: function (params) {
                       const value = params.value;
-                      if (value < 30) {
-                          return '#3bbb00'; 
-                      } else if (value < 60) {
-                          return '#05ebfc';
+                      if (value < 50) {
+                          return `rgba(22, 198, 12, ${(value+50)/100})`; 
+                      } else if (value < 75) {
+                          return `rgba(0, 120, 215, ${(150-value)/100})`;
                       } else if (value < 90) {
-                          return '#ffc402';
+                          return `rgba(255, 225, 0, ${(value+10)/100})`;
                       } else {
-                        return '#fa3333'
+                        return `rgba(240, 58, 23, ${value/100})`
                       }
                   }
                 },
                 label: {
                   show: true,
                   position: 'top', // 顶部显示
-                  formatter: '{c}', // 显示数据值
+                  formatter: '{c}%', // 显示数据值
+                  color: 'white'
                 },
               }
             ]
           },
           echartsOptionA1: { // 电流
-            tooltip: {
-              trigger: 'axis',
-              axisPointer: {
-                type: 'shadow'
-              }
-            },
             xAxis: {
               type: 'category',
-              data: ((cab.lineCurA && cab.lineCurA.length == 3) || (cab.lineCurB && cab.lineCurB.length == 3)) ? ['Ia', 'Ib','Ic'] : ['Ia'],
+              data: ['A路','B路'],
               axisTick: {
                 show: false
               },
@@ -2848,7 +3451,7 @@ const handleDataDetail = (res) => {
             grid: {
               left: '-22',
               right: '0',
-              bottom: '4.9%',
+              bottom: '4%',
               top: '8%',
               containLabel: true
             },
@@ -2857,7 +3460,8 @@ const handleDataDetail = (res) => {
               show: false,
             },
             series: [{
-              name: 'A',
+              name: '电流',
+              type: 'bar',
               itemStyle: {
                 color: function (params) {
                     const index = params.dataIndex;
@@ -2865,33 +3469,19 @@ const handleDataDetail = (res) => {
                         return '#E5B849';
                     } else if (index == 1) {
                         return '#C8603A';
-                    } else if (index == 2) {
-                        return '#AD3762';
                     } else {
                       return '#fa3333'
                     }
                 }
               },
-              data: cab.lineCurA && cab.lineCurA.length == 3 ? [(cab.lineCurA ? cab.lineCurA[0] : 0),(cab.lineCurA ? cab.lineCurA[1] : 0),(cab.lineCurA ? cab.lineCurA[2] : 0)] : [(cab.lineCurA ? cab.lineCurA[0] : 0)],
-              ...common
-            },{
-              name: 'B',
-              itemStyle: {
-                color: function (params) {
-                    const index = params.dataIndex;
-                    if (index == 0) {
-                        return '#E5B849';
-                    } else if (index == 1) {
-                        return '#C8603A';
-                    } else if (index == 2) {
-                        return '#AD3762';
-                    } else {
-                      return '#fa3333'
-                    }
-                }
-              },
-              data: cab.lineCurB && cab.lineCurB.length == 3 ? [(cab.lineCurB ? cab.lineCurB[0] : 0),(cab.lineCurB ? cab.lineCurB[1] : 0),(cab.lineCurB ? cab.lineCurB[2] : 0)] : [(cab.lineCurB ? cab.lineCurB[0] : 0)],
-              ...common
+              data: [cab.lineCurA ? cab.lineCurA[0] : 0,cab.lineCurB ? cab.lineCurB[0] : 0],
+              label: {
+                show: true, // 显示数值
+                position: 'top', // 数值显示在柱形图顶部
+                formatter: '{c}A',
+                fontSize: 12, // 数值字体大小
+                color: 'white'
+              }
             }]
           },
           echartsOptionV1: { // 电压
@@ -2903,7 +3493,7 @@ const handleDataDetail = (res) => {
             },
             xAxis: {
               type: 'category',
-              data: ((cab.lineVolA && cab.lineVolA.length == 3) || (cab.lineVolB && cab.lineVolB.length == 3)) ? ['Ua', 'Ub','Uc'] : ['Ua'],
+              data: ['A路','B路'],
               axisTick: {
                 show: false
               },
@@ -2915,9 +3505,9 @@ const handleDataDetail = (res) => {
               }
             },
             grid: {
-              left: '-28',
+              left: '-22',
               right: '0',
-              bottom: '4.9%',
+              bottom: '4%',
               top: '8%',
               containLabel: true
             },
@@ -2926,7 +3516,8 @@ const handleDataDetail = (res) => {
               show: false,
             },
             series: [{
-              name: 'A',
+              name: '电压',
+              type: 'bar',
               itemStyle: {
                 color: function (params) {
                     const index = params.dataIndex;
@@ -2934,33 +3525,19 @@ const handleDataDetail = (res) => {
                         return '#075F71';
                     } else if (index == 1) {
                         return '#119CB5';
-                    } else if (index == 2) {
-                        return '#45C0C9';
                     } else {
                       return '#fa3333'
                     }
                 }
               },
-              data: cab.lineVolA && cab.lineVolA.length == 3 ? [(cab.lineVolA ? cab.lineVolA[0] : 0),(cab.lineVolA ? cab.lineVolA[1] : 0),(cab.lineVolA ? cab.lineVolA[2] : 0)] : [(cab.lineVolA ? cab.lineVolA[0] : 0)],
-              ...common
-            },{
-              name: 'B',
-              itemStyle: {
-                color: function (params) {
-                    const index = params.dataIndex;
-                    if (index == 0) {
-                        return '#075F71';
-                    } else if (index == 1) {
-                        return '#119CB5';
-                    } else if (index == 2) {
-                        return '#45C0C9';
-                    } else {
-                      return '#fa3333'
-                    }
-                }
-              },
-              data: cab.lineVolB && cab.lineVolB.length == 3 ? [(cab.lineVolB ? cab.lineVolB[0] : 0),(cab.lineVolB ? cab.lineVolB[1] : 0),(cab.lineVolB ? cab.lineVolB[2] : 0)] : [(cab.lineVolB ? cab.lineVolB[0] : 0)],
-              ...common
+              data: [cab.lineVolA ? cab.lineVolA[0] : 0,cab.lineVolB ? cab.lineVolB[0] : 0],
+              label: {
+                show: true, // 显示数值
+                position: 'top', // 数值显示在柱形图顶部
+                formatter: '{c}V',
+                fontSize: 12, // 数值字体大小
+                color: 'white'
+              }
             }]
           },
           echartsOptionFactor: { // 功率因数
@@ -2980,7 +3557,7 @@ const handleDataDetail = (res) => {
             grid: {
               left: '-26',
               right: '0',
-              bottom: '4.6%',
+              bottom: '4%',
               top: '8%',
               containLabel: true
             },
@@ -2995,18 +3572,17 @@ const handleDataDetail = (res) => {
                 data: [cab.powerFactor],
                 type: 'bar',
                 barWidth: '100%',
-                showBackground: true,
                 itemStyle: {
                   color: function (params) {
                       const value = params.value;
-                      if (value < 0.25) {
-                          return '#FF6E76';
-                      } else if (value < 0.5) {
-                          return '#FDDD60';
-                      } else if (value < 0.75) {
-                          return '#58D9F9';
+                      if (value < 0.75) {
+                          return `rgba(240, 58, 23, ${1.3-value})`;
+                      } else if (value < 0.85) {
+                          return `rgba(255, 192, 0, ${1.75-value})`;
+                      } else if (value < 0.9) {
+                          return '#0078d7';
                       } else {
-                        return '#7CFFB2'
+                        return '#16c60c'
                       }
                   }
                 },
@@ -3014,6 +3590,7 @@ const handleDataDetail = (res) => {
                   show: true,
                   position: 'top', // 顶部显示
                   formatter: '{c}', // 显示数据值
+                  color: 'white'
                 },
               }
             ]
@@ -3033,13 +3610,14 @@ const handleDataDetail = (res) => {
                 }
             },
             yAxis: {
-                type: 'value',
-                show: false
+              type: 'value',
+              show: false,
+              max: cab.powCapacity*1.2
             },
             grid: {
               left: '-22',
               right: '0',
-              bottom: '4.9%',
+              bottom: '3.2%',
               top: '8%',
               containLabel: true
             },
@@ -3047,15 +3625,18 @@ const handleDataDetail = (res) => {
                 {
                     name: 'Small Red Bar',
                     type: 'bar',
-                    data: [cab.powActive.toFixed(3)], // 左侧小柱形图的数据
+                    data: [cab.powActive ? cab.powActive.toFixed(1) : 0], // 左侧小柱形图的数据
                     itemStyle: {
-                        color: '#91cc75'
+                        color: '#5470c6'
                     },
                     stack: 'Ad',
                     barWidth: '100%',
                     label: {
                         show: true, // 显示数值
                         position: 'inside', // 数值显示在柱形图内部
+                        formatter: function(params) {
+                          return params.value === 0 ? '' : params.value+'kW';
+                        },
                         color: 'white', // 数值颜色
                         fontSize: 12 // 数值字体大小
                     }
@@ -3063,15 +3644,16 @@ const handleDataDetail = (res) => {
                 {
                     name: 'Small Blue Bar',
                     type: 'bar',
-                    data: [cab.powReactive.toFixed(3)], // 右侧小柱形图的数据
+                    data: [cab.powReactive ? cab.powReactive.toFixed(1) : 0], // 右侧小柱形图的数据
                     itemStyle: {
-                        color: '#800080'
+                        color: '#FFC000'
                     },
                     stack: 'Ad',
                     barWidth: '100%',
                     label: {
                         show: true, // 显示数值
                         position: 'inside', // 数值显示在柱形图内部
+                        formatter: '{c}kVar',
                         color: 'white', // 数值颜色
                         fontSize: 12 // 数值字体大小
                     }
@@ -3080,44 +3662,45 @@ const handleDataDetail = (res) => {
           },
           echartsOptionBalance: {
             xAxis: {
-                type: 'category',
-                data: ['A路', 'B路'],
-                axisTick: {
-                  show: false
-                },
-                axisLine: {
-                  show: false
-                },
-                axisLabel: {
-                    show: false // 隐藏 ECharts 自带的标签
-                }
+              type: 'category',
+              data: ['A路', 'B路'],
+              axisTick: {
+                show: false
+              },
+              axisLine: {
+                show: false
+              },
+              axisLabel: {
+                  show: false // 隐藏 ECharts 自带的标签
+              }
             },
             yAxis: {
-                type: 'value',
-                show: false
+              type: 'value',
+              show: false,
+              max: cab.powCapacity
             },
             grid: {
               left: '-22',
               right: '0',
-              bottom: '4.9%',
+              bottom: '4%',
               top: '8%',
               containLabel: true
             },
             series: [
-                {
-                    name: '视在功率',
-                    type: 'bar',
-                    data: [cab.powApparentA, cab.powApparentB], // 大柱形图的数据
-                    itemStyle: {
-                        color: '#5470c6'
-                    },
-                    z: 1, // 确保大柱形图在底层
-                    label: {
-                        show: true, // 显示数值
-                        position: 'top', // 数值显示在柱形图顶部
-                        fontSize: 12 // 数值字体大小
-                    }
+              {
+                name: '有功功率',
+                type: 'bar',
+                data: [cab.powActiveA ? cab.powActiveA.toFixed(1) : 0,cab.powActiveB ? cab.powActiveB.toFixed(1) : 0], // 大柱形图的数据
+                itemStyle: {
+                  color: '#5470c6'
                 },
+                label: {
+                  show: true, // 显示数值
+                  position: 'top', // 数值显示在柱形图顶部
+                  fontSize: 12, // 数值字体大小
+                  color: 'white'
+                }
+              },
             ]
           },
           echartsOptionTemp: { // 温度
@@ -3135,9 +3718,9 @@ const handleDataDetail = (res) => {
               }
             },
             grid: {
-              left: '-22',
+              left: '-24',
               right: '0',
-              bottom: '4.9%',
+              bottom: '4%',
               top: '8%',
               containLabel: true
             },
@@ -3152,20 +3735,33 @@ const handleDataDetail = (res) => {
                 itemStyle: {
                   color: function (params) {
                       const index = params.dataIndex;
+                      const value = params.value;
                       if (index == 0) {
-                        for (const item of tempList.value) {
-                            if (params.value < item.max) {
-                                return item.color;
-                            }
+                        if (value <= 20) {
+                          return `rgba(0, 120, 215, ${value+80})`;
+                        } else if (value < 24) {
+                          return `rgba(0, 128, 0, ${(value+76)/100})`;
+                        } else if (value < 27) {
+                          return `rgba(50, 205, 50, ${(124-value)/100})`;
+                        } else if (value < 30) {
+                          return `rgba(255, 192, 0, ${(value+70)/100})`;
+                        } else if (value < 35) {
+                          return `rgba(247, 99, 12, ${(value+65)/100})`;
+                        } else {
+                          return `rgba(232, 18, 36, ${value})`;
                         }
-                        return 'red';
                       } else if (index == 1) {
-                        for (const item of tempList.value) {
-                            if (params.value < item.hotMax) {
-                                return item.hotColor;
-                            }
+                        if (value <= 30) {
+                          return `rgba(0, 128, 0, ${(value+70)/100})`;
+                        } else if (value < 35) {
+                          return `rgba(50, 205, 50, ${(130-value)/100})`;
+                        } else if (value < 40) {
+                          return `rgba(255, 192, 0, ${(value+60)/100})`;
+                        } else if (value < 45) {
+                          return `rgba(247, 99, 12, ${(value+55)/100})`;
+                        } else {
+                          return `rgba(232, 18, 36, ${value})`;
                         }
-                        return 'red';
                       } else {
                         return '#fa3333'
                       }
@@ -3175,6 +3771,7 @@ const handleDataDetail = (res) => {
                   show: true,
                   position: 'top', // 顶部显示
                   formatter: '{c}°C', // 显示数据值
+                  color: 'white'
                 },
               }
             ]
@@ -3193,7 +3790,7 @@ const handleDataDetail = (res) => {
             grid: {
               left: '-22',
               right: '0',
-              bottom: '4.9%',
+              bottom: '4%',
               top: '8%',
               containLabel: true
             },
@@ -3207,7 +3804,6 @@ const handleDataDetail = (res) => {
                 data: [item.usedSpace],
                 type: 'bar',
                 barWidth: '100%',
-                showBackground: true,
                 itemStyle: {
                   color: function (params) {
                       const value = params.value;
@@ -3227,6 +3823,7 @@ const handleDataDetail = (res) => {
                   show: true,
                   position: 'top', // 顶部显示
                   formatter: '已用容量:\n{c}', // 显示数据值
+                  color: 'white'
                 },
               }
             ]
@@ -3243,31 +3840,28 @@ const handleDataDetail = (res) => {
               }
             },
             grid: {
-              left: '-40',
+              left: '-30',
               right: '0',
-              bottom: '4.9%',
+              bottom: '4%',
               top: '8%',
               containLabel: true
             },
             yAxis: {
               type: 'value',
-              max: item.eleLimitDay, 
+              max: item.powCapacity*24, 
               show: false,
             },
             series: [
               {
                 name: 'load',
-                data: [item.yesterdayEq ? item.yesterdayEq.toFixed(2) : 0],
+                data: [item.yesterdayEq ? item.yesterdayEq.toFixed(1) : 0],
                 type: 'bar',
                 barWidth: '100%',
-                showBackground: true,
-                backgroundStyle: {
-                  color: 'rgba(180, 180, 180, 0.2)'
-                },
                 label: {
                   show: true,
                   position: 'top', // 顶部显示
-                  formatter: '{c}', // 显示数据值
+                  formatter: '{c}kW·h', // 显示数据值
+                  color: 'white'
                 },
               }
             ]
@@ -3375,15 +3969,11 @@ const getMachineColInfoReal = async() => {
   const result = await MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
 
   emit('sendList', result);
-    //push({path: '/aisle/index', state: { roomDownVal: result.roomId}});
-    // Object.assign(machineColInfo, result);
 
-    handleCabinetListReal(result); 
-    //连线就保存
-    // handleCabinetList(result);s
-
-    // handleBusInit(result);
-    console.log('getMachineColInfo', result);
+  Object.assign(machineColInfo, result);
+  handleCabinetListReal(result); 
+  
+  console.log('getMachineColInfo', result);
 }
 
 
@@ -3440,7 +4030,7 @@ const handleCabinetList = async(data) => {
   // 给机柜要连接的插接箱 找到对应的下标
   data.cabinetList && data.cabinetList.forEach(item => {
     if(item.index > 0) {
-      arr.splice(item.index - 1, 1, item)
+      arr.splice(item.index - 1, 1, {...item,deviation: item.powActiveA && item.powActiveB ? (Math.abs(item.powActiveA-item.powActiveB)*100/Math.max(item.powActiveA,item.powActiveB))?.toFixed(0) : 0})
     }
   })
   console.log('arr', arr)
@@ -3469,7 +4059,7 @@ const handleCabinetListReal = async(data) => {
   // 给机柜要连接的插接箱 找到对应的下标
   data.cabinetList && data.cabinetList.forEach(item => {
     if(item.index > 0) {
-      arr.splice(item.index - 1, 1, item)
+      arr.splice(item.index - 1, 1, {...item,deviation: item.powActiveA && item.powActiveB ? (Math.abs(item.powActiveA-item.powActiveB)*100/Math.max(item.powActiveA,item.powActiveB))?.toFixed(0) : 0})
     }
   })
   console.log('arr', arr)
@@ -3480,24 +4070,65 @@ const handleCabinetListReal = async(data) => {
 // 增加空机柜
 const addMachine = async () => {
   console.log('addMachine')
-  cabinetList.value.push({})
-  updateCabinetConnect()
-  // const res = await MachineColumnApi.saveAisleDetail({
-  //   id: machineColInfo.id,
-  //   length: cabinetList.value.length + 1,
-  // })
-  // if(res) {
-  //   message.success('增加成功！')
-  // } else {
-  //   message.error('增加失败！')
-  // }
-  // getMachineColInfoReal()
+  // cabinetList.value.push({})
+  // updateCabinetConnect()
+  let asileObject = {
+    id:machineColInfo.id,
+    roomId: machineColInfo.roomId,
+    aisleName:machineColInfo.aisleName,
+    aisleLength:machineColInfo.length+1,
+    xCoordinate:machineColInfo.xCoordinate,
+    yCoordinate:machineColInfo.yCoordinate,
+    direction:machineColInfo.direction
+  }
+  const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
+
+  if(flagRes) {
+    message.error("增加失败！可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+    return
+  }
+
+  const aisleRes = await MachineRoomApi.saveRoomAisle(asileObject) 
+  if(aisleRes) {
+    message.success('增加成功！')
+  } else {
+    message.error('增加失败！')
+  }
+  getMachineColInfoReal()
 }
 // 删除空机柜
-const deleteMachine = () => {
-  console.log('deleteMachine')
-  cabinetList.value.pop()
-  updateCabinetConnect()
+const deleteMachine = async () => {
+  let minAmount = machineColInfo.cabinetList ? machineColInfo.cabinetList[machineColInfo.cabinetList.length-1].index : 0
+  if(machineColInfo.length-1 < minAmount) {
+    message.error("减少失败！当前柜列中机柜最大下标为" + minAmount + ",要减少的位置不能为空")
+    return
+  }
+  // console.log('deleteMachine')
+  // cabinetList.value.pop()
+  // updateCabinetConnect()
+  let asileObject = {
+    id:machineColInfo.id,
+    roomId: machineColInfo.roomId,
+    aisleName:machineColInfo.aisleName,
+    aisleLength:machineColInfo.length-1,
+    xCoordinate:machineColInfo.xCoordinate,
+    yCoordinate:machineColInfo.yCoordinate,
+    direction:machineColInfo.direction
+  }
+  const flagRes = await MachineRoomApi.findAddAisleVerify(asileObject)
+
+  if(flagRes) {
+    message.error("减少失败！可能原因如下：该柜列的位置的长度范围内有机柜或柜列,柜列同名,柜列超出机房长度范围")
+    return
+  }
+
+  const aisleRes = await MachineRoomApi.saveRoomAisle(asileObject) 
+  if(aisleRes) {
+    message.success('减少成功！')
+  } else {
+    message.error('减少失败！')
+  }
+  getMachineColInfoReal()
 }
 //
 const switchBtn = (value) => {
@@ -3574,7 +4205,7 @@ watch(() => queryParams.cabinetroomId, (val) => {
   }
 })
 
-watch(() => queryParams.cabinetColumnId,(val) => {
+watch(() => queryParams.cabinetColumnId,async (val) => {
   console.log('wwwwwwwwwww', val, machineList.value)
   emit('idChange', val)
   editEnable.value = false
@@ -3594,7 +4225,7 @@ watch(() => containerInfo, (val) => {
 onMounted(() => {
   getNavList()
   initConnect()
-  getCabinetColorAll()
+  // getCabinetColorAll()
   flashListTimer.value = setInterval((getMachineColInfoReal), 5000);
   // intervalTimer = setInterval(() => {
   //   getDataDetail()
@@ -3645,6 +4276,7 @@ onBeforeRouteLeave(()=>{
 .btn-main {
   display: flex;
   align-items: center;
+  height: 5vh;
 }
 .tip {
   display: flex;
@@ -3668,6 +4300,13 @@ onBeforeRouteLeave(()=>{
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  .statusRadius {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 10px;
+    margin-right: 5px;
+  }
 }
 .topForm .line {
   display: inline-block;
@@ -3699,8 +4338,15 @@ onBeforeRouteLeave(()=>{
   display: flex;
   gap: 10px;
 }
+.busContainer {
+  display: flex;
+  width: 100%;
+}
 .Container {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   // overflow: hidden;
   // align-items: center;
   // padding-bottom: 20px;
@@ -3719,7 +4365,7 @@ onBeforeRouteLeave(()=>{
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background-color: silver;
+      font-weight: bold;
       // box-shadow: 0 0 10px silver;
       margin-bottom: 50px;
     }
@@ -3772,7 +4418,7 @@ onBeforeRouteLeave(()=>{
           font-size: 12px;
           display: flex;
           flex-direction: column;
-          border: 1px solid;
+          border: 1px solid #979aa1;
           border-top: none;
           background-color: #fff;
           margin: 0 39px;
@@ -3850,6 +4496,7 @@ onBeforeRouteLeave(()=>{
     display: flex;
     justify-content: center;
     .cabinetBox {
+      margin: 0 5px;
       .point {
         height: 5px;
         display: flex;
@@ -3873,13 +4520,13 @@ onBeforeRouteLeave(()=>{
         width: 100px;
         height: 339px;
         box-sizing: border-box;
-        border: 2px solid;
+        border: 4px solid #888888;
       }
       .inner_empty {
         width: 100%;
         height: 100%;
         box-sizing: border-box;
-        border: 5px solid #888;
+        border: 5px solid #979aa1;
         background-color: #f9f9f9;
       }
       .inner_fill {
@@ -3887,7 +4534,7 @@ onBeforeRouteLeave(()=>{
         width: 100%;
         height: 100%;
         box-sizing: border-box;
-        border: 5px solid #888;
+        border: 5px solid #979aa1;
         z-index: 10;
       }
       .fill_box {
@@ -3897,7 +4544,8 @@ onBeforeRouteLeave(()=>{
         height: 100%;
         padding: 5px;
         box-sizing: border-box;
-        background-color: #f2fff8;
+        background-color: #979aa1;
+        color: white;
       }
       .status {
         font-size: 12px;
@@ -3908,8 +4556,8 @@ onBeforeRouteLeave(()=>{
       }
       .ti_xing {
         width:100%;
-        border-bottom: 3px solid black;
-        margin: 0 7px;
+        border-bottom: 6px solid #4d4f53;
+        margin: 0 5px;
         box-sizing: border-box;
         height: 0;
       }
@@ -3955,6 +4603,16 @@ onBeforeRouteLeave(()=>{
     background-color: rgb(231, 245, 255);
     color: rgb(82, 177, 255);
   }
+}
+.cabinetEchartsName {
+  background-color:#484d55;
+  position: absolute;
+  bottom:3px;
+  color:white;
+  display:flex;
+  width:90%;
+  justify-content:center;
+  font-size:10px;
 }
 
 :deep(.el-cascader-menu__wrap) {
