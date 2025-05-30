@@ -2852,6 +2852,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> cabinetData = getDataNew(startTime, endTime, Arrays.asList(Id), index);
+                if (CollectionUtils.isEmpty(cabinetData)){
+                    return result;
+                }
                 Double firstEq = null;
                 Double lastEq = null;
                 Double totalEq = 0D;

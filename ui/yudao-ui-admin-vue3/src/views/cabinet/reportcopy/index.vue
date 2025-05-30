@@ -1468,7 +1468,6 @@ onMounted( async () =>  {
     queryParams.visAllReport = visAllReport;
       switchValue.value = switchValue1;
     getList();
-    console.log('机柜onMounted');
     
   }
   getNavList()

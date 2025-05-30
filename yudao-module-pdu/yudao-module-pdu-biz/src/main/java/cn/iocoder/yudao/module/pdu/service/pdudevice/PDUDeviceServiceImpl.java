@@ -1498,6 +1498,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         String endTime = localDateTimeToString(newTime);
                         // TODO 电力计算错误，待电力计算错误解决再实现功能
                         List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
+                        if (CollectionUtils.isEmpty(cabinetData)){
+                            return result;
+                        }
                         double totalEq = 0D;
                         if (isSameDay) {
                             List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
