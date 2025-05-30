@@ -140,5 +140,5 @@ public interface CabinetService {
 
     Map getCabinetPFDetail(CabinetIndexVo pageReqVO);
 
-    List<CabinetBasicInformationVo> getCabinetDisplayDataByDevKey(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    List<CabinetBasicInformationVo> getCabinetDisplayDataByDevKey(String aisleId, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

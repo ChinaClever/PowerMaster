@@ -306,8 +306,8 @@ public class CabinetController {
     }
 
     @GetMapping("/cabinetBasicInformation")
-    @Operation(summary = "获得PDU设备详细信息")
-    public CommonResult<List<CabinetBasicInformationVo>> getCabinetDisplayDataByDevKey(String id, Integer timeType, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
-        return success(cabinetService.getCabinetDisplayDataByDevKey(id,timeType,oldTime,newTime));
+    @Operation(summary = "根据柜列id获得机柜设备详细信息")
+    public CommonResult<List<CabinetBasicInformationVo>> getCabinetDisplayDataByDevKey(String aisleId, Integer timeType, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(cabinetService.getCabinetDisplayDataByDevKey(aisleId,timeType,oldTime,newTime));
     }
 }
