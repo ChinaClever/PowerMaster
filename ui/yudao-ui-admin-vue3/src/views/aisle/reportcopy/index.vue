@@ -285,8 +285,11 @@
             <div class="page-conTitle" >
               电量分布
             </div>
-            <p class="paragraph" v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
-            <p class="paragraph" v-if="visControll.isSameDay && eqData.firstEq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
+            <!-- <p class="paragraph" v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+            <p class="paragraph" v-if="visControll.isSameDay && eqData.firstEq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p> -->
+             <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，{{eqData.maxEle == 0 ? '用电量' + eqData.maxEle : '最大单日用电量' + eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+            <p v-if="visControll.isSameDay">本周期内，共计使用电量{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh，最大用电量{{eqData.maxEle}}kWh， （发生时间{{eqData.maxEleTime}}）</p>
+
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
           <!-- <div class="pageBox"  v-if="visControll.pfVis">
@@ -1041,7 +1044,7 @@ totalLineList.value = factorData.value.totalLineRes;
 }
 
 const handleConsumeQuery = async () => {
-  eqData.value = await IndexApi.getConsumeData(queryParams);
+  eqData.value = await IndexApi.getConsumeDataById(queryParams);
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
   }
@@ -1079,11 +1082,11 @@ const handleDetailQuery = async () => {
   })
   temp.push({ 
     baseInfoName : "电力容量",
-    baseInfoValue :'--',
+    baseInfoValue :AisleInfo?.eleCapacity != null ? AisleInfo?.eleCapacity : '--',
     consumeName : "当前总有功功率",
     consumeValue : AisleInfo?.powActiveTotal != null ? AisleInfo?.powActiveTotal?.toFixed(3) + "kW" : '/',
     percentageName: "A路有功功率",
-    percentageValue: AisleInfo?.powActiveA != null ? AisleInfo?.powActiveA+'KW' : '--',
+    percentageValue: AisleInfo?.powActiveA != null ? AisleInfo?.powActiveA.toFixed(3)+'KW' : '--',
   })
   temp.push({
     baseInfoName : "负载率",
@@ -1091,7 +1094,7 @@ const handleDetailQuery = async () => {
     consumeName : "当前总无功功率",
     consumeValue : AisleInfo?.powReactiveTotal != null ? AisleInfo?.powReactiveTotal?.toFixed(3) + "kVar" : '/',
         percentageName: "B路有功功率",
-    percentageValue: AisleInfo?.powActiveB != null ? AisleInfo?.powActiveB+'KW' :'--',
+    percentageValue: AisleInfo?.powActiveB != null ? AisleInfo?.powActiveB.toFixed(3)+'KW' :'--',
   })
    temp.push({
     baseInfoName : "耗电量",

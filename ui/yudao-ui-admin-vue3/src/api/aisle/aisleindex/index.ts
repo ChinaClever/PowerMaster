@@ -110,6 +110,10 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/report/ele`,data})
   },
 
+    getConsumeDataById: async (data) => {
+    return await request.post({ url: `/aisle/index/report/eleUse`,data})
+  },
+
   getPowData: async (data) => {
     return await request.post({ url: `/aisle/index/report/pow`,data})
   },

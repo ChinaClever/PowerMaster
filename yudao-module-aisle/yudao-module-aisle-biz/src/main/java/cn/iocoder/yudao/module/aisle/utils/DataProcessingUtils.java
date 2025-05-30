@@ -361,24 +361,41 @@ public class DataProcessingUtils {
      * @param isSameDay
      * @param dataType
      */
-    public static void processLineHisData(AisleHdaLineHour houResVO, Map<String, Object> resultMap, boolean isSameDay, DataTypeEnums dataType) {
+    public static boolean processLineHisData(AisleHdaLineHour houResVO, Map<String, Object> resultMap, boolean isSameDay, DataTypeEnums dataType) {
         int lineId = houResVO.getLineId() + 1;
         String lineKey = "dayList" + lineId;
 
+
+
         Map<String, Object> lineData = (Map<String, Object>) resultMap.computeIfAbsent(lineKey, k -> new HashMap<>());
         ((List<AisleHdaLineHour>) lineData.computeIfAbsent("data", k -> new ArrayList<>())).add(houResVO);
-        ((List<Float>) lineData.computeIfAbsent("curADataList", k -> new ArrayList<>())).add(getACurValue(houResVO, dataType));
-        ((List<Float>) lineData.computeIfAbsent("volADataList", k -> new ArrayList<>())).add(getAVolValue(houResVO, dataType));
+
+        Float aCurValue = getACurValue(houResVO, dataType);
+        Float aVolValue = getAVolValue(houResVO, dataType);
+        if (aCurValue == -1 || aVolValue == -1){
+            return false;
+        }
+
+        ((List<Float>) lineData.computeIfAbsent("curADataList", k -> new ArrayList<>())).add(aCurValue);
+        ((List<Float>) lineData.computeIfAbsent("volADataList", k -> new ArrayList<>())).add(aVolValue);
         ((List<String>) lineData.computeIfAbsent("curAHappenTime", k -> new ArrayList<>())).add(formatACurTime(houResVO, dataType));
         ((List<String>) lineData.computeIfAbsent("volAHappenTime", k -> new ArrayList<>())).add(formatAVolTime(houResVO, dataType));
 
-        ((List<Float>) lineData.computeIfAbsent("curBDataList", k -> new ArrayList<>())).add(getBCurValue(houResVO, dataType));
-        ((List<Float>) lineData.computeIfAbsent("volBDataList", k -> new ArrayList<>())).add(getBVolValue(houResVO, dataType));
+        Float bCurValue = getBCurValue(houResVO, dataType);
+        Float bVolValue = getBVolValue(houResVO, dataType);
+        if (bCurValue == -1 || bVolValue == -1){
+            return false;
+        }
+
+        ((List<Float>) lineData.computeIfAbsent("curBDataList", k -> new ArrayList<>())).add(bCurValue);
+        ((List<Float>) lineData.computeIfAbsent("volBDataList", k -> new ArrayList<>())).add(bVolValue);
         ((List<String>) lineData.computeIfAbsent("curBHappenTime", k -> new ArrayList<>())).add(formatBCurTime(houResVO, dataType));
         ((List<String>) lineData.computeIfAbsent("volBHappenTime", k -> new ArrayList<>())).add(formatBVolTime(houResVO, dataType));
 
         List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
         dateTimes.add(isSameDay ? houResVO.getCreateTime().split(" ")[1] : houResVO.getCreateTime().split(" ")[0]);
+
+        return true;
     }
 
     /**
@@ -391,11 +408,11 @@ public class DataProcessingUtils {
     private static Float getACurValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
         switch (dataType) {
             case MAX:
-                return houResVO.getCurAMaxValue().floatValue();
+                return houResVO.getCurAMaxValue() != null ? houResVO.getCurAMaxValue().floatValue() : -1f;
             case AVG:
-                return houResVO.getCurAAvgValue().floatValue();
+                return houResVO.getCurAAvgValue() != null ? houResVO.getCurAAvgValue().floatValue() : -1f;
             case MIN:
-                return houResVO.getCurAMinValue().floatValue();
+                return houResVO.getCurAMinValue() != null ? houResVO.getCurAMinValue().floatValue() : -1f;
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }
@@ -411,56 +428,15 @@ public class DataProcessingUtils {
     private static Float getAVolValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
         switch (dataType) {
             case MAX:
-                return houResVO.getVolAMaxValue().floatValue();
+                return houResVO.getVolAMaxValue() != null ? houResVO.getVolAMaxValue().floatValue() : -1f;
             case AVG:
-                return houResVO.getVolAAvgValue().floatValue();
+                return houResVO.getVolAAvgValue() != null ? houResVO.getVolAAvgValue().floatValue() : -1f;
             case MIN:
-                return houResVO.getVolAMinValue().floatValue();
+                return houResVO.getVolAMinValue() != null ? houResVO.getVolAMinValue().floatValue() : -1f;
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }
     }
-
-    /**
-     * 处理相电流发生时间
-     *
-     * @param houResVO
-     * @param dataType
-     * @return
-     */
-    private static String formatACurTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
-        switch (dataType) {
-            case MAX:
-                return houResVO.getCurAMaxTime();
-            case AVG:
-                return "无";
-            case MIN:
-                return houResVO.getCurAMinTime();
-            default:
-                throw new IllegalArgumentException("Invalid data type: " + dataType);
-        }
-    }
-
-    /**
-     * 处理相电压发生时间
-     *
-     * @param houResVO
-     * @param dataType
-     * @return
-     */
-    private static String formatAVolTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
-        switch (dataType) {
-            case MAX:
-                return houResVO.getVolABaxTime();
-            case AVG:
-                return "无";
-            case MIN:
-                return houResVO.getVolAMinTime();
-            default:
-                throw new IllegalArgumentException("Invalid data type: " + dataType);
-        }
-    }
-
 
     /**
      * 处理相电流值
@@ -472,11 +448,11 @@ public class DataProcessingUtils {
     private static Float getBCurValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
         switch (dataType) {
             case MAX:
-                return houResVO.getCurBMaxValue().floatValue();
+                return houResVO.getCurBMaxValue() != null ? houResVO.getCurBMaxValue().floatValue() : -1f;
             case AVG:
-                return houResVO.getCurBAvgValue().floatValue();
+                return houResVO.getCurBAvgValue() != null ? houResVO.getCurBAvgValue().floatValue() : -1f;
             case MIN:
-                return houResVO.getCurBMinValue().floatValue();
+                return houResVO.getCurBMinValue() != null ? houResVO.getCurBMinValue().floatValue() : -1f;
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }
@@ -492,11 +468,51 @@ public class DataProcessingUtils {
     private static Float getBVolValue(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
         switch (dataType) {
             case MAX:
-                return houResVO.getVolBMaxValue().floatValue();
+                return houResVO.getVolBMaxValue() != null ? houResVO.getVolBMaxValue().floatValue() : -1f;
             case AVG:
-                return houResVO.getVolBAvgValue().floatValue();
+                return houResVO.getVolBAvgValue() != null ? houResVO.getVolBAvgValue().floatValue() : -1f;
             case MIN:
-                return houResVO.getVolBMinValue().floatValue();
+                return houResVO.getVolBMinValue() != null ? houResVO.getVolBMinValue().floatValue() : -1f;
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电流发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static String formatACurTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getCurAMaxTime() != null ? houResVO.getCurAMaxTime() : "无";
+            case AVG:
+                return "无";
+            case MIN:
+                return houResVO.getCurAMinTime() != null ? houResVO.getCurAMinTime() : "无";
+            default:
+                throw new IllegalArgumentException("Invalid data type: " + dataType);
+        }
+    }
+
+    /**
+     * 处理相电压发生时间
+     *
+     * @param houResVO
+     * @param dataType
+     * @return
+     */
+    private static String formatAVolTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
+        switch (dataType) {
+            case MAX:
+                return houResVO.getVolABaxTime() != null ? houResVO.getVolABaxTime() : "无";
+            case AVG:
+                return "无";
+            case MIN:
+                return houResVO.getVolAMinTime() != null ? houResVO.getVolAMinTime() : "无";
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }
@@ -512,11 +528,11 @@ public class DataProcessingUtils {
     private static String formatBCurTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
         switch (dataType) {
             case MAX:
-                return houResVO.getCurBMaxTime();
+                return houResVO.getCurBMaxTime() != null ? houResVO.getCurBMaxTime() : "无";
             case AVG:
                 return "无";
             case MIN:
-                return houResVO.getCurBMinTime();
+                return houResVO.getCurBMinTime() != null ? houResVO.getCurBMinTime() : "无";
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }
@@ -532,11 +548,11 @@ public class DataProcessingUtils {
     private static String formatBVolTime(AisleHdaLineHour houResVO, DataTypeEnums dataType) {
         switch (dataType) {
             case MAX:
-                return houResVO.getVolBMaxTime();
+                return houResVO.getVolBMaxTime() != null ? houResVO.getVolBMaxTime() : "无";
             case AVG:
                 return "无";
             case MIN:
-                return houResVO.getVolBMinTime();
+                return houResVO.getVolBMinTime() != null ? houResVO.getVolBMinTime() : "无";
             default:
                 throw new IllegalArgumentException("Invalid data type: " + dataType);
         }

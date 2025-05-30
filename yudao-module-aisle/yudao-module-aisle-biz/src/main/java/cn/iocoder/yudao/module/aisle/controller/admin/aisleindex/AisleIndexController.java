@@ -245,6 +245,12 @@ public class AisleIndexController {
         return success(indexService.getReportConsumeDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
+    @PostMapping("/report/eleUse")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getReportConsumeEleDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportConsumeEleDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
     @PostMapping("/report/pow")
     @Operation(summary = "获得通道列报表数据")
     public CommonResult<Map> getReportPowDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {

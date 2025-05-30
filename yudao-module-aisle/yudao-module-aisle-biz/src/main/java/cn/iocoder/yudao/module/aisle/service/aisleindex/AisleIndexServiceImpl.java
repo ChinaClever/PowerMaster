@@ -1481,6 +1481,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             Integer aisleKey = jsonObject.getInteger("aisle_key");
             AisleBalanceRes aisleBalanceRes = resMap.get(aisleKey);
             aisleBalanceRes.setLoadRate(jsonObject.getDouble("load_factor"));
+            Integer aisleId = jsonObject.getInteger("aisle_key");
+            AisleIndexDO aisleIndexDO = aisleIndexCopyMapper.selectById(aisleId);
+            aisleBalanceRes.setEleCapacity(aisleIndexDO.getPowerCapacity());
             JSONObject aislePower = jsonObject.getJSONObject("aisle_power");
             JSONObject totalData = aislePower.getJSONObject("total_data");
             if (Objects.nonNull(totalData)) {
@@ -1533,6 +1536,107 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             }
         }
         return new PageResult<>(result, aisleIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public Map getReportConsumeEleDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        AisleLineResBase barRes = new AisleLineResBase();
+        BarSeries barSeries = new BarSeries();
+        try {
+            if (id != null) {
+                String index = null;
+                boolean isSameDay = false;
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                    index = "aisle_ele_total_realtime";
+                    if (oldTime.equals(newTime)) {
+                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                    }
+                    isSameDay = true;
+                } else {
+                    index = "aisle_eq_total_day";
+                    oldTime = oldTime.plusDays(1);
+                    newTime = newTime.plusDays(1);
+                    isSameDay = false;
+                }
+                String startTime = localDateTimeToString(oldTime);
+                String endTime = localDateTimeToString(newTime);
+                List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                Double firstEq = null;
+                Double lastEq = null;
+                Double totalEq = 0D;
+                Double maxEle = null;
+                String maxEleTime = null;
+                int nowTimes = 0;
+                if (isSameDay) {
+                    List<AisleEleTotalRealtimeDo> busList = new ArrayList<>();
+                    for (String str : cabinetData) {
+                        nowTimes++;
+                        AisleEleTotalRealtimeDo aisleEleTotalRealtimeDo = JsonUtils.parseObject(str, AisleEleTotalRealtimeDo.class);
+                        if (nowTimes == 1) {
+                            firstEq = aisleEleTotalRealtimeDo.getEleTotal();
+                        }
+                        if (nowTimes > 1) {
+                            barSeries.getData().add((float) (aisleEleTotalRealtimeDo.getEleTotal() - lastEq));
+                            barRes.getTime().add(aisleEleTotalRealtimeDo.getCreateTime().toString("HH:mm:ss"));
+                        }
+                        lastEq = aisleEleTotalRealtimeDo.getEleTotal();
+                        busList.add(aisleEleTotalRealtimeDo);
+                    }
+
+                    //计算实时用电量
+                    List<AisleEleTotalRealtimeDo> dayEqList = new ArrayList<>();
+                    for (int i = 0; i < cabinetData.size() - 1; i++) {
+                        AisleEleTotalRealtimeDo dayEleDo = new AisleEleTotalRealtimeDo();
+                        totalEq += (float) busList.get(i + 1).getEleTotal() - (float) busList.get(i).getEleTotal();
+                        dayEleDo.setEleTotal(busList.get(i + 1).getEleTotal() - busList.get(i).getEleTotal());
+                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
+                        dayEqList.add(dayEleDo);
+                    }
+                    dayEqList.sort(Comparator.comparing(AisleEleTotalRealtimeDo::getEleTotal));
+                    maxEle = dayEqList.get(dayEqList.size() - 1).getEleTotal();
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+
+                    barRes.getSeries().add(barSeries);
+                    result.put("totalEle", totalEq);
+                    result.put("maxEle", maxEle);
+                    result.put("maxEleTime", maxEleTime);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
+                    result.put("barRes", barRes);
+                } else {
+                    int dataIndex = 0;
+                    for (String str : cabinetData) {
+                        nowTimes++;
+                        AisleEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, AisleEqTotalDayDo.class);
+                        totalEq += totalDayDo.getEqValue();
+                        barSeries.getData().add((float) totalDayDo.getEqValue());
+                        barRes.getTime().add(totalDayDo.getStartTime().toString("yyyy-MM-dd"));   if (dataIndex == 0) {
+                            firstEq = totalDayDo.getStartEle();
+                        }
+                        if (dataIndex == cabinetData.size() - 1) {
+                            lastEq = totalDayDo.getEndEle();
+                        }
+                    }
+                    String eqMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "eq_value");
+                    AisleEqTotalDayDo eqMaxValue = JsonUtils.parseObject(eqMax, AisleEqTotalDayDo.class);
+                    if (eqMaxValue != null) {
+                        maxEle = eqMaxValue.getEqValue();
+                        maxEleTime = eqMaxValue.getStartTime().toString("yyyy-MM-dd HH:mm:ss");
+                    }
+                    barRes.getSeries().add(barSeries);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
+                    result.put("totalEle", totalEq);
+                    result.put("maxEle", maxEle);
+                    result.put("maxEleTime", maxEleTime);
+                    result.put("barRes", barRes);
+                }
+            }
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
+        }
+        return result;
     }
 
     @Override
@@ -2046,7 +2150,10 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
                     AisleHdaLineHour houResVO = JsonUtils.parseObject(str, AisleHdaLineHour.class);
-                    DataProcessingUtils.processLineHisData(houResVO, resultMap, isSameDay, DataTypeEnums.fromValue(dataType));
+                    boolean b = DataProcessingUtils.processLineHisData(houResVO, resultMap, isSameDay, DataTypeEnums.fromValue(dataType));
+                    if (!b){
+                        return new HashMap();
+                    }
                     strData.add(str);
                 }
             }
