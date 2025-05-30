@@ -177,7 +177,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setId(pduIndex.getId());
             pduDeviceDO.setDevKey(pduIndex.getPduKey());
             pduDeviceDO.setDeleted(pduIndex.getIsDeleted().equals(1));
-            pduDeviceDO.setColor(pduIndex.getCurUnbalanceStatus());
+            if (!Objects.equals(pduIndex.getRunStatus(),5)) {
+                pduDeviceDO.setColor(pduIndex.getCurUnbalanceStatus());
+                pduDeviceDO.setVolColor(pduIndex.getVolUnbalanceStatus());
+            }
             result.add(pduDeviceDO);
         }
         Map<String, PDUDeviceDO> resMap = result.stream().collect(Collectors.toMap(PDUDeviceDO::getDevKey, Function.identity()));
@@ -212,14 +215,21 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setBcur(new BigDecimal(curArr.get(1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
                 pduDeviceDO.setCcur(new BigDecimal(curArr.get(2)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+                pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+                pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+                pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             } else {
                 pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+                pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+//                pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+//                pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
 
-            pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 
-            pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
             pduDeviceDO.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
         }
@@ -4026,7 +4036,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return locationMap;
         }
         List<CabinetPduResVO> cabinetPdus = cabinetIndexMapper.selectCabinetPduList(pduKeys);
-
+        if (CollectionUtils.isEmpty(cabinetPdus)){
+            pduKeys.forEach(iter ->{
+                locationMap.put(iter,"未绑定");
+            });
+            return locationMap;
+        }
         // 将查询结果按 ipAddr 和 cascadeAddr 分组
         Map<String, List<CabinetPduResVO>> cabinetPduAMap = cabinetPdus.stream()
                 .filter(vo -> pduKeys.contains(vo.getPduKeyA()))
