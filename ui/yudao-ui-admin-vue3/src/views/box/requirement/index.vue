@@ -301,23 +301,23 @@
             <div class="info" style="margin-left:10px;width: 100%">
               <div style="width: 100%;display: flex">
                 <div style="width: 20%"></div>
-                <div style="width: 40%">视在功率</div>
-                <div style="width: 40%">有功功率</div>
+                <div style="width: 35%">视在功率</div>
+                <div style="width: 35%">有功功率</div>
               </div>
               <div style="width: 100%;display: flex">
                 <div style="width: 20%">输出位1</div>
-                <div style="width: 40%">{{item.l1MaxValueb}}kVA</div>
-                <div style="width: 40%">{{item.l1MaxValue}}kW</div>
+                <div style="width: 35%">{{item.l1MaxValueb}}kVA</div>
+                <div style="width: 35%">{{item.l1MaxValue}}kW</div>
               </div>
               <div v-if="item.l2MaxValueb && item.l2MaxValue" style="width: 100%;display: flex">
                 <div style="width: 20%">输出位2</div>
-                <div style="width: 40%">{{item.l2MaxValueb}}kVA</div>
-                <div style="width: 40%">{{item.l2MaxValue}}kW</div>
+                <div style="width: 35%">{{item.l2MaxValueb}}kVA</div>
+                <div style="width: 35%">{{item.l2MaxValue}}kW</div>
               </div>
               <div v-if="item.l3MaxValueb && item.l3MaxValue" style="width: 100%;display: flex">
                 <div style="width: 20%">输出位3</div>
-                <div style="width: 40%">{{item.l3MaxValueb}}kVA</div>
-                <div style="width: 40%">{{item.l3MaxValue}}kW</div>
+                <div style="width: 35%">{{item.l3MaxValueb}}kVA</div>
+                <div style="width: 35%">{{item.l3MaxValue}}kW</div>
               </div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>

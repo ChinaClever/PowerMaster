@@ -170,7 +170,7 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 25%;">
+            top: 15%;">
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[0].toFixed(3)}}kW</span>
           </div>
@@ -181,7 +181,7 @@
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0].toFixed(3)}}kVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="font-size: 24px">○</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
           </div>
         </div>
     </div>
@@ -196,7 +196,7 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 25%;">
+            top: 15%;">
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[1].toFixed(3)}}kW</span>
           </div>
@@ -207,7 +207,7 @@
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1].toFixed(3)}}kVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="font-size: 24px">○</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
           </div>
         </div>
     </div>
@@ -222,7 +222,7 @@
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 25%;">
+            top: 15%;">
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[2].toFixed(3)}}kW</span>
           </div>
@@ -233,7 +233,7 @@
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2].toFixed(3)}}kVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="font-size: 24px">○</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
           </div>
         </div>
     </div>

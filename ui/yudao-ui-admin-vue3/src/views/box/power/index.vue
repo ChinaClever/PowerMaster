@@ -694,7 +694,10 @@
                 有功功率
               </div>
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line' && item.outletActivePow.length > 1">
-                {{ item.powActive.toFixed(3) }}kW<br/><span style="font-size: 15px; ">总有功功率</span>
+                <span style="font-size: 24px; ">{{ Math.floor(item.powActive) }}</span>
+                <span style="font-size: 16px; ">{{ (item.powActive % 1).toFixed(3).substring(1) }}</span>
+                <br/>
+                <span style="font-size: 14px; ">总有功功率KW</span>
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
@@ -706,13 +709,19 @@
                 无功功率
               </div>
               <div v-if="valueMode == 3 && item.outletActivePow != null && typeText == 'line' && item.outletReactivePow.length > 1">
-                {{ item.powReactive.toFixed(3) }}kVar<br/><span style="font-size: 15px; ">总无功功率</span>
+                <span style="font-size: 24px; ">{{ Math.floor(item.powReactive) }}</span>
+                <span style="font-size: 16px; ">{{ (item.powReactive % 1).toFixed(3).substring(1) }}</span>
+                <br/>
+                <span style="font-size: 14px; ">总无功功率kVar</span>
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'  && item.outletApparentPow.length <= 1" >
                 视在功率
               </div>
-              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line' && item.outletApparentPow.length > 1" >
-                {{ item.powApparent.toFixed(3) }}kVa<br/><span style="font-size: 15px; ">总视在功率</span>
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line' && item.outletApparentPow.length > 1">
+                <span style="font-size: 24px; ">{{ Math.floor(item.powApparent) }}</span>
+                <span style="font-size: 16px; ">{{ (item.powApparent % 1).toFixed(3).substring(1) }}</span>
+                <br/>
+                <span style="font-size: 14px; ">总视在功率kVa</span>
               </div>
              <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
                 无功功率
