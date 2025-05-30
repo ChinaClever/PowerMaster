@@ -1458,6 +1458,84 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
+    public PageResult<AisleBalanceRes> getAisBasicInformation(AisleIndexPageReqVO pageReqVO) {
+
+        PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
+        List<AisleBalanceRes> result = new ArrayList<>();
+        List<AisleIndexDO> aisleIndexDOList = aisleIndexDOPageResult.getList();
+        List mutiRedis = getMutiRedis(aisleIndexDOList);
+        aisleIndexDOList.forEach(aisleIndexDO -> {
+            AisleBalanceRes aisleBalanceRes = new AisleBalanceRes();
+            aisleBalanceRes.setId(aisleIndexDO.getId());
+            aisleBalanceRes.setRoomId(aisleIndexDO.getRoomId());
+            aisleBalanceRes.setName(aisleIndexDO.getAisleName());
+            result.add(aisleBalanceRes);
+        });
+        getPosition(result);
+        Map<Integer, AisleBalanceRes> resMap = result.stream().collect(Collectors.toMap(AisleBalanceRes::getId, Function.identity()));
+        for (Object o : mutiRedis) {
+            if (Objects.isNull(o)) {
+                continue;
+            }
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+            Integer aisleKey = jsonObject.getInteger("aisle_key");
+            AisleBalanceRes aisleBalanceRes = resMap.get(aisleKey);
+            aisleBalanceRes.setLoadRate(jsonObject.getDouble("load_factor"));
+            JSONObject aislePower = jsonObject.getJSONObject("aisle_power");
+            JSONObject totalData = aislePower.getJSONObject("total_data");
+            if (Objects.nonNull(totalData)) {
+                aisleBalanceRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
+                aisleBalanceRes.setPowActiveTotal(totalData.getDouble("pow_active"));
+                aisleBalanceRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
+                aisleBalanceRes.setPowFactorTotal(totalData.getDouble("power_factor"));
+                aisleBalanceRes.setEleActive(totalData.getDouble("ele_active"));
+            }
+
+            JSONObject pathA = aislePower.getJSONObject("path_a");
+            if (Objects.nonNull(pathA)) {
+                aisleBalanceRes.setPowApparentA(pathA.getDouble("pow_apparent"));
+                aisleBalanceRes.setPowActiveA(pathA.getDouble("pow_active"));
+                aisleBalanceRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
+            }
+
+
+            JSONObject pathB = aislePower.getJSONObject("path_b");
+            if (Objects.nonNull(pathB)) {
+                aisleBalanceRes.setPowApparentB(pathB.getDouble("pow_apparent"));
+                aisleBalanceRes.setPowActiveB(pathB.getDouble("pow_active"));
+                aisleBalanceRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
+            }
+
+            if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
+                aisleBalanceRes.setRateA((aisleBalanceRes.getPowApparentA() / aisleBalanceRes.getPowApparentTotal()) * 100);
+            } else {
+                aisleBalanceRes.setRateA(0.0);
+            }
+            if (aisleBalanceRes.getPowApparentB() != null && aisleBalanceRes.getPowApparentB() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
+                aisleBalanceRes.setRateB((aisleBalanceRes.getPowApparentB() / aisleBalanceRes.getPowApparentTotal()) * 100);
+            } else {
+                aisleBalanceRes.setRateB(0.0);
+            }
+            if (aisleBalanceRes.getPowActiveA() != null && aisleBalanceRes.getPowActiveA() != 0 &&
+                    aisleBalanceRes.getPowActiveB() != null && aisleBalanceRes.getPowActiveB() != 0) {
+                Double powActiveA = aisleBalanceRes.getPowActiveA();
+                Double powActiveB = aisleBalanceRes.getPowActiveB();
+
+                // 计算差的绝对值
+                Double absDifference = Math.abs(powActiveA - powActiveB);
+
+                // 找出 powActiveA 和 powActiveB 中的最大值
+                Double maxPower = Math.max(powActiveA, powActiveB);
+
+                // 计算绝对值与最大值的商
+                double ratio = absDifference / maxPower;
+                aisleBalanceRes.setDeviation(ratio);
+            }
+        }
+        return new PageResult<>(result, aisleIndexDOPageResult.getTotal());
+    }
+
+    @Override
     public Map getReportConsumeDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
         AisleLineResBase barRes = new AisleLineResBase();
@@ -2033,6 +2111,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         resultMap.put("volRes", volResBase);
         return resultMap;
     }
+
+
 
     public void processLineMavMin(List<AisleHdaLineHour> powList, Integer dataType, Map<String, Object> result) {
         //电流

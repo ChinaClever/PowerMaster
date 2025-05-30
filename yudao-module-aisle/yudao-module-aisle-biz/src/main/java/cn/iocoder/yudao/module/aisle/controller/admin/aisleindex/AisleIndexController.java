@@ -226,6 +226,13 @@ public class AisleIndexController {
         return success(pageResult);
     }
 
+    @PostMapping("/aisBasicInformation")
+    @Operation(summary = "获得通道列平衡分页")
+    public CommonResult<PageResult<AisleBalanceRes>> getAisBasicInformation(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        PageResult<AisleBalanceRes> pageResult = indexService.getAisBasicInformation(pageReqVO);
+        return success(pageResult);
+    }
+
     @PostMapping("/balance/chart")
     @Operation(summary = "获得通道列平衡详情")
     public CommonResult<AisleBalanceChartResVO> getAisleBalanceChart(@RequestParam("id") Integer id) {
