@@ -226,6 +226,19 @@ public class AisleIndexController {
         return success(pageResult);
     }
 
+    @PostMapping("/aisBasicInformation")
+    @Operation(summary = "获得通道列平衡分页")
+    public CommonResult<PageResult<AisleBalanceRes>> getAisBasicInformation(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        PageResult<AisleBalanceRes> pageResult = indexService.getAisBasicInformation(pageReqVO);
+        return success(pageResult);
+    }
+
+    @GetMapping("/getAisBasicInformationByRoom")
+    @Operation(summary = "获得通道列平衡分页")
+    public CommonResult<List<AisleBalanceRes>> getAisBasicInformationByRoom(String roomId) {
+        return success(indexService.getAisBasicInformationByRoom(roomId));
+    }
+
     @PostMapping("/balance/chart")
     @Operation(summary = "获得通道列平衡详情")
     public CommonResult<AisleBalanceChartResVO> getAisleBalanceChart(@RequestParam("id") Integer id) {
@@ -236,6 +249,12 @@ public class AisleIndexController {
     @Operation(summary = "获得通道列报表数据")
     public CommonResult<Map> getReportConsumeDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
         return success(indexService.getReportConsumeDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/eleUse")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getReportConsumeEleDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportConsumeEleDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pow")
@@ -288,6 +307,12 @@ public class AisleIndexController {
     public CommonResult<List<AisleMaxEqResVO>> getMaxEq() {
         List<AisleMaxEqResVO> pageResult = indexService.getMaxEq();
         return success(pageResult);
+    }
+
+    @GetMapping("/getEleByRoom")
+    @Operation(summary = "根据机房id获取柜列耗电量")
+    public CommonResult<Map> getEleByAisle(String roomId,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) throws IOException {
+        return success(indexService.getEleByRoom(roomId,timeType,oldTime,newTime));
     }
 
 //    @GetMapping("/export-excel")

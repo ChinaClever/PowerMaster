@@ -107,4 +107,12 @@ public interface AisleIndexService {
     Map getReportPowDataByTypeAndId(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
 
     Map aisleHdaLineHisdataReportKey(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime, Integer dataType);
+
+    PageResult<AisleBalanceRes> getAisBasicInformation(AisleIndexPageReqVO pageReqVO);
+
+    Map getReportConsumeEleDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    List<AisleBalanceRes> getAisBasicInformationByRoom(String roomId);
+
+    Map getEleByRoom(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

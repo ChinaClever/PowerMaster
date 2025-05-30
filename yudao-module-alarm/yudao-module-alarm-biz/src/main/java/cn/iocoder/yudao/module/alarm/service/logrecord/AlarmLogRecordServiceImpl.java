@@ -202,16 +202,28 @@ public class AlarmLogRecordServiceImpl implements AlarmLogRecordService {
                     .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
                     .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
                     .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
-                    .inIfPresent(AlarmLogRecordDO::getAlarmType, 6)
+                    .eqIfPresent(AlarmLogRecordDO::getCabinetId, pageReqVO.getLikeName())
                     .betweenIfPresent(AlarmLogRecordDO::getStartTime, pageReqVO.getPduStartTime(), pageReqVO.getPduFinishTime())
-                    .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()) && alarmLevel == null && alarmType == null, wrapper -> wrapper
-                            .like(AlarmLogRecordDO::getAlarmKey, pageReqVO.getLikeName())
-                            .or()
-                            .like(AlarmLogRecordDO::getAlarmDesc, pageReqVO.getLikeName())
-                            .or()
-                            .like(AlarmLogRecordDO::getAlarmPosition, pageReqVO.getLikeName()))
                     .orderByDesc(AlarmLogRecordDO::getCreateTime));
-        } else {
+        } else if (pageReqVO.getAlarmType() == 10){
+            recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
+                    .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
+//                            .inIfPresent(AlarmLogRecordDO::getAlarmType,10,11,12,13)
+                    .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                    .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
+                    .eqIfPresent(AlarmLogRecordDO::getAisleId, pageReqVO.getLikeName())
+                    .betweenIfPresent(AlarmLogRecordDO::getStartTime, pageReqVO.getPduStartTime(), pageReqVO.getPduFinishTime())
+                    .orderByDesc(AlarmLogRecordDO::getCreateTime));
+        } else if (pageReqVO.getAlarmType() == 14) {
+            recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
+                    .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
+//                    .inIfPresent(AlarmLogRecordDO::getAlarmType,14,15,16,17)
+                    .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)
+                    .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getRoomId())
+                    .eqIfPresent(AlarmLogRecordDO::getRoomId, pageReqVO.getLikeName())
+                    .betweenIfPresent(AlarmLogRecordDO::getStartTime, pageReqVO.getPduStartTime(), pageReqVO.getPduFinishTime())
+                    .orderByDesc(AlarmLogRecordDO::getCreateTime));
+        }else {
             recordPageResult = logRecordMapper.selectPage(page, new LambdaQueryWrapperX<AlarmLogRecordDO>()
                     .inIfPresent(AlarmLogRecordDO::getAlarmStatus, pageReqVO.getAlarmStatus())
                     .eqIfPresent(AlarmLogRecordDO::getAlarmLevel, alarmLevel)

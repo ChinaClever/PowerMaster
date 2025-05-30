@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.aisle.service.aisleindex;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
@@ -10,6 +11,7 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AisleHdaLineHour;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
@@ -1457,6 +1459,336 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
+    public PageResult<AisleBalanceRes> getAisBasicInformation(AisleIndexPageReqVO pageReqVO) {
+
+        PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
+        List<AisleBalanceRes> result = new ArrayList<>();
+        List<AisleIndexDO> aisleIndexDOList = aisleIndexDOPageResult.getList();
+        List mutiRedis = getMutiRedis(aisleIndexDOList);
+        aisleIndexDOList.forEach(aisleIndexDO -> {
+            AisleBalanceRes aisleBalanceRes = new AisleBalanceRes();
+            aisleBalanceRes.setId(aisleIndexDO.getId());
+            aisleBalanceRes.setRoomId(aisleIndexDO.getRoomId());
+            aisleBalanceRes.setName(aisleIndexDO.getAisleName());
+            result.add(aisleBalanceRes);
+        });
+        getPosition(result);
+        Map<Integer, AisleBalanceRes> resMap = result.stream().collect(Collectors.toMap(AisleBalanceRes::getId, Function.identity()));
+        for (Object o : mutiRedis) {
+            if (Objects.isNull(o)) {
+                continue;
+            }
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+            Integer aisleKey = jsonObject.getInteger("aisle_key");
+            AisleBalanceRes aisleBalanceRes = resMap.get(aisleKey);
+            aisleBalanceRes.setLoadRate(jsonObject.getDouble("load_factor"));
+            Integer aisleId = jsonObject.getInteger("aisle_key");
+            AisleIndexDO aisleIndexDO = aisleIndexCopyMapper.selectById(aisleId);
+            aisleBalanceRes.setEleCapacity(aisleIndexDO.getPowerCapacity());
+            JSONObject aislePower = jsonObject.getJSONObject("aisle_power");
+            JSONObject totalData = aislePower.getJSONObject("total_data");
+            if (Objects.nonNull(totalData)) {
+                aisleBalanceRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
+                aisleBalanceRes.setPowActiveTotal(totalData.getDouble("pow_active"));
+                aisleBalanceRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
+                aisleBalanceRes.setPowFactorTotal(totalData.getDouble("power_factor"));
+                aisleBalanceRes.setEleActive(totalData.getDouble("ele_active"));
+            }
+
+            JSONObject pathA = aislePower.getJSONObject("path_a");
+            if (Objects.nonNull(pathA)) {
+                aisleBalanceRes.setPowApparentA(pathA.getDouble("pow_apparent"));
+                aisleBalanceRes.setPowActiveA(pathA.getDouble("pow_active"));
+                aisleBalanceRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
+            }
+
+
+            JSONObject pathB = aislePower.getJSONObject("path_b");
+            if (Objects.nonNull(pathB)) {
+                aisleBalanceRes.setPowApparentB(pathB.getDouble("pow_apparent"));
+                aisleBalanceRes.setPowActiveB(pathB.getDouble("pow_active"));
+                aisleBalanceRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
+            }
+
+            if (aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
+                aisleBalanceRes.setRateA((aisleBalanceRes.getPowApparentA() / aisleBalanceRes.getPowApparentTotal()) * 100);
+            } else {
+                aisleBalanceRes.setRateA(0.0);
+            }
+            if (aisleBalanceRes.getPowApparentB() != null && aisleBalanceRes.getPowApparentB() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0) {
+                aisleBalanceRes.setRateB((aisleBalanceRes.getPowApparentB() / aisleBalanceRes.getPowApparentTotal()) * 100);
+            } else {
+                aisleBalanceRes.setRateB(0.0);
+            }
+            if (aisleBalanceRes.getPowActiveA() != null && aisleBalanceRes.getPowActiveA() != 0 &&
+                    aisleBalanceRes.getPowActiveB() != null && aisleBalanceRes.getPowActiveB() != 0) {
+                Double powActiveA = aisleBalanceRes.getPowActiveA();
+                Double powActiveB = aisleBalanceRes.getPowActiveB();
+
+                // 计算差的绝对值
+                Double absDifference = Math.abs(powActiveA - powActiveB);
+
+                // 找出 powActiveA 和 powActiveB 中的最大值
+                Double maxPower = Math.max(powActiveA, powActiveB);
+
+                // 计算绝对值与最大值的商
+                double ratio = absDifference / maxPower;
+                aisleBalanceRes.setDeviation(ratio);
+            }
+        }
+        return new PageResult<>(result, aisleIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public Map getReportConsumeEleDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        AisleLineResBase barRes = new AisleLineResBase();
+        BarSeries barSeries = new BarSeries();
+        try {
+            if (id != null) {
+                String index = null;
+                boolean isSameDay = false;
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                    index = "aisle_ele_total_realtime";
+                    if (oldTime.equals(newTime)) {
+                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                    }
+                    isSameDay = true;
+                } else {
+                    index = "aisle_eq_total_day";
+                    oldTime = oldTime.plusDays(1);
+                    newTime = newTime.plusDays(1);
+                    isSameDay = false;
+                }
+                String startTime = localDateTimeToString(oldTime);
+                String endTime = localDateTimeToString(newTime);
+                List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                if (cabinetData.size() == 0){
+                    return result;
+                }
+                Double firstEq = null;
+                Double lastEq = null;
+                Double totalEq = 0D;
+                Double maxEle = null;
+                String maxEleTime = null;
+                int nowTimes = 0;
+                if (isSameDay) {
+                    List<AisleEleTotalRealtimeDo> busList = new ArrayList<>();
+                    for (String str : cabinetData) {
+                        nowTimes++;
+                        AisleEleTotalRealtimeDo aisleEleTotalRealtimeDo = JsonUtils.parseObject(str, AisleEleTotalRealtimeDo.class);
+                        if (nowTimes == 1) {
+                            firstEq = aisleEleTotalRealtimeDo.getEleTotal();
+                        }
+                        if (nowTimes > 1) {
+                            barSeries.getData().add((float) (aisleEleTotalRealtimeDo.getEleTotal() - lastEq));
+                            barRes.getTime().add(aisleEleTotalRealtimeDo.getCreateTime().toString("HH:mm:ss"));
+                        }
+                        lastEq = aisleEleTotalRealtimeDo.getEleTotal();
+                        busList.add(aisleEleTotalRealtimeDo);
+                    }
+
+                    //计算实时用电量
+                    List<AisleEleTotalRealtimeDo> dayEqList = new ArrayList<>();
+                    for (int i = 0; i < cabinetData.size() - 1; i++) {
+                        AisleEleTotalRealtimeDo dayEleDo = new AisleEleTotalRealtimeDo();
+                        totalEq += (float) busList.get(i + 1).getEleTotal() - (float) busList.get(i).getEleTotal();
+                        dayEleDo.setEleTotal(busList.get(i + 1).getEleTotal() - busList.get(i).getEleTotal());
+                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
+                        dayEqList.add(dayEleDo);
+                    }
+                    dayEqList.sort(Comparator.comparing(AisleEleTotalRealtimeDo::getEleTotal));
+                    maxEle = dayEqList.get(dayEqList.size() - 1).getEleTotal();
+                    maxEleTime = dayEqList.get(dayEqList.size() - 1).getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+
+                    barRes.getSeries().add(barSeries);
+                    result.put("totalEle", totalEq);
+                    result.put("maxEle", maxEle);
+                    result.put("maxEleTime", maxEleTime);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
+                    result.put("barRes", barRes);
+                } else {
+                    int dataIndex = 0;
+                    for (String str : cabinetData) {
+                        nowTimes++;
+                        AisleEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, AisleEqTotalDayDo.class);
+                        totalEq += totalDayDo.getEqValue();
+                        barSeries.getData().add((float) totalDayDo.getEqValue());
+                        barRes.getTime().add(totalDayDo.getStartTime().toString("yyyy-MM-dd"));   if (dataIndex == 0) {
+                            firstEq = totalDayDo.getStartEle();
+                        }
+                        if (dataIndex == cabinetData.size() - 1) {
+                            lastEq = totalDayDo.getEndEle();
+                        }
+                    }
+                    String eqMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "eq_value");
+                    AisleEqTotalDayDo eqMaxValue = JsonUtils.parseObject(eqMax, AisleEqTotalDayDo.class);
+                    if (eqMaxValue != null) {
+                        maxEle = eqMaxValue.getEqValue();
+                        maxEleTime = eqMaxValue.getStartTime().toString("yyyy-MM-dd HH:mm:ss");
+                    }
+                    barRes.getSeries().add(barSeries);
+                    result.put("firstEq", firstEq);
+                    result.put("lastEq", lastEq);
+                    result.put("totalEle", totalEq);
+                    result.put("maxEle", maxEle);
+                    result.put("maxEleTime", maxEleTime);
+                    result.put("barRes", barRes);
+                }
+            }
+        } catch (Exception e) {
+            log.error("获取数据失败", e);
+        }
+        return result;
+    }
+
+    @Override
+    public List<AisleBalanceRes> getAisBasicInformationByRoom(String roomId) {
+        List<AisleBalanceRes> resList = new ArrayList<>();
+        AisleIndexPageReqVO aisleIndexPageReqVO = new AisleIndexPageReqVO();
+        aisleIndexPageReqVO.setRoomId(Integer.valueOf(roomId));
+        PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(aisleIndexPageReqVO);
+        List<AisleIndexDO> aisleIndexDOList = aisleIndexDOPageResult.getList();
+
+        for (AisleIndexDO aisleIndexDO : aisleIndexDOList) {
+            AisleBalanceRes aisleBalanceRes = new AisleBalanceRes();
+            aisleBalanceRes.setId(aisleIndexDO.getId());
+            aisleBalanceRes.setName(aisleIndexDO.getAisleName());
+            List<AisleIndexDO> aisleIndexDOS = new ArrayList<>();
+            aisleIndexDOS.add(aisleIndexDO);
+            List mutiRedis = getMutiRedis(aisleIndexDOS);
+
+            for (Object o : mutiRedis) {
+                if (Objects.isNull(o)) {
+                    continue;
+                }
+                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+                aisleBalanceRes.setLoadRate(jsonObject.getDouble("load_factor"));
+                aisleBalanceRes.setStatus(jsonObject.getInteger("status"));
+                aisleBalanceRes.setEleCapacity(aisleIndexDO.getPowerCapacity());
+                JSONObject aislePower = jsonObject.getJSONObject("aisle_power");
+                JSONObject totalData = aislePower.getJSONObject("total_data");
+                if (Objects.nonNull(totalData)) {
+                    aisleBalanceRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
+                    aisleBalanceRes.setPowActiveTotal(totalData.getDouble("pow_active"));
+                    aisleBalanceRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
+                    aisleBalanceRes.setPowFactorTotal(totalData.getDouble("power_factor"));
+                    aisleBalanceRes.setEleActive(totalData.getDouble("ele_active"));
+                }
+                JSONObject pathA = aislePower.getJSONObject("path_a");
+                if (Objects.nonNull(pathA)) {
+                    aisleBalanceRes.setPowApparentA(pathA.getDouble("pow_apparent"));
+                    aisleBalanceRes.setPowActiveA(pathA.getDouble("pow_active"));
+                    aisleBalanceRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
+                }
+                JSONObject pathB = aislePower.getJSONObject("path_b");
+                if (Objects.nonNull(pathB)) {
+                    aisleBalanceRes.setPowApparentB(pathB.getDouble("pow_apparent"));
+                    aisleBalanceRes.setPowActiveB(pathB.getDouble("pow_active"));
+                    aisleBalanceRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
+                }
+                if (pathA != null && pathB != null){
+                    Double aPow = pathA.getDouble("pow_active");
+                    Double bPow = pathB.getDouble("pow_active");
+                    Double proportion = calculateProportion(aPow, bPow);
+                    aisleBalanceRes.setRateA(proportion);
+                }
+            }
+            resList.add(aisleBalanceRes);
+        }
+        return resList;
+    }
+
+
+    private Double calculateProportion(Double apow, Double bpow) {
+        double percentageValue = 50.0;
+
+        if (apow == null && bpow == null) {
+            percentageValue = -1.0;
+        } else if (apow != null && bpow == null) {
+            percentageValue = 100.0;
+        } else if (apow == null && bpow != null) {
+            percentageValue = 0.0;
+        } else if (apow != 0 && bpow == 0) {
+            percentageValue = 100.0;
+        } else if (apow == 0 && bpow != 0) {
+            percentageValue = 0.0;
+        } else if (apow != 0 && bpow != 0) {
+            percentageValue = apow / (apow + bpow) * 100;
+        }
+
+        return percentageValue;
+    }
+
+    @Override
+    public Map getEleByRoom(String roomId, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        AisleIndexPageReqVO aisleIndexPageReqVO = new AisleIndexPageReqVO();
+        aisleIndexPageReqVO.setRoomId(Integer.valueOf(roomId));
+        PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(aisleIndexPageReqVO);
+        List<AisleIndexDO> aisleIndexDOList = aisleIndexDOPageResult.getList();
+        HashMap result = new HashMap<>();
+        AisleLineResBase barRes = new AisleLineResBase();
+        BarSeries barSeries = new BarSeries();
+        if (CollectionUtil.isEmpty(aisleIndexDOList)){
+            return  result;
+        }
+        for (AisleIndexDO aisleIndexDO : aisleIndexDOList) {
+            Integer id = aisleIndexDO.getId();
+            try {
+                if (id != null) {
+                    String index = null;
+                    boolean isSameDay = false;
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        index = "aisle_ele_total_realtime";
+                        if (oldTime.equals(newTime)) {
+                            newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                        }
+                        isSameDay = true;
+                    } else {
+                        index = "aisle_eq_total_day";
+                        oldTime = oldTime.plusDays(1);
+                        newTime = newTime.plusDays(1);
+                        isSameDay = false;
+                    }
+                    String startTime = localDateTimeToString(oldTime);
+                    String endTime = localDateTimeToString(newTime);
+                    List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                    if (cabinetData.size() == 0){
+                        return result;
+                    }
+                    float totalEq = 0f;
+                    if (isSameDay) {
+                        List<AisleEleTotalRealtimeDo> busList = new ArrayList<>();
+                        for (String str : cabinetData) {
+                            AisleEleTotalRealtimeDo aisleEleTotalRealtimeDo = JsonUtils.parseObject(str, AisleEleTotalRealtimeDo.class);
+                            busList.add(aisleEleTotalRealtimeDo);
+                        }
+                        //计算实时用电量
+                        for (int i = 0; i < cabinetData.size() - 1; i++) {
+                            totalEq += (float) busList.get(i + 1).getEleTotal() - (float) busList.get(i).getEleTotal();
+                        }
+                        barSeries.getData().add((totalEq));
+                        barRes.getTime().add(aisleIndexDO.getAisleName());
+                    } else {
+                        for (String str : cabinetData) {
+                            AisleEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, AisleEqTotalDayDo.class);
+                            totalEq += totalDayDo.getEqValue();
+                        }
+                        barSeries.getData().add((totalEq));
+                        barRes.getTime().add(aisleIndexDO.getAisleName());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("获取数据失败", e);
+            }
+        }
+        barRes.getSeries().add(barSeries);
+        result.put("barRes",barRes);
+        return result;
+    }
+
+    @Override
     public Map getReportConsumeDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
         AisleLineResBase barRes = new AisleLineResBase();
@@ -1946,7 +2278,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             oldTime = oldTime.plusDays(1).withHour(0).withMinute(0).withSecond(0);
             newTime = newTime.plusDays(1).withHour(23).withMinute(59).withSecond(59);
         }
-
+        List<String> strData = new ArrayList<>();
         String startTime = localDateTimeToString(oldTime);
         String endTime = localDateTimeToString(newTime);
 
@@ -1967,13 +2299,22 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 for (SearchHit hit : hits) {
                     String str = hit.getSourceAsString();
                     AisleHdaLineHour houResVO = JsonUtils.parseObject(str, AisleHdaLineHour.class);
-                    DataProcessingUtils.processLineHisData(houResVO, resultMap, isSameDay, DataTypeEnums.fromValue(dataType));
+                    boolean b = DataProcessingUtils.processLineHisData(houResVO, resultMap, isSameDay, DataTypeEnums.fromValue(dataType));
+                    if (!b){
+                        return new HashMap();
+                    }
+                    strData.add(str);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int maxIndex = 3;
+
+        List<AisleHdaLineHour> powList = strData.stream().map(str -> JsonUtils.parseObject(str, AisleHdaLineHour.class)).collect(Collectors.toList());
+        processLineMavMin(powList,dataType,resultMap);
+
+        int aIndex = 1;
+        int bIndex = 2;
         // 处理结果
         for (int lineId = 1; lineId <= 3; lineId++) {
             String lineKey = "dayList" + lineId;
@@ -1985,14 +2326,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 LineSeries curBSeries = new LineSeries();
                 LineSeries volBSeries = new LineSeries();
 
-                resultMap.put("curName" + lineId, "A路L" + lineId + "相电流");
-                resultMap.put("volName" + lineId, "A路L" + lineId + "相电压");
+                resultMap.put("curName" + aIndex, "A路L" + lineId + "相电流");
+                resultMap.put("volName" + aIndex, "A路L" + lineId + "相电压");
 
                 curASeries.setName("A-L" + lineId);
                 volASeries.setName("A-L" + lineId);
 
-                resultMap.put("curName" + (lineId + maxIndex), "B路L" + lineId + "相电流");
-                resultMap.put("volName" + (lineId + maxIndex), "B路L" + lineId + "相电压");
+                resultMap.put("curName" + bIndex, "B路L" + lineId + "相电流");
+                resultMap.put("volName" + bIndex, "B路L" + lineId + "相电压");
 
                 curBSeries.setName("B-L" + lineId);
                 volBSeries.setName("B-L" + lineId);
@@ -2007,37 +2348,14 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 volBSeries.setData((List<Float>) lineData.get("volBDataList"));
                 volBSeries.setHappenTime((List<String>) lineData.get("volBHappenTime"));
 
-//                Map<String, Object> analyzedData = PduAnalysisResult.analyzePduData((List<PduHdaLineHouResVO>) lineData.get("data"), dataType);
-//                PduAnalysisResult.CurrentResult currentResult = (PduAnalysisResult.CurrentResult) analyzedData.get("current");
-//                PduAnalysisResult.VoltageResult voltageResult = (PduAnalysisResult.VoltageResult) analyzedData.get("voltage");
-//
-//                if (dataType != 0) {
-//                    resultMap.put("curMaxValue" + lineId, currentResult.maxCurValue);
-//                    resultMap.put("curMaxTime" + lineId, sdfS.format(currentResult.maxCurTime));
-//                    resultMap.put("curMinValue" + lineId, currentResult.minCurValue);
-//                    resultMap.put("curMinTime" + lineId, sdfS.format(currentResult.minCurTime));
-//                    resultMap.put("volMaxValue" + lineId, voltageResult.maxVolValue);
-//                    resultMap.put("volMaxTime" + lineId, sdfS.format(voltageResult.maxVolTime));
-//                    resultMap.put("volMinValue" + lineId, voltageResult.minVolValue);
-//                    resultMap.put("volMinTime" + lineId, sdfS.format(voltageResult.minVolTime));
-//                } else {
-//                    resultMap.put("curMaxValue" + lineId, currentResult.maxCurValue);
-//                    resultMap.put("curMaxTime" + lineId, "无");
-//                    resultMap.put("curMinValue" + lineId, currentResult.minCurValue);
-//                    resultMap.put("curMinTime" + lineId, "无");
-//                    resultMap.put("volMaxValue" + lineId, voltageResult.maxVolValue);
-//                    resultMap.put("volMaxTime" + lineId, "无");
-//                    resultMap.put("volMinValue" + lineId, voltageResult.minVolValue);
-//                    resultMap.put("volMinTime" + lineId, "无");
-//                }
-
-
                 curResBase.getSeries().add(curASeries);
                 volResBase.getSeries().add(volASeries);
                 curResBase.getSeries().add(curBSeries);
                 volResBase.getSeries().add(volBSeries);
             }
             resultMap.put("lineNumber", lineId);
+            aIndex = aIndex+2;
+            bIndex = bIndex+2;
         }
 
         // 添加时间轴数据
@@ -2050,50 +2368,145 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         return resultMap;
     }
 
+
+
     public void processLineMavMin(List<AisleHdaLineHour> powList, Integer dataType, Map<String, Object> result) {
+        //电流
+        //A相
+        PowerData lineCurARoadA = new PowerData();
+        PowerData lineCurARoadB = new PowerData();
 
+        //B相
+        PowerData lineCurBRoadA = new PowerData();
+        PowerData lineCurBRoadB = new PowerData();
+
+        //C相
+        PowerData lineCurCRoadA = new PowerData();
+        PowerData lineCurCRoadB = new PowerData();
+
+        //电压
+        //A相
+        PowerData lineVolARoadA = new PowerData();
+        PowerData lineVolARoadB = new PowerData();
+
+        //B相
+        PowerData lineVolBRoadA = new PowerData();
+        PowerData lineVolBRoadB = new PowerData();
+
+        //C相
+        PowerData lineVolCRoadA = new PowerData();
+        PowerData lineVolCRoadB = new PowerData();
         for (AisleHdaLineHour aisleHdaLineHour : powList) {
-            //A相
-            PowerData lineARoadA = new PowerData();
-            PowerData lineARoadB = new PowerData();
-
-            //B相
-            PowerData lineBRoadA = new PowerData();
-            PowerData lineBRoadB = new PowerData();
-
-            //C相
-            PowerData lineCRoadA = new PowerData();
-            PowerData lineCRoadB = new PowerData();
-
-            switch (aisleHdaLineHour.getLineId()) {
+            int lineId = aisleHdaLineHour.getLineId();
+            switch (lineId) {
                 case 0:
-                    updatePowerData(lineARoadA, aisleHdaLineHour.getCurAMaxValue().floatValue(), aisleHdaLineHour.getCurAMaxTime(), aisleHdaLineHour.getCurAAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurAMinValue().floatValue(), aisleHdaLineHour.getCurAMinTime(), dataType);
-                    updatePowerData(lineARoadB, aisleHdaLineHour.getCurBMaxValue().floatValue(), aisleHdaLineHour.getCurBMaxTime(), aisleHdaLineHour.getCurBAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurBMinValue().floatValue(), aisleHdaLineHour.getCurBMinTime(), dataType);
+                    updatePowerData(lineCurARoadA, safeFloatValue(aisleHdaLineHour.getCurAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMaxTime()), safeFloatValue(aisleHdaLineHour.getCurAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurAMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMinTime()), dataType);
+                    updatePowerData(lineCurARoadB, safeFloatValue(aisleHdaLineHour.getCurBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMaxTime()), safeFloatValue(aisleHdaLineHour.getCurBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurBMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMinTime()), dataType);
+
+                    updatePowerData(lineVolARoadA, safeFloatValue(aisleHdaLineHour.getVolAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolABaxTime()), safeFloatValue(aisleHdaLineHour.getVolAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolAMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolAMinTime()), dataType);
+                    updatePowerData(lineVolARoadB, safeFloatValue(aisleHdaLineHour.getVolBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMaxTime()), safeFloatValue(aisleHdaLineHour.getVolBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolBMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMinTime()), dataType);
                     break;
                 case 1:
-                    updatePowerData(lineBRoadA, aisleHdaLineHour.getCurAMaxValue().floatValue(), aisleHdaLineHour.getCurAMaxTime(), aisleHdaLineHour.getCurAAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurAMinValue().floatValue(), aisleHdaLineHour.getCurAMinTime(), dataType);
-                    updatePowerData(lineBRoadB, aisleHdaLineHour.getCurBMaxValue().floatValue(), aisleHdaLineHour.getCurBMaxTime(), aisleHdaLineHour.getCurBAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurBMinValue().floatValue(), aisleHdaLineHour.getCurBMinTime(), dataType);
-                    break;
+                    updatePowerData(lineCurBRoadA, safeFloatValue(aisleHdaLineHour.getCurAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMaxTime()), safeFloatValue(aisleHdaLineHour.getCurAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurAMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMinTime()), dataType);
+                    updatePowerData(lineCurBRoadB, safeFloatValue(aisleHdaLineHour.getCurBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMaxTime()), safeFloatValue(aisleHdaLineHour.getCurBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurBMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMinTime()), dataType);
 
+                    updatePowerData(lineVolBRoadA, safeFloatValue(aisleHdaLineHour.getVolAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolABaxTime()), safeFloatValue(aisleHdaLineHour.getVolAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolAMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolAMinTime()), dataType);
+                    updatePowerData(lineVolBRoadB, safeFloatValue(aisleHdaLineHour.getVolBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMaxTime()), safeFloatValue(aisleHdaLineHour.getVolBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolBMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMinTime()), dataType);
+                    break;
                 case 2:
-                    updatePowerData(lineCRoadA, aisleHdaLineHour.getCurAMaxValue().floatValue(), aisleHdaLineHour.getCurAMaxTime(), aisleHdaLineHour.getCurAAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurAMinValue().floatValue(), aisleHdaLineHour.getCurAMinTime(), dataType);
-                    updatePowerData(lineCRoadB, aisleHdaLineHour.getCurBMaxValue().floatValue(), aisleHdaLineHour.getCurBMaxTime(), aisleHdaLineHour.getCurBAvgValue().floatValue()
-                            , aisleHdaLineHour.getCurBMinValue().floatValue(), aisleHdaLineHour.getCurBMinTime(), dataType);
-                    break;
+                    updatePowerData(lineCurCRoadA, safeFloatValue(aisleHdaLineHour.getCurAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMaxTime()), safeFloatValue(aisleHdaLineHour.getCurAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurAMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurAMinTime()), dataType);
+                    updatePowerData(lineCurCRoadB, safeFloatValue(aisleHdaLineHour.getCurBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMaxTime()), safeFloatValue(aisleHdaLineHour.getCurBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getCurBMinValue()), safeLocalDateTime(aisleHdaLineHour.getCurBMinTime()), dataType);
 
+                    updatePowerData(lineVolCRoadA, safeFloatValue(aisleHdaLineHour.getVolAMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolABaxTime()), safeFloatValue(aisleHdaLineHour.getVolAAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolAMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolAMinTime()), dataType);
+                    updatePowerData(lineVolCRoadB, safeFloatValue(aisleHdaLineHour.getVolBMaxValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMaxTime()), safeFloatValue(aisleHdaLineHour.getVolBAvgValue())
+                            , safeFloatValue(aisleHdaLineHour.getVolBMinValue()), safeLocalDateTime(aisleHdaLineHour.getVolBMinTime()), dataType);
+                    break;
                 default:
+                    // 处理解默认情况
+                    break;
             }
         }
 
         //设置数据
-        result.put("","");
+        //电流
+        result.put("curMaxValue"+1, lineCurARoadA.maxValue);
+        result.put("curMaxTime"+1,lineCurARoadA.maxTime);
+        result.put("curMinValue"+1,lineCurARoadA.minValue);
+        result.put("curMinTime"+1,lineCurARoadA.minTime);
 
+        result.put("curMaxValue"+2, lineCurARoadB.maxValue);
+        result.put("curMaxTime"+2,lineCurARoadB.maxTime);
+        result.put("curMinValue"+2,lineCurARoadB.minValue);
+        result.put("curMinTime"+2,lineCurARoadB.minTime);
 
+        result.put("curMaxValue"+3, lineCurBRoadA.maxValue);
+        result.put("curMaxTime"+3,lineCurBRoadA.maxTime);
+        result.put("curMinValue"+3,lineCurBRoadA.minValue);
+        result.put("curMinTime"+3,lineCurBRoadA.minTime);
+
+        result.put("curMaxValue"+4, lineCurBRoadB.maxValue);
+        result.put("curMaxTime"+4,lineCurBRoadB.maxTime);
+        result.put("curMinValue"+4,lineCurBRoadB.minValue);
+        result.put("curMinTime"+4,lineCurBRoadB.minTime);
+
+        result.put("curMaxValue"+5, lineCurCRoadA.maxValue);
+        result.put("curMaxTime"+5,lineCurCRoadA.maxTime);
+        result.put("curMinValue"+5,lineCurCRoadA.minValue);
+        result.put("curMinTime"+5,lineCurCRoadA.minTime);
+
+        result.put("curMaxValue"+6, lineCurCRoadB.maxValue);
+        result.put("curMaxTime"+6,lineCurCRoadB.maxTime);
+        result.put("curMinValue"+6,lineCurCRoadB.minValue);
+        result.put("curMinTime"+6,lineCurCRoadB.minTime);
+        //电压
+        result.put("volMaxValue" + 1, lineVolARoadA.maxValue);
+        result.put("volMaxTime" + 1, lineVolARoadA.maxTime);
+        result.put("volMinValue" + 1, lineVolARoadA.minValue);
+        result.put("volMinTime" + 1, lineVolARoadA.minTime);
+
+        result.put("volMaxValue" + 2, lineVolARoadB.maxValue);
+        result.put("volMaxTime" + 2, lineVolARoadB.maxTime);
+        result.put("volMinValue" + 2, lineVolARoadB.minValue);
+        result.put("volMinTime" + 2, lineVolARoadB.minTime);
+
+        result.put("volMaxValue" + 3, lineVolBRoadA.maxValue);
+        result.put("volMaxTime" + 3, lineVolBRoadA.maxTime);
+        result.put("volMinValue" + 3, lineVolBRoadA.minValue);
+        result.put("volMinTime" + 3, lineVolBRoadA.minTime);
+
+        result.put("volMaxValue" + 4, lineVolBRoadB.maxValue);
+        result.put("volMaxTime" + 4, lineVolBRoadB.maxTime);
+        result.put("volMinValue" + 4, lineVolBRoadB.minValue);
+        result.put("volMinTime" + 4, lineVolBRoadB.minTime);
+
+        result.put("volMaxValue" + 5, lineVolCRoadA.maxValue);
+        result.put("volMaxTime" + 5, lineVolCRoadA.maxTime);
+        result.put("volMinValue" + 5, lineVolCRoadA.minValue);
+        result.put("volMinTime" + 5, lineVolCRoadA.minTime);
+
+        result.put("volMaxValue" + 6, lineVolCRoadB.maxValue);
+        result.put("volMaxTime" + 6, lineVolCRoadB.maxTime);
+        result.put("volMinValue" + 6, lineVolCRoadB.minValue);
+        result.put("volMinTime" + 6, lineVolCRoadB.minTime);
+    }
+
+    private float safeFloatValue(Number value) {
+        return value != null ? value.floatValue() : 0.0f;
+    }
+
+    private String safeLocalDateTime(String value) {
+        return value != null ? value : "";
     }
 
     public void processPowMavMin(List<AislePowHourDo> powList, Integer dataType, Map<String, Object> result) {
@@ -2444,6 +2857,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
         return preFix + midName + type;
     }
+
 
 
     private List getMutiRedis(List<AisleIndexDO> list) {

@@ -28,7 +28,7 @@ public class AisleHdaLineHour {
     @JsonProperty("cur_a_min_time")
     private String curAMinTime;
 
-    @JsonProperty("curA_min_value")
+    @JsonProperty("cur_a_min_value")
     private Double curAMinValue;
 
     @JsonProperty("cur_b_avg_value")

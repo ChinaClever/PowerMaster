@@ -58,19 +58,19 @@
           />
         </el-form-item> -->
         <el-form-item label="时间段" prop="createTime" label-width="100px">
-          <el-button 
+          <el-button :color="switchValue == 0 ? '#00778c' : ''"
             @click="queryParams.timeType = 0;dateTimeName='twentyfourHour';now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报
           </el-button>
-          <el-button 
+          <el-button :color="switchValue == 1 ? '#00778c' : ''"
             @click="queryParams.timeType = 1;dateTimeName='seventytwoHour';now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
           </el-button>
-          <el-button 
+          <el-button :color="switchValue == 2 ? '#00778c' : ''"
             @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 2;" 
             :type="switchValue == 2 ? 'primary' : ''"
           >
@@ -169,11 +169,11 @@
                         <span v-else>{{ scope.row.baseInfoValue }}</span>
                       </template>
                     </el-table-column> -->
-                    <el-table-column  align="center" label="能耗" >
+                    <el-table-column  align="center" label="当前功率" >
                       <el-table-column :show-header="false" prop="consumeName"  />
                       <el-table-column :show-header="false" prop="consumeValue" />
                     </el-table-column>
-                    <el-table-column  align="center" label="占比" >
+                    <el-table-column  align="center" label="AB路占比" >
                       <el-table-column :show-header="false" prop="percentageName"  />
                       <el-table-column :show-header="false" prop="percentageValue" >
                         <template #default="scope">
@@ -200,33 +200,6 @@
               配电设备信息
             </div>
             <br/>
-            <!-- <el-row :gutter="24" >
-              <el-col :span="24 - serChartContainerWidth">
-                <div class="centered-div">
-                  <el-table 
-                    :data="rack" 
-                    :header-cell-style="arraySpanMethod"
-                    >
-                    <el-table-column  align="center" label="网络地址" prop="name"  />
-                    <el-table-column  align="center" label="状态" prop="totalPower" />
-                    <el-table-column  align="center" label="总有功功率" prop="acurrent" />
-                    <el-table-column  align="center" label="总无功功率" prop="bcurrent" />
-                    <el-table-column  align="center" label="总视在功率" prop="bcurrent" />
-                    <el-table-column  align="center" label="总功率因数" prop="bcurrent" />
-                    <el-table-column  align="center" label="耗电量" prop="bcurrent" />
-                    <el-table-column  align="center" label="电压不平衡" prop="bcurrent" />
-                    <el-table-column  align="center" label="电流不平衡" prop="bcurrent" />
-                    <el-table-column label="操作" align="center">
-                    <template #default="scope">
-                    <el-button v-if="switchValue==0" @click="generateDailyReport(scope.row.devKey)">日报</el-button>
-                    <el-button v-if="switchValue==1" @click="generateMonthlyReport(scope.row.devKey)">月报</el-button>
-                    </template>
-
-      </el-table-column>
-                  </el-table>
-                </div>
-              </el-col>
-            </el-row> -->
           </div>
               <el-table :data="tableData" style="width: 100%" :border="true">
                                     <el-table-column  align="center" label="序号" type="index" prop="id" width="100px"/>
@@ -374,12 +347,12 @@
           <div v-for="(sensor, index) in lineCurList?.series" :key="index">
             <div class="power-section single-line" v-if="index %2 == 0">
               <span class="power-title">{{lineCurVolData.res[`curName${index + 1}`]}}</span>
-  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 1}`]}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 1}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 1}`]}})</span></span>
+  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 1}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 1}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 1}`]}})</span></span>
           <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=lineCurList?.series.length "> {{lineCurVolData.res[`curName${index + 2}`]}}</span>
-  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 2}`]}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`curMaxValue${index + 2}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineCurList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`curMinValue${index + 2}`].toFixed(2)}}</span> A <span class="time">记录于({{lineCurVolData.res[`curMinTime${index + 2}`]}})</span></span>
 </div>
           </div>
             <ACurLine class="adaptiveStyle" :list="lineCurList"  :dataType="queryParams.dataType"/>
@@ -391,12 +364,12 @@
                         <div v-for="(sensor, index) in lineVolList?.series" :key="index">
             <div class="power-section single-line" v-if="index %2 == 0">
               <span class="power-title">{{lineCurVolData.res[`volName${index + 1}`]}}</span>
-  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 1}`]}})</span></span>
-  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 1}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 1}`]}})</span></span>
+  <span class="power-value">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 1}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 1}`]}})</span></span>
+  <span class="power-value">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 1}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 1}`]}})</span></span>
           <span  class="separator">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
   <span class="power-title" v-if="index+2<=lineVolList?.series.length ">{{lineCurVolData.res[`volName${index + 2}`]}}</span>
-  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 2}`]}})</span></span>
-  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 2}`]}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">峰值 <span class="highlight">{{lineCurVolData.res[`volMaxValue${index + 2}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMaxTime${index + 2}`]}})</span></span>
+  <span class="power-value" v-if="index+2<=lineVolList?.series.length ">谷值 <span class="highlight">{{lineCurVolData.res[`volMinValue${index + 2}`].toFixed(1)}}</span> V <span class="time">记录于({{lineCurVolData.res[`volMinTime${index + 2}`]}})</span></span>
 </div>
 
           </div>
@@ -468,13 +441,13 @@
           </div>
 
  
-    
+<!--     
           <div class="pageBox" v-if="visControll.BpowVis">
             <div class="page-conTitle" >
               机架耗电电量排名（先写死，后续根据需要修改）
             </div>
             <HorizontalBar :width="computedWidth" height="58vh" />
-          </div>
+          </div> -->
           <!-- <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
               输出位电量排名
@@ -690,6 +663,8 @@ const loadAll = async () => {
 
   return objectArray;
 }
+
+
 
 const querySearch = (queryString: string, cb: any) => {
   const results = queryString
@@ -1020,15 +995,20 @@ const getList = async () => {
   
       //清除temp1的缓存数据
   temp1.value=[]
+  console.log(queryParams.id)
   //获得告警信息
+  const preStatus = ref([0])
   const temp1Data = await IndexApi.getBoxRecordPage({
+
     pageNo: 1,
     pageSize: 100,
-    devKey: queryParams.devKey,
-    // devKey : '',
     devType: 7,
+    likeName: queryParams.Id,
     alarmType: 6,
-    likeName: '1-1-1',
+    pduStartTime: queryParams.oldTime,
+    pduFinishTime: queryParams.newTime,
+              alarmStatus: preStatus.value,
+    
   })
   //处理告警信息数据
   // //debugger
@@ -1061,7 +1041,7 @@ const handlePFLineQuery = async () => {
 
 
 const handleEleQuery = async () => {
-  const data = await IndexApi.getEleByCabinet(queryParams);
+  const data = await IndexApi.getEleByCabinetId(queryParams);
   ele.value = data.ele;
   console.log('elekasjklasncklasnckasnk',ele.value);
 }
@@ -1366,13 +1346,13 @@ if (ab) {
     baseInfoName : "所属位置",
     baseInfoValue : CabinetInfo1?.name,
     consumeName : "当前总视在功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '--',
     percentageName: "当前AB路占比",
     percentageValue: percentageValue?.toFixed(0),
   })
   temp.push({
     baseInfoName : "电力容量",
-    baseInfoValue : CabinetInfo?.pow_capacity != null ?  CabinetInfo?.pow_capacity : '/',
+    baseInfoValue : CabinetInfo?.pow_capacity != null ?  CabinetInfo?.pow_capacity+'KW' : '--',
     consumeName : "当前总有功功率",
     consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active != null ? CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW" : '/',
     percentageName: "A路有功功率",
@@ -1380,17 +1360,17 @@ if (ab) {
   })
   temp.push({
     baseInfoName : "负载率",
-    baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
+    baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '--',
     consumeName : "当前总无功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/',
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '--',
     percentageName: "B路有功功率",
     percentageValue: CabinetInfo?.cabinet_power?.path_b !=null ?CabinetInfo?.cabinet_power?.path_b.pow_active.toFixed(3)+'kW':'--',
   })
   temp.push({
     baseInfoName : "耗电量",
-    baseInfoValue : (ele.value || 0).toFixed(3) + "kW",
+    baseInfoValue : (ele.value || 0).toFixed(1) + "kWh",
     consumeName : "当前功率因素",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '/',
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.power_factor != null ? CabinetInfo?.cabinet_power?.total_data?.power_factor?.toFixed(2) : '--',
     percentageName: "偏差率",
     percentageValue: result.value != null ? result : '--',
   })
@@ -1467,8 +1447,34 @@ const handleQuery = async () => {
 // }
 
 
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+
 /** 初始化 **/
 onMounted( async () =>  {
+    let id = route.query?.CabinetId as string | undefined;
+  let timeType = route.query?.timeType as string | undefined;
+  let oldTime = route.query?.oldTime as string | undefined;
+  let newTime = route.query?.newTime as string | undefined;
+  let visAllReport = route.query?.visAllReport as string | undefined;
+  let switchValue1 = route.query?.switchValue as string | undefined;
+
+  if (id != undefined) {
+    queryParams.ipAddr = id;
+    queryParams.Id = id;
+    queryParams.timeType = timeType;
+    queryParams.oldTime = oldTime;
+    queryParams.newTime = newTime;
+    queryParams.visAllReport = visAllReport;
+      switchValue.value = switchValue1;
+    getList();
+    
+  }
+  getNavList()
+  // getList();
+  // initChart();
+  idList.value = await loadAll();
+  // window.addEventListener('resize', updateWindowWidth);
   // getList();
   // initChart();
   getNavList();

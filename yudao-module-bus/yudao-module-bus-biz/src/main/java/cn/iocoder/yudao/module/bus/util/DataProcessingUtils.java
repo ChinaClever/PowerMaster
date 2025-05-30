@@ -15,6 +15,8 @@ public class DataProcessingUtils {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat hourOnlyFormat = new SimpleDateFormat("HH:mm");
+
 
     /**
      * 收集相电压电流数据
@@ -38,7 +40,7 @@ public class DataProcessingUtils {
 
 
         List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
-        dateTimes.add(isSameDay ? sdf.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+        dateTimes.add(isSameDay ? hourOnlyFormat.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
 
     }
 
@@ -131,7 +133,7 @@ public class DataProcessingUtils {
         ((List<Float>) lineData.computeIfAbsent("loadRateDataList", k -> new ArrayList<>())).add(getCurValue(houResVO, dataType));
         ((List<String>) lineData.computeIfAbsent("loadRateHappenTime", k -> new ArrayList<>())).add(formatCurTime(houResVO, dataType));
         List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
-        dateTimes.add(isSameDay ? sdf.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+        dateTimes.add(isSameDay ? hourOnlyFormat.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
 
     }
 

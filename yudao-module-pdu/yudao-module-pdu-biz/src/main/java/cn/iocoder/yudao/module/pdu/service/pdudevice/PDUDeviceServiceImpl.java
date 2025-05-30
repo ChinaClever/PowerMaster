@@ -111,7 +111,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private static final SimpleDateFormat hourOnlyFormat = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat hourOnlyFormat = new SimpleDateFormat("HH:mm");
 
     @Resource
     private PduIndexMapper pDUDeviceMapper;
@@ -155,7 +155,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 return new PageResult<PDUDeviceDO>(result, 0L);
             }
         }
-        if (Objects.equals(pageReqVO.getCurbance(),1)) {
+        if (Objects.equals(pageReqVO.getCurbance(), 1)) {
             pduIndexPageResult = pDUDeviceMapper.selectQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
         } else {
             pduIndexPageResult = pDUDeviceMapper.selectCurbanceQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
@@ -306,31 +306,31 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (Objects.nonNull(curMap.get(pduId))) {
                     MaxValueAndCreateTime curl1 = curMap.get(pduId).get(1);
 
-                    pduLineRes.setL1MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl1.getMaxValue()),2));
+                    pduLineRes.setL1MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl1.getMaxValue()), 2));
                     pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     MaxValueAndCreateTime curl2 = curMap.get(pduId).get(2);
                     if (curl2 != null) {
-                        pduLineRes.setL2MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl2.getMaxValue()),2));
+                        pduLineRes.setL2MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl2.getMaxValue()), 2));
                         pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                     MaxValueAndCreateTime curl3 = curMap.get(pduId).get(3);
                     if (curl3 != null) {
-                        pduLineRes.setL3MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl3.getMaxValue()),2));
+                        pduLineRes.setL3MaxCur(BigDemicalUtil.setScale(BigDecimal.valueOf(curl3.getMaxValue()), 2));
                         pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                 }
                 if (Objects.nonNull(powMap.get(pduId))) {
                     MaxValueAndCreateTime powl1 = powMap.get(pduId).get(1);
-                    pduLineRes.setL1MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl1.getMaxValue()),3));
+                    pduLineRes.setL1MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl1.getMaxValue()), 3));
                     pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     MaxValueAndCreateTime powl2 = powMap.get(pduId).get(2);
                     if (powl2 != null) {
-                        pduLineRes.setL2MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl2.getMaxValue()),3));
+                        pduLineRes.setL2MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl2.getMaxValue()), 3));
                         pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                     MaxValueAndCreateTime powl3 = powMap.get(pduId).get(3);
                     if (powl3 != null) {
-                        pduLineRes.setL3MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl3.getMaxValue()),3));
+                        pduLineRes.setL3MaxPow(BigDemicalUtil.setScale(BigDecimal.valueOf(powl3.getMaxValue()), 3));
                         pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                     }
                 }
@@ -366,9 +366,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             // 构建搜索源
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.boolQuery()
-                            .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").from(startTime).to(endTime)));
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").from(startTime).to(endTime)));
             String[] includeFields;
-            if ( pageReqVO.getFlagVlaue() == 0) {
+            if (pageReqVO.getFlagVlaue() == 0) {
                 // 排序字段
                 searchSourceBuilder.sort("cur_max_value", SortOrder.DESC);
                 // 限制字段，只取需要的字段
@@ -393,7 +393,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 // 构建结果对象
                 if (pageReqVO.getFlagVlaue() == 0) {
                     BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("cur_max_value"));
-                    result.setMaxValue(BigDemicalUtil.setScale1(value,2).toString());
+                    result.setMaxValue(BigDemicalUtil.setScale1(value, 2).toString());
                     result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                     result.setLineId((Integer) sourceAsMap.get("line_id"));
                     result.setPduId((Integer) sourceAsMap.get("pdu_id"));
@@ -401,7 +401,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 } else {
                     // 构建结果对象
                     BigDecimal value = BigDecimal.valueOf((Double) sourceAsMap.get("pow_active_max_value"));
-                    result.setMaxValue(BigDemicalUtil.setScale1(value,3).toString());
+                    result.setMaxValue(BigDemicalUtil.setScale1(value, 3).toString());
                     result.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
                     result.setLineId((Integer) sourceAsMap.get("line_id"));
                     result.setPduId((Integer) sourceAsMap.get("pdu_id"));
@@ -496,8 +496,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return jsonObject != null ? jsonObject.toJSONString() : null;
         }
     }
-
-
 
 
     @Override
@@ -1011,9 +1009,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     curResBase.getSeries().add(curSeries);
                     volResBase.getSeries().add(volSeries);
                 }
-                resultMap.put("lineNumber", lineId);
-            }
 
+            }
+            resultMap.put("lineNumber", curResBase.getSeries().size());
             // 添加时间轴数据
             List<String> uniqueDateTimes = (List<String>) resultMap.getOrDefault("dateTimes", new ArrayList<>());
             List<String> xTime = uniqueDateTimes.stream().distinct().collect(Collectors.toList());
@@ -1268,7 +1266,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         String pduKeyA = Optional.ofNullable(cabinetPdu)
                 .map(CabinetPdu::getPduKeyA)
                 .orElse("默认值");
-        if ("默认值".equals(pduKeyA)){
+        if ("默认值".equals(pduKeyA)) {
             return resultAB;
         }
         HashMap result = new HashMap<>();
@@ -1371,7 +1369,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         String pduKeyB = Optional.ofNullable(cabinetPdu)
                 .map(CabinetPdu::getPduKeyB)
                 .orElse("默认值");
-        if ("默认值".equals(pduKeyB)){
+        if ("默认值".equals(pduKeyB)) {
             return resultAB;
         }
 
@@ -1415,8 +1413,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 if (lineData != null && !(((List<PduHdaLineHouResVO>) lineData.get("data")).isEmpty())) {
                     LineSeries curSeries = new LineSeries();
                     LineSeries volSeries = new LineSeries();
-                    result.put("curName" + (lineId + suffix), "B路L" + lineId + "相电流");
-                    result.put("volName" + (lineId + suffix), "B路L" + lineId + "相电压");
+
                     curSeries.setName("B-L" + lineId);
                     volSeries.setName("B-L" + lineId);
                     curSeries.setData((List<Float>) lineData.get("curDataList"));
@@ -1428,28 +1425,33 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     PduAnalysisResult.CurrentResult currentResult = (PduAnalysisResult.CurrentResult) analyzedData.get("current");
                     PduAnalysisResult.VoltageResult voltageResult = (PduAnalysisResult.VoltageResult) analyzedData.get("voltage");
 
-                    if (dataType != 0) {
-                        result.put("curMaxValue" + (lineId + suffix), currentResult.maxCurValue);
-                        result.put("curMaxTime" + (lineId + suffix), sdf.format(currentResult.maxCurTime));
-                        result.put("curMinValue" + (lineId + suffix), currentResult.minCurValue);
-                        result.put("curMinTime" + (lineId + suffix), sdf.format(currentResult.minCurTime));
-                        result.put("volMaxValue" + (lineId + suffix), voltageResult.maxVolValue);
-                        result.put("volMaxTime" + (lineId + suffix), sdf.format(voltageResult.maxVolTime));
-                        result.put("volMinValue" + (lineId + suffix), voltageResult.minVolValue);
-                        result.put("volMinTime" + (lineId + suffix), sdf.format(voltageResult.minVolTime));
-                    } else {
-                        result.put("curMaxValue" + (lineId + suffix), currentResult.maxCurValue);
-                        result.put("curMaxTime" + (lineId + suffix), "无");
-                        result.put("curMinValue" + (lineId + suffix), currentResult.minCurValue);
-                        result.put("curMinTime" + (lineId + suffix), "无");
-                        result.put("volMaxValue" + (lineId + suffix), voltageResult.maxVolValue);
-                        result.put("volMaxTime" + (lineId + suffix), "无");
-                        result.put("volMinValue" + (lineId + suffix), voltageResult.minVolValue);
-                        result.put("volMinTime" + (lineId + suffix), "无");
-                    }
+
 
                     curResBase.getSeries().add(curSeries);
                     volResBase.getSeries().add(volSeries);
+
+                    if (dataType != 0) {
+                        result.put("curMaxValue" + curResBase.getSeries().size(), currentResult.maxCurValue);
+                        result.put("curMaxTime" + curResBase.getSeries().size(), sdf.format(currentResult.maxCurTime));
+                        result.put("curMinValue" + curResBase.getSeries().size(), currentResult.minCurValue);
+                        result.put("curMinTime" + curResBase.getSeries().size(), sdf.format(currentResult.minCurTime));
+                        result.put("volMaxValue" + volResBase.getSeries().size(), voltageResult.maxVolValue);
+                        result.put("volMaxTime" + volResBase.getSeries().size(), sdf.format(voltageResult.maxVolTime));
+                        result.put("volMinValue" + volResBase.getSeries().size(), voltageResult.minVolValue);
+                        result.put("volMinTime" + volResBase.getSeries().size(), sdf.format(voltageResult.minVolTime));
+                    } else {
+                        result.put("curMaxValue" + curResBase.getSeries().size(), currentResult.maxCurValue);
+                        result.put("curMaxTime" + curResBase.getSeries().size(), "无");
+                        result.put("curMinValue" + curResBase.getSeries().size(), currentResult.minCurValue);
+                        result.put("curMinTime" + curResBase.getSeries().size(), "无");
+                        result.put("volMaxValue" + volResBase.getSeries().size(), voltageResult.maxVolValue);
+                        result.put("volMaxTime" + volResBase.getSeries().size(), "无");
+                        result.put("volMinValue" + volResBase.getSeries().size(), voltageResult.minVolValue);
+                        result.put("volMinTime" + volResBase.getSeries().size(), "无");
+                    }
+
+                    result.put("curName" + curResBase.getSeries().size(), "B路L" + lineId + "相电流");
+                    result.put("volName" + volResBase.getSeries().size(), "B路L" + lineId + "相电压");
                 }
 
             }
@@ -1496,6 +1498,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         String endTime = localDateTimeToString(newTime);
                         // TODO 电力计算错误，待电力计算错误解决再实现功能
                         List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
+                        if (CollectionUtils.isEmpty(cabinetData)){
+                            return result;
+                        }
                         double totalEq = 0D;
                         if (isSameDay) {
                             List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
@@ -1534,7 +1539,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         for (String devKey : pduKeyList) {
             ValueOperations ops = redisTemplate.opsForValue();
             JSONObject jsonObject = (JSONObject) ops.get("packet:pdu:" + devKey);
-            if (jsonObject != null){
+            if (jsonObject != null) {
                 PduBasicInformationVo pduBasicInformationVo = new PduBasicInformationVo();
                 //设置ip
 //                pduBasicInformationVo.setIpAddress(jsonObject.getString("dev_ip"));
@@ -1558,7 +1563,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     System.out.println("pdu_total_data is null");
                 }
             }
-            }
+        }
 
         return pduBasicInformationVos;
     }
@@ -1567,51 +1572,51 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         double pduTotal = 0D;
         if (!StringUtils.isEmpty(pduKey)) {
-                try {
-                    PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKey));
-                    if (pduIndex != null) {
-                        String index = null;
-                        boolean isSameDay = false;
-                        Integer Id = pduIndex.getId();
-                        if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
-                            index = "pdu_ele_total_realtime";
-                            if (oldTime.equals(newTime)) {
-                                newTime = newTime.withHour(23).withMinute(59).withSecond(59);
-                            }
-                            isSameDay = true;
-                        } else {
-                            index = "pdu_eq_total_day";
-                            oldTime = oldTime.plusDays(1);
-                            newTime = newTime.plusDays(1);
-                            isSameDay = false;
+            try {
+                PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getPduKey, pduKey));
+                if (pduIndex != null) {
+                    String index = null;
+                    boolean isSameDay = false;
+                    Integer Id = pduIndex.getId();
+                    if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                        index = "pdu_ele_total_realtime";
+                        if (oldTime.equals(newTime)) {
+                            newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                         }
-                        String startTime = localDateTimeToString(oldTime);
-                        String endTime = localDateTimeToString(newTime);
-                        // TODO 电力计算错误，待电力计算错误解决再实现功能
-                        List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
-                        double totalEq = 0D;
-                        if (isSameDay) {
-                            List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
-                            for (String str : cabinetData) {
-                                PduEleTotalRealtimeDo eleDO = JsonUtils.parseObject(str, PduEleTotalRealtimeDo.class);
-                                busList.add(eleDO);
-                            }
-
-                            for (int i = 0; i < cabinetData.size() - 1; i++) {
-                                totalEq += (float) busList.get(i + 1).getEle() - (float) busList.get(i).getEle();
-                            }
-                            pduTotal = totalEq;
-                        } else {
-                            for (String str : cabinetData) {
-                                PduEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, PduEqTotalDayDo.class);
-                                totalEq += (float) totalDayDo.getEq();
-                            }
-                            pduTotal = totalEq;
-                        }
+                        isSameDay = true;
+                    } else {
+                        index = "pdu_eq_total_day";
+                        oldTime = oldTime.plusDays(1);
+                        newTime = newTime.plusDays(1);
+                        isSameDay = false;
                     }
-                } catch (Exception e) {
-                    log.error("获取数据失败", e);
+                    String startTime = localDateTimeToString(oldTime);
+                    String endTime = localDateTimeToString(newTime);
+                    // TODO 电力计算错误，待电力计算错误解决再实现功能
+                    List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
+                    double totalEq = 0D;
+                    if (isSameDay) {
+                        List<PduEleTotalRealtimeDo> busList = new ArrayList<>();
+                        for (String str : cabinetData) {
+                            PduEleTotalRealtimeDo eleDO = JsonUtils.parseObject(str, PduEleTotalRealtimeDo.class);
+                            busList.add(eleDO);
+                        }
+
+                        for (int i = 0; i < cabinetData.size() - 1; i++) {
+                            totalEq += (float) busList.get(i + 1).getEle() - (float) busList.get(i).getEle();
+                        }
+                        pduTotal = totalEq;
+                    } else {
+                        for (String str : cabinetData) {
+                            PduEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, PduEqTotalDayDo.class);
+                            totalEq += (float) totalDayDo.getEq();
+                        }
+                        pduTotal = totalEq;
+                    }
                 }
+            } catch (Exception e) {
+                log.error("获取数据失败", e);
+            }
 
         }
         return pduTotal;
@@ -1761,7 +1766,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             String endTime = null;
             LocalDateTime now = LocalDateTime.now();
             String index = null;
-            switch (timeType){
+            switch (timeType) {
                 case 0:
                     index = "pdu_hda_line_realtime";
                     startTime = LocalDateTimeUtil.format(now.minusHours(1), "yyyy-MM-dd HH:mm:ss");
@@ -1821,7 +1826,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         Map<String, Object> curMap = new HashMap<>();
                         curMap.put("lineId", hourDo.getLineId());
                         curMap.put("curValue", hourDo.getCur());
-                        curMap.put("createTime",sdf.format(hourDo.getCreateTime()) );
+                        curMap.put("createTime", sdf.format(hourDo.getCreateTime()));
                         Map<String, Object> volMap = new HashMap<>();
                         volMap.put("lineId", hourDo.getLineId());
                         volMap.put("volValue", hourDo.getVol());
@@ -1843,7 +1848,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         Map<String, Object> volMap = new HashMap<>();
                         volMap.put("lineId", hourDo.getLineId());
                         volMap.put("volValue", hourDo.getVolAvgValue());
-                        volMap.put("createTime",  sdf.format(hourDo.getCreateTime()));
+                        volMap.put("createTime", sdf.format(hourDo.getCreateTime()));
                         volMap.put("volMaxValue", hourDo.getVolMaxValue());
                         volMap.put("volMaxTime", sdf.format(hourDo.getVolMaxTime()));
                         volMap.put("volMinValue", hourDo.getVolMinValue());
@@ -1871,8 +1876,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public BalancedDistributionStatisticsVO getBalancedDistribution(int curbance) {
-        if (Objects.equals(curbance,1)){
-            return  pDUDeviceMapper.getBalancedDistribution();
+        if (Objects.equals(curbance, 1)) {
+            return pDUDeviceMapper.getBalancedDistribution();
         }
         return pDUDeviceMapper.getBalancedDistributionVol();
     }
@@ -1976,6 +1981,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String endTime = localDateTimeToString(newTime);
                 // TODO 电力计算错误，待电力计算错误解决再实现功能
                 List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Id.intValue()), index);
+                if (CollectionUtils.isEmpty(cabinetData)){
+                    return result;
+                }
                 Double firstEq = null;
                 Double lastEq = null;
                 Double totalEq = 0D;
@@ -2003,7 +2011,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         PduEleTotalRealtimeDo dayEleDo = new PduEleTotalRealtimeDo();
                         totalEq += (float) busList.get(i + 1).getEle() - (float) busList.get(i).getEle();
                         dayEleDo.setEle(busList.get(i + 1).getEle() - busList.get(i).getEle());
-                        dayEleDo.setCreateTime(busList.get(i+1).getCreateTime());
+                        dayEleDo.setCreateTime(busList.get(i + 1).getCreateTime());
                         dayEqList.add(dayEleDo);
                     }
                     dayEqList.sort(Comparator.comparing(PduEleTotalRealtimeDo::getEle));
@@ -2218,18 +2226,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> data = getData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), pfIndex);
-                List<PduHdaTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, PduHdaTotalHourDo.class)).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(data)){
+                    List<PduHdaTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, PduHdaTotalHourDo.class)).collect(Collectors.toList());
 
-                LineSeries totalPFLine = new LineSeries();
-                processPFMavMin(powList, dataType, timeType, totalLineRes, totalPFLine, result, oldTime, newTime);
-                if (dataType == 1) {
-                    happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
-                } else if (dataType == -1) {
-                    happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    LineSeries totalPFLine = new LineSeries();
+                    processPFMavMin(powList, dataType, timeType, totalLineRes, totalPFLine, result, oldTime, newTime);
+                    if (dataType == 1) {
+                        happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMaxTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    } else if (dataType == -1) {
+                        happenTime = powList.stream().map(PduHdaTotalHourDo -> PduHdaTotalHourDo.getPowerFactorMinTime().toString("yyyy-MM-dd HH:mm:ss")).collect(Collectors.toList());
+                    }
+
+                    totalLineRes.getSeries().add(totalPFLine);
+                    totalPFLine.setHappenTime(happenTime);
                 }
-
-                totalLineRes.getSeries().add(totalPFLine);
-                totalPFLine.setHappenTime(happenTime);
                 //获取相功率因数
                 SearchRequest searchRequest = null;
                 String index = "";
@@ -2282,18 +2292,18 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
      */
     public void processData(SearchHits hits, Integer dataType, Map result, CabinetChartResBase totalLineRes) {
         //描述数据收集
-        Float lineAMax = -0.1f;
-        Float lineAMin = 1.1f;
+        Float lineAMax = -Float.MIN_VALUE;
+        Float lineAMin = Float.MAX_VALUE;
         String lineAMaxTime = "";
         String lineAMinTime = "";
 
-        Float lineBMax = -0.1f;
-        Float lineBMin = 1.1f;
+        Float lineBMax = -Float.MIN_VALUE;
+        Float lineBMin = Float.MAX_VALUE;
         String lineBMaxTime = "";
         String lineBMinTime = "";
 
-        Float lineCMax = -0.1f;
-        Float lineCMin = 1.1f;
+        Float lineCMax = -Float.MIN_VALUE;
+        Float lineCMin = Float.MAX_VALUE;
         String lineCMaxTime = "";
         String lineCMinTime = "";
 
@@ -2465,12 +2475,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
 
         }
-        lineASeries.setHappenTime(lineAHappenTime);
-        lineBSeries.setHappenTime(lineBHappenTime);
-        lineCSeries.setHappenTime(lineCHappenTime);
-        totalLineRes.getSeries().add(lineASeries);
-        totalLineRes.getSeries().add(lineBSeries);
-        totalLineRes.getSeries().add(lineCSeries);
+
+        if (!CollectionUtils.isEmpty(lineASeries.getData())){
+            lineASeries.setHappenTime(lineAHappenTime);
+            totalLineRes.getSeries().add(lineASeries);
+        }
+        if (!CollectionUtils.isEmpty(lineBSeries.getData())){
+            lineBSeries.setHappenTime(lineBHappenTime);
+            totalLineRes.getSeries().add(lineBSeries);
+        }
+        if (!CollectionUtils.isEmpty(lineCSeries.getData())){
+            lineCSeries.setHappenTime(lineCHappenTime);
+            totalLineRes.getSeries().add(lineCSeries);
+        }
+
 
 
     }
@@ -2596,11 +2614,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         totalApparentPow.getData().add(pduHdaTotalHourDo.getApparentPowMaxValue());
                         totalActivePow.getData().add(pduHdaTotalHourDo.getActivePowMaxValue());
                         totalReactivePow.getData().add(pduHdaTotalHourDo.getPowReactiveMaxValue());
-//                        if (timeFlag) {
-//                            totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("HH:mm"));
-//                        } else {
-//                            totalLineRes.getTime().add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd"));
-//                        }
+
                     }
 
                 } else if (dataType == 0) {
@@ -2687,7 +2701,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
      * 数值辅助类
      */
     private static class PowerData {
-        private Float maxValue = 0f;
+        private Float maxValue = -Float.MIN_VALUE;
         private Float minValue = Float.MAX_VALUE;
         private String maxTime = "";
         private String minTime = "";
@@ -3053,8 +3067,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     List<Float> loopCur = null;
 
                     //收集描述信息（峰值、谷值、发生时间）
-                    Float loopMax = 0f;
-                    Float loopMin = Float.MAX_VALUE;
+                    float loopMax = -Float.MIN_VALUE;
+                    float loopMin = Float.MAX_VALUE;
 
                     String loopMaxTime = "";
                     String loopMinTime = "";
@@ -4200,7 +4214,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         List<String> dateTimes = (List<String>) resultMap.computeIfAbsent("dateTimes", k -> new ArrayList<>());
 
 
-            dateTimes.add(isSameDay ? hourOnlyFormat.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
+        dateTimes.add(isSameDay ? hourOnlyFormat.format(houResVO.getCreateTime()) : dateOnlyFormat.format(houResVO.getCreateTime()));
 
 
     }
@@ -4325,7 +4339,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
      */
     public void processPFMavMin(List<PduHdaTotalHourDo> powList, Integer dataType, Integer timeType, CabinetChartResBase totalLineRes
             , LineSeries totalPFLine, Map<String, Object> result, LocalDateTime oldTime, LocalDateTime newTime) {
-        Float totalMax = 0f;
+        Float totalMax = -Float.MIN_VALUE;
         Float totalMin = Float.MAX_VALUE;
         String totalMaxTime = "";
         String totalMinTime = "";

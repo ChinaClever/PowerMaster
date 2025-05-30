@@ -113,6 +113,10 @@ export const IndexApi = {
   getEleByCabinet : async (params) => {
     return await request.get({ url: `/cabinet/index/getEleByCabinet`, params })
   },
+  getEleByCabinetId : async (params) => {
+    return await request.get({ url: `/cabinet/index/getEleByCabinetId`, params })
+  },
+
   // 查询所有颜色
   getCabinetColorAll : async () => {
     return await request.get({ url: `/cabinet/tem-color/all` })
