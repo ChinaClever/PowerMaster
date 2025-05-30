@@ -36,13 +36,13 @@
     <template v-if="chosenBtn == 4 && pluginData.powActive">
       <div class="box" v-for="(line, boxIndex) in pluginData.powActive" :key="boxIndex">
         <div>P{{boxIndex + 1}}</div>
-        <div>{{line.toFixed(3)}}</div>
+        <div>{{line.toFixed(1)}}</div>
       </div>
     </template>
     <template v-if="chosenBtn == 7 && pluginData.powApparent">
       <div class="box" v-for="(line, boxIndex) in pluginData.powApparent" :key="boxIndex">
         <div>P{{boxIndex + 1}}</div>
-        <div>{{line.toFixed(3)}}</div>
+        <div>{{line.toFixed(1)}}</div>
       </div>
     </template>
     <template v-if="chosenBtn == 8 && pluginData.temData">
@@ -57,7 +57,7 @@
     <template v-if="chosenBtn == 10 && pluginData.yesterdayEq">
       <div class="box" v-for="(line, boxIndex) in pluginData.yesterdayEq" :key="boxIndex">
         <div>E{{boxIndex + 1}}</div>
-        <div>{{line.toFixed(2)}}</div>
+        <div>{{line.toFixed(1)}}</div>
       </div>
     </template>
   </div>

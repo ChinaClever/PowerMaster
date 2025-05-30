@@ -39,7 +39,7 @@
       <div style="display: flex;">
         <div>
           <el-form-item label="柜列用能" label-width="130">
-            <el-switch v-model="isAutoCreate.aisleAlarm" :active-value="1" :inactive-value="0" style="width: 100px;--el-switch-on-color: #00778c;" />
+            <el-switch v-model="isAutoCreate.aisleAlarm" :active-value="true" :inactive-value="false" style="width: 100px;--el-switch-on-color: #00778c;" />
           </el-form-item>
         </div>
         <div v-if="isAutoCreate.aisleAlarm" style="flex: 1;">
@@ -511,7 +511,7 @@ const submitForm = async () => {
 const handleChange = (currentValue: number | undefined, oldValue: number | undefined) => {
   if(currentValue < minAmount.value) {
     formData.value.amount = minAmount.value
-    message.warning("当前柜列中机柜数量为" + minAmount.value + ",要减少的位置不能为空")
+    message.warning("当前柜列中机柜最大下标为" + minAmount.value + ",要减少的位置不能为空")
   }
 }
 
